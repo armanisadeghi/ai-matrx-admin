@@ -44,7 +44,7 @@ const EntityAnalyzerView = ({ entityKey }: { entityKey: EntityKeys }) => {
         state.loading.lastOperation
     ]);
 
-    const fields = state.entityMetadata.fields;
+    const fields = state.entityMetadata.entityFields
 
     const activeRecord = React.useMemo(() =>
             state.selection.activeRecord && state.records[state.selection.activeRecord]

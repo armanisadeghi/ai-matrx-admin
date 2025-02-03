@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useEditorContext } from '../provider/EditorProvider';
+import { useEditorContext } from '../../../providers/rich-text-editor/Provider';
+
 
 interface UseMessageEditorProps {
     id: string;
     onMessageUpdate?: (data: {
         content: string;
-        processedContent: string;
         chips: any[];
     }) => void;
     onChipUpdate?: (data: {
@@ -25,8 +25,7 @@ export const useMessageEditor = ({ id, onMessageUpdate, onChipUpdate }: UseMessa
 
         const interval = setInterval(() => {
             const editorState = context.getEditorState(id);
-            const content = context.getTextWithChipsReplaced(id, false);
-            const processedContent = context.getTextWithChipsReplaced(id, true);
+            const content = context.getEncodedText(id);
 
             const currentState = JSON.stringify({
                 content,
@@ -37,7 +36,6 @@ export const useMessageEditor = ({ id, onMessageUpdate, onChipUpdate }: UseMessa
                 // Monitor overall message changes
                 onMessageUpdate?.({
                     content,
-                    processedContent,
                     chips: editorState.chipData
                 });
 

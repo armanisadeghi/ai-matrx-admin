@@ -2074,5 +2074,26 @@ export const RECIPE_DATABASE = {
             "processor_overrides": "{}",
             "other_overrides": "{}"
         }
+    },
+    "15a11c3d-f037-4f2b-9e22-fe88e68d75e1": {
+        "name": "Gaston Recipe",
+        "brokers": [
+            {
+                "id": "26524ca1-347a-492c-9b3e-877792d56a92",
+                "official_name": "26524ca1-347a-492c-9b3e-877792d56a92",
+                "name": "Interview Data",
+                "data_type": "placeholder",
+                "required": true,
+                "default_value": null,
+                "ready": "True"
+            }
+
+        ],
+        "default_overrides": {
+            "model_override": "",
+            "processor_overrides": "{}",
+            "other_overrides": "{}"
+        }
+
     }
 };

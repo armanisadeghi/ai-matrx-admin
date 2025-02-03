@@ -4,10 +4,10 @@ import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEn
 import { processJoinedData, RelationshipDefinition } from '@/app/entities/hooks/relationships/utils';
 import { useActiveJoinedRecords } from '@/app/entities/hooks/relationships/useActiveJoinedRecords';
 import { useJoinedRecordsActiveParent } from '@/app/entities/hooks/relationships/useJoinedRecords';
-import { ProcessedRecipeMessages } from '../../panel-manager/types';
-import { useMessageReordering } from '../messages/useMessageReordering';
+import { ProcessedRecipeMessages } from '../../messages/types';
+import { useMessageReordering } from '../../../../hooks/aiCockpit/useMessageReordering';
 
-const messageRelationshipDefinition: RelationshipDefinition = {
+export const messageRelationshipDefinition: RelationshipDefinition = {
     parentEntity: {
         entityKey: 'recipe',
         referenceField: 'id',
@@ -54,6 +54,8 @@ export function useMessageTemplatesWithNew() {
         createRelatedRecords: createMessageTemplates,
         parentId: acticeRecipeId,
     } = useJoinedRecordsActiveParent(messageRelationshipDefinition);
+
+
 
     // const { updateRecord: savePermanentRecordChanges } = useUpdateRecord("messageTemplate");
 

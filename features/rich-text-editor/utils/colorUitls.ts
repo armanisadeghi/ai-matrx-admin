@@ -1,10 +1,12 @@
-import { COLOR_STYLES, TAILWIND_COLORS, TailwindColor } from "../constants";
-import { ColorOption } from "../types";
+import { COLOR_STYLES, TAILWIND_COLORS, TailwindColor } from "../../../constants/rich-text-constants";
+import { ColorOption } from "../../../types/editor.types";
 
 
 export function getNextAvailableColor(colorAssignments: Map<string, string>): string {
     const usedColors = new Set(colorAssignments.values());
-    return TAILWIND_COLORS.find((color) => !usedColors.has(color)) || TAILWIND_COLORS[0];
+    const availableColors = TAILWIND_COLORS.filter(color => !usedColors.has(color));
+    const randomIndex = Math.floor(Math.random() * (availableColors.length || TAILWIND_COLORS.length));
+    return availableColors.length > 0 ? availableColors[randomIndex] : TAILWIND_COLORS[randomIndex];
 }
 
 export function getColorClassName(color: TailwindColor | string): string {
@@ -16,4 +18,9 @@ export function getAllColorOptions(): ColorOption[] {
         color,
         className: COLOR_STYLES[color]
     }));
+}
+
+export function getRandomColor(): TailwindColor {
+    const randomIndex = Math.floor(Math.random() * TAILWIND_COLORS.length);
+    return TAILWIND_COLORS[randomIndex];
 }

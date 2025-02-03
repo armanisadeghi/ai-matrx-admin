@@ -1,14 +1,14 @@
 'use client';
 
 import { createEntitySelectors, GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { EntityData, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityData, EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
 import { useCallback, useEffect } from 'react';
-import { RelationshipDefinition, createRelationshipData, filterJoinForChild } from './utils';
+import { createRelationshipData, filterJoinForChild } from './utils';
 import React from 'react';
 import { useSequentialDelete } from '../crud/useSequentialDelete';
 import useUnsavedJoinedWithParent from '../unsaved-records/useUnsavedJoinedWithParent';
 import { toMatrxId, toPkValues, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import { useRelationshipMapper } from './useRelationshipMapper';
+import { useParentRelationship, useRelationshipMapper } from './useRelationshipMapper';
 
 export function useJoinedRecords(relationshipDefinition: RelationshipDefinition, parentId: string) {
     const dispatch = useAppDispatch();
@@ -16,8 +16,7 @@ export function useJoinedRecords(relationshipDefinition: RelationshipDefinition,
     const parentEntity = relationshipDefinition.parentEntity.entityKey;
     const joiningEntity = relationshipDefinition.joiningEntity.entityKey;
 
-    const mapper = useRelationshipMapper(joiningEntity, parentEntity);
-    mapper.setParentId(parentId);
+    const { JoiningEntityRecords, joiningMatrxIds, childIds, childMatrxIds, parentMatrxid } = useParentRelationship(joiningEntity, parentEntity, parentId);
 
     const parentReferencedField = relationshipDefinition.parentEntity.referenceField;
     const parentRecordId = toMatrxId(parentEntity, { [parentReferencedField]: parentId });
@@ -30,11 +29,7 @@ export function useJoinedRecords(relationshipDefinition: RelationshipDefinition,
     // Parent Record
     const parentRecord = useAppSelector((state) => parentSelectors.selectRecordByKey(state, parentRecordId)) as EntityData<EntityKeys>;
 
-    const JoiningEntityRecords = mapper.getJoinRecords();
-    const joiningMatrxIds = mapper.getJoinMatrxIds();
-    const childMatrxIds = mapper.getChildMatrxIds();
-
-    const matchingChildRecords = useAppSelector((state) => childSelectors.selectRecordsWithKeys(state, childMatrxIds)) as EntityData<EntityKeys>[];
+    const matchingChildRecords = useAppSelector((state) => childSelectors.selectRecordsWithKeys(state, childMatrxIds)) as EntityDataWithKey<EntityKeys>[];
 
     // Fetch Dependent Records for joining, which I think results in fetching all child records as well as the parent record.
     const fetchChildPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(
@@ -123,11 +118,16 @@ export function useJoinedRecordsActiveParent(relationshipDefinition: Relationshi
     return useJoinedRecords(relationshipDefinition, parentId);
 }
 
-export function useJoinedDeleteRecord(relationshipDefinition, joiningSelectors, joiningEntity, JoiningEntityRecords, childEntity) {
+export function useJoinedDeleteRecord(
+    relationshipDefinition: RelationshipDefinition,
+    joiningSelectors,
+    joiningEntity: EntityKeys,
+    JoiningEntityRecords,
+    childEntity: EntityKeys
+) {
     // Get all joining record IDs at the hook level
-    const allJoiningRecordIds = useAppSelector((state) => joiningSelectors.selectRecordIdsByRecords(state, JoiningEntityRecords));
-
     const { deleteRecords, isDeleting } = useSequentialDelete(joiningEntity, childEntity, (success) => {
+        console.log('Delete callback');
         if (success) {
             console.log('Both records deleted successfully');
         } else {
@@ -137,27 +137,35 @@ export function useJoinedDeleteRecord(relationshipDefinition, joiningSelectors, 
 
     const deleteMatrxIdWithChild = useCallback(
         (childRecordId: MatrxRecordId) => {
+            console.log('==== deleteMatrxIdWithChild childRecordId:', childRecordId);
             const childIdToDelete = toPkValues(childRecordId)[0];
-            const joiningRecordsToDelete = filterJoinForChild(JoiningEntityRecords, childIdToDelete, relationshipDefinition);
-            const joiningRecordId = allJoiningRecordIds[JoiningEntityRecords.indexOf(joiningRecordsToDelete[0])];
+            console.log('==== childIdToDelete:', childIdToDelete);
+            const joiningRecordToDelete = filterJoinForChild(JoiningEntityRecords, childIdToDelete, relationshipDefinition)[0];
+            console.log('==== joiningRecordToDelete:', joiningRecordToDelete);
 
-            if (joiningRecordId) {
-                deleteRecords(joiningRecordId, childRecordId);
+            if (joiningRecordToDelete) {
+                console.log('==== deleting records:', joiningRecordToDelete, childRecordId);
+                deleteRecords(joiningRecordToDelete.id, childRecordId);
             }
         },
-        [deleteRecords, JoiningEntityRecords, allJoiningRecordIds, childEntity, relationshipDefinition]
+        [deleteRecords, JoiningEntityRecords, childEntity, relationshipDefinition]
     );
 
     const deletePkWithChild = useCallback(
         (primaryKeyValue: any) => {
+            console.log('==== deletePkWithChild primaryKeyValue:', primaryKeyValue);
             const joiningRecordsToDelete = filterJoinForChild(JoiningEntityRecords, primaryKeyValue, relationshipDefinition);
-            const joiningRecordId = allJoiningRecordIds[JoiningEntityRecords.indexOf(joiningRecordsToDelete[0])];
+            console.log('==== joiningRecordsToDelete:', joiningRecordsToDelete);
+            
+            const joiningRecord = JoiningEntityRecords.find((record) => record.id === joiningRecordsToDelete[0]?.id);
+            console.log('==== joiningRecord:', joiningRecord);
 
-            if (joiningRecordId) {
-                deleteRecords(joiningRecordId, primaryKeyValue);
+            if (joiningRecord?.matrxRecordId) {
+                console.log('==== deleting records:', joiningRecord.matrxRecordId, primaryKeyValue);
+                deleteRecords(joiningRecord.matrxRecordId, primaryKeyValue);
             }
         },
-        [deleteRecords, JoiningEntityRecords, allJoiningRecordIds, relationshipDefinition]
+        [deleteRecords, JoiningEntityRecords, relationshipDefinition]
     );
 
     return {

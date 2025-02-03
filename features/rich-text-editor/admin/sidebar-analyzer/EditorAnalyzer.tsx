@@ -7,7 +7,7 @@ import { ChevronLeft } from 'lucide-react';
 import { MatrxJsonToCollapsible } from "@/components/matrx/matrx-collapsible";
 import dynamic from 'next/dynamic';
 import EditorAnalyzerView from './EditorAnalyzerView';
-import { useEditorContext } from '../../provider/EditorProvider';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 
 const EnhancedJsonViewerGroup = dynamic(() => 
     import('@/components/ui/JsonComponents/JsonViewerComponent').then(mod => mod.EnhancedJsonViewerGroup), 
@@ -52,7 +52,7 @@ const EditorAnalyzer: React.FC<EditorAnalyzerProps> = () => {
         {
             id: `${editorId}-layout`,
             title: 'Layout Data',
-            data: context.getEditorLayout(editorId)
+            data: context.layout.getEditorLayout(editorId)
         },
         {
             id: `${editorId}-chips`,
@@ -88,7 +88,7 @@ const EditorAnalyzer: React.FC<EditorAnalyzerProps> = () => {
                         <EditorAnalyzerView 
                             editorId={selectedEditor}
                             state={context.getEditorState(selectedEditor)}
-                            layout={context.getEditorLayout(selectedEditor)}
+                            layout={context.layout.getEditorLayout(selectedEditor)}
                         />
 
                         <div className="mt-4">

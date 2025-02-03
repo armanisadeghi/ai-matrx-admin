@@ -170,10 +170,18 @@ const formatThree = "pretty";
 const formatFour = "GraphQL";
 
 
+export const fetchConfig = {
+    entityKey: 'recipe' as EntityKeys,
+    idField: 'id',
+    ids: ['e708eaf5-2c06-411f-9384-976ff85a6e24', '2182d8c6-5430-4caf-8843-1d0a1109b566'],
+    matrxRecordIds: ["id:e708eaf5-2c06-411f-9384-976ff85a6e24", "id:2182d8c6-5430-4caf-8843-1d0a1109b566"],
+};
+
+
 export const entitySelectorsConfig: EntitySelectorConfig[] = [
     {
-        category: "Entity Metadata",
-        entityKey: "emails",
+        category: "Entity Records",
+        entityKey: "recipe",
         selectors: [
             {
                 name: "selectEntityDisplayName",
@@ -187,31 +195,70 @@ export const entitySelectorsConfig: EntitySelectorConfig[] = [
                 selectorKey: "selectMetadataSummary",
                 args: [],
                 isObjectArgs: false,
-                conductTest: true
+                conductTest: false
             }, //
             {
                 name: "selectPrimaryKeyMetadata",
                 selectorKey: "selectPrimaryKeyMetadata",
                 args: [],  // No args needed
                 isObjectArgs: false,
-                conductTest: true
+                conductTest: false
             },
             {
                 name: "selectRecordByPrimaryKey",
                 selectorKey: "selectRecordByPrimaryKey",
-                args: [{'id': "b0f1b14a-110e-4947-af3c-d3f95a70897f"}],
+                args: [{'id': "e708eaf5-2c06-411f-9384-976ff85a6e24"}],
                 isObjectArgs: false,
-                conductTest: true
+                conductTest: false
             },
             {
                 name: "selectFieldInfo",
                 selectorKey: "selectFieldInfo",
                 args: [],
                 isObjectArgs: false,
+                conductTest: false
+            },
+            {
+                name: "selectRecordWithKey",
+                selectorKey: "selectRecordWithKey",
+                args: ["id:e708eaf5-2c06-411f-9384-976ff85a6e24"],  // Single recordKey
+                isObjectArgs: false,
                 conductTest: true
             },
-
-        ] //fieldInfo
+            {
+                name: "selectRecordsWithKeys",
+                selectorKey: "selectRecordsWithKeys",
+                args: [["id:e708eaf5-2c06-411f-9384-976ff85a6e24", "id:2182d8c6-5430-4caf-8843-1d0a1109b566"]],  // Array of recordKeys
+                isObjectArgs: false,
+                conductTest: true
+            },
+            {
+                name: "selectRecordWithKeyByPrimaryKey",
+                selectorKey: "selectRecordWithKeyByPrimaryKey",
+                args: [{'id': "e708eaf5-2c06-411f-9384-976ff85a6e24"}],  // Single primary key value object
+                isObjectArgs: false,
+                conductTest: true
+            },
+            {
+                name: "selectRecordsWithKeysByPrimaryKeys",
+                selectorKey: "selectRecordsWithKeysByPrimaryKeys",
+                args: [[
+                    {'id': "e708eaf5-2c06-411f-9384-976ff85a6e24"},
+                    {'id': "2182d8c6-5430-4caf-8843-1d0a1109b566"}
+                ]],  // Array of primary key value objects
+                isObjectArgs: false,
+                conductTest: true
+            },
+            {
+                name: "selectRecordsWithKeysBySimpleIds",
+                selectorKey: "selectRecordsWithKeysBySimpleIds",
+                args: [["e708eaf5-2c06-411f-9384-976ff85a6e24", "2182d8c6-5430-4caf-8843-1d0a1109b566"]],  // Array of simple IDs
+                isObjectArgs: false,
+                conductTest: true
+            }
+        
+        ] 
+        //fieldInfo
     },
     // {
     //     category: "Entity Metadata",

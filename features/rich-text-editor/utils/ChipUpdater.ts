@@ -2,8 +2,8 @@ import { MatrxRecordId } from '@/types';
 
 import { cn } from '@/lib/utils';
 import { getColorClassName } from './colorUitls';
-import { CHIP_BASE_CLASS, TailwindColor } from '../constants';
-import { ChipData } from '../types/editor.types';
+import { CHIP_BASE_CLASS, TailwindColor } from '../../../constants/rich-text-constants';
+import { ChipData } from '../../../types/editor.types';
 
 // Full type definition for chip updates
 export interface ChipUpdateData {
@@ -85,6 +85,17 @@ export const updateChipById = (editorElement: HTMLDivElement, chipId: string, up
             error: error instanceof Error ? error.message : 'Unknown error',
         };
     }
+};
+
+export const updateChipToBrokerId = (
+    editorElement: HTMLDivElement,
+    chipId: string,
+    brokerId: MatrxRecordId
+): UpdateResult => {
+    return updateChipById(editorElement, chipId, {
+        id: brokerId,
+        brokerId: brokerId
+    });
 };
 
 /**

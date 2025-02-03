@@ -1,7 +1,6 @@
 // lib/redux/entity/types.ts
 
-import {DataStructure, FieldDataOptionsType} from "@/types/AutomationSchemaTypes";
-
+import { DataStructure, FetchStrategy, FieldDataOptionsType } from '@/types/AutomationSchemaTypes';
 
 import {
     EntityKeys,
@@ -9,22 +8,24 @@ import {
     AllEntityFieldKeys,
     AnyEntityDatabaseTable,
     Relationship,
-    AutomationEntity, ForeignKeyReference, AllEntityNameVariations, AnyDatabaseColumnForEntity
-} from "@/types/entityTypes";
-import {TypeBrand} from "@/utils/schema/initialSchemas";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
+    AutomationEntity,
+    ForeignKeyReference,
+    AllEntityNameVariations,
+    AnyDatabaseColumnForEntity,
+    EntityDataWithKey,
+} from '@/types/entityTypes';
+import { TypeBrand } from '@/utils/schema/initialSchemas';
+import { MatrxVariant } from '@/components/matrx/ArmaniForm/field-components/types';
 
-
-export type SuccessResult = { status: "success"; data: void };
-export type ErrorResult = { status: "error"; error: any };
+export type SuccessResult = { status: 'success'; data: void };
+export type ErrorResult = { status: 'error'; error: any };
 export type CallbackResult = SuccessResult | ErrorResult;
 export type OperationCallback<T = void> = {
     onSuccess?: (result: SuccessResult) => void;
     onError?: (error: ErrorResult) => void;
 };
 
-
-type PrimaryKeyType = 'single' | 'composite' | 'none';
+export type PrimaryKeyType = 'single' | 'composite' | 'none';
 
 export interface PrimaryKeyMetadata {
     type: PrimaryKeyType;
@@ -59,7 +60,7 @@ export type ComponentProps = {
 
 export interface EntityStateField {
     fieldName: AllEntityFieldKeys;
-    fieldNameFormats: Record<string, AllEntityNameVariations>;    
+    fieldNameFormats: Record<string, AllEntityNameVariations>;
     uniqueColumnId: string;
     uniqueFieldId: string;
     dataType: FieldDataOptionsType;
@@ -86,7 +87,6 @@ export interface EntityStateField {
     displayName: string;
 }
 
-
 export interface EntityStateFieldWithValue extends EntityStateField {
     value: any;
 }
@@ -99,27 +99,28 @@ export interface EntityStateFieldWithValueComplex extends EntityStateField {
 
 export type EntityFieldWithValue<TEntity extends EntityKeys> = {
     [TField in keyof AutomationEntity<TEntity>['entityFields']]: Omit<AutomationEntity<TEntity>['entityFields'][TField], 'typeReference'> & {
-    typeReference: AutomationEntity<TEntity>['entityFields'][TField]['typeReference'];
-    value: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
-};
+        typeReference: AutomationEntity<TEntity>['entityFields'][TField]['typeReference'];
+        value: ExtractType<AutomationEntity<TEntity>['entityFields'][TField]['typeReference']>;
+    };
 };
 
-type MyEntityFieldWithValues = EntityFieldWithValue<"registeredFunction">;
-type ModulePathField = EntityFieldWithValue<"registeredFunction">['modulePath'];
-type argInverseField = EntityFieldWithValue<"registeredFunction">['argInverse'];
-
+type MyEntityFieldWithValues = EntityFieldWithValue<'registeredFunction'>;
+type ModulePathField = EntityFieldWithValue<'registeredFunction'>['modulePath'];
+type argInverseField = EntityFieldWithValue<'registeredFunction'>['argInverse'];
 
 export interface EntityMetadata {
     entityName: EntityKeys;
+    uniqueTableId: string;
+    uniqueEntityId: string;
     displayName: string;
+    defaultFetchStrategy: FetchStrategy;
     schemaType: string;
     primaryKeyMetadata: PrimaryKeyMetadata;
     displayFieldMetadata: DisplayFieldMetadata;
     displayField?: string;
-    fields: EntityStateField[];
+    entityFields: Record<AllEntityFieldKeys, EntityStateField>;
     relationships: Relationship[];
 }
-
 
 // --- Pagination State ---
 export interface PaginationState {
@@ -133,16 +134,14 @@ export interface PaginationState {
     hasPreviousPage: boolean;
 }
 
-
 // --- Cache Management ---
 export interface CacheState {
-    lastFetched: Record<string, string>;  // dates as ISO strings
+    lastFetched: Record<string, string>; // dates as ISO strings
     staleTime: number;
     stale: boolean;
-    prefetchedPages: number[];  // Changed from Set<number> to number[]
-    invalidationTriggers: string[];  // Changed from Set<string> to string[]
+    prefetchedPages: number[]; // Changed from Set<number> to number[]
+    invalidationTriggers: string[]; // Changed from Set<string> to string[]
 }
-
 
 // --- Quick Reference Cache ---
 export interface QuickReferenceRecord {
@@ -163,6 +162,11 @@ export interface QuickReferenceState {
     fetchComplete: boolean;
 }
 
+export interface EnhancedRecord {
+    needsFetch: boolean;
+    recordKey: string;
+    data?: EntityDataWithKey<EntityKeys>;
+}
 
 // --- History Management ---
 export interface HistoryEntry<TEntity extends EntityKeys> {
@@ -178,7 +182,6 @@ export interface HistoryEntry<TEntity extends EntityKeys> {
     };
 }
 
-
 export interface HistoryState<TEntity extends EntityKeys> {
     past: HistoryEntry<TEntity>[];
     future: HistoryEntry<TEntity>[];
@@ -187,17 +190,7 @@ export interface HistoryState<TEntity extends EntityKeys> {
 }
 
 // --- Query and Filter Types ---
-type ComparisonOperator =
-    | 'eq'
-    | 'neq'
-    | 'gt'
-    | 'gte'
-    | 'lt'
-    | 'lte'
-    | 'like'
-    | 'ilike'
-    | 'in'
-    | 'between';
+type ComparisonOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'in' | 'between';
 
 export interface FilterCondition {
     field: string;
@@ -237,7 +230,6 @@ export interface SubscriptionConfig {
     batchUpdates?: boolean;
 }
 
-
 export interface SelectionSummary {
     count: number;
     hasSelection: boolean;
@@ -259,7 +251,7 @@ export interface SelectionState {
 }
 
 export type EntityDataWithId<TEntity extends EntityKeys> = EntityData<TEntity> & {
-    matrxRecordId: MatrxRecordId
+    matrxRecordId: MatrxRecordId;
 };
 
 // --- Basic Types ---
@@ -271,10 +263,10 @@ export type EntityRecordMap<TEntity extends EntityKeys> = Record<MatrxRecordId, 
 // Add this to your types
 // --- Main Slice State ---
 export interface EntityState<TEntity extends EntityKeys> {
-    entityMetadata: EntityMetadata;  // Field info is here: entityMetadata.fields has this: EntityStateField[]
-    records: EntityRecordMap<EntityKeys>;   // Data is here
+    entityMetadata: EntityMetadata; // Field info is here: entityMetadata.fields has this: EntityStateField[]
+    records: EntityRecordMap<EntityKeys>; // Data is here
     unsavedRecords: Record<MatrxRecordId, Partial<EntityData<TEntity>>>;
-    pendingOperations: MatrxRecordId[];  // Array instead of Set
+    pendingOperations: MatrxRecordId[]; // Array instead of Set
     quickReference: QuickReferenceState;
     selection: SelectionState;
     pagination: PaginationState;
@@ -302,6 +294,7 @@ export type EntityOperations =
     | 'CREATE'
     | 'UPDATE'
     | 'DIRECT_UPDATE'
+    | 'DIRECT_CREATE'
     | 'DELETE'
     | 'CUSTOM';
 
@@ -322,7 +315,7 @@ export interface EntityOperationFlags {
 }
 
 export interface FlexibleQueryOptions {
-    entityNameAnyFormat: AllEntityNameVariations | EntityKeys
+    entityNameAnyFormat: AllEntityNameVariations | EntityKeys;
     callback?: string;
     recordKeys?: MatrxRecordId[];
     matrxRecordId?: MatrxRecordId;
@@ -389,7 +382,6 @@ export interface QueryOptionsReturn<TEntity extends EntityKeys> {
     primaryKeyFields?: string[];
 }
 
-
 export interface QueryOptions<TEntity extends EntityKeys> {
     tableName: AnyEntityDatabaseTable;
     recordKey?: MatrxRecordId;
@@ -407,7 +399,7 @@ export interface QueryOptions<TEntity extends EntityKeys> {
 
 export type EntityStatus = 'initialized' | 'error' | 'loading' | 'other';
 
-export type EntityOperationMode = 'create' | 'update' | 'delete' | 'view' ;
+export type EntityOperationMode = 'create' | 'update' | 'delete' | 'view';
 
 export interface EntityFlags {
     needsRefresh?: boolean;
@@ -437,7 +429,6 @@ export interface EntityError {
     details?: unknown;
     lastOperation?: EntityOperations;
 }
-
 
 export interface RecordOperation<TEntity extends EntityKeys> {
     primaryKeyMetadata: PrimaryKeyMetadata;
@@ -542,7 +533,7 @@ interface CombinedEntityMetadata {
     DisplayFieldMetadata: {
         fieldName: string;
         databaseFieldName: string;
-    }
+    };
     displayField?: string;
     fields: {
         name: string;
@@ -589,7 +580,7 @@ interface SimplifiedEntityState {
         selectionMode: 'single' | 'multiple' | 'none';
         activeRecord: Record<string, unknown> | null;
         lastSelected?: MatrxRecordId;
-    }
+    };
 
     entityMetadata: {
         displayName: string;
@@ -603,7 +594,7 @@ interface SimplifiedEntityState {
         DisplayFieldMetadata: {
             fieldName: string;
             databaseFieldName: string;
-        }
+        };
         displayField?: string;
         fields: {
             name: string;
@@ -627,4 +618,3 @@ interface SimplifiedEntityState {
         }[];
     };
 }
-

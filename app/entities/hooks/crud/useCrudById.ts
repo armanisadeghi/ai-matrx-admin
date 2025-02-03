@@ -3,14 +3,15 @@
 
 import * as React from 'react';
 import { useCallback, useMemo } from 'react';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { EntityKeys } from '@/types/entityTypes';
 import { EntityOperationMode, EntityRecordMap, FlexibleQueryOptions, MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { Callback, callbackManager } from '@/utils/callbackManager';
 import { UpdateRecordPayload, useEntityTools } from '@/lib/redux';
 
 export const useEntitySelectionCrud = <TEntity extends EntityKeys>(entityKey: TEntity) => {
-    const { store, actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecords);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);

@@ -3,6 +3,7 @@ import { useEntityTools } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback } from 'react';
+import { useAppDispatch } from '@/lib/redux/hooks';
 
 interface UseDeleteRecordResult {
     deleteRecord: (matrxRecordId: MatrxRecordId) => void;
@@ -12,7 +13,8 @@ export const useDeleteRecord = (
     entityKey: EntityKeys,
     onComplete?: (success: boolean) => void
 ): UseDeleteRecordResult => {
-    const { actions, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
 
     const deleteRecord = useCallback((matrxRecordId: MatrxRecordId) => {
         dispatch(actions.addPendingOperation(matrxRecordId));

@@ -40,6 +40,7 @@ import {
     CreateRecordPayload,
     createRecordSuccessPayload,
     DeleteRecordPayload,
+    DirectCreateRecordPayload,
     DirectUpdateRecordPayload,
     ExecuteCustomQueryPayload,
     FetchAllPayload,
@@ -52,6 +53,7 @@ import {
 } from '@/lib/redux/entity/actions';
 import { Callback } from '@/utils/callbackManager';
 import { EntityModeManager } from './utils/crudOpsManagement';
+import { getOrFetchSelectedRecordsThunk } from './thunks';
 
 export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity, initialState: EntityState<TEntity>) => {
     const entityLogger = EntityLogger.createLoggerWithDefaults(`Entity Slice`, entityKey, 'ENTITY_SLICE');
@@ -132,7 +134,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             },
 
             fetchOneWithFkIfk: (state: EntityState<TEntity>, action: PayloadAction<FetchOneWithFkIfkPayload>) => {
-                entityLogger.log('debug', 'fetchOneWithFkIfk set to loading', action.payload);
+                entityLogger.log('debug', '------ > fetchOneWithFkIfk set to loading', action.payload);
                 setLoading(state, 'FETCH_ONE_WITH_FK_IFK');
             },
 
@@ -300,7 +302,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             addToSelection: (state: EntityState<TEntity>, action: PayloadAction<MatrxRecordId>) => {
                 if (isMatrxRecordId(action.payload)) {
                     addRecordToSelection(state, entityKey, action.payload);
-                } else if (isEntityData(action.payload, state.entityMetadata.fields)) {
+                } else if (isEntityData(action.payload, state.entityMetadata.entityFields)) {
                     const matrxRecordId = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
                     addRecordToSelection(state, entityKey, matrxRecordId);
                 } else {
@@ -317,7 +319,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 state.selection.activeRecord = action.payload;
 
                 if (!state.selection.selectedRecords.includes(action.payload)) {
-                    console.log('Adding Active Record to Selection: ', action.payload);
                     addRecordToSelection(state, entityKey, action.payload);
                 }
             },
@@ -451,12 +452,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             },
             createRecordSuccess: (state: EntityState<TEntity>, action: PayloadAction<createRecordSuccessPayload>) => {
                 entityLogger.log('debug', 'createRecordSuccess', action.payload);
-                const preDebugData = {
-                    pendingOperations: state.pendingOperations,
-                    unsavedRecords: state.unsavedRecords,
-                    payload: action.payload,
-                };
-                entityLogger.log('debug', 'createRecordSuccess debugData:', preDebugData);
 
                 const tempId = action.payload.tempRecordId;
                 const data = action.payload.data;
@@ -467,12 +462,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, data);
                 state.records[recordKey] = data;
 
-                const postDebugData = {
-                    pendingOperations: state.pendingOperations,
-                    unsavedRecords: state.unsavedRecords,
-                    payload: action.payload,
-                };
-                entityLogger.log('debug', 'createRecordSuccess postDebugData:', postDebugData);
 
                 const result = modeManager.changeMode(state, 'view');
 
@@ -513,6 +502,17 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                         return;
                     }
                 }
+            },
+            directCreateRecord: (state: EntityState<TEntity>, action: PayloadAction<DirectCreateRecordPayload>) => {
+                entityLogger.log('info', 'slice - directCreateRecord', action.payload);
+                setLoading(state, 'DIRECT_CREATE');
+            },
+
+            directCreateRecordSuccess: (state: EntityState<TEntity>, action: PayloadAction<EntityData<TEntity>>) => {
+                entityLogger.log('info', 'directCreateRecordSuccess', action.payload);
+                const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
+                state.records[recordKey] = action.payload;
+                setSuccess(state, 'DIRECT_CREATE');
             },
 
             directUpdateRecord: (state: EntityState<TEntity>, action: PayloadAction<DirectUpdateRecordPayload>) => {
@@ -910,9 +910,28 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             resetState: () => initialState,
         },
 
-        // Extra Reducers
         extraReducers: (builder) => {
             builder
+                // Add handlers for the new thunk
+                .addCase(getOrFetchSelectedRecordsThunk.pending, (state) => {
+                    entityLogger.log('debug', 'getOrFetchSelectedRecordsThunk pending');
+                    setLoading(state, 'GET_OR_FETCH_RECORDS');
+                })
+                .addCase(getOrFetchSelectedRecordsThunk.fulfilled, (state) => {
+                    entityLogger.log('debug', 'getOrFetchSelectedRecordsThunk fulfilled');
+                    setSuccess(state, 'GET_OR_FETCH_RECORDS');
+                    clearError(state);
+                })
+                .addCase(getOrFetchSelectedRecordsThunk.rejected, (state, action) => {
+                    entityLogger.log('error', 'getOrFetchSelectedRecordsThunk rejected', action.error);
+                    setError(state, {
+                        payload: {
+                            message: action.error.message || 'An error occurred during fetch by record IDs.',
+                            code: action.error.code,
+                        }
+                    });
+                })
+                // Keep existing matchers
                 .addMatcher(
                     (action) => action.type.endsWith('/rejected'),
                     (state, action: PayloadAction<{ message?: string; code?: number; details?: any }>) => {
@@ -929,6 +948,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 );
         },
     });
+
     return {
         reducer: slice.reducer,
         actions: slice.actions,

@@ -10,7 +10,15 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-const PlaygroundHistoryDialog = ({ isOpen, onOpenChange }) => {
+interface PlaygroundHistoryDialogProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const PlaygroundHistoryDialog: React.FC<PlaygroundHistoryDialogProps> = ({ 
+  isOpen, 
+  onOpenChange 
+}) => {
   return (
     <CommandDialog open={isOpen} onOpenChange={onOpenChange}>
       <CommandInput placeholder="Search playground history..." />

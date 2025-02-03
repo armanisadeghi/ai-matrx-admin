@@ -28,8 +28,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Header Test',
+        path: 'header-test',
         relative: true,
         description: ''
     },

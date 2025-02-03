@@ -1,8 +1,8 @@
 // lib/redux/entity/hooks/coreHooks.ts
-import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import { createEntitySelectors, createRecordKey, getEntitySlice, parseRecordKey, useAppDispatch, useAppStore } from '@/lib/redux';
-import { useMemo, useCallback } from 'react';
-import { string } from 'zod';
+import { AllEntityFieldKeys, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
+import { createEntitySelectors, createRecordKey, getEntitySlice, parseRecordKey, useAppDispatch, useAppSelector, useAppStore } from '@/lib/redux';
+import { useCallback, useMemo } from 'react';
+import { getEntityMetadata } from '../utils/direct-schema';
 
 export const useEntityActions = (entityKey: EntityKeys) => {
     const dispatch = useAppDispatch();
@@ -24,47 +24,92 @@ export const useEntityCore = (entityKey: EntityKeys) => {
 };
 
 export const useEntityTools = (entityKey: EntityKeys) => {
-    const dispatch = useAppDispatch();
     const store = useAppStore();
-    const selectors = createEntitySelectors(entityKey);
-    const actions = getEntitySlice(entityKey).actions;
-    const metadata = selectors.selectPrimaryKeyMetadata(store.getState());
+    const metadata = getEntityMetadata(entityKey);
+    const pkMeta = metadata?.primaryKeyMetadata;
+    const pkType = pkMeta?.type;
+    const pkFields = pkMeta?.fields || [];
+    const FetchStrategy = metadata?.defaultFetchStrategy;
 
-    const getRecordIdFromPkValue = useCallback(
+    const firstPkField = useMemo(() => pkFields[0], [pkFields]);
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const actions = useMemo(() => getEntitySlice(entityKey).actions, [entityKey]);
+
+    const pkValueToMatrxId = useCallback(
         (pkValue: string) => {
-            const pkValues = { [metadata.fields[0]]: pkValue };
-            return createRecordKey(metadata, pkValues);
+            if (pkType === 'composite') {
+                console.error('This Entity has a composite primary key. Use pkValuesToMatrxId instead.');
+            }
+            return createRecordKey(pkMeta, { [firstPkField]: pkValue });
         },
-        [metadata]
+        [pkMeta, pkType, firstPkField]
     );
 
-    const getPrimaryKeyValue = useCallback((recordId: MatrxRecordId) => {
-        return parseRecordKey(recordId);
-    }, []);
+    const pkValuesToMatrxId = useCallback((pkValues: Record<string, unknown>) => createRecordKey(pkMeta, pkValues), [pkMeta]);
 
-    const getRecordIdFromPkValues = useCallback(
-        (pkValues: Record<string, unknown>) => {
-            return createRecordKey(metadata, pkValues);
-        },
-        [metadata]
-    );
-
-    const getPrimaryKeyValues = useCallback((recordId: MatrxRecordId) => {
-        return parseRecordKey(recordId);
-    }, []);
+    const matrxIdToPks = useCallback((recordId: MatrxRecordId) => parseRecordKey(recordId) as Record<AllEntityFieldKeys, unknown>, []);
 
     return {
-        // Core entity tools
         selectors,
         actions,
-        dispatch,
         store,
-
-        // Key transformation utilities
-        getRecordIdFromPkValue,
-        getPrimaryKeyValue,
-        getRecordIdFromPkValues,
-        getPrimaryKeyValues,
+        pkType,
+        pkFields,
+        firstPkField,
+        pkValueToMatrxId,
+        matrxIdToPks,
+        pkValuesToMatrxId,
+        FetchStrategy,
     };
 };
 
+export const useEntityData = (entityKey: EntityKeys) => {
+    const store = useAppStore();
+    const metadata = getEntityMetadata(entityKey);
+    const pkMeta = metadata?.primaryKeyMetadata;
+    const pkType = pkMeta?.type;
+    const pkFields = pkMeta?.fields || [];
+    const FetchStrategy = metadata?.defaultFetchStrategy;
+    const firstPkField = useMemo(() => pkFields[0], [pkFields]);
+    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
+    const actions = useMemo(() => getEntitySlice(entityKey).actions, [entityKey]);
+
+    const pkValueToMatrxId = useCallback(
+        (pkValue: string) => {
+            if (pkType === 'composite') {
+                console.error('This Entity has a composite primary key. Use pkValuesToMatrxId instead.');
+            }
+            return createRecordKey(pkMeta, { [firstPkField]: pkValue });
+        },
+        [pkMeta, pkType, firstPkField]
+    );
+
+    const pkValuesToMatrxId = useCallback((pkValues: Record<string, unknown>) => createRecordKey(pkMeta, pkValues), [pkMeta]);
+
+    const matrxIdToPks = useCallback((recordId: MatrxRecordId) => parseRecordKey(recordId) as Record<AllEntityFieldKeys, unknown>, []);
+
+    const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
+    const activeRecord = useAppSelector(selectors.selectActiveRecord);
+    const selectedRecords = useAppSelector(selectors.selectSelectedRecordsWithKey);
+    const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
+    const effectiveRecords = useAppSelector(selectors.selectAllEffectiveRecordsWithKeys);
+
+
+    return {
+        selectors,
+        actions,
+        store,
+        pkType,
+        pkFields,
+        firstPkField,
+        pkValueToMatrxId,
+        matrxIdToPks,
+        pkValuesToMatrxId,
+        FetchStrategy,
+        activeRecordId,
+        activeRecord,
+        selectedRecords,
+        selectedRecordIds,
+        effectiveRecords,
+    };
+};

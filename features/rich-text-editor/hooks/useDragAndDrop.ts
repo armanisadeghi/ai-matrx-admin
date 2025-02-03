@@ -1,34 +1,88 @@
-// useDragAndDrop.ts
-import { useCallback } from 'react';
-import { getDropRange, isValidDropTarget } from '../utils/editorUtils';
-import { useEditorContext } from '../provider/EditorProvider';
+import { useCallback, useState } from 'react';
 import { getEditorElement } from '../utils/editorUtils';
+
+export const getDropRange = (x: number, y: number, editor: HTMLDivElement): Range | null => {
+    if (!editor) return null;
+
+    // Try caretPositionFromPoint first (newer standard)
+    if (document.caretPositionFromPoint) {
+        try {
+            const position = document.caretPositionFromPoint(x, y);
+            if (position) {
+                const range = document.createRange();
+                range.setStart(position.offsetNode, position.offset);
+                range.collapse(true);
+
+                if (editor.contains(range.commonAncestorContainer)) {
+                    // Adjust range if we're over a chip
+                    const chipElement = findNearestChip(range.commonAncestorContainer);
+                    if (chipElement) {
+                        // Determine if we should insert before or after the chip
+                        const chipRect = chipElement.getBoundingClientRect();
+                        const isBeforeChip = x < (chipRect.left + chipRect.right) / 2;
+
+                        range.collapse(true);
+                        if (isBeforeChip) {
+                            range.setStartBefore(chipElement);
+                        } else {
+                            range.setStartAfter(chipElement);
+                        }
+                    }
+                    return range;
+                }
+            }
+        } catch (e) {
+            // Fall through to caretRangeFromPoint if this fails
+        }
+    }
+
+    // Fallback to caretRangeFromPoint
+    const range = document.caretRangeFromPoint?.(x, y);
+    if (range && editor.contains(range.commonAncestorContainer)) {
+        // Apply the same chip-aware logic to the fallback method
+        const chipElement = findNearestChip(range.commonAncestorContainer);
+        if (chipElement) {
+            const chipRect = chipElement.getBoundingClientRect();
+            const isBeforeChip = x < (chipRect.left + chipRect.right) / 2;
+
+            range.collapse(true);
+            if (isBeforeChip) {
+                range.setStartBefore(chipElement);
+            } else {
+                range.setStartAfter(chipElement);
+            }
+        }
+        return range;
+    }
+
+    return null;
+};
+
+const findNearestChip = (node: Node): Element | null => {
+    let current: Node | null = node;
+    while (current && current instanceof Element) {
+        if (current.hasAttribute('data-chip-id')) {
+            return current;
+        }
+        current = current.parentElement;
+    }
+    return null;
+};
+
+export const isValidDropTarget = (node: Node, editorRef: HTMLDivElement): boolean => {
+    // We now always return true since we handle chip proximity in getDropRange
+    return editorRef.contains(node);
+};
 
 export const useDragAndDrop = (
     editorId: string,
-    { normalizeContent, updatePlainTextContent }: {
-        normalizeContent: () => void;
-        updatePlainTextContent: () => void;
+    {
+        updateContentAndMetadata,
+    }: {
+        updateContentAndMetadata: () => void;
     }
 ) => {
-    const context = useEditorContext();
-    const editorState = context.getEditorState(editorId);
-    const { draggedChip } = editorState;
-
-    // These handlers don't need editor element, so they remain largely unchanged
-    const handleNativeDragStart = useCallback((e: DragEvent) => {
-        const chip = e.target as HTMLElement;
-        context.setDraggedChip(editorId, chip);
-        e.dataTransfer?.setData('text/plain', chip.textContent || '');
-        chip.classList.add('opacity-25');
-        e.stopPropagation();
-    }, [editorId]);
-
-    const handleNativeDragEnd = useCallback((e: DragEvent) => {
-        const chip = e.target as HTMLElement;
-        chip.classList.remove('opacity-25');
-        context.setDraggedChip(editorId, null);
-    }, [editorId]);
+    const [draggedChip, setDraggedChip] = useState<HTMLElement | null>(null);
 
     const handleDragOver = useCallback(
         (e: React.DragEvent<HTMLElement>) => {
@@ -73,23 +127,15 @@ export const useDragAndDrop = (
             selection?.removeAllRanges();
             selection?.addRange(newRange);
 
-            normalizeContent();
-            updatePlainTextContent();
-            context.setDraggedChip(editorId, null);
+            updateContentAndMetadata();
+            setDraggedChip(null);
         },
-        [draggedChip, editorId, normalizeContent, updatePlainTextContent]
+        [draggedChip, editorId, updateContentAndMetadata]
     );
 
-    const dragConfig = {
-        onDragStart: handleNativeDragStart,
-        onDragEnd: handleNativeDragEnd
-    };
-
     return {
-        handleNativeDragStart,
-        handleNativeDragEnd,
         handleDragOver,
         handleDrop,
-        dragConfig
+        setDraggedChip,
     };
 };

@@ -119,7 +119,7 @@ class FileSystemManager {
                 .rpc('update_all_bucket_tree_structures');
 
             this.debugger.logOperation('loadAllBucketStructures', {forceRefresh}, {data, error});
-            console.log('data', data);
+            // console.log('data', data);
 
             if (error) throw error;
 
@@ -147,12 +147,12 @@ class FileSystemManager {
     }
 
     getBucketStructure(bucketName: string): BucketTreeStructure | undefined {
-        console.log('bucketStructures', this.bucketStructures);
+        // console.log('bucketStructures', this.bucketStructures);
         return this.bucketStructures.get(bucketName);
     }
 
     getAllBucketStructures(): Map<string, BucketTreeStructure> {
-        console.log('bucketStructures', this.bucketStructures);
+        // console.log('bucketStructures', this.bucketStructures);
         return new Map(this.bucketStructures);
     }
 

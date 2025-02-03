@@ -10,6 +10,9 @@ import { metadata } from './config/metadata';
 import { viewport } from './config/viewport';
 import { inter, montserrat } from "@/styles/themes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
+import { initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
+
+const schemaSystem = initializeSchemaSystem();
 
 export { metadata, viewport };
 

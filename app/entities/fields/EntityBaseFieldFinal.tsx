@@ -6,7 +6,7 @@ import React, { useCallback, useMemo } from 'react';
 import { EntityKeys } from '@/types/entityTypes';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import FormFieldMotionWrapperFinal from './FormFieldMotionWrapperFinal';
 import { StaticFieldConfig, FieldDisableLogic } from './field-management';
 import { useFieldValue } from './field-hooks';
@@ -18,10 +18,21 @@ export interface EntityBaseFieldFinalProps {
     unifiedLayoutProps?: UnifiedLayoutProps;
     className?: string;
     onFieldChange?: (fieldName: string, value: unknown) => void;
+    forceEnable?: boolean; // New optional prop
 }
 
-const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutProps, className, onFieldChange }: EntityBaseFieldFinalProps) => {
-    const { store, actions, selectors, dispatch } = useEntityTools(entityKey);
+const EntityBaseFieldFinal = ({ 
+    entityKey, 
+    fieldName, 
+    recordId, 
+    unifiedLayoutProps, 
+    className, 
+    onFieldChange,
+    forceEnable // New prop with implicit undefined default
+}: EntityBaseFieldFinalProps) => {
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
+
     const entityStatus = useAppSelector(selectors.selectEntityStatus);
     const operationMode = useAppSelector(selectors.selectEntityOperationMode);
 
@@ -50,11 +61,12 @@ const EntityBaseFieldFinal = ({ entityKey, fieldName, recordId, unifiedLayoutPro
                     },
                     [dispatch, actions, recordId, fieldName, operationMode, onFieldChange]
                 );
-        
+
                 return (
                     <FieldDisableLogic
                         entityStatus={entityStatus}
                         operationMode={operationMode}
+                        forceEnable={forceEnable} // Pass through the forceEnable prop
                     >
                         {(isDisabled) => (
                             <FormFieldMotionWrapperFinal

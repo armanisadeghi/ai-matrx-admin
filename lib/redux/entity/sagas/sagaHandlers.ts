@@ -1,107 +1,77 @@
-import {AnyEntityDatabaseTable, EntityData, EntityKeys} from "@/types/entityTypes";
-import {createEntitySlice} from "@/lib/redux/entity/slice";
-import {PayloadAction} from "@reduxjs/toolkit";
-import {BatchOperationPayload, FilterPayload, HistoryEntry, MatrxRecordId, QueryOptions, UnifiedDatabaseObject} from "@/lib/redux/entity/types/stateTypes";
-import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
-import {all, call, delay, put, select, take} from "redux-saga/effects";
+import { AnyEntityDatabaseTable, EntityData, EntityKeys } from '@/types/entityTypes';
+import { createEntitySlice } from '@/lib/redux/entity/slice';
+import { PayloadAction } from '@reduxjs/toolkit';
+import { BatchOperationPayload, FilterPayload, HistoryEntry, MatrxRecordId, QueryOptions, UnifiedDatabaseObject } from '@/lib/redux/entity/types/stateTypes';
+import EntityLogger from '@/lib/redux/entity/utils/entityLogger';
+import { all, call, delay, put, select, take } from 'redux-saga/effects';
 import {
     selectDatabaseConversion,
     selectEntityDatabaseName,
-    selectEntityMetadata, selectEntityPrimaryKeyMetadata, selectEntityRelationships,
-    selectFrontendConversion
-} from "@/lib/redux/schema/globalCacheSelectors";
-import {createEntitySelectors} from "@/lib/redux/entity/selectors";
-import {createRecordKey, setLoading} from "@/lib/redux/entity/utils/stateHelpUtils";
-import {Draft} from "immer";
-import {BaseSagaContext} from "@/lib/redux";
-import {FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload} from "../actions";
-import {createStructuredError} from "@/utils/errorContext";
-import {supabase} from "@/utils/supabase/client";
+    selectEntityMetadata,
+    selectEntityPrimaryKeyMetadata,
+    selectEntityRelationships,
+    selectFrontendConversion,
+} from '@/lib/redux/schema/globalCacheSelectors';
+import { createEntitySelectors } from '@/lib/redux/entity/selectors';
+import { createRecordKey, setLoading } from '@/lib/redux/entity/utils/stateHelpUtils';
+import { Draft } from 'immer';
+import { BaseSagaContext } from '@/lib/redux';
+import { FetchOneWithFkIfkPayload, GetOrFetchSelectedRecordsPayload } from '../actions';
+import { createStructuredError } from '@/utils/errorContext';
+import { supabase } from '@/utils/supabase/client';
+import { addUserIdToData, hasUserIdField } from '../utils/direct-schema';
+import { selectActiveUserId } from '../../selectors/userSelectors';
 
 const DEBOUNCE_MS = 300;
 const CACHE_DURATION = 5 * 60 * 1000;
-const trace = "SAGA HANDLERS";
+const trace = 'SAGA HANDLERS';
 const sagaLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 
-
-
-
-
-
-
-
-function* handleFetchOneWithFkIfk<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity>) {
+function* handleFetchOneWithFkIfk<TEntity extends EntityKeys>({ entityKey, actions, api, tableName, unifiedDatabaseObject }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOneWithFkIfk', entityKey);
-
 
     // ============ See withFullRelationConversion ============
 
-
-
     try {
-        const {data, error} = yield api
-            .rpc('fetch_all_fk_ifk', {
-                p_table_name: tableName,
-                p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues
-            });
+        const { data, error } = yield api.rpc('fetch_all_fk_ifk', {
+            p_table_name: tableName,
+            p_primary_key_values: unifiedDatabaseObject.primaryKeysAndValues,
+        });
 
         if (error) throw error;
 
         entityLogger.log('debug', 'Fetched data with relationships', data);
         return data;
     } catch (error: any) {
-        yield put(actions.setError(
-            createStructuredError({
-                error,
-                location: 'handleFetchOneWithFkIfk Saga',
-                entityKey,
-                additionalContext: {
-                    tableName,
-                    primaryKeysAndValues: unifiedDatabaseObject.primaryKeysAndValues,
-                    rpcMethod: 'fetch_all_fk_ifk'
-                }
-            })
-        ));
+        yield put(
+            actions.setError(
+                createStructuredError({
+                    error,
+                    location: 'handleFetchOneWithFkIfk Saga',
+                    entityKey,
+                    additionalContext: {
+                        tableName,
+                        primaryKeysAndValues: unifiedDatabaseObject.primaryKeysAndValues,
+                        rpcMethod: 'fetch_all_fk_ifk',
+                    },
+                })
+            )
+        );
         throw error;
     }
 }
 
-function* handleFetchOne<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity>) {
+function* handleFetchOne<TEntity extends EntityKeys>({ entityKey, actions, api, action, tableName, unifiedDatabaseObject }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOne', entityKey);
     entityLogger.log('debug', 'Starting fetchOne', action.payload);
 
-
-    // ============ See withFullRelationConversion ============
-
-
-
-
-
-    // const relationships = yield select(selectEntityRelationships, entityKey);
-
-
-    let query = api.select("*");
+    let query = api.select('*');
 
     Object.entries(unifiedDatabaseObject.primaryKeysAndValues).forEach(([key, value]) => {
         query = query.eq(key, value);
     });
 
-    const {data, error} = yield query.single();
+    const { data, error } = yield query.single();
 
     if (error) throw error;
 
@@ -109,25 +79,23 @@ function* handleFetchOne<TEntity extends EntityKeys>(
     return data;
 }
 
-function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity>) {
-
+function* handleFetchOneWithRelated<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    tableName,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity>) {
     const relationships = yield select(selectEntityRelationships, entityKey);
 
-    let query = api.select("*");
+    let query = api.select('*');
 
     Object.entries(unifiedDatabaseObject.primaryKeysAndValues).forEach(([key, value]) => {
         query = query.eq(key, value);
     });
 
-    const {data: mainData, error} = yield query.single();
+    const { data: mainData, error } = yield query.single();
 
     if (error) throw error;
 
@@ -135,24 +103,14 @@ function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
     const relatedData: Record<string, any> = {};
 
     for (const relationship of relationships) {
-        const {
-            relationshipType,
-            column,
-            relatedTable,
-            relatedColumn,
-            junctionTable
-        } = relationship;
+        const { relationshipType, column, relatedTable, relatedColumn, junctionTable } = relationship;
 
         try {
             switch (relationshipType) {
                 case 'foreignKey': {
                     // Fetch complete record for foreign key relationships
                     if (mainData[column]) {
-                        const {data, error} = yield api
-                            .from(relatedTable)
-                            .select('*')
-                            .eq(relatedColumn, mainData[column])
-                            .single();
+                        const { data, error } = yield api.from(relatedTable).select('*').eq(relatedColumn, mainData[column]).single();
 
                         if (!error && data) {
                             relatedData[`${relatedTable}_${column}`] = data;
@@ -166,10 +124,7 @@ function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
                     const relatedTablePrimaryKeys = yield select(selectEntityPrimaryKeyMetadata, relatedTable);
                     const primaryKeyFields = relatedTablePrimaryKeys.database_fields.join(',');
 
-                    const {data, error} = yield api
-                        .from(relatedTable)
-                        .select(primaryKeyFields)
-                        .eq(relatedColumn, mainData[column]);
+                    const { data, error } = yield api.from(relatedTable).select(primaryKeyFields).eq(relatedColumn, mainData[column]);
 
                     if (!error && data) {
                         relatedData[`${relatedTable}_inverse`] = data;
@@ -180,20 +135,17 @@ function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
                 case 'manyToMany': {
                     if (junctionTable) {
                         // First get the related ids from junction table
-                        const {data: junctionData, error: junctionError} = yield api
-                            .from(junctionTable)
-                            .select(relatedColumn)
-                            .eq(column, mainData.id);
+                        const { data: junctionData, error: junctionError } = yield api.from(junctionTable).select(relatedColumn).eq(column, mainData.id);
 
                         if (!junctionError && junctionData) {
-                            const relatedIds = junctionData.map(record => record[relatedColumn]);
+                            const relatedIds = junctionData.map((record) => record[relatedColumn]);
 
                             // Get primary key fields for the related table
                             const relatedTablePrimaryKeys = yield select(selectEntityPrimaryKeyMetadata, relatedTable);
                             const primaryKeyFields = relatedTablePrimaryKeys.database_fields.join(',');
 
                             // Then fetch only the primary keys from the related table
-                            const {data: manyToManyData, error: relatedError} = yield api
+                            const { data: manyToManyData, error: relatedError } = yield api
                                 .from(relatedTable)
                                 .select(primaryKeyFields)
                                 .in(relatedColumn, relatedIds);
@@ -213,34 +165,26 @@ function* handleFetchOneWithRelated<TEntity extends EntityKeys>(
 
     return {
         ...mainData,
-        relationships: relatedData
+        relationships: relatedData,
     };
 }
 
-function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity>) {
+function* handleFetchOneAdvanced<TEntity extends EntityKeys>({ entityKey, actions, api, action, tableName, unifiedDatabaseObject }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchOneAdvanced', entityKey);
 
     try {
         entityLogger.log('debug', 'Starting fetchOne', action.payload);
 
-        let query = api.select("*");
+        let query = api.select('*');
 
         Object.entries(action.payload.primaryKeyValues).forEach(([key, value]) => {
             query = query.eq(key, value);
         });
 
-        const {data, error} = yield query.single();
+        const { data, error } = yield query.single();
         if (error) throw error;
 
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
         entityLogger.log('debug', 'Fetch one response', frontendResponse);
@@ -248,21 +192,35 @@ function* handleFetchOneAdvanced<TEntity extends EntityKeys>(
         yield put(actions.fetchOneSuccess(frontendResponse));
     } catch (error: any) {
         entityLogger.log('error', 'Error in fetchOne', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during fetch one.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during fetch one.',
+                code: error.code,
+            })
+        );
         throw error;
     }
 }
 
-
 function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     action: PayloadAction<GetOrFetchSelectedRecordsPayload>,
-    unifiedDatabaseObject?: UnifiedDatabaseObject,
+    unifiedDatabaseObject?: UnifiedDatabaseObject
 ) {
+    const validRecordIds = action.payload.matrxRecordIds.filter((recordId): recordId is NonNullable<typeof recordId> => recordId !== null);
+    
+    // Update the payload with filtered IDs
+    const filteredPayload = {
+        ...action.payload,
+        matrxRecordIds: validRecordIds
+    };
+
+    // Early return if no valid IDs exist
+    if (validRecordIds.length === 0) {
+        return;
+    }
+
     const entityLogger = EntityLogger.createLoggerWithDefaults('HANDLE GET OR FETCH SELECTED RECORDS', entityKey);
     const entitySelectors = createEntitySelectors(entityKey);
 
@@ -271,24 +229,21 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
 
     // Call the function with the state
     yield call(setLoading, state, 'GET_OR_FETCH_RECORDS');
-    
-
 
     try {
-        entityLogger.log('debug', 'Starting', action.payload);
+        entityLogger.log('info', 'Starting', filteredPayload);
 
-        const {existingRecords, recordIdsNotInState, primaryKeysToFetch} = yield select(
-            entitySelectors.selectRecordsForFetching(action.payload.matrxRecordIds)
+        const { existingRecords, recordIdsNotInState, primaryKeysToFetch } = yield select(
+            entitySelectors.selectRecordsForFetching(validRecordIds)
         );
-
-        entityLogger.log('debug', '-Existing records', existingRecords);
-        entityLogger.log('debug', '-Record IDs not in state', recordIdsNotInState);
-        entityLogger.log('debug', '-Primary keys to fetch', primaryKeysToFetch);
+        entityLogger.log('info', '-Existing records', existingRecords);
+        entityLogger.log('info', '-Record IDs not in state', recordIdsNotInState);
+        entityLogger.log('info', '-Primary keys to fetch', primaryKeysToFetch);
 
         for (const recordId of existingRecords) {
-            entityLogger.log('debug', '-Existing records', existingRecords);
-            entityLogger.log('debug', '--- handleGetOrFetchSelectedRecords Adding to selection', recordId);
-            entityLogger.log('debug', 'Dispatching addToSelection action');
+            entityLogger.log('info', '-Existing records', existingRecords);
+            entityLogger.log('info', '--- handleGetOrFetchSelectedRecords Adding to selection', recordId);
+            entityLogger.log('info', 'Dispatching addToSelection action');
 
             yield put(actions.addToSelection(recordId));
         }
@@ -321,27 +276,27 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
         }
 
         yield put(actions.getOrFetchSelectedRecordsSuccess());
-
     } catch (error: any) {
         entityLogger.log('error', 'Error', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during fetch by record IDs.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during fetch by record IDs.',
+                code: error.code,
+            })
+        );
     }
 }
 
-function* handleFetchSelectedRecords<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity> & {
-        action: PayloadAction<QueryOptions<TEntity>>
-    }) {
+function* handleFetchSelectedRecords<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    tableName,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity> & {
+    action: PayloadAction<QueryOptions<TEntity>>;
+}) {
     const entitySelectors = createEntitySelectors(entityKey);
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchSelectedRecords', entityKey);
 
@@ -349,7 +304,7 @@ function* handleFetchSelectedRecords<TEntity extends EntityKeys>(
         const queryOptions = action.payload;
         entityLogger.log('debug', 'Starting handleFetchSelectedRecords', queryOptions);
 
-        let query = api.select("*");
+        let query = api.select('*');
 
         // Apply filters from queryOptions
         if (queryOptions.filters) {
@@ -360,7 +315,7 @@ function* handleFetchSelectedRecords<TEntity extends EntityKeys>(
 
         // Execute the query and log results
         entityLogger.log('debug', 'Final query with all filters applied:', query);
-        const {data, error} = yield query;
+        const { data, error } = yield query;
 
         if (error) {
             entityLogger.log('error', 'Error from database query', error);
@@ -369,7 +324,7 @@ function* handleFetchSelectedRecords<TEntity extends EntityKeys>(
         entityLogger.log('debug', 'Data fetched successfully:', data);
 
         // Prepare payload for frontend conversion and log it
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
 
         // Perform frontend conversion and log the result
         const frontendResponse = yield select(selectFrontendConversion, payload);
@@ -386,32 +341,24 @@ function* handleFetchSelectedRecords<TEntity extends EntityKeys>(
                 entityLogger.log('warn', 'Record ID not found for record:', record);
             }
         }
-
     } catch (error: any) {
         entityLogger.log('error', 'Error in handleFetchSelectedRecords', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during the database query.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during the database query.',
+                code: error.code,
+            })
+        );
     }
 }
 
-
-function* handleFetchAll<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity>) {
+function* handleFetchAll<TEntity extends EntityKeys>({ entityKey, actions, api, action, tableName, unifiedDatabaseObject }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchAll', entityKey);
 
     try {
         entityLogger.log('debug', 'Starting fetchAll');
 
-        let query = api.select("*");
+        let query = api.select('*');
 
         if (unifiedDatabaseObject.filters) {
             Object.entries(unifiedDatabaseObject.filters).forEach(([key, value]) => {
@@ -419,58 +366,56 @@ function* handleFetchAll<TEntity extends EntityKeys>(
             });
         }
 
-        const {data, error} = yield query;
+        const { data, error } = yield query;
         if (error) throw error;
 
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
         entityLogger.log('debug', 'Fetch All response received and sending back');
 
         yield put(actions.fetchAllSuccess(frontendResponse));
     } catch (error: any) {
         entityLogger.log('error', 'Error in fetchAll', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during fetch all.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during fetch all.',
+                code: error.code,
+            })
+        );
         throw error;
     }
 }
 
-function* handleFetchQuickReference<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity>) {
+function* handleFetchQuickReference<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    tableName,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchQuickReference', entityKey);
 
     try {
         entityLogger.log('debug', 'Starting', action.payload);
 
-        const {primaryKeyMetadata, displayFieldMetadata} = yield select(selectEntityMetadata, entityKey);
+        const { primaryKeyMetadata, displayFieldMetadata } = yield select(selectEntityMetadata, entityKey);
 
         const dbPrimaryKeyFields = primaryKeyMetadata.database_fields;
         const dbDisplayField = displayFieldMetadata?.databaseFieldName;
         const limit = action.payload?.maxRecords ?? 1000;
 
-        let query = api
-            .select(`${dbPrimaryKeyFields.join(',')}${dbDisplayField ? `,${dbDisplayField}` : ''}`)
-            .limit(limit);
+        let query = api.select(`${dbPrimaryKeyFields.join(',')}${dbDisplayField ? `,${dbDisplayField}` : ''}`).limit(limit);
 
-        const {data, error, count} = yield query; // TODO: NOT GETTING A TOTAL COUNT!
+        const { data, error, count } = yield query; // TODO: NOT GETTING A TOTAL COUNT!
         if (error) throw error;
 
-
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
         entityLogger.log('debug', 'Final result', frontendResponse);
 
-        const quickReferenceRecords = frontendResponse.map(record => {
+        const quickReferenceRecords = frontendResponse.map((record) => {
             const primaryKeyValues = primaryKeyMetadata.fields.reduce((acc, field) => {
                 acc[field] = record[field];
                 return acc;
@@ -494,26 +439,26 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>(
         yield put(actions.fetchQuickReferenceSuccess(quickReferenceRecords));
     } catch (error: any) {
         entityLogger.log('error', 'Error in fetchQuickReference', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during quick reference fetch.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during quick reference fetch.',
+                code: error.code,
+            })
+        );
         throw error;
     }
 }
 
-
-function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity> & {
-        action: PayloadAction<QueryOptions<TEntity>>
-    }) {
+function* handleExecuteCustomQuery<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    tableName,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity> & {
+    action: PayloadAction<QueryOptions<TEntity>>;
+}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleExecuteCustomQuery', entityKey);
 
     try {
@@ -528,8 +473,8 @@ function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
         }
 
         if (unifiedDatabaseObject.sorts) {
-            unifiedDatabaseObject.sorts.forEach(sort => {
-                query = query.order(sort.column, {ascending: sort.ascending});
+            unifiedDatabaseObject.sorts.forEach((sort) => {
+                query = query.order(sort.column, { ascending: sort.ascending });
             });
         }
 
@@ -541,38 +486,29 @@ function* handleExecuteCustomQuery<TEntity extends EntityKeys>(
             query = query.range(unifiedDatabaseObject.offset, unifiedDatabaseObject.offset + (unifiedDatabaseObject.limit || 10) - 1);
         }
 
-        const {data, error} = yield query;
+        const { data, error } = yield query;
         if (error) throw error;
 
-        entityLogger.log('debug', 'Database response', {data});
+        entityLogger.log('debug', 'Database response', { data });
 
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
         entityLogger.log('debug', 'Final result', frontendResponse);
 
         yield put(actions.executeCustomQuerySuccess(frontendResponse));
-
     } catch (error: any) {
-        yield put(actions.setError({
-            message: error.message || "An error occurred during custom query execution.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during custom query execution.',
+                code: error.code,
+            })
+        );
         throw error;
     }
 }
 
-
-function* handleDelete<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        tableName,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity> & {}
-) {
+function* handleDelete<TEntity extends EntityKeys>({ entityKey, actions, api, action, tableName, unifiedDatabaseObject }: BaseSagaContext<TEntity> & {}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleDelete', entityKey);
 
     try {
@@ -587,55 +523,55 @@ function* handleDelete<TEntity extends EntityKeys>(
                 query = query.eq(key, value);
             });
         } else {
-            throw new Error("Primary key values are missing in unifiedDatabaseObject.");
+            throw new Error('Primary key values are missing in unifiedDatabaseObject.');
         }
 
-        const {error} = yield query;
+        const { error } = yield query;
         if (error) throw error;
 
-        entityLogger.log('debug', 'Database response', {success: true});
+        entityLogger.log('debug', 'Database response', { success: true });
 
         const recordKeys = unifiedDatabaseObject.recordKeys;
 
         yield put(actions.removeRecords(recordKeys));
 
-        entityLogger.log('debug', 'Final result', {removed: primaryKeyValues});
+        entityLogger.log('debug', 'Final result', { removed: primaryKeyValues });
 
         for (const recordKey of recordKeys) {
-            yield put(actions.deleteRecordSuccess({matrxRecordId: recordKey}));
+            yield put(actions.deleteRecordSuccess({ matrxRecordId: recordKey }));
         }
 
-        yield put(actions.fetchQuickReference({maxRecords: 1000}));
-
+        yield put(actions.fetchQuickReference({ maxRecords: 1000 }));
     } catch (error: any) {
         entityLogger.log('error', 'Delete operation error', error);
 
-        yield put(actions.setError({
-            message: error.message || "An error occurred during delete.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during delete.',
+                code: error.code,
+            })
+        );
         throw error;
     }
 }
 
-function* handleBatchOperation<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity> & {
-        action: PayloadAction<BatchOperationPayload<TEntity>>
-    }) {
+function* handleBatchOperation<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity> & {
+    action: PayloadAction<BatchOperationPayload<TEntity>>;
+}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleBatchOperation', entityKey);
 
     try {
-        const {operation, records, primaryKeyMetadata, options} = action.payload;
+        const { operation, records, primaryKeyMetadata, options } = action.payload;
         const batchSize = options?.batchSize || 100;
         const results: EntityData<TEntity>[] = [];
 
-        entityLogger.log('debug', 'Starting', {operation, batchSize, records});
+        entityLogger.log('debug', 'Starting', { operation, batchSize, records });
 
         for (let i = 0; i < records.length; i += batchSize) {
             const batch = records.slice(i, i + batchSize);
@@ -643,9 +579,7 @@ function* handleBatchOperation<TEntity extends EntityKeys>(
 
             switch (operation) {
                 case 'create':
-                    const {data: insertData, error: insertError} = yield api
-                        .insert(batch)
-                        .select();
+                    const { data: insertData, error: insertError } = yield api.insert(batch).select();
                     if (insertError) throw insertError;
                     if (insertData) results.push(...insertData);
                     break;
@@ -653,10 +587,10 @@ function* handleBatchOperation<TEntity extends EntityKeys>(
                 case 'update':
                     for (const record of batch) {
                         let updateQuery = api.update(record);
-                        primaryKeyMetadata.fields.forEach(field => {
+                        primaryKeyMetadata.fields.forEach((field) => {
                             updateQuery = updateQuery.eq(field, record[field]);
                         });
-                        const {data: updateData, error: updateError} = yield updateQuery.select().single();
+                        const { data: updateData, error: updateError } = yield updateQuery.select().single();
                         if (updateError) throw updateError;
                         if (updateData) results.push(updateData);
                     }
@@ -665,10 +599,10 @@ function* handleBatchOperation<TEntity extends EntityKeys>(
                 case 'delete':
                     for (const record of batch) {
                         let deleteQuery = api.delete();
-                        primaryKeyMetadata.fields.forEach(field => {
+                        primaryKeyMetadata.fields.forEach((field) => {
                             deleteQuery = deleteQuery.eq(field, record[field]);
                         });
-                        const {error: deleteError} = yield deleteQuery;
+                        const { error: deleteError } = yield deleteQuery;
                         if (deleteError) throw deleteError;
                     }
                     break;
@@ -679,9 +613,9 @@ function* handleBatchOperation<TEntity extends EntityKeys>(
             }
         }
 
-        entityLogger.log('debug', 'Database response', {results});
+        entityLogger.log('debug', 'Database response', { results });
 
-        const payload = {entityName: entityKey, data: results};
+        const payload = { entityName: entityKey, data: results };
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
         entityLogger.log('debug', 'Final result', frontendResponse);
@@ -696,20 +630,20 @@ function* handleBatchOperation<TEntity extends EntityKeys>(
                 yield put(actions.removeRecords(records as Draft<EntityData<TEntity>>[]));
                 break;
         }
-
     } catch (error: any) {
-        yield put(actions.setError({
-            message: error.message || "An error occurred during batch operation.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during batch operation.',
+                code: error.code,
+            })
+        );
         throw error;
     }
 }
 
-
 function* handleSubscriptionEvents<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     payload: {
         eventType: 'INSERT' | 'UPDATE' | 'DELETE';
         new: any;
@@ -724,7 +658,7 @@ function* handleSubscriptionEvents<TEntity extends EntityKeys>(
 
         const conversionPayload = {
             entityName: entityKey,
-            data: payload.new || payload.old
+            data: payload.new || payload.old,
         };
         const frontendData = yield select(selectFrontendConversion, conversionPayload);
 
@@ -741,20 +675,21 @@ function* handleSubscriptionEvents<TEntity extends EntityKeys>(
         }
 
         yield* handleQuickReferenceUpdate(entityKey, actions, frontendData, unifiedDatabaseObject);
-
     } catch (error: any) {
         entityLogger.log('error', 'Subscription event handling error', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during subscription handling.",
-            code: error.code,
-            details: error
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during subscription handling.',
+                code: error.code,
+                details: error,
+            })
+        );
     }
 }
 
 function* handleQuickReferenceUpdate<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     record: EntityData<TEntity>,
     unifiedDatabaseObject?: UnifiedDatabaseObject
 ) {
@@ -762,9 +697,9 @@ function* handleQuickReferenceUpdate<TEntity extends EntityKeys>(
 
     entityLogger.log('debug', 'Starting', record);
 
-    const {primaryKeyMetadata, displayFieldMetadata} = yield select(selectEntityMetadata, entityKey);
+    const { primaryKeyMetadata, displayFieldMetadata } = yield select(selectEntityMetadata, entityKey);
 
-    const displayFieldName = unifiedDatabaseObject.frontendDisplayField
+    const displayFieldName = unifiedDatabaseObject.frontendDisplayField;
     const primaryKeyValues = primaryKeyMetadata.fields.reduce((acc, field) => {
         acc[field] = record[field];
         return acc;
@@ -775,8 +710,8 @@ function* handleQuickReferenceUpdate<TEntity extends EntityKeys>(
     const quickReferenceRecord = {
         primaryKeyValues,
         displayValue: record[displayFieldName],
-        recordKey
-    }
+        recordKey,
+    };
 
     entityLogger.log('debug', 'Final result', quickReferenceRecord);
 
@@ -785,7 +720,7 @@ function* handleQuickReferenceUpdate<TEntity extends EntityKeys>(
 
 function* handleRefreshData<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     api: any,
     action: PayloadAction<void>,
     tableName: string,
@@ -796,37 +731,38 @@ function* handleRefreshData<TEntity extends EntityKeys>(
     try {
         entityLogger.log('debug', 'Starting data refresh', action.payload);
 
-        const currentState = yield select(state => state.entities[entityKey]);
-        const {page, pageSize} = currentState.pagination;
+        const currentState = yield select((state) => state.entities[entityKey]);
+        const { page, pageSize } = currentState.pagination;
 
         // Create a new action for fetch paginated
         const fetchAction = createPayloadAction(actions.fetchRecords.type, {
             page,
-            pageSize
+            pageSize,
         });
 
         // Use put instead of call for saga actions
-        yield put(actions.fetchRecords({page, pageSize}));
+        yield put(actions.fetchRecords({ page, pageSize }));
 
         // Refresh quick reference if needed
-        yield put(actions.fetchQuickReference({maxRecords: 1000}));
+        yield put(actions.fetchQuickReference({ maxRecords: 1000 }));
 
-        yield put(actions.setFlags({needsRefresh: false}));
+        yield put(actions.setFlags({ needsRefresh: false }));
         entityLogger.log('debug', 'Data refresh completed');
-
     } catch (error: any) {
         entityLogger.log('error', 'Refresh data error', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during refresh.",
-            code: error.code,
-            details: error
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during refresh.',
+                code: error.code,
+                details: error,
+            })
+        );
     }
 }
 
 function* handleCacheInvalidation<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     unifiedDatabaseObject?: UnifiedDatabaseObject
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleCacheInvalidation', entityKey);
@@ -834,7 +770,7 @@ function* handleCacheInvalidation<TEntity extends EntityKeys>(
     try {
         entityLogger.log('debug', 'Checking cache invalidation');
 
-        const currentState = yield select(state => state.entities[entityKey]);
+        const currentState = yield select((state) => state.entities[entityKey]);
         const now = new Date().getTime();
         const cacheKey = currentState.entityMetadata.primaryKeyMetadata.database_fields.join('::');
         const lastFetched = new Date(currentState.cache.lastFetched[cacheKey] || 0).getTime();
@@ -842,7 +778,7 @@ function* handleCacheInvalidation<TEntity extends EntityKeys>(
         if (now - lastFetched > currentState.cache.staleTime) {
             entityLogger.log('debug', 'Cache invalidated', {
                 lastFetched: new Date(lastFetched).toISOString(),
-                staleTime: currentState.cache.staleTime
+                staleTime: currentState.cache.staleTime,
             });
 
             yield put(actions.invalidateCache());
@@ -855,7 +791,7 @@ function* handleCacheInvalidation<TEntity extends EntityKeys>(
 
 function* handleHistoryUpdate<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     operation: 'create' | 'update' | 'delete' | 'bulk',
     newData: EntityData<TEntity> | EntityData<TEntity>[],
     previousData?: EntityData<TEntity> | EntityData<TEntity>[],
@@ -869,7 +805,7 @@ function* handleHistoryUpdate<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleHistoryUpdate', entityKey);
 
     try {
-        entityLogger.log('debug', 'Updating history', {operation, metadata});
+        entityLogger.log('debug', 'Updating history', { operation, metadata });
 
         const historyEntry: Draft<HistoryEntry<TEntity>> = {
             timestamp: new Date().toISOString(),
@@ -878,22 +814,20 @@ function* handleHistoryUpdate<TEntity extends EntityKeys>(
             previousData: previousData as Draft<EntityData<TEntity>> | Draft<EntityData<TEntity>>[],
             metadata: {
                 ...metadata,
-                user: metadata?.user || 'system'
-            }
+                user: metadata?.user || 'system',
+            },
         };
 
         yield put(actions.pushToHistory(historyEntry));
         entityLogger.log('debug', 'History updated successfully');
-
     } catch (error: any) {
         entityLogger.log('error', 'History update error', error);
     }
 }
 
-
 function* handleFilterChange<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     api: any,
     action: PayloadAction<FilterPayload>,
     unifiedDatabaseObject?: UnifiedDatabaseObject
@@ -905,14 +839,14 @@ function* handleFilterChange<TEntity extends EntityKeys>(
 
         yield delay(DEBOUNCE_MS);
 
-        const currentState = yield select(state => state.entities[entityKey]);
+        const currentState = yield select((state) => state.entities[entityKey]);
         yield put(actions.setPage(1));
 
-        let query = api.select("*", {count: "exact"});
+        let query = api.select('*', { count: 'exact' });
 
         // Apply filters
         if (action.payload.conditions.length > 0) {
-            action.payload.conditions.forEach(condition => {
+            action.payload.conditions.forEach((condition) => {
                 if (condition.operator === 'eq') {
                     query = query.eq(condition.field, condition.value);
                 }
@@ -920,42 +854,43 @@ function* handleFilterChange<TEntity extends EntityKeys>(
             });
         }
 
-        const {data, error, count} = yield query;
+        const { data, error, count } = yield query;
         if (error) throw error;
 
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
-        yield put(actions.fetchRecordsSuccess({
-            data: frontendResponse,
-            page: 1,
-            pageSize: currentState.pagination.pageSize,
-            totalCount: count || 0
-        }));
+        yield put(
+            actions.fetchRecordsSuccess({
+                data: frontendResponse,
+                page: 1,
+                pageSize: currentState.pagination.pageSize,
+                totalCount: count || 0,
+            })
+        );
 
         entityLogger.log('debug', 'Filter change applied successfully');
-
     } catch (error: any) {
         entityLogger.log('error', 'Filter change error', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during filter update.",
-            code: error.code,
-            details: error
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during filter update.',
+                code: error.code,
+                details: error,
+            })
+        );
     }
 }
 
-
-function* handleFetchPaginated<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        unifiedDatabaseObject,
-    }: BaseSagaContext<TEntity> & {
-        action: PayloadAction<{ page: number; pageSize: number; options?: QueryOptions<TEntity>; maxCount?: number }>
-    }) {
+function* handleFetchPaginated<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity> & {
+    action: PayloadAction<{ page: number; pageSize: number; options?: QueryOptions<TEntity>; maxCount?: number }>;
+}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchPaginated', entityKey);
 
     try {
@@ -964,91 +899,87 @@ function* handleFetchPaginated<TEntity extends EntityKeys>(
         const from = (action.payload.page - 1) * action.payload.pageSize;
         const to = action.payload.page * action.payload.pageSize - 1;
 
-        entityLogger.log('debug', 'Executing query', {from, to});
+        entityLogger.log('debug', 'Executing query', { from, to });
 
-        const {data, error, count} = yield api
-            .select("*", {count: "exact"})
-            .range(from, to);
+        const { data, error, count } = yield api.select('*', { count: 'exact' }).range(from, to);
 
         if (error) {
             entityLogger.log('error', 'Query error', error);
             throw error;
         }
 
-        entityLogger.log('debug', 'Query successful', {dataCount: data?.length, totalCount: count});
+        entityLogger.log('debug', 'Query successful', { dataCount: data?.length, totalCount: count });
 
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
-        yield put(actions.fetchRecordsSuccess({
-            data: frontendResponse,
-            page: action.payload.page,
-            pageSize: action.payload.pageSize,
-            totalCount: count || 0
-        }));
-
+        yield put(
+            actions.fetchRecordsSuccess({
+                data: frontendResponse,
+                page: action.payload.page,
+                pageSize: action.payload.pageSize,
+                totalCount: count || 0,
+            })
+        );
     } catch (error: any) {
         entityLogger.log('error', 'Error in fetchPaginated', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during fetch paginated.",
-            code: error.code,
-            details: error
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during fetch paginated.',
+                code: error.code,
+                details: error,
+            })
+        );
         throw error;
     }
 }
 
 function createPayloadAction<T>(type: string, payload: T): PayloadAction<T> {
-    return {type, payload};
+    return { type, payload };
 }
 
-function* handleCreate<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        unifiedDatabaseObject,
-    }: BaseSagaContext<TEntity> & {
-        action: PayloadAction<EntityData<TEntity>>
-    }) {
+function* handleCreate<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity> & {
+    action: PayloadAction<EntityData<TEntity>>;
+}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleCreate', entityKey);
 
-    const dataForInsert = unifiedDatabaseObject.data
+    const dataForInsert = unifiedDatabaseObject.data;
     entityLogger.log('debug', 'Data for insert:', dataForInsert);
 
     try {
-
-        const {data, error} = yield api
-            .insert(dataForInsert)
-            .select()
-            .single();
+        const { data, error } = yield api.insert(dataForInsert).select().single();
 
         if (error) throw error;
 
-        entityLogger.log('debug', 'Database response', {data});
+        entityLogger.log('debug', 'Database response', { data });
 
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
-
 
         const successPayload = {
             tempRecordId: unifiedDatabaseObject.tempRecordId,
-            data: frontendResponse
+            data: frontendResponse,
         };
 
         entityLogger.log('debug', '-- Dispatching createRecordSuccess', successPayload);
 
         yield put(actions.createRecordSuccess(successPayload));
 
-
         entityLogger.log('debug', 'Pushing to history', frontendResponse);
 
-        yield put(actions.pushToHistory({
-            timestamp: new Date().toISOString(),
-            operation: 'create',
-            data: frontendResponse
-        }));
+        yield put(
+            actions.pushToHistory({
+                timestamp: new Date().toISOString(),
+                operation: 'create',
+                data: frontendResponse,
+            })
+        );
 
         entityLogger.log('debug', 'Invalidating cache');
 
@@ -1060,27 +991,81 @@ function* handleCreate<TEntity extends EntityKeys>(
 
         entityLogger.log('debug', 'Final result', frontendResponse);
 
+        const primaryKeyMetadata = yield select(selectEntityPrimaryKeyMetadata, entityKey);
+        const recordKey = createRecordKey(primaryKeyMetadata, data);
+
+        return {
+            tempRecordId: unifiedDatabaseObject.tempRecordId,
+            recordKey,
+            data: frontendResponse,
+        };
     } catch (error: any) {
         entityLogger.log('error', 'Create operation error', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred during create.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during create.',
+                code: error.code,
+            })
+        );
         throw error;
     }
 }
 
-function* handleUpdate<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        unifiedDatabaseObject,
-    }: BaseSagaContext<TEntity> & {}) {
+export function* handleDirectCreate<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity> & {
+    action: PayloadAction<EntityData<TEntity>>;
+}) {
+    const entityLogger = EntityLogger.createLoggerWithDefaults('handleDirectCreate', entityKey);
+
+    const receivedData = unifiedDatabaseObject.data;
+
+    const dataForInsert = addUserIdToData(entityKey, receivedData);
+
+    entityLogger.log('info', 'Recieved Data for insert with potentially added user_id:', dataForInsert);
+
+    try {
+        const { data, error } = yield api.insert(dataForInsert).select().single();
+
+        if (error) throw error;
+
+        const payload = { entityName: entityKey, data };
+        const frontendResponse = yield select(selectFrontendConversion, payload);
+
+        yield put(actions.directCreateRecordSuccess(frontendResponse));
+
+        entityLogger.log('debug', 'frontend response data', frontendResponse);
+
+        yield* handleQuickReferenceUpdate(entityKey, actions, frontendResponse, unifiedDatabaseObject);
+
+        const primaryKeyMetadata = yield select(selectEntityPrimaryKeyMetadata, entityKey);
+        const recordKey = createRecordKey(primaryKeyMetadata, data);
+
+        return {
+            recordKey,
+            data: frontendResponse,
+        };
+
+    } catch (error: any) {
+        entityLogger.log('error', 'Create operation error', error);
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred during create.',
+                code: error.code,
+            })
+        );
+        throw error;
+    }
+}
+
+
+function* handleUpdate<TEntity extends EntityKeys>({ entityKey, actions, api, action, unifiedDatabaseObject }: BaseSagaContext<TEntity> & {}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleUpdate', entityKey);
     entityLogger.log('debug', 'Starting update operation', action.payload);
-
 
     let previousData: Record<string, any> | undefined;
     let recordKey: MatrxRecordId;
@@ -1089,31 +1074,26 @@ function* handleUpdate<TEntity extends EntityKeys>(
         recordKey = unifiedDatabaseObject.recordKeys[0];
         const entitySelectors = createEntitySelectors(entityKey);
 
-        const changeComparison = yield select(state =>
-            entitySelectors.selectChangeComparisonById(state, recordKey)
-        );
+        const changeComparison = yield select((state) => entitySelectors.selectChangeComparisonById(state, recordKey));
 
         previousData = changeComparison.originalRecord;
         const allUpdatedData = changeComparison.unsavedRecord;
 
         if (previousData) {
-            const optimisticData = {...previousData, ...allUpdatedData};
+            const optimisticData = { ...previousData, ...allUpdatedData };
             entityLogger.log('debug', 'Optimistic update', optimisticData);
 
-            yield put(actions.upsertRecords([
-                {recordKey, record: optimisticData}
-            ]));
+            yield put(actions.upsertRecords([{ recordKey, record: optimisticData }]));
         }
 
         const convertedChangedData = yield select(selectDatabaseConversion, {
             entityName: entityKey,
-            data: changeComparison.changedFieldData
+            data: changeComparison.changedFieldData,
         });
 
         const primaryKeyFields = unifiedDatabaseObject.databasePks;
 
         entityLogger.log('debug', 'Converted data for update:', convertedChangedData);
-
 
         const primaryKeyValues = primaryKeyFields.reduce((acc, key) => {
             if (previousData[key] !== undefined) {
@@ -1123,7 +1103,6 @@ function* handleUpdate<TEntity extends EntityKeys>(
         }, {});
 
         entityLogger.log('debug', 'Primary key values:', primaryKeyValues);
-
 
         let query = api.update(convertedChangedData);
         Object.entries(primaryKeyValues).forEach(([key, value]) => {
@@ -1131,16 +1110,14 @@ function* handleUpdate<TEntity extends EntityKeys>(
         });
 
         entityLogger.log('debug', 'DB Query:', query);
-        const {data, error} = yield query.select().single();
+        const { data, error } = yield query.select().single();
 
-        entityLogger.log('debug', 'Database response', {error, data});
+        entityLogger.log('debug', 'Database response', { error, data });
 
         if (error) throw error;
 
-
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
-
 
         entityLogger.log('debug', 'Frontend response', frontendResponse);
 
@@ -1153,56 +1130,49 @@ function* handleUpdate<TEntity extends EntityKeys>(
         const quickReferenceRecord = {
             primaryKeyValues: primaryKeyValues,
             displayValue: frontendResponse[unifiedDatabaseObject?.frontendDisplayField],
-            recordKey: recordKey
+            recordKey: recordKey,
         };
         entityLogger.log('debug', 'quickReferenceRecord:', quickReferenceRecord);
 
         // Update history
-        yield put(actions.pushToHistory({
-            timestamp: new Date().toISOString(),
-            operation: 'update',
-            data: frontendResponse,
-            previousData
-        }));
+        yield put(
+            actions.pushToHistory({
+                timestamp: new Date().toISOString(),
+                operation: 'update',
+                data: frontendResponse,
+                previousData,
+            })
+        );
 
         // Invalidate cache
         yield put(actions.invalidateCache());
 
-
-
         entityLogger.log('debug', 'Final result', frontendResponse);
-
     } catch (error: any) {
         entityLogger.log('error', 'Update operation error', error);
 
         if (previousData) {
             entityLogger.log('debug', 'Reverting optimistic update');
-            yield put(actions.upsertRecords([
-                {recordKey, record: previousData}
-            ]));
+            yield put(actions.upsertRecords([{ recordKey, record: previousData }]));
         }
 
-        yield put(actions.setError(createStructuredError({
-            error,
-            location: 'handleUpdate Saga',
-            action,
-            entityKey,
-        })));
+        yield put(
+            actions.setError(
+                createStructuredError({
+                    error,
+                    location: 'handleUpdate Saga',
+                    action,
+                    entityKey,
+                })
+            )
+        );
         throw error;
     }
 }
 
-function* handleDirectUpdate<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        unifiedDatabaseObject,
-    }: BaseSagaContext<TEntity> & {}) {
+function* handleDirectUpdate<TEntity extends EntityKeys>({ entityKey, actions, api, action, unifiedDatabaseObject }: BaseSagaContext<TEntity> & {}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleUpdate', entityKey);
     entityLogger.log('debug', 'Starting update operation', action.payload);
-
 
     let previousData: Record<string, any> | undefined;
     let recordKey: MatrxRecordId;
@@ -1211,30 +1181,18 @@ function* handleDirectUpdate<TEntity extends EntityKeys>(
         recordKey = unifiedDatabaseObject.recordKeys[0];
         const entitySelectors = createEntitySelectors(entityKey);
 
-        const previousData = yield select(state =>
-            entitySelectors.selectRecordByKey(state, recordKey)
-        );
+        const previousData = yield select((state) => entitySelectors.selectRecordByKey(state, recordKey));
 
         const allUpdatedData = unifiedDatabaseObject.data as Record<string, any>;
 
         if (previousData) {
-            const optimisticData = {...previousData, ...allUpdatedData};
+            const optimisticData = { ...previousData, ...allUpdatedData };
             entityLogger.log('debug', 'Optimistic update', optimisticData);
 
-            yield put(actions.upsertRecords([
-                {recordKey, record: optimisticData}
-            ]));
+            yield put(actions.upsertRecords([{ recordKey, record: optimisticData }]));
         }
 
-        // const convertedChangedData = yield select(selectDatabaseConversion, {
-        //     entityName: entityKey,
-        //     data: allUpdatedData
-        // });
-
         const primaryKeyFields = unifiedDatabaseObject.databasePks;
-
-        // entityLogger.log('debug', 'Converted data for update:', convertedChangedData);
-
 
         const primaryKeyValues = primaryKeyFields.reduce((acc, key) => {
             if (previousData[key] !== undefined) {
@@ -1245,23 +1203,20 @@ function* handleDirectUpdate<TEntity extends EntityKeys>(
 
         entityLogger.log('debug', 'Primary key values:', primaryKeyValues);
 
-
         let query = api.update(allUpdatedData);
         Object.entries(primaryKeyValues).forEach(([key, value]) => {
             query = query.eq(key, value);
         });
 
         entityLogger.log('debug', 'DB Query:', query);
-        const {data, error} = yield query.select().single();
+        const { data, error } = yield query.select().single();
 
-        entityLogger.log('debug', 'Database response', {error, data});
+        entityLogger.log('debug', 'Database response', { error, data });
 
         if (error) throw error;
 
-
-        const payload = {entityName: entityKey, data};
+        const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
-
 
         entityLogger.log('debug', 'Frontend response', frontendResponse);
 
@@ -1274,60 +1229,60 @@ function* handleDirectUpdate<TEntity extends EntityKeys>(
         const quickReferenceRecord = {
             primaryKeyValues: primaryKeyValues,
             displayValue: frontendResponse[unifiedDatabaseObject?.frontendDisplayField],
-            recordKey: recordKey
+            recordKey: recordKey,
         };
         entityLogger.log('debug', 'quickReferenceRecord:', quickReferenceRecord);
 
         // Update history
-        yield put(actions.pushToHistory({
-            timestamp: new Date().toISOString(),
-            operation: 'update',
-            data: frontendResponse,
-            previousData
-        }));
+        yield put(
+            actions.pushToHistory({
+                timestamp: new Date().toISOString(),
+                operation: 'update',
+                data: frontendResponse,
+                previousData,
+            })
+        );
 
         // Invalidate cache
         yield put(actions.invalidateCache());
 
-
-
         entityLogger.log('debug', 'Final result', frontendResponse);
-
     } catch (error: any) {
         entityLogger.log('error', 'Update operation error', error);
 
         if (previousData) {
             entityLogger.log('debug', 'Reverting optimistic update');
-            yield put(actions.upsertRecords([
-                {recordKey, record: previousData}
-            ]));
+            yield put(actions.upsertRecords([{ recordKey, record: previousData }]));
         }
 
-        yield put(actions.setError(createStructuredError({
-            error,
-            location: 'handleUpdate Saga',
-            action,
-            entityKey,
-        })));
+        yield put(
+            actions.setError(
+                createStructuredError({
+                    error,
+                    location: 'handleUpdate Saga',
+                    action,
+                    entityKey,
+                })
+            )
+        );
         throw error;
     }
 }
 
-
 function* handleUpdateQuickReference<TEntity extends EntityKeys>(
     entityKey: TEntity,
-    actions: ReturnType<typeof createEntitySlice<TEntity>>["actions"],
+    actions: ReturnType<typeof createEntitySlice<TEntity>>['actions'],
     record: EntityData<TEntity>,
     unifiedDatabaseObject?: UnifiedDatabaseObject
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleQuickReferenceUpdate', entityKey);
 
-    entityLogger.log('debug', 'Starting Quick Reference Update', {record, unifiedDatabaseObject});
+    entityLogger.log('debug', 'Starting Quick Reference Update', { record, unifiedDatabaseObject });
 
     const quickReferenceRecord = {
         primaryKeyValues: unifiedDatabaseObject?.primaryKeysAndValues,
         displayValue: record[unifiedDatabaseObject?.frontendDisplayField],
-        recordKey: unifiedDatabaseObject?.recordKeys[0]
+        recordKey: unifiedDatabaseObject?.recordKeys[0],
     };
 
     entityLogger.log('debug', 'Prepared Quick Reference Record', quickReferenceRecord);
@@ -1336,15 +1291,13 @@ function* handleUpdateQuickReference<TEntity extends EntityKeys>(
     yield put(actions.addQuickReferenceRecords([quickReferenceRecord]));
 }
 
-
-function* handleFetchMetrics<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        actions,
-        api,
-        action,
-        unifiedDatabaseObject
-    }: BaseSagaContext<TEntity> & { action: PayloadAction<void> }) {
+function* handleFetchMetrics<TEntity extends EntityKeys>({
+    entityKey,
+    actions,
+    api,
+    action,
+    unifiedDatabaseObject,
+}: BaseSagaContext<TEntity> & { action: PayloadAction<void> }) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchMetrics', entityKey);
 
     try {
@@ -1352,12 +1305,9 @@ function* handleFetchMetrics<TEntity extends EntityKeys>(
 
         // Fetch operation counts
         const operationCounts = yield all({
-            creates: api.select('count(*)', {head: true})
-                .eq('operation_type', 'create'),
-            updates: api.select('count(*)', {head: true})
-                .eq('operation_type', 'update'),
-            deletes: api.select('count(*)', {head: true})
-                .eq('operation_type', 'delete'),
+            creates: api.select('count(*)', { head: true }).eq('operation_type', 'create'),
+            updates: api.select('count(*)', { head: true }).eq('operation_type', 'update'),
+            deletes: api.select('count(*)', { head: true }).eq('operation_type', 'delete'),
         });
 
         // const {data, error} = yield supabase
@@ -1367,9 +1317,8 @@ function* handleFetchMetrics<TEntity extends EntityKeys>(
 
         // Fetch performance metrics
         const performanceMetrics = yield call(async () => {
-            const response = await supabase
-                .rpc('get_entity_performance_metrics', {
-                entity_name: entityKey
+            const response = await supabase.rpc('get_entity_performance_metrics', {
+                entity_name: entityKey,
             });
             return response.data;
         });
@@ -1377,7 +1326,7 @@ function* handleFetchMetrics<TEntity extends EntityKeys>(
         // Fetch cache statistics
         const cacheStats = yield call(async () => {
             const response = await supabase.rpc('get_entity_cache_stats', {
-                entity_name: entityKey
+                entity_name: entityKey,
             });
             return response.data;
         });
@@ -1386,31 +1335,33 @@ function* handleFetchMetrics<TEntity extends EntityKeys>(
         const errorRates = yield call(async () => {
             const response = await supabase.rpc('get_entity_error_rates', {
                 entity_name: entityKey,
-                time_range: '24h'
+                time_range: '24h',
             });
             return response.data;
         });
 
-        yield put(actions.setMetrics({
-            operationCounts,
-            performanceMetrics,
-            cacheStats,
-            errorRates,
-            lastUpdated: new Date().toISOString()
-        }));
+        yield put(
+            actions.setMetrics({
+                operationCounts,
+                performanceMetrics,
+                cacheStats,
+                errorRates,
+                lastUpdated: new Date().toISOString(),
+            })
+        );
 
-        entityLogger.log('debug', 'Final result', {operationCounts, performanceMetrics, cacheStats, errorRates});
-
+        entityLogger.log('debug', 'Final result', { operationCounts, performanceMetrics, cacheStats, errorRates });
     } catch (error: any) {
         entityLogger.log('error', 'Error fetching metrics', error);
-        yield put(actions.setError({
-            message: error.message || "An error occurred while fetching metrics.",
-            code: error.code,
-        }));
+        yield put(
+            actions.setError({
+                message: error.message || 'An error occurred while fetching metrics.',
+                code: error.code,
+            })
+        );
         throw error;
     }
 }
-
 
 export {
     handleFetchOne,
@@ -1430,10 +1381,10 @@ export {
     handleFetchMetrics,
     handleFetchOneAdvanced,
     handleGetOrFetchSelectedRecords,
+    handleQuickReferenceUpdate,
     handleFetchSelectedRecords,
     handleDirectUpdate,
 };
-
 
 /*// Socket ==========================================================
 
@@ -1517,7 +1468,6 @@ function* handleDeleteFromSocket<TEntity extends EntityKeys>(
 
 */
 
-
 // =========== Socket Samples ================
 /*
 function* handleCreate<TEntity extends EntityKeys>(
@@ -1567,7 +1517,6 @@ function* handleDelete<TEntity extends EntityKeys>(
         // ... existing error handling ...
     }
 }*/
-
 
 /*function* handleSubscription<TEntity extends EntityKeys>(
     entityKey: TEntity,

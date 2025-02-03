@@ -2,6 +2,7 @@ import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import EntityFormAnyRecord from '../forms/EntityFormAnyRecordWithRelated';
 import EntitySheet from '../fields/other-components/EntitySheet';
+import { createEntitySelectors, useAppStore } from '@/lib/redux';
 
 interface EntityRecordSheetProps {
     selectedEntity: EntityKeys;
@@ -39,6 +40,11 @@ export const EntityRecordSheet: React.FC<EntityRecordSheetProps> = ({
     if (!selectedEntity || !recordId) {
         return null;
     }
+    const Store = useAppStore();
+    const selectors = createEntitySelectors(selectedEntity);
+    const entityDisplayName = selectors.selectEntityDisplayName(Store.getState());
+
+    description = description || `Edit ${entityDisplayName}`;
 
     return (
         <EntitySheet

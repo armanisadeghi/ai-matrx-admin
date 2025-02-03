@@ -1,4 +1,88 @@
-import { ChipData, ChipRequestOptions, TextStyle } from '../types';
+import { BrokerMetaData, ChipData, ChipRequestOptions, TextStyle } from '../../../types/editor.types';
+
+// Helper to get editor element by ID
+export const getEditorElement = (editorId: string): HTMLDivElement | null => {
+    return document.querySelector(`[data-editor-id="${editorId}"]`) as HTMLDivElement | null;
+};
+
+const formatChipMetadata = (element: Element): string => {
+    const metadata: BrokerMetaData = {
+        id: element.getAttribute('data-chip-id') || '',
+        matrxRecordId: element.getAttribute('data-chip-matrxRecordId') || '',
+        name: element.getAttribute('data-chip-name') || '',
+        defaultValue: element.getAttribute('data-chip-defaultValue') || '',
+        color: element.getAttribute('data-chip-color') || '',
+        status: element.getAttribute('data-chip-status') || '',
+        defaultComponent: element.getAttribute('data-chip-defaultComponent') || '',
+        dataType: element.getAttribute('data-chip-dataType') || '',
+    };
+
+    // Build the metadata string in the required format
+    const parts = [
+        `matrxRecordId:${metadata.matrxRecordId}`,
+        `id:${metadata.id}`,
+        `name:"${metadata.name}"`,
+        `defaultValue:"${metadata.defaultValue}"`,
+        `color:"${metadata.color}"`,
+        `status:"${metadata.status}"`,
+    ].filter((part) => !part.endsWith('""') && !part.endsWith(':'));
+
+    return `{${parts.join('|')}}!`;
+};
+
+export const extractEncodedTextFromDom = (editor: HTMLDivElement): string => {
+    let text = '';
+
+    // Handle deeply nested elements recursively if needed
+    const processNestedElement = (element: Element): string => {
+        if (element.hasAttribute('data-chip-id')) {
+            return formatChipMetadata(element);
+        }
+        return '';
+    };
+
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+        acceptNode: (node) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                if (node.textContent === '\u200B') {
+                    return NodeFilter.FILTER_SKIP;
+                }
+                if (node.parentNode instanceof Element && node.parentNode.hasAttribute('data-chip-id')) {
+                    return NodeFilter.FILTER_SKIP;
+                }
+            }
+            return NodeFilter.FILTER_ACCEPT;
+        },
+    });
+
+    let node: Node | null;
+    while ((node = walker.nextNode())) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            text += node.textContent;
+        } else if (node instanceof Element) {
+            if (node.hasAttribute('data-chip-id')) {
+                text += formatChipMetadata(node);
+            } else if (node.tagName === 'DIV') {
+                if (node.querySelector('br')) {
+                    text += '\n\n';
+                } else {
+                    text += '\n';
+                }
+                // Process any nested elements that might be deeply buried
+                const nestedText = processNestedElement(node);
+                if (nestedText) {
+                    text += nestedText;
+                }
+            }
+        }
+    }
+
+    return text
+        .split('\n')
+        .map((line) => line.replace(/\s+/g, ' ').trim())
+        .join('\n')
+        .trim();
+};
 
 export const ensureValidContainer = (editor: HTMLDivElement, selection: Selection): Range => {
     if (!editor.firstChild) {
@@ -41,116 +125,32 @@ export const ensureValidContainer = (editor: HTMLDivElement, selection: Selectio
     return range;
 };
 
-export const safeInsertBefore = (parent: Node | null | undefined, newNode: Node, referenceNode: Node | null | undefined): void => {
-    if (!parent) return;
-
-    // If no reference node or it's not a child of parent, append to end
-    if (!referenceNode || referenceNode.parentNode !== parent) {
-        parent.appendChild(newNode);
-        return;
-    }
-
-    parent.insertBefore(newNode, referenceNode);
-};
-
-export const getDropRange = (x: number, y: number, editor: HTMLDivElement): Range | null => {
-    if (!editor) return null;
-
-    const range = document.caretRangeFromPoint(x, y);
-    if (!range || !editor.contains(range.commonAncestorContainer)) return null;
-
-    return range;
-};
-
-export const isValidDropTarget = (node: Node, editorRef: HTMLDivElement): boolean => {
-    let current: Node | null = node;
-    while (current && current !== editorRef) {
-        if (current instanceof Element && current.hasAttribute('data-chip-id')) {
-            return false;
-        }
-        current = current.parentNode;
-    }
-    return true;
-};
-
-export const extractTextContent = (editor: HTMLDivElement): string => {
-    let text = '';
-    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
-        acceptNode: (node) => {
-            if (node.nodeType === Node.TEXT_NODE) {
-                if (node.textContent === '\u200B') {
-                    return NodeFilter.FILTER_SKIP;
-                }
-                if (node.parentNode instanceof Element && node.parentNode.hasAttribute('data-chip-id')) {
-                    return NodeFilter.FILTER_SKIP;
-                }
-            }
-            return NodeFilter.FILTER_ACCEPT;
-        },
-    });
-
-    let node: Node | null;
-    while ((node = walker.nextNode())) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            text += node.textContent;
-        } else if (node instanceof Element) {
-            if (node.hasAttribute('data-chip-id')) {
-                text += `{${node.getAttribute('data-chip-id')}}!`;
-            } else if (node.tagName === 'DIV') {
-                if (node.querySelector('br')) {
-                    text += '\n\n';
-                } else {
-                    text += '\n';
-                }
-            }
-        }
-    }
-
-    return text
-        .split('\n')
-        .map((line) => line.replace(/\s+/g, ' ').trim())
-        .join('\n')
-        .trim();
-};
-
-export const applyTextStyle = (style: TextStyle): void => {
-    document.execCommand(style.command, false, style.value || null);
-};
-
-export const getFormattedContent = (editor: HTMLDivElement): string => {
-    const clone = editor.cloneNode(true) as HTMLDivElement;
-    const chips = clone.querySelectorAll('[data-chip="true"]');
-
-    chips.forEach((chip) => {
-        const chipName = chip.textContent;
-        chip.replaceWith(`{${chipName}}!`);
-    });
-
-    return clone.textContent || '';
-};
-
 export const getSelectedText = (): { text: string; range: Range | null } => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) {
         return { text: '', range: null };
     }
-
     const range = selection.getRangeAt(0);
     const text = range.toString().trim();
-
     return { text, range };
 };
 
-export const isValidChipText = (text: string): boolean => {
-    return text.length > 0 && text.length <= 1000;
+export const getSelectedTextOrRange = (editorId: string): { text: string; range: Range } => {
+    const editor = getEditorElement(editorId);
+    if (!editor) throw new Error('Editor not found');
+
+    const selection = window.getSelection();
+    if (!selection) throw new Error('Selection not available');
+
+    const range = ensureValidContainer(editor, selection);
+    const text = range.toString().trim();
+    return { text, range };
 };
 
-export const initializeEditor = (editor: HTMLDivElement, id: string) => {
-    editor.setAttribute('role', 'textbox');
-    editor.setAttribute('aria-multiline', 'true');
-    editor.setAttribute('spellcheck', 'true');
-    editor.setAttribute('data-editor-id', id);
-};
+export function insertWithRangeMethod(insertionWrapper: HTMLElement, range: Range) {
+    range.deleteContents();
+    range.insertNode(insertionWrapper);
+}
 
 export function insertWithStructurePreservation(insertionWrapper: HTMLElement, currentRange: Range, parent: Node | null | undefined, container: Node): boolean {
     try {
@@ -192,18 +192,33 @@ export function positionCursorAfterChip(anchorNode: Text, selection: Selection) 
     selection.addRange(finalRange);
 }
 
-export function insertWithRangeMethod(insertionWrapper: HTMLElement, range: Range) {
-    range.deleteContents();
-    range.insertNode(insertionWrapper);
-}
+const safeInsertBefore = (parent: Node | null | undefined, newNode: Node, referenceNode: Node | null | undefined): void => {
+    if (!parent) return;
 
+    // If no reference node or it's not a child of parent, append to end
+    if (!referenceNode || referenceNode.parentNode !== parent) {
+        parent.appendChild(newNode);
+        return;
+    }
+
+    parent.insertBefore(newNode, referenceNode);
+};
+
+export const applyTextStyle = (style: TextStyle): void => {
+    document.execCommand(style.command, false, style.value || null);
+};
+
+export const getCursorRange = (): Range | null => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return null;
+    return selection.getRangeAt(0);
+};
+
+export const isValidChipText = (text: string): boolean => {
+    return text.length > 0 && text.length <= 1000;
+};
 
 export const DEBUG_MODE = false;
-
-// Helper to get editor element by ID
-export const getEditorElement = (editorId: string): HTMLDivElement | null => {
-    return document.querySelector(`[data-editor-id="${editorId}"]`) as HTMLDivElement | null;
-};
 
 export const setupEditorAttributes = (editor: HTMLDivElement, componentId: string) => {
     editor.setAttribute('role', 'textbox');
@@ -211,13 +226,11 @@ export const setupEditorAttributes = (editor: HTMLDivElement, componentId: strin
     editor.setAttribute('spellcheck', 'true');
     editor.setAttribute('data-editor-root', 'true');
     editor.setAttribute('data-editor-id', componentId);
+    // Explicitly mark as drop target
+    editor.setAttribute('data-drop-target', 'true');
 };
 
-
-export const prepareChipRequestOptions = (
-    existingChipData?: ChipData,
-    selectedText?: string
-): ChipRequestOptions => {
+export const prepareChipRequestOptions = (existingChipData?: ChipData, selectedText?: string): ChipRequestOptions => {
     if (!existingChipData) {
         return selectedText ? { stringValue: selectedText } : {};
     }
@@ -227,6 +240,6 @@ export const prepareChipRequestOptions = (
         label: existingChipData.label,
         color: existingChipData.color,
         brokerId: existingChipData.brokerId,
-        stringValue: existingChipData.stringValue
+        stringValue: existingChipData.stringValue,
     };
 };

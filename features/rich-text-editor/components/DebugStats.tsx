@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useState } from "react";
-import { inspectEditorHTML } from "../utils/debugUtils";
+import { inspectEditorHTML } from "../admin/debugUtils";
 
 export const DebugStats = forwardRef<HTMLDivElement, { editorId: string }>(({ editorId }, ref) => {
     const [stats, setStats] = useState({

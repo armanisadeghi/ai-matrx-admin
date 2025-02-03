@@ -7,7 +7,7 @@ import { storageManager } from './storageManager';
 import { RootState } from '@/lib/redux/store';
 import { toast } from '@/lib/toast-service';
 
-console.log('Creating storage sync saga');
+// console.log('Creating storage sync saga');
 
 export function createStorageSyncSaga(config: StorageSyncConfig) {
     const {

@@ -7,7 +7,8 @@ import { createEntitySelectors, getEntitySlice, useAppDispatch, useAppSelector }
 export const SmartEditButton = ({ 
     entityKey, 
     size = 'default',
-    recordId 
+    recordId,
+    forceEnable
 }: SmartButtonProps) => {
     const dispatch = useAppDispatch();
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
@@ -37,6 +38,7 @@ export const SmartEditButton = ({
             disabled={isDisabled}
             size={size}
             variant="secondary"
+            forceEnable={forceEnable}
         >
             <Edit2 className="h-4 w-4" />
             Edit

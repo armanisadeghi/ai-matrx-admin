@@ -1,15 +1,14 @@
 // lib/redux/socket/manager.ts
 
-import {EventChannel, eventChannel} from 'redux-saga';
-import {SagaCoordinator} from '@/lib/redux/sagas/SagaCoordinator';
+import { EventChannel, eventChannel } from 'redux-saga';
+import { SagaCoordinator } from '@/lib/redux/sagas/SagaCoordinator';
 
 export class SocketManager {
     private static instance: SocketManager;
     private socket: any | null = null;
     private dynamicEventListeners: Map<string, (data: any) => void> = new Map(); // Store listeners
 
-    private constructor() {
-    }
+    private constructor() {}
 
     static getInstance(): SocketManager {
         if (!SocketManager.instance) {
@@ -24,7 +23,7 @@ export class SocketManager {
                 try {
                     const { io } = await import('socket.io-client');
 
-                    const socketAddress = process.env.SOCKET_OVERRIDE || 'http://matrx.89.116.187.5.sslip.io' // 'http://matrx.89.116.187.5.sslip.io'//http://localhost:8000';
+                    const socketAddress = process.env.SOCKET_OVERRIDE || 'http://matrx.89.116.187.5.sslip.io'; // 'http://matrx.89.116.187.5.sslip.io' // 'http://localhost:8000';
 
                     // Connect directly to the required namespace
                     this.socket = io(`${socketAddress}/UserSession`, {
@@ -50,7 +49,7 @@ export class SocketManager {
             this.cleanupDynamicListeners();
             this.socket.disconnect();
             this.socket = null;
-            console.log('SocketManager: Disconnected and cleaned up listeners');
+            // console.log('SocketManager: Disconnected and cleaned up listeners');
         }
     }
 
@@ -65,16 +64,10 @@ export class SocketManager {
         const sagaCoordinator = SagaCoordinator.getInstance();
         const socket = this.getSocket();
 
-        // Standard connection events
-        socket.on('connect', () => {
-            console.log('Socket connected:', socket.id);
-        });
+        socket.on('connect', () => {});
 
-        socket.on('disconnect', () => {
-            console.log('Socket disconnected');
-        });
+        socket.on('disconnect', () => {});
 
-        // Dynamic listener for responses
         socket.onAny((eventName: string, ...args: any[]) => {
             sagaCoordinator.emitSocketEvent({ eventName, args });
         });
@@ -88,9 +81,8 @@ export class SocketManager {
             return;
         }
 
-        console.log(`Emitting task: ${eventName} with data:`, data);
+        console.log(`Emitting task: ${eventName}`);
 
-        // Emit the task to the backend
         socket.emit(eventName, data, (response: { event_name?: string }) => {
             const sid = socket.id;
             const taskName = data[0]?.task || 'unknown_task';
@@ -99,19 +91,31 @@ export class SocketManager {
 
             if (response?.event_name) {
                 console.log('Task confirmed. Listening for event:', response.event_name);
-
                 this.addDynamicEventListener(response.event_name, callback);
             } else {
-                console.log(`No dynamic event name provided. Falling back to: ${basicEventName}`);
-
+                console.log(`Server did not provide custom event name. Listening for: ${basicEventName}`);
                 this.addDynamicEventListener(basicEventName, (fallbackResponse) => {
-                    console.log(
-                        // `Fallback response received for event: ${basicEventName}`,
-                        fallbackResponse
-                    );
                     callback(fallbackResponse);
                 });
             }
+        });
+    }
+
+    startStreamingTasks<T>(event: string, tasks: T[], onStreamUpdate: (index: number, data: string) => void) {
+        tasks.forEach((taskData, index) => {
+            const singleTaskPayload = [
+                {
+                    ...taskData,
+                    index,
+                    stream: true,
+                },
+            ];
+
+            this.startTask(event, singleTaskPayload, (response) => {
+                if (response?.data) {
+                    onStreamUpdate(index, response.data);
+                }
+            });
         });
     }
 
@@ -154,7 +158,6 @@ export class SocketManager {
         }
     }
 
-
     listenForResponse(eventName: string, taskIndex: number, callback: (data: any) => void) {
         const socket = this.getSocket();
 
@@ -168,7 +171,7 @@ export class SocketManager {
 
         // Add the listener for the dynamic event
         socket.on(dynamicEventName, (data: any) => {
-            console.log(`Received response for event: ${dynamicEventName}`, data); // Log the response
+            // console.log(`Received response for event: ${dynamicEventName}`, data); // Log the response
             callback(data); // Pass the data to the provided callback
         });
 

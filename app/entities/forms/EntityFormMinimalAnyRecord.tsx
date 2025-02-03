@@ -3,9 +3,9 @@
 import React, { useCallback } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';
+import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
 import { getFormStyle } from './formUtils';
 import { ComponentDensity, EntityKeys, MatrxRecordId } from '@/types';
-import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
 import EntityFormFooter from './form-helpers/EntityFormFooter';
 
 interface EntityFormMinimalAnyRecordProps {
@@ -60,12 +60,13 @@ export const EntityFormMinimalAnyRecord = <TEntity extends EntityKeys>({
                         allowEdit: true,
                         allowDelete: true,
                         allowRefresh: true,
+                        allowAdvanced: true,
                     }}
                     crudLayout={{
                         buttonLayout: 'row',
                         buttonSize: 'icon',
                         buttonsPosition: 'top',
-                        buttonSpacing: 'normal',
+                        buttonSpacing: 'compact',
                     }}
                 />
             </div>

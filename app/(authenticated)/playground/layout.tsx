@@ -12,13 +12,13 @@ import EditorAnalyzer from '@/features/rich-text-editor/admin/sidebar-analyzer/E
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <div className='flex flex-col h-full'>
-            <div className='sticky top-0 z-50'>
+            {/* <div className='sticky top-0 z-50'>
                 <ModuleHeaderWithProvider
                     pages={filteredPages}
                     moduleHome={MODULE_HOME}
                     moduleName={MODULE_NAME}
                 />
-            </div>
+            </div> */}
             <MatrxDynamicPanel
                 initialPosition='right'
                 defaultExpanded={false}

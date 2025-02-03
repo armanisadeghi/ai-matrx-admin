@@ -1,6 +1,6 @@
 // entityExports.ts
-import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
-import {AutomationTableName} from "@/types/AutomationSchemaTypes";
+import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+import { AutomationTableName } from '@/types/AutomationSchemaTypes';
 
 export function getReducers() {
     const registeredFunctionSlice = getEntitySlice('registeredFunction');
@@ -25,15 +25,39 @@ export function getActions() {
 export function getEntityReducers() {
     const reducers = {} as Record<AutomationTableName, ReturnType<typeof getEntitySlice>['reducer']>;
     const tableNames: AutomationTableName[] = [
-        'action', 'aiEndpoint', 'aiModel', 'arg', 'automationBoundaryBroker', 'automationMatrix',
-        'broker', 'dataInputComponent', 'dataOutputComponent', 'displayOption', 'emails', 'extractor',
-        'flashcardData', 'flashcardHistory', 'flashcardImages', 'flashcardSetRelations', 'flashcardSets',
-        'processor', 'recipe', 'recipeBroker', 'recipeDisplay', 'recipeFunction', 'recipeModel',
-        'recipeProcessor', 'recipeTool', 'registeredFunction', 'systemFunction', 'tool', 'transformer',
-        'userPreferences'
+        'action',
+        'aiEndpoint',
+        'aiModel',
+        'arg',
+        'automationBoundaryBroker',
+        'automationMatrix',
+        'broker',
+        'dataInputComponent',
+        'dataOutputComponent',
+        'displayOption',
+        'emails',
+        'extractor',
+        'flashcardData',
+        'flashcardHistory',
+        'flashcardImages',
+        'flashcardSetRelations',
+        'flashcardSets',
+        'processor',
+        'recipe',
+        'recipeBroker',
+        'recipeDisplay',
+        'recipeFunction',
+        'recipeModel',
+        'recipeProcessor',
+        'recipeTool',
+        'registeredFunction',
+        'systemFunction',
+        'tool',
+        'transformer',
+        'userPreferences',
     ];
 
-    tableNames.forEach(tableName => {
+    tableNames.forEach((tableName) => {
         reducers[tableName] = getEntitySlice(tableName).reducer;
     });
 
@@ -43,15 +67,39 @@ export function getEntityReducers() {
 export function getEntityActions() {
     const actions = {} as Record<AutomationTableName, ReturnType<typeof getEntitySlice>['actions']>;
     const tableNames: AutomationTableName[] = [
-        'action', 'aiEndpoint', 'aiModel', 'arg', 'automationBoundaryBroker', 'automationMatrix',
-        'broker', 'dataInputComponent', 'dataOutputComponent', 'displayOption', 'emails', 'extractor',
-        'flashcardData', 'flashcardHistory', 'flashcardImages', 'flashcardSetRelations', 'flashcardSets',
-        'processor', 'recipe', 'recipeBroker', 'recipeDisplay', 'recipeFunction', 'recipeModel',
-        'recipeProcessor', 'recipeTool', 'registeredFunction', 'systemFunction', 'tool', 'transformer',
-        'userPreferences'
+        'action',
+        'aiEndpoint',
+        'aiModel',
+        'arg',
+        'automationBoundaryBroker',
+        'automationMatrix',
+        'broker',
+        'dataInputComponent',
+        'dataOutputComponent',
+        'displayOption',
+        'emails',
+        'extractor',
+        'flashcardData',
+        'flashcardHistory',
+        'flashcardImages',
+        'flashcardSetRelations',
+        'flashcardSets',
+        'processor',
+        'recipe',
+        'recipeBroker',
+        'recipeDisplay',
+        'recipeFunction',
+        'recipeModel',
+        'recipeProcessor',
+        'recipeTool',
+        'registeredFunction',
+        'systemFunction',
+        'tool',
+        'transformer',
+        'userPreferences',
     ];
 
-    tableNames.forEach(tableName => {
+    tableNames.forEach((tableName) => {
         actions[tableName] = getEntitySlice(tableName).actions;
     });
 

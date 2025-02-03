@@ -1,4 +1,4 @@
-import { useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useEntityTools } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
 import { useCallback, useState } from 'react';
@@ -13,39 +13,49 @@ export const useSequentialDelete = (
     secondEntityKey: EntityKeys,
     onComplete?: (success: boolean) => void
 ): UseSequentialDeleteResult => {
+    const dispatch = useAppDispatch();
     const [isDeleting, setIsDeleting] = useState(false);
     const firstEntity = useEntityTools(firstEntityKey);
     const secondEntity = useEntityTools(secondEntityKey);
 
-    const deleteRecords = useCallback((firstRecordId: MatrxRecordId, secondRecordId: MatrxRecordId) => {
-        setIsDeleting(true);
-        
-        firstEntity.dispatch(firstEntity.actions.addPendingOperation(firstRecordId));
+    const deleteRecords = useCallback(
+        (firstRecordId: MatrxRecordId, secondRecordId: MatrxRecordId) => {
+            setIsDeleting(true);
 
-        firstEntity.dispatch(firstEntity.actions.deleteRecord({
-            matrxRecordId: firstRecordId,
-            callbackId: callbackManager.register((firstSuccess: boolean) => {
-                firstEntity.dispatch(firstEntity.actions.removePendingOperation(firstRecordId));
+            dispatch(firstEntity.actions.addPendingOperation(firstRecordId));
 
-                if (!firstSuccess) {
-                    setIsDeleting(false);
-                    onComplete?.(false);
-                    return;
-                }
+            dispatch(
+                firstEntity.actions.deleteRecord({
+                    matrxRecordId: firstRecordId,
+                    callbackId: callbackManager.register((firstSuccess: boolean) => {
 
-                secondEntity.dispatch(secondEntity.actions.addPendingOperation(secondRecordId));
+                        dispatch(firstEntity.actions.removePendingOperation(firstRecordId));
 
-                secondEntity.dispatch(secondEntity.actions.deleteRecord({
-                    matrxRecordId: secondRecordId,
-                    callbackId: callbackManager.register((secondSuccess: boolean) => {
-                        secondEntity.dispatch(secondEntity.actions.removePendingOperation(secondRecordId));
-                        setIsDeleting(false);
-                        onComplete?.(secondSuccess);
-                    })
-                }));
-            })
-        }));
-    }, [firstEntity.dispatch, firstEntity.actions, secondEntity.dispatch, secondEntity.actions, onComplete]);
+                        if (!firstSuccess) {
+                            setIsDeleting(false);
+                            onComplete?.(false);
+                            return;
+                        }
+
+                        dispatch(secondEntity.actions.addPendingOperation(secondRecordId));
+
+                        dispatch(
+                            secondEntity.actions.deleteRecord({
+                                matrxRecordId: secondRecordId,
+                                callbackId: callbackManager.register((secondSuccess: boolean) => {
+                                    dispatch(secondEntity.actions.removePendingOperation(secondRecordId));
+
+                                    setIsDeleting(false);
+                                    onComplete?.(secondSuccess);
+                                }),
+                            })
+                        );
+                    }),
+                })
+            );
+        },
+        [dispatch, firstEntity.actions, secondEntity.actions, onComplete]
+    );
 
     return { deleteRecords, isDeleting };
 };

@@ -1,6 +1,7 @@
 // useEditorVisualizer.ts - This is the hook specifically for visualization
 import { useState, useEffect } from 'react';
-import { useEditorContext } from '../provider/EditorProvider';
+import { useEditorContext } from '../../../providers/rich-text-editor/Provider';
+
 
 export const useEditorVisualizer = () => {
     const context = useEditorContext();
@@ -35,8 +36,8 @@ export const useEditorVisualizer = () => {
 
         // Editor state
         getEditorState: (id: string) => context.getEditorState(id),
-        getProcessedContent: (id: string) => context.getTextWithChipsReplaced(id, showTokenIds),
-        getEditorLayout: (id: string) => context.getEditorLayout(id),
+        getProcessedContent: (id: string) => context.getEncodedText(id),
+        getEditorLayout: (id: string) => context.layout.getEditorLayout(id),
 
         // Token display
         showTokenIds,

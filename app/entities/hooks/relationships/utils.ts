@@ -1,45 +1,22 @@
-import { EntityKeys, EntityAnyFieldKey, MatrxRecordId, EntityDataWithKey } from '@/types';
+import { EntityKeys, EntityAnyFieldKey, MatrxRecordId, EntityDataWithKey, ProcessedEntityData } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash';
+import { SimpleRelDef } from './definitionConversionUtil';
 
-export type RelationshipDefinition = {
-    parentEntity: {
-        entityKey: EntityKeys;
-        referenceField: EntityAnyFieldKey<EntityKeys>;
-    };
-    childEntity: {
-        entityKey: EntityKeys;
-        referenceField: EntityAnyFieldKey<EntityKeys>;
-    };
-    joiningEntity: {
-        entityKey: EntityKeys;
-        parentField: EntityAnyFieldKey<EntityKeys>;
-        childField: EntityAnyFieldKey<EntityKeys>;
-        nameField?: EntityAnyFieldKey<EntityKeys> | null;
-        orderPositionField?: EntityAnyFieldKey<EntityKeys> | null;
-        defaultValueField?: EntityAnyFieldKey<EntityKeys> | null;
-        roleTypeField?: EntityAnyFieldKey<EntityKeys> | null;
-        priorityField?: EntityAnyFieldKey<EntityKeys> | null;
-        paramsField?: EntityAnyFieldKey<EntityKeys> | null;
-        statusField?: EntityAnyFieldKey<EntityKeys> | null;
-        commentsField?: EntityAnyFieldKey<EntityKeys> | null;
-    };
-};
-
-export function createRelationshipData(relationshipDefinition: RelationshipDefinition, parentRecordId: MatrxRecordId, childId: string = 'uuid') {
+export function createRelationshipData(relationshipDefinition: SimpleRelDef, parentRecordId: MatrxRecordId, childId: string = 'uuid') {
     const childEntityId = childId === 'uuid' ? uuidv4() : childId;
 
     return {
         parentEntity: {
-            ...relationshipDefinition.parentEntity,
+            ...relationshipDefinition.parent,
             recordId: parentRecordId,
         },
         childEntity: {
-            ...relationshipDefinition.childEntity,
+            ...relationshipDefinition.child,
             value: childEntityId,
         },
         joiningEntity: {
-            ...relationshipDefinition.joiningEntity,
+            ...relationshipDefinition.join,
         },
     };
 }
@@ -248,7 +225,7 @@ export function applyDefaultValues({
 type MergeJoinFieldsOptions = {
     childRecords: EntityDataWithKey<EntityKeys>[];
     joiningRecords: EntityDataWithKey<EntityKeys>[];
-    relationshipDefinition: RelationshipDefinition;
+    relationshipDefinition: SimpleRelDef;
 };
 
 export function mergeJoinFields({ childRecords, joiningRecords, relationshipDefinition }: MergeJoinFieldsOptions): EntityDataWithKey<EntityKeys>[] {
@@ -258,7 +235,7 @@ export function mergeJoinFields({ childRecords, joiningRecords, relationshipDefi
     }
 
     const {
-        joiningEntity: { parentField, childField, orderPositionField },
+        join: { parentField, childField, orderPositionField },
     } = relationshipDefinition;
 
     // Fields to exclude from merging (relationship fields)
@@ -294,28 +271,39 @@ export function mergeJoinFields({ childRecords, joiningRecords, relationshipDefi
     return processedRecords;
 }
 
-type JoinedEntityData = EntityDataWithKey<EntityKeys> & EntityDataWithKey<EntityKeys>;
 
-type ProcessJoinedDataOptions = {
+export type ProcessJoinedDataOptions = {
     childRecords: EntityDataWithKey<EntityKeys>[];
     joiningRecords: EntityDataWithKey<EntityKeys>[];
-    relationshipDefinition: RelationshipDefinition;
+    relationshipDefinition: SimpleRelDef;
+    parentMatrxId?: MatrxRecordId;
     filterStatus?: {
         value: RelationshipStatus | RelationshipStatus[];
         not?: boolean;
     };
 };
 
-export function processJoinedData({ childRecords, joiningRecords, relationshipDefinition, filterStatus }: ProcessJoinedDataOptions): JoinedEntityData[] {
-    // Exit early if we don't have valid inputs
+export function processJoinedData({ 
+    childRecords, 
+    joiningRecords, 
+    relationshipDefinition, 
+    filterStatus, 
+    parentMatrxId 
+}: ProcessJoinedDataOptions): ProcessedEntityData<EntityKeys>[] {
     if (!childRecords?.length || !joiningRecords?.length) {
         return childRecords;
     }
-
+    console.log('Processing', childRecords?.length, 'record(s) for', relationshipDefinition.child.name, );
     const {
-        parentEntity: { referenceField: parentReferenceField },
-        childEntity: { referenceField: childReferenceField },
-        joiningEntity: { statusField, orderPositionField, childField, parentField },
+        parent: { referenceField: parentReferenceField },
+        child: { referenceField: childReferenceField },
+        join: { 
+            statusField, 
+            orderPositionField, 
+            childField, 
+            parentField,
+            primaryKeys
+        },
     } = relationshipDefinition;
 
     // Step 1: Apply status filtering to joining records first if needed
@@ -332,32 +320,49 @@ export function processJoinedData({ childRecords, joiningRecords, relationshipDe
     // Step 2: Create an efficient lookup of joining records
     const joiningMap = _.keyBy(filteredJoiningRecords, childField);
 
-    // Step 3: Merge fields and exclude relationship fields
+    // Step 3: Merge fields and collect primary keys into joinPksValues
     let processedRecords = childRecords.map((childRecord) => {
         const childId = childRecord[childReferenceField];
         const joiningRecord = childId ? joiningMap[childId] : undefined;
 
         if (!joiningRecord) {
-            return childRecord;
+            return parentMatrxId ? {
+                ...childRecord,
+                parentMatrxId
+            } : childRecord;
         }
-        // Exclude relationship fields from merging
-        const filteredJoiningRecord = _.omit(joiningRecord, [parentField, childField]);
 
-        // Only add fields that don't exist in childRecord
-        const newFields = Object.entries(filteredJoiningRecord).reduce((acc, [key, value]) => {
-            if (!(key in childRecord)) {
-                acc[key] = value;
+        // Collect primary key values
+        const joinPksValues = primaryKeys.reduce((acc, pkField) => {
+            if (pkField in joiningRecord) {
+                acc[pkField] = joiningRecord[pkField];
             }
             return acc;
         }, {});
 
-        return {
+        // Exclude the child field reference from joining record
+        const filteredJoiningRecord = _.omit(joiningRecord, [childField]);
+
+        // Create a new object for joining fields, handling name collisions
+        const processedJoiningFields = Object.entries(filteredJoiningRecord).reduce((acc, [key, value]) => {
+            // If the field exists in childRecord, append 'Join' to the key
+            const newKey = key in childRecord ? `${key}Join` : key;
+            acc[newKey] = value;
+            return acc;
+        }, {});
+
+        // Merge all fields
+        const finalRecord = {
             ...childRecord,
-            ...newFields,
+            ...processedJoiningFields,
+            joinPksValues,
+            ...(parentMatrxId ? { parentMatrxId } : {})
         };
+
+        return finalRecord;
     });
 
-    // Step 4: Apply ordering if orderPositionField is provided and add it to records
+    // Step 4: Apply ordering if orderPositionField is provided
     if (orderPositionField) {
         processedRecords = processedRecords.map((record) => {
             const orderValue = record[orderPositionField];
@@ -372,13 +377,14 @@ export function processJoinedData({ childRecords, joiningRecords, relationshipDe
     return processedRecords;
 }
 
+
 // Accepts a list of all joining records and filters them by a specific child ID
 export function filterJoinForChild(
     allJoiningRecords: Record<string, any>[],
     childIdValue: string | number,
-    relationshipDefinition: RelationshipDefinition
+    relationshipDefinition: SimpleRelDef
 ): Record<string, any>[] {
-    const childField = relationshipDefinition.joiningEntity.childField;
+    const childField = relationshipDefinition.join.childField;
 
     return allJoiningRecords.filter((record) => record[childField] === childIdValue);
 }

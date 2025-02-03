@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useEditorContext } from '@/features/rich-text-editor/provider/EditorProvider';
+import { useEditorContext } from '@/features/rich-text-editor/_dev/new/EditorProvider';
 import { useRefManager } from '@/lib/refs';
 import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
 

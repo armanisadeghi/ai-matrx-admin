@@ -5,12 +5,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFetchQuickRef } from '@/app/entities/hooks/useFetchQuickRef';
-import { ChipData } from '../../types/editor.types';
-import ColorPicker from './ColorPicker';
-import { TailwindColor } from '../../constants';
+import { ChipData } from '@/types/editor.types';
+import ChipColorPicker from './ChipColorPicker';
+import { TailwindColor } from '@/constants/rich-text-constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DeleteChipDialog from './DeleteChipDialog';
-import { useEditorContext } from '../../provider/EditorProvider';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 
 export const ChipDetails = ({ chip, editorId }: { chip: ChipData; editorId: string }) => {
     const context = useEditorContext();
@@ -18,14 +18,14 @@ export const ChipDetails = ({ chip, editorId }: { chip: ChipData; editorId: stri
 
     const removeChipData = useCallback(
         (chipId: string) => {
-            context.removeChipData(editorId, chipId);
+            context.chips.removeChipData(editorId, chipId);
         },
         [editorId, context]
     );
 
     const updateChip = useCallback(
         (chipId: string, updates: Partial<ChipData>) => {
-            context.updateChipData(chipId, updates);
+            context.chips.updateChipData(chipId, updates);
         },
         [context]
     );
@@ -74,7 +74,7 @@ export const ChipDetails = ({ chip, editorId }: { chip: ChipData; editorId: stri
 
                 <div className='space-y-2'>
                     <label className='text-sm text-muted-foreground'>Color</label>
-                    <ColorPicker
+                    <ChipColorPicker
                         value={chip.color as TailwindColor}
                         onValueChange={handleColorChange}
                     />

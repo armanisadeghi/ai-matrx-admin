@@ -137,12 +137,12 @@ export function FileSystemProvider({
 
   const initializeBucket = useCallback(
     async (bucket: AvailableBuckets) => {
-      console.log("Initializing bucket:", bucket);
+      // console.log("Initializing bucket:", bucket);
       const hooks = bucketHooksMap.get(bucket);
       if (hooks) {
         try {
           const { actions } = hooks.slice;
-          console.log("Starting listContents for bucket:", bucket);
+          // console.log("Starting listContents for bucket:", bucket);
           await dispatch(actions.listContents({ forceFetch: true }));
         } catch (error) {
           console.error("Error initializing bucket:", bucket, error);
@@ -186,7 +186,7 @@ export function FileSystemProvider({
 
   // Initialize initial bucket on mount
   useEffect(() => {
-    console.log("Provider mount - initializing initial bucket:", initialBucket);
+    // console.log("Provider mount - initializing initial bucket:", initialBucket);
     initializeBucket(initialBucket).catch((error) =>
       console.error("Error in initial bucket setup:", error)
     );

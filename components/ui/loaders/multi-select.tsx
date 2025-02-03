@@ -74,32 +74,48 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 const updatePosition = () => {
                     const rect = containerRef.current?.getBoundingClientRect();
                     if (!rect) return;
-
+        
+                    // Calculate vertical positioning
                     const spaceBelow = window.innerHeight - rect.bottom;
                     const spaceAbove = rect.top;
                     const showAbove = spaceBelow < 200 && spaceAbove > spaceBelow;
-
+        
+                    // Calculate horizontal positioning
+                    const minWidth = 256; // equivalent to min-w-64
+                    let left = rect.left;
+                    
+                    // Check if dropdown would overflow right edge
+                    if (left + minWidth > window.innerWidth) {
+                        // Align to right edge with 4px padding
+                        left = window.innerWidth - minWidth - 4;
+                    }
+                    
+                    // Check if dropdown would overflow left edge
+                    if (left < 4) {
+                        left = 4; // Maintain minimum 4px from left edge
+                    }
+        
                     setDropdownStyles({
                         position: 'fixed',
-                        width: rect.width,
-                        left: rect.left,
+                        width: Math.max(rect.width, minWidth),
+                        left,
                         [showAbove ? 'bottom' : 'top']: showAbove ? window.innerHeight - rect.top + 4 : rect.bottom + 4,
                         maxHeight: Math.min(300, showAbove ? rect.top - 20 : window.innerHeight - rect.bottom - 20),
                         overflowY: 'auto',
                     });
                 };
-
+        
                 updatePosition();
                 window.addEventListener('scroll', updatePosition, true);
                 window.addEventListener('resize', updatePosition);
-
+        
                 return () => {
                     window.removeEventListener('scroll', updatePosition, true);
                     window.removeEventListener('resize', updatePosition);
                 };
             }
         }, [isOpen]);
-
+        
         React.useEffect(() => {
             const handleClickOutside = (event: MouseEvent | TouchEvent) => {
                 if (!containerRef.current) return;
@@ -244,7 +260,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                     {isOpen && (
                         <Portal>
                             <div
-                                className={cn('fixed z-50 rounded-md border bg-popover shadow-md', displayMode === 'icon' && 'right-0')}
+                                className={cn('fixed z-[999] min-w-64 rounded-md border bg-popover shadow-md', displayMode === 'icon' && 'right-0')}
                                 style={dropdownStyles}
                             >
                                 {creatable && (

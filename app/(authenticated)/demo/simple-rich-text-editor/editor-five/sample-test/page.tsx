@@ -1,8 +1,9 @@
 'use client';
 
-import EditorStateVisualizer from '@/features/rich-text-editor/admin/MessageEditorVisualizer';
+
 import React from 'react';
 import MultiEditorPage from '../multi-editor/page';
+import EditorStateVisualizer from '@/features/rich-text-editor/admin/sidebar-analyzer/EditorStateVisualizer';
 
 
 export default function MessagesPage() {

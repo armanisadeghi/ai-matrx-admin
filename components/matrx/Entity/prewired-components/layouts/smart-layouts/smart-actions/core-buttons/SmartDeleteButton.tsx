@@ -9,7 +9,8 @@ import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
 export const SmartDeleteButton = memo((
     {
         entityKey,
-        size = 'default'
+        size = 'default',
+        forceEnable
     }: SmartButtonProps) => {
 
     const selectors = React.useMemo(() => createEntitySelectors(entityKey), [entityKey]);
@@ -48,7 +49,8 @@ export const SmartDeleteButton = memo((
                 disabled={isDisabled}
                 size={size}
                 variant="destructive"
-            >
+                forceEnable={forceEnable}
+                >
                 <Trash2 className="h-4 w-4"/>
                 Delete
             </SmartButtonBase>

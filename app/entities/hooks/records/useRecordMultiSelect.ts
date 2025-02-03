@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { EntityKeys } from '@/types/entityTypes';
-import { useAppSelector } from '@/lib/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { FetchMode, GetOrFetchSelectedRecordsPayload } from '@/lib/redux/entity/actions';
 import { useEntityTools } from '@/lib/redux';
 
 export const useRecordMultiSelect = <TEntity extends EntityKeys>(entityKey: TEntity) => {
-    const { actions, selectors, dispatch } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
     const [fetchMode, setFetchMode] = React.useState(<FetchMode>'fkIfk');
     const selectedRecordIds = useAppSelector(selectors.selectSelectedRecordIds);
     const selectedRecords = useAppSelector(selectors.selectSelectedRecords);

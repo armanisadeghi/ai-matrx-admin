@@ -8,12 +8,16 @@
     "name": "app-shell-test"
   },
   {
+    "path": "/tests/audio-recorder-test",
+    "name": "audio-recorder-test"
+  },
+  {
     "path": "/tests/backup",
     "name": "backup"
   },
   {
-    "path": "/tests/component-test",
-    "name": "component-test"
+    "path": "/tests/context-menu",
+    "name": "context-menu"
   },
   {
     "path": "/tests/crud-operations",
@@ -30,6 +34,10 @@
   {
     "path": "/tests/dynamic-layouts",
     "name": "dynamic-layouts"
+  },
+  {
+    "path": "/tests/flashcard-app-tests",
+    "name": "flashcard-app-tests"
   },
   {
     "path": "/tests/forms",
@@ -56,12 +64,28 @@
     "name": "math"
   },
   {
+    "path": "/tests/matrx-editor",
+    "name": "matrx-editor"
+  },
+  {
+    "path": "/tests/matrx-local",
+    "name": "matrx-local"
+  },
+  {
     "path": "/tests/matrx-table",
     "name": "matrx-table"
   },
   {
     "path": "/tests/modals",
     "name": "modals"
+  },
+  {
+    "path": "/tests/monoco-editor",
+    "name": "monoco-editor"
+  },
+  {
+    "path": "/tests/notes-app",
+    "name": "notes-app"
   },
   {
     "path": "/tests/openai-chat",
@@ -72,12 +96,20 @@
     "name": "photo-video"
   },
   {
+    "path": "/tests/qr-labels",
+    "name": "qr-labels"
+  },
+  {
     "path": "/tests/reaact-patterns",
     "name": "reaact-patterns"
   },
   {
     "path": "/tests/recipe-creation",
     "name": "recipe-creation"
+  },
+  {
+    "path": "/tests/relationship-management",
+    "name": "relationship-management"
   },
   {
     "path": "/tests/selector-test",
@@ -92,12 +124,20 @@
     "name": "ssr-test"
   },
   {
+    "path": "/tests/storage-tests",
+    "name": "storage-tests"
+  },
+  {
     "path": "/tests/table-test",
     "name": "table-test"
   },
   {
     "path": "/tests/tailwind-test",
     "name": "tailwind-test"
+  },
+  {
+    "path": "/tests/use-hooks-tests",
+    "name": "use-hooks-tests"
   },
   {
     "path": "/tests/windows",

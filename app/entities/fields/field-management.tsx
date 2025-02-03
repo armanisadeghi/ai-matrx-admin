@@ -16,12 +16,19 @@ export const FieldDisableLogic = React.memo(
         children,
         entityStatus,
         operationMode,
+        forceEnable = false,
     }: {
         children: (isDisabled: boolean) => React.ReactNode;
         entityStatus: EntityStatus;
         operationMode: EntityOperationMode | undefined;
+        forceEnable?: boolean;
     }) => {
         const isDisabled = useMemo(() => {
+            // If forceEnable is true, always return false (not disabled)
+            if (forceEnable) {
+                return false;
+            }
+
             if (entityStatus === 'loading' || entityStatus === 'error') {
                 return true;
             }
@@ -36,7 +43,7 @@ export const FieldDisableLogic = React.memo(
                 default:
                     return true;
             }
-        }, [entityStatus, operationMode]);
+        }, [entityStatus, operationMode, forceEnable]);
 
         return <>{children(isDisabled)}</>;
     }
@@ -105,16 +112,15 @@ export const StaticFieldConfig = React.memo((props: StaticFieldConfigProps) => {
     return <>{children({ Component, fieldMetadata, styleConfig })}</>;
 });
 
-
 const default_component_count = {
-    "UUID_FIELD": 38,
-    "INPUT": 37,
-    "FK_SELECT": 44,
-    "TEXTAREA": 48,
-    "SWITCH": 15,
-    "JSON_EDITOR": 43,
-    "NUMBER_INPUT": 26,
-    "DATE_PICKER": 16,
-    "SELECT": 18,
-    "UUID_ARRAY": 2
+    UUID_FIELD: 38,
+    INPUT: 37,
+    FK_SELECT: 44,
+    TEXTAREA: 48,
+    SWITCH: 15,
+    JSON_EDITOR: 43,
+    NUMBER_INPUT: 26,
+    DATE_PICKER: 16,
+    SELECT: 18,
+    UUID_ARRAY: 2,
 } as const;

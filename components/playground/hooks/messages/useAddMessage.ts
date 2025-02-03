@@ -2,8 +2,9 @@
 
 import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
 import { useRelationshipCreate } from '@/app/entities/hooks/unsaved-records/useDirectCreate';
-import { useAppStore, useEntityTools } from '@/lib/redux';
+import { useAppStore, useAppDispatch, useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue, toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
+import { EntityKeys } from '@/types';
 import { useCallback, useMemo } from 'react';
 
 export interface AddMessagePayload {
@@ -13,7 +14,12 @@ export interface AddMessagePayload {
     type: 'other' | 'text' | 'base64_image' | 'blob' | 'image_url';
 }
 
-export function useAddMessage() {
+interface UseAddMessageOptions {
+    onSuccess?: () => void;
+    onError?: (error: Error) => void;
+}
+
+export function useAddMessage({ onSuccess, onError }: UseAddMessageOptions = {}) {
     const store = useAppStore();
     const parentEntity = 'recipe';
     const joiningEntity = 'recipeMessage';
@@ -41,10 +47,12 @@ export function useAddMessage() {
 }
 
 export function useUpdateMessage() {
-    const { actions, dispatch } = useEntityTools('messageTemplate');
-    const { updateRecord } = useUpdateRecord('messageTemplate');
+    const entityKey = 'messageTemplate' as EntityKeys;
+    const dispatch = useAppDispatch();
+    const { store, actions, selectors } = useEntityTools(entityKey);
+    const { updateRecord } = useUpdateRecord(entityKey);
 
-    const getRecordId = useMemo(() => (id: string) => toMatrxIdFromValue('messageTemplate', id), []);
+    const getRecordId = useMemo(() => (id: string) => toMatrxIdFromValue(entityKey, id), []);
 
     const updateMessageContent = useCallback(
         (id: string, content: string) => {

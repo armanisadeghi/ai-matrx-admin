@@ -1,9 +1,11 @@
 import React from 'react';
 import { Button } from '@/components/ui';
-import { X, CheckCircle2, XCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, CheckCircle2, XCircle, ChevronUp, ChevronDown, Frown } from 'lucide-react';
 import { cn } from '@/utils';
 import { MatrxRecordId } from '@/types';
-import { TailwindColor, COLOR_STYLES } from '@/features/rich-text-editor/constants';
+import { TailwindColor, COLOR_STYLES } from '@/constants/rich-text-constants';
+import { ChipData } from '@/types/editor.types';
+import { findChipsByBrokerIdGlobal } from '@/features/rich-text-editor/utils/chipFilnder';
 
 interface BrokerRecord {
     name?: string;
@@ -15,6 +17,7 @@ interface BrokerRecord {
 interface BrokerCardHeaderProps {
     recordId: MatrxRecordId;
     record: BrokerRecord;
+    chips: ChipData[];
     color?: TailwindColor;
     isConnected?: boolean;
     isOpen: boolean;
@@ -22,36 +25,19 @@ interface BrokerCardHeaderProps {
     onDelete: () => void;
 }
 
-const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ 
-    recordId, 
-    record, 
-    color = 'blue', 
-    isConnected, 
-    isOpen, 
-    onToggle, 
-    onDelete 
-}) => {
+const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({ recordId, record, chips, color = 'blue', isConnected, isOpen, onToggle, onDelete }) => {
+    const name = record?.name || 'Unnamed Broker';
+    const hasChips = findChipsByBrokerIdGlobal(recordId).length > 0;
+
+
     const getStatusClasses = () => {
-        return cn(
-            'h-6 w-6 flex items-center justify-center rounded-md relative',
-            'transition-all duration-300 ease-in-out'
-        );
+        return cn('h-6 w-6 flex items-center justify-center rounded-md relative', 'transition-all duration-300 ease-in-out');
     };
 
-    const getIconClasses = (isConnected: boolean) => {
-        if (isConnected) {
-            return cn(
-                'h-4 w-4 transition-all duration-300',
-                // Using emerald for a rich green that works well in both modes
-                'text-emerald-600 dark:text-emerald-500',
-                // Add a subtle glow effect
-                'drop-shadow-[0_0_3px_rgba(16,185,129,0.3)]',
-                // Increase the glow on hover
-                'group-hover:drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]'
-            );
-        }
-        return 'h-4 w-4 text-muted-foreground/50 transition-all duration-300';
-    };
+
+    const isConnectedClass = 'h-4 w-4 transition-all duration-300 text-emerald-600 dark:text-emerald-500 drop-shadow-[0_0_3px_rgba(16,185,129,0.3)] group-hover:drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]'
+    const missingChipsClass = 'h-4 w-4 transition-all duration-300 text-orange-600 dark:text-orange-500 drop-shadow-[0_0_3px_rgba(16,185,129,0.3)] group-hover:drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]'
+    const isDisconnectedClass = 'h-4 w-4 text-muted-foreground/50 transition-all duration-300';
 
     return (
         <div
@@ -71,9 +57,7 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({
             </Button>
 
             <div className='flex items-center gap-2 min-w-0 flex-1'>
-                <span className='font-medium text-sm truncate'>
-                    {record.name || 'Unnamed Broker'}
-                </span>
+                <span className='font-medium text-sm truncate'>{name}</span>
             </div>
 
             <div className='flex items-center gap-2 flex-shrink-0'>
@@ -82,17 +66,17 @@ const BrokerCardHeader: React.FC<BrokerCardHeaderProps> = ({
                     title={isConnected ? 'Connected' : 'Disconnected'}
                 >
                     {isConnected ? (
-                        <CheckCircle2 className={getIconClasses(true)} />
+                        hasChips ? (
+                            <CheckCircle2 className={isConnectedClass} />
+                        ) : (
+                            <Frown className={missingChipsClass} />
+                        )
                     ) : (
-                        <XCircle className={getIconClasses(false)} />
+                        <XCircle className={isDisconnectedClass} />
                     )}
                 </div>
 
-                {isOpen ? (
-                    <ChevronUp className='h-4 w-4' />
-                ) : (
-                    <ChevronDown className='h-4 w-4' />
-                )}
+                {isOpen ? <ChevronUp className='h-4 w-4' /> : <ChevronDown className='h-4 w-4' />}
             </div>
         </div>
     );

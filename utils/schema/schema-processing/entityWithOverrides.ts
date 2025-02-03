@@ -97,7 +97,9 @@ export function processEntity<TEntity extends EntityKeys>(
     entityOverrides?: Record<EntityKeys, EntityOverrides<EntityKeys>>
 ) {
     const updatedEntity = {
+        ...entityDef,
         entityName: entityName,
+        displayName: entityDef.displayName,
         schemaType: entityDef.schemaType,
         primaryKey: entityDef.primaryKey,
         uniqueTableId: entityDef.uniqueTableId,
