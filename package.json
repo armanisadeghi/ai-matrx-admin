@@ -168,6 +168,7 @@
     "react-swipeable": "latest",
     "react-syntax-highlighter": "latest",
     "react-table": "latest",
+    "react-terminal": "^1.4.5",
     "react-toastify": "latest",
     "react-use-websocket": "latest",
     "react-webcam": "latest",

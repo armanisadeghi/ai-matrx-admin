@@ -10,7 +10,11 @@ export function usePreferenceValue<
     preference: K
 ): [UserPreferences[T][K], (value: UserPreferences[T][K]) => void] {
     const dispatch = useAppDispatch();
-    const initialValue = useAppSelector(state => state.userPreferences[module][preference]);
+    // TODO: Quick hack to resolve undefined issues - Kelvin
+    const initialValue = useAppSelector(state => {
+        console.log("User Preferences:", state.userPreferences);
+        return state.userPreferences[module]?.[preference!];
+    });
     const [localValue, setLocalValue] = useState(initialValue);
     
     // Track initial value to know if we need to update on unmount
