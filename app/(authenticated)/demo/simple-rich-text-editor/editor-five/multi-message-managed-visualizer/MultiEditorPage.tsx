@@ -4,7 +4,6 @@ import React from 'react';
 import { GripVertical } from 'lucide-react';
 import { DropZone } from './DropZone';
 import { useDraggableEditors } from './useDraggableEditors';
-import MessageEditor from '@/features/rich-text-editor/_dev/withMessageEditor';
 
 const MultiEditorPage = () => {
     const {

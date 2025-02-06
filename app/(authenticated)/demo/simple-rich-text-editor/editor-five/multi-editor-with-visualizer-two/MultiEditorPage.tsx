@@ -3,7 +3,6 @@
 import React, { useState, useRef } from 'react';
 import { GripVertical } from 'lucide-react';
 import { DropZone } from './DropZone';
-import ManagedMessageEditor from '@/components/playground/panel-manager/MessageEditorWithProvider';
 import { useMessageTemplatesWithNew } from '@/components/playground/hooks/dev/useMessageWithNew';
 
 const MultiEditorPage = () => {

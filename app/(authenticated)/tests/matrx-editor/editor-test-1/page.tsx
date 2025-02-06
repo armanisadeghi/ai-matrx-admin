@@ -1,7 +1,5 @@
 "use client";
 
-import { MatrxEditorWithControls } from "@/components/matrx-editor/MatrxEditorWithControls";
-import { DocumentState } from "@/components/matrx-editor/types";
 import React, { useState, useEffect } from "react";
 
 export default function EditorPage() {
