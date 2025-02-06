@@ -257,9 +257,6 @@ importers:
       array-move:
         specifier: latest
         version: 4.0.0
-      better-react-mathjax:
-        specifier: latest
-        version: 2.0.4-beta1(react@19.0.0)
       canvas:
         specifier: latest
         version: 2.11.2
@@ -431,9 +428,6 @@ importers:
       react-markdown:
         specifier: latest
         version: 9.0.1(@types/react@19.0.1)(react@19.0.0)
-      react-mathjax:
-        specifier: latest
-        version: 1.0.1(react@19.0.0)
       react-media-recorder:
         specifier: ^1.7.1
         version: 1.7.1
@@ -4817,11 +4811,6 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  better-react-mathjax@2.0.4-beta1:
-    resolution: {integrity: sha512-b166Edbt0YsPMsM8Hsdps5csxx0ObI87Ji0Ey2WLMD3yRRlJwwowO79l4/bTUzQmp5C7CUh76fj6drFZjAch4w==}
-    peerDependencies:
-      react: '>=16.8'
-
   bidi-js@1.0.3:
     resolution: {integrity: sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==}
 
@@ -8082,11 +8071,6 @@ packages:
     peerDependencies:
       '@types/react': '>=18'
       react: '>=18'
-
-  react-mathjax@1.0.1:
-    resolution: {integrity: sha512-+mjFcciZY3GQoqiQm3aRTyDjgBKuoaXpY+SCONX00jScuPpTKwnASeFMS5+pbTIzDf5zPT2Y9ZZfQ9U/d4CKtQ==}
-    peerDependencies:
-      react: ^16.3.0
 
   react-media-recorder@1.7.1:
     resolution: {integrity: sha512-OIYA4pfGR1HbRm4aB/mv2EswDSBanh+NbUyUEEeIaHVpmsF3AOr4T0te4CgIn5ijja85A/KI+JimVoiQ93dNgA==}
@@ -15544,11 +15528,6 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  better-react-mathjax@2.0.4-beta1(react@19.0.0):
-    dependencies:
-      mathjax-full: 3.2.2
-      react: 19.0.0
-
   bidi-js@1.0.3:
     dependencies:
       require-from-string: 2.0.2
@@ -19559,11 +19538,6 @@ snapshots:
       vfile: 6.0.3
     transitivePeerDependencies:
       - supports-color
-
-  react-mathjax@1.0.1(react@19.0.0):
-    dependencies:
-      load-script: 1.0.0
-      react: 19.0.0
 
   react-media-recorder@1.7.1:
     dependencies:

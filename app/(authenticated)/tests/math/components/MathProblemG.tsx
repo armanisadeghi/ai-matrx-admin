@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, JSX} from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
 import 'katex/dist/katex.min.css';
 import {BlockMath} from 'react-katex';
