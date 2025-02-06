@@ -7,7 +7,9 @@ import { supabase } from '@/utils/supabase/client';
 export class SocketManager {
     private static instance: SocketManager;
     private socket: any | null = null;
-    private dynamicEventListeners: Map<string, (data: any) => void> = new Map(); // Store listeners
+    private dynamicEventListeners: Map<string, (data: any) => void> = new Map();
+    private readonly PRODUCTION_URL = 'http://matrx.89.116.187.5.sslip.io';
+    private readonly LOCAL_URL = 'http://localhost:8000';
 
     private constructor() {}
 
@@ -18,33 +20,58 @@ export class SocketManager {
         return SocketManager.instance;
     }
 
-    async connect() {
-        if (!this.socket) {
-            if (typeof window !== 'undefined') {
-                try {
-                    const { io } = await import('socket.io-client');
+    private async getSocketAddress(): Promise<string> {
+        if (process.env.NEXT_PUBLIC_SOCKET_OVERRIDE) {
+            return process.env.NEXT_PUBLIC_SOCKET_OVERRIDE;
+        }
 
-                    const socketAddress = process.env.SOCKET_OVERRIDE || 'http://localhost:8000'; // 'http://matrx.89.116.187.5.sslip.io' // 'http://localhost:8000';
-                    const session = await supabase.auth.getSession();
+        if (process.env.NODE_ENV === 'production') {
+            return this.PRODUCTION_URL;
+        }
 
-                    // Connect directly to the required namespace
-                    this.socket = io(`${socketAddress}/UserSession`, {
-                        transports: ['websocket', 'polling'],
-                        withCredentials: true,
-                        auth: {
-                            token: session.data.session.access_token
-                          }
-                    });
+        try {
+            const testSocket = await fetch(this.LOCAL_URL, {
+                method: 'HEAD',
+                signal: AbortSignal.timeout(2000), // 2 second timeout
+            });
 
-                    this.registerEventHandlers();
-
-                    console.log(`SocketManager: Connected to ${socketAddress}/UserSession`);
-                } catch (error) {
-                    console.error('SocketManager: Error connecting socket', error);
-                }
-            } else {
-                console.log('SocketManager: window is undefined, skipping socket connection');
+            if (testSocket.ok) {
+                return this.LOCAL_URL;
             }
+        } catch (error) {
+            console.log('Local server not available, falling back to production URL');
+        }
+
+        return this.PRODUCTION_URL;
+    }
+
+    async connect() {
+        if (!this.socket && typeof window !== 'undefined') {
+            try {
+                const { io } = await import('socket.io-client');
+                const socketAddress = await this.getSocketAddress();
+                const session = await supabase.auth.getSession();
+
+                this.socket = io(`${socketAddress}/UserSession`, {
+                    transports: ['websocket', 'polling'],
+                    withCredentials: true,
+                    auth: {
+                        token: session.data.session.access_token,
+                    },
+                    timeout: 10000, // 10 second connection timeout
+                    reconnection: true,
+                    reconnectionAttempts: 5,
+                    reconnectionDelay: 1000,
+                });
+
+                this.registerEventHandlers();
+                console.log(`SocketManager: Connected to ${socketAddress}/UserSession`);
+            } catch (error) {
+                console.error('SocketManager: Error connecting socket', error);
+                throw new Error(`Failed to connect to socket: ${error.message}`);
+            }
+        } else if (typeof window === 'undefined') {
+            console.log('SocketManager: window is undefined, skipping socket connection');
         }
     }
 

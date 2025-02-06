@@ -541,7 +541,7 @@ export function isEntityData<TEntity extends EntityKeys>(input: unknown, fields:
 export const hasPrimaryKeyValues = (metadata: PrimaryKeyMetadata, record: any): boolean => {
     return metadata.fields.every((field) => {
         const hasValue = record[field] !== undefined;
-        if (!hasValue && process.env.NODE_ENVIRON === 'development') {
+        if (!hasValue && process.env.NODE_ENV === 'development') {
             console.warn(`Missing primary key value for field: ${field}`);
         }
         return hasValue;
@@ -555,7 +555,7 @@ export const createWhereClause = (metadata: PrimaryKeyMetadata, record: any): Re
         const frontendField = metadata.fields[index];
         const value = record[frontendField];
 
-        if (value === undefined && process.env.NODE_ENVIRON === 'development') {
+        if (value === undefined && process.env.NODE_ENV === 'development') {
             console.warn(`Missing value for where clause field: ${frontendField}`);
         }
 

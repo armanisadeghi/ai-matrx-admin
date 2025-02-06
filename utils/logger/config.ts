@@ -79,13 +79,13 @@ const resolvedLogLevel = resolveLogLevel(
 );
 
 export const logConfig = {
-    environment: process.env.NODE_ENVIRON || DEFAULT_VALUES.environment,
+    environment: process.env.NODE_ENV || DEFAULT_VALUES.environment,
     service: process.env.SERVICE_NAME || 'next-app',
-    debug: process.env.NODE_ENVIRON === 'development',
+    debug: process.env.NODE_ENV === 'development',
     logLevel: resolvedLogLevel.level, // Updated logLevel
     consoleLogLevel: resolvedConsoleLevel.level,
     detailLevel: process.env.DETAIL_LEVEL || DEFAULT_VALUES.detailLevel,
-    console: process.env.NODE_ENVIRON === 'development' && resolvedConsoleLevel.level !== 'none',
+    console: process.env.NODE_ENV === 'development' && resolvedConsoleLevel.level !== 'none',
     duplicateSuppressionInterval: DEFAULT_VALUES.duplicateSuppressionInterval,
     maxLogEntries: DEFAULT_VALUES.maxLogEntries,
     serverLogEndpoint: '/api/logs',

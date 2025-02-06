@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
-const baseUrl = process.env.NODE_ENVIRON === 'development'
+const baseUrl = process.env.NODE_ENV === 'development'
                 ? 'http://localhost:3000'
                 : 'http://aimatrx.com'
 

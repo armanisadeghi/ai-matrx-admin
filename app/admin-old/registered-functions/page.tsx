@@ -1,3 +1,5 @@
+'use client';
+
 // File location: @/app/registered-functions/hold-hold-page.tsx
 
 

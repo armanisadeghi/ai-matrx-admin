@@ -64,7 +64,7 @@ export async function saveJson({
 }: JsonFileParams): Promise<JsonFileResult> {
     try {
         const env = environment === 'auto'
-            ? process.env.NODE_ENVIRON as 'development' | 'production'
+            ? process.env.NODE_ENV as 'development' | 'production'
             : environment;
 
         const result = await fileHelpers.json.save(filename, jsonData, {

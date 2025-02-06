@@ -145,7 +145,7 @@ export async function listDirectoriesProd(manifestPath: string = DEFAULT_MANIFES
  * Universal directory listing function
  */
 export async function listDirectories(targetPath: string[]): Promise<DirectoryEntry[]> {
-    return process.env.NODE_ENVIRON === 'development'
+    return process.env.NODE_ENV === 'development'
            ? listDirectoriesDev(targetPath)
            : listDirectoriesProd();
 }
@@ -191,7 +191,7 @@ export async function saveFile(
         subDir = 'uploads',
         fullPath,
         encoding = 'utf-8',
-        environment = process.env.NODE_ENVIRON as 'development' | 'production'
+        environment = process.env.NODE_ENV as 'development' | 'production'
     } = options;
 
     if (!filename || !content) {
@@ -276,7 +276,7 @@ export async function readFile(
         subDir = 'uploads',
         fullPath,
         encoding = 'utf-8',
-        environment = process.env.NODE_ENVIRON as 'development' | 'production'
+        environment = process.env.NODE_ENV as 'development' | 'production'
     } = options;
 
     try {
