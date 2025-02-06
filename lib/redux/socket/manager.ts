@@ -1,6 +1,4 @@
 // lib/redux/socket/manager.ts
-
-import { EventChannel, eventChannel } from 'redux-saga';
 import { SagaCoordinator } from '@/lib/redux/sagas/SagaCoordinator';
 import { supabase } from '@/utils/supabase/client';
 
