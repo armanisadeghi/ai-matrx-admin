@@ -1,10 +1,6 @@
-// page.tsx
-import dynamic from 'next/dynamic'
+// app/enjoy/matrx-jump/jump-with-settings/page.tsx
+import GamePageClient from './GamePageClient'
 
-const GamePageClient = dynamic(() => import('./GamePageClient'), { 
-  ssr: false 
-})
-
-export default function GamePage() {
+export default function Page() {
   return <GamePageClient />
 }
