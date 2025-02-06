@@ -1,4 +1,5 @@
 // lib/redux/socket/manager.ts
+
 import { SagaCoordinator } from '@/lib/redux/sagas/SagaCoordinator';
 import { supabase } from '@/utils/supabase/client';
 
@@ -23,16 +24,19 @@ export class SocketManager {
             return process.env.NEXT_PUBLIC_SOCKET_OVERRIDE;
         }
 
+        // Production environment
         if (process.env.NODE_ENV === 'production') {
             return this.PRODUCTION_URL;
         }
 
+        // Development environment with fallback
         try {
-            const testSocket = await fetch(this.LOCAL_URL, {
+            // Test local connection
+            const testSocket = await fetch(this.LOCAL_URL, { 
                 method: 'HEAD',
-                signal: AbortSignal.timeout(2000),
+                signal: AbortSignal.timeout(2000) // 2 second timeout
             });
-
+            
             if (testSocket.ok) {
                 return this.LOCAL_URL;
             }
@@ -44,41 +48,38 @@ export class SocketManager {
     }
 
     async connect() {
-        if (!this.socket && typeof window !== 'undefined') {
-            try {
-                const { io } = await import('socket.io-client');
-                const socketAddress = await this.getSocketAddress();
-                const session = await supabase.auth.getSession();
+        if (!this.socket) {
+            if (typeof window !== 'undefined') {
+                try {
+                    const { io } = await import('socket.io-client');
+                    const socketAddress = await this.getSocketAddress();
+                    const session = await supabase.auth.getSession();
 
-                this.socket = io(socketAddress, {
-                    path: '/socket.io/',
-                    transports: ['polling', 'websocket'],  // Start with polling, then upgrade
-                    withCredentials: true,
-                    auth: {
-                        token: session.data.session.access_token,
-                    },
-                    timeout: 10000,
-                    reconnection: true,
-                    reconnectionAttempts: 5,
-                    reconnectionDelay: 1000,
-                    forceNew: true,
-                    autoConnect: true
-                });
+                    // Connect directly to the required namespace
+                    this.socket = io(`${socketAddress}/UserSession`, {
+                        transports: ['polling', 'websocket'],  // Changed order to try polling first
+                        withCredentials: true,
+                        auth: {
+                            token: session.data.session.access_token
+                        }
+                    });
 
-                this.socket.on('connect_error', (error: any) => {
-                    console.log('Connection Error:', error.message);
-                });
+                    // Add error handler
+                    this.socket.on('connect_error', (error: Error) => {
+                        console.error('Socket connection error:', error.message);
+                    });
 
-                this.registerEventHandlers();
-                console.log(`SocketManager: Connected to ${socketAddress}`);
-            } catch (error) {
-                console.error('SocketManager: Error connecting socket', error);
-                throw new Error(`Failed to connect to socket: ${error.message}`);
+                    this.registerEventHandlers();
+                    console.log(`SocketManager: Connected to ${socketAddress}/UserSession`);
+                } catch (error) {
+                    console.error('SocketManager: Error connecting socket', error);
+                }
+            } else {
+                console.log('SocketManager: window is undefined, skipping socket connection');
             }
-        } else if (typeof window === 'undefined') {
-            console.log('SocketManager: window is undefined, skipping socket connection');
         }
     }
+
 
     disconnect() {
         if (this.socket) {
