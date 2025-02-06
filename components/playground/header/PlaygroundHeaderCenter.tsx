@@ -25,8 +25,7 @@ const PlaygroundHeaderCenter = ({
     onNewRecipe = () => {},
     aiCockpitHook,
 }: PlaygroundHeaderCenterProps) => {
-    const [lastUsedRecipe, setLastUsedRecipe] = usePreferenceValue('playground', 'lastRecipeId');
-    const { saveCompiledRecipe, recipeVersion, activeRecipeMatrxId } = aiCockpitHook;
+    const { saveCompiledRecipe, recipeVersion, activeRecipeMatrxId, recipeRecord } = aiCockpitHook;
     const [version, setVersion] = useState(recipeVersion);
 
     useEffect(() => {
@@ -34,10 +33,6 @@ const PlaygroundHeaderCenter = ({
     }, [recipeVersion]);
 
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-
-    const handleRecipeChange = (record: QuickReferenceRecord) => {
-        setLastUsedRecipe(record.recordKey);
-    };
 
     const handleSaveCompiledRecipe = () => {
         saveCompiledRecipe();
@@ -69,7 +64,6 @@ const PlaygroundHeaderCenter = ({
                     <div className='min-w-[160px] max-w-[320px] w-full'>
                         <QuickRefSelect
                             entityKey='recipe'
-                            onRecordChange={handleRecipeChange}
                         />
                     </div>
                     <select

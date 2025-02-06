@@ -14,72 +14,135 @@ interface ProcessedLine {
 }
 
 export const processContentLines = (content: string): ProcessedLine[] => {
-    // Split on newlines but preserve the exact number of empty lines
-    const lines = content.split('\n');
-
-    let previousWasEmpty = false;  // Track consecutive empty lines
+    // First, protect all chip content
+    const chips: { start: number; end: number; content: string }[] = [];
+    let match;
     
-    return lines.map((line, index) => {
-        const trimmedLine = line.trim();
-        
-        // Handle empty lines
-        if (trimmedLine === '') {
-            // If this is an empty line, mark it as a true empty line
-            // but don't create additional ones
-            const result = {
-                segments: [],
-                isFirstLine: index === 0,
-                isEmpty: true,
-            };
-            previousWasEmpty = true;
-            return result;
+    MATRX_PATTERN.lastIndex = 0;
+    while ((match = MATRX_PATTERN.exec(content))) {
+        chips.push({
+            start: match.index,
+            end: match.index + match[0].length,
+            content: match[0]
+        });
+    }
+
+    const protectedRanges = chips.map(chip => ({
+        start: chip.start,
+        end: chip.end
+    }));
+
+    const isProtected = (index: number): boolean => {
+        return protectedRanges.some(range => 
+            index >= range.start && index < range.end
+        );
+    };
+
+    // Split content into first line and rest
+    let firstLineEnd = -1;
+    let searchIndex = 0;
+    
+    // Find the first unprotected newline
+    while (searchIndex < content.length) {
+        if (content[searchIndex] === '\n' && !isProtected(searchIndex)) {
+            firstLineEnd = searchIndex;
+            break;
+        }
+        searchIndex++;
+    }
+
+    // Handle case where there is no newline
+    if (firstLineEnd === -1) {
+        firstLineEnd = content.length;
+    }
+
+    // Get first line and remaining content
+    const firstLine = content.slice(0, firstLineEnd);
+    const remainingContent = firstLineEnd < content.length ? 
+        content.slice(firstLineEnd + 1) : '';
+
+    // Process remaining content for line breaks
+    const remainingLines: string[] = [];
+    if (remainingContent) {
+        let lastPos = 0;
+        searchIndex = 0;
+
+        while (searchIndex < remainingContent.length) {
+            if (remainingContent[searchIndex] === '\n' && !isProtected(searchIndex)) {
+                remainingLines.push(remainingContent.slice(lastPos, searchIndex));
+                lastPos = searchIndex + 1;
+            }
+            searchIndex++;
         }
 
-        // Non-empty line processing
-        previousWasEmpty = false;
+        // Add final line if exists
+        if (lastPos < remainingContent.length) {
+            remainingLines.push(remainingContent.slice(lastPos));
+        }
+    }
+
+    // Process all lines into segments
+    const processLineContent = (lineContent: string, isFirst: boolean): ProcessedLine => {
+        if (lineContent === '' || lineContent === '\n') {
+            return {
+                segments: [],
+                isFirstLine: isFirst,
+                isEmpty: true,
+            };
+        }
+
         const segments: LineSegment[] = [];
         let lastIndex = 0;
-        let match;
-
+        
         MATRX_PATTERN.lastIndex = 0;
-        while ((match = MATRX_PATTERN.exec(line))) {
+        while ((match = MATRX_PATTERN.exec(lineContent))) {
             if (match.index > lastIndex) {
                 segments.push({
                     type: 'text',
-                    content: line.slice(lastIndex, match.index),
+                    content: lineContent.slice(lastIndex, match.index),
                 });
             }
 
             segments.push({
                 type: 'chip',
                 content: match[0],
-                metadata: match[1],
+                metadata: match[1]
             });
 
             lastIndex = match.index + match[0].length;
         }
 
-        if (lastIndex < line.length) {
+        if (lastIndex < lineContent.length) {
             segments.push({
                 type: 'text',
-                content: line.slice(lastIndex),
+                content: lineContent.slice(lastIndex),
             });
         }
 
         return {
             segments,
-            isFirstLine: index === 0,
+            isFirstLine: isFirst,
             isEmpty: false,
         };
-    }).filter((line, index, array) => {
-        // Filter out consecutive empty lines
-        if (index > 0 && line.isEmpty && array[index - 1].isEmpty) {
-            return false;
-        }
-        return true;
-    });
-};
+    };
 
+    // Combine first line and remaining lines
+    const allProcessedLines = [
+        processLineContent(firstLine, true),
+        ...remainingLines.map((line, index) => processLineContent(line, false))
+    ];
+
+    // Handle trailing newline case
+    if (content.endsWith('\n') && !isProtected(content.length - 1)) {
+        allProcessedLines.push({
+            segments: [],
+            isFirstLine: false,
+            isEmpty: true,
+        });
+    }
+
+    return allProcessedLines;
+};
 
 export const createEmptyLine = (isFirstLine: boolean): HTMLElement => {
     const container = document.createElement(isFirstLine ? 'span' : 'div');

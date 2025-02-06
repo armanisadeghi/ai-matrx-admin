@@ -2,6 +2,7 @@
 
 import { EventChannel, eventChannel } from 'redux-saga';
 import { SagaCoordinator } from '@/lib/redux/sagas/SagaCoordinator';
+import { supabase } from '@/utils/supabase/client';
 
 export class SocketManager {
     private static instance: SocketManager;
@@ -23,12 +24,16 @@ export class SocketManager {
                 try {
                     const { io } = await import('socket.io-client');
 
-                    const socketAddress = process.env.SOCKET_OVERRIDE || 'http://matrx.89.116.187.5.sslip.io'; // 'http://matrx.89.116.187.5.sslip.io' // 'http://localhost:8000';
+                    const socketAddress = process.env.SOCKET_OVERRIDE || 'http://localhost:8000'; // 'http://matrx.89.116.187.5.sslip.io' // 'http://localhost:8000';
+                    const session = await supabase.auth.getSession();
 
                     // Connect directly to the required namespace
                     this.socket = io(`${socketAddress}/UserSession`, {
                         transports: ['websocket', 'polling'],
                         withCredentials: true,
+                        auth: {
+                            token: session.data.session.access_token
+                          }
                     });
 
                     this.registerEventHandlers();

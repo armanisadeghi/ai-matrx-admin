@@ -66,7 +66,7 @@ export interface TextStyle {
 export interface EditorInstanceState {
     ref: RefObject<HTMLDivElement>;
     state: EditorState;
-    plainTextContent: string; // Regular text with chip placeholders {id}!
+    plainTextContent: string; // Regular text with chip placeholders MATRX_PATTERN = /<<<MATRX_START>>>(.*?)<<<MATRX_END>>>/gs;
     fullTextContent: string; // Text with actual chip values inserted
     chipData: ChipData[];
     brokerAssociations: Map<string, Set<string>>; // chipId -> Set of brokerIds

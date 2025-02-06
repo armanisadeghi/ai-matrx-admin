@@ -63,8 +63,6 @@ export const getDisplayMode = (contentMode: ContentMode): DisplayMode => {
             return DisplayMode.DEFAULT_VALUE;
         case 'recordKey':
             return DisplayMode.RECORD_KEY;
-        case 'status':
-            return DisplayMode.STATUS;
         default:
             return DisplayMode.ENCODED;
     }
