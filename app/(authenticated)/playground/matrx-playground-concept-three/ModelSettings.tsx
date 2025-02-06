@@ -1,8 +1,9 @@
 import React from "react";
-import ModelSelectionWithinfo from "./ModelSelectionWithinfo";
+
 import { Button } from "@/components/ui/button";
 import { Save, Code, SquarePlus } from "lucide-react";
 import PromptSettings from "./PromptSettings";
+import ModelSelectionWithinfo from "./ModelSelectionWithinfo";
 
 const ModelSettings = ({ initialSettings }) => {
   return (

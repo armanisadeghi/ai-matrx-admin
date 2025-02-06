@@ -289,22 +289,22 @@ export const selectorsConfig = [
         isObjectArgs: false,
         conductTest: false
     },
-    {
-        category: "Direct State Access",
-        name: "selectFields",
-        selectorFn: schemaSelectors.selectFields,
-        args: [],
-        isObjectArgs: false,
-        conductTest: false
-    },
-    {
-        category: "Direct State Access",
-        name: "selectFieldsByEntity",
-        selectorFn: schemaSelectors.selectFieldsByEntity,
-        args: [],
-        isObjectArgs: false,
-        conductTest: true
-    },
+    // {
+    //     category: "Direct State Access",
+    //     name: "selectFields",
+    //     selectorFn: schemaSelectors.selectFields,
+    //     args: [],
+    //     isObjectArgs: false,
+    //     conductTest: false
+    // },
+    // {
+    //     category: "Direct State Access",
+    //     name: "selectFieldsByEntity",
+    //     selectorFn: schemaSelectors.selectFieldsByEntity,
+    //     args: [],
+    //     isObjectArgs: false,
+    //     conductTest: true
+    // },
     {
         category: "Direct State Access",
         name: "selectIsInitialized",

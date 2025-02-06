@@ -88,7 +88,7 @@ export async function saveFile({
 }: FileParams): Promise<FileResult> {
     try {
         const env = environment === 'auto'
-            ? process.env.NODE_ENV as 'development' | 'production'
+            ? process.env.NODE_ENVIRON as 'development' | 'production'
             : environment;
 
         const helper = content instanceof Buffer

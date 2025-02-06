@@ -268,7 +268,7 @@ function createPrimaryKeyMetadata<TEntity extends EntityKeys>(
     });
 
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENVIRON === 'development') {
         entityLogger.log('debug', 'createPrimaryKeyMetadata - Primary Key Configuration', {
             fields: pkMetadata.fields,
             databaseFields: pkMetadata.database_fields,

@@ -175,7 +175,7 @@ export const createSmartCellRenderer = (
 
             if (value === null || value === undefined) return '';
             if (!metadata.isNative && metadata.databaseTable) {
-                if (process.env.NODE_ENV === 'development') {
+                if (process.env.NODE_ENVIRON === 'development') {
                     console.log('Non-native field:', fieldKey, value);
                 }
                 return handleNonNativeField(value, metadata.databaseTable);

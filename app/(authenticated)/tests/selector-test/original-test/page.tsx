@@ -193,8 +193,6 @@ const SelectorTestPage: React.FC = () => {
     const schema = useAppSelector(schemaSelectors.selectSchema);
     const entityNames = useAppSelector(schemaSelectors.selectEntityNames);
     const entities = useAppSelector(schemaSelectors.selectEntities);
-    const fields = useAppSelector(schemaSelectors.selectFields);
-    const fieldsByEntity = useAppSelector(schemaSelectors.selectFieldsByEntity);
     const isInitialized = useAppSelector(schemaSelectors.selectIsInitialized);
 
     // Direct Conversion Map Selectors
@@ -241,8 +239,6 @@ const SelectorTestPage: React.FC = () => {
     const canonicalConversion = useAppSelector((state) => schemaSelectors.selectCanonicalConversion(state, { entityName: entityKey, data: sampleDataTwo }));
 
     // Query Conversion Selectors
-    const queryDatabaseConversion = useAppSelector((state) => schemaSelectors.selectQueryDatabaseConversion(state, { entityName: entityKey, options: queryOptions }));
-    const payloadOptionsDatabaseConversion = useAppSelector((state) => schemaSelectors.selectPayloadOptionsDatabaseConversion(state, { entityName: entityKey, options: queryOptions }));
     const payloadObjectKeyReplacement = useAppSelector((state) => schemaSelectors.selectReplaceKeysInObject(state,dataObject, sampleKeyMapping));
     const expandedPayloadOptionsDatabaseConversion = useAppSelector((state) => schemaSelectors.selectUnifiedQueryDatabaseConversion(state, { entityName: entityKey, options: unifiedQuery }));
 
@@ -257,8 +253,6 @@ const SelectorTestPage: React.FC = () => {
         { category: "Direct State Access", name: "selectSchema", props: "None", result: schema },
         { category: "Direct State Access", name: "selectEntityNames", props: "None", result: entityNames },
         { category: "Direct State Access", name: "selectEntities", props: "None", result: entities },
-        { category: "Direct State Access", name: "selectFields", props: "None", result: fields },
-        { category: "Direct State Access", name: "selectFieldsByEntity", props: "None", result: fieldsByEntity },
         { category: "Direct State Access", name: "selectIsInitialized", props: "None", result: isInitialized },
 
         // Direct Conversion Map Selectors
@@ -308,8 +302,8 @@ const SelectorTestPage: React.FC = () => {
         { category: "Conversion", name: "selectCanonicalConversion", props: JSON.stringify({ entityName: entityKey, data: sampleDataTwo }, null, 2), result: canonicalConversion },
 
         // Query Conversion Selectors
-        { category: "Query Conversion", name: "selectQueryDatabaseConversion", props: JSON.stringify({ entityName: entityKey, options: {} }, null, 2), result: queryDatabaseConversion },
-        { category: "Query Conversion", name: "selectPayloadOptionsDatabaseConversion", props: JSON.stringify({ entityName: entityKey, options: {} }, null, 2), result: payloadOptionsDatabaseConversion },
+        // { category: "Query Conversion", name: "selectQueryDatabaseConversion", props: JSON.stringify({ entityName: entityKey, options: {} }, null, 2), result: queryDatabaseConversion },
+        // { category: "Query Conversion", name: "selectPayloadOptionsDatabaseConversion", props: JSON.stringify({ entityName: entityKey, options: {} }, null, 2), result: payloadOptionsDatabaseConversion },
         { category: "Query Conversion", name: "selectUnifiedQueryDatabaseConversion", props: JSON.stringify({ entityName: entityKey, options: {} }, null, 2), result: expandedPayloadOptionsDatabaseConversion },
         { category: "Key Replacement", name: "selectReplaceKeysInObject", props: JSON.stringify({ data: {}, keyMapping: {} }, null, 2), result: payloadObjectKeyReplacement }, // Replace {} with actual data and key mapping
     ];

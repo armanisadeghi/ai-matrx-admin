@@ -44,7 +44,7 @@ export const makeStore = (initialState: any) => {
         socketMiddleware,
         storageMiddleware
       ),
-    devTools: process.env.NODE_ENV !== "production",
+    devTools: process.env.NODE_ENVIRON !== "production",
   });
 
   const rootSagaInstance = createRootSaga(initialState.globalCache.entityNames);

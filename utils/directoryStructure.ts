@@ -133,7 +133,7 @@ export async function generateDirectoryManifest() {
  * Universal directory fetching function
  */
 export async function getTestDirectories(): Promise<TestDirectory[]> {
-    return process.env.NODE_ENV === 'development'
+    return process.env.NODE_ENVIRON === 'development'
            ? getTestDirectoriesDev()
            : getTestDirectoriesProd();
 }

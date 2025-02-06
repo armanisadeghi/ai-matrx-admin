@@ -58,7 +58,7 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
                             label={tab.resultLabel}
                             streamingText={streamingResponses[index] || ''}
                             onDelete={deleteSettings}
-                            debug={process.env.NODE_ENV === 'development'}
+                            debug={process.env.NODE_ENVIRON === 'development'}
                             onDebugClick={(id) => console.log('Debug clicked:', id)}
                         />
                     ))}
