@@ -30,7 +30,7 @@ export class SocketManager {
         try {
             const testSocket = await fetch(this.LOCAL_URL, {
                 method: 'HEAD',
-                signal: AbortSignal.timeout(2000), // 2 second timeout
+                signal: AbortSignal.timeout(2000),
             });
 
             if (testSocket.ok) {
@@ -50,20 +50,27 @@ export class SocketManager {
                 const socketAddress = await this.getSocketAddress();
                 const session = await supabase.auth.getSession();
 
-                this.socket = io(`${socketAddress}/UserSession`, {
-                    transports: ['websocket', 'polling'],
+                this.socket = io(socketAddress, {
+                    path: '/socket.io/',
+                    transports: ['polling', 'websocket'],  // Start with polling, then upgrade
                     withCredentials: true,
                     auth: {
                         token: session.data.session.access_token,
                     },
-                    timeout: 10000, // 10 second connection timeout
+                    timeout: 10000,
                     reconnection: true,
                     reconnectionAttempts: 5,
                     reconnectionDelay: 1000,
+                    forceNew: true,
+                    autoConnect: true
+                });
+
+                this.socket.on('connect_error', (error: any) => {
+                    console.log('Connection Error:', error.message);
                 });
 
                 this.registerEventHandlers();
-                console.log(`SocketManager: Connected to ${socketAddress}/UserSession`);
+                console.log(`SocketManager: Connected to ${socketAddress}`);
             } catch (error) {
                 console.error('SocketManager: Error connecting socket', error);
                 throw new Error(`Failed to connect to socket: ${error.message}`);
