@@ -19,8 +19,8 @@ export type Conversation = {
     title: string;
     messages: Message[];
     timestamp: number;
-    structuredData: StructuredResponse[];
-    audioFeedback: AudioFeedbackItem[];
+    structuredData?: StructuredResponse[];
+    audioFeedback?: AudioFeedbackItem[];
 };
 
 export type ProcessState = {

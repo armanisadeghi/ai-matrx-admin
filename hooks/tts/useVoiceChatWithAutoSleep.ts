@@ -255,7 +255,7 @@ export const useVoiceChatWithAutoSleep = (initialAutoSleepConfig?: Partial<AutoS
                 input,
                 inputType: data instanceof Blob ? 'audio' : 'text',
                 responseType: 'audio',
-                assistant: selectedAssistant.value,
+                assistant: selectedAssistant.id,
                 previousMessages,
             });
 
@@ -310,7 +310,7 @@ export const useVoiceChatWithAutoSleep = (initialAutoSleepConfig?: Partial<AutoS
             });
             setActivityTiming(prev => ({...prev, isActive: false}));
         }
-    }, [isAsleep, wakeUp, currentConversationId, conversations, selectedAssistant.value, handlePlaybackComplete, addMessage]);
+    }, [isAsleep, wakeUp, currentConversationId, conversations, selectedAssistant.id, handlePlaybackComplete, addMessage]);
 
     const handleSubmit = useCallback(() => {
         if (!input.trim()) return;
