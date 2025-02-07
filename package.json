@@ -32,6 +32,7 @@
     "@monaco-editor/react": "latest",
     "@mux/mux-player-react": "^3.2.0",
     "@mynaui/icons-react": "latest",
+    "@next/bundle-analyzer": "^15.1.6",
     "@nextui-org/react": "latest",
     "@nextui-org/theme": "latest",
     "@radix-ui/react-accessible-icon": "latest",
