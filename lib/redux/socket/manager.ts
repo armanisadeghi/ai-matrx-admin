@@ -7,7 +7,7 @@ export class SocketManager {
     private static instance: SocketManager;
     private socket: any | null = null;
     private dynamicEventListeners: Map<string, (data: any) => void> = new Map();
-    private readonly PRODUCTION_URL = 'https://server.app.matrxserver.com/' //'http://matrx.89.116.187.5.sslip.io';
+    private readonly PRODUCTION_URL = 'https://server.app.matrxserver.com'
     private readonly LOCAL_URL = 'http://localhost:8000';
 
     private constructor() {}
@@ -31,7 +31,7 @@ export class SocketManager {
         try {
             const testSocket = await fetch(this.LOCAL_URL, { 
                 method: 'HEAD',
-                signal: AbortSignal.timeout(2000) // 2 second timeout
+                signal: AbortSignal.timeout(2000)
             });
             
             if (testSocket.ok) {
@@ -54,7 +54,7 @@ export class SocketManager {
 
                     // Connect directly to the required namespace
                     this.socket = io(`${socketAddress}/UserSession`, {
-                        transports: ['polling', 'websocket'],  // Changed order to try polling first
+                        transports: ['polling', 'websocket'],
                         withCredentials: true,
                         auth: {
                             token: session.data.session.access_token
