@@ -36,7 +36,6 @@ const nextConfig = {
     },
 };
 
-// Commented out to avoid copying WASM and ONNX files to see if it resolves build issues and memory issues.
-// copyFiles(); 
+copyFiles();
 
 module.exports = nextConfig;
