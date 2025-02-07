@@ -7,7 +7,7 @@ export class SocketManager {
     private static instance: SocketManager;
     private socket: any | null = null;
     private dynamicEventListeners: Map<string, (data: any) => void> = new Map();
-    private readonly PRODUCTION_URL = 'http://matrx.89.116.187.5.sslip.io';
+    private readonly PRODUCTION_URL = 'https://server.app.matrxserver.com/' //'http://matrx.89.116.187.5.sslip.io';
     private readonly LOCAL_URL = 'http://localhost:8000';
 
     private constructor() {}
@@ -24,14 +24,11 @@ export class SocketManager {
             return process.env.NEXT_PUBLIC_SOCKET_OVERRIDE;
         }
 
-        // Production environment
         if (process.env.NODE_ENV === 'production') {
             return this.PRODUCTION_URL;
         }
 
-        // Development environment with fallback
         try {
-            // Test local connection
             const testSocket = await fetch(this.LOCAL_URL, { 
                 method: 'HEAD',
                 signal: AbortSignal.timeout(2000) // 2 second timeout
