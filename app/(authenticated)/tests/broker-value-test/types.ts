@@ -1,85 +1,44 @@
-export type ComponentConfig = {
-    // Base config all components might use
-    styles?: {
-      container?: string;
-      label?: string;
-      input?: string;
-      description?: string;
-    };
-    validation?: {
-      required?: boolean;
-      pattern?: string;
-      min?: number;
-      max?: number;
-      minLength?: number;
-      maxLength?: number;
-      custom?: (value: any) => boolean;
-    };
-  } & (
-    // Component-specific configs using discriminated union
-    | {
-        component: 'select';
-        options: Array<{ label: string; value: string | number }>;
-        isMulti?: boolean;
-        isClearable?: boolean;
-      }
-    | {
-        component: 'slider';
-        min: number;
-        max: number;
-        step: number;
-        showMarks?: boolean;
-      }
-    | {
-        component: 'number';
-        min?: number;
-        max?: number;
-        step?: number;
-        allowDecimal?: boolean;
-      }
-    | {
-        component: 'textarea';
-        rows?: number;
-        maxRows?: number;
-        resizable?: boolean;
-      }
-    | {
-        component: 'radio';
-        options: Array<{ label: string; value: string | number }>;
-        layout?: 'horizontal' | 'vertical';
-      }
-    | {
-        component: 'checkbox';
-        label?: string;
-        indeterminate?: boolean;
-      }
-    | {
-        component: 'switch';
-        label?: string;
-        icons?: {
-          checked?: React.ReactNode;
-          unchecked?: React.ReactNode;
-        };
-      }
-    | {
-        component: 'input';
-        type?: 'text' | 'email' | 'password' | 'url' | 'tel';
-        placeholder?: string;
-      }
-  );
-  
+// Core types matching our database schema
+type DataType = 'list' | 'url' | 'str' | 'bool' | 'dict' | 'float' | 'int';
+type DefaultComponent = 'BrokerInput' | 'BrokerTextarea' | 'BrokerSelect' | 'BrokerSlider' | 'BrokerSwitch' | 'BrokerCheckbox' | 'BrokerRadio';
+
 export type DataBroker = {
     id: string;
     name: string;
-    description: string;
-    dataType: string;
-    config: ComponentConfig;
-  };
+    defaultValue: string;
+    dataType: DataType;
+    inputComponent: string;  // FK to DataInputComponent.id
+    outputComponent: string; // FK to DataOutputComponent.id
+};
 
-  export type BrokerValue = {
+export type DataInputComponent = {
     id: string;
-    data_broker: string; // FK to DataBroker.id
-    data: {
-      value: any;  // Typed based on DataBroker.dataType
-    };
-  };
+    name: string;
+    description: string | null;
+    options: any[] | null;
+    include_other: boolean | null;
+    min: number | null;
+    max: number | null;
+    step: number | null;
+    min_rows: number | null;
+    max_rows: number | null;
+    acceptable_filetypes: string[] | null;
+    src: string | null;
+    classes: string | null;
+    color_overrides: Record<string, string> | null;
+    additional_params: Record<string, any> | null;
+    sub_component: string | null;
+    component: DefaultComponent;
+};
+
+export type BrokerValue = {
+  id: string; // UUID (Primary Key)
+  user_id: string | null; // UUID (Foreign Key referencing auth.users)
+  data_broker: string | null; // UUID (Foreign Key referencing data_broker)
+  data: Record<string, unknown> | null; // JSONB field, default {"value": null}
+  category: string | null; // VARCHAR (nullable)
+  sub_category: string | null; // VARCHAR (nullable)
+  tags: string[] | null; // Array of text
+  comments: string | null; // Nullable text
+  created_at: string; // TIMESTAMP WITH TIME ZONE (auto-generated)
+};

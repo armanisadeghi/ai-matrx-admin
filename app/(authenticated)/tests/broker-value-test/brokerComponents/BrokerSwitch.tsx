@@ -2,29 +2,49 @@ import { Switch, Label } from "@/components/ui";
 import { withBrokerInput } from "../components/withBrokerInput";
 import { cn } from "@/utils";
 
-const BrokerSwitch = withBrokerInput(({ 
-    value, 
-    onChange, 
-    name, 
-    description, 
-    config 
-  }) => {
-    if (config.component !== 'switch') throw new Error('Invalid config');
+export const BrokerSwitch = withBrokerInput(({ 
+  value, 
+  onChange, 
+  broker, 
+  inputComponent 
+}) => {
+  const labelPosition = inputComponent.additional_params?.labelPosition || 'left';
   
-    return (
-      <div className="flex items-center justify-between">
-        <div>
-          <Label className={config.styles?.label}>{name}</Label>
-          <p className={cn("text-sm text-muted-foreground", config.styles?.description)}>
-            {description}
-          </p>
-        </div>
-        <Switch
-          checked={value ?? false}
+  const switchElement = (
+      <Switch
+          checked={value === true || value === 'true'}
           onCheckedChange={onChange}
-          className={config.styles?.input}
-        />
+          className={inputComponent.classes}
+      />
+  );
+
+  return (
+      <div className="flex items-center justify-between gap-4">
+          {labelPosition === 'left' ? (
+              <>
+                  <div className="flex-1">
+                      <Label>{inputComponent.name}</Label>
+                      {inputComponent.description && (
+                          <p className="text-sm text-muted-foreground">
+                              {inputComponent.description}
+                          </p>
+                      )}
+                  </div>
+                  {switchElement}
+              </>
+          ) : (
+              <>
+                  {switchElement}
+                  <div className="flex-1">
+                      <Label>{inputComponent.name}</Label>
+                      {inputComponent.description && (
+                          <p className="text-sm text-muted-foreground">
+                              {inputComponent.description}
+                          </p>
+                      )}
+                  </div>
+              </>
+          )}
       </div>
-    );
-  });
-  
+  );
+});
