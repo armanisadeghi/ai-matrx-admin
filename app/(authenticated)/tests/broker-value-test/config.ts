@@ -40,14 +40,14 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Single Section Test Three',
+        path: 'single-section-test-three',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Single Section Test Two',
+        path: 'single-section-test-two',
         relative: true,
         description: ''
     },

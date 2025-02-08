@@ -34,6 +34,9 @@ export function createUtilities({ addUtilities, theme }: any) {
                 ${theme('backgroundImage.noise-texture')}
             `,
             backgroundBlendMode: 'normal, soft-light',
+        },
+        '.bg-gradient-radial': {
+            backgroundImage: 'radial-gradient(var(--tw-gradient-stops))'
         }
     };
 

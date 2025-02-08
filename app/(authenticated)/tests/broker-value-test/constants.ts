@@ -2,6 +2,8 @@ import { BrokerValue, DataBroker, DataInputComponent } from './types';
 
 export type MockStores = {
     brokers: Record<string, DataBroker>;
+    brokers_two: Record<string, DataBroker>;
+    brokers_three: Record<string, DataBroker>;
     inputComponents: Record<string, DataInputComponent>;
     brokerValues: Map<string, BrokerValue>;
 };
@@ -23,6 +25,38 @@ export const mockData: MockStores = {
             dataType: 'float',
             inputComponent: 'volume-slider',
             outputComponent: 'volume-display',
+        },
+        'user.skill': {
+            id: 'user.skill',
+            name: 'Primary Skill',
+            defaultValue: 'dev',
+            dataType: 'str',
+            inputComponent: 'skill-radio',
+            outputComponent: 'text-display',
+        },
+        'recipe.tags': {
+            id: 'recipe.tags',
+            name: 'Recipe Tags',
+            defaultValue: '',
+            dataType: 'dict',
+            inputComponent: 'recipe-tags',
+            outputComponent: 'tag-display',
+        },
+        'brand.accent-color': {
+            id: 'brand.accent-color',
+            name: 'Brand Accent Color',
+            defaultValue: 'blue',
+            dataType: 'str',
+            inputComponent: 'tailwind-color-picker',
+            outputComponent: 'color-display',
+        },
+        'brand.custom-color': {
+            id: 'brand.custom-color',
+            name: 'Custom Brand Color',
+            defaultValue: '#4F46E5',
+            dataType: 'str',
+            inputComponent: 'hex-color-picker',
+            outputComponent: 'color-display',
         },
         'notifications.enabled': {
             id: 'notifications.enabled',
@@ -152,6 +186,24 @@ export const mockData: MockStores = {
             inputComponent: 'experience-radio',
             outputComponent: 'text-display',
         },
+    },
+    brokers_two: {
+        'theme.selection': {
+            id: 'theme.selection',
+            name: 'Theme Selection',
+            defaultValue: 'system',
+            dataType: 'str',
+            inputComponent: 'theme-select',
+            outputComponent: 'theme-display',
+        },
+        'system.volume': {
+            id: 'system.volume',
+            name: 'System Volume',
+            defaultValue: '50',
+            dataType: 'float',
+            inputComponent: 'volume-slider',
+            outputComponent: 'volume-display',
+        },
         'user.skill': {
             id: 'user.skill',
             name: 'Primary Skill',
@@ -161,8 +213,115 @@ export const mockData: MockStores = {
             outputComponent: 'text-display',
         },
     },
+    brokers_three: {
+        'notifications.enabled': {
+            id: 'notifications.enabled',
+            name: 'Notifications',
+            defaultValue: 'false',
+            dataType: 'bool',
+            inputComponent: 'notif-switch',
+            outputComponent: 'status-display',
+        },
+        'user.email': {
+            id: 'user.email',
+            name: 'User Email',
+            defaultValue: '',
+            dataType: 'str',
+            inputComponent: 'email-input',
+            outputComponent: 'text-display',
+        },
+        'language.selection': {
+            id: 'language.selection',
+            name: 'Language Selection',
+            defaultValue: 'en',
+            dataType: 'str',
+            inputComponent: 'lang-select',
+            outputComponent: 'lang-display',
+        },
+        'music.volume': {
+            id: 'music.volume',
+            name: 'Music Volume',
+            defaultValue: '70',
+            dataType: 'float',
+            inputComponent: 'music-slider',
+            outputComponent: 'volume-display',
+        },
+        'dark.mode': {
+            id: 'dark.mode',
+            name: 'Dark Mode',
+            defaultValue: 'false',
+            dataType: 'bool',
+            inputComponent: 'dark-switch',
+            outputComponent: 'mode-display',
+        },
+        'user.name': {
+            id: 'user.name',
+            name: 'Username',
+            defaultValue: '',
+            dataType: 'str',
+            inputComponent: 'name-input',
+            outputComponent: 'text-display',
+        },
+        'user.bio': {
+            id: 'user.bio',
+            name: 'User Bio',
+            defaultValue: '',
+            dataType: 'str',
+            inputComponent: 'bio-textarea',
+            outputComponent: 'text-display',
+        },
+        'feedback.comments': {
+            id: 'feedback.comments',
+            name: 'Feedback Comments',
+            defaultValue: '',
+            dataType: 'str',
+            inputComponent: 'feedback-textarea',
+            outputComponent: 'text-display',
+        },
+        'system.quantity': {
+            id: 'system.quantity',
+            name: 'Item Quantity',
+            defaultValue: '1',
+            dataType: 'int',
+            inputComponent: 'quantity-picker',
+            outputComponent: 'number-display',
+        },
+        'system.age': {
+            id: 'system.age',
+            name: 'User Age',
+            defaultValue: '18',
+            dataType: 'int',
+            inputComponent: 'age-picker',
+            outputComponent: 'number-display',
+        },
+    },
 
     inputComponents: {
+        'tailwind-color-picker': {
+            id: 'tailwind-color-picker',
+            name: 'Tailwind Color Selection',
+            description: 'Choose from our predefined brand color palette',
+            placeholder: 'Select a color...',
+            component: 'BrokerTailwindColorPicker',
+        },
+        'hex-color-picker': {
+            id: 'hex-color-picker',
+            name: 'Custom Color Picker',
+            description: 'Select any custom color using the color picker',
+            placeholder: 'Choose a color...',
+            component: 'BrokerColorPicker',
+            additionalParams: {
+                defaultColor: '#4F46E5',
+            },
+        },
+
+        'recipe-tags': {
+            id: 'recipe-tags',
+            name: 'Tag Entry',
+            description: 'Enter tags for your recipe. Tags are how you and others can find your recipe and you can use tags to group similar recipes together.',
+            placeholder: 'Enter Tags...',
+            component: 'BrokerTextArrayInput',
+        },
         'theme-select': {
             id: 'theme-select',
             name: 'Theme Selector',

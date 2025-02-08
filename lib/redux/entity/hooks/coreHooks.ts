@@ -26,6 +26,7 @@ export const useEntityCore = (entityKey: EntityKeys) => {
 export const useEntityTools = (entityKey: EntityKeys) => {
     const store = useAppStore();
     const metadata = getEntityMetadata(entityKey);
+    if (!metadata) { return null; }
     const pkMeta = metadata?.primaryKeyMetadata;
     const pkType = pkMeta?.type;
     const pkFields = pkMeta?.fields || [];

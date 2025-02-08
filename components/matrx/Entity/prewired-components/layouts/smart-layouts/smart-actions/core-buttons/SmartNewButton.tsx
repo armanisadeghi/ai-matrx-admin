@@ -3,15 +3,15 @@ import {useCallback} from "react";
 import SmartButtonBase from "./SmartButtonBase";
 import {SmartButtonProps} from "../types";
 import {Plus} from "lucide-react";
-import {useAppSelector, useEntityTools} from "@/lib/redux";
+import {useAppDispatch, useAppSelector, useEntityTools} from "@/lib/redux";
 
 export const SmartNewButton = (
     {
         entityKey,
         size = 'default'
     }: SmartButtonProps) => {
-
-    const { actions, selectors, dispatch, store } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { actions, selectors, store } = useEntityTools(entityKey);
     const operationMode = useAppSelector(selectors.selectOperationMode);
     const hasUnsavedChanges = useAppSelector(selectors.selectHasUnsavedChanges);
     const isLoading = useAppSelector(selectors.selectIsLoading);
