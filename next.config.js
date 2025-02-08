@@ -3,6 +3,10 @@ const { remotePatterns } = require('./utils/next-config/imageConfig');
 const { configureWebpack } = require('./utils/next-config/webpackConfig');
 const copyFiles = require('./utils/next-config/copyFiles');
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     experimental: {
@@ -38,4 +42,4 @@ const nextConfig = {
 
 copyFiles();
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);
