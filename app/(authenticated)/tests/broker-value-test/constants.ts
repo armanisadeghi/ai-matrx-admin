@@ -169,7 +169,7 @@ export const mockData: MockStores = {
             dataType: 'list',
             inputComponent: 'skills-checkbox',
             outputComponent: 'list-display',
-        },    
+        },
         'user.preference': {
             id: 'user.preference',
             name: 'Contact Preference',
@@ -210,6 +210,14 @@ export const mockData: MockStores = {
             defaultValue: 'dev',
             dataType: 'str',
             inputComponent: 'skill-radio',
+            outputComponent: 'text-display',
+        },
+        'feedback.comments': {
+            id: 'feedback.comments',
+            name: 'Feedback Comments',
+            defaultValue: '',
+            dataType: 'str',
+            inputComponent: 'feedback-textarea',
             outputComponent: 'text-display',
         },
     },
@@ -532,7 +540,7 @@ export const mockData: MockStores = {
             ],
             includeOther: true,
         },
-    
+
         'contact-radio': {
             id: 'contact-radio',
             name: 'Contact Method',
