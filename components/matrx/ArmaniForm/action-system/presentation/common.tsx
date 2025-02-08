@@ -6,7 +6,7 @@ import {
 } from "@/components/ui";
 import React from "react";
 import {PresentationConfig, PresentationControls} from "./types";
-import cn from "classnames";
+import { cn } from '@/utils';
 import {HelpPanel} from "@/components/matrx/ArmaniForm/field-components/help-text/HelpPanel";
 
 export const defaultConfig: PresentationConfig = {

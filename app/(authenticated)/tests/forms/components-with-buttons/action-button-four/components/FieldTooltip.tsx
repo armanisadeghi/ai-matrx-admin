@@ -2,7 +2,7 @@
 import React from 'react';
 import { InfoIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
-import cn from 'classnames';
+import { cn } from '@/utils';
 
 interface FieldTooltipProps {
     description: string;

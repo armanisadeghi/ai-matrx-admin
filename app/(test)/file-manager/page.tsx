@@ -11,8 +11,6 @@ export default function FileManagerPage() {
             <div className="min-h-screen bg-background">
                 <FileManager
                     defaultBucket="any-file"
-                    showDebugger={true}
-                    maxFileSize={1024 * 1024 * 50} // 50MB
                 />
             </div>
         </FileSystemProvider>

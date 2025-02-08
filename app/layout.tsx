@@ -63,30 +63,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             {children}
             <Toaster />
 
-        {/* Optional: Add a MutationObserver script to remove LastPass elements */}
-        <script
-            dangerouslySetInnerHTML={{
-                __html: `
-                            if (typeof window !== 'undefined') {
-                                const observer = new MutationObserver((mutations) => {
-                                    mutations.forEach((mutation) => {
-                                        mutation.addedNodes.forEach((node) => {
-                                            if (node.nodeType === 1 && 
-                                                (node as Element).getAttribute('data-lastpass-root')) {
-                                                node.remove();
-                                            }
-                                        });
-                                    });
-                                });
-                                
-                                observer.observe(document.body, {
-                                    childList: true,
-                                    subtree: true
-                                });
-                            }
-                        `
-            }}
-        />
         </body>
         </html>
     );
