@@ -1,20 +1,38 @@
 import { Switch, Label } from "@/components/ui";
-import { withBrokerInput } from "../components/withBrokerInput";
-import { cn } from "@/utils";
+import { withBrokerInput, withBrokerCustomInput } from "../components/withBrokerInput";
+
 
 export const BrokerSwitch = withBrokerInput(({ 
+  value, 
+  onChange, 
+  inputComponent 
+}) => {
+  
+  return (
+      <div className="flex items-center gap-2">
+          <Switch
+              checked={value === true || value === 'true'}
+              onCheckedChange={onChange}
+          />
+      </div>
+  );
+});
+
+
+
+export const BrokerCustomSwitch = withBrokerCustomInput(({ 
   value, 
   onChange, 
   broker, 
   inputComponent 
 }) => {
-  const labelPosition = inputComponent.additional_params?.labelPosition || 'left';
+  const labelPosition = inputComponent.additionalParams?.labelPosition || 'left';
   
   const switchElement = (
       <Switch
           checked={value === true || value === 'true'}
           onCheckedChange={onChange}
-          className={inputComponent.classes}
+          className={inputComponent.componentClassName}
       />
   );
 

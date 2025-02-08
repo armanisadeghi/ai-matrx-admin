@@ -8,7 +8,9 @@ import { BrokerInput } from "../brokerComponents/BrokerInput";
 import { BrokerSelect } from "../brokerComponents/BrokerSelect";
 import { BrokerSlider } from "../brokerComponents/BrokerSlider";
 import { BrokerSwitch } from "../brokerComponents/BrokerSwitch";
+import { BrokerTextarea } from "../brokerComponents/BrokerTextarea";
 import { mockData } from "../constants";
+import BrokerTextareaGrow from '../brokerComponents/BrokerTextareaGrow';
 
 export const BrokerSamplePage = () => {
     const [brokerValues, setBrokerValues] = useState<Record<string, any>>({});
@@ -32,15 +34,14 @@ export const BrokerSamplePage = () => {
     }, []);
 
     return (
-        <div className="container mx-auto py-6 space-y-6">
-            <Card>
+        <div className="pt-2 w-full h-full bg-background">
+            <Card className='bg-background'>
                 <CardHeader>
                     <CardTitle>Broker Component Test Page</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-6">
                     {/* Select Components */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Select Components</h3>
                         <div className="grid gap-4 md:grid-cols-2">
                             <BrokerSelect brokerId="theme.selection" />
                             <BrokerSelect brokerId="language.selection" />
@@ -51,7 +52,6 @@ export const BrokerSamplePage = () => {
 
                     {/* Slider Components */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Slider Components</h3>
                         <div className="grid gap-4 md:grid-cols-2">
                             <BrokerSlider brokerId="system.volume" />
                             <BrokerSlider brokerId="music.volume" />
@@ -62,7 +62,6 @@ export const BrokerSamplePage = () => {
 
                     {/* Switch Components */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Switch Components</h3>
                         <div className="grid gap-4 md:grid-cols-2">
                             <BrokerSwitch brokerId="notifications.enabled" />
                             <BrokerSwitch brokerId="dark.mode" />
@@ -73,17 +72,26 @@ export const BrokerSamplePage = () => {
 
                     {/* Input Components */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Input Components</h3>
                         <div className="grid gap-4 md:grid-cols-2">
                             <BrokerInput brokerId="user.email" />
                             <BrokerInput brokerId="user.name" />
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Textarea Components */}
+                    <div className="space-y-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <BrokerTextareaGrow brokerId="user.bio" />
+                            <BrokerTextarea brokerId="feedback.comments" />
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
             {/* Current Values Display */}
-            <Card>
+            <Card className='bg-background pt-12'>
                 <CardHeader>
                     <CardTitle>Current Broker Values</CardTitle>
                 </CardHeader>

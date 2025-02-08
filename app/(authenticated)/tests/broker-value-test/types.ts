@@ -1,44 +1,59 @@
+import { BrokerComponentType } from "./brokerComponents";
+
 // Core types matching our database schema
 type DataType = 'list' | 'url' | 'str' | 'bool' | 'dict' | 'float' | 'int';
-type DefaultComponent = 'BrokerInput' | 'BrokerTextarea' | 'BrokerSelect' | 'BrokerSlider' | 'BrokerSwitch' | 'BrokerCheckbox' | 'BrokerRadio';
 
 export type DataBroker = {
     id: string;
     name: string;
-    defaultValue: string;
+    defaultValue: any;
     dataType: DataType;
-    inputComponent: string;  // FK to DataInputComponent.id
+    inputComponent: string; // FK to DataInputComponent.id
     outputComponent: string; // FK to DataOutputComponent.id
 };
 
+export type Size = '3xs' | '2xs' | 'xs' | 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'default';
+
+
 export type DataInputComponent = {
     id: string;
-    name: string;
-    description: string | null;
-    options: any[] | null;
-    include_other: boolean | null;
-    min: number | null;
-    max: number | null;
-    step: number | null;
-    min_rows: number | null;
-    max_rows: number | null;
-    acceptable_filetypes: string[] | null;
-    src: string | null;
-    classes: string | null;
-    color_overrides: Record<string, string> | null;
-    additional_params: Record<string, any> | null;
-    sub_component: string | null;
-    component: DefaultComponent;
+    name?: string;
+    description?: string;
+    placeholder?: string;
+    options?: { label: string; value: any }[];
+    includeOther?: boolean;
+    min?: number;
+    max?: number;
+    step?: number;
+    acceptableFiletypes?: any;
+    src?: string;
+    colorOverrides?: any;
+    additionalParams?: any;
+    subComponent?: string;
+    component: BrokerComponentType;
+    containerClassName?: string;
+    collapsibleClassName?: string;
+    labelClassName?: string;
+    descriptionClassName?: string;
+    componentClassName?: string;
+    size?: Size;
+    height?: Size;
+    width?: Size;
+    minHeight?: Size;
+    maxHeight?: Size;
+    minWidth?: Size;
+    maxWidth?: Size;
+    orientation?: 'horizontal' | 'vertical' | 'default';
 };
 
 export type BrokerValue = {
-  id: string; // UUID (Primary Key)
-  user_id: string | null; // UUID (Foreign Key referencing auth.users)
-  data_broker: string | null; // UUID (Foreign Key referencing data_broker)
-  data: Record<string, unknown> | null; // JSONB field, default {"value": null}
-  category: string | null; // VARCHAR (nullable)
-  sub_category: string | null; // VARCHAR (nullable)
-  tags: string[] | null; // Array of text
-  comments: string | null; // Nullable text
-  created_at: string; // TIMESTAMP WITH TIME ZONE (auto-generated)
+    id: string; // UUID (Primary Key)
+    userId: string | null; // UUID (Foreign Key referencing auth.users)
+    dataBroker: string | null; // UUID (Foreign Key referencing data_broker)
+    data: Record<string, unknown> | null; // JSONB field, default {"value": null}
+    category: string | null; // VARCHAR (nullable)
+    subCategory: string | null; // VARCHAR (nullable)
+    tags: string[] | null; // Array of text
+    comments: string | null; // Nullable text
+    createdAt: string; // TIMESTAMP WITH TIME ZONE (auto-generated)
 };

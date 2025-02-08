@@ -1,7 +1,14 @@
-import { BrokerSamplePage } from "./components/BrokerSamplePage";
+// page.tsx
 
-// https://claude.ai/chat/eb3d4bfa-b642-4bb6-be94-7b4941c1e0ed
+import { NextNavCardFull } from "@/components/matrx/navigation";
+import { filteredPages } from './config';
+
 
 export default function Page() {
-    return <BrokerSamplePage />;
+
+    return (
+        <div className="container mx-auto py-6">
+            <NextNavCardFull items={filteredPages} />
+        </div>
+    );
 }

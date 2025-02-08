@@ -63,7 +63,7 @@ export class SocketManager {
 
                     // Add error handler
                     this.socket.on('connect_error', (error: Error) => {
-                        console.error('Socket connection error:', error.message);
+                        console.log('Socket connection error:', error.message);
                     });
 
                     this.registerEventHandlers();

@@ -1,6 +1,5 @@
 import { BrokerValue, DataBroker, DataInputComponent } from './types';
 
-// First, let's create our mock data stores:
 export type MockStores = {
     brokers: Record<string, DataBroker>;
     inputComponents: Record<string, DataInputComponent>;
@@ -41,6 +40,126 @@ export const mockData: MockStores = {
             inputComponent: 'email-input',
             outputComponent: 'text-display',
         },
+        'language.selection': {
+            id: 'language.selection',
+            name: 'Language Selection',
+            defaultValue: 'en',
+            dataType: 'str',
+            inputComponent: 'lang-select',
+            outputComponent: 'lang-display',
+        },
+        'music.volume': {
+            id: 'music.volume',
+            name: 'Music Volume',
+            defaultValue: '70',
+            dataType: 'float',
+            inputComponent: 'music-slider',
+            outputComponent: 'volume-display',
+        },
+        'dark.mode': {
+            id: 'dark.mode',
+            name: 'Dark Mode',
+            defaultValue: 'false',
+            dataType: 'bool',
+            inputComponent: 'dark-switch',
+            outputComponent: 'mode-display',
+        },
+        'user.name': {
+            id: 'user.name',
+            name: 'Username',
+            defaultValue: '',
+            dataType: 'str',
+            inputComponent: 'name-input',
+            outputComponent: 'text-display',
+        },
+        'user.bio': {
+            id: 'user.bio',
+            name: 'User Bio',
+            defaultValue: '',
+            dataType: 'str',
+            inputComponent: 'bio-textarea',
+            outputComponent: 'text-display',
+        },
+        'feedback.comments': {
+            id: 'feedback.comments',
+            name: 'Feedback Comments',
+            defaultValue: '',
+            dataType: 'str',
+            inputComponent: 'feedback-textarea',
+            outputComponent: 'text-display',
+        },
+        'system.quantity': {
+            id: 'system.quantity',
+            name: 'Item Quantity',
+            defaultValue: '1',
+            dataType: 'int',
+            inputComponent: 'quantity-picker',
+            outputComponent: 'number-display',
+        },
+        'system.age': {
+            id: 'system.age',
+            name: 'User Age',
+            defaultValue: '18',
+            dataType: 'int',
+            inputComponent: 'age-picker',
+            outputComponent: 'number-display',
+        },
+        'system.percentage': {
+            id: 'system.percentage',
+            name: 'Completion Percentage',
+            defaultValue: '0',
+            dataType: 'float',
+            inputComponent: 'percentage-number',
+            outputComponent: 'number-display',
+        },
+        'user.interests': {
+            id: 'user.interests',
+            name: 'User Interests',
+            defaultValue: 'reading',
+            dataType: 'list',
+            inputComponent: 'interests-checkbox',
+            outputComponent: 'list-display',
+        },
+        'system.permissions': {
+            id: 'system.permissions',
+            name: 'System Permissions',
+            defaultValue: 'view',
+            dataType: 'list',
+            inputComponent: 'permissions-checkbox',
+            outputComponent: 'list-display',
+        },
+        'user.skills': {
+            id: 'user.skills',
+            name: 'User Skills',
+            defaultValue: ['javascript'],
+            dataType: 'list',
+            inputComponent: 'skills-checkbox',
+            outputComponent: 'list-display',
+        },    
+        'user.preference': {
+            id: 'user.preference',
+            name: 'Contact Preference',
+            defaultValue: 'email',
+            dataType: 'str',
+            inputComponent: 'contact-radio',
+            outputComponent: 'text-display',
+        },
+        'user.experience': {
+            id: 'user.experience',
+            name: 'Experience Level',
+            defaultValue: 'intermediate',
+            dataType: 'str',
+            inputComponent: 'experience-radio',
+            outputComponent: 'text-display',
+        },
+        'user.skill': {
+            id: 'user.skill',
+            name: 'Primary Skill',
+            defaultValue: 'dev',
+            dataType: 'str',
+            inputComponent: 'skill-radio',
+            outputComponent: 'text-display',
+        },
     },
 
     inputComponents: {
@@ -48,29 +167,18 @@ export const mockData: MockStores = {
             id: 'theme-select',
             name: 'Theme Selector',
             description: 'Choose your preferred interface theme',
+            placeholder: 'Select theme...',
             options: [
                 { label: 'Light Mode', value: 'light' },
                 { label: 'Dark Mode', value: 'dark' },
                 { label: 'System Default', value: 'system' },
             ],
-            include_other: true,
-            classes: 'max-w-xs',
-            color_overrides: {
+            includeOther: true,
+            colorOverrides: {
                 light: '#ffffff',
                 dark: '#1a1a1a',
             },
             component: 'BrokerSelect',
-            min: null,
-            max: null,
-            step: null,
-            min_rows: null,
-            max_rows: null,
-            acceptable_filetypes: null,
-            src: null,
-            additional_params: {
-                placeholder: 'Select theme...',
-            },
-            sub_component: null,
         },
 
         'volume-slider': {
@@ -80,174 +188,233 @@ export const mockData: MockStores = {
             min: 0,
             max: 100,
             step: 1,
-            classes: 'max-w-md',
             component: 'BrokerSlider',
-            options: null,
-            include_other: null,
-            min_rows: null,
-            max_rows: null,
-            acceptable_filetypes: null,
-            src: null,
-            color_overrides: null,
-            additional_params: {
+            additionalParams: {
                 showValue: true,
                 valuePrefix: '',
                 valueSuffix: '%',
             },
-            sub_component: null,
         },
 
         'notif-switch': {
             id: 'notif-switch',
             name: 'Enable Notifications',
             description: 'Toggle system notifications on or off',
-            classes: 'max-w-sm',
             component: 'BrokerSwitch',
-            options: null,
-            include_other: null,
-            min: null,
-            max: null,
-            step: null,
-            min_rows: null,
-            max_rows: null,
-            acceptable_filetypes: null,
-            src: null,
-            color_overrides: null,
-            additional_params: {
+            additionalParams: {
                 labelPosition: 'left',
                 size: 'default',
             },
-            sub_component: null,
         },
 
         'email-input': {
             id: 'email-input',
             name: 'Email Address',
             description: 'Enter your contact email address',
-            classes: 'max-w-md',
             component: 'BrokerInput',
-            options: null,
-            include_other: null,
-            min: null,
-            max: null,
-            step: null,
-            min_rows: null,
-            max_rows: null,
-            acceptable_filetypes: null,
-            src: null,
-            color_overrides: null,
-            additional_params: {
+            placeholder: 'Enter your email...',
+            additionalParams: {
                 type: 'email',
-                placeholder: 'Enter your email...',
                 validation: {
                     pattern: '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$',
                     message: 'Please enter a valid email address',
                 },
             },
-            sub_component: null,
+        },
+        'lang-select': {
+            id: 'lang-select',
+            name: 'Interface Language',
+            description: 'Select your preferred language',
+            options: [
+                { label: 'English', value: 'en' },
+                { label: 'Spanish', value: 'es' },
+                { label: 'French', value: 'fr' },
+            ],
+            includeOther: false,
+            component: 'BrokerSelect',
+            additionalParams: {
+                placeholder: 'Choose language...',
+            },
+        },
+        'music-slider': {
+            id: 'music-slider',
+            name: 'Music Level',
+            description: 'Adjust the music volume',
+            min: 0,
+            max: 100,
+            step: 5,
+            component: 'BrokerSlider',
+            additionalParams: {
+                showValue: true,
+                valueSuffix: '%',
+            },
+        },
+        'dark-switch': {
+            id: 'dark-switch',
+            name: 'Dark Mode',
+            description: 'Enable dark mode for the interface',
+            component: 'BrokerSwitch',
+            additionalParams: {
+                labelPosition: 'right',
+                size: 'default',
+            },
+        },
+        'name-input': {
+            id: 'name-input',
+            name: 'Username',
+            description: 'Enter your preferred username',
+            component: 'BrokerInput',
+            additionalParams: {
+                type: 'text',
+                placeholder: 'Enter username...',
+                validation: {
+                    pattern: '^[a-zA-Z0-9_-]{3,16}$',
+                    message: 'Username must be 3-16 characters and contain only letters, numbers, underscore, or hyphen',
+                },
+            },
+        },
+        'bio-textarea': {
+            id: 'bio-textarea',
+            name: 'User Biography',
+            description: 'Tell us about yourself - your interests, hobbies, and background',
+            placeholder: 'Write a brief description about yourself...',
+            minHeight: 'xs',
+            component: 'BrokerTextareaGrow',
+        },
+        'feedback-textarea': {
+            id: 'feedback-textarea',
+            name: 'Detailed Feedback',
+            description: 'Please provide your detailed feedback, suggestions, or concerns',
+            placeholder: 'Enter your feedback here...',
+            minHeight: 's',
+            component: 'BrokerTextarea',
+        },
+        'quantity-picker': {
+            id: 'quantity-picker',
+            name: 'Quantity Selection',
+            description: 'Select the number of items you want',
+            component: 'BrokerNumberPicker',
+            min: 0,
+            max: 100,
+            step: 1,
+            additionalParams: {
+                placeholder: 'Enter quantity...',
+            },
+        },
+        'age-picker': {
+            id: 'age-picker',
+            name: 'Age Selection',
+            description: 'Select your age',
+            component: 'BrokerNumberPicker',
+            min: 13,
+            max: 120,
+            step: 1,
+            additionalParams: {
+                placeholder: 'Enter age...',
+            },
+        },
+        'quantity-number': {
+            id: 'quantity-number',
+            name: 'Quantity Selector',
+            description: 'Select the number of items',
+            min: 0,
+            max: 100,
+            step: 1,
+            component: 'BrokerNumberInput',
+        },
+        'percentage-number': {
+            id: 'percentage-number',
+            name: 'Percentage Input',
+            description: 'Enter a percentage value',
+            min: 0,
+            max: 100,
+            step: 0.1,
+            component: 'BrokerNumberInput',
+        },
+        'interests-checkbox': {
+            id: 'interests-checkbox',
+            name: 'Interests',
+            description: 'Select your interests',
+            component: 'BrokerCheckbox',
+            orientation: 'vertical',
+            options: [
+                { label: 'Coding', value: 'coding' },
+                { label: 'Design', value: 'design' },
+                { label: 'Music', value: 'music' },
+                { label: 'Sports', value: 'sports' },
+            ],
+            includeOther: true,
+        },
+        'permissions-checkbox': {
+            id: 'permissions-checkbox',
+            name: 'Permission Selection',
+            description: 'Select user permissions',
+            component: 'BrokerCheckbox',
+            orientation: 'horizontal',
+            options: [
+                { label: 'View', value: 'view' },
+                { label: 'Edit', value: 'edit' },
+                { label: 'Delete', value: 'delete' },
+                { label: 'Admin', value: 'admin' },
+            ],
+            includeOther: false,
+        },
+        'skills-checkbox': {
+            id: 'skills-checkbox',
+            name: 'Programming Skills',
+            description: 'Select all programming languages you know',
+            component: 'BrokerCheckbox',
+            orientation: 'horizontal',
+            options: [
+                { label: 'JavaScript', value: 'javascript' },
+                { label: 'Python', value: 'python' },
+                { label: 'Java', value: 'java' },
+                { label: 'C++', value: 'cpp' },
+            ],
+            includeOther: true,
+        },
+    
+        'contact-radio': {
+            id: 'contact-radio',
+            name: 'Contact Method',
+            description: 'How would you like to be contacted?',
+            component: 'BrokerRadioGroup',
+            orientation: 'horizontal', // can be 'vertical', 'horizontal', or 'default'
+            options: [
+                { label: 'Email', value: 'email' },
+                { label: 'Phone', value: 'phone' },
+                { label: 'SMS', value: 'sms' },
+            ],
+            includeOther: true,
+        },
+        'experience-radio': {
+            id: 'experience-radio',
+            name: 'Experience Level',
+            description: 'Select your experience level',
+            component: 'BrokerRadioGroup',
+            orientation: 'vertical', // explicitly vertical
+            options: [
+                { label: 'Beginner', value: 'beginner' },
+                { label: 'Intermediate', value: 'intermediate' },
+                { label: 'Advanced', value: 'advanced' },
+                { label: 'Expert', value: 'expert' },
+            ],
+            includeOther: false,
+        },
+        'skill-radio': {
+            id: 'skill-radio',
+            name: 'Skill Selection',
+            description: 'Select your primary skill',
+            component: 'BrokerRadioGroup',
+            orientation: 'default', // will render as vertical
+            options: [
+                { label: 'Development', value: 'dev' },
+                { label: 'Design', value: 'design' },
+                { label: 'Marketing', value: 'marketing' },
+            ],
+            includeOther: false,
         },
     },
 
     brokerValues: new Map(),
 };
-
-const additionalMockData = {
-    brokers: {
-      'language.selection': {
-        id: 'language.selection',
-        name: 'Language Selection',
-        defaultValue: 'en',
-        dataType: 'str',
-        inputComponent: 'lang-select',
-        outputComponent: 'lang-display'
-      },
-      'music.volume': {
-        id: 'music.volume',
-        name: 'Music Volume',
-        defaultValue: '70',
-        dataType: 'float',
-        inputComponent: 'music-slider',
-        outputComponent: 'volume-display'
-      },
-      'dark.mode': {
-        id: 'dark.mode',
-        name: 'Dark Mode',
-        defaultValue: 'false',
-        dataType: 'bool',
-        inputComponent: 'dark-switch',
-        outputComponent: 'mode-display'
-      },
-      'user.name': {
-        id: 'user.name',
-        name: 'Username',
-        defaultValue: '',
-        dataType: 'str',
-        inputComponent: 'name-input',
-        outputComponent: 'text-display'
-      }
-    },
-    
-    inputComponents: {
-      'lang-select': {
-        id: 'lang-select',
-        name: 'Interface Language',
-        description: 'Select your preferred language',
-        options: [
-          { label: 'English', value: 'en' },
-          { label: 'Spanish', value: 'es' },
-          { label: 'French', value: 'fr' }
-        ],
-        include_other: false,
-        classes: 'max-w-xs',
-        component: 'BrokerSelect',
-        additional_params: {
-          placeholder: 'Choose language...'
-        }
-      },
-      'music-slider': {
-        id: 'music-slider',
-        name: 'Music Level',
-        description: 'Adjust the music volume',
-        min: 0,
-        max: 100,
-        step: 5,
-        classes: 'max-w-md',
-        component: 'BrokerSlider',
-        additional_params: {
-          showValue: true,
-          valueSuffix: '%'
-        }
-      },
-      'dark-switch': {
-        id: 'dark-switch',
-        name: 'Dark Mode',
-        description: 'Enable dark mode for the interface',
-        classes: 'max-w-sm',
-        component: 'BrokerSwitch',
-        additional_params: {
-          labelPosition: 'right',
-          size: 'default'
-        }
-      },
-      'name-input': {
-        id: 'name-input',
-        name: 'Username',
-        description: 'Enter your preferred username',
-        classes: 'max-w-md',
-        component: 'BrokerInput',
-        additional_params: {
-          type: 'text',
-          placeholder: 'Enter username...',
-          validation: {
-            pattern: '^[a-zA-Z0-9_-]{3,16}$',
-            message: 'Username must be 3-16 characters and contain only letters, numbers, underscore, or hyphen'
-          }
-        }
-      }
-    }
-  };
-  
-  // Merge the additional mock data with our existing mock data
-  Object.assign(mockData.brokers, additionalMockData.brokers);
-  Object.assign(mockData.inputComponents, additionalMockData.inputComponents);
-  

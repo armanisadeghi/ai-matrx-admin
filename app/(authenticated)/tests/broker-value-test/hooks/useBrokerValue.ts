@@ -1,8 +1,5 @@
 import { mockData } from "../constants";
 
-
-
-// Enhanced hook that fetches both broker and input component data
 export function useBrokerInput(brokerId: string) {
   const broker = mockData.brokers[brokerId];
   if (!broker) {
@@ -14,7 +11,6 @@ export function useBrokerInput(brokerId: string) {
       throw new Error(`No input component found with id: ${broker.inputComponent}`);
   }
 
-  // Get/Set value with type conversion
   const convertValue = (value: any): any => {
       switch (broker.dataType) {
           case 'bool': return Boolean(value);
@@ -35,12 +31,12 @@ export function useBrokerInput(brokerId: string) {
       const convertedValue = convertValue(newValue);
           mockData.brokerValues.set(brokerId, {
           id: crypto.randomUUID(),
-          data_broker: brokerId,
-          user_id: "default",
+          dataBroker: brokerId,
+          userId: "default",
           category: "default",
-          sub_category: "default",
+          subCategory: "default",
           tags: [],
-          created_at: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
           comments: "",
           data: { value: convertedValue }
       });

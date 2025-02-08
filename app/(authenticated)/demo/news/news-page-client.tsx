@@ -48,6 +48,7 @@ const NewsPage = () => {
         'science',
         'sports',
         'technology',
+        'ai',
     ];
 
     const countries = [

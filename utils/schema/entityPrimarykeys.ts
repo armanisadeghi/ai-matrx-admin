@@ -55,6 +55,10 @@ export const primaryKeys = {
         frontendFields: ['id'],
         databaseColumns: ['id'],
     },
+    brokerValue: {
+        frontendFields: ['id'],
+        databaseColumns: ['id'],
+    },
     bucketStructures: {
         frontendFields: ['bucket_id'],
         databaseColumns: ['bucketId'],
