@@ -26,7 +26,6 @@ const AiSettingsRecord: React.FC<AiSettingsRecordProps> = ({
         : null;
 
     const handleFieldChange = useCallback((field: string, value: unknown) => {
-        console.log('Field changed:', field, value);
     }, []);
 
     const fieldOptions: FieldRendererOptions = {

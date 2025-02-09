@@ -1,4 +1,4 @@
-import { mockData } from "../constants";
+import { mockData } from "../constants/mock-data";
 
 export function useBrokerInput(brokerId: string) {
   const broker = mockData.brokers[brokerId];

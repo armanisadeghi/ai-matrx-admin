@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Minus, Plus } from "lucide-react";
-import { withBrokerInput } from "../components/withBrokerInput";
+import { withBrokerInput } from "../wrappers/withBrokerInput";
 
 export const BrokerNumberPicker = withBrokerInput(({ value, onChange, inputComponent }) => {
     const min = inputComponent.min ?? 0;

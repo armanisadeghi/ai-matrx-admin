@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Label, Input } from "@/components/ui";
 import { cn } from "@/utils";
-import { withBrokerInput, withBrokerCustomInput } from "../components/withBrokerInput";
+import { withBrokerInput, withBrokerCustomInput } from "../wrappers/withBrokerInput";
 
 export const BrokerInput = withBrokerInput(({ 
     value, 

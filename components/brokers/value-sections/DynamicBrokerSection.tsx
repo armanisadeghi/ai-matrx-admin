@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockData } from '../constants';
-import { BROKER_COMPONENTS } from '../brokerComponents';
+import { mockData } from '../constants/mock-data';
+import { BROKER_COMPONENTS } from '../value-components';
 import { cn } from '@/utils';
 
 interface DynamicBrokerSectionProps {

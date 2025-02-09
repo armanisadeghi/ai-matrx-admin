@@ -1,4 +1,4 @@
-import { withBrokerInput } from '../components/withBrokerInput';
+import { withBrokerInput } from '../wrappers/withBrokerInput';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
@@ -11,21 +11,21 @@ export const BrokerColorPicker = withBrokerInput(({
 
     return (
         <div className="flex items-center gap-2 w-full">
-            <div 
-                className="w-6 h-6 rounded ring-1 ring-ring/20"
-                style={{ backgroundColor: currentColor }}
-            />
-            
             <Input
                 type="color"
                 value={currentColor}
                 onChange={(e) => onChange(e.target.value)}
                 className={cn(
-                    "h-8 w-20",
+                    "h-8 w-24",
                     "border rounded",
                     "[&::-webkit-color-swatch-wrapper]:p-0",
                     "[&::-webkit-color-swatch]:border-none",
-                    "[&::-moz-color-swatch]:border-none"
+                    "[&::-webkit-color-swatch]:h-full",
+                    "[&::-webkit-color-swatch]:w-full",
+                    "[&::-moz-color-swatch]:border-none",
+                    "[&::-moz-color-swatch]:h-full",
+                    "[&::-moz-color-swatch]:w-full",
+                    "p-0"
                 )}
             />
             

@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
-import { withBrokerInput } from "../components/withBrokerInput";
+import { withBrokerInput } from "../wrappers/withBrokerInput";
 
 export const BrokerNumberInput = withBrokerInput(({ 
     value, 

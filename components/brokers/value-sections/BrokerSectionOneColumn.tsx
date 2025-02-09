@@ -2,11 +2,13 @@
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { mockData } from '../constants';
-import { BROKER_COMPONENTS } from '../brokerComponents';
+
 import { cn } from '@/utils';
+import { BROKER_COMPONENTS } from '../value-components';
 
 interface DynamicBrokerSectionProps {
+    brokers: Record<string, any>;
+    inputComponents: Record<string, any>;
     sectionTitle?: string;
     maxHeight?: string;
     sectionClassName?: string;
@@ -16,7 +18,9 @@ interface DynamicBrokerSectionProps {
     cardContentClassName?: string;
 }
 
-export const DynamicBrokerSection = ({
+export const BrokerSectionOneColumn = ({
+    brokers,
+    inputComponents,
     sectionTitle,
     maxHeight,
     sectionClassName,
@@ -27,9 +31,9 @@ export const DynamicBrokerSection = ({
 }: DynamicBrokerSectionProps) => {
     const brokerComponents = useMemo(
         () =>
-            Object.keys(mockData.brokers_three).map((brokerId) => {
-                const broker = mockData.brokers_three[brokerId];
-                const componentInfo = mockData.inputComponents[broker.inputComponent];
+            Object.keys(brokers).map((brokerId) => {
+                const broker = brokers[brokerId];
+                const componentInfo = inputComponents[broker.inputComponent];
                 const Component = BROKER_COMPONENTS[componentInfo.component];
 
                 if (!Component) {
@@ -59,11 +63,10 @@ export const DynamicBrokerSection = ({
                     </CardHeader>
                 )}
                 <CardContent className={cn('grid gap-6 pb-8', maxHeight && 'flex-1 overflow-auto', cardContentClassName)}>
-                    <div className='grid gap-8 lg:grid-cols-2'>{brokerComponents}</div>
+                    <div className='grid gap-8'>{brokerComponents}</div>
                 </CardContent>
             </Card>
         </div>
     );
 };
-
-export default DynamicBrokerSection;
+export default BrokerSectionOneColumn;

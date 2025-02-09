@@ -1,7 +1,7 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { withBrokerInput } from "../components/withBrokerInput";
+import { withBrokerInput } from "../wrappers/withBrokerInput";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 

@@ -1,4 +1,4 @@
-import { BrokerValue, DataBroker, DataInputComponent } from './types';
+import { BrokerValue, DataBroker, DataInputComponent } from '../types';
 
 export type MockStores = {
     brokers: Record<string, DataBroker>;

@@ -1,5 +1,5 @@
 import { TAILWIND_COLORS, generateColorStyle, TailwindColor } from '@/constants/rich-text-constants';
-import { withBrokerInput } from '../components/withBrokerInput';
+import { withBrokerInput } from '../wrappers/withBrokerInput';
 
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
@@ -19,7 +19,7 @@ export const BrokerTailwindColorPicker = withBrokerInput(({
                         key={color}
                         onClick={() => onChange(color)}
                         className={cn(
-                            'w-8 h-8 rounded flex items-center justify-center',
+                            'w-7 h-7 rounded flex items-center justify-center',
                             'ring-offset-background',
                             generateColorStyle(color),
                             currentColor === color ? 'ring-2 ring-ring ring-offset-2' : 'ring-1 ring-ring/20'

@@ -1,13 +1,8 @@
-import { UseAiCockpitHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { getUniqueBrokerRecordIds, getUniqueMetadataFromAllMessages, transformEncodedToSimpleIdPattern } from '@/features/rich-text-editor/utils/patternUtils';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
 import { DataBrokerRecordWithKey, RecipeRecordWithKey } from '@/types';
 import { createNormalizer } from '@/utils/dataSchemaNormalizer';
 import { useCallback, useState } from 'react';
-
-interface UseCompileRecipeProps {
-    aiCockpitHook: UseAiCockpitHook;
-}
 
 export type BasicMessage = {
     type: 'text' | 'base64_image' | 'blob' | 'image_url' | 'other' | string;
@@ -16,6 +11,8 @@ export type BasicMessage = {
 };
 
 const extractNestedValues = (settings: any) => {
+    console.log('----- Settings:', settings);
+
     return {
         ...settings,
         model: settings?.ai_model_reference?.name,
@@ -51,13 +48,15 @@ const AI_SETTINGS_FIELDS = [
     'endpoint',
     'provider',
     'model',
+    'aiEndpoint',
+    'aiProvider',
+    'aiModel',
     'systemMessageOverride',
 ] as const;
 
 const BROKER_FIELDS = ['id', 'name', 'defaultValue', 'dataType'] as const;
 
 const normalizeAiSettings = createNormalizer(AI_SETTINGS_FIELDS);
-const normalizeBroker = createNormalizer(BROKER_FIELDS);
 
 export type CompiledRecipe = {
     id: string;
@@ -92,21 +91,12 @@ export interface RecipeTaskData {
 export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, messages, processedSettings, recipeSelectors }) {
     const selectors = recipeSelectors;
     const recipeRecord = useAppSelector((state) => selectors.selectRecordWithKey(state, activeRecipeMatrxId)) as RecipeRecordWithKey;
-    const { actions: brokerActions, selectors: brokerSelectors } = useEntityTools('dataBroker');
-
-    const [messageList, setMessageList] = useState<BasicMessage[]>([]);
-    const [brokerList, setBrokerList] = useState<Record<string, any>[]>([]);
-    const [settingsList, setSettingsList] = useState<Record<string, any>[]>([]);
-    const [compiledRecipe, setCompiledRecipe] = useState<CompiledRecipe | null>(null);
+    const { selectors: brokerSelectors } = useEntityTools('dataBroker');
 
     const uniqueBrokerRecordIds = getUniqueBrokerRecordIds(messages);
     const matchingBrokers = useAppSelector((state) => brokerSelectors.selectRecordsWithKeys(state, uniqueBrokerRecordIds)) as DataBrokerRecordWithKey[];
 
     const compileRecipe = useCallback(() => {
-
-        const uniqueMessageBrokers = getUniqueMetadataFromAllMessages(messages);
-
-
 
         const messageList: BasicMessage[] = messages.map((message) => ({
             content: transformEncodedToSimpleIdPattern(message.content),
@@ -115,8 +105,6 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
         }));
 
         const settingsList = processedSettings.map((settings) => normalizeAiSettings(extractNestedValues(settings))) as Record<string, any>[];
-
-
 
         const compiledRecipe = {
             id: recipeRecord?.id,
@@ -166,13 +154,6 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
             broker_values: recipeTaskBrokers,
             overrides: override,
         }));
-
-
-
-
-
-
-
 
         return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
     }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);

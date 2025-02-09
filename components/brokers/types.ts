@@ -1,4 +1,4 @@
-import { BrokerComponentType } from "./brokerComponents";
+import { BrokerComponentType } from "./value-components";
 
 // Core types matching our database schema
 type DataType = 'list' | 'url' | 'str' | 'bool' | 'dict' | 'float' | 'int';

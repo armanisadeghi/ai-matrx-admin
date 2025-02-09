@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Label, Input } from '@/components/ui';
-import { withBrokerInput, withBrokerCustomInput } from '../components/withBrokerInput';
+import { withBrokerInput, withBrokerCustomInput } from '../wrappers/withBrokerInput';
 import { useState, useEffect } from 'react';
 
 export const BrokerSelect = withBrokerInput(({ value, onChange, inputComponent }) => {

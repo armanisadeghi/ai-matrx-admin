@@ -1,6 +1,6 @@
 'use client';
 
-import DynamicBrokerSection from '../components/DynamicBrokerSamplePage';
+import DynamicBrokerSection from '@/components/brokers/value-sections/DynamicBrokerSection';
 
 export default function Page() {
     return (
