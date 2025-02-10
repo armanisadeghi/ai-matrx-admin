@@ -16,6 +16,10 @@ interface LayoutOptions {
         show: boolean;
         menuItems?: React.ReactNode[];
     };
+    mainSidebar?: {
+        show: boolean;
+        width: number;
+    };
     leftSections?: Section[];
     rightSections?: Section[];
     topSections?: Section[];

@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ExpandRecursively, MessageTemplateDataOptional, MessageTemplateProcessed, MessageTemplateRecordWithKey, RecipeMessageRecordWithKey } from '@/types';
 import { processJoinedData } from '@/app/entities/hooks/relationships/utils';
-import { useMessageReordering } from '../../../../hooks/aiCockpit/useMessageReordering';
+import { useMessageReordering } from '@/hooks/aiCockpit/useMessageReordering';
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 import { recipeMessageDef } from '@/app/entities/hooks/relationships/definitionConversionUtil';
 import { useAppDispatch, useEntityTools } from '@/lib/redux';
-import { getAllMatrxRecordIdsFromMessages } from '@/features/rich-text-editor/utils/patternUtils';
+import { getAllMatrxRecordIdsFromMessages, MATRX_PATTERN } from '@/features/rich-text-editor/utils/patternUtils';
 import { getOrFetchSelectedRecordsThunk, RecordResult } from '@/lib/redux/entity/thunks';
 
 type NewMessage = {
@@ -29,12 +29,11 @@ export type RecipeMessageHook = ExpandRecursively<
 >;
 
 export const extractUniqueBrokersFromRecords = (messages: MessageTemplateProcessed[]): string[] => {
-    const brokerPattern = /\{([^}]+)\}!/g;
     const uniqueValues = new Set<string>();
 
     messages.forEach((message) => {
         let match;
-        while ((match = brokerPattern.exec(message.content)) !== null) {
+        while ((match = MATRX_PATTERN.exec(message.content)) !== null) {
             uniqueValues.add(match[1].trim());
         }
     });

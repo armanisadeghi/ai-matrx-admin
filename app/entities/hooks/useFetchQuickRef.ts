@@ -7,6 +7,7 @@ import { entityDefaultSettings } from '@/lib/redux/entity/constants/defaults';
 import { EntityKeys } from '@/types/entityTypes';
 
 export function useFetchQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
+
     const dispatch = useAppDispatch();
     const { actions, selectors } = useEntityTools(entityKey);
     const loadingState = useAppSelector(selectors.selectLoadingState);

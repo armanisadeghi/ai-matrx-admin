@@ -6,7 +6,6 @@ import {Providers} from "@/app/Providers";
 import {mapUserData} from '@/utils/userDataMapper';
 import {LayoutWithSidebar} from "@/components/layout/MatrixLayout";
 import {appSidebarLinks, adminSidebarLinks} from "@/constants";
-import {generateClientGlobalCache, initializeSchemaSystem} from '@/utils/schema/precomputeUtil';
 import {getTestDirectories} from '@/utils/directoryStructure';
 import {InitialReduxState} from "@/types/reduxTypes";
 import {ClientDebugWrapper} from '@/components/admin/ClientDebugWrapper';
@@ -14,6 +13,7 @@ import NavigationLoader from "@/components/loaders/NavigationLoader";
 import {headers} from 'next/headers';
 import {LayoutProvider} from '@/providers/layout/LayoutProvider';
 import {ModuleLayout} from "@/providers/layout/ModuleLayout";
+import { generateClientGlobalCache, initializeSchemaSystem } from '@/utils/schema/schema-processing/processSchema';
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();

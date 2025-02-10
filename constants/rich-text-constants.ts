@@ -1,9 +1,5 @@
-import { cn } from '@/utils';
 import { ContentMode } from '../types/editor.types';
 
-
-
-export const CHIP_BASE_CLASS = 'inline-flex items-center align-middle px-2 py-1 mx-1 rounded-md cursor-move min-h-[24px] min-w-[128px]';
 
 export const TAILWIND_COLORS = [
     'red',
@@ -27,7 +23,32 @@ export const TAILWIND_COLORS = [
 
 export type TailwindColor = (typeof TAILWIND_COLORS)[number];
 
-export const COLOR_STYLES: Record<TailwindColor, string> = {
+export function generateColorStyle(color: TailwindColor): string {
+    return `bg-${color}-300 dark:bg-${color}-800 text-${color}-900 dark:text-${color}-100 hover:bg-${color}-400 dark:hover:bg-${color}-700 transition-colors duration-200`;
+}
+
+export const COLOR_STYLES: Record<TailwindColor, string> = Object.fromEntries(TAILWIND_COLORS.map((color) => [color, generateColorStyle(color)])) as Record<
+    TailwindColor,
+    string
+>;
+
+export const MODE_CLASSES: Record<ContentMode, string> = {
+    encodeChips: 'inline-flex items-center align-middle px-2 py-0 mx-1 rounded-md cursor-move min-h-[12px] min-w-[96px]',
+    name: 'inline-flex items-center align-middle px-1 py-0.5 mx-0.5 font-inherit text-inherit bg-inherit cursor-text border-l-4 border-r-4',
+    defaultValue:
+        'inline-flex items-center align-middle px-1 py-0.5 whitespace-pre-wrap font-inherit text-inherit bg-inherit cursor-text border-l-2 border-r-2',
+    recordKey: 'inline-flex items-center align-middle px-1 font-mono text-gray-600 font-inherit text-inherit bg-inherit cursor-pointer',
+    encodeVisible: 'inline-flex items-center align-middle px-1 font-inherit text-inherit bg-inherit cursor-pointer',
+    status: 'inline-flex items-center align-middle px-2 py-0 mx-1 rounded-md cursor-move min-h-[12px] min-w-[96px]',
+};
+
+export function getStyle(color: TailwindColor, mode: ContentMode): string {
+    return `${MODE_CLASSES[mode]} ${generateColorStyle(color)}`;
+}
+
+export const CHIP_BASE_CLASS = 'inline-flex items-center align-middle px-1 py-0 mx-1 rounded-md cursor-move min-h-[12px] min-w-[96px]';
+
+export const COLOR_STYLES_DIRECT: Record<TailwindColor, string> = {
     red: 'bg-red-300 dark:bg-red-800 text-red-900 dark:text-red-100 hover:bg-red-400 dark:hover:bg-red-700 transition-colors duration-200',
     orange: 'bg-orange-300 dark:bg-orange-800 text-orange-900 dark:text-orange-100 hover:bg-orange-400 dark:hover:bg-orange-700 transition-colors duration-200',
     amber: 'bg-amber-300 dark:bg-amber-800 text-amber-900 dark:text-amber-100 hover:bg-amber-400 dark:hover:bg-amber-700 transition-colors duration-200',
@@ -49,140 +70,3 @@ export const COLOR_STYLES: Record<TailwindColor, string> = {
     rose: 'bg-rose-300 dark:bg-rose-800 text-rose-900 dark:text-rose-100 hover:bg-rose-400 dark:hover:bg-rose-700 transition-colors duration-200',
 };
 
-// Add these to your constants file
-export const MODE_CLASSES: Record<ContentMode, string> = {
-    encodeChips: CHIP_BASE_CLASS,
-    name: 'inline-flex items-center align-middle px-1 py-0.5 mx-0.5',
-    defaultValue: 'inline-flex items-center align-middle px-1 py-0.5 font-inherit text-inherit bg-inherit',
-    recordKey: 'inline-flex items-center align-middle px-1 font-mono text-gray-600',
-    encodeVisible: 'inline-flex items-center align-middle px-1 font-mono',
-    status: CHIP_BASE_CLASS
-};
-
-
-
-
-
-
-export const LAYOUT_BASE = {
-    structure: 'inline-flex items-center align-middle',
-    spacing: {
-        chip: 'px-2 py-1 mx-1',
-        text: 'px-1 py-0.5 mx-0.5'
-    },
-    dimensions: {
-        chip: 'min-h-[24px] min-w-[128px]',
-        text: ''  // Text follows natural dimensions
-    }
-};
-
-export const VISUAL_STYLES = {
-    chip: {
-        shape: 'rounded-md',
-        interaction: 'cursor-move'
-    },
-    text: {
-        base: 'font-inherit text-inherit bg-inherit',
-        mono: 'font-mono'
-    }
-};
-
-export const COLOR_VARIANTS = {
-    chip: (color: TailwindColor) => ({
-        background: `bg-${color}-300 dark:bg-${color}-800`,
-        text: `text-${color}-900 dark:text-${color}-100`,
-        hover: `hover:bg-${color}-400 dark:hover:bg-${color}-700`,
-        transition: 'transition-colors duration-200'
-    }),
-    border: (color: TailwindColor) => ({
-        standard: `border-${color}-300 dark:border-${color}-700`,
-        subtle: `border-${color}-200 dark:border-${color}-800`
-    })
-};
-
-export const MODE_STYLES = {
-    encodeChips: (color: TailwindColor) => cn(
-        LAYOUT_BASE.structure,
-        LAYOUT_BASE.spacing.chip,
-        LAYOUT_BASE.dimensions.chip,
-        VISUAL_STYLES.chip.shape,
-        VISUAL_STYLES.chip.interaction,
-        Object.values(COLOR_VARIANTS.chip(color)).join(' ')
-    ),
-    
-    name: (color: TailwindColor) => cn(
-        LAYOUT_BASE.structure,
-        LAYOUT_BASE.spacing.text,
-        `border-l-2 border-r-2 ${COLOR_VARIANTS.border(color).standard}`
-    ),
-    
-    defaultValue: (color: TailwindColor) => cn(
-        LAYOUT_BASE.structure,
-        LAYOUT_BASE.spacing.text,
-        VISUAL_STYLES.text.base,
-        `border-l border-r ${COLOR_VARIANTS.border(color).standard}`
-    ),
-    
-    recordKey: (color: TailwindColor) => cn(
-        LAYOUT_BASE.structure,
-        LAYOUT_BASE.spacing.text,
-        VISUAL_STYLES.text.mono,
-        `border-l border-r ${COLOR_VARIANTS.border(color).subtle}`
-    ),
-    
-    encodeVisible: (color: TailwindColor) => cn(
-        LAYOUT_BASE.structure,
-        LAYOUT_BASE.spacing.text,
-        VISUAL_STYLES.text.mono,
-        `border-l border-r ${COLOR_VARIANTS.border(color).subtle}`
-    )
-};
-
-
-export const getColorClassesForModeNew = (color: TailwindColor, mode: ContentMode): string => {
-    if (!color) return '';
-    return MODE_STYLES[mode](color);
-};
-
-
-
-
-// Add color variations for different modes
-export const getColorClassesForMode = (color: TailwindColor, mode: ContentMode): string => {
-    if (!color) return '';
-
-    switch (mode) {
-        case 'encodeChips':
-        case 'status':
-            // Maintain full chip styling for chip and status modes
-            return COLOR_STYLES[color];
-            
-        case 'name':
-            // For name mode, use a slightly more prominent border
-            return `border-l-2 border-r-2 border-${color}-300 dark:border-${color}-700`;
-            
-        case 'defaultValue':
-            // For default value mode, use a subtle border but maintain the connection to the chip color
-            return `border-l border-r border-${color}-300 dark:border-${color}-700`;
-            
-        case 'encodeVisible':
-        case 'recordKey':
-            // For technical modes, use very subtle borders
-            return `border-l border-r border-${color}-200 dark:border-${color}-800`;
-            
-        default:
-            return '';
-    }
-};
-
-
-export const OLD_MODE_CLASSES: Record<ContentMode, string> = {
-    encodeChips: CHIP_BASE_CLASS,
-    name: 'inline-flex items-center align-middle px-1 py-0.5 mx-0.5 rounded border-l-2 border-r-2 cursor-text min-h-[20px]',
-    defaultValue: 'inline-flex items-center align-middle bg-background text-neutral-950 dark:text-neutral-50 whitespace-pre-wrap border-l-2 border-r-2 cursor-text min-h-[20px]',
-    recordKey: 'inline-flex items-center align-middle px-1 font-mono text-sm text-gray-600 dark:text-gray-400',
-    encodeVisible: 'inline-flex items-center align-middle px-1 font-mono text-sm text-gray-700 dark:text-gray-300',
-    status: CHIP_BASE_CLASS, // Uses same base as encodeChips but with status-specific modifications
-};
-
-export const CHIP_BASE_CLASS_OLD = 'inline-flex items-center px-2 py-1 mx-1 rounded-md cursor-move';

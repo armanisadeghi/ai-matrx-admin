@@ -3,6 +3,13 @@ const { remotePatterns } = require('./utils/next-config/imageConfig');
 const { configureWebpack } = require('./utils/next-config/webpackConfig');
 const copyFiles = require('./utils/next-config/copyFiles');
 
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: process.env.ANALYZE === 'true',
+    openAnalyzer: true,
+    generateStatsFile: true,
+    statsFilename: 'stats.json',
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     experimental: {
@@ -19,7 +26,21 @@ const nextConfig = {
     images: {
         remotePatterns,
     },
-    webpack: configureWebpack,
+    webpack: (config, { isServer }) => {
+        // First apply your existing webpack config
+        config = configureWebpack(config, { isServer });
+        
+        // Add rule to prevent bundling of .onnx files
+        config.module.rules.push({
+            test: /\.onnx$/,
+            type: 'asset/resource',
+            generator: {
+                filename: 'static/[hash][ext]'
+            }
+        });
+
+        return config;
+    },
     eslint: {
         ignoreDuringBuilds: true,
         dirs: ['pages', 'components', 'lib', 'utils', 'app'],
@@ -36,6 +57,8 @@ const nextConfig = {
     },
 };
 
+// Move copyFiles after the bundle analyzer setup
+const finalConfig = withBundleAnalyzer(nextConfig);
 copyFiles();
 
-module.exports = nextConfig;
+module.exports = finalConfig;

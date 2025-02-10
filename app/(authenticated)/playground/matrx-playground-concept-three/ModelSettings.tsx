@@ -1,8 +1,9 @@
 import React from "react";
-import ModelSelectionWithinfo from "./ModelSelectionWithinfo";
+
 import { Button } from "@/components/ui/button";
 import { Save, Code, SquarePlus } from "lucide-react";
 import PromptSettings from "./PromptSettings";
+import { ModelSelectionWithInfo } from "./ModelSelectionWithInfo";
 
 const ModelSettings = ({ initialSettings }) => {
   return (
@@ -16,7 +17,7 @@ const ModelSettings = ({ initialSettings }) => {
         </Button>
       </div>
 
-      <ModelSelectionWithinfo initialSettings={initialSettings} />
+      <ModelSelectionWithInfo initialSettings={initialSettings} />
       <PromptSettings initialSettings={initialSettings} />
     </>
   );

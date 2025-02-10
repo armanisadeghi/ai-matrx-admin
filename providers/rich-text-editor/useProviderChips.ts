@@ -100,7 +100,6 @@ export const useProviderChips = (
 
     const addChipDataFromMetadata = useCallback(
         (editorId: string, metadata: BrokerMetaData) => {
-            console.log('addChipDataFromMetadata With:', editorId, metadata);
             const chipData: ChipData = {
                 id: metadata.matrxRecordId,
                 label: metadata.name,
@@ -221,6 +220,36 @@ export const useProviderChips = (
                         };
                         next.set(editorId, updatedState);
                         chipSyncManager.syncStateToDOM(editorId, chipId, updates);
+                    }
+                });
+
+                return next;
+            });
+        },
+        [releaseColor]
+    );
+
+    const updateChipAndBroker = useCallback(
+        (matrxRecordId: MatrxRecordId, updates: Partial<ChipData>) => {
+            console.log('-- updateChipAndBroker With:', matrxRecordId, updates);
+            setEditors((prev) => {
+                const next = new Map(prev);
+
+                prev.forEach((state, editorId) => {
+                    const chip = state.chipData.find((c) => c.id === matrxRecordId);
+                    const broker = state.metadata.find((m) => m.matrxRecordId === matrxRecordId);
+                    if (chip && broker) {
+                        // If color is being updated, handle color management
+                        if (updates.color && updates.color !== chip.color) {
+                            releaseColor(chip.color);
+                        }
+
+                        const updatedState = {
+                            ...state,
+                            chipData: state.chipData.map((c) => (c.id === matrxRecordId ? { ...c, ...updates } : c)),
+                            metadata: state.metadata.map((m) => (m.matrxRecordId === matrxRecordId ? { ...m, ...updates } : m)),
+                        };
+                        next.set(editorId, updatedState);
                     }
                 });
 
@@ -413,6 +442,7 @@ export const useProviderChips = (
         updateChipData,
         syncChipToBroker,
         getOrFetchAllBrokers,
+        updateChipAndBroker,
     };
 };
 

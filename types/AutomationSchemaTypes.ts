@@ -71,6 +71,7 @@ export type AutomationTableName =
     | 'automationBoundaryBroker'
     | 'automationMatrix'
     | 'broker'
+    | 'brokerValue'
     | 'bucketStructures'
     | 'bucketTreeStructures'
     | 'compiledRecipe'
@@ -214,6 +215,13 @@ export type BrokerDataOptional = Expand<EntityDataOptional<'broker'>>;
 export type BrokerRecordWithKey = Expand<EntityDataWithKey<'broker'>>;
 export type BrokerProcessed = Expand<ProcessedEntityData<'broker'>>;
 export type BrokerData = Expand<EntityDataMixed<'broker'>>;
+
+export type BrokerValueType = AutomationEntity<'brokerValue'>;
+export type BrokerValueDataRequired = Expand<EntityData<'brokerValue'>>;
+export type BrokerValueDataOptional = Expand<EntityDataOptional<'brokerValue'>>;
+export type BrokerValueRecordWithKey = Expand<EntityDataWithKey<'brokerValue'>>;
+export type BrokerValueProcessed = Expand<ProcessedEntityData<'brokerValue'>>;
+export type BrokerValueData = Expand<EntityDataMixed<'brokerValue'>>;
 
 export type BucketStructuresType = AutomationEntity<'bucketStructures'>;
 export type BucketStructuresDataRequired = Expand<EntityData<'bucketStructures'>>;

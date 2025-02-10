@@ -1,66 +1,20 @@
-import { MessageTemplateProcessed, MessageTemplateRecordWithKey } from '@/types';
+import { MatrxRecordId } from "@/types";
 
-export const MATRX_PATTERN = /\{([^}]+)}!/g;
-export const MATRX_BARE_UUID = /{([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})}!/g;
-export const MATRX_ID_PATTERN = /{([a-zA-Z_][a-zA-Z0-9_]*:[^:}]+(?:::(?:[a-zA-Z_][a-zA-Z0-9_]*:[^:}]+))*)}!/g;
+// Pattern definitions
+export const MATRX_PATTERN = /<<<MATRX_START>>>(.*?)<<<MATRX_END>>>/gs;
+export const DEFAULT_VALUE_PATTERN = /<DEFAULT_VALUE>(.*?)<DEFAULT_VALUE_END>/gs;
+export const MATRX_RECORD_ID_PATTERN = /<MATRX_KEY>(.*?)<MATRX_KEY_END>/gs;
+export const MATRX_ID_PATTERN = /<ID>(.*?)<ID_END>/gs;
+export const MATRX_NAME_PATTERN = /<NAME>(.*?)<NAME_END>/gs;
+export const MATRX_STATUS_PATTERN = /<STATUS>(.*?)<STATUS_END>/gs;
+export const MATRX_COLOR_PATTERN = /<COLOR>(.*?)<COLOR_END>/gs;
+export const MATRX_DEFAULT_COMPONENT_PATTERN = /<COMPONENT>(.*?)<COMPONENT_END>/gs;
+export const MATRX_DATA_TYPE_PATTERN = /<DATA_TYPE>(.*?)<DATA_TYPE>/gs;
 
-export const PATTERN_OPTIONS = {
-    all: MATRX_PATTERN,
-    UUID: MATRX_BARE_UUID,
-    recordkey: MATRX_ID_PATTERN,
-};
-
-export const findMatrxMatches = (content: string): string[] => {
-    MATRX_PATTERN.lastIndex = 0;
-
-    return Array.from(content.matchAll(MATRX_PATTERN), (match) => match[1]);
-};
-
-export const findPatterns = (pattern: RegExp, content: string): string[] => {
-    MATRX_PATTERN.lastIndex = 0;
-
-    return Array.from(content.matchAll(pattern), (match) => match[1]);
-};
-
-export const findPatternsByname = (patternName: string, content: string): string[] => {
-    const pattern = PATTERN_OPTIONS[patternName];
-    MATRX_PATTERN.lastIndex = 0;
-
-    return Array.from(content.matchAll(pattern), (match) => match[1]);
-};
-
-interface PatternResults {
-    all: string[];
-    uuids: string[];
-    ids: string[];
-}
-
-export const findAllPatterns = (content: string): PatternResults => {
-    return {
-        all: findPatterns(MATRX_PATTERN, content),
-        uuids: findPatterns(MATRX_BARE_UUID, content),
-        ids: findPatterns(MATRX_ID_PATTERN, content),
-    };
-};
-
-export const findAllPatternsOrdered = (content: string): PatternResults => {
-    const idMatches = new Set(findPatterns(MATRX_ID_PATTERN, content));
-
-    const uuidMatches = new Set(findPatterns(MATRX_BARE_UUID, content).filter((match) => !idMatches.has(match)));
-
-    const basicMatches = new Set(findPatterns(MATRX_PATTERN, content).filter((match) => !idMatches.has(match) && !uuidMatches.has(match)));
-
-    return {
-        ids: Array.from(idMatches),
-        uuids: Array.from(uuidMatches),
-        all: Array.from(basicMatches),
-    };
-};
-
-// Add valid status types
+// Types
 export type MatrxStatus = 'new' | 'active' | 'disconnected' | 'deleted' | string;
 
-interface MatrxMetadata {
+export interface MatrxMetadata {
     matrxRecordId?: string;
     name?: string;
     defaultValue?: string;
@@ -72,30 +26,83 @@ interface MatrxMetadata {
     [key: string]: string | undefined;
 }
 
-// Define display options as an enum
+export interface Message {
+    content: string;
+    [key: string]: any;
+}
+
+// Display modes enum
 export enum DisplayMode {
     ENCODED = 'encoded',
     SIMPLE_ID = 'simple_id',
     RECORD_KEY = 'record_key',
     NAME = 'name',
     DEFAULT_VALUE = 'default_value',
-    STATUS = 'status',
 }
 
-// Parse a single MATRX pattern into its metadata components
+// Core parsing function
 export const parseMatrxMetadata = (content: string): MatrxMetadata => {
-    const parts = content.split('|');
     const metadata: MatrxMetadata = {};
 
-    parts.forEach((part) => {
-        const match = part.match(/^([^:]+):"([^"]*)"$/) || part.match(/^([^:]+):([^"]*)$/);
-        if (match) {
-            const [, key, value] = match;
-            metadata[key] = value === 'undefined' ? '' : value;
+    // Reset lastIndex for all patterns
+    const patterns = [
+        { pattern: DEFAULT_VALUE_PATTERN, key: 'defaultValue' },
+        { pattern: MATRX_RECORD_ID_PATTERN, key: 'matrxRecordId' },
+        { pattern: MATRX_ID_PATTERN, key: 'id' },
+        { pattern: MATRX_NAME_PATTERN, key: 'name' },
+        { pattern: MATRX_STATUS_PATTERN, key: 'status' },
+        { pattern: MATRX_COLOR_PATTERN, key: 'color' },
+        { pattern: MATRX_DEFAULT_COMPONENT_PATTERN, key: 'defaultComponent' },
+        { pattern: MATRX_DATA_TYPE_PATTERN, key: 'dataType' },
+    ];
+
+    patterns.forEach(({ pattern, key }) => {
+        pattern.lastIndex = 0;
+        const match = pattern.exec(content);
+        if (match && match[1]) {
+            metadata[key] = match[1];
         }
     });
 
     return metadata;
+};
+
+// Core encoding function
+export const encodeMatrxMetadata = (metadata: MatrxMetadata): string => {
+    const parts: string[] = [];
+
+    if (metadata.matrxRecordId) {
+        parts.push(`<MATRX_KEY>${metadata.matrxRecordId}<MATRX_KEY_END>`);
+    }
+    if (metadata.id) {
+        parts.push(`<ID>${metadata.id}<ID_END>`);
+    }
+    if (metadata.name) {
+        parts.push(`<NAME>${metadata.name}<NAME_END>`);
+    }
+    if (metadata.defaultValue) {
+        parts.push(`<DEFAULT_VALUE>${metadata.defaultValue}<DEFAULT_VALUE_END>`);
+    }
+    if (metadata.color) {
+        parts.push(`<COLOR>${metadata.color}<COLOR_END>`);
+    }
+    if (metadata.status) {
+        parts.push(`<STATUS>${metadata.status}<STATUS_END>`);
+    }
+    if (metadata.defaultComponent) {
+        parts.push(`<COMPONENT>${metadata.defaultComponent}<COMPONENT_END>`);
+    }
+    if (metadata.dataType) {
+        parts.push(`<DATA_TYPE>${metadata.dataType}<DATA_TYPE_END>`);
+    }
+
+    return `<<<MATRX_START>>>${parts.join('')}<<<MATRX_END>>>`;
+};
+
+// Utility functions
+export const findMatrxMatches = (content: string): string[] => {
+    MATRX_PATTERN.lastIndex = 0;
+    return Array.from(content.matchAll(MATRX_PATTERN), (match) => match[1]);
 };
 
 export const transformMatrxText = (text: string, mode: DisplayMode): string => {
@@ -107,33 +114,33 @@ export const transformMatrxText = (text: string, mode: DisplayMode): string => {
         switch (mode) {
             case DisplayMode.ENCODED:
                 return fullMatch;
-
             case DisplayMode.SIMPLE_ID:
                 return metadata.id || fullMatch;
-
             case DisplayMode.RECORD_KEY:
                 return metadata.matrxRecordId || fullMatch;
-
             case DisplayMode.NAME:
                 return metadata.name || fullMatch;
-
             case DisplayMode.DEFAULT_VALUE:
                 return metadata.defaultValue || fullMatch;
-
-            case DisplayMode.STATUS:
-                return metadata.status || fullMatch;
-
             default:
                 return fullMatch;
         }
     });
 };
 
-export const isMatrxNew = (metadata: MatrxMetadata): boolean => metadata.status === 'new';
+export const transformEncodedToSimpleIdNotEncoded = (text: string): string => {
+    return transformMatrxText(text, DisplayMode.SIMPLE_ID);
+};
 
-export const isMatrxActive = (metadata: MatrxMetadata): boolean => metadata.status === 'active';
+export const transformEncodedToSimpleIdPattern = (text: string): string => {
+    MATRX_PATTERN.lastIndex = 0;
 
-// Function to get metadata from text
+    return text.replace(MATRX_PATTERN, (fullMatch, content) => {
+        const metadata = parseMatrxMetadata(content);
+        return metadata.id ? `<<<MATRX_START>>><ID>${metadata.id}<ID_END><<<MATRX_END>>>` : fullMatch;
+    });
+};
+
 export const getMetadataFromText = (text: string): MatrxMetadata[] => {
     MATRX_PATTERN.lastIndex = 0;
     const matches = Array.from(text.matchAll(MATRX_PATTERN), (match) => match[1]);
@@ -168,91 +175,44 @@ export const getAllMatrxRecordIds = (text: string): string[] =>
         .map((metadata) => metadata.matrxRecordId)
         .filter((id): id is string => Boolean(id));
 
-interface Message {
-    content: string;
-    [key: string]: any;
-}
+export const getAllSimpleIds = (text: string): string[] =>
+    getAllMetadata(text)
+        .map((metadata) => metadata.id)
+        .filter((id): id is string => Boolean(id));
+
 
 export const getAllMatrxRecordIdsFromMessages = (messages: Message[]): string[] => {
     return messages
-        .map((message) => message.content || '') // Extract 'content', default to empty string
-        .flatMap((content) => getAllMatrxRecordIds(content)) // Use utility to get IDs from each content
-        .filter((id, index, self) => id && self.indexOf(id) === index); // Remove duplicates and falsy values
+        .map((message) => message.content || '')
+        .flatMap((content) => getAllMatrxRecordIds(content))
+        .filter((id, index, self) => id && self.indexOf(id) === index);
 };
 
 export const getNewMatrxRecordIdsFromMessages = (messages: Message[], currentIds: string[]): string[] => {
-    const allIdsFromMessages = messages
-        .map((message) => message.content || '') // Extract 'content', default to empty string
-        .flatMap((content) => getAllMatrxRecordIds(content)) // Use utility to get IDs from each content
-        .filter((id, index, self) => id && self.indexOf(id) === index); // Remove duplicates and falsy values
+    const allIdsFromMessages = getAllMatrxRecordIdsFromMessages(messages);
     return allIdsFromMessages.filter((id) => !currentIds.includes(id));
 };
 
-
 export const getMetadataFromAllMessages = (messages: Message[]): MatrxMetadata[] => {
-    return messages
-        .map(message => message.content || '')
-        .flatMap(getAllMetadata);
+    return messages.map((message) => message.content || '').flatMap(getAllMetadata);
 };
 
 export const getUniqueMetadataFromAllMessages = (messages: Message[]): MatrxMetadata[] => {
     const allMetadata = getMetadataFromAllMessages(messages);
-    const uniqueMetadataMap = new Map(
-        allMetadata.map(metadata => [metadata.id, metadata])
-    );
-    
+    const uniqueMetadataMap = new Map(allMetadata.map((metadata) => [metadata.id, metadata]));
     return Array.from(uniqueMetadataMap.values());
 };
 
-
-
-
-
-export const encodeMatrxMetadata = (metadata: MatrxMetadata): string => {
-    const parts: string[] = [];
-
-    // Handle required fields first
-    if (metadata.matrxRecordId) {
-        parts.push(`matrxRecordId:${metadata.matrxRecordId}`);
-    }
-
-    if (metadata.id) {
-        parts.push(`id:${metadata.id}`);
-    }
-
-    // Handle optional fields with quotes for values that might contain special characters
-    if (metadata.name !== undefined) {
-        parts.push(`name:"${metadata.name}"`);
-    }
-
-    if (metadata.defaultValue !== undefined) {
-        parts.push(`defaultValue:"${metadata.defaultValue}"`);
-    }
-
-    if (metadata.color !== undefined) {
-        parts.push(`color:"${metadata.color}"`);
-    }
-
-    if (metadata.status !== undefined) {
-        parts.push(`status:"${metadata.status}"`);
-    }
-
-    if (metadata.defaultComponent !== undefined && metadata.defaultComponent !== '') {
-        parts.push(`defaultComponent:"${metadata.defaultComponent}"`);
-    }
-
-    if (metadata.dataType !== undefined && metadata.dataType !== '') {
-        parts.push(`dataType:"${metadata.dataType}"`);
-    }
-
-    return `{${parts.join('|')}}!`;
+export const getUniqueBrokerRecordIds = (messages: Message[]) => {
+    return getUniqueMetadataFromAllMessages(messages)
+        .filter((metadata) => metadata.matrxRecordId)
+        .map((metadata) => metadata.matrxRecordId);
 };
 
 export const encodeMatrxMetadataArray = (metadataArray: MatrxMetadata[]): string => {
     return metadataArray.map(encodeMatrxMetadata).join(' ');
 };
 
-// Helper function to insert encoded MATRX patterns into text with placeholders
 export const insertMatrxPatterns = (text: string, patterns: MatrxMetadata[]): string => {
     let result = text;
     patterns.forEach((pattern, index) => {

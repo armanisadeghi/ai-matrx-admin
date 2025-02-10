@@ -1,4 +1,4 @@
-import {assistantMessages, userMessages} from "@/components/playground/next-playground/messages";
+import {assistantMessages, userMessages} from "./messages";
 
 export type PlaygroundPreset = {
     id: string;

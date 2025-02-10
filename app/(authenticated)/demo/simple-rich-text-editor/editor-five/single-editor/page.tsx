@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useEditorContext } from '@/features/rich-text-editor/_dev/new/EditorProvider';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 import { MatrxTableLoading } from '@/components/matrx/LoadingComponents';
 import EditorDisplayWrapper from './EditorDisplayWrapper';
 

@@ -1,13 +1,8 @@
-import { UseAiCockpitHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
-import { getUniqueMetadataFromAllMessages } from '@/features/rich-text-editor/utils/patternUtils';
-import { useAppSelector } from '@/lib/redux';
-import { RecipeRecordWithKey } from '@/types';
+import { getUniqueBrokerRecordIds, getUniqueMetadataFromAllMessages, transformEncodedToSimpleIdPattern } from '@/features/rich-text-editor/utils/patternUtils';
+import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { DataBrokerRecordWithKey, RecipeRecordWithKey } from '@/types';
 import { createNormalizer } from '@/utils/dataSchemaNormalizer';
-import { useCallback } from 'react';
-
-interface UseCompileRecipeProps {
-    aiCockpitHook: UseAiCockpitHook;
-}
+import { useCallback, useState } from 'react';
 
 export type BasicMessage = {
     type: 'text' | 'base64_image' | 'blob' | 'image_url' | 'other' | string;
@@ -16,6 +11,8 @@ export type BasicMessage = {
 };
 
 const extractNestedValues = (settings: any) => {
+    console.log('----- Settings:', settings);
+
     return {
         ...settings,
         model: settings?.ai_model_reference?.name,
@@ -51,13 +48,15 @@ const AI_SETTINGS_FIELDS = [
     'endpoint',
     'provider',
     'model',
+    'aiEndpoint',
+    'aiProvider',
+    'aiModel',
     'systemMessageOverride',
 ] as const;
 
 const BROKER_FIELDS = ['id', 'name', 'defaultValue', 'dataType'] as const;
 
 const normalizeAiSettings = createNormalizer(AI_SETTINGS_FIELDS);
-const normalizeBroker = createNormalizer(BROKER_FIELDS);
 
 export type CompiledRecipe = {
     id: string;
@@ -91,41 +90,45 @@ export interface RecipeTaskData {
 
 export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, messages, processedSettings, recipeSelectors }) {
     const selectors = recipeSelectors;
+    const recipeRecord = useAppSelector((state) => selectors.selectRecordWithKey(state, activeRecipeMatrxId)) as RecipeRecordWithKey;
+    const { selectors: brokerSelectors } = useEntityTools('dataBroker');
 
-    const recipeRecord = useAppSelector((state) => selectors.selectRecordWithKey(state, activeRecipeId)) as RecipeRecordWithKey;
+    const uniqueBrokerRecordIds = getUniqueBrokerRecordIds(messages);
+    const matchingBrokers = useAppSelector((state) => brokerSelectors.selectRecordsWithKeys(state, uniqueBrokerRecordIds)) as DataBrokerRecordWithKey[];
 
     const compileRecipe = useCallback(() => {
+
         const messageList: BasicMessage[] = messages.map((message) => ({
-            content: message.content,
+            content: transformEncodedToSimpleIdPattern(message.content),
             role: message.role,
             type: message.type,
         }));
 
         const settingsList = processedSettings.map((settings) => normalizeAiSettings(extractNestedValues(settings))) as Record<string, any>[];
 
-        const uniqueMessageBrokers = getUniqueMetadataFromAllMessages(messages);
-        const normalizedBrokers = uniqueMessageBrokers.map((broker) => normalizeBroker(broker));
         const compiledRecipe = {
             id: recipeRecord?.id,
             matrxRecordId: activeRecipeMatrxId,
             name: recipeRecord?.name,
             messages: messageList,
-            brokers: normalizedBrokers,
+            brokers: matchingBrokers,
             settings: settingsList,
         } as CompiledRecipe;
 
-        const recipeTaskBrokers = normalizedBrokers.map((broker) => ({
+        console.log('----- Compiled Recipe:', compiledRecipe);
+
+        const recipeTaskBrokers = matchingBrokers.map((broker) => ({
             id: broker.id,
             official_name: broker.id,
-            data_type: broker.dataType === 'default' ? 'str' : broker.dataType,
+            data_type: broker.dataType,
             required: true,
             value: broker.defaultValue,
             ready: true,
         })) as BrokerValue[];
 
         const recipeOverrides: RecipeOverrides[] = settingsList.map((settings) => ({
-            model_override: settings.model, // Directly take the model string
-            processor_overrides: {}, // Always an empty object
+            model_override: settings.model,
+            processor_overrides: {},
             other_overrides: Object.fromEntries(
                 Object.entries({
                     max_tokens: settings.maxTokens,
@@ -142,7 +145,7 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
                     modalities: settings.modalities,
                     tools: settings.tools,
                     system_message_override: settings.systemMessageOverride,
-                }).filter(([_, value]) => value !== 'default') // Remove "default" values
+                }).filter(([_, value]) => value !== 'default')
             ),
         }));
 
@@ -153,41 +156,6 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
         }));
 
         return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
-    }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);
-
-    return {
-        recipeRecord,
-        compileRecipe,
-    };
-}
-
-export function useRecipeCompilerViaHook({ aiCockpitHook }: UseCompileRecipeProps) {
-    const { activeRecipeMatrxId, activeRecipeId, messages, processedSettings, tools } = aiCockpitHook;
-
-    const selectors = tools.recipe.selectors;
-
-    const recipeRecord = useAppSelector((state) => selectors.selectRecordWithKey(state, activeRecipeId)) as RecipeRecordWithKey;
-
-    const compileRecipe = useCallback(() => {
-        const messageList: BasicMessage[] = messages.map((message) => ({
-            content: message.content,
-            role: message.role,
-            type: message.type,
-        }));
-
-        const settingsList = processedSettings.map((settings) => normalizeAiSettings(extractNestedValues(settings)));
-
-        const uniqueMessageBrokers = getUniqueMetadataFromAllMessages(messages);
-        const normalizedBrokers = uniqueMessageBrokers.map((broker) => normalizeBroker(broker));
-
-        return {
-            id: recipeRecord?.id,
-            matrxRecordId: activeRecipeMatrxId,
-            name: recipeRecord?.name,
-            messages: messageList,
-            brokers: normalizedBrokers,
-            settings: settingsList,
-        } as CompiledRecipe;
     }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);
 
     return {

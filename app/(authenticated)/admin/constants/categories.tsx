@@ -48,7 +48,6 @@ import EntityMetrics from "../components/entities/EntityMetrics";
 import EntityBrowser from "../components/entities/EntityBrowser";
 import EntityLab from "../components/entities/EntityLab";
 import { Database, DatabaseBackup, DatabaseZap } from "lucide-react";
-import LocalStorageAdmin from "@/app/(authenticated)/admin/components/LocalStorageAdmin";
 import SchemaVisualizer from "../components/SchemaVisualizer";
 import { SchemaVisualizerLayout } from "../components/SchemaVisualizer/SchemaVisualizerLayout";
 import DatabaseAdminDashboard from "@/app/(authenticated)/admin/components/database-admin/DatabaseAdminDashboard";

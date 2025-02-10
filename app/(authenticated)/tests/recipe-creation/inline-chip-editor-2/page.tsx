@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback } from "react";
-import { Editor, ContentItem } from "./editor";
+import { Editor, ContentItem } from "./EditorComponent";
 import { cn } from "@/lib/utils";
 import { useEditor } from "./useEditor";
 import { X } from "lucide-react";

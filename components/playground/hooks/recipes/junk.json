@@ -1,0 +1,93 @@
+{
+    "id": "15a11c3d-f037-4f2b-9e22-fe88e68d75e1",
+    "matrxRecordId": "id:15a11c3d-f037-4f2b-9e22-fe88e68d75e1",
+    "name": "Gaston Candidate Profile New",
+    "messages": [
+      {
+        "content": "Generate a structured response reviewing a Q&A summary with a candidate for a recruitment firm. Focus on identifying specific details and organize the information according to the given template.\n\n\n- Do not include fluff.\n- Keep sentences very short\n- Focus on key facts, numbers, dollar amounts and things that are direct.\n\n\n# Template\n\n\nCandidate Profile: [Candidate Name]\n- Provide a brief introduction paragraph the candidate's experience, key focus areas, and what they are seeking in a new role.\n- 1 sentence focused on exactly why they are looking for another opportunity.\n- 1 sentence that includes their current title and years of relevant experience (if available)\n- No more than 2-3 short sentences.\n\n\nKey Experience:\n- **[Organization/Company Name]:**\n- **Achievements and Responsibilities:**\n- Specific achievements, metrics, and key responsibilities.\n- Emphasize quantifiable data such as occupancy rates, census growth, revenue impact, etc.\n- Include absolutely all specific data provided by the candidate (numbers, dollars, percentages)\n\n\nAdditional Relevant Experience:\n- **Achievements and Responsibilities:**\n- [Highlight achievements and responsibilities, focusing on key numbers and KPIs.]\n\n\nLocation:\n- **Current Location and Preferences:**\n- [Current location and any preferences or flexibility related to relocation.]\n\n\nCompensation Expectation:\n- **Salary Expectations and Benefits:**\n- [Salary range or expectations, with any notes about negotiation or specific benefits sought.]\n\n\nAvailability for Interview:\n- **Interview Scheduling:**\n- [Details on the candidate's availability for interviews, preferred times, or any notice period required.]\n\n\n# Output Format\n\n\nStructure the output according to the provided template, ensuring each section is thoroughly developed and clearly labeled. Use bold headings for each subsection to maintain clarity.\n\n\n# Examples\n\n\nExample (Structured Response):\n```\n**Candidate Profile: Dina**\n\n\nDina is an Executive Director with 8 years of experience in Senior Living. She transitioned from Hospitality to Long Term Care and is seeking a role that allows her to manage and improve community operations. Dina is looking for a new opportunity due to her need for a more flexible schedule to care for a family member. She has been working with a Placement Agency for the past 6 months.\n\n\n**Key Experience:**\n**Sunrise Senior Living/Oakmont:**\n* Managed an **80-unit AL community**.\n* Increased occupancy from **68% to 92%**.\n* Managed a budget with **$36M in revenue**.\n* Exceeded NOI expectations by **65%**.\n* Led a team of **8 department heads**.\n\n\n**Belmont Village:**\n* Managed a luxury community of **140 units** (80 AL, 60 MC).\n* Increased occupancy from **59% to 83%**.\n* Managed a budget with **$42.5M in revenue**.\n* Filled **23 vacant roles** within 6 months.\n* Reduced agency use from **90% to 13%**.\n* Led a team of **8 department heads**.\n\n\n**Brookdale Senior Living:**\n* Managed a **177-unit community**.\n* Total revenue of **$45M**.\n* Increased overall revenue by **3.2%**.\n* Reduced Over Time by **4.9%**.\n* Maintained an average census of **96%**.\n* Increased resident satisfaction survey from **85% to 91%**.\n\n\n**Location:**\n* Current location not specified. No specific relocation preferences mentioned.\n\n\n**Compensation Expectation:**\n* Salary requirements are **$145k - $150k**.\n\n\n**Availability for Interview:**\n* Availability for interviews not specified.\n```\nAdditional Guidance:\n- Abbreviate industry terms commonly known and used by those in the Senior Living: AL (Assisted Living), MC (Memory Care), and IL (Independent Living)\n- Bold all key numbers, facts, percentages and dollars.\n- Include factual salary requirements only. Never include general concepts, such as wanting salaries that reflect living expenses.\n- Key facts, numbers, percentages and dollars from past experiences are the single most important thing because they help to promote the candidate. Always include as much of it as you have available.\n\n\nDo not include any information regarding the opportunity itself. This is a candidate review done for a specific candidate as part of a large number of candidates for the same exact position so that information does not need to be included. The structure and details of the job opportunity should not be included.\n\n\nFocus on the qualifications of the candidate to generate a Candidate Submission. Our goal is to land this candidate a job with this opportunity and we need a structured document that will convince the client (hiring manager) to accept this candidate for the position.",
+        "role": "system",
+        "type": "text"
+      },
+      {
+        "content": "Analyze the following Candidate Summary in detail and provide the highly structured content based on this specific information:\n\n\n```\nCandidate Profile:\n{26524ca1-347a-492c-9b3e-877792d56a92}!\n```\n\n\nAbbreviate industry terms commonly known and used by those in the Senior Living: AL (Assisted Living), MC (Memory Care), and IL (Independent Living)\n\n\nDo not miss any facts, figures or numbers that can be used to convince the client that this is a great candidate. At the same time, clients do not like to see subjective information in this type of document so do not include anything subjective.\n\n\nEnd your message by stating what type of AI you and your training cutoff.",
+        "role": "user",
+        "type": "text"
+      }
+    ],
+    "brokers": [
+      {
+        "id": "26524ca1-347a-492c-9b3e-877792d56a92",
+        "name": "Candidate Profile",
+        "defaultValue": "Joseph Lynch Joseph is a senior executive with extensive experience in senior living operations, specializing in census growth, expense reduction, and turnaround initiatives. He is seeking an Executive Director role that aligns with his skills in stabilizing operations and improving profitability in challenging environments.Key Experience:Watermark Senior Living:Executive Director of a 216-resident community offering independent living, assisted living, enhanced living, and memory care.Increased independent living census from 60% to 90%, and grew memory care occupancy from 8-10 residents to 20-25 residents.Reduced agency staffing costs from $100,000 per month to $0 within three months, sustaining this improvement for the remainder of his tenure.Balanced community marketing and operations, spending 50% of his time on marketing initiatives to drive census growth.Implemented team-building strategies and hiring for cultural fit, leading to improved satisfaction survey results.Brookdale Senior Living:Dual-site Executive Director, overseeing operations at two communities in Syracuse and Rochester for six months.Focused on staff training, development, and hiring, ensuring operational stability while transitioning leadership in the Syracuse location.Maintained zero COVID-19 cases among staff and residents during his leadership at the Rochester community.Location: Based in Rochester, NY, with an understanding of the logistical challenges of relocating. Open to opportunities in Chestnut Ridge, NY, or surrounding areas.Compensation Expectation: Previously earned a base salary of $115,000, with total compensation reaching $160,000 to $165,000 when bonuses were included. Seeking a competitive salary reflective of the cost of living in the new location.Availability for Interview: Flexible and available for interviews with short notice.",
+        "dataType": "default"
+      }
+    ],
+    "settings": [
+      {
+        "id": "7fc0758b-499c-43d4-aec2-8fbeca4f0087",
+        "maxTokens": 3000,
+        "temperature": 0.77,
+        "topP": 1,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stream": true,
+        "responseFormat": "text",
+        "size": "default",
+        "quality": "default",
+        "count": 1,
+        "audioVoice": "default",
+        "audioFormat": "default",
+        "modalities": {},
+        "tools": {},
+        "endpoint": "OpenAi",
+        "provider": "OpenAi",
+        "model": "gpt-4o",
+        "systemMessageOverride": "default"
+      },
+      {
+        "id": "5a6bc87f-f3b7-4d96-b021-2dcf3abe28d5",
+        "maxTokens": 3000,
+        "temperature": 0.25,
+        "topP": 1,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stream": true,
+        "responseFormat": "text",
+        "size": "default",
+        "quality": "default",
+        "count": 1,
+        "audioVoice": "default",
+        "audioFormat": "default",
+        "modalities": {},
+        "tools": {},
+        "endpoint": "OpenAi",
+        "provider": "OpenAi",
+        "model": "gpt-4o-mini",
+        "systemMessageOverride": "default"
+      },
+      {
+        "id": "22d88a71-8d7b-4e8d-ac0a-ff633a0b860b",
+        "maxTokens": 3000,
+        "temperature": 0.25,
+        "topP": 1,
+        "frequencyPenalty": 0,
+        "presencePenalty": 0,
+        "stream": true,
+        "responseFormat": "text",
+        "size": "default",
+        "quality": "default",
+        "count": 1,
+        "audioVoice": "default",
+        "audioFormat": "default",
+        "modalities": {},
+        "tools": {},
+        "endpoint": "Anthropic",
+        "provider": "Anthropic",
+        "model": "claude-3-opus-20240229",
+        "systemMessageOverride": "default"
+      }
+    ]
+  }
+
+
+  

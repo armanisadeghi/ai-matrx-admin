@@ -165,6 +165,11 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         console.log('Showing encoded');
     }, []);
 
+    const handleShowEncodedId = useCallback(() => {
+        context.setContentMode(messageRecordId, 'recordKey');
+        console.log('Showing encoded id');
+    }, []);
+
     const handleShowNames = useCallback(() => {
         context.setContentMode(messageRecordId, 'name');
         console.log('Showing names');
@@ -213,6 +218,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                 onToggleCollapse={handleToggleVisibility}
                 onShowChips={handleShowChips}
                 onShowEncoded={handleShowEncoded}
+                onShowEncodedId={handleShowEncodedId}
                 onShowNames={handleShowNames}
                 onShowDefaultValue={handleShowDefaultValue}
                 onRoleChange={handleRoleChange}

@@ -6,7 +6,7 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from '@
 import {Label} from '@/components/ui/label';
 import {Link, Pencil, Upload, Calendar, Clock, Globe, Code, File, Plus, InfoIcon} from 'lucide-react';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui';
-import cn from "classnames";
+import { cn } from '@/utils';
 
 const actionButtonClass = "h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-border rounded-md flex items-center gap-2";
 const iconButtonClass = "h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-accent/50 border border-border rounded-md flex items-center justify-center";

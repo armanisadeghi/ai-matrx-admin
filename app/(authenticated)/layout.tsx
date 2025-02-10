@@ -44,8 +44,6 @@ export default async function AuthenticatedLayout(
     }
 
     const userData = mapUserData(user);
-    console.log('layout has userData:', userData);
-    console.log('Settigs global user id:', userData.id);
     setGlobalUserId(userData.id);
 
     const testDirectories = await getTestDirectories();

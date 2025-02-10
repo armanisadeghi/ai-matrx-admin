@@ -15,7 +15,7 @@ interface ModelSelectionWithInfoProps {
   };
 }
 
-const ModelSelectionWithInfo: React.FC<ModelSelectionWithInfoProps> = ({
+export const ModelSelectionWithInfo: React.FC<ModelSelectionWithInfoProps> = ({
   initialSettings,
 }) => {
   const [selectedRecipe, setSelectedRecipe] = useState<

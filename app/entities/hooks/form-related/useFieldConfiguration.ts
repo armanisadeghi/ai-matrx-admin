@@ -14,18 +14,24 @@ export interface FieldState<TEntity extends EntityKeys = EntityKeys> {
 }
 
 export function useFieldConfiguration<TEntity extends EntityKeys>(
-    entityKey: TEntity, 
-    unifiedLayoutProps: UnifiedLayoutProps, 
+    entityKey: TEntity,
+    unifiedLayoutProps: UnifiedLayoutProps,
     showRelatedFields = true,
     fieldState?: FieldState<TEntity>
 ) {
     const store = useAppStore();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
 
-    const config = useMemo(
-        () => processFormConfig<TEntity>(unifiedLayoutProps),
-        [unifiedLayoutProps.dynamicLayoutOptions?.formStyleOptions, unifiedLayoutProps.entitiesToHide]
-    );
+    const config = useMemo(() => {
+        const processedConfig = processFormConfig<TEntity>(unifiedLayoutProps);
+
+        const updatedEntitiesToHide = new Set([...(processedConfig.entitiesToHide || []), 'users']);
+
+        return {
+            ...processedConfig,
+            entitiesToHide: Array.from(updatedEntitiesToHide),
+        };
+    }, [unifiedLayoutProps.dynamicLayoutOptions?.formStyleOptions, unifiedLayoutProps.entitiesToHide]);
     const { entitiesToHide, enableSearch, excludeFields, defaultShownFields } = config;
 
     const { fieldGroups, displayNames } = useMemo(
@@ -41,32 +47,26 @@ export function useFieldConfiguration<TEntity extends EntityKeys>(
     const allowedFields = useMemo(() => {
         // First, get all available fields based on showRelatedFields
         const allFields = showRelatedFields ? [...nativeFields, ...relationshipFields] : [...nativeFields];
-        
+
         // Filter out excluded fields
         const filteredFields = allFields.filter((field) => !excludeFields.has(field));
-        
+
         // If we have visible fields in fieldState, order the allowed fields accordingly
         if (fieldState?.visibleFields?.length) {
             // Create a Set of filtered fields for O(1) lookup
             const filteredFieldsSet = new Set(filteredFields);
-            
+
             // Start with visible fields that exist in filtered fields
-            const orderedFields = fieldState.visibleFields.filter(field => filteredFieldsSet.has(field));
-            
+            const orderedFields = fieldState.visibleFields.filter((field) => filteredFieldsSet.has(field));
+
             // Add remaining filtered fields that weren't in visible fields
-            const remainingFields = filteredFields.filter(field => !orderedFields.includes(field));
-            
+            const remainingFields = filteredFields.filter((field) => !orderedFields.includes(field));
+
             return [...orderedFields, ...remainingFields];
         }
-        
+
         return filteredFields;
-    }, [
-        nativeFields, 
-        relationshipFields, 
-        showRelatedFields, 
-        excludeFields, 
-        fieldState?.visibleFields
-    ]);
+    }, [nativeFields, relationshipFields, showRelatedFields, excludeFields, fieldState?.visibleFields]);
 
     return useMemo(
         () => ({

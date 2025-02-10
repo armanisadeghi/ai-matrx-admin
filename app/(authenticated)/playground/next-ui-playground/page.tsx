@@ -1,6 +1,7 @@
 // File location: @/app/playground/hold-hold-page.tsx
 
-import Playground from "@/components/playground/next-playground/Playground";
+import Playground from "@/components/next-playground/Playground";
+
 
 export default function RegisteredFunctionPage() {
     return (

@@ -39,7 +39,6 @@ export function useGetOrFetchRecord({ entityName, matrxRecordId, simpleId, shoul
 
     useEffect(() => {
         if (recordId && shouldProcess) {
-            console.log('useGetOrFetchRecord calling getOrFetchSelectedRecords', recordId);
             dispatch(
                 actions.getOrFetchSelectedRecords({
                     matrxRecordIds: [recordId],

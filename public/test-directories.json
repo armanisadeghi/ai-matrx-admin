@@ -16,6 +16,10 @@
     "name": "backup"
   },
   {
+    "path": "/tests/broker-value-test",
+    "name": "broker-value-test"
+  },
+  {
     "path": "/tests/context-menu",
     "name": "context-menu"
   },

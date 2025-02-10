@@ -3,7 +3,6 @@
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
-import { NextUIProvider } from "@nextui-org/react";
 import { cookies } from 'next/headers';
 import { Metadata } from 'next';
 import { metadata } from './config/metadata';
@@ -60,36 +59,10 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             data-lpignore="true"
             data-form-type="other"
         >
-        <NextUIProvider>
             <NavigationLoader />
             {children}
             <Toaster />
-        </NextUIProvider>
 
-        {/* Optional: Add a MutationObserver script to remove LastPass elements */}
-        <script
-            dangerouslySetInnerHTML={{
-                __html: `
-                            if (typeof window !== 'undefined') {
-                                const observer = new MutationObserver((mutations) => {
-                                    mutations.forEach((mutation) => {
-                                        mutation.addedNodes.forEach((node) => {
-                                            if (node.nodeType === 1 && 
-                                                (node as Element).getAttribute('data-lastpass-root')) {
-                                                node.remove();
-                                            }
-                                        });
-                                    });
-                                });
-                                
-                                observer.observe(document.body, {
-                                    childList: true,
-                                    subtree: true
-                                });
-                            }
-                        `
-            }}
-        />
         </body>
         </html>
     );
