@@ -1,10 +1,8 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/utils';
-import { BROKER_COMPONENTS } from '../value-components';
 import { DataBrokerData } from '@/app/(authenticated)/tests/broker-value-test/one-column-live/page';
 
 // Types
