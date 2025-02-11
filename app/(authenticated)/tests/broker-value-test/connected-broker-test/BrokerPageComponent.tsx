@@ -1,118 +1,113 @@
-import { useCallback, useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import EntityFormMinimalAnyRecord from '@/app/entities/forms/EntityFormMinimalAnyRecord';
-import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
-import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { CompiledRecipeData, MatrxRecordId } from '@/types';
+'use client';
 
-const initialLayoutProps = getUnifiedLayoutProps({
-    entityKey: 'dataBroker',
-    formComponent: 'MINIMAL',
-    quickReferenceType: 'LIST',
-    isExpanded: true,
-    handlers: {},
-});
+import BrokerSectionOneColumn from '@/components/brokers/value-sections/BrokerSectionWrapper';
+import {
+    BrokerValueData,
+    CompiledRecipeRecordWithKey,
+    DataInputComponentData,
+    DataOutputComponentData,
+    MessageBrokerData,
+} from '@/types';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useCompiledRecipe } from '@/hooks/run-recipe/useCompiledRecipe';
+import RunRecipeSelection from '@/components/brokers/wired/RunRecipeSelection';
+import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
+import { useState } from 'react';
 
-const layoutProps = getUpdatedUnifiedLayoutProps(initialLayoutProps, {
-    formComponent: 'MINIMAL',
-    dynamicStyleOptions: {
-        density: 'compact',
-        size: 'sm',
-    },
-    dynamicLayoutOptions: {
-        formStyleOptions: {
-            fieldFiltering: {
-                excludeFields: ['id'],
-                defaultShownFields: ['name', 'defaultValue', 'dataType', 'defaultComponent', 'color'],
-            },
-        },
-    },
-});
+
+export type DataBrokerData = {
+    id: string;
+    name: string;
+    dataType?: 'str' | 'bool' | 'dict' | 'float' | 'int' | 'list' | 'url';
+    outputComponent?: string;
+    dataInputComponentReference?: DataInputComponentData[];
+    defaultValue?: string;
+    inputComponent?: string;
+    color?:
+        | 'blue'
+        | 'amber'
+        | 'cyan'
+        | 'emerald'
+        | 'fuchsia'
+        | 'gray'
+        | 'green'
+        | 'indigo'
+        | 'lime'
+        | 'neutral'
+        | 'orange'
+        | 'pink'
+        | 'purple'
+        | 'red'
+        | 'rose'
+        | 'sky'
+        | 'slate'
+        | 'stone'
+        | 'teal'
+        | 'violet'
+        | 'yellow'
+        | 'zinc';
+    dataOutputComponentReference?: DataOutputComponentData[];
+    brokerValueInverse?: BrokerValueData[];
+    messageBrokerInverse?: MessageBrokerData[];
+};
+
+
 
 const BrokerPageComponent = () => {
-    const dispatch = useAppDispatch();
-    const { selectors: compiledRecipeSelectors, actions: compiledRecipeActions } = useEntityTools('compiledRecipe');
-    const {selectors: recipeSelectors} = useEntityTools('recipe');
-    const { selectors: dataBrokerSelectors } = useEntityTools('dataBroker');
-    const { actions: brokerValuActions, selectors: brokerValueSelectors } = useEntityTools('brokerValue');
+    const [state, setState] = useState<{
+        recipe: QuickReferenceRecord | undefined;
+        version: number;
+        compiledVersions: CompiledRecipeRecordWithKey[];
+    }>({
+        recipe: undefined,
+        version: 1,
+        compiledVersions: []
+    });
 
-    const activeRecipeId = useAppSelector(recipeSelectors.selectActiveRecordId);
-    const matchingCompiledRecipes = useAppSelector((state) => compiledRecipeSelectors.selectRecordsByFieldValue(state, 'recipe', activeRecipeId));
-    const availableVersions = matchingCompiledRecipes.map((record) => record.version);
-    
-    const activeCompiledRecipeRecord = useAppSelector(compiledRecipeSelectors.selectActiveRecord) as CompiledRecipeData;
-    // State for selected version
-    const [selectedVersion, setSelectedVersion] = useState<string>('');
-
-    const setActiveCompiledRecipe = useCallback((recordId: MatrxRecordId) => {
-        dispatch(compiledRecipeActions.setActiveRecordSmart(recordId));
-    }, [dispatch, compiledRecipeActions]);
-
-    // Callbacks for version selection
-    const handleLatestVersion = useCallback(() => {
-        const latestVersionRecord = matchingCompiledRecipes.reduce((latest, current) => {
-            return !latest || current.version > latest.version ? current : latest;
-        }, matchingCompiledRecipes[0]);
-        
-        if (latestVersionRecord) {
-            setActiveCompiledRecipe(latestVersionRecord.id);
-        }
-    }, [matchingCompiledRecipes, setActiveCompiledRecipe]);
-
-    const handleVersionSelect = useCallback((version: string) => {
-        const selectedRecord = matchingCompiledRecipes.find(
-            recipe => recipe.version === parseInt(version)
-        );
-        
-        if (selectedRecord) {
-            setActiveCompiledRecipe(selectedRecord.id);
-        }
-        setSelectedVersion(version);
-    }, [matchingCompiledRecipes, setActiveCompiledRecipe]);
-
-    const neededBrokers = activeCompiledRecipeRecord?.compiledRecipe.brokers || [];
-
-
+    const {
+        compiledRecipe,
+        inputComponents,
+        isLoading,
+        hasError,
+    } = useCompiledRecipe({
+        selectedRecipe: state.recipe,
+        selectedVersion: state.version,
+        compiledVersions: state.compiledVersions
+    });
 
     return (
-        <div className="flex flex-col h-full py-3">
-            <div className="flex items-center gap-4 mb-4">
-                <Button 
-                    variant="outline"
-                    onClick={handleLatestVersion}
-                    className="w-32"
-                >
-                    Latest Version
-                </Button>
-                
-                <Select
-                    value={selectedVersion}
-                    onValueChange={handleVersionSelect}
-                >
-                    <SelectTrigger className="w-48">
-                        <SelectValue placeholder="Select version..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {availableVersions.map((version) => (
-                            <SelectItem 
-                                key={version} 
-                                value={version.toString()}
-                            >
-                                Version {version}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+        <div className='h-full w-full bg-neutral-100 dark:bg-neutral-800'>
+            <div className='w-full items-center bg-neutral-100 dark:bg-neutral-800 border-b border-gray-200 dark:border-gray-800'>
+                <div className='container mx-auto'>
+                    <RunRecipeSelection onStateChange={setState} />
+                </div>
             </div>
 
-            {/* <EntityFormMinimalAnyRecord
-                recordId={recordId!}
-                unifiedLayoutProps={layoutProps}
-                onFieldChange={handleBrokerFieldUpdate}
-            /> */}
+            <div className='h-full w-full px-4 py-8 space-y-6'>
+                {isLoading && (
+                    <Alert>
+                        <AlertDescription>Loading recipe data...</AlertDescription>
+                    </Alert>
+                )}
+
+                {hasError && (
+                    <Alert variant='destructive'>
+                        <AlertDescription>No compiled recipe data found for the selected version.</AlertDescription>
+                    </Alert>
+                )}
+
+                {state.recipe && !isLoading && !hasError && compiledRecipe?.brokers && (
+                    <div className='bg-neutral-100 dark:bg-neutral-800 border border-gray-200 dark:border-gray-800 rounded-lg'>
+                        <BrokerSectionOneColumn
+                            brokers={compiledRecipe.brokers}
+                            inputComponents={inputComponents}
+                            sectionTitle='Please provide some details...'
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
-};
+}
 
 export default BrokerPageComponent;

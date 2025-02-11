@@ -130,8 +130,6 @@ export function useBrokerValue(broker: DataBrokerDataWithKey) {
     const primaryEntity = 'brokerValue';
     const [brokerValueRecord, setBrokerValueRecord] = useState<BrokerValueData | null>(null);
     const recordId = brokerValueRecord?.id;
-    // const broker = useGetOrFetchRecord({ entityName: 'dataBroker', matrxRecordId: `id:${brokerId}` }) as DataBrokerDataWithKey;
-    console.log('useBrokerValue broker:', broker);
 
     const dataInputComponentSelectors = createEntitySelectors('dataInputComponent');
     const componentMatrxId = `id:${broker.inputComponent}`;

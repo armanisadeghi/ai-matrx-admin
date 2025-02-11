@@ -31,7 +31,7 @@ export function useMessageDeletion({ activeRecipeFieldId }: UseMessageDeletionOp
             if (!activeRecipeFieldId) return;
 
             // 1. Get the recipe message to be deleted to know its order
-            const recipeMessages = useAppSelector(recipeMessageSelectors.selectRecordsByFieldValue('messageId', messageId)) as RecipeMessageDataRequired[];
+            const recipeMessages = useAppSelector((state) => recipeMessageSelectors.selectRecordsByFieldValueHelper(state,'messageId', messageId)) as RecipeMessageDataRequired[];
 
             const recipeMessage = recipeMessages[0];
             if (!recipeMessage) return;
@@ -39,7 +39,7 @@ export function useMessageDeletion({ activeRecipeFieldId }: UseMessageDeletionOp
             const deletedOrder = recipeMessage.order;
 
             // 2. Get all recipe messages for this recipe to reorder them
-            const allRecipeMessages = useAppSelector(recipeMessageSelectors.selectRecordsByFieldValue('recipeId', activeRecipeFieldId)) as RecipeMessageDataRequired[];
+            const allRecipeMessages = useAppSelector((state) => recipeMessageSelectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeFieldId)) as RecipeMessageDataRequired[];
 
             // 3. Delete the recipe message relationship first
             deleteRecipeMessage(recipeMessage.id as MatrxRecordId);

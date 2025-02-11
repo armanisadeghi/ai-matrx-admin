@@ -10,12 +10,9 @@ import {
     DataInputComponentData,
     DataInputComponentRecordWithKey,
     DataOutputComponentData,
+    MatrxRecordId,
     MessageBrokerData,
     MessageTemplateDataOptional,
-    RecipeBrokerData,
-    RecipeData,
-    RecipeMessageData,
-    RecipeProcessorData,
     RecipeRecordWithKey,
 } from '@/types';
 import { useEffect, useMemo, useState } from 'react';
@@ -23,21 +20,6 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGetorFetchRecords } from '@/app/entities/hooks/records/useGetOrFetch';
 
-type RecipeDataWithKey = {
-    id: string;
-    name: string;
-    status: 'other' | 'draft' | 'active_testing' | 'archived' | 'in_review' | 'live';
-    description?: string;
-    isPublic?: boolean;
-    tags?: Record<string, unknown>;
-    recipeBrokerInverse?: RecipeBrokerData[];
-    version?: number;
-    recipeMessageInverse?: RecipeMessageData[];
-    recipeProcessorInverse?: RecipeProcessorData[];
-    sampleOutput?: string;
-    postResultOptions?: Record<string, unknown>;
-    compiledRecipeInverse?: CompiledRecipeData[];
-};
 
 export type DataBrokerData = {
     id: string;
@@ -83,18 +65,19 @@ type CompiledRecipeEntry = {
     settings: AiSettingsData[];
 };
 
-type CompiledRecipeData = {
+type CompiledRecipeRecordWithKey = {
     id: string;
-    compiledRecipe: CompiledRecipeEntry;
+    compiledRecipe: Record<string, unknown>;
+    recipeId: string;
     createdAt: Date;
+    userId: string;
     isPublic: boolean;
+    version: number;
     updatedAt: Date;
     authenticatedRead: boolean;
-    recipeId?: string;
-    recipeReference?: RecipeData;
-    userId?: string;
-    version?: number;
-};
+    matrxRecordId: MatrxRecordId;
+}
+
 
 export default function Page() {
     const [selectedRecipeQuickRef, setSelectedRecipeQuickRef] = useState<QuickReferenceRecord | undefined>(undefined);
@@ -107,15 +90,19 @@ export default function Page() {
     const recipeRecordWithRelatedData = useAppSelector((state) => selectors.selectRecordWithKey(state, selectedRecipeQuickRef?.recordKey)) as
         | RecipeRecordWithKey
         | undefined;
+    
+    const recipeId = recipeRecordWithRelatedData?.id;
 
-    const allCompiledVersions = useAppSelector((state) =>
-        recipeRecordWithRelatedData?.id ? compiledSelectors.selectRecordsByFieldValue(state, 'recipeId', recipeRecordWithRelatedData.id) : []
-    ) as CompiledRecipeData[];
+    const allCompiledVersions = useAppSelector(state => 
+        compiledSelectors.selectRecordsByFieldValue(state, 'recipeId', recipeId) as CompiledRecipeRecordWithKey[]
+    )
 
+    
     const activeCompiledRecipeRecord = allCompiledVersions.find((record) => record.version === recipeVersion);
-    const brokers = activeCompiledRecipeRecord?.compiledRecipe?.brokers;
 
-    console.log('-- Page with brokers:', brokers);
+    const compiledRecipe = activeCompiledRecipeRecord?.compiledRecipe as CompiledRecipeEntry;
+
+    const brokers = compiledRecipe?.brokers;
 
     const inputComponentIds = brokers?.map((broker) => `id:${broker.inputComponent}`) ?? [];
 

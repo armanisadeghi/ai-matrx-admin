@@ -1,7 +1,8 @@
 // lib/redux/entity/selectors.ts
+'use client';
 
 import { createSelector, Selector } from '@reduxjs/toolkit';
-import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey, AllEntityFieldKeys } from '@/types/entityTypes';
+import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey, AllEntityFieldKeys, EntityFieldKeys } from '@/types/entityTypes';
 import { RootState } from '@/lib/redux/store';
 import {
     EnhancedRecord,
@@ -25,6 +26,12 @@ interface FieldNameGroups<TEntity extends EntityKeys> {
     relationshipFields: EntityAnyFieldKey<TEntity>[];
 }
 
+type EntityFieldFilter<TEntity extends EntityKeys> = {
+    field: EntityFieldKeys<TEntity>;
+    value: unknown;
+};
+
+
 const trace = 'ENTITY SELECTORS';
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
@@ -34,28 +41,87 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectEntity = (state: RootState): EntityState<TEntity> => {
         return state.entities[entityKey] || ({} as EntityState<TEntity>);
     };
+    
+    const selectAllRecords = createSelector(
+        [selectEntity],
+        (entity): EntityRecordMap<TEntity> => entity?.records || ({} as EntityRecordMap<TEntity>)
+    );
+    
+    const selectRecordsArray = createSelector(
+        [selectAllRecords],
+        (records): EntityDataWithKey<TEntity>[] => {
+            if (!records) return [];
+            
+            return Object.entries(records).map(([recordId, record]) => ({
+                ...record,
+                matrxRecordId: recordId
+            }));
+        }
+     );
+     
+     const selectRecordsByFieldValue = createSelector(
+        [
+            selectRecordsArray,
+            (_: RootState, field: EntityFieldKeys<TEntity>) => field,
+            (_: RootState, _field: EntityFieldKeys<TEntity>, value: unknown) => value
+        ],
+        (records, field, value): EntityDataWithKey<TEntity>[] => {
+            if (!records || !field) return [];
+            
+            return records.filter(record => record[field] === value);
+        }
+     );
 
-    const selectAllRecords = createSelector([selectEntity], (entity): EntityRecordMap<TEntity> => entity?.records || ({} as EntityRecordMap<TEntity>));
-
-    const selectRecordsByFieldValue = (state: RootState, fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any): EntityRecordArray<TEntity> => {
-        const records = selectAllRecords(state);
-        return Object.values(records).filter((record) => record[fieldName] === fieldValue);
-    };
-
-    // First, create a base selector that takes the additional parameters
-    const selectRecordKeyByFieldValue = (state: RootState, fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any): MatrxRecordId | null => {
-        const records = selectAllRecords(state);
-        const entry = Object.entries(records).find(([_, record]) => record[fieldName] === fieldValue);
-        return entry ? (entry[0] as MatrxRecordId) : null;
-    };
-
-    // For multiple keys
-    const selectRecordKeysByFieldValue = (state: RootState, fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any): MatrxRecordId[] => {
-        const records = selectAllRecords(state);
-        return Object.entries(records)
-            .filter(([_, record]) => record[fieldName] === fieldValue)
-            .map(([key]) => key as MatrxRecordId);
-    };
+     const selectRecordKeysByFieldValue = createSelector(
+        [selectRecordsByFieldValue],
+        (records): MatrxRecordId[] => {
+            if (!records) return [];
+            
+            return records.map(record => record.matrxRecordId);
+        }
+    );
+    
+    const selectFirstRecordKeyByFieldValue = createSelector(
+        [selectRecordKeysByFieldValue],
+        (recordKeys): MatrxRecordId => {
+            if (!recordKeys || recordKeys.length === 0) return '' as MatrxRecordId;
+            
+            return recordKeys[0];
+        }
+    );
+    
+    const selectRecordsByFieldValues = createSelector(
+        [
+            selectRecordsArray,
+            (_: RootState, filters: EntityFieldFilter<TEntity>[]) => filters
+        ],
+        (records, filters): EntityDataWithKey<TEntity>[] => {
+            if (!records || !filters.length) return [];
+            
+            return records.filter(record => 
+                filters.every(({ field, value }) => record[field] === value)
+            );
+        }
+    );
+    
+    // Then we can create a selector for the keys
+    const selectRecordKeysByFieldValues = createSelector(
+        [selectRecordsByFieldValues],
+        (records): MatrxRecordId[] => {
+            if (!records) return [];
+            return records.map(record => record.matrxRecordId);
+        }
+    );
+    
+    // And one for the first match
+    const selectFirstRecordKeyByFieldValues = createSelector(
+        [selectRecordKeysByFieldValues],
+        (recordKeys): MatrxRecordId => {
+            if (!recordKeys || recordKeys.length === 0) return '' as MatrxRecordId;
+            return recordKeys[0];
+        }
+    );
+    
 
     const selectEntityDisplayName = createSelector([selectEntity], (entity) => {
         return entity.entityMetadata.displayName;
@@ -1443,6 +1509,13 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectFieldNameGroupsWithHidden,
 
         selectRecordsByFieldValue,
+        selectFirstRecordKeyByFieldValue,
+        selectRecordKeysByFieldValue,
+        selectRecordsArray,
+        selectRecordsByFieldValues,
+        selectRecordKeysByFieldValues,
+        selectFirstRecordKeyByFieldValues,
+
         selectMatrxRecordIdsBySimpleKeys,
         selectMatrxRecordIdBySimpleKey,
         selectRecordsByKeys,
@@ -1459,8 +1532,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectRecordsWithKeysBySimpleIds,
         selectAllEffectiveRecordsWithKeys,
 
-        selectRecordKeyByFieldValue,
-        selectRecordKeysByFieldValue,
 
         selectEnhancedRecords,
         selectEnhancedRecordByKey,
@@ -1481,5 +1552,6 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectNonPkFkFieldNames,
         selectMatchDataToNonPkFkFields,
         selectMatchListDataToNonPkFkFields,
+    
     };
 };
