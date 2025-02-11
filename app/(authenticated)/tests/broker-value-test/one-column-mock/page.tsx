@@ -1,4 +1,4 @@
-import BrokerSectionOneColumn from "@/components/brokers/value-sections/BrokerSectionOneColumn";
+import BrokerSectionOneColumn from "@/components/brokers/value-sections/BrokerSectionWrapper";
 import { mockData } from "@/components/brokers/constants/mock-data";
 
 

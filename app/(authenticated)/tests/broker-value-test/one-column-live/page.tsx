@@ -1,7 +1,7 @@
 'use client';
 
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
-import BrokerSectionOneColumn from '@/components/brokers/value-sections/BrokerSectionOneColumn';
+import BrokerSectionOneColumn from '@/components/brokers/value-sections/BrokerSectionWrapper';
 import { createEntitySelectors, useAppSelector } from '@/lib/redux';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import {
@@ -22,7 +22,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useGetorFetchRecords } from '@/app/entities/hooks/records/useGetOrFetch';
-import { useBrokerValue } from '@/components/brokers/hooks/useBrokerValue';
 
 type RecipeDataWithKey = {
     id: string;
@@ -40,7 +39,7 @@ type RecipeDataWithKey = {
     compiledRecipeInverse?: CompiledRecipeData[];
 };
 
-type DataBrokerData = {
+export type DataBrokerData = {
     id: string;
     name: string;
     dataType?: 'str' | 'bool' | 'dict' | 'float' | 'int' | 'list' | 'url';
@@ -160,10 +159,10 @@ export default function Page() {
         selectedRecipeQuickRef && (!recipeRecordWithRelatedData || !activeCompiledRecipeRecord || (inputComponentIds.length > 0 && !hasAllInputComponents));
 
     return (
-        <div className='flex flex-col h-full w-full bg-slate-200 dark:bg-slate-800'>
+        <div className='h-full w-full bg-neutral-100 dark:bg-neutral-800'>
             {/* Top Selection Bar */}
-            <div className='w-full bg-background border-b border-gray-200 dark:border-gray-800 px-4 py-4'>
-                <div className='container mx-auto flex flex-row items-center gap-4'>
+            <div className='w-full items-center bg-neutral-100 dark:bg-neutral-800 border-b border-gray-200 dark:border-gray-800 px-4 py-2'>
+                <div className='container mx-auto flex flex-row items-center gap-4 '>
                     {/* Recipe Selection */}
                     <div className='w-[320px]'>
                         <QuickRefSelect
@@ -203,7 +202,7 @@ export default function Page() {
             </div>
 
             {/* Main Content Area */}
-            <div className='flex-1 container mx-auto px-4 py-8 space-y-6'>
+            <div className='h-full w-full px-4 py-8 space-y-6'>
                 {/* Loading State */}
                 {isLoading && (
                     <Alert>
@@ -220,11 +219,11 @@ export default function Page() {
 
                 {/* Broker Section */}
                 {selectedRecipeQuickRef && activeCompiledRecipeRecord && brokers && hasAllInputComponents && (
-                    <div className='bg-background border border-gray-200 dark:border-gray-800 rounded-lg'>
+                    <div className='bg-neutral-100 dark:bg-neutral-800 border border-gray-200 dark:border-gray-800 rounded-lg'>
                         <BrokerSectionOneColumn
                             brokers={brokers}
                             inputComponents={inputComponents}
-                            sectionTitle='Enter the details'
+                            sectionTitle='Please provide some details...'
                         />
                     </div>
                 )}

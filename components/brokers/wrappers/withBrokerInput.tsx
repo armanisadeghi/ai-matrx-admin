@@ -70,10 +70,10 @@ export const withBrokerInput = <P extends object>(
             }
         };
 
-        const containerBaseClasses = 'grid flex flex-col w-full h-full space-y-4';
-        const collapsibleBaseClasses = 'w-full';
-        const labelBaseClasses = 'text-base cursor-pointer select-none';
-        const descriptionBaseClasses = 'pt-2 pb-2 text-sm text-muted-foreground';
+        const containerBaseClasses = 'grid flex flex-col w-full h-full space-y-4 border border-green-500';
+        const collapsibleBaseClasses = 'w-full border border-blue-500';
+        const labelBaseClasses = 'text-base cursor-pointer select-none border border-pink-500';
+        const descriptionBaseClasses = 'pt-2 pb-12 text-md text-muted-foreground border border-red-500';
         const mainComponentBaseClasses = 'w-full h-full';
         const headerClasses = 'flex items-center w-full';
         const clickableAreaClasses =
@@ -122,7 +122,7 @@ export const withBrokerInput = <P extends object>(
                     </div>
 
                     {hasDescription && (
-                        <CollapsibleContent className='w-full overflow-hidden data-[state=open]:animate-slide-down data-[state=closed]:animate-slide-up'>
+                        <CollapsibleContent className='w-full  overflow-hidden data-[state=open]:animate-slide-down data-[state=closed]:animate-slide-up'>
                             <div className={cn(descriptionBaseClasses, inputComponent?.descriptionClassName || '')}>{inputComponent.description}</div>
                         </CollapsibleContent>
                     )}

@@ -70,14 +70,14 @@ export const withBrokerInput = <P extends object>(
             }
         };
 
-        const containerBaseClasses = 'grid flex flex-col w-full h-full space-y-4';
-        const collapsibleBaseClasses = 'w-full';
-        const labelBaseClasses = 'text-base cursor-pointer select-none';
-        const descriptionBaseClasses = 'pt-2 pb-2 text-sm text-muted-foreground';
+        const containerBaseClasses = 'grid flex flex-col w-full h-full space-y-2 border border-neutral-200 dark:border-neutral-700 rounded-lg';
+        const collapsibleBaseClasses = 'w-full pr-2';
+        const labelBaseClasses = 'text-base pt-1 cursor-pointer select-none';
+        const descriptionBaseClasses = 'pt-2 pb-2 px-6 text-md text-muted-foreground';
         const mainComponentBaseClasses = 'w-full h-full';
         const headerClasses = 'flex items-center w-full';
         const clickableAreaClasses =
-            'flex-1 flex items-center justify-between hover:bg-accent hover:text-accent-foreground rounded-sm cursor-pointer px-2 py-1';
+            'flex-1 flex items-center justify-between hover:bg-accent hover:text-accent-foreground rounded-sm cursor-pointer pr-2 pl-3 py-1';
         const controlsClasses = 'flex items-center space-x-2 ml-2';
         const iconClasses = 'h-4 w-4 shrink-0 text-muted-foreground cursor-pointer hover:text-foreground transition-colors';
         const disabledIconClasses = 'opacity-40 cursor-not-allowed hover:text-muted-foreground';
@@ -94,7 +94,7 @@ export const withBrokerInput = <P extends object>(
                         {hasDescription ? (
                             <CollapsibleTrigger className='flex-1'>
                                 <div className={clickableAreaClasses}>
-                                    <Label className={cn(labelBaseClasses, inputComponent?.labelClassName || '')}>{inputComponent.name}</Label>
+                                    <Label className={cn(labelBaseClasses, inputComponent?.labelClassName || '')}>{broker.name}  Learn More...</Label>
                                     <ChevronDown className='h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 [data-state=open]:rotate-180' />
                                 </div>
                             </CollapsibleTrigger>

@@ -7,8 +7,8 @@ import { cn } from '@/utils';
 import { BROKER_COMPONENTS } from '../value-components';
 import { DataBrokerData } from '@/app/(authenticated)/tests/broker-value-test/one-column-live/page';
 
-
-interface DynamicBrokerSectionProps {
+// Types
+interface BrokerSectionProps {
     brokers: DataBrokerData[];
     inputComponents: Record<string, any>;
     sectionTitle?: string;
@@ -20,20 +20,14 @@ interface DynamicBrokerSectionProps {
     cardContentClassName?: string;
 }
 
-const LoadingSkeleton = () => {
-    return (
-        <div className="space-y-4">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-            <Skeleton className="h-28 w-full" />
-        </div>
-    );
-};
+interface BrokerSectionUIProps extends BrokerSectionProps {
+    isLoading: boolean;
+    isComponentsReady: boolean;
+    brokerComponents: React.ReactNode[];
+}
 
-export const BrokerSectionOneColumn = ({
-    brokers,
-    inputComponents,
+
+export const BrokerSectionUIOneColumn = ({
     sectionTitle,
     maxHeight,
     sectionClassName,
@@ -41,49 +35,17 @@ export const BrokerSectionOneColumn = ({
     cardHeaderClassName,
     cardTitleClassName,
     cardContentClassName,
-}: DynamicBrokerSectionProps) => {
-    const [isLoading, setIsLoading] = useState(true);
-    const [isComponentsReady, setIsComponentsReady] = useState(false);
-    
-    // Simulate a loading delay
-    useEffect(() => {
-        const loadingTimer = setTimeout(() => {
-            setIsLoading(false);
-        }, 2000); // 2 second delay
-
-        return () => clearTimeout(loadingTimer);
-    }, []);
-
-    // Add additional delay for component rendering
-    useEffect(() => {
-        if (!isLoading) {
-            const componentTimer = setTimeout(() => {
-                setIsComponentsReady(true);
-            }, 500); // 0.5 second additional delay after loading
-
-            return () => clearTimeout(componentTimer);
-        }
-    }, [isLoading]);
-    
-    const brokerComponents = useMemo(
-        () =>
-            brokers.map((broker, index) => {
-                const componentInfo = inputComponents[broker.inputComponent];
-                const Component = BROKER_COMPONENTS[componentInfo.component];
-
-                if (!Component) {
-                    console.warn(`No matching component found for: ${componentInfo.component}`);
-                    return null;
-                }
-
-                return (
-                    <Component
-                        key={`broker-${index}`}
-                        broker={broker}
-                    />
-                );
-            }),
-        [brokers, inputComponents]
+    isLoading,
+    isComponentsReady,
+    brokerComponents
+}: BrokerSectionUIProps) => {
+    const LoadingSkeleton = () => (
+        <div className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
+            <Skeleton className="h-28 w-full" />
+        </div>
     );
 
     return (
@@ -123,4 +85,3 @@ export const BrokerSectionOneColumn = ({
     );
 };
 
-export default BrokerSectionOneColumn;
