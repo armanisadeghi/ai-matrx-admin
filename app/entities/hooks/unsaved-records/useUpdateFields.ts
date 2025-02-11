@@ -1,10 +1,9 @@
 // useUpdateFields.ts
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useEntityTools } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
-// Updated to handle any type of value
 type FieldValue = string | number | boolean | null | Record<string, unknown> | unknown;
 type FieldUpdates = Record<string, FieldValue>;
 
@@ -15,12 +14,12 @@ interface UseUpdateFieldsResult {
 
 export const useUpdateFields = (entityKey: EntityKeys): UseUpdateFieldsResult => {
     const dispatch = useDispatch();
-    const { actions, selectors } = useEntityTools(entityKey);
-    const fieldSchema = useAppSelector(selectors.selectFieldInfo);
+    const { actions, fields } = useEntityTools(entityKey);
+    const validFieldNames = new Set(Object.keys(fields));
 
     const updateField = useCallback(
         (recordId: MatrxRecordId, fieldName: string, value: FieldValue) => {
-            if (fieldSchema.some((field) => field.name === fieldName)) {
+            if (validFieldNames.has(fieldName)) {
                 dispatch(
                     actions.updateUnsavedField({
                         recordId,
@@ -30,14 +29,13 @@ export const useUpdateFields = (entityKey: EntityKeys): UseUpdateFieldsResult =>
                 );
             }
         },
-        [dispatch, actions, fieldSchema]
+        [dispatch, actions, validFieldNames]
     );
 
     const updateFields = useCallback(
         (recordId: MatrxRecordId, updates: FieldUpdates) => {
-            // Convert updates object to array format and filter valid fields
             const validUpdates = Object.entries(updates)
-                .filter(([fieldName]) => fieldSchema.some((field) => field.name === fieldName))
+                .filter(([fieldName]) => validFieldNames.has(fieldName))
                 .map(([fieldName, value]) => ({
                     recordId,
                     field: fieldName,
@@ -48,8 +46,28 @@ export const useUpdateFields = (entityKey: EntityKeys): UseUpdateFieldsResult =>
                 dispatch(actions.updateUnsavedFields({ updates: validUpdates }));
             }
         },
-        [dispatch, actions, fieldSchema]
+        [dispatch, actions, validFieldNames]
     );
 
     return { updateField, updateFields };
+};
+
+export const useFieldUpdate = (entityKey: EntityKeys, recordId: MatrxRecordId | undefined, fieldName: string) => {
+    const dispatch = useDispatch();
+    const { actions, fields } = useEntityTools(entityKey);
+
+    return useCallback(
+        (value: FieldValue) => {
+            if (recordId && fields[fieldName]) {
+                dispatch(
+                    actions.updateUnsavedField({
+                        recordId,
+                        field: fieldName,
+                        value,
+                    })
+                );
+            }
+        },
+        [dispatch, actions, recordId, fieldName, fields]
+    );
 };

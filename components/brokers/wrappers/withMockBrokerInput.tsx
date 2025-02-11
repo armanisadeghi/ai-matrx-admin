@@ -21,10 +21,10 @@ export const withBrokerInput = <P extends object>(
     return function BrokerInput({ broker, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
         const { value: originalValue, setValue: setOriginalValue, inputComponent } = useBrokerValue(broker);
         const { toast } = useToast();
-        const hasDescription = inputComponent.description && inputComponent.description.length > 0;
+        const hasDescription = inputComponent?.description && inputComponent.description.length > 0;
 
-        const showCopy = inputComponent.additionalParams?.copy !== false;
-        const showHistory = inputComponent.additionalParams?.history !== false;
+        const showCopy = inputComponent?.additionalParams?.copy !== false;
+        const showHistory = inputComponent?.additionalParams?.history !== false;
 
         const { state: value, set: setValue, undo, redo, canUndo, canRedo } = useHistoryState(originalValue);
 
@@ -81,6 +81,11 @@ export const withBrokerInput = <P extends object>(
         const controlsClasses = 'flex items-center space-x-2 ml-2';
         const iconClasses = 'h-4 w-4 shrink-0 text-muted-foreground cursor-pointer hover:text-foreground transition-colors';
         const disabledIconClasses = 'opacity-40 cursor-not-allowed hover:text-muted-foreground';
+
+        if (!inputComponent) {
+            return null;
+        }
+
 
         return (
             <div className={cn(containerBaseClasses, inputComponent?.containerClassName || '', className)}>

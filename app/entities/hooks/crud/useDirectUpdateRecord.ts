@@ -1,9 +1,8 @@
-import { useAppDispatch, useEntityTools } from "@/lib/redux";
-import { EntityAnyFieldKey, EntityData, EntityKeys } from "@/types";
-import { useCallback } from "react";
+import { useAppDispatch, useEntityTools } from '@/lib/redux';
+import { EntityAnyFieldKey, EntityKeys } from '@/types';
+import { useCallback } from 'react';
 
-
-export const useMoveDown = (entityName: EntityKeys,selectField: EntityAnyFieldKey<EntityKeys>) => {
+export const useDirectUpdateRecord = (entityName: EntityKeys, selectField: EntityAnyFieldKey<EntityKeys>) => {
     const dispatch = useAppDispatch();
     const { actions, selectors, store } = useEntityTools(entityName);
 

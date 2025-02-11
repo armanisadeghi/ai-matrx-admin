@@ -129,7 +129,7 @@ const PromptSettings = ({ initialSettings }) => {
           disabled={false}
           defaultValue={streamResponse}
           onChange={setStreamResponse}
-          labels={{ on: "Steam", off: "Direct" }}
+          labels={{ on: "Stream", off: "Direct" }}
         />
       </div>
       <div className="w-full space-y-2">

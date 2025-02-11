@@ -365,9 +365,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
         nativeFieldsNoPk: ['name', 'dependsDefault', 'defaultExtractors', 'params'],
     },
     recipe: {
-        nativeFields: ['id', 'name', 'description', 'tags', 'sampleOutput', 'isPublic', 'status', 'version', 'messages', 'postResultOptions'],
+        nativeFields: ['id', 'name', 'description', 'tags', 'sampleOutput', 'isPublic', 'status', 'version', 'postResultOptions'],
         primaryKeyFields: ['id'],
-        nativeFieldsNoPk: ['name', 'description', 'tags', 'sampleOutput', 'isPublic', 'status', 'version', 'messages', 'postResultOptions'],
+        nativeFieldsNoPk: ['name', 'description', 'tags', 'sampleOutput', 'isPublic', 'status', 'version', 'postResultOptions'],
     },
     recipeBroker: {
         nativeFields: ['id', 'recipe', 'broker', 'brokerRole', 'required'],

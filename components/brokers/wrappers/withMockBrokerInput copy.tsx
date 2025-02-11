@@ -3,26 +3,27 @@ import { ChevronDown, RotateCcw, RotateCw, Copy } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
+import { useMockBrokerInput } from '../hooks/useMockBrokerValue';
+import { DataBroker, DataInputComponent } from '../types';
 import { useHistoryState } from '@uidotdev/usehooks';
 import { useToast } from '@/components/ui/use-toast';
-import { DataBrokerDataWithKey, useBrokerValue } from '../hooks/useBrokerValue';
-import { DataInputComponentData } from '@/types';
 
 export const withBrokerInput = <P extends object>(
     WrappedComponent: React.ComponentType<
         P & {
             value: any;
             onChange: (value: any) => void;
-            broker: DataBrokerDataWithKey;
-            inputComponent: DataInputComponentData;
+            broker: DataBroker;
+            inputComponent: DataInputComponent;
         }
     >
 ) => {
-    return function BrokerInput({ broker, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
-        const { value: originalValue, setValue: setOriginalValue, inputComponent } = useBrokerValue(broker);
+    return function BrokerInput({ brokerId, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
+        const { value: originalValue, setValue: setOriginalValue, broker, inputComponent } = useMockBrokerInput(brokerId);
         const { toast } = useToast();
         const hasDescription = inputComponent.description && inputComponent.description.length > 0;
 
+        // Extract feature flags from additionalParams
         const showCopy = inputComponent.additionalParams?.copy !== false;
         const showHistory = inputComponent.additionalParams?.history !== false;
 
@@ -142,7 +143,7 @@ export const withBrokerInput = <P extends object>(
 };
 
 export type BrokerInputProps = {
-    broker: DataBrokerDataWithKey;
+    brokerId: string;
     className?: string;
     // Add any other common props here
 };
@@ -152,13 +153,13 @@ export const withBrokerCustomInput = <P extends object>(
         P & {
             value: any;
             onChange: (value: any) => void;
-            broker: DataBrokerDataWithKey;
-            inputComponent: DataInputComponentData;
+            broker: DataBroker;
+            inputComponent: DataInputComponent;
         }
     >
 ) => {
-    return function BrokerInput({ broker, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
-        const { value, setValue, inputComponent } = useBrokerValue(broker);
+    return function BrokerInput({ brokerId, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
+        const { value, setValue, broker, inputComponent } = useMockBrokerInput(brokerId);
 
         return (
             <div className={cn('space-y-2', inputComponent.containerClassName || '', className)}>

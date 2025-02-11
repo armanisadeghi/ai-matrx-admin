@@ -1,6 +1,6 @@
 import React from 'react';
 import { Textarea } from "@/components/ui/textarea";
-import { withBrokerInput } from '../wrappers/withBrokerInput';
+import { withBrokerInput } from '../wrappers/withMockBrokerInput';
 
 export const BrokerTextarea = withBrokerInput(({ 
     value, 

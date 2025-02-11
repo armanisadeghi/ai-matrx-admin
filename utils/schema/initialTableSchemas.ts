@@ -6039,7 +6039,7 @@ export const audioRecording = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
+            defaultComponent: 'UUID_FIELD' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -9967,7 +9967,7 @@ export const brokerValue = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
+            defaultComponent: 'UUID_FIELD' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -10317,7 +10317,7 @@ export const brokerValue = {
             },
             structure: 'single' as const,
             isNative: true,
-            typeReference: {} as TypeBrand<any>,
+            typeReference: {} as TypeBrand<string[]>,
             enumValues: null,
             entityName: 'brokerValue',
             databaseTable: 'broker_value',
@@ -11450,7 +11450,7 @@ export const compiledRecipe = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
+            defaultComponent: 'UUID_FIELD' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -13286,8 +13286,28 @@ export const dataInputComponent = {
                         value: 'BrokerCheckbox',
                     },
                     {
+                        label: 'Broker Color Picker',
+                        value: 'BrokerColorPicker',
+                    },
+                    {
+                        label: 'Broker Custom Input',
+                        value: 'BrokerCustomInput',
+                    },
+                    {
+                        label: 'Broker Custom Select',
+                        value: 'BrokerCustomSelect',
+                    },
+                    {
                         label: 'Broker Input',
                         value: 'BrokerInput',
+                    },
+                    {
+                        label: 'Broker Number Input',
+                        value: 'BrokerNumberInput',
+                    },
+                    {
+                        label: 'Broker Number Picker',
+                        value: 'BrokerNumberPicker',
                     },
                     {
                         label: 'Broker Radio',
@@ -13306,8 +13326,20 @@ export const dataInputComponent = {
                         value: 'BrokerSwitch',
                     },
                     {
+                        label: 'Broker Tailwind Color Picker',
+                        value: 'BrokerTailwindColorPicker',
+                    },
+                    {
+                        label: 'Broker Text Array Input',
+                        value: 'BrokerTextArrayInput',
+                    },
+                    {
                         label: 'Broker Textarea',
                         value: 'BrokerTextarea',
+                    },
+                    {
+                        label: 'Broker Textarea Grow',
+                        value: 'BrokerTextareaGrow',
                     },
                     {
                         label: 'Button',
@@ -13423,12 +13455,20 @@ export const dataInputComponent = {
                 | 'Accordion_View'
                 | 'Accordion_View_Add_Edit'
                 | 'BrokerCheckbox'
+                | 'BrokerColorPicker'
+                | 'BrokerCustomInput'
+                | 'BrokerCustomSelect'
                 | 'BrokerInput'
+                | 'BrokerNumberInput'
+                | 'BrokerNumberPicker'
                 | 'BrokerRadio'
                 | 'BrokerSelect'
                 | 'BrokerSlider'
                 | 'BrokerSwitch'
+                | 'BrokerTailwindColorPicker'
+                | 'BrokerTextArrayInput'
                 | 'BrokerTextarea'
+                | 'BrokerTextareaGrow'
                 | 'Button'
                 | 'Checkbox'
                 | 'Chip'
@@ -13462,12 +13502,20 @@ export const dataInputComponent = {
                 'Accordion_View',
                 'Accordion_View_Add_Edit',
                 'BrokerCheckbox',
+                'BrokerColorPicker',
+                'BrokerCustomInput',
+                'BrokerCustomSelect',
                 'BrokerInput',
+                'BrokerNumberInput',
+                'BrokerNumberPicker',
                 'BrokerRadio',
                 'BrokerSelect',
                 'BrokerSlider',
                 'BrokerSwitch',
+                'BrokerTailwindColorPicker',
+                'BrokerTextArrayInput',
                 'BrokerTextarea',
+                'BrokerTextareaGrow',
                 'Button',
                 'Checkbox',
                 'Chip',
@@ -16279,10 +16327,10 @@ export const emails = {
             isRequired: true,
             maxLength: null,
             isArray: false,
-            defaultValue: 'extensions.uuid_generate_v4()' as const,
+            defaultValue: '' as const,
             isPrimaryKey: true,
             isDisplayField: false,
-            defaultGeneratorFunction: '',
+            defaultGeneratorFunction: 'getUUID()',
             validationFunctions: [],
             exclusionRules: [],
             defaultComponent: 'UUID_FIELD' as const,
@@ -17186,7 +17234,7 @@ export const fileStructure = {
             isRequired: true,
             maxLength: null,
             isArray: false,
-            defaultValue: 'public.file_structure_id_seq' as const,
+            defaultValue: 'file_structure_id_seq' as const,
             isPrimaryKey: true,
             isDisplayField: false,
             defaultGeneratorFunction: '',
@@ -17951,7 +17999,7 @@ export const flashcardData = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
+            defaultComponent: 'UUID_FIELD' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -19200,7 +19248,7 @@ export const flashcardHistory = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
+            defaultComponent: 'UUID_FIELD' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -20597,7 +20645,7 @@ export const flashcardSets = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
+            defaultComponent: 'UUID_FIELD' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',
@@ -23244,70 +23292,6 @@ export const recipe = {
             databaseTable: 'recipe',
             foreignKeyReference: null,
             description: '"Version" field for recipe. This is an optional field. Your entry must be an number data type.',
-        },
-        messages: {
-            fieldNameFormats: {
-                frontend: 'messages',
-                backend: 'messages',
-                database: 'messages',
-                pretty: 'Messages',
-                component: 'Messages',
-                kebab: 'messages',
-                sqlFunctionRef: 'p_messages',
-                RestAPI: 'messages',
-                GraphQL: 'messages',
-                custom: 'messages',
-            } as const,
-            name: 'messages',
-            displayName: 'Messages',
-
-            uniqueColumnId: 'supabase_automation_matrix:public:recipe:messages',
-            uniqueFieldId: 'supabase_automation_matrix:recipe:messages',
-
-            dataType: 'object' as const,
-            isRequired: false,
-            maxLength: null,
-            isArray: true,
-            defaultValue: '' as const,
-            isPrimaryKey: false,
-            isDisplayField: false,
-            defaultGeneratorFunction: '',
-            validationFunctions: [],
-            exclusionRules: [],
-            defaultComponent: 'JSON_EDITOR' as const,
-            componentProps: {
-                subComponent: 'jsonArray',
-                variant: 'default',
-                section: 'default',
-                placeholder: 'default',
-                size: 'default',
-                textSize: 'default',
-                textColor: 'default',
-                rows: 'default',
-                animation: 'default',
-                fullWidthValue: 'default',
-                fullWidth: 'default',
-                disabled: 'default',
-                className: 'default',
-                type: 'default',
-                onChange: 'default',
-                onBlur: 'default',
-                formatString: 'default',
-                min: 'default',
-                max: 'default',
-                step: 'default',
-                numberType: 'default',
-                options: 'default',
-                required: false,
-            },
-            structure: 'single' as const,
-            isNative: true,
-            typeReference: {} as TypeBrand<Record<string, unknown>[]>,
-            enumValues: null,
-            entityName: 'recipe',
-            databaseTable: 'recipe',
-            foreignKeyReference: null,
-            description: '"Messages" field for recipe. This is an optional field. Your entry must be an object data type. You can enter one or more entries.',
         },
         postResultOptions: {
             fieldNameFormats: {
@@ -28898,7 +28882,7 @@ export const userPreferences = {
             defaultGeneratorFunction: '',
             validationFunctions: [],
             exclusionRules: [],
-            defaultComponent: 'FK_SELECT' as const,
+            defaultComponent: 'UUID_FIELD' as const,
             componentProps: {
                 subComponent: 'default',
                 variant: 'default',

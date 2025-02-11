@@ -155,6 +155,8 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
             overrides: override,
         }));
 
+        console.log("----- Recipe Task Data List:", recipeTaskDataList);
+
         return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
     }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);
 

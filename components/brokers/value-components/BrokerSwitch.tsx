@@ -1,5 +1,5 @@
 import { Switch, Label } from "@/components/ui";
-import { withBrokerInput, withBrokerCustomInput } from "../wrappers/withBrokerInput";
+import { withBrokerInput, withBrokerCustomInput } from "../wrappers/withMockBrokerInput";
 
 
 export const BrokerSwitch = withBrokerInput(({ 

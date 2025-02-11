@@ -1,4 +1,4 @@
-import { withBrokerInput } from '../wrappers/withBrokerInput';
+import { withBrokerInput } from '../wrappers/withMockBrokerInput';
 import TextArrayInput from '@/components/ui/matrx/TextArrayInput';
 
 export const BrokerTextArrayInput = withBrokerInput(({ 

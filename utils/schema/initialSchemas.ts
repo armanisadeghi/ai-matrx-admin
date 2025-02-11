@@ -13275,8 +13275,28 @@ export const initialAutomationTableSchema = {
                             value: 'BrokerCheckbox',
                         },
                         {
+                            label: 'Broker Color Picker',
+                            value: 'BrokerColorPicker',
+                        },
+                        {
+                            label: 'Broker Custom Input',
+                            value: 'BrokerCustomInput',
+                        },
+                        {
+                            label: 'Broker Custom Select',
+                            value: 'BrokerCustomSelect',
+                        },
+                        {
                             label: 'Broker Input',
                             value: 'BrokerInput',
+                        },
+                        {
+                            label: 'Broker Number Input',
+                            value: 'BrokerNumberInput',
+                        },
+                        {
+                            label: 'Broker Number Picker',
+                            value: 'BrokerNumberPicker',
                         },
                         {
                             label: 'Broker Radio',
@@ -13295,8 +13315,20 @@ export const initialAutomationTableSchema = {
                             value: 'BrokerSwitch',
                         },
                         {
+                            label: 'Broker Tailwind Color Picker',
+                            value: 'BrokerTailwindColorPicker',
+                        },
+                        {
+                            label: 'Broker Text Array Input',
+                            value: 'BrokerTextArrayInput',
+                        },
+                        {
                             label: 'Broker Textarea',
                             value: 'BrokerTextarea',
+                        },
+                        {
+                            label: 'Broker Textarea Grow',
+                            value: 'BrokerTextareaGrow',
                         },
                         {
                             label: 'Button',
@@ -13412,12 +13444,20 @@ export const initialAutomationTableSchema = {
                     | 'Accordion_View'
                     | 'Accordion_View_Add_Edit'
                     | 'BrokerCheckbox'
+                    | 'BrokerColorPicker'
+                    | 'BrokerCustomInput'
+                    | 'BrokerCustomSelect'
                     | 'BrokerInput'
+                    | 'BrokerNumberInput'
+                    | 'BrokerNumberPicker'
                     | 'BrokerRadio'
                     | 'BrokerSelect'
                     | 'BrokerSlider'
                     | 'BrokerSwitch'
+                    | 'BrokerTailwindColorPicker'
+                    | 'BrokerTextArrayInput'
                     | 'BrokerTextarea'
+                    | 'BrokerTextareaGrow'
                     | 'Button'
                     | 'Checkbox'
                     | 'Chip'
@@ -13451,12 +13491,20 @@ export const initialAutomationTableSchema = {
                     'Accordion_View',
                     'Accordion_View_Add_Edit',
                     'BrokerCheckbox',
+                    'BrokerColorPicker',
+                    'BrokerCustomInput',
+                    'BrokerCustomSelect',
                     'BrokerInput',
+                    'BrokerNumberInput',
+                    'BrokerNumberPicker',
                     'BrokerRadio',
                     'BrokerSelect',
                     'BrokerSlider',
                     'BrokerSwitch',
+                    'BrokerTailwindColorPicker',
+                    'BrokerTextArrayInput',
                     'BrokerTextarea',
+                    'BrokerTextareaGrow',
                     'Button',
                     'Checkbox',
                     'Chip',

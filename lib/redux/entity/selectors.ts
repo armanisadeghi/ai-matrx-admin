@@ -37,12 +37,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectAllRecords = createSelector([selectEntity], (entity): EntityRecordMap<TEntity> => entity?.records || ({} as EntityRecordMap<TEntity>));
 
-    const selectRecordsByFieldValue = (fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any) =>
-        createSelector([selectAllRecords], (records): EntityRecordArray<TEntity> => {
-            const matchingRecords = Object.values(records).filter((record) => record[fieldName] === fieldValue);
-
-            return matchingRecords;
-        });
+    const selectRecordsByFieldValue = (state: RootState, fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any): EntityRecordArray<TEntity> => {
+        const records = selectAllRecords(state);
+        return Object.values(records).filter((record) => record[fieldName] === fieldValue);
+    };
 
     // First, create a base selector that takes the additional parameters
     const selectRecordKeyByFieldValue = (state: RootState, fieldName: EntityAnyFieldKey<TEntity>, fieldValue: any): MatrxRecordId | null => {

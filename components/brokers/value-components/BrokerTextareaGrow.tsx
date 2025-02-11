@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { withBrokerInput } from '../wrappers/withBrokerInput';
+import { withBrokerInput } from '../wrappers/withMockBrokerInput';
 
 export const BrokerTextareaGrow = withBrokerInput(({ 
     value, 
