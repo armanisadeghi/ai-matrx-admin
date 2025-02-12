@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { createRecordKey, useAppDispatch, useAppSelector, useEntityData, useEntityToasts, useEntityTools } from '@/lib/redux';
-import { EntityData, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityData, EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { useCallbackManager } from '@/hooks/useCallbackManager';
 import { useDispatch } from 'react-redux';
@@ -133,13 +133,13 @@ export const useCreateAndGetId = ({ entityKey, onSuccess, onError, showToast = t
 
 interface CreateWithIdOptions {
     entityKey: EntityKeys;
-    onSuccess?: (result: EntityData<EntityKeys>) => void;
+    onSuccess?: (newRecordWithKey: EntityDataWithKey<EntityKeys>) => void;
     onError?: (error: Error) => void;
     showToast?: boolean;
 }
 
 interface DirectCreateRecordResult {
-    result: EntityData<EntityKeys>;
+    newRecordWithKey: EntityDataWithKey<EntityKeys>;
 }
 
 interface CustomPromise extends Promise<any> {
@@ -165,12 +165,18 @@ export const useCreateWithId = ({ entityKey, onSuccess, onError, showToast = tru
                     })
                 );
 
-                const result = await callbackPromise;
+                const callbackResult = await callbackPromise;
+                const newRecordWithKey = {
+                    ...callbackResult.data,
+                    matrxRecordId: callbackResult.recordKey,
+                }
+                
+                
                 if (showToast) {
                     entityToasts.handleCreateSuccess();
                 }
-                onSuccess?.(result);
-                return { result };
+                onSuccess?.(newRecordWithKey);
+                return { newRecordWithKey };
             } catch (error) {
                 if (showToast) {
                     entityToasts.handleError(error as Error, 'create');

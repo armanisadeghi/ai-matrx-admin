@@ -3,7 +3,7 @@ import { ChevronDown, RotateCcw, RotateCw, Copy } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { useMockBrokerInput } from '../hooks/useMockBrokerValue';
+import { useMockBrokerInput } from '../mock-parts/useMockBrokerValue';
 import { DataBroker, DataInputComponent } from '../types';
 import { useHistoryState } from '@uidotdev/usehooks';
 import { useToast } from '@/components/ui/use-toast';

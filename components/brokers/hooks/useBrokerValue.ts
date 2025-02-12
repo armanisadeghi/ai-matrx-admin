@@ -1,11 +1,10 @@
-import { useGetOrFetchRecord } from '@/app/entities/hooks/records/useGetOrFetch';
-import { DataInputComponentData, DataInputComponentRecordWithKey, DataOutputComponentData, MatrxRecordId, MessageBrokerData } from '@/types';
+import { DataInputComponentData, DataInputComponentRecordWithKey, DataOutputComponentData, EntityDataWithKey, MatrxRecordId, MessageBrokerData } from '@/types';
 import { useCreateWithId } from '@/app/entities/hooks/crud/useDirectCreateRecord';
 import { useUser } from '@/lib/hooks/useUser';
-import { use, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useFieldUpdate } from '@/app/entities/hooks/unsaved-records/useUpdateFields';
-import { createEntitySelectors, useAppSelector } from '@/lib/redux';
+import { createEntitySelectors, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 
 type BrokerValueData = {
     id: string;
@@ -57,7 +56,7 @@ export type DataBrokerDataWithKey = {
 };
 
 interface CreateBrokerValueOptions {
-    onSuccess?: (result: any) => void;
+    onSuccess?: (newRecordWithKey: EntityDataWithKey<'brokerValue'>) => void;
     onError?: (error: Error) => void;
     showToast?: boolean;
 }
@@ -77,7 +76,7 @@ type BrokerValueRecordWithKey = {
     createdAt?: Date;
     userId: string;
     tags: string[];
-    data: Record<string, unknown>;
+    data: Record<'value', unknown>;
     category: string;
     subCategory: string;
     comments: string;
@@ -112,24 +111,25 @@ export const useCreateBrokerValue = ({ onSuccess, onError, showToast = false }: 
                 ...(additionalData.comments && { comments: additionalData.comments }),
             };
 
-            const result = await createWithId({
+            const newRecordWithKey = await createWithId({
                 data: brokerValueData,
                 matrxRecordId,
-            });
+            })
 
-            return {
-                ...brokerValueData,
-                matrxRecordId,
-            };
+            console.log('useCreateBrokerValue newRecordWithKey', newRecordWithKey);
+
+            return newRecordWithKey as unknown as BrokerValueRecordWithKey;
         },
         [createWithId, userId]
     );
 };
 
 export function useBrokerValue(broker: DataBrokerDataWithKey) {
+    const dispatch = useAppDispatch();
     const primaryEntity = 'brokerValue';
-    const [brokerValueRecord, setBrokerValueRecord] = useState<BrokerValueData | null>(null);
-    const recordId = brokerValueRecord?.id;
+    const { actions, selectors } = useEntityTools(primaryEntity);
+    const [brokerValueRecord, setBrokerValueRecord] = useState<BrokerValueRecordWithKey | null>(null);
+    const recordId = brokerValueRecord?.matrxRecordId;
 
     const dataInputComponentSelectors = createEntitySelectors('dataInputComponent');
     const componentMatrxId = `id:${broker.inputComponent}`;
@@ -139,7 +139,8 @@ export function useBrokerValue(broker: DataBrokerDataWithKey) {
 
     const createBrokerValue = useCreateBrokerValue({
         onSuccess: (result) => {
-            setBrokerValueRecord(result);
+            console.log('useBrokerValue onSuccess result', result);
+            setBrokerValueRecord(result as BrokerValueRecordWithKey);
         },
     });
 
@@ -171,6 +172,12 @@ export function useBrokerValue(broker: DataBrokerDataWithKey) {
         }
     };
 
+    const handleSave = () => {
+        dispatch(actions.updateRecord({
+            matrxRecordId: recordId,
+        }));
+    }
+
     const getValue = () => {
         return brokerValueRecord?.data.value ?? broker?.defaultValue ?? '';
     };
@@ -184,6 +191,7 @@ export function useBrokerValue(broker: DataBrokerDataWithKey) {
     return {
         value: getValue(),
         setValue,
+        handleSave,
         broker,
         inputComponent,
     };

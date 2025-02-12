@@ -50,7 +50,7 @@ exports.configureWebpack = (config, { isServer }) => {
     config.plugins.push(
         new webpack.IgnorePlugin({
             checkResource: (resource) => {
-                const excludeDirs = ['/_armani/', '/armani/', '/_dev/'];
+                const excludeDirs = ['/_armani/', '/armani/', '/_dev/', 'app/(authenticated)/demo/component-demo/' ];
                 return excludeDirs.some((dir) => resource.includes(dir));
             },
         })
