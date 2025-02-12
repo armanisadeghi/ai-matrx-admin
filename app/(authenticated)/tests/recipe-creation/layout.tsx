@@ -1,26 +1,22 @@
 // /layout.tsx
-"use  client";
 
-import { StructuredEditorProvider } from "@/app/contexts/old/StructuredEditorContext";
+import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
+import { filteredPages, MODULE_HOME, MODULE_NAME} from './config';
+import React from "react";
 
-import { ModuleHeader } from "@/components/matrx/navigation";
-import { filteredPages, MODULE_HOME, MODULE_NAME } from "./config";
-
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const currentPath =
-    typeof window !== "undefined" ? window.location.pathname : "";
-
-  return (
-    <div className="flex flex-col h-full">
-      <ModuleHeader
-        pages={filteredPages}
-        currentPath={currentPath}
-        moduleHome={MODULE_HOME}
-        moduleName={MODULE_NAME}
-      />
-      <main className="flex-1">
-        <StructuredEditorProvider>{children}</StructuredEditorProvider>
-      </main>
-    </div>
-  );
+export default function Layout({children}: { children: React.ReactNode }) {
+    return (
+        <div className="flex flex-col h-full">
+            <div className="sticky top-0 z-50">
+                <ModuleHeaderWithProvider
+                    pages={filteredPages}
+                    moduleHome={MODULE_HOME}
+                    moduleName={MODULE_NAME}
+                />
+            </div>
+            <main className="flex-1">
+                {children}
+            </main>
+        </div>
+    );
 }

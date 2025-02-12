@@ -1,11 +1,11 @@
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { EntityKeys, EntityData } from '@/types';
 import React, { useEffect, useCallback } from 'react';
-import { RelationshipDefinition, createRelationshipData } from './utils';
+import { createRelationshipData } from './utils';
 
 // Base hook for getting join relationships
 export function useJoinedRecords(
-    relationshipDefinition: RelationshipDefinition,
+    relationshipDefinition,
     options?: {
         parentRecordId?: string; // Optional: specific parent record ID
         parentFieldValue?: string; // Optional: specific parent field value
@@ -32,7 +32,7 @@ export function useJoinedRecords(
     const parentFieldValue = options?.parentFieldValue ?? options?.parentRecordId ?? activeParentRecord?.[parentReferencedField];
 
     // Get joining records
-    const JoiningEntityRecords = useAppSelector(joiningSelectors.selectRecordsByFieldValue(joiningParentField, parentFieldValue)) as EntityData<EntityKeys>[];
+    const JoiningEntityRecords = useAppSelector((state) => joiningSelectors.selectRecordsByFieldValueHelper(state, joiningParentField, parentFieldValue)) as EntityData<EntityKeys>[];
 
     // Get child records
     const matchingChildIds = React.useMemo(
@@ -91,16 +91,16 @@ export function useJoinedRecords(
 }
 
 // Convenience hook for active record scenarios
-export function useActiveJoinedRecords(relationshipDefinition: RelationshipDefinition) {
+export function useActiveJoinedRecords(relationshipDefinition) {
     return useJoinedRecords(relationshipDefinition);
 }
 
 // Hook for specific record scenarios
-export function useRecordJoinedRecords(relationshipDefinition: RelationshipDefinition, parentRecordId: string) {
+export function useRecordJoinedRecords(relationshipDefinition, parentRecordId: string) {
     return useJoinedRecords(relationshipDefinition, { parentRecordId });
 }
 
 // Hook for field value scenarios
-export function useFieldValueJoinedRecords(relationshipDefinition: RelationshipDefinition, fieldValue: string) {
+export function useFieldValueJoinedRecords(relationshipDefinition, fieldValue: string) {
     return useJoinedRecords(relationshipDefinition, { parentFieldValue: fieldValue });
 }

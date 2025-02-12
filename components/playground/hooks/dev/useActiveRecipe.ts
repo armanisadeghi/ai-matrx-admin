@@ -26,7 +26,7 @@ export function useActiveRecipe() {
 
 
     // Messages
-    const recipeMessages = useAppSelector(recipeMessage.selectors.selectRecordsByFieldValue('recipeId', activeRecipeId)) as RecipeMessageDataRequired[];
+    const recipeMessages = useAppSelector((state) => recipeMessage.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeId)) as RecipeMessageDataRequired[];
 
     const matchingMessageIds = React.useMemo(
         () => recipeMessages.filter((message) => message?.messageId != null).map((message) => message.messageId),
@@ -37,7 +37,7 @@ export function useActiveRecipe() {
 
 
     // AI Agents & Settings
-    const aiAgents = useAppSelector(aiAgent.selectors.selectRecordsByFieldValue('recipeId', activeRecipeId)) as AiAgentDataRequired[];
+    const aiAgents = useAppSelector((state) => aiAgent.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeId)) as AiAgentDataRequired[];
 
     const matchingAiSettingsIds = React.useMemo(
         () => aiAgents.filter((agent) => agent?.aiSettingsId != null).map((agent) => agent.aiSettingsId),
@@ -47,10 +47,10 @@ export function useActiveRecipe() {
     const matchingAiSettings = useAppSelector((state) => aiSettings.selectors.selectRecordsByKeys(state, settingsMatrxIds)) as AiSettingsDataRequired[];
 
 
-    const aiAgentRecords = useAppSelector(aiAgent.selectors.selectRecordsByFieldValue('recipeId', activeRecipeId)) as AiAgentDataRequired[];
+    const aiAgentRecords = useAppSelector((state) => aiAgent.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeId)) as AiAgentDataRequired[];
 
     // Message Brokers and Data Brokers
-    const messageBrokers = useAppSelector(messageBroker.selectors.selectRecordsByFieldValue('messageId', matchingMessageIds)) as MessageBrokerDataRequired[];
+    const messageBrokers = useAppSelector((state) => messageBroker.selectors.selectRecordsByFieldValueHelper(state,'messageId', matchingMessageIds)) as MessageBrokerDataRequired[];
     
     const matchingBrokerIds = React.useMemo(
         () => messageBrokers.filter((broker) => broker?.brokerId != null).map((broker) => broker.brokerId),

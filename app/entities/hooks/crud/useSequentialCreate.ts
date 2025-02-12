@@ -114,8 +114,8 @@ export const useSequentialCreate = ({
                 }
 
                 return {
-                    firstResult: firstResponse.result,
-                    secondResult: secondResponse.result,
+                    firstResult: firstResponse.newRecordWithKey,
+                    secondResult: secondResponse.newRecordWithKey,
                 };
             } catch (error) {
                 if (shouldShowIndividual || shouldShowCombined) {

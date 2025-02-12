@@ -1,4 +1,4 @@
-import { withBrokerInput } from '../wrappers/withBrokerInput';
+import { withBrokerInput } from '../wrappers/withMockBrokerInput';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 

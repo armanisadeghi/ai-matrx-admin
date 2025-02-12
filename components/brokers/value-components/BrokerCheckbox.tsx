@@ -1,6 +1,6 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { withBrokerInput } from "../wrappers/withBrokerInput";
+import { withBrokerInput } from "../wrappers/withMockBrokerInput";
 import { cn } from "@/lib/utils";
 
 export const BrokerCheckbox = withBrokerInput(({ 

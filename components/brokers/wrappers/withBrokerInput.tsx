@@ -1,31 +1,30 @@
 import React, { useEffect } from 'react';
-import { ChevronDown, RotateCcw, RotateCw, Copy } from 'lucide-react';
+import { ChevronDown, RotateCcw, RotateCw, Copy, Save } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
-import { useBrokerInput } from '../hooks/useBrokerValue';
-import { DataBroker, DataInputComponent } from '../types';
 import { useHistoryState } from '@uidotdev/usehooks';
 import { useToast } from '@/components/ui/use-toast';
+import { DataBrokerDataWithKey, useBrokerValue } from '../hooks/useBrokerValue';
+import { DataInputComponentData } from '@/types';
 
-export const withBrokerInput = <P extends object>(
+export const withStandardBrokerInput = <P extends object>(
     WrappedComponent: React.ComponentType<
         P & {
             value: any;
             onChange: (value: any) => void;
-            broker: DataBroker;
-            inputComponent: DataInputComponent;
+            inputComponent: DataInputComponentData;
         }
     >
 ) => {
-    return function BrokerInput({ brokerId, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
-        const { value: originalValue, setValue: setOriginalValue, broker, inputComponent } = useBrokerInput(brokerId);
+    return function BrokerInput({ broker, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
+        const { value: originalValue, setValue: setOriginalValue, inputComponent, handleSave } = useBrokerValue(broker);
         const { toast } = useToast();
-        const hasDescription = inputComponent.description && inputComponent.description.length > 0;
+        const hasDescription = inputComponent?.description && inputComponent.description.length > 0;
 
-        // Extract feature flags from additionalParams
-        const showCopy = inputComponent.additionalParams?.copy !== false;
-        const showHistory = inputComponent.additionalParams?.history !== false;
+        const showCopy = inputComponent?.additionalParams?.copy !== false;
+        const showHistory = inputComponent?.additionalParams?.history !== false;
+        const showSave = inputComponent?.additionalParams?.save !== false;
 
         const { state: value, set: setValue, undo, redo, canUndo, canRedo } = useHistoryState(originalValue);
 
@@ -71,17 +70,22 @@ export const withBrokerInput = <P extends object>(
             }
         };
 
-        const containerBaseClasses = 'grid flex flex-col w-full h-full space-y-4';
-        const collapsibleBaseClasses = 'w-full';
-        const labelBaseClasses = 'text-base cursor-pointer select-none';
-        const descriptionBaseClasses = 'pt-2 pb-2 text-sm text-muted-foreground';
+        const containerBaseClasses = 'grid flex flex-col w-full h-full space-y-2 rounded-t-2xl rounded-b-lg border border-blue-100 dark:border-blue-600';
+        const collapsibleBaseClasses = 'w-full pr-2 bg-blue-100 dark:bg-blue-600 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-t-xl';
+        const labelBaseClasses = 'text-base pt-1 cursor-pointer select-none ';
+        const descriptionBaseClasses = 'pt-2 pb-2 px-6 text-md text-accent-foreground bg-blue-500';
         const mainComponentBaseClasses = 'w-full h-full';
         const headerClasses = 'flex items-center w-full';
         const clickableAreaClasses =
-            'flex-1 flex items-center justify-between hover:bg-accent hover:text-accent-foreground rounded-sm cursor-pointer px-2 py-1';
+            'flex-1 flex items-center justify-between hover:text-accent-foreground rounded-sm cursor-pointer pr-2 pl-3 py-1';
         const controlsClasses = 'flex items-center space-x-2 ml-2';
         const iconClasses = 'h-4 w-4 shrink-0 text-muted-foreground cursor-pointer hover:text-foreground transition-colors';
         const disabledIconClasses = 'opacity-40 cursor-not-allowed hover:text-muted-foreground';
+
+        if (!inputComponent) {
+            return null;
+        }
+
 
         return (
             <div className={cn(containerBaseClasses, inputComponent?.containerClassName || '', className)}>
@@ -90,7 +94,7 @@ export const withBrokerInput = <P extends object>(
                         {hasDescription ? (
                             <CollapsibleTrigger className='flex-1'>
                                 <div className={clickableAreaClasses}>
-                                    <Label className={cn(labelBaseClasses, inputComponent?.labelClassName || '')}>{inputComponent.name}</Label>
+                                    <Label className={cn(labelBaseClasses, inputComponent?.labelClassName || '')}>{broker.name}</Label>
                                     <ChevronDown className='h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 [data-state=open]:rotate-180' />
                                 </div>
                             </CollapsibleTrigger>
@@ -101,6 +105,12 @@ export const withBrokerInput = <P extends object>(
                         )}
 
                         <div className={controlsClasses}>
+                            {showSave && (
+                                <Save
+                                    className={iconClasses}
+                                    onClick={handleSave}
+                                />
+                            )}
                             {showCopy && (
                                 <Copy
                                     className={iconClasses}
@@ -133,7 +143,6 @@ export const withBrokerInput = <P extends object>(
                     className={cn(mainComponentBaseClasses, inputComponent?.componentClassName || '')}
                     value={value}
                     onChange={setValue}
-                    broker={broker}
                     inputComponent={inputComponent}
                     {...(props as P)}
                 />
@@ -142,8 +151,18 @@ export const withBrokerInput = <P extends object>(
     };
 };
 
+
+
+
+
+
+
+
+
+
+
 export type BrokerInputProps = {
-    brokerId: string;
+    broker?: DataBrokerDataWithKey;
     className?: string;
     // Add any other common props here
 };
@@ -153,13 +172,13 @@ export const withBrokerCustomInput = <P extends object>(
         P & {
             value: any;
             onChange: (value: any) => void;
-            broker: DataBroker;
-            inputComponent: DataInputComponent;
+            broker: DataBrokerDataWithKey;
+            inputComponent: DataInputComponentData;
         }
     >
 ) => {
-    return function BrokerInput({ brokerId, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
-        const { value, setValue, broker, inputComponent } = useBrokerInput(brokerId);
+    return function BrokerInput({ broker, className, ...props }: BrokerInputProps & Omit<P, 'value' | 'onChange' | 'broker' | 'inputComponent'>) {
+        const { value, setValue, inputComponent } = useBrokerValue(broker);
 
         return (
             <div className={cn('space-y-2', inputComponent.containerClassName || '', className)}>

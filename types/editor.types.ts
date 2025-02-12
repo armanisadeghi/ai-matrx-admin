@@ -113,12 +113,10 @@ export type EditorStateUpdate =
     | { type: 'incrementChipCounter' }
     | { type: 'applyStyle'; style: TextStyle };
 
-
 export interface ColorOption {
     color: TailwindColor;
     className: string;
 }
-
 
 export interface DOMSnapshot {
     selection: {

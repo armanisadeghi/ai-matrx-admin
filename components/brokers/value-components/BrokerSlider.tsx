@@ -1,5 +1,5 @@
 import { Slider, Label } from '@/components/ui';
-import { withBrokerInput, withBrokerCustomInput } from '../wrappers/withBrokerInput';
+import { withBrokerInput, withBrokerCustomInput } from '../wrappers/withMockBrokerInput';
 
 export const BrokerSlider = withBrokerInput(({ value, onChange, inputComponent }) => {
     const showValue = inputComponent.additionalParams?.showValue ?? true;

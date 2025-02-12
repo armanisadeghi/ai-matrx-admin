@@ -504,24 +504,24 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 }
             },
             directCreateRecord: (state: EntityState<TEntity>, action: PayloadAction<DirectCreateRecordPayload>) => {
-                entityLogger.log('info', 'slice - directCreateRecord', action.payload);
+                entityLogger.log('debug', 'slice - directCreateRecord', action.payload);
                 setLoading(state, 'DIRECT_CREATE');
             },
 
             directCreateRecordSuccess: (state: EntityState<TEntity>, action: PayloadAction<EntityData<TEntity>>) => {
-                entityLogger.log('info', 'directCreateRecordSuccess', action.payload);
+                entityLogger.log('debug', 'directCreateRecordSuccess', action.payload);
                 const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
                 state.records[recordKey] = action.payload;
                 setSuccess(state, 'DIRECT_CREATE');
             },
 
             directUpdateRecord: (state: EntityState<TEntity>, action: PayloadAction<DirectUpdateRecordPayload>) => {
-                entityLogger.log('info', 'slice - directUpdateRecord', action.payload);
+                entityLogger.log('debug', 'slice - directUpdateRecord', action.payload);
                 setLoading(state, 'DIRECT_UPDATE');
             },
 
             directUpdateRecordSuccess: (state: EntityState<TEntity>, action: PayloadAction<EntityData<TEntity>>) => {
-                entityLogger.log('info', 'directUpdateRecordSuccess', action.payload);
+                entityLogger.log('debug', 'directUpdateRecordSuccess', action.payload);
                 const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, action.payload);
                 state.records[recordKey] = action.payload;
                 setSuccess(state, 'DIRECT_UPDATE');
