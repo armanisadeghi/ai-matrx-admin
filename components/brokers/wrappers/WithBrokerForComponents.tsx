@@ -85,7 +85,7 @@ export const withBrokerForComponentCreation = <P extends object>(
         };
 
         const containerBaseClasses =
-            "grid flex flex-col w-full h-full space-y-2 rounded-t-2xl rounded-b-lg border border-blue-100 dark:border-blue-600";
+            "grid flex flex-col w-full h-full space-y-2 gap-y-4 rounded-t-2xl rounded-b-lg border border-blue-100 dark:border-red-600";
         const collapsibleBaseClasses = "w-full pr-2 bg-blue-100 dark:bg-blue-600 hover:bg-blue-200 dark:hover:bg-blue-700 rounded-t-xl";
         const labelBaseClasses = "text-base pt-1 cursor-pointer select-none ";
         const descriptionBaseClasses = "pt-2 pb-2 px-6 text-md text-accent-foreground bg-blue-500";
@@ -108,7 +108,7 @@ export const withBrokerForComponentCreation = <P extends object>(
                         {hasDescription ? (
                             <CollapsibleTrigger className="flex-1">
                                 <div className={clickableAreaClasses}>
-                                    <Label className={cn(labelBaseClasses, inputComponent?.labelClassName || "")}></Label>
+                                    <Label className={cn(labelBaseClasses, inputComponent?.labelClassName || "")}>Broker Name Displayed Here</Label>
                                     <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 [data-state=open]:rotate-180" />
                                 </div>
                             </CollapsibleTrigger>
