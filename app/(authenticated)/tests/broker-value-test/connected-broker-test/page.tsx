@@ -6,7 +6,7 @@ import BrokerPageComponent from "@/components/brokers/main-layouts/BrokerPageCom
 export default function Page() {
     return (
         <div>
-            <BrokerPageComponent initialColumns={2} />
+            <BrokerPageComponent />
         </div>
     )
 }
