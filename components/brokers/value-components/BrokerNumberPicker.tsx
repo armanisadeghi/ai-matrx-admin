@@ -1,12 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Minus, Plus } from "lucide-react";
-import { withBrokerInput } from "../wrappers/withMockBrokerInput";
-
-export const BrokerNumberPicker = withBrokerInput(({ value, onChange, inputComponent }) => {
+import { withBrokerComponentWrapper } from "../wrappers/withBrokerComponentWrapper";
+import { cn } from "@/utils";
+export const BrokerNumberPicker = withBrokerComponentWrapper(({ 
+    value, 
+    onChange, 
+    inputComponent,
+    isDemo,
+    ...rest
+}) => {
     const min = inputComponent.min ?? 0;
     const max = inputComponent.max ?? 100;
     const step = inputComponent.step ?? 1;
+    const className = inputComponent.componentClassName;
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value === '' ? min : Number(e.target.value);
@@ -30,7 +37,7 @@ export const BrokerNumberPicker = withBrokerInput(({ value, onChange, inputCompo
     };
 
     return (
-        <div className="flex items-center space-x-2">
+        <div className={cn('flex items-center space-x-2', className)}>
             <Button
                 variant="outline"
                 size="icon"

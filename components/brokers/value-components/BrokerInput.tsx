@@ -1,16 +1,19 @@
 import { useState, useRef } from "react";
-import { Label, Input } from "@/components/ui";
+import { Input } from "@/components/ui";
 import { cn } from "@/utils";
-import { withBrokerInput, withBrokerCustomInput } from "../wrappers/withMockBrokerInput";
+import { withBrokerComponentWrapper } from "../wrappers/withBrokerComponentWrapper";
 
-export const BrokerInput = withBrokerInput(({ 
+export const BrokerInput = withBrokerComponentWrapper(({ 
     value, 
     onChange, 
-    inputComponent 
+    inputComponent,
+    isDemo,
+    ...rest
 }) => {
     const [error, setError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    
+    const className = inputComponent.componentClassName;
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         
@@ -35,7 +38,7 @@ export const BrokerInput = withBrokerInput(({
     };
 
     return (
-        <div className="w-full space-y-1">
+        <div className={cn('w-full space-y-1', className)}>
             <Input
                 ref={inputRef}
                 value={value ?? ''}
@@ -52,61 +55,4 @@ export const BrokerInput = withBrokerInput(({
     );
 });
 
-export const BrokerCustomInput = withBrokerCustomInput(({ 
-    value, 
-    onChange, 
-    inputComponent 
-}) => {
-    const [error, setError] = useState<string | null>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
-    
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
-        
-        // Clear error if field is empty or passes validation
-        if (!newValue || !inputComponent.additionalParams?.validation) {
-            setError(null);
-        } else if (inputComponent.additionalParams?.validation) {
-            const { pattern, message } = inputComponent.additionalParams.validation;
-            if (pattern && !new RegExp(pattern).test(newValue)) {
-                setError(message || 'Invalid input');
-            } else {
-                setError(null);
-            }
-        }
-        
-        onChange(newValue);
-    };
-
-    const handleFocus = () => {
-        if (inputRef.current) {
-            inputRef.current.select();
-        }
-    };
-
-    return (
-        <div className="space-y-1">
-            <Label>{inputComponent.name}</Label>
-            <Input
-                ref={inputRef}
-                value={value}
-                onChange={handleChange}
-                onFocus={handleFocus}
-                type={inputComponent.additionalParams?.type || 'text'}
-                placeholder={inputComponent.additionalParams?.placeholder}
-                className={cn(
-                    error && "border-red-500",
-                    inputComponent.componentClassName
-                )}
-            />
-            {error && (
-                <p className="text-sm text-red-500">{error}</p>
-            )}
-            {inputComponent.description && (
-                <p className="text-sm text-muted-foreground">
-                    {inputComponent.description}
-                </p>
-            )}
-        </div>
-    );
-});
+export default BrokerInput;

@@ -5,55 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useFieldUpdate } from '@/app/entities/hooks/unsaved-records/useUpdateFields';
 import { createEntitySelectors, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { DataBrokerDataWithKey, DataInputComponent } from '../types';
 
-type BrokerValueData = {
-    id: string;
-    createdAt?: Date;
-    dataBroker?: string;
-    userId?: string;
-    tags?: string[];
-    data?: Record<'value', unknown>;
-    category?: string;
-    subCategory?: string;
-    comments?: string;
-};
-
-export type DataBrokerDataWithKey = {
-    id: string;
-    matrxRecordId: MatrxRecordId;
-    name: string;
-    dataType?: 'str' | 'bool' | 'dict' | 'float' | 'int' | 'list' | 'url';
-    outputComponent?: string;
-    defaultValue?: string;
-    inputComponent?: string;
-    color?:
-        | 'blue'
-        | 'amber'
-        | 'cyan'
-        | 'emerald'
-        | 'fuchsia'
-        | 'gray'
-        | 'green'
-        | 'indigo'
-        | 'lime'
-        | 'neutral'
-        | 'orange'
-        | 'pink'
-        | 'purple'
-        | 'red'
-        | 'rose'
-        | 'sky'
-        | 'slate'
-        | 'stone'
-        | 'teal'
-        | 'violet'
-        | 'yellow'
-        | 'zinc';
-    dataInputComponentReference?: DataInputComponentData[];
-    dataOutputComponentReference?: DataOutputComponentData[];
-    brokerValueInverse?: BrokerValueData[];
-    messageBrokerInverse?: MessageBrokerData[];
-};
 
 interface CreateBrokerValueOptions {
     onSuccess?: (newRecordWithKey: EntityDataWithKey<'brokerValue'>) => void;
@@ -133,7 +86,7 @@ export function useBrokerValue(broker: DataBrokerDataWithKey) {
 
     const dataInputComponentSelectors = createEntitySelectors('dataInputComponent');
     const componentMatrxId = `id:${broker.inputComponent}`;
-    const inputComponent = useAppSelector((state) => dataInputComponentSelectors.selectRecordWithKey(state, componentMatrxId)) as DataInputComponentRecordWithKey;
+    const inputComponent = useAppSelector((state) => dataInputComponentSelectors.selectRecordWithKey(state, componentMatrxId)) as unknown as DataInputComponent;
 
 
 

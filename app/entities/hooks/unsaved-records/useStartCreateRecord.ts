@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { generateTemporaryRecordId, useEntityTools } from '@/lib/redux';
+import { generateTemporaryRecordId, useAppDispatch, useEntityTools } from '@/lib/redux';
 import { EntityKeys } from '@/types';
 
 interface UseTemporaryRecordOptions<T = any> {
@@ -14,7 +14,8 @@ type FieldUpdate = {
 export const useStartCreateRecord = <T extends Record<string, any>>({ 
   entityKey 
 }: UseTemporaryRecordOptions<T>) => {
-  const { actions, dispatch, store } = useEntityTools(entityKey);
+    const dispatch = useAppDispatch();
+    const { actions, store } = useEntityTools(entityKey);
   const entityState = store.getState().entities[entityKey];  
   // Simple creation that just returns the tempId
   const create = useCallback(() => {

@@ -1,9 +1,9 @@
-import { BrokerValue, DataBroker, DataInputComponent } from '../types';
+import { BrokerValue, DataBroker, DataBrokerDataWithKey, DataInputComponent } from '../types';
 
 export type MockStores = {
-    brokers: Record<string, DataBroker>;
-    brokers_two: Record<string, DataBroker>;
-    brokers_three: Record<string, DataBroker>;
+    brokers: Record<string, DataBrokerDataWithKey>;
+    brokers_two: Record<string, DataBrokerDataWithKey>;
+    brokers_three: Record<string, DataBrokerDataWithKey>;
     inputComponents: Record<string, DataInputComponent>;
     brokerValues: Map<string, BrokerValue>;
 };
@@ -12,6 +12,7 @@ export const mockData: MockStores = {
     brokers: {
         'theme.selection': {
             id: 'theme.selection',
+            matrxRecordId: 'theme.selection',
             name: 'Theme Selection',
             defaultValue: 'system',
             dataType: 'str',
@@ -20,6 +21,7 @@ export const mockData: MockStores = {
         },
         'system.volume': {
             id: 'system.volume',
+            matrxRecordId: 'system.volume',
             name: 'System Volume',
             defaultValue: '50',
             dataType: 'float',
@@ -28,6 +30,7 @@ export const mockData: MockStores = {
         },
         'user.skill': {
             id: 'user.skill',
+            matrxRecordId: 'user.skill',
             name: 'Primary Skill',
             defaultValue: 'dev',
             dataType: 'str',
@@ -36,6 +39,7 @@ export const mockData: MockStores = {
         },
         'recipe.tags': {
             id: 'recipe.tags',
+            matrxRecordId: 'recipe.tags',
             name: 'Recipe Tags',
             defaultValue: '',
             dataType: 'dict',
@@ -44,6 +48,7 @@ export const mockData: MockStores = {
         },
         'brand.accent-color': {
             id: 'brand.accent-color',
+            matrxRecordId: 'brand.accent-color',
             name: 'Brand Accent Color',
             defaultValue: 'blue',
             dataType: 'str',
@@ -52,6 +57,7 @@ export const mockData: MockStores = {
         },
         'brand.custom-color': {
             id: 'brand.custom-color',
+            matrxRecordId: 'brand.custom-color',
             name: 'Custom Brand Color',
             defaultValue: '#4F46E5',
             dataType: 'str',
@@ -60,6 +66,7 @@ export const mockData: MockStores = {
         },
         'notifications.enabled': {
             id: 'notifications.enabled',
+            matrxRecordId: 'notifications.enabled',
             name: 'Notifications',
             defaultValue: 'false',
             dataType: 'bool',
@@ -68,6 +75,7 @@ export const mockData: MockStores = {
         },
         'user.email': {
             id: 'user.email',
+            matrxRecordId: 'user.email',
             name: 'User Email',
             defaultValue: '',
             dataType: 'str',
@@ -76,6 +84,7 @@ export const mockData: MockStores = {
         },
         'language.selection': {
             id: 'language.selection',
+            matrxRecordId: 'language.selection',
             name: 'Language Selection',
             defaultValue: 'en',
             dataType: 'str',
@@ -84,6 +93,7 @@ export const mockData: MockStores = {
         },
         'music.volume': {
             id: 'music.volume',
+            matrxRecordId: 'music.volume',
             name: 'Music Volume',
             defaultValue: '70',
             dataType: 'float',
@@ -92,6 +102,7 @@ export const mockData: MockStores = {
         },
         'dark.mode': {
             id: 'dark.mode',
+            matrxRecordId: 'dark.mode',
             name: 'Dark Mode',
             defaultValue: 'false',
             dataType: 'bool',
@@ -100,6 +111,7 @@ export const mockData: MockStores = {
         },
         'user.name': {
             id: 'user.name',
+            matrxRecordId: 'user.name',
             name: 'Username',
             defaultValue: '',
             dataType: 'str',
@@ -108,6 +120,7 @@ export const mockData: MockStores = {
         },
         'user.bio': {
             id: 'user.bio',
+            matrxRecordId: 'user.bio',
             name: 'User Bio',
             defaultValue: '',
             dataType: 'str',
@@ -116,6 +129,7 @@ export const mockData: MockStores = {
         },
         'feedback.comments': {
             id: 'feedback.comments',
+            matrxRecordId: 'feedback.comments',
             name: 'Feedback Comments',
             defaultValue: '',
             dataType: 'str',
@@ -124,6 +138,7 @@ export const mockData: MockStores = {
         },
         'system.quantity': {
             id: 'system.quantity',
+            matrxRecordId: 'system.quantity',
             name: 'Item Quantity',
             defaultValue: '1',
             dataType: 'int',
@@ -132,6 +147,7 @@ export const mockData: MockStores = {
         },
         'system.age': {
             id: 'system.age',
+            matrxRecordId: 'system.age',
             name: 'User Age',
             defaultValue: '18',
             dataType: 'int',
@@ -140,6 +156,7 @@ export const mockData: MockStores = {
         },
         'system.percentage': {
             id: 'system.percentage',
+            matrxRecordId: 'system.percentage',
             name: 'Completion Percentage',
             defaultValue: '0',
             dataType: 'float',
@@ -148,6 +165,7 @@ export const mockData: MockStores = {
         },
         'user.interests': {
             id: 'user.interests',
+            matrxRecordId: 'user.interests',
             name: 'User Interests',
             defaultValue: 'reading',
             dataType: 'list',
@@ -156,6 +174,7 @@ export const mockData: MockStores = {
         },
         'system.permissions': {
             id: 'system.permissions',
+            matrxRecordId: 'system.permissions',
             name: 'System Permissions',
             defaultValue: 'view',
             dataType: 'list',
@@ -164,14 +183,16 @@ export const mockData: MockStores = {
         },
         'user.skills': {
             id: 'user.skills',
+            matrxRecordId: 'user.skills',
             name: 'User Skills',
-            defaultValue: ['javascript'],
+            defaultValue: 'javascript',
             dataType: 'list',
             inputComponent: 'skills-checkbox',
             outputComponent: 'list-display',
         },
         'user.preference': {
             id: 'user.preference',
+            matrxRecordId: 'user.preference',
             name: 'Contact Preference',
             defaultValue: 'email',
             dataType: 'str',
@@ -180,6 +201,7 @@ export const mockData: MockStores = {
         },
         'user.experience': {
             id: 'user.experience',
+            matrxRecordId: 'user.experience',
             name: 'Experience Level',
             defaultValue: 'intermediate',
             dataType: 'str',
@@ -190,6 +212,7 @@ export const mockData: MockStores = {
     brokers_two: {
         'theme.selection': {
             id: 'theme.selection',
+            matrxRecordId: 'theme.selection',
             name: 'Theme Selection',
             defaultValue: 'system',
             dataType: 'str',
@@ -198,6 +221,7 @@ export const mockData: MockStores = {
         },
         'system.volume': {
             id: 'system.volume',
+            matrxRecordId: 'system.volume',
             name: 'System Volume',
             defaultValue: '50',
             dataType: 'float',
@@ -206,6 +230,7 @@ export const mockData: MockStores = {
         },
         'user.skill': {
             id: 'user.skill',
+            matrxRecordId: 'user.skill',
             name: 'Primary Skill',
             defaultValue: 'dev',
             dataType: 'str',
@@ -214,6 +239,7 @@ export const mockData: MockStores = {
         },
         'feedback.comments': {
             id: 'feedback.comments',
+            matrxRecordId: 'feedback.comments',
             name: 'Feedback Comments',
             defaultValue: '',
             dataType: 'str',
@@ -224,6 +250,7 @@ export const mockData: MockStores = {
     brokers_three: {
         'notifications.enabled': {
             id: 'notifications.enabled',
+            matrxRecordId: 'notifications.enabled',
             name: 'Notifications',
             defaultValue: 'false',
             dataType: 'bool',
@@ -232,6 +259,7 @@ export const mockData: MockStores = {
         },
         'user.email': {
             id: 'user.email',
+            matrxRecordId: 'user.email',
             name: 'User Email',
             defaultValue: '',
             dataType: 'str',
@@ -240,6 +268,7 @@ export const mockData: MockStores = {
         },
         'language.selection': {
             id: 'language.selection',
+            matrxRecordId: 'language.selection',
             name: 'Language Selection',
             defaultValue: 'en',
             dataType: 'str',
@@ -248,6 +277,7 @@ export const mockData: MockStores = {
         },
         'music.volume': {
             id: 'music.volume',
+            matrxRecordId: 'music.volume',
             name: 'Music Volume',
             defaultValue: '70',
             dataType: 'float',
@@ -256,6 +286,7 @@ export const mockData: MockStores = {
         },
         'dark.mode': {
             id: 'dark.mode',
+            matrxRecordId: 'dark.mode',
             name: 'Dark Mode',
             defaultValue: 'false',
             dataType: 'bool',
@@ -264,6 +295,7 @@ export const mockData: MockStores = {
         },
         'user.name': {
             id: 'user.name',
+            matrxRecordId: 'user.name',
             name: 'Username',
             defaultValue: '',
             dataType: 'str',
@@ -272,6 +304,7 @@ export const mockData: MockStores = {
         },
         'user.bio': {
             id: 'user.bio',
+            matrxRecordId: 'user.bio',
             name: 'User Bio',
             defaultValue: '',
             dataType: 'str',
@@ -280,6 +313,7 @@ export const mockData: MockStores = {
         },
         'feedback.comments': {
             id: 'feedback.comments',
+            matrxRecordId: 'feedback.comments',
             name: 'Feedback Comments',
             defaultValue: '',
             dataType: 'str',
@@ -288,6 +322,7 @@ export const mockData: MockStores = {
         },
         'system.quantity': {
             id: 'system.quantity',
+            matrxRecordId: 'system.quantity',
             name: 'Item Quantity',
             defaultValue: '1',
             dataType: 'int',
@@ -296,6 +331,7 @@ export const mockData: MockStores = {
         },
         'system.age': {
             id: 'system.age',
+            matrxRecordId: 'system.age',
             name: 'User Age',
             defaultValue: '18',
             dataType: 'int',

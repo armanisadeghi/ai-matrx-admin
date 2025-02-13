@@ -2,11 +2,11 @@
 
 import { BrokerCheckbox } from "./BrokerCheckbox";
 import BrokerColorPicker from "./BrokerColorPicker";
-import { BrokerCustomInput, BrokerInput } from "./BrokerInput";
+import { BrokerInput } from "./BrokerInput";
 import { BrokerNumberInput } from "./BrokerNumberInput";
 import { BrokerNumberPicker } from "./BrokerNumberPicker";
 import { BrokerRadioGroup } from "./BrokerRadioGroup";
-import { BrokerCustomSelect, BrokerSelect } from "./BrokerSelect";
+import { BrokerSelect } from "./BrokerSelect";
 import { BrokerSlider } from "./BrokerSlider";
 import { BrokerSwitch } from "./BrokerSwitch";
 import BrokerTailwindColorPicker from "./BrokerTailwindColorPicker";
@@ -16,9 +16,7 @@ import BrokerTextArrayInput from "./BrokerTextArrayInput";
 
 export const BROKER_COMPONENTS = {
     'BrokerInput': BrokerInput,
-    'BrokerCustomInput': BrokerCustomInput,
     'BrokerSelect': BrokerSelect,
-    'BrokerCustomSelect': BrokerCustomSelect,
     'BrokerSlider': BrokerSlider,
     'BrokerSwitch': BrokerSwitch,
     'BrokerCheckbox': BrokerCheckbox,
@@ -31,5 +29,11 @@ export const BROKER_COMPONENTS = {
     'BrokerColorPicker': BrokerColorPicker,
     'BrokerTailwindColorPicker': BrokerTailwindColorPicker,
 }
+
+export const BROKER_COMPONENT_OPTIONS = Object.entries(BROKER_COMPONENTS).map(([key, value]) => ({
+    label: key.replace(/([A-Z])/g, ' $1').trim(),
+    value: key,
+}));
+
 
 export type BrokerComponentType = keyof typeof BROKER_COMPONENTS;

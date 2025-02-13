@@ -1,105 +1,85 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { withBrokerInput } from "../wrappers/withMockBrokerInput";
 import { cn } from "@/lib/utils";
+import { withBrokerComponentWrapper } from "../wrappers/withBrokerComponentWrapper";
+import { useOtherOption } from './hooks/useOtherOption';
 
-export const BrokerCheckbox = withBrokerInput(({ 
+export const BrokerCheckbox = withBrokerComponentWrapper(({ 
     value, 
     onChange, 
-    inputComponent 
+    inputComponent,
+    isDemo,
+    ...rest
 }) => {
-    const options = inputComponent.options ?? [];
-    const allOptions = inputComponent.includeOther ? [...options, { label: 'Other', value: '_other' }] : options;
-    const orientation = inputComponent.orientation === 'horizontal' ? 'horizontal' : 'vertical';
+    const {
+        showOtherInput,
+        otherValue,
+        selected,
+        internalOptions,
+        handleChange,
+        handleOtherInputChange,
+        getDisplayValue
+    } = useOtherOption({
+        value: Array.isArray(value) ? value : value ? [value] : [],
+        options: inputComponent.options ?? [],
+        includeOther: inputComponent.includeOther,
+        onChange
+    });
 
-    // Convert incoming value to array
-    const currentValues = Array.isArray(value) ? value : value ? [value] : [];
+    const selectedValues = Array.isArray(selected) ? selected : [];
 
-    // Find custom value (any value not in options and not '_other')
-    const otherValue = currentValues.find(v => 
-        v !== '_other' && !options.some(opt => opt.value === v)
-    );
-    const showOtherInput = Boolean(currentValues.includes('_other'));
-
-    const handleCheckboxChange = (checked: boolean, optionValue: string) => {
-        let newValues: string[];
-
-        if (optionValue === '_other') {
-            if (checked) {
-                // Add _other to the list, but don't add any custom value yet
-                newValues = [...currentValues.filter(v => options.some(opt => opt.value === v)), '_other'];
-            } else {
-                // Remove both _other and any custom value
-                newValues = currentValues.filter(v => options.some(opt => opt.value === v));
-            }
+    const handleCheckboxChange = (checked: boolean, option: string) => {
+        if (checked) {
+            handleChange([...selectedValues, option]);
         } else {
-            if (checked) {
-                // Add the new value while preserving other values including custom
-                newValues = [...currentValues, optionValue];
-            } else {
-                // Remove just this value
-                newValues = currentValues.filter(v => v !== optionValue);
-            }
-        }
-
-        onChange(newValues);
-    };
-
-    const handleOtherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newOtherValue = e.target.value;
-        
-        // Remove any existing custom value but keep '_other' marker
-        const standardValues = currentValues.filter(v => 
-            options.some(opt => opt.value === v) || v === '_other'
-        );
-
-        if (newOtherValue) {
-            onChange([...standardValues, newOtherValue]);
-        } else {
-            onChange(standardValues);
+            handleChange(selectedValues.filter(v => v !== option));
         }
     };
+
+    const orientation = inputComponent.orientation === "horizontal" ? "horizontal" : "vertical";
 
     return (
-        <div className="space-y-4">
+        <div className={cn('space-y-2', inputComponent.componentClassName)}>
             <div className={cn(
-                orientation === 'horizontal' 
+                orientation === "horizontal" 
                     ? "flex flex-row flex-wrap gap-4" 
                     : "flex flex-col space-y-2"
             )}>
-                {allOptions.map((option) => (
+                {internalOptions.map((option) => (
                     <div 
-                        key={option.value} 
+                        key={option} 
                         className={cn(
                             "flex items-center space-x-2",
-                            orientation === 'horizontal' && "min-w-fit"
+                            orientation === "horizontal" && "min-w-fit"
                         )}
                     >
                         <Checkbox
-                            id={option.value}
-                            checked={currentValues.includes(option.value)}
+                            id={option}
+                            checked={selectedValues.includes(option)}
                             onCheckedChange={(checked) => 
-                                handleCheckboxChange(checked as boolean, option.value)
+                                handleCheckboxChange(checked as boolean, option)
                             }
                         />
                         <label
-                            htmlFor={option.value}
+                            htmlFor={option}
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                            {option.label}
+                            {getDisplayValue(option)}
                         </label>
                     </div>
                 ))}
             </div>
-            
+
             {showOtherInput && (
-                <Input
-                    value={otherValue || ''}
-                    onChange={handleOtherInputChange}
-                    placeholder="Enter custom value..."
+                <Input 
+                    value={otherValue}
+                    onChange={(e) => handleOtherInputChange(e.target.value)}
+                    placeholder="Enter other values separated by commas."
                     className="mt-2"
                 />
             )}
         </div>
     );
 });
+
+export default BrokerCheckbox;

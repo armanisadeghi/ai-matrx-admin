@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { BrokerComponentType, BROKER_COMPONENTS } from "@/components/brokers/value-components";
-import SingleBrokerSectionUI from "@/components/brokers/value-sections/SingleBrokerSectionUI";
+import SingleBrokerSectionUI from "@/components/brokers/value-sections/single-broker/SingleBrokerSectionUI";
 import { 
     Select,
     SelectContent,
@@ -11,8 +11,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { DEFAULT_VALUES } from "./component-schemas";
-import ComponentConfigurator from "./ComponentConfigurator";
+import { DEFAULT_VALUES } from "./_dev/component-schemas";
+import ComponentConfigurator from "./_dev/ComponentConfigurator";
 
 const DEMO_COMPONENTS = Object.entries(BROKER_COMPONENTS).reduce((acc, [key, Component]) => {
     acc[key] = Component;
@@ -116,7 +116,6 @@ export default function ComponentEditor() {
                         isLoading={false}
                         isComponentsReady={true}
                         brokerComponent={renderComponent}
-                        inputComponents={inputComponents}
                         isDemo={true}
                     />
                 )}

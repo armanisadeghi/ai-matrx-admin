@@ -1,15 +1,17 @@
 import React, { useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { withBrokerInput } from '../wrappers/withMockBrokerInput';
+import { withBrokerComponentWrapper } from "../wrappers/withBrokerComponentWrapper";
 
-export const BrokerTextareaGrow = withBrokerInput(({ 
+export const BrokerTextareaGrow = withBrokerComponentWrapper(({ 
     value, 
     onChange, 
-    inputComponent 
+    inputComponent,
+    isDemo,
+    ...rest
 }) => {
     const textareaRef = useRef(null);
-    
+    const className = inputComponent.componentClassName;
     const handleChange = (e) => {
         const newValue = e.target.value;
         
@@ -26,7 +28,7 @@ export const BrokerTextareaGrow = withBrokerInput(({
                  (rawSize === '3xs' || rawSize === '2xs' || rawSize === 'xs') ? 'xs' : 
                  rawSize;
 
-    const className = cn(
+    const textareaClassName = cn(
         "resize-none w-full",
         {
             'min-h-[72px]': size === 'xs',
@@ -42,7 +44,7 @@ export const BrokerTextareaGrow = withBrokerInput(({
     );
 
     return (
-        <div className="space-y-1">
+        <div className={cn('space-y-1', className)}>
             <Textarea
                 ref={textareaRef}
                 value={value ?? ''}
@@ -50,7 +52,7 @@ export const BrokerTextareaGrow = withBrokerInput(({
                 onInput={handleChange}
                 rows={1}
                 placeholder={inputComponent.placeholder}
-                className={className}
+                className={cn(textareaClassName, className)}
             />
         </div>
     );

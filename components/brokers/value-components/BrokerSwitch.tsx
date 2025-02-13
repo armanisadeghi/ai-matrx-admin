@@ -1,71 +1,32 @@
 import { Switch, Label } from "@/components/ui";
-import { withBrokerInput, withBrokerCustomInput } from "../wrappers/withMockBrokerInput";
+import { withBrokerComponentWrapper } from "../wrappers/withBrokerComponentWrapper";
+import { cn } from "@/utils";
 
-
-export const BrokerSwitch = withBrokerInput(({ 
-  value, 
-  onChange, 
-  inputComponent 
+export const BrokerSwitch = withBrokerComponentWrapper(({ 
+    value, 
+    onChange, 
+    inputComponent,
+    isDemo,
+    ...rest
 }) => {
-  
-  return (
-      <div className="flex items-center gap-2">
-          <Switch
-              checked={value === true || value === 'true'}
-              onCheckedChange={onChange}
-          />
-      </div>
-  );
+    const options = inputComponent.options ?? ['Off', 'On'];
+    const [offLabel, onLabel] = options;
+    const checked = value === true || value === 'true';
+
+    return (
+        <div className={cn('flex items-center gap-2', inputComponent.componentClassName)}>
+            <Label className="text-sm font-medium text-muted-foreground">
+                {offLabel}
+            </Label>
+            <Switch
+                checked={checked}
+                onCheckedChange={onChange}
+            />
+            <Label className="text-sm font-medium text-muted-foreground">
+                {onLabel}
+            </Label>
+        </div>
+    );
 });
 
-
-
-
-
-
-export const BrokerCustomSwitch = withBrokerCustomInput(({ 
-  value, 
-  onChange, 
-  broker, 
-  inputComponent 
-}) => {
-  const labelPosition = inputComponent.additionalParams?.labelPosition || 'left';
-  
-  const switchElement = (
-      <Switch
-          checked={value === true || value === 'true'}
-          onCheckedChange={onChange}
-          className={inputComponent.componentClassName}
-      />
-  );
-
-  return (
-      <div className="flex items-center justify-between gap-4">
-          {labelPosition === 'left' ? (
-              <>
-                  <div className="flex-1">
-                      <Label>{inputComponent.name}</Label>
-                      {inputComponent.description && (
-                          <p className="text-sm text-muted-foreground">
-                              {inputComponent.description}
-                          </p>
-                      )}
-                  </div>
-                  {switchElement}
-              </>
-          ) : (
-              <>
-                  {switchElement}
-                  <div className="flex-1">
-                      <Label>{inputComponent.name}</Label>
-                      {inputComponent.description && (
-                          <p className="text-sm text-muted-foreground">
-                              {inputComponent.description}
-                          </p>
-                      )}
-                  </div>
-              </>
-          )}
-      </div>
-  );
-});
+export default BrokerSwitch;

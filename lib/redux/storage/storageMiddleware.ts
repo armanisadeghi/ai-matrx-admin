@@ -4,7 +4,6 @@ import StorageManager from '@/utils/supabase/StorageManager';
 import type { StorageState } from './types';
 import _ from 'lodash';
 
-// Create a throttled version of the storage operations
 const throttledStorageOperations = _.throttle((storage: StorageManager, payload: Partial<StorageState>) => {
     if (
         payload.currentBucket &&
@@ -15,7 +14,10 @@ const throttledStorageOperations = _.throttle((storage: StorageManager, payload:
     if (payload.currentPath) {
         storage.navigateToFolder(payload.currentPath);
     }
-}, 1000, { leading: true, trailing: false }); // Adjust the 1000ms delay as needed
+}, 1000, { leading: true, trailing: false });
+
+
+
 
 export const storageMiddleware: Middleware = (storeAPI) => (next) => (action: UnknownAction) => {
     const result = next(action);

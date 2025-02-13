@@ -16,6 +16,7 @@ interface BrokerSectionProps {
     cardHeaderClassName?: string;
     cardTitleClassName?: string;
     cardContentClassName?: string;
+    columns?: number;
 }
 
 interface BrokerSectionUIProps extends BrokerSectionProps {
@@ -24,8 +25,7 @@ interface BrokerSectionUIProps extends BrokerSectionProps {
     brokerComponents: React.ReactNode[];
 }
 
-
-export const BrokerSectionUIOneColumn = ({
+export const BrokerSectionColumnOptions = ({
     sectionTitle,
     maxHeight,
     sectionClassName,
@@ -35,7 +35,8 @@ export const BrokerSectionUIOneColumn = ({
     cardContentClassName,
     isLoading,
     isComponentsReady,
-    brokerComponents
+    brokerComponents,
+    columns
 }: BrokerSectionUIProps) => {
     const LoadingSkeleton = () => (
         <div className="space-y-4">
@@ -46,9 +47,39 @@ export const BrokerSectionUIOneColumn = ({
         </div>
     );
 
+    const getInitialColumnCount = () => {
+        // If columns prop is explicitly set, use that
+        if (columns !== undefined) return columns;
+
+        // Otherwise, determine based on number of components
+        const componentCount = brokerComponents.length;
+        
+        if (componentCount <= 1) return 1;
+        if (componentCount === 2) return 2;
+        if (componentCount === 3) return 3;
+        if (componentCount <= 5) return 2;
+        return 3; // 6 or more components
+    };
+
+    const getGridColumns = () => {
+        const columnCount = getInitialColumnCount();
+        switch (columnCount) {
+            case 2:
+                return 'grid-cols-2';
+            case 3:
+                return 'grid-cols-3';
+            case 4:
+                return 'grid-cols-4';
+            case 5:
+                return 'grid-cols-5';
+            default:
+                return 'grid-cols-1';
+        }
+    };
+
     return (
         <div
-            className={cn('pt-2 w-full h-full bg-matrx-background', sectionClassName)}
+            className={cn('pt-1 w-full h-full bg-matrx-background', sectionClassName)}
             style={maxHeight ? { maxHeight } : undefined}
         >
             <Card className={cn('bg-matrx-background', maxHeight && 'h-full flex flex-col', cardClassName)}>
@@ -65,7 +96,7 @@ export const BrokerSectionUIOneColumn = ({
                 )}
                 <CardContent 
                     className={cn(
-                        'grid gap-6 pb-8',
+                        'grid pb-2',
                         maxHeight && 'flex-1 overflow-auto',
                         cardContentClassName
                     )}
@@ -73,7 +104,7 @@ export const BrokerSectionUIOneColumn = ({
                     {isLoading ? (
                         <LoadingSkeleton />
                     ) : isComponentsReady ? (
-                        <div className="grid gap-8">{brokerComponents}</div>
+                        <div className={cn("grid gap-4", getGridColumns())}>{brokerComponents}</div>
                     ) : (
                         <LoadingSkeleton />
                     )}
@@ -83,3 +114,4 @@ export const BrokerSectionUIOneColumn = ({
     );
 };
 
+export default BrokerSectionColumnOptions;

@@ -1,18 +1,20 @@
 import { TAILWIND_COLORS, generateColorStyle, TailwindColor } from '@/constants/rich-text-constants';
-import { withBrokerInput } from '../wrappers/withMockBrokerInput';
+import { withBrokerComponentWrapper } from "../wrappers/withBrokerComponentWrapper";
 
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 
-export const BrokerTailwindColorPicker = withBrokerInput(({ 
+export const BrokerTailwindColorPicker = withBrokerComponentWrapper(({ 
     value, 
     onChange, 
-    inputComponent 
+    inputComponent,
+    isDemo,
+    ...rest
 }) => {
     const currentColor = (value as TailwindColor) || TAILWIND_COLORS[0];
-    
+    const className = inputComponent.componentClassName;
     return (
-        <div className="w-full">
+        <div className={cn('w-full', className)}>
             <div className="flex flex-wrap gap-1.5">
                 {TAILWIND_COLORS.map((color) => (
                     <button

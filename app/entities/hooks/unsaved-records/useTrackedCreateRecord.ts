@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef } from 'react';
-import { generateTemporaryRecordId, useEntityTools, useEntityToasts } from '@/lib/redux';
+import { generateTemporaryRecordId, useEntityTools, useEntityToasts, useAppDispatch } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { callbackManager, CallbackContext, ProgressInfo } from '@/utils/callbackManager';
 
@@ -32,7 +32,8 @@ interface useTrackedCreateRecordResult {
 }
 
 export const useTrackedCreateRecord = (entityKey: EntityKeys): useTrackedCreateRecordResult => {
-  const { store, actions, dispatch, selectors } = useEntityTools(entityKey);
+  const dispatch = useAppDispatch();
+  const { store, actions, selectors } = useEntityTools(entityKey);
   const entityToasts = useEntityToasts(entityKey);
   
   // Track creation groups and progress

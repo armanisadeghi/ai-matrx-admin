@@ -1,5 +1,17 @@
 import { TailwindColor } from "@/constants/rich-text-constants";
 import { BrokerComponentType } from "./value-components";
+import { DataOutputComponentData, MatrxRecordId, MessageBrokerData } from "@/types";
+
+
+
+export type BrokerInputProps = {
+    inputComponent: DataInputComponent;
+    isDemo?: boolean;
+    broker?: DataBrokerDataWithKey;
+    className?: string;
+};
+
+
 
 // Core types matching our database schema
 export type DataType = 'list' | 'url' | 'str' | 'bool' | 'dict' | 'float' | 'int';
@@ -43,7 +55,7 @@ export type DataInputComponent = {
     componentClassName?: string;
 
 
-    options?: { label: string; value: any }[];
+    options?: string[];
     includeOther?: boolean;
 
     min?: number;
@@ -84,14 +96,9 @@ export type DataInputBaseProps = {
     componentClassName?: string;
 }
 
-export type Option = {
-    label: string;
-    value: string;
-};
-
 
 export type BrokerCheckboxType = DataInputBaseProps & {
-    options?: Option[];
+    options?: string[];
     includeOther?: boolean;
     orientation?: ComponentOrientation;
 };
@@ -123,14 +130,14 @@ export type BrokerNumberPickerType = DataInputBaseProps & {
 };
 
 export type BrokerRadioGroupType = DataInputBaseProps & {
-    options?: Option[];
+    options?: string[];
     includeOther?: boolean;
     orientation?: ComponentOrientation;
 };
 
 
 export type BrokerSelectType = DataInputBaseProps & {
-    options?: Option[];
+    options?: string[];
     includeOther?: boolean;
     additionalParams?: {
         placeholder?: string;
@@ -138,7 +145,7 @@ export type BrokerSelectType = DataInputBaseProps & {
 };
 
 export type BrokerCustomSelectType = DataInputBaseProps & {
-    options?: Option[];
+    options?: string[];
     includeOther?: boolean;
 };
 
@@ -184,4 +191,55 @@ export type BrokerTextArrayInputType = DataInputBaseProps & {
     };
 };
 
+
+
+
+export type BrokerValueData = {
+    id: string;
+    createdAt?: Date;
+    dataBroker?: string;
+    userId?: string;
+    tags?: string[];
+    data?: Record<'value', unknown>;
+    category?: string;
+    subCategory?: string;
+    comments?: string;
+};
+
+export type DataBrokerDataWithKey = {
+    id: string;
+    matrxRecordId: MatrxRecordId;
+    name: string;
+    dataType?: 'str' | 'bool' | 'dict' | 'float' | 'int' | 'list' | 'url';
+    outputComponent?: string;
+    defaultValue?: string;
+    inputComponent?: string;
+    color?:
+        | 'blue'
+        | 'amber'
+        | 'cyan'
+        | 'emerald'
+        | 'fuchsia'
+        | 'gray'
+        | 'green'
+        | 'indigo'
+        | 'lime'
+        | 'neutral'
+        | 'orange'
+        | 'pink'
+        | 'purple'
+        | 'red'
+        | 'rose'
+        | 'sky'
+        | 'slate'
+        | 'stone'
+        | 'teal'
+        | 'violet'
+        | 'yellow'
+        | 'zinc';
+    dataInputComponentReference?: DataInputComponent[];
+    dataOutputComponentReference?: DataOutputComponentData[];
+    brokerValueInverse?: BrokerValue[];
+    messageBrokerInverse?: MessageBrokerData[];
+};
 

@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { BROKER_COMPONENTS } from '../value-components';
 import { DataBrokerData } from '@/app/(authenticated)/tests/broker-value-test/one-column-live/page';
-import { BrokerSectionUIOneColumn } from './BrokerSectionUI';
+import { BrokerSectionColumnOptions } from './BrokerSectionUI';
 
 
 interface BrokerSectionProps {
@@ -16,10 +16,11 @@ interface BrokerSectionProps {
     cardHeaderClassName?: string;
     cardTitleClassName?: string;
     cardContentClassName?: string;
+    columns?: number;
 }
 
 
-export const BrokerSectionOneColumn = (props: BrokerSectionProps) => {
+export const BrokerSectionWrapper = (props: BrokerSectionProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isComponentsReady, setIsComponentsReady] = useState(false);
     
@@ -63,13 +64,14 @@ export const BrokerSectionOneColumn = (props: BrokerSectionProps) => {
     );
 
     return (
-        <BrokerSectionUIOneColumn
+        <BrokerSectionColumnOptions
             {...props}
             isLoading={isLoading}
             isComponentsReady={isComponentsReady}
             brokerComponents={brokerComponents}
+            
         />
     );
 };
 
-export default BrokerSectionOneColumn;
+export default BrokerSectionWrapper;

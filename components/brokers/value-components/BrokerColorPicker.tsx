@@ -1,16 +1,19 @@
-import { withBrokerInput } from '../wrappers/withMockBrokerInput';
+import { withBrokerComponentWrapper } from "../wrappers/withBrokerComponentWrapper";
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-export const BrokerColorPicker = withBrokerInput(({ 
+export const BrokerColorPicker = withBrokerComponentWrapper(({ 
     value, 
     onChange, 
-    inputComponent 
+    inputComponent,
+    isDemo,
+    ...rest
 }) => {
     const currentColor = value || '#6B7280';
+    const className = inputComponent.componentClassName;
 
     return (
-        <div className="flex items-center gap-2 w-full">
+        <div className={cn('flex items-center gap-2 w-full', className)}>
             <Input
                 type="color"
                 value={currentColor}

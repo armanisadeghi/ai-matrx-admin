@@ -1,90 +1,49 @@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { withBrokerInput } from "../wrappers/withMockBrokerInput";
-import { useState, useEffect } from "react";
+import { withBrokerComponentWrapper } from "../wrappers/withBrokerComponentWrapper";
 import { cn } from "@/lib/utils";
+import { useOtherOption } from "./hooks/useOtherOption";
 
-export const BrokerRadioGroup = withBrokerInput(({ 
-    value, 
-    onChange, 
-    inputComponent 
-}) => {
-    const options = inputComponent.options ?? [];
-    const allOptions = inputComponent.includeOther ? [...options, { label: 'Other', value: '_other' }] : options;
-
-    const orientation = inputComponent.orientation === 'horizontal' ? 'horizontal' : 'vertical';
-    
-    const [showOtherInput, setShowOtherInput] = useState(false);
-    const [otherValue, setOtherValue] = useState('');
-    const [displayValue, setDisplayValue] = useState(() => {
-        const isValueInOptions = options.some((option) => option.value === value);
-        return !isValueInOptions && value ? '_other' : value;
-    });
-
-    useEffect(() => {
-        const isValueInOptions = options.some((option) => option.value === value);
-        if (!isValueInOptions && value) {
-            setShowOtherInput(true);
-            setOtherValue(value);
-            setDisplayValue('_other');
-        } else if (isValueInOptions) {
-            setDisplayValue(value);
-            setShowOtherInput(false);
+export const BrokerRadioGroup = withBrokerComponentWrapper(({ value, onChange, inputComponent, isDemo, ...rest }) => {
+    const { showOtherInput, otherValue, selected, internalOptions, handleChange, handleOtherInputChange, getDisplayValue } = useOtherOption(
+        {
+            value,
+            options: inputComponent.options ?? [],
+            includeOther: inputComponent.includeOther,
+            onChange,
         }
-    }, [value, options]);
+    );
 
-    const handleChange = (newValue: string) => {
-        if (newValue === '_other') {
-            setShowOtherInput(true);
-            setDisplayValue('_other');
-            onChange(otherValue);
-        } else {
-            setShowOtherInput(false);
-            setDisplayValue(newValue);
-            onChange(newValue);
-        }
-    };
-
-    const handleOtherInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
-        setOtherValue(newValue);
-        onChange(newValue);
-    };
+    const orientation = inputComponent.orientation === "horizontal" ? "horizontal" : "vertical";
 
     return (
-        <div className="space-y-4">
-            <RadioGroup
-                value={displayValue || ''}
-                onValueChange={handleChange}
-                className={cn(
-                    orientation === 'horizontal' 
-                        ? "flex flex-row flex-wrap gap-4" 
-                        : "flex flex-col space-y-2"
-                )}
-            >
-                {allOptions.map((option) => (
-                    <div 
-                        key={option.value} 
-                        className={cn(
-                            "flex items-center space-x-2",
-                            orientation === 'horizontal' && "min-w-fit"
-                        )}
-                    >
-                        <RadioGroupItem value={option.value} id={option.value} />
-                        <Label htmlFor={option.value}>{option.label}</Label>
-                    </div>
-                ))}
-            </RadioGroup>
+        <div className="w-full h-full px-2 pt-2 items-center justify-center">
+            <div className={cn("space-y-2", inputComponent.componentClassName)}>
+                <RadioGroup
+                    value={selected as string}
+                    onValueChange={handleChange}
+                    className={cn(orientation === "horizontal" ? "flex flex-row flex-wrap gap-4" : "flex flex-col space-y-2")}
+                >
+                    {internalOptions.map((option) => (
+                        <div key={option} className={cn("flex items-center space-x-2", orientation === "horizontal" && "min-w-fit")}>
+                            <RadioGroupItem value={option} id={option} />
+                            <Label htmlFor={option}>{getDisplayValue(option)}</Label>
+                        </div>
+                    ))}
+                </RadioGroup>
 
-            {showOtherInput && (
-                <Input
-                    value={otherValue}
-                    onChange={handleOtherInputChange}
-                    placeholder="Enter custom value..."
-                    className="mt-2"
-                />
-            )}
+                {showOtherInput && (
+                    <Input
+                        value={otherValue}
+                        onChange={(e) => handleOtherInputChange(e.target.value)}
+                        placeholder="Enter custom value..."
+                        className="mt-2"
+                    />
+                )}
+            </div>
         </div>
     );
 });
+
+export default BrokerRadioGroup;
