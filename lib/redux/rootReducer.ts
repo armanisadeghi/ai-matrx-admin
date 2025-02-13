@@ -26,6 +26,7 @@ import tagsReducer from "./notes/tagsSlice";
 import { storageReducer } from "./storage";
 import { createFileSystemSlice } from "./fileSystem/slice";
 import { AvailableBuckets, FileManagement } from "./fileSystem/types";
+import { UnifiedSchemaCache } from "@/types/entityTypes";
 
 export const availableBuckets = [
   "userContent",
@@ -71,7 +72,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     ])
   );
 
-  const globalCacheSlice = createGlobalCacheSlice(initialState.globalCache);
+  const globalCacheSlice = createGlobalCacheSlice(initialState.globalCache as UnifiedSchemaCache);
 
   return combineReducers({
     ...featureReducers,
