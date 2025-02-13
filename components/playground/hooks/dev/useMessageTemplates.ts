@@ -35,7 +35,7 @@ export function useMessageTemplates() {
     }, [recipeMessageRecords, matchingMessages]);
 
     // Message Brokers and Data Brokers
-    const messageBrokers = useAppSelector(messageBrokerEntity.selectors.selectRecordsByFieldValue('messageId', matchingMessageIds)) as MessageBrokerDataRequired[];
+    const messageBrokers = useAppSelector((state) => messageBrokerEntity.selectors.selectRecordsByFieldValueHelper(state,'messageId', matchingMessageIds)) as MessageBrokerDataRequired[];
 
     const matchingBrokerIds = React.useMemo(
         () => messageBrokers.filter((broker) => broker?.brokerId != null).map((broker) => broker.brokerId),

@@ -293,7 +293,7 @@ export function processJoinedData({
     if (!childRecords?.length || !joiningRecords?.length) {
         return childRecords;
     }
-    console.log('Processing', childRecords?.length, 'record(s) for', relationshipDefinition.child.name, );
+    // console.log('Processing', childRecords?.length, 'record(s) for', relationshipDefinition.child.name, );
     const {
         parent: { referenceField: parentReferenceField },
         child: { referenceField: childReferenceField },

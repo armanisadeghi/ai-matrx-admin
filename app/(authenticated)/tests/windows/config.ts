@@ -69,12 +69,12 @@ export const pages: ModulePage[] = [
         relative: true,
         description: ''
     },
-    {
-        title: 'Camera Test',
-        path: 'camera-test',
-        relative: true,
-        description: ''
-    },
+    // {
+    //     title: 'Camera Test',
+    //     path: 'camera-test',
+    //     relative: true,
+    //     description: ''
+    // },
     {
         title: 'Component Test',
         path: 'component-test',
@@ -93,12 +93,12 @@ export const pages: ModulePage[] = [
         relative: true,
         description: ''
     },
-    {
-        title: 'Floating Slider Demo',
-        path: 'floating-slider-demo',
-        relative: true,
-        description: ''
-    },
+    // {
+    //     title: 'Floating Slider Demo',
+    //     path: 'floating-slider-demo',
+    //     relative: true,
+    //     description: ''
+    // },
     {
         title: 'Forms',
         path: 'forms',
@@ -153,12 +153,12 @@ export const pages: ModulePage[] = [
         relative: true,
         description: ''
     },
-    {
-        title: 'Image Gallery Starter',
-        path: 'image-gallery-starter',
-        relative: true,
-        description: ''
-    },
+    // {
+    //     title: 'Image Gallery Starter',
+    //     path: 'image-gallery-starter',
+    //     relative: true,
+    //     description: ''
+    // },
     {
         title: 'Input Test',
         path: 'input-test',

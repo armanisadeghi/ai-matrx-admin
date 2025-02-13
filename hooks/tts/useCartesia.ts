@@ -12,7 +12,8 @@ import {
     EmotionName,
     EmotionLevel
 } from '@/lib/cartesia/cartesia.types';
-import {Source, WebPlayer} from "@cartesia/cartesia-js";
+import {WebPlayer} from "@cartesia/cartesia-js";
+import Source from '@cartesia/cartesia-js/wrapper/source';
 
 interface UseCartesiaProps {
     container?: OutputContainer;

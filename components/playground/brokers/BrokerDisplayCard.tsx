@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 import { updateChipMetadata } from '@/features/rich-text-editor/utils/enhancedChipUtils';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 
 
 interface BrokerDisplayCardProps {
@@ -28,6 +29,8 @@ interface BrokerDisplayCardProps {
 
 const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDelete, onChipUpdate, brokerOptions }: BrokerDisplayCardProps) => {
     const [isOpen, setIsOpen] = useState(false);
+    const context = useEditorContext();
+    const chipController = context.chips;
 
     const [color, setColor] = useState<TailwindColor>(() => {
         if (!chips) return 'teal';
@@ -43,6 +46,7 @@ const BrokerDisplayCard = ({ recordId, record, unifiedLayoutProps, chips, onDele
                 [field]: value,
             };
             updateChipMetadata(recordId, updates);
+            chipController.updateChipAndBroker(recordId, updates);
         },
         [recordId]
     );

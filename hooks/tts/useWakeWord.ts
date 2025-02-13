@@ -1,6 +1,5 @@
 // hooks/useWakeWord.ts
 import {useEffect, useState, useCallback, useRef} from 'react';
-import {usePorcupine} from "@picovoice/porcupine-react";
 
 export type WakeWord = {
     publicPath: string;

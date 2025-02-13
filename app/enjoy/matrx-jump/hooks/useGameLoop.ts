@@ -27,7 +27,7 @@ export const useGameLoop = (
     updateEntities?: (state: GameState) => void
 ): GameLoopHookResult => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const frameRef = useRef<number>();
+    const frameRef = useRef<number | undefined>(undefined);
 
     const calculateScrollSpeed = useCallback((playerY: number, playerVelocityY: number) => {
         const topZoneY = CANVAS_HEIGHT * TOP_ZONE_THRESHOLD;

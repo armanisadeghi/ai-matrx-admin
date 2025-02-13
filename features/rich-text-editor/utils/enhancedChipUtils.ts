@@ -1,5 +1,5 @@
 import { cn } from '@/utils';
-import { getColorClassesForMode, MODE_CLASSES, TAILWIND_COLORS, TailwindColor } from '@/constants/rich-text-constants';
+import { getStyle, TAILWIND_COLORS, TailwindColor } from '@/constants/rich-text-constants';
 import { BrokerMetaData, ContentMode } from '@/types/editor.types';
 import { ChipMenuContextValue } from '../components/ChipContextMenu';
 import { encodeMatrxMetadata } from './patternUtils';
@@ -113,7 +113,7 @@ export function attachEventHandlers(chipContainer: HTMLSpanElement, handlers: Pa
                     (handler as EventListener)(event);
                 }
             };
-            
+
             chipContainer.addEventListener(eventName, wrappedHandler);
             attachedHandlers.set(eventName, wrappedHandler);
         }
@@ -140,15 +140,6 @@ export const createEnhancedChipStructure = (
     insertionWrapper.setAttribute('data-chip-container', 'true');
     insertionWrapper.setAttribute('data-structure-id', structureId);
     insertionWrapper.setAttribute('data-display-mode', mode);
-
-    // Leading space wrapper
-    const leadingSpaceWrapper = document.createElement('span');
-    leadingSpaceWrapper.setAttribute('data-chip-space', 'true');
-    leadingSpaceWrapper.setAttribute('data-space-type', 'leading');
-    leadingSpaceWrapper.setAttribute('data-structure-id', structureId);
-    leadingSpaceWrapper.appendChild(document.createTextNode('\u00A0'));
-    insertionWrapper.appendChild(leadingSpaceWrapper);
-
     // Chip wrapper
     const chipWrapper = document.createElement('span');
     chipWrapper.setAttribute('data-chip-wrapper', 'true');
@@ -168,13 +159,12 @@ export const createEnhancedChipStructure = (
     chipWrapper.appendChild(chipContainer);
 
     // Add leading spaces to container
-    chipContainer.appendChild(document.createTextNode('\u00A0\u00A0'));
+    chipContainer.appendChild(document.createTextNode('\u00A0'));
 
     // The chip itself
     const chip = document.createElement('span');
-    const colorClasses = getColorClassesForMode(brokerMetadata.color as TailwindColor, mode);
-    const modeClasses = MODE_CLASSES[mode];
-    chip.className = cn(modeClasses, colorClasses);
+    const modeClasses = getStyle(brokerMetadata.color as TailwindColor, mode);
+    chip.className = cn(modeClasses);
 
     const encodedString = encodeMatrxMetadata(brokerMetadata);
 
@@ -205,7 +195,7 @@ export const createEnhancedChipStructure = (
     chipContainer.appendChild(chip);
 
     // Add trailing spaces to container
-    chipContainer.appendChild(document.createTextNode('\u00A0\u00A0'));
+    chipContainer.appendChild(document.createTextNode('\u00A0'));
 
     // Add event handlers based on mode
     configureChipMode(chip, chipContainer, brokerMetadata, mode);
@@ -225,14 +215,6 @@ export const createEnhancedChipStructure = (
     if (handlers.onMouseEnter) chipContainer.addEventListener('mouseenter', handlers.onMouseEnter);
     if (handlers.onMouseLeave) chipContainer.addEventListener('mouseleave', handlers.onMouseLeave);
 
-    // Add trailing space and anchor wrappers
-    const trailingSpaceWrapper = document.createElement('span');
-    trailingSpaceWrapper.setAttribute('data-chip-space', 'true');
-    trailingSpaceWrapper.setAttribute('data-space-type', 'trailing');
-    trailingSpaceWrapper.setAttribute('data-structure-id', structureId);
-    trailingSpaceWrapper.appendChild(document.createTextNode('\u00A0'));
-    insertionWrapper.appendChild(trailingSpaceWrapper);
-
     const anchorWrapper = document.createElement('span');
     anchorWrapper.setAttribute('data-chip-anchor', 'true');
     anchorWrapper.setAttribute('data-structure-id', structureId);
@@ -244,87 +226,45 @@ export const createEnhancedChipStructure = (
         chipWrapper,
         chip,
         anchorNode: anchorWrapper.firstChild as Text,
-        // chipCleanup,
     };
 };
 
-// Create a WeakMap to store observers for each chip element
 const chipObservers = new WeakMap<HTMLElement, MutationObserver>();
 
 const configureChipMode = (chip: HTMLElement, container: HTMLElement, brokerMetadata: BrokerMetaData, mode: ContentMode) => {
-    // Clean up any existing observer
     const existingObserver = chipObservers.get(chip);
     if (existingObserver) {
         existingObserver.disconnect();
         chipObservers.delete(chip);
     }
+    const color = brokerMetadata.color as TailwindColor;
 
-    // Update display mode attributes
     chip.setAttribute('data-display-mode', mode);
     container.setAttribute('data-display-mode', mode);
 
-    // Initial color setup
-    updateChipColorClasses(chip, mode);
+    updateChipColorClasses(chip, mode, color);
 
-    // Create a mutation observer to watch for color changes
     const colorObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.attributeName === 'data-chip-color') {
-                updateChipColorClasses(chip, mode);
+                const currentColor = chip.getAttribute('data-chip-color') as TailwindColor;
+                updateChipColorClasses(chip, mode, currentColor);
             }
         });
     });
 
-    colorObserver.observe(chip, { 
+    colorObserver.observe(chip, {
         attributes: true,
-        attributeFilter: ['data-chip-color'] 
+        attributeFilter: ['data-chip-color'],
     });
 
-    // Store observer reference
     chipObservers.set(chip, colorObserver);
-
-    // Update content
     chip.textContent = getDisplayContent(brokerMetadata, mode);
-
-    // Configure editability and draggability
     configureInteractivity(container, mode);
 };
 
-
-
-const updateChipColorClasses = (chip: HTMLElement, mode: ContentMode) => {
-    const color = chip.getAttribute('data-chip-color') as TailwindColor;
-    if (!color) return;
-
-    const modeClasses = MODE_CLASSES[mode];
-    const colorClasses = getColorClassesForMode(color, mode);
-
-    // Remove all existing color-related classes
-    const classesToRemove = TAILWIND_COLORS.flatMap((c) => [
-        `bg-${c}-300`,
-        `dark:bg-${c}-800`,
-        `text-${c}-900`,
-        `dark:text-${c}-100`,
-        `hover:bg-${c}-400`,
-        `dark:hover:bg-${c}-700`,
-        `border-${c}-200`,
-        `border-${c}-300`,
-        `border-${c}-700`,
-        `border-${c}-800`,
-    ]);
-
-    chip.classList.remove(...classesToRemove);
-
-    // Add new classes
-    chip.className = cn(
-        modeClasses,
-        colorClasses,
-        // Preserve non-color related utility classes
-        chip.className
-            .split(' ')
-            .filter((cls) => !classesToRemove.includes(cls) && !MODE_CLASSES[mode].split(' ').includes(cls))
-            .join(' ')
-    );
+const updateChipColorClasses = (chip: HTMLElement, mode: ContentMode, color: TailwindColor) => {
+    chip.className = getStyle(color, mode);
 };
 
 const configureInteractivity = (container: HTMLElement, mode: ContentMode) => {
@@ -332,14 +272,22 @@ const configureInteractivity = (container: HTMLElement, mode: ContentMode) => {
         container.contentEditable = 'true';
         container.removeAttribute('draggable');
         container.classList.remove('cursor-move');
+        container.classList.add('cursor-text');
     } else if (mode === 'encodeChips') {
         container.contentEditable = 'false';
         container.setAttribute('draggable', 'true');
         container.classList.add('cursor-move');
+        container.classList.remove('cursor-text');
+    } else if (mode === 'recordKey') {
+        container.contentEditable = 'false';
+        container.removeAttribute('draggable');
+        container.classList.remove('cursor-move');
+        container.classList.remove('cursor-text');
     } else {
         container.contentEditable = 'false';
         container.removeAttribute('draggable');
         container.classList.remove('cursor-move');
+        container.classList.remove('cursor-text');
     }
 };
 
@@ -378,7 +326,7 @@ export function updateChipMetadata(
         label: string;
         defaultValue: string;
         stringValue: string;
-        color: string;
+        color: TailwindColor;
         status: string;
         defaultComponent: string;
         dataType: string;
@@ -387,8 +335,8 @@ export function updateChipMetadata(
     editorId?: string
 ) {
     const chips = editorId
-        ? document.getElementById(editorId)?.querySelectorAll(`[data-chip-matrxrecordid="${recordId}"]`)
-        : document.querySelectorAll(`[data-chip-matrxrecordid="${recordId}"]`);
+        ? document.getElementById(editorId)?.querySelectorAll(`[data-chip-matrxRecordId="${recordId}"]`)
+        : document.querySelectorAll(`[data-chip-matrxRecordId="${recordId}"]`);
 
     if (!chips?.length) {
         console.error(`No chips found with record ID ${recordId}`);
@@ -413,9 +361,12 @@ export function updateChipMetadata(
             const prevColor = chipElement.getAttribute('data-chip-color');
             chipElement.setAttribute('data-chip-color', updates.color);
             const currentMode = chipElement.getAttribute('data-display-mode') as ContentMode;
-            updateChipColorClasses(chipElement, currentMode);
-        }
+            const newClasses = getStyle(updates.color, currentMode);
 
+            console.log('--- newClasses', newClasses);
+
+            chipElement.setAttribute('class', newClasses);
+        }
         if (updates.status) {
             chipElement.setAttribute('data-chip-status', updates.status);
         }

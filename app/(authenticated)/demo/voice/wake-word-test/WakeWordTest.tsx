@@ -1,7 +1,6 @@
 "use client";
 
 import React, {useEffect, useState} from "react";
-import {usePorcupine} from "@picovoice/porcupine-react";
 import {toast} from "sonner";
 import {cn} from "@/utils/cn";
 import { motion } from "framer-motion";

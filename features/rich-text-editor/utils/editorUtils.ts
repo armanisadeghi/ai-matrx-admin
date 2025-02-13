@@ -1,4 +1,5 @@
 import { BrokerMetaData, ChipData, ChipRequestOptions, TextStyle } from '../../../types/editor.types';
+import { encodeMatrxMetadata } from './patternUtils';
 
 // Helper to get editor element by ID
 export const getEditorElement = (editorId: string): HTMLDivElement | null => {
@@ -17,23 +18,17 @@ const formatChipMetadata = (element: Element): string => {
         dataType: element.getAttribute('data-chip-dataType') || '',
     };
 
-    // Build the metadata string in the required format
-    const parts = [
-        `matrxRecordId:${metadata.matrxRecordId}`,
-        `id:${metadata.id}`,
-        `name:"${metadata.name}"`,
-        `defaultValue:"${metadata.defaultValue}"`,
-        `color:"${metadata.color}"`,
-        `status:"${metadata.status}"`,
-    ].filter((part) => !part.endsWith('""') && !part.endsWith(':'));
-
-    return `{${parts.join('|')}}!`;
+    return encodeMatrxMetadata(metadata);
 };
 
 export const extractEncodedTextFromDom = (editor: HTMLDivElement): string => {
     let text = '';
+    let isFirstLine = true;
 
-    // Handle deeply nested elements recursively if needed
+    const hasChipAttribute = (element: Element): boolean => {
+        return Array.from(element.attributes).some(attr => attr.name.startsWith('data-chip-'));
+    };
+
     const processNestedElement = (element: Element): string => {
         if (element.hasAttribute('data-chip-id')) {
             return formatChipMetadata(element);
@@ -47,7 +42,9 @@ export const extractEncodedTextFromDom = (editor: HTMLDivElement): string => {
                 if (node.textContent === '\u200B') {
                     return NodeFilter.FILTER_SKIP;
                 }
-                if (node.parentNode instanceof Element && node.parentNode.hasAttribute('data-chip-id')) {
+                if (node.parentNode instanceof Element && 
+                    (hasChipAttribute(node.parentNode) || 
+                     (node.parentNode.parentNode instanceof Element && hasChipAttribute(node.parentNode.parentNode)))) {
                     return NodeFilter.FILTER_SKIP;
                 }
             }
@@ -58,30 +55,34 @@ export const extractEncodedTextFromDom = (editor: HTMLDivElement): string => {
     let node: Node | null;
     while ((node = walker.nextNode())) {
         if (node.nodeType === Node.TEXT_NODE) {
+            // Add text content directly
             text += node.textContent;
         } else if (node instanceof Element) {
             if (node.hasAttribute('data-chip-id')) {
+                // Add chip metadata
                 text += formatChipMetadata(node);
             } else if (node.tagName === 'DIV') {
-                if (node.querySelector('br')) {
-                    text += '\n\n';
-                } else {
-                    text += '\n';
-                }
-                // Process any nested elements that might be deeply buried
-                const nestedText = processNestedElement(node);
-                if (nestedText) {
-                    text += nestedText;
+                text += '\n';
+                isFirstLine = false;
+
+                if (!node.querySelector('br')) {
+                    // Process any nested elements that might be deeply buried
+                    const nestedText = processNestedElement(node);
+                    if (nestedText) {
+                        text += nestedText;
+                    }
                 }
             }
         }
     }
 
-    return text
-        .split('\n')
-        .map((line) => line.replace(/\s+/g, ' ').trim())
-        .join('\n')
-        .trim();
+    // If the editor is completely empty (just a br in first line),
+    // ensure we at least have a newline
+    if (text === '' && editor.querySelector('br')) {
+        text = '\n';
+    }
+
+    return text;
 };
 
 export const ensureValidContainer = (editor: HTMLDivElement, selection: Selection): Range => {
@@ -226,7 +227,6 @@ export const setupEditorAttributes = (editor: HTMLDivElement, componentId: strin
     editor.setAttribute('spellcheck', 'true');
     editor.setAttribute('data-editor-root', 'true');
     editor.setAttribute('data-editor-id', componentId);
-    // Explicitly mark as drop target
     editor.setAttribute('data-drop-target', 'true');
 };
 

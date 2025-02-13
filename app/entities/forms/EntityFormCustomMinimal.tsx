@@ -62,7 +62,6 @@ export const EntityFormCustomMinimal = <TEntity extends EntityKeys>({
             console.log('Record creation started');
         } else {
             if (avoidViewMode) {
-                console.log('Setting operation mode to update');
                 dispatch(actions.setOperationMode('update'));
             }
         }

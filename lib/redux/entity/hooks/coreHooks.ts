@@ -26,6 +26,8 @@ export const useEntityCore = (entityKey: EntityKeys) => {
 export const useEntityTools = (entityKey: EntityKeys) => {
     const store = useAppStore();
     const metadata = getEntityMetadata(entityKey);
+    if (!metadata) { return null; }
+    const fields = metadata.entityFields;
     const pkMeta = metadata?.primaryKeyMetadata;
     const pkType = pkMeta?.type;
     const pkFields = pkMeta?.fields || [];
@@ -53,6 +55,7 @@ export const useEntityTools = (entityKey: EntityKeys) => {
         selectors,
         actions,
         store,
+        fields,
         pkType,
         pkFields,
         firstPkField,
@@ -67,6 +70,7 @@ export const useEntityData = (entityKey: EntityKeys) => {
     const store = useAppStore();
     const metadata = getEntityMetadata(entityKey);
     const pkMeta = metadata?.primaryKeyMetadata;
+    const fields = metadata?.entityFields;
     const pkType = pkMeta?.type;
     const pkFields = pkMeta?.fields || [];
     const FetchStrategy = metadata?.defaultFetchStrategy;
@@ -101,6 +105,7 @@ export const useEntityData = (entityKey: EntityKeys) => {
         store,
         pkType,
         pkFields,
+        fields,
         firstPkField,
         pkValueToMatrxId,
         matrxIdToPks,

@@ -8,9 +8,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {MatrxJson} from 'components/ui/JsonComponents';
+
 import { simpleJsonObject, complexJsonObject, largeJsonObject, invalidJsonString, JsonDataType } from '../sampleData';
 import TextDivider from "@/components/matrx/TextDivider";
+import { FullEditableJsonViewer } from '@/components/ui';
 
 const EnhancedJsonDemoComponent: React.FC = () => {
     const [currentData, setCurrentData] = useState<string | object>(JSON.stringify(simpleJsonObject, null, 2));
@@ -103,7 +104,7 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                     <Card>
                         <CardContent>
                             <TextDivider text="Json.Editor (Base)" />
-                            <MatrxJson.Editor
+                            <FullEditableJsonViewer
                                 data={currentData}
                                 onChange={handleDataChange}
                                 validateDelay={validateDelay}
@@ -116,7 +117,7 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                     <Card>
                         <CardContent>
                             <TextDivider text="Json.Editor (with Formatting)" />
-                            <MatrxJson.Editor
+                            <FullEditableJsonViewer
                                 data={currentData}
                                 onChange={handleDataChange}
                                 validateDelay={validateDelay}
@@ -128,7 +129,7 @@ const EnhancedJsonDemoComponent: React.FC = () => {
                 </TabsContent>
                 <TabsContent value="full">
                     <TextDivider text="Json.FullEditor" />
-                    <MatrxJson.FullEditor
+                    <FullEditableJsonViewer
                         data={currentData}
                         onChange={handleDataChange}
                         validateDelay={validateDelay}

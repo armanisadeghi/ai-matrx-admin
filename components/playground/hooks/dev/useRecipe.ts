@@ -15,8 +15,7 @@ export function useRecipe() {
     const activeRecipeFieldId = activeRecipeRecord?.id;
 
     // Messages
-    const recipeMessageRecords = useAppSelector(
-        recipeMessageEntity.selectors.selectRecordsByFieldValue('recipeId', activeRecipeFieldId)
+    const recipeMessageRecords = useAppSelector((state) => recipeMessageEntity.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeFieldId)
     ) as RecipeMessageDataRequired[];
 
     const matchingMessageIds = React.useMemo(
@@ -29,7 +28,7 @@ export function useRecipe() {
     ) as MessageTemplateDataRequired[];
 
     // AI Agents & Settings
-    const aiAgentRecords = useAppSelector(aiAgentEntity.selectors.selectRecordsByFieldValue('recipeId', activeRecipeFieldId)) as AiAgentDataRequired[];
+    const aiAgentRecords = useAppSelector((state) => aiAgentEntity.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeFieldId)) as AiAgentDataRequired[];
 
     const aiAgentMetadata = useAppSelector(aiAgentEntity.selectors.selectEntityMetadata);
 

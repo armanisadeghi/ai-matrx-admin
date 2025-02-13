@@ -1,12 +1,14 @@
 // lib/redux/socket/manager.ts
 
-import { EventChannel, eventChannel } from 'redux-saga';
 import { SagaCoordinator } from '@/lib/redux/sagas/SagaCoordinator';
+import { supabase } from '@/utils/supabase/client';
 
 export class SocketManager {
     private static instance: SocketManager;
     private socket: any | null = null;
-    private dynamicEventListeners: Map<string, (data: any) => void> = new Map(); // Store listeners
+    private dynamicEventListeners: Map<string, (data: any) => void> = new Map();
+    private readonly PRODUCTION_URL = 'https://server.app.matrxserver.com'
+    private readonly LOCAL_URL = 'http://localhost:8000';
 
     private constructor() {}
 
@@ -17,22 +19,54 @@ export class SocketManager {
         return SocketManager.instance;
     }
 
+    private async getSocketAddress(): Promise<string> {
+        if (process.env.NEXT_PUBLIC_SOCKET_OVERRIDE) {
+            return process.env.NEXT_PUBLIC_SOCKET_OVERRIDE;
+        }
+
+        if (process.env.NODE_ENV === 'production') {
+            return this.PRODUCTION_URL;
+        }
+
+        try {
+            const testSocket = await fetch(this.LOCAL_URL, { 
+                method: 'HEAD',
+                signal: AbortSignal.timeout(2000)
+            });
+            
+            if (testSocket.ok) {
+                return this.LOCAL_URL;
+            }
+        } catch (error) {
+            console.log('Local server not available, falling back to production URL');
+        }
+
+        return this.PRODUCTION_URL;
+    }
+
     async connect() {
         if (!this.socket) {
             if (typeof window !== 'undefined') {
                 try {
                     const { io } = await import('socket.io-client');
-
-                    const socketAddress = process.env.SOCKET_OVERRIDE || 'http://matrx.89.116.187.5.sslip.io'; // 'http://matrx.89.116.187.5.sslip.io' // 'http://localhost:8000';
+                    const socketAddress = await this.getSocketAddress();
+                    const session = await supabase.auth.getSession();
 
                     // Connect directly to the required namespace
                     this.socket = io(`${socketAddress}/UserSession`, {
-                        transports: ['websocket', 'polling'],
+                        transports: ['polling', 'websocket'],
                         withCredentials: true,
+                        auth: {
+                            token: session.data.session.access_token
+                        }
+                    });
+
+                    // Add error handler
+                    this.socket.on('connect_error', (error: Error) => {
+                        console.log('Socket connection error:', error.message);
                     });
 
                     this.registerEventHandlers();
-
                     console.log(`SocketManager: Connected to ${socketAddress}/UserSession`);
                 } catch (error) {
                     console.error('SocketManager: Error connecting socket', error);
@@ -42,6 +76,7 @@ export class SocketManager {
             }
         }
     }
+
 
     disconnect() {
         if (this.socket) {

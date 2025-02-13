@@ -19,6 +19,12 @@
       "@/*": [
         "./*"
       ],
+      "@components/ui/*": [
+        "./components/ui/*"
+      ],
+      "@components/*": [
+        "./components/*"
+      ],
       "/*": [
         "public/*"
       ]
@@ -53,8 +59,10 @@
     "scripts/**/*",
     "node_modules/flowbite-react/lib/esm/index.d.ts",
     "global.d.ts",
-    "cartesia.d.ts"
-, "components/FileManager/FilePreview/pdf-preview/PDFPreview.tsx"  ],
+    "cartesia.d.ts",
+    "components/FileManager/FilePreview/pdf-preview/PDFPreview.tsx",
+    "features/rich-text-editor/utils/PatternUtilsOLD.ts"
+  ],
   "exclude": [
     "node_modules",
     "_armani",
@@ -72,6 +80,9 @@
       "paths": {
         "@/*": [
           "./*"
+        ],
+        "@components/ui/*": [
+          "./components/ui/*"
         ]
       }
     }

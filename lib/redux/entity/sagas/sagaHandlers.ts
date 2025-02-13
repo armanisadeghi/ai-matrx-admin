@@ -231,19 +231,19 @@ function* handleGetOrFetchSelectedRecords<TEntity extends EntityKeys>(
     yield call(setLoading, state, 'GET_OR_FETCH_RECORDS');
 
     try {
-        entityLogger.log('info', 'Starting', filteredPayload);
+        entityLogger.log('debug', 'Starting', filteredPayload);
 
         const { existingRecords, recordIdsNotInState, primaryKeysToFetch } = yield select(
             entitySelectors.selectRecordsForFetching(validRecordIds)
         );
-        entityLogger.log('info', '-Existing records', existingRecords);
-        entityLogger.log('info', '-Record IDs not in state', recordIdsNotInState);
-        entityLogger.log('info', '-Primary keys to fetch', primaryKeysToFetch);
+        entityLogger.log('debug', '-Existing records', existingRecords);
+        entityLogger.log('debug', '-Record IDs not in state', recordIdsNotInState);
+        entityLogger.log('debug', '-Primary keys to fetch', primaryKeysToFetch);
 
         for (const recordId of existingRecords) {
-            entityLogger.log('info', '-Existing records', existingRecords);
-            entityLogger.log('info', '--- handleGetOrFetchSelectedRecords Adding to selection', recordId);
-            entityLogger.log('info', 'Dispatching addToSelection action');
+            entityLogger.log('debug', '-Existing records', existingRecords);
+            entityLogger.log('debug', '--- handleGetOrFetchSelectedRecords Adding to selection', recordId);
+            entityLogger.log('debug', 'Dispatching addToSelection action');
 
             yield put(actions.addToSelection(recordId));
         }
@@ -405,8 +405,8 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>({
         const dbDisplayField = displayFieldMetadata?.databaseFieldName;
         const limit = action.payload?.maxRecords ?? 1000;
 
-        let query = api.select(`${dbPrimaryKeyFields.join(',')}${dbDisplayField ? `,${dbDisplayField}` : ''}`).limit(limit);
-
+        let query = api.select(`${dbPrimaryKeyFields.join(',')}${dbDisplayField ? `,${dbDisplayField}` : ''}`).limit(limit).order(dbDisplayField, { ascending: true });
+        
         const { data, error, count } = yield query; // TODO: NOT GETTING A TOTAL COUNT!
         if (error) throw error;
 

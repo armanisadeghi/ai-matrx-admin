@@ -1,9 +1,9 @@
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { EntityKeys, EntityData, MatrxRecordId } from '@/types';
 import React, { useEffect, useCallback } from 'react';
-import { RelationshipDefinition, createRelationshipData } from './utils';
+import { createRelationshipData } from './utils';
 
-export function useActiveJoinedRecords(relationshipDefinition: RelationshipDefinition) {
+export function useActiveJoinedRecords(relationshipDefinition) {
     const dispatch = useAppDispatch();
 
     const parentEntity = relationshipDefinition.parentEntity.entityKey;
@@ -25,9 +25,7 @@ export function useActiveJoinedRecords(relationshipDefinition: RelationshipDefin
     const activeParentRefererenceField = parentReferencedField;
     const activeParentFieldId = activeParentRecord?.[activeParentRefererenceField];
 
-    const JoiningEntityRecords = useAppSelector(
-        joiningSelectors.selectRecordsByFieldValue(joiningParentField, activeParentFieldId)
-    ) as EntityData<EntityKeys>[];
+    const JoiningEntityRecords = useAppSelector((state) => joiningSelectors.selectRecordsByFieldValueHelper(state, joiningParentField, activeParentFieldId)) as EntityData<EntityKeys>[];
 
 
     const matchingChildIds = React.useMemo(

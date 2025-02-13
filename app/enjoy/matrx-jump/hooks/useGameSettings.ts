@@ -1,3 +1,5 @@
+'use client';
+
 // hooks/useGameSettings.ts
 import { useState, useEffect } from 'react';
 

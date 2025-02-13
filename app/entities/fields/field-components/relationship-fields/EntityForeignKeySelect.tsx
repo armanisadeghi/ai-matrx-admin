@@ -15,6 +15,8 @@ const EntityForeignKeySelect = React.forwardRef<HTMLSelectElement, EntityForeign
         ref
     ) => {
         const relatedEntity = dynamicFieldInfo.foreignKeyReference?.entity as EntityKeys;
+        // if (relatedEntity === 'users') { return null; }
+
         useFetchQuickRef(relatedEntity);
         
         // Find the record key that corresponds to our incoming value

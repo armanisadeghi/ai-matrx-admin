@@ -3,14 +3,14 @@ import useStartCreateRecord from './useStartCreateRecord';
 import { useUpdateFields } from './useUpdateFields';
 import { useCreateRecord } from './useCreateRecord';
 
-type FieldValue = string | number | boolean | null | Record<string, unknown> | unknown;
+export type FieldValue = string | number | boolean | null | Record<string, unknown> | unknown;
 type FieldUpdates = Record<string, FieldValue>;
 
-interface UseUnsavedRecordOptions<T = any> {
+export interface UseUnsavedRecordOptions<T = any> {
     entityKey: EntityKeys;
 }
 
-interface UseUnsavedRecordResult<T> {
+export interface UseUnsavedRecordResult<T> {
     // Start methods
     start: () => MatrxRecordId;
     startWithData: (initialData: Partial<T>) => MatrxRecordId;

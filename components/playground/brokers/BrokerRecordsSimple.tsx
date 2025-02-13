@@ -3,7 +3,7 @@
 import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { EntityKeys, MatrxRecordId, MessageBrokerDataOptional } from '@/types';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
+import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 import { ChipData } from '@/types/editor.types';
 import BrokerDisplayCard from './BrokerDisplayCard';
@@ -31,16 +31,17 @@ export interface EnhancedBrokerRecord {
 }
 
 const BrokerRecordsSimple = ({ unifiedLayoutProps }: { unifiedLayoutProps: UnifiedLayoutProps }) => {
+    const dispatch = useAppDispatch();
     const [canProcess, setCanProcess] = useState(false);
     const entityName = 'dataBroker' as EntityKeys;
-    const { selectors } = useEntityTools(entityName);
+    const { selectors, actions } = useEntityTools(entityName);
     const selectedBrokers = useAppSelector(selectors.selectSelectedEnhancedRecords);
     const context = useEditorContext();
     const messagesLoading = context.messagesLoading;
     const { quickReferences, isLoading: quickRefLoading, getOrFetchRecord, enhancedRecords } = useEnhancedFetch(entityName);
     const isLoading = quickRefLoading || messagesLoading;
-
     const { deleteRecord: removeRelationship } = useDeleteRecord('messageBroker');
+
 
     useEffect(() => {
         if (isLoading) {
@@ -95,6 +96,7 @@ const BrokerRecordsSimple = ({ unifiedLayoutProps }: { unifiedLayoutProps: Unifi
 
     const handleRemove = useCallback(
         (recordId: MatrxRecordId) => {
+            dispatch(actions.removeFromSelection(recordId));
             const broker = enhancedRecords[recordId];
             const messageBrokerId = broker?.data?.messageBrokerInverse?.[0]?.id;
             if (messageBrokerId) {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
-import { Image, Link, Trash2, Save, Expand, Minimize2, LetterText, Radiation, SquareRadical, Bug, Eye } from 'lucide-react';
+import { Image, Link, Trash2, Save, Expand, Minimize2, LetterText, Radiation, SquareRadical, Bug, Eye, SquareAsterisk } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MatrxRecordId } from '@/types';
 
@@ -17,6 +17,7 @@ export interface MessageToolbarProps {
     onShowEncoded: (messageRecordId: MatrxRecordId) => void;
     onShowNames: (messageRecordId: MatrxRecordId) => void;
     onShowDefaultValue: (messageRecordId: MatrxRecordId) => void;
+    onShowEncodedId: (messageRecordId: MatrxRecordId) => void;
     onRoleChange: (messageRecordId: MatrxRecordId, newRole: string) => void;
     onDragDrop: (draggedId: MatrxRecordId, targetId: MatrxRecordId) => void;
     debug?: boolean;
@@ -69,6 +70,7 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
     onShowEncoded,
     onShowNames,
     onShowDefaultValue,
+    onShowEncodedId,
     onRoleChange,
     onDragDrop,
     debug = false,
@@ -104,25 +106,30 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
             onClick: () => onToggleCollapse(messageRecordId),
         },
         {
-            label: 'Standard',
+            label: 'Standard Text With Chips',
             icon: <Radiation className='h-4 w-4' />,
             onClick: () => onShowChips(messageRecordId),
         },
         {
-            label: 'Plain Text',
+            label: 'Plain Text With Broker Default Values',
             icon: <LetterText className='h-4 w-4' />,
+            onClick: () => onShowDefaultValue(messageRecordId),
+        },        {
+            label: 'Visible Encoded ID',
+            icon: <SquareAsterisk className='h-4 w-4' />,
+            onClick: () => onShowEncodedId(messageRecordId),
+        },
+        {
+            label: 'Visible Encoded Text',
+            icon: <SquareRadical className='h-4 w-4' />,
             onClick: () => onShowEncoded(messageRecordId),
         },
         {
             label: 'Broker Names',
-            icon: <SquareRadical className='h-4 w-4' />,
+            icon: <Eye className='h-4 w-4' />,
             onClick: () => onShowNames(messageRecordId),
         },
-        {
-            label: 'Processed',
-            icon: <Eye className='h-4 w-4' />,
-            onClick: () => onShowDefaultValue(messageRecordId),
-        },
+
     ];
 
     if (debug) {

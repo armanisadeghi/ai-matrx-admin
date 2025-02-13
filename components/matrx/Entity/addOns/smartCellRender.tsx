@@ -1,12 +1,10 @@
-import {Switch, Button, Tooltip, TooltipContent, TooltipTrigger, Badge} from "@/components/ui"
-import {Link} from "lucide-react"
-import {EntityData, EntityKeys} from "@/types/entityTypes";
-import {ButtonSize, ButtonVariant} from "../types/tableBuilderTypes";
-import {ActionConfig, SmartFieldConfig, TableColumn} from "@/components/matrx/Entity/types/advancedDataTableTypes";
+import { Switch, Button, Tooltip, TooltipContent, TooltipTrigger, Badge } from '@/components/ui';
+import { Link } from 'lucide-react';
+import { EntityData, EntityKeys } from '@/types/entityTypes';
+import { ButtonSize, ButtonVariant } from '../types/tableBuilderTypes';
+import { ActionConfig, SmartFieldConfig, TableColumn } from '@/components/matrx/Entity/types/advancedDataTableTypes';
 import { useMemo } from 'react';
-import {Row} from "@tanstack/react-table";
-import {EntityDataWithId} from "@/lib/redux/entity/types/stateTypes";
-
+import { EntityDataWithId } from '@/lib/redux/entity/types/stateTypes';
 
 const getSpecialValue = (value: any, formatting: any) => {
     if (value === null) return formatting.nullValue;
@@ -16,9 +14,7 @@ const getSpecialValue = (value: any, formatting: any) => {
 };
 
 const formatDate = (value: any) => {
-    return value instanceof Date
-           ? new Intl.DateTimeFormat('en-US', {dateStyle: 'medium'}).format(value)
-           : value;
+    return value instanceof Date ? new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(value) : value;
 };
 
 const formatNumber = (value: number, numberFormat?: any) => {
@@ -29,15 +25,13 @@ const formatCurrency = (value: number, numberFormat?: any) => {
     return new Intl.NumberFormat('en-US', {
         ...numberFormat,
         style: 'currency',
-        currency: numberFormat?.currency || 'USD'
+        currency: numberFormat?.currency || 'USD',
     }).format(value);
 };
 
 const truncateText = (text: string, maxCharacters: number) => {
     if (!text) return '';
-    return text.length > maxCharacters
-           ? `${text.substring(0, maxCharacters)}...`
-           : text;
+    return text.length > maxCharacters ? `${text.substring(0, maxCharacters)}...` : text;
 };
 
 export const formatCellValue = (value: any, fieldType: string, formatting: any, maxCharacters: number, meta?: any) => {
@@ -70,12 +64,11 @@ export const formatCellValue = (value: any, fieldType: string, formatting: any, 
     }
 };
 
-
 // Separate handlers for each type
 const handleNonNativeField = (value: any, databaseTable: string) => (
     <Link
         href={`/${databaseTable}`}
-        className="text-blue-600 hover:underline"
+        className='text-blue-600 hover:underline'
     >
         View {databaseTable}
     </Link>
@@ -105,15 +98,14 @@ const handleUUIDField = (value: string, config?: UUIDFieldConfig | null) => {
         <Tooltip>
             <TooltipTrigger asChild>
                 <Badge
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-secondary/80"
+                    className='cursor-pointer hover:bg-secondary/80'
                     onClick={() => config?.onUUIDClick?.(value)}
                 >
                     {config?.globalLabel || 'Unique ID'}
                 </Badge>
             </TooltipTrigger>
             <TooltipContent>
-                <code className="text-xs font-mono">{value}</code>
+                <code className='text-xs font-mono'>{value}</code>
             </TooltipContent>
         </Tooltip>
     );
@@ -133,12 +125,8 @@ const handleArrayField = (value: any[]) => {
 
     return (
         <Tooltip>
-            <TooltipTrigger>
-                {value.length} items
-            </TooltipTrigger>
-            <TooltipContent>
-                {value.join(', ')}
-            </TooltipContent>
+            <TooltipTrigger>{value.length} items</TooltipTrigger>
+            <TooltipContent>{value.join(', ')}</TooltipContent>
         </Tooltip>
     );
 };
@@ -148,17 +136,11 @@ const handleObjectField = (value: object) => {
     const display = JSON.stringify(value);
     return (
         <Tooltip>
-            <TooltipTrigger>
-                {'{...}'}
-            </TooltipTrigger>
-            <TooltipContent>
-                {display}
-            </TooltipContent>
+            <TooltipTrigger>{'{...}'}</TooltipTrigger>
+            <TooltipContent>{display}</TooltipContent>
         </Tooltip>
     );
 };
-
-
 
 export const createSmartCellRenderer = (
     fieldType: string,
@@ -219,16 +201,15 @@ export const createActionColumn = <TEntity extends EntityKeys>(
         if (config.view?.enabled) totalWidth += 40;
         if (config.edit?.enabled) totalWidth += 40;
         if (config.delete?.enabled) totalWidth += 50;
-        config.custom?.forEach(() => totalWidth += 60);
+        config.custom?.forEach(() => (totalWidth += 60));
 
-        const numberOfGaps = [
-            config.view?.enabled ? 1 : 0,
-            config.edit?.enabled ? 1 : 0,
-            config.delete?.enabled ? 1 : 0,
-            ...(config.custom?.map(() => 1) || [])
-        ].reduce((sum, current) => sum + current, 0) - 1;
+        const numberOfGaps =
+            [config.view?.enabled ? 1 : 0, config.edit?.enabled ? 1 : 0, config.delete?.enabled ? 1 : 0, ...(config.custom?.map(() => 1) || [])].reduce(
+                (sum, current) => sum + current,
+                0
+            ) - 1;
 
-        return totalWidth + (Math.max(0, numberOfGaps) * 8);
+        return totalWidth + Math.max(0, numberOfGaps) * 8;
     };
 
     const width = calculateWidth();
@@ -237,7 +218,7 @@ export const createActionColumn = <TEntity extends EntityKeys>(
         id: 'actions',
         accessorKey: 'actions',
         header: 'Actions',
-        cell: ({row}) => {
+        cell: ({ row }) => {
             const actions = [];
 
             if (config.view?.enabled) {
@@ -251,7 +232,7 @@ export const createActionColumn = <TEntity extends EntityKeys>(
                         }
                     },
                     variant: config.view.variant || 'secondary',
-                    size: config.view.size || 'xs'
+                    size: config.view.size || 'xs',
                 });
             }
 
@@ -266,7 +247,7 @@ export const createActionColumn = <TEntity extends EntityKeys>(
                         }
                     },
                     variant: config.edit.variant || 'outline',
-                    size: config.edit.size || 'xs'
+                    size: config.edit.size || 'xs',
                 });
             }
 
@@ -281,28 +262,28 @@ export const createActionColumn = <TEntity extends EntityKeys>(
                         }
                     },
                     variant: config.delete.variant || 'destructive',
-                    size: config.delete.size || 'xs'
+                    size: config.delete.size || 'xs',
                 });
             }
 
-            config.custom?.forEach(customAction => {
+            config.custom?.forEach((customAction) => {
                 actions.push({
                     label: customAction.label,
                     onClick: () => customAction.handler(row.original),
                     variant: customAction.variant || 'outline',
-                    size: customAction.size || 'xs'
+                    size: customAction.size || 'xs',
                 });
             });
 
             return (
-                <div className="flex gap-2 justify-end w-full">
+                <div className='flex gap-2 justify-end w-full'>
                     {actions.map((action, index) => (
                         <Button
                             key={`${action.label}-${index}`}
                             variant={action.variant}
                             size={action.size}
                             onClick={action.onClick}
-                            className="whitespace-nowrap"
+                            className='whitespace-nowrap'
                         >
                             {action.label}
                         </Button>
@@ -327,14 +308,14 @@ export const createActionColumn = <TEntity extends EntityKeys>(
             filterable: false,
             groupable: false,
             align: 'right',
-            width
-        }
+            width,
+        },
     };
 };
 
 // Interface for the default actions format expected by the table builder
 interface DefaultActionColumn {
-    type: "actions";
+    type: 'actions';
     options: {
         actions: Array<{
             label: string;
@@ -346,70 +327,68 @@ interface DefaultActionColumn {
     };
 }
 
-
 // Create default table actions in the format expected by the table builder
 export const createDefaultTableActions = (
     handleAction: (actionName: string, rowData: any) => void
 ): { basic: DefaultActionColumn; expanded: DefaultActionColumn } => ({
     basic: {
-        type: "actions",
+        type: 'actions',
         options: {
             actions: [
                 {
-                    label: "Edit",
+                    label: 'Edit',
                     onClick: (row) => handleAction('edit', row),
-                    variant: "outline",
-                    size: "xs"
+                    variant: 'outline',
+                    size: 'xs',
                 },
                 {
-                    label: "Delete",
+                    label: 'Delete',
                     onClick: (row) => handleAction('delete', row),
-                    variant: "destructive",
-                    size: "xs"
-                }
+                    variant: 'destructive',
+                    size: 'xs',
+                },
             ],
-            containerClassName: "justify-end"
-        }
+            containerClassName: 'justify-end',
+        },
     },
     expanded: {
-        type: "actions",
+        type: 'actions',
         options: {
             actions: [
                 {
-                    label: "View",
+                    label: 'View',
                     onClick: (row) => handleAction('view', row),
-                    variant: "secondary",
-                    size: "xs"
+                    variant: 'secondary',
+                    size: 'xs',
                 },
                 {
-                    label: "Edit",
+                    label: 'Edit',
                     onClick: (row) => handleAction('edit', row),
-                    variant: "outline",
-                    size: "xs"
+                    variant: 'outline',
+                    size: 'xs',
                 },
                 {
-                    label: "Delete",
+                    label: 'Delete',
                     onClick: (row) => handleAction('delete', row),
-                    variant: "destructive",
-                    size: "xs"
-                }
+                    variant: 'destructive',
+                    size: 'xs',
+                },
             ],
-            containerClassName: "justify-end"
-        }
-    }
+            containerClassName: 'justify-end',
+        },
+    },
 });
-
 
 // concept for later:
 
 interface TableDisplayConfig {
     // Basic display settings
     display: {
-        hidden?: boolean;              // Whether to hide this column by default
-        width?: number;                // Default column width in pixels
+        hidden?: boolean; // Whether to hide this column by default
+        width?: number; // Default column width in pixels
         align?: 'left' | 'center' | 'right';
-        truncate?: boolean;            // Whether to truncate long content
-        maxLength?: number;            // Max characters before truncating
+        truncate?: boolean; // Whether to truncate long content
+        maxLength?: number; // Max characters before truncating
     };
 
     // Formatting options based on data type
@@ -419,8 +398,8 @@ interface TableDisplayConfig {
             type: 'decimal' | 'percent' | 'currency';
             minimumFractionDigits?: number;
             maximumFractionDigits?: number;
-            currency?: string;         // For currency formatting (USD, EUR, etc.)
-            compact?: boolean;         // Use compact notation (1K, 1M, etc.)
+            currency?: string; // For currency formatting (USD, EUR, etc.)
+            compact?: boolean; // Use compact notation (1K, 1M, etc.)
         };
 
         // Dates
@@ -443,16 +422,16 @@ interface TableDisplayConfig {
         backgroundColor?: string;
         textColor?: string;
         fontWeight?: 'normal' | 'bold';
-        className?: string;           // Custom CSS class
+        className?: string; // Custom CSS class
     };
 
     // Conditional formatting
     conditions?: Array<{
         when: {
-            value?: any;              // Match exact value
+            value?: any; // Match exact value
             range?: [number, number]; // For number ranges
-            contains?: string;        // For text search
-            regex?: string;          // For pattern matching
+            contains?: string; // For text search
+            regex?: string; // For pattern matching
         };
         style: {
             backgroundColor?: string;
@@ -478,30 +457,30 @@ const exampleSchema = {
             tableConfig: {
                 display: {
                     align: 'right',
-                    width: 120
+                    width: 120,
                 },
                 format: {
                     number: {
                         type: 'currency',
                         currency: 'USD',
-                        minimumFractionDigits: 2
-                    }
+                        minimumFractionDigits: 2,
+                    },
                 },
                 conditions: [
                     {
-                        when: {range: [0, 100]},
-                        style: {textColor: 'green'}
+                        when: { range: [0, 100] },
+                        style: { textColor: 'green' },
                     },
                     {
-                        when: {range: [100, 1000]},
-                        style: {textColor: 'orange'}
+                        when: { range: [100, 1000] },
+                        style: { textColor: 'orange' },
                     },
                     {
-                        when: {range: [1000, Infinity]},
-                        style: {textColor: 'red'}
-                    }
-                ]
-            }
+                        when: { range: [1000, Infinity] },
+                        style: { textColor: 'red' },
+                    },
+                ],
+            },
         },
         status: {
             dataType: 'string',
@@ -509,27 +488,27 @@ const exampleSchema = {
             tableConfig: {
                 display: {
                     align: 'center',
-                    width: 100
+                    width: 100,
                 },
                 conditions: [
                     {
-                        when: {value: 'active'},
+                        when: { value: 'active' },
                         style: {
                             backgroundColor: '#e6ffe6',
                             textColor: '#006600',
-                            className: 'status-active'
-                        }
+                            className: 'status-active',
+                        },
                     },
                     {
-                        when: {value: 'inactive'},
+                        when: { value: 'inactive' },
                         style: {
                             backgroundColor: '#ffe6e6',
                             textColor: '#660000',
-                            className: 'status-inactive'
-                        }
-                    }
-                ]
-            }
+                            className: 'status-inactive',
+                        },
+                    },
+                ],
+            },
         },
         createdAt: {
             dataType: 'date',
@@ -537,15 +516,15 @@ const exampleSchema = {
             tableConfig: {
                 display: {
                     align: 'left',
-                    width: 160
+                    width: 160,
                 },
                 format: {
                     date: {
                         type: 'datetime',
-                        format: 'medium'
-                    }
-                }
-            }
-        }
-    }
+                        format: 'medium',
+                    },
+                },
+            },
+        },
+    },
 };
