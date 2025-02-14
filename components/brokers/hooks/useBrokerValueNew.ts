@@ -30,7 +30,7 @@ export const useCreateUpdateBrokerValue = (brokerId: string) => {
     const broker = useAppSelector((state) =>
         brokerSelectors.selectRecordWithKey(state, brokerRecordKey)
     ) as unknown as DataBrokerDataWithKey;
-    const brokerDataType = broker.dataType;
+    const brokerDataType = broker?.dataType || "str";
 
     const [recordId, setRecordId] = useState<string | null>(currentRecordId);
     const brokerValueDefaults = fieldDefaults as BrokerValueData;

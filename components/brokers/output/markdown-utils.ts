@@ -17,8 +17,8 @@ export type SectionItem = {
     const sections: { title: string; items: SectionItem[] }[] = [];
     let currentSection: { title: string; items: SectionItem[] } | null = null;
   
-    const isHeader = (line: string) => line.startsWith("### ");
-    const isDivider = (line: string) => line.startsWith("===");
+    const isHeader = (line: string) => line.startsWith("### ") || line.startsWith("## ") || line.startsWith("**");
+    const isDivider = (line: string) => line.startsWith("===") || line.startsWith("---");
   
     let collectingIntro = true;
     let collectingOutro = false;
@@ -36,7 +36,7 @@ export type SectionItem = {
         if (currentSection) {
           sections.push(currentSection);
         }
-        currentSection = { title: line.replace("###", "").trim(), items: [] };
+        currentSection = { title: line.replace("###", "").trim(), items: [] } 
         continue;
       }
   

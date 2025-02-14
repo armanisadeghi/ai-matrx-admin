@@ -9,9 +9,18 @@ import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
 import { parseMarkdownContent } from "@/components/brokers/output/markdown-utils";
 import FunMarkdownRenderer from "./FunMarkdown";
 import AnimatedEventComponent from "@/components/brokers/output/AnimatedEventComponent";
+
+const TEXT_IDS = [
+"8255edc9-5170-4f67-8d40-718e77a3561c",
+"ce63d140-5619-4f4f-9d7d-055f622f887b",
+
+
+]
+
+
 export default function PinkBlueBrokerPage() {
-    const recipeId = "ce63d140-5619-4f4f-9d7d-055f622f887b";
-    const recipeRecordKey = "id:ce63d140-5619-4f4f-9d7d-055f622f887b";
+    const recipeId = TEXT_IDS[1];
+    const recipeRecordKey = `id:${recipeId}`;
     const prepareRecipeHook = usePrepareRecipeToRun({
         recipeRecordKey: recipeRecordKey,
         version: "latest",
