@@ -47,7 +47,7 @@ export interface RecipeSocketTask extends SocketTask {
     taskData: RecipeTaskData;
 }
 
-export const useCockpitSocket = (getTasks: () => RecipeTaskData[]) => {
+export const useCockpitSocket = (getTasks: () => Promise<RecipeTaskData[]>) => {
     useInitializeSocket();
     const socketManager = SocketManager.getInstance();
     const responseRef = useRef<HTMLDivElement | null>(null);
@@ -55,11 +55,11 @@ export const useCockpitSocket = (getTasks: () => RecipeTaskData[]) => {
     const [streamingResponses, setStreamingResponses] = useState<StreamingResponses>({});
     const [isResponseActive, setIsResponseActive] = useState(false);
 
-    const handleSend = () => {
+    const handleSend = async () => {
         setStreamingResponses({});
         setIsResponseActive(true);
 
-        const tasks = getTasks();
+        const tasks = await getTasks();
         const payload = tasks.map((taskData) => ({
             task: 'run_recipe',
             taskData,

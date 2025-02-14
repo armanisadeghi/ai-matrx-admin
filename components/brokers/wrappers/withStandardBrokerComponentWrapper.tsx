@@ -157,7 +157,7 @@ export const withBrokerCustomInput = <P extends object>(
         }
     >
 ) => {
-    return function BrokerInput({
+    return function BrokerComponent({
         broker,
         className,
         ...props

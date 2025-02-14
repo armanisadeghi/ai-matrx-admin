@@ -108,6 +108,9 @@ type MyEntityFieldWithValues = EntityFieldWithValue<'registeredFunction'>;
 type ModulePathField = EntityFieldWithValue<'registeredFunction'>['modulePath'];
 type argInverseField = EntityFieldWithValue<'registeredFunction'>['argInverse'];
 
+
+export type EntityFieldRecord = Record<AllEntityFieldKeys, EntityStateField>;
+
 export interface EntityMetadata {
     entityName: EntityKeys;
     uniqueTableId: string;
@@ -118,7 +121,7 @@ export interface EntityMetadata {
     primaryKeyMetadata: PrimaryKeyMetadata;
     displayFieldMetadata: DisplayFieldMetadata;
     displayField?: string;
-    entityFields: Record<AllEntityFieldKeys, EntityStateField>;
+    entityFields: EntityFieldRecord;
     relationships: Relationship[];
 }
 

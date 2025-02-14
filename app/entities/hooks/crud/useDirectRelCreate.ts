@@ -15,8 +15,8 @@ export interface ProcessedResults {
 export const processReturnResults = (results: RelationshipCreateResult[]): ProcessedResults => {
     const childRecord = results[0].childRecord.data as EntityData<EntityKeys>;
     const joinRecord = results[0].joinRecord.data as EntityData<EntityKeys>;
-    const childMatrxRecordId = results[0].childRecord.recordKey as MatrxRecordId;
-    const joinMatrxRecordId = results[0].joinRecord.recordKey as MatrxRecordId;
+    const childMatrxRecordId = results[0].childRecord.matrxRecordId as MatrxRecordId;
+    const joinMatrxRecordId = results[0].joinRecord.matrxRecordId as MatrxRecordId;
 
     return {
         childRecord,
@@ -35,7 +35,7 @@ interface RawData {
 }
 
 interface RecordWithKey {
-    recordKey: MatrxRecordId;
+    matrxRecordId: MatrxRecordId;
     data: Record<string, unknown>;
 }
 
@@ -133,18 +133,20 @@ export const useRelationshipDirectCreate = (
                     joinMatrxRecordId,
                 };
 
-                if (result.childRecord.recordKey !== result.childMatrxRecordId) {
+                console.log('result', result)
+
+                if (result.childRecord.matrxRecordId !== result.childMatrxRecordId) {
                     console.warn(
                         'Child record key mismatch:',
-                        '\nRecord Key:', result.childRecord.recordKey,
+                        '\nRecord Key:', result.childRecord.matrxRecordId,
                         '\nMatrx ID:', result.childMatrxRecordId
                     );
                 }
 
-                if (result.joinRecord.recordKey !== result.joinMatrxRecordId) {
+                if (result.joinRecord.matrxRecordId !== result.joinMatrxRecordId) {
                     console.warn(
                         'Join record key mismatch:',
-                        '\nRecord Key:', result.joinRecord.recordKey,
+                        '\nRecord Key:', result.joinRecord.matrxRecordId,
                         '\nMatrx ID:', result.joinMatrxRecordId
                     );
                 }

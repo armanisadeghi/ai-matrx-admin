@@ -24,7 +24,6 @@ export const makeBrokerMetadata = (requestOptions: ChipRequestOptions = {}, next
     const recordKey = requestOptions.matrxRecordId ?? `id:${idToUse}`;
     const name = requestOptions.name ?? generateChipLabel(requestOptions.defaultValue ?? '');
     const defaultValue = requestOptions.defaultValue ?? '';
-    const defaultComponent = requestOptions.defaultComponent;
     const dataType = requestOptions.dataType ?? 'str';
     return {
         id: idToUse,
@@ -32,7 +31,6 @@ export const makeBrokerMetadata = (requestOptions: ChipRequestOptions = {}, next
         defaultValue: defaultValue,
         color: nextColor,
         matrxRecordId: recordKey,
-        defaultComponent: defaultComponent,
         dataType: dataType,
     };
 };
@@ -42,13 +40,12 @@ export const brokerFromMetadata = (metadata: BrokerMetaData): DataBrokerData => 
     name: metadata.name || 'New Broker',
     defaultValue: metadata.defaultValue || '',
     color: metadata.color as DataBrokerData['color'],
-    defaultComponent: metadata.defaultComponent,
     dataType: metadata.dataType as DataBrokerData['dataType'],
 });
 
 const processReturnResults = (results: RelationshipCreateResult[], nextColor: string) => {
-    const brokerRecord = results[0].childRecord.data as DataBrokerData;
-    const messageBrokerRecord = results[0].joinRecord.data as MessageBrokerData;
+    const brokerRecord = results[0].childRecord as unknown as DataBrokerData;
+    const messageBrokerRecord = results[0].joinRecord as unknown as MessageBrokerData;
     const matrxRecordId = results[0].childMatrxRecordId;
 
     const brokerMetadata = {
@@ -57,7 +54,7 @@ const processReturnResults = (results: RelationshipCreateResult[], nextColor: st
         defaultValue: brokerRecord.defaultValue || brokerRecord.name,
         color: brokerRecord.color || nextColor,
         matrxRecordId,
-        defaultComponent: brokerRecord.defaultComponent || '',
+        defaultComponent: brokerRecord.inputComponent || '',
         dataType: brokerRecord.dataType || 'str',
         status: 'active',
     };
@@ -72,7 +69,7 @@ const processBrokerRecordData = (brokerRecord: DataBrokerRecordWithKey, nextColo
         defaultValue: brokerRecord.defaultValue,
         color: brokerRecord.color || nextColor,
         matrxRecordId: brokerRecord.matrxRecordId,
-        defaultComponent: brokerRecord.defaultComponent,
+        defaultComponent: brokerRecord.inputComponent,
         dataType: brokerRecord.dataType,
         status: 'active',
     };

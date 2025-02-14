@@ -12,7 +12,7 @@ import {
     PrimaryKeyMetadata,
 } from '@/lib/redux/entity/types/stateTypes';
 import EntityLogger from './entityLogger';
-import { utils } from 'xlsx';
+import { v4 as uuidv4 } from 'uuid';
 
 // EntityLogger.addFeatureToFilter("utils");
 
@@ -208,14 +208,18 @@ export const clearUnsavedRecords = <TEntity extends EntityKeys>(state: EntitySta
 };
 
 export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {
+    const newUuid = uuidv4();
     const prefix = 'new-record-';
-    const existingTempIds = Object.keys(state?.unsavedRecords || {})
-        .filter((id) => id.startsWith(prefix))
-        .map((id) => parseInt(id.replace(prefix, '')))
-        .sort((a, b) => b - a);
 
-    const highestExistingNumber = existingTempIds.length > 0 ? existingTempIds[0] : 0;
-    return `${prefix}${highestExistingNumber + 1}`;
+    // console.log("state.unsavedRecords", state.unsavedRecords)
+
+    // const existingTempIds = Object.keys(state?.unsavedRecords || {})
+    //     .filter((id) => id.startsWith(prefix))
+    //     .map((id) => parseInt(id.replace(prefix, '')))
+    //     .sort((a, b) => b - a);
+
+    // const highestExistingNumber = existingTempIds.length > 0 ? existingTempIds[0] : 0;
+    return `${prefix}${newUuid}`;
 };
 
 

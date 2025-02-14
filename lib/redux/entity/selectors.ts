@@ -1021,7 +1021,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectEffectiveRecordOrDefaults = createSelector(
         [selectEntity, selectDefaultValues, (_, recordId: MatrxRecordId) => recordId],
         (entity, defaultValues, recordId) => {
-            const isTemporary = recordId.startsWith('new-record-');
+            const isTemporary = recordId?.startsWith('new-record-');
             const record = entity.unsavedRecords?.[recordId] || entity.records?.[recordId];
 
             if (!record) {

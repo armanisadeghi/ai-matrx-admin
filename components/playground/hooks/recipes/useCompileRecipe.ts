@@ -1,18 +1,20 @@
-import { getUniqueBrokerRecordIds, getUniqueMetadataFromAllMessages, transformEncodedToSimpleIdPattern } from '@/features/rich-text-editor/utils/patternUtils';
-import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { DataBrokerRecordWithKey, RecipeRecordWithKey } from '@/types';
-import { createNormalizer } from '@/utils/dataSchemaNormalizer';
-import { useCallback, useState } from 'react';
+import {
+    getUniqueBrokerRecordIds,
+    transformEncodedToSimpleIdPattern,
+} from "@/features/rich-text-editor/utils/patternUtils";
+import { useAppSelector, useEntityTools } from "@/lib/redux";
+import { DataBrokerRecordWithKey, RecipeRecordWithKey } from "@/types";
+import { createNormalizer } from "@/utils/dataSchemaNormalizer";
+import { useCallback } from "react";
+import { createRecipeTaskBrokers, createRecipeOverrides, createRecipeTaskDataList } from "./recipe-task-utils";
 
 export type BasicMessage = {
-    type: 'text' | 'base64_image' | 'blob' | 'image_url' | 'other' | string;
-    role: 'user' | 'assistant' | 'system' | string;
+    type: "text" | "base64_image" | "blob" | "image_url" | "other" | string;
+    role: "user" | "assistant" | "system" | string;
     content: string;
 };
 
 const extractNestedValues = (settings: any) => {
-    console.log('----- Settings:', settings);
-
     return {
         ...settings,
         model: settings?.ai_model_reference?.name,
@@ -30,31 +32,31 @@ const extractNestedValues = (settings: any) => {
 };
 
 const AI_SETTINGS_FIELDS = [
-    'id',
-    'maxTokens',
-    'temperature',
-    'topP',
-    'frequencyPenalty',
-    'presencePenalty',
-    'stream',
-    'responseFormat',
-    'size',
-    'quality',
-    'count',
-    'audioVoice',
-    'audioFormat',
-    'modalities',
-    'tools',
-    'endpoint',
-    'provider',
-    'model',
-    'aiEndpoint',
-    'aiProvider',
-    'aiModel',
-    'systemMessageOverride',
+    "id",
+    "maxTokens",
+    "temperature",
+    "topP",
+    "frequencyPenalty",
+    "presencePenalty",
+    "stream",
+    "responseFormat",
+    "size",
+    "quality",
+    "count",
+    "audioVoice",
+    "audioFormat",
+    "modalities",
+    "tools",
+    "endpoint",
+    "provider",
+    "model",
+    "aiEndpoint",
+    "aiProvider",
+    "aiModel",
+    "systemMessageOverride",
 ] as const;
 
-const BROKER_FIELDS = ['id', 'name', 'defaultValue', 'dataType'] as const;
+const BROKER_FIELDS = ["id", "name", "defaultValue", "dataType"] as const;
 
 const normalizeAiSettings = createNormalizer(AI_SETTINGS_FIELDS);
 
@@ -91,20 +93,24 @@ export interface RecipeTaskData {
 export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, messages, processedSettings, recipeSelectors }) {
     const selectors = recipeSelectors;
     const recipeRecord = useAppSelector((state) => selectors.selectRecordWithKey(state, activeRecipeMatrxId)) as RecipeRecordWithKey;
-    const { selectors: brokerSelectors } = useEntityTools('dataBroker');
+    const { selectors: brokerSelectors } = useEntityTools("dataBroker");
 
     const uniqueBrokerRecordIds = getUniqueBrokerRecordIds(messages);
-    const matchingBrokers = useAppSelector((state) => brokerSelectors.selectRecordsWithKeys(state, uniqueBrokerRecordIds)) as DataBrokerRecordWithKey[];
+    const matchingBrokers = useAppSelector((state) =>
+        brokerSelectors.selectRecordsWithKeys(state, uniqueBrokerRecordIds)
+    ) as DataBrokerRecordWithKey[];
 
     const compileRecipe = useCallback(() => {
-
         const messageList: BasicMessage[] = messages.map((message) => ({
             content: transformEncodedToSimpleIdPattern(message.content),
             role: message.role,
             type: message.type,
         }));
 
-        const settingsList = processedSettings.map((settings) => normalizeAiSettings(extractNestedValues(settings))) as Record<string, any>[];
+        const settingsList = processedSettings.map((settings) => normalizeAiSettings(extractNestedValues(settings))) as Record<
+            string,
+            any
+        >[];
 
         const compiledRecipe = {
             id: recipeRecord?.id,
@@ -115,47 +121,9 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
             settings: settingsList,
         } as CompiledRecipe;
 
-        console.log('----- Compiled Recipe:', compiledRecipe);
-
-        const recipeTaskBrokers = matchingBrokers.map((broker) => ({
-            id: broker.id,
-            official_name: broker.id,
-            data_type: broker.dataType,
-            required: true,
-            value: broker.defaultValue,
-            ready: true,
-        })) as BrokerValue[];
-
-        const recipeOverrides: RecipeOverrides[] = settingsList.map((settings) => ({
-            model_override: settings.model,
-            processor_overrides: {},
-            other_overrides: Object.fromEntries(
-                Object.entries({
-                    max_tokens: settings.maxTokens,
-                    temperature: settings.temperature,
-                    top_p: settings.topP,
-                    frequency_penalty: settings.frequencyPenalty,
-                    presence_penalty: settings.presencePenalty,
-                    response_format: settings.responseFormat,
-                    size: settings.size,
-                    quality: settings.quality,
-                    count: settings.count,
-                    audio_voice: settings.audioVoice,
-                    audio_format: settings.audioFormat,
-                    modalities: settings.modalities,
-                    tools: settings.tools,
-                    system_message_override: settings.systemMessageOverride,
-                }).filter(([_, value]) => value !== 'default')
-            ),
-        }));
-
-        const recipeTaskDataList: RecipeTaskData[] = recipeOverrides.map((override) => ({
-            recipe_id: activeRecipeId,
-            broker_values: recipeTaskBrokers,
-            overrides: override,
-        }));
-
-        console.log("----- Recipe Task Data List:", recipeTaskDataList);
+        const recipeTaskBrokers = createRecipeTaskBrokers(matchingBrokers);
+        const recipeOverrides = createRecipeOverrides(settingsList);
+        const recipeTaskDataList = createRecipeTaskDataList(compiledRecipe, activeRecipeId);
 
         return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
     }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);

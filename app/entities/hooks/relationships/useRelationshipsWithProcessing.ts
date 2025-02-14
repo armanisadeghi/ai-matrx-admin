@@ -1,17 +1,23 @@
-import { createEntitySelectors, useAppSelector } from '@/lib/redux';
-import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
-import { useCallback, useEffect, useState } from 'react';
-import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import { useSequentialDelete } from '../crud/useSequentialDelete';
-import { getStandardRelationship, KnownRelDef, SimpleRelDef } from './definitionConversionUtil';
-import _ from 'lodash';
-import { useRelationshipDirectCreate } from '../crud/useDirectRelCreate';
-import { useStableRelationships } from './new/useStableRelationships';
-import { useRecipeAgentSettings } from '@/hooks/aiCockpit/useRecipeAgentSettings';
-import { useProcessedRecipeMessages } from '@/hooks/aiCockpit/useProcessedRecipeMessages';
-import { BrokerValue, CompiledRecipe, RecipeOverrides, RecipeTaskData, useRecipeCompiler } from '@/components/playground/hooks/recipes/useCompileRecipe';
-import { useCockpitSocket } from '@/lib/redux/socket/hooks/useCockpitRecipe';
-import { useCreateRecord } from '../crud/useDirectCreateRecord';
+import { createEntitySelectors, useAppSelector } from "@/lib/redux";
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from "@/types";
+import { useCallback, useEffect, useState } from "react";
+import { toPkValue } from "@/lib/redux/entity/utils/entityPrimaryKeys";
+import { useSequentialDelete } from "../crud/useSequentialDelete";
+import { getStandardRelationship, KnownRelDef, SimpleRelDef } from "./definitionConversionUtil";
+import _ from "lodash";
+import { useRelationshipDirectCreate } from "../crud/useDirectRelCreate";
+import { useStableRelationships } from "./new/useStableRelationships";
+import { useRecipeAgentSettings } from "@/hooks/aiCockpit/useRecipeAgentSettings";
+import { useProcessedRecipeMessages } from "@/hooks/aiCockpit/useProcessedRecipeMessages";
+import {
+    BrokerValue,
+    CompiledRecipe,
+    RecipeOverrides,
+    RecipeTaskData,
+    useRecipeCompiler,
+} from "@/components/playground/hooks/recipes/useCompileRecipe";
+import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
+import { useCreateRecord } from "../crud/useDirectCreateRecord";
 
 export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) {
     const {
@@ -120,7 +126,7 @@ export function findSingleJoinRecordKeyForChild(
     relDefSimple: SimpleRelDef
 ): MatrxRecordId | undefined {
     const childField = relDefSimple.join.childField;
-    const childId = typeof childIdValue === 'string' && childIdValue.includes(':') ? toPkValue(childIdValue) : childIdValue;
+    const childId = typeof childIdValue === "string" && childIdValue.includes(":") ? toPkValue(childIdValue) : childIdValue;
     const matchingRecord = joinRecordsWithKey.find((record) => record[childField] === childId);
     if (!matchingRecord) {
         return undefined;
@@ -134,7 +140,7 @@ export function filterAllJoinRecordKeysForChild(
     relDefSimple: SimpleRelDef
 ): MatrxRecordId[] {
     const childField = relDefSimple.join.childField;
-    const childId = typeof childIdValue === 'string' && childIdValue.includes(':') ? toPkValue(childIdValue) : childIdValue;
+    const childId = typeof childIdValue === "string" && childIdValue.includes(":") ? toPkValue(childIdValue) : childIdValue;
     const matchingRecords = joinRecordsWithKey.filter((record) => record[childField] === childId);
     const recordKeys: MatrxRecordId[] = matchingRecords.map((record) => record.matrxRecordId);
     return recordKeys;
@@ -167,7 +173,11 @@ export function useDoubleJoinedActiveParentProcessing(firstRelKey: KnownRelDef, 
 
 export type DoubleJoinedActiveParentProcessingHook = ReturnType<typeof useDoubleJoinedActiveParentProcessing>;
 
-export function useDoubleStableRelationships(firstRelKey: KnownRelDef, secondRelKey: KnownRelDef, anyParentId: MatrxRecordId | string | number) {
+export function useDoubleStableRelationships(
+    firstRelKey: KnownRelDef,
+    secondRelKey: KnownRelDef,
+    anyParentId: MatrxRecordId | string | number
+) {
     const firstRelDef = getStandardRelationship(firstRelKey);
     const secondRelDef = getStandardRelationship(secondRelKey);
     const selectors = createEntitySelectors(firstRelDef.parent.name);
@@ -183,7 +193,6 @@ export type UseDoubleStableRelationshipHook = ReturnType<typeof useDoubleJoinedA
 export function useAiCockpit() {
     const [compiledRecipe, setCompiledRecipe] = useState<CompiledRecipe | null>(null);
     const [recipeVersion, setRecipeVersion] = useState(1);
-
     const [taskBrokers, setTaskBrokers] = useState<BrokerValue[]>([]);
     const [recipeOverrides, setRecipeOverrides] = useState<RecipeOverrides[]>([]);
     const [recipeTaskData, setRecipeTaskData] = useState<RecipeTaskData[]>([]);
@@ -193,7 +202,7 @@ export function useAiCockpit() {
         activeParentId: activeRecipeId,
         firstRelHook,
         secondRelHook,
-    } = useDoubleJoinedActiveParentProcessing('recipeMessage', 'aiAgent');
+    } = useDoubleJoinedActiveParentProcessing("recipeMessage", "aiAgent");
     const recipeMessageHook = useProcessedRecipeMessages(firstRelHook);
     const { messages, deleteMessage, addMessage, handleDragDrop } = recipeMessageHook;
     const recipeAgentSettingsHook = useRecipeAgentSettings(secondRelHook);
@@ -208,40 +217,47 @@ export function useAiCockpit() {
     });
 
     const createCompiledRecord = useCreateRecord({
-        entityKey: 'compiledRecipe' as EntityKeys
+        entityKey: "compiledRecipe" as EntityKeys,
     });
-    
-    const saveCompiledRecipe = async () => {
-        const { compiledRecipe: result } = compileRecipe();
-        
-        await createCompiledRecord({ 
-            data: {
-                recipeId: activeRecipeId,
-                compiledRecipe: result,
-                version: recipeVersion
-            }
-        });
-        
-        setCompiledRecipe(result);
-        setRecipeVersion(prev => prev + 1);
-    };
 
-    const recompileRecipe = () => {
+    const recompileRecipe = useCallback(() => {
         const { compiledRecipe: result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList } = compileRecipe();
         setCompiledRecipe(result);
         setTaskBrokers(recipeTaskBrokers);
         setRecipeOverrides(recipeOverrides);
         setRecipeTaskData(recipeTaskDataList);
-    };
-
-    const getLatestTasks = useCallback(() => {
-        const { recipeTaskDataList } = compileRecipe();
-        return recipeTaskDataList;
+        return { result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
     }, [compileRecipe]);
 
+    const saveCompiledRecipe = useCallback(async () => {
+        const { result } = recompileRecipe();
+        
+        try {
+            await createCompiledRecord({
+                data: {
+                    recipeId: activeRecipeId,
+                    compiledRecipe: result,
+                    version: recipeVersion,
+                },
+            });
+            
+            setRecipeVersion((prev) => prev + 1);
+        } catch (error) {
+            console.error("Error saving compiled recipe:", error);
+        }
+    }, [activeRecipeId, recompileRecipe, recipeVersion, createCompiledRecord]);
+
+    const getLatestTasks = useCallback(async () => {
+        const { recipeTaskDataList } = recompileRecipe();
+        return recipeTaskDataList;
+    }, [recompileRecipe]);
+
+    // Single initialization effect
     useEffect(() => {
-        recompileRecipe();
-    }, []);
+        if (activeRecipeId) {
+            recompileRecipe();
+        }
+    }, [activeRecipeId]);
 
     const compiledData = {
         recipeId: activeRecipeId,
@@ -253,9 +269,10 @@ export function useAiCockpit() {
 
     const socketHook = useCockpitSocket(getLatestTasks);
 
-    const handlePlay = useCallback(() => {
+    const handlePlay = useCallback(async () => {
+        await saveCompiledRecipe();
         socketHook.handleSend();
-    }, [socketHook]);
+    }, [saveCompiledRecipe, socketHook]);
 
     const tools = {
         recipe: firstRelHook.parentTools,

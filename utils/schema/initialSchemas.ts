@@ -12622,7 +12622,7 @@ export const initialAutomationTableSchema = {
                 },
                 structure: 'single' as const,
                 isNative: true,
-                typeReference: {} as TypeBrand<Record<string, unknown>>,
+                typeReference: {} as TypeBrand<string[]>,
                 enumValues: null,
                 entityName: 'dataInputComponent',
                 databaseTable: 'data_input_component',

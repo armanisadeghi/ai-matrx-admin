@@ -17,11 +17,12 @@ import {
     DatabaseEntityName,
     BackendFieldName,
     DatabaseFieldName,
+    AllEntityFieldKeys,
 } from '@/types';
 import { MatrxVariant } from '@/components/ui/types';
 import { getGlobalCache } from '@/utils/schema/schema-processing/processSchema';
 import { RelationshipDetails } from '@/utils/schema/fullRelationships';
-import { EntityMetadata } from '../types/stateTypes';
+import { EntityMetadata, EntityFieldRecord } from '../types/stateTypes';
 import { getGlobalUserId } from '@/app/Providers';
 
 
@@ -261,6 +262,31 @@ export const getFieldSelectOptions = (entityKey: EntityKeys): FieldSelectOption[
     }));
 };
 
+
+export const getEntityFields = (entityKey: EntityKeys) => {
+    const metadata = getEntityMetadata(entityKey);
+    return metadata.entityFields as EntityFieldRecord;
+};
+
+
+export const getEntityFieldNames = (entityKey: EntityKeys) => {
+    const metadata = getEntityMetadata(entityKey);
+    return Object.keys(metadata.entityFields) as AllEntityFieldKeys[];
+};
+
+export const getEntityField = (entityKey: EntityKeys, fieldName: FieldKeys) => {
+    const metadata = getEntityMetadata(entityKey);
+    return metadata.entityFields[fieldName] as EntityStateField;
+};
+
+export const getEntityDefaultValues = (entityKey: EntityKeys) => {
+    const entityFields = getEntityFields(entityKey);
+    return Object.fromEntries(
+        Object.entries(entityFields).map(([key, field]) => [key, field.defaultValue])
+    ) as Record<AllEntityFieldKeys, unknown>;
+};
+
+
 export const hasUserIdField = (entityKey: EntityKeys): boolean => {
     const metadata = getEntityMetadata(entityKey);
     if (!metadata) return false;
@@ -281,3 +307,6 @@ export const addUserIdToData = (entityKey: EntityKeys, data: any) => {
     
     return data;
 };
+
+
+
