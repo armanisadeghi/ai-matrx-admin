@@ -73,7 +73,7 @@ export function ResultPanel({ id, order, number, label, streamingText, onDelete,
         switch (viewMode) {
             case 'raw':
             case 'processed':
-                return <pre className='p-4 whitespace-pre-wrap font-mono text-sm'>{streamingText}</pre>;
+                return <pre className='p-4 whitespace-pre-wrap overflow-y-auto font-mono text-sm'>{streamingText}</pre>;
             case 'rendered':
             default:
                 return (
