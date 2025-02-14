@@ -4,22 +4,18 @@ import PinkBlueBrokerDisplay from "@/components/brokers/main-layouts/variations/
 import { createRecipeTaskData } from "@/components/playground/hooks/recipes/recipe-task-utils";
 import { usePrepareRecipeToRun } from "@/hooks/run-recipe/usePrepareRecipeToRun";
 import { CompiledRecipe } from "@/components/playground/hooks/recipes/useCompileRecipe";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
 import { parseMarkdownContent } from "@/components/brokers/output/markdown-utils";
+import { parseDynamicMarkdownContent } from "@/components/brokers/output/dynamic-markdown";
+
 import FunMarkdownRenderer from "./FunMarkdown";
 import AnimatedEventComponent from "@/components/brokers/output/AnimatedEventComponent";
-
-const TEXT_IDS = [
-"8255edc9-5170-4f67-8d40-718e77a3561c",
-"ce63d140-5619-4f4f-9d7d-055f622f887b",
-
-
-]
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+const TEXT_IDS = ["8255edc9-5170-4f67-8d40-718e77a3561c", "ce63d140-5619-4f4f-9d7d-055f622f887b", "01f7331c-5183-4453-8e0c-9f347c478bfc"];
 
 export default function PinkBlueBrokerPage() {
-    const recipeId = TEXT_IDS[1];
+    const [recipeId, setRecipeId] = useState(TEXT_IDS[2]);
     const recipeRecordKey = `id:${recipeId}`;
     const prepareRecipeHook = usePrepareRecipeToRun({
         recipeRecordKey: recipeRecordKey,
@@ -40,6 +36,18 @@ export default function PinkBlueBrokerPage() {
 
     return (
         <div className="flex flex-col h-screen">
+            <Select value={recipeId} onValueChange={(value) => setRecipeId(value)}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select a recipe" />
+                </SelectTrigger>
+                <SelectContent>
+                    {TEXT_IDS.map((id) => (
+                        <SelectItem key={id} value={id}>
+                            {id}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
             <PinkBlueBrokerDisplay
                 prepareRecipeHook={prepareRecipeHook}
                 recipeTitle="Plan Your Perfect Vegas Trip"
@@ -47,13 +55,12 @@ export default function PinkBlueBrokerPage() {
                 recipeActionText="Get Personalized Recommendations"
                 onSubmit={handleSend}
             />
-
             {isResponseActive && (
                 <div className="flex-1 overflow-y-auto">
                     {intro && (
-                            <div className="w-full bg-gradient-to-br from-pink-50 to-cyan-50 dark:from-pink-950 dark:to-cyan-950 border-2 border-pink-200 dark:border-pink-800 shadow-lg rounded-xl  mt-4">
-                                <FunMarkdownRenderer content={intro || ""} type="message" role="assistant" fontSize={18} />
-                            </div>
+                        <div className="w-full bg-gradient-to-br from-pink-50 to-cyan-50 dark:from-pink-950 dark:to-cyan-950 border-2 border-pink-200 dark:border-pink-800 shadow-lg rounded-xl  mt-4">
+                            <FunMarkdownRenderer content={intro || ""} type="message" role="assistant" fontSize={18} />
+                        </div>
                     )}
 
                     {sections && (

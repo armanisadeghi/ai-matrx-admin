@@ -1,4 +1,30 @@
 {
+    "brokerValue": {
+        "selfReferential": [],
+        "manyToMany": ["dataBroker"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "brokerValue",
+            "table_name": "broker_value",
+            "foreignKeys": {
+                "dataBroker": {
+                    "foreign_table": "data_broker",
+                    "foreign_entity": "dataBroker",
+                    "column": "data_broker",
+                    "fieldName": "dataBroker",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "broker_value_data_broker_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
     "aiModelEndpoint": {
         "selfReferential": [],
         "manyToMany": ["aiEndpoint", "aiModel"],
@@ -59,6 +85,49 @@
                 }
             },
             "referencedBy": {}
+        }
+    },
+    "dataInputComponent": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["messageBroker", "broker", "dataBroker"],
+        "relationshipDetails": {
+            "entityName": "dataInputComponent",
+            "table_name": "data_input_component",
+            "foreignKeys": {},
+            "referencedBy": {
+                "messageBroker": {
+                    "foreign_table": "message_broker",
+                    "foreign_entity": "messageBroker",
+                    "field": "defaultComponent",
+                    "column": "default_component",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "message_broker_default_component_fkey"
+                },
+                "broker": {
+                    "foreign_table": "broker",
+                    "foreign_entity": "broker",
+                    "field": "customSourceComponent",
+                    "column": "custom_source_component",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "broker_custom_component_fkey"
+                },
+                "dataBroker": {
+                    "foreign_table": "data_broker",
+                    "foreign_entity": "dataBroker",
+                    "field": "inputComponent",
+                    "column": "input_component",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "data_broker_default_component_fkey"
+                }
+            }
         }
     },
     "compiledRecipe": {
@@ -161,6 +230,31 @@
                 }
             },
             "referencedBy": {}
+        }
+    },
+    "wcImpairmentDefinition": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["wcInjury"],
+        "relationshipDetails": {
+            "entityName": "wcImpairmentDefinition",
+            "table_name": "wc_impairment_definition",
+            "foreignKeys": {},
+            "referencedBy": {
+                "wcInjury": {
+                    "foreign_table": "wc_injury",
+                    "foreign_entity": "wcInjury",
+                    "field": "impairmentDefinitionId",
+                    "column": "impairment_definition_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "wc_injury_impairment_definition_id_fkey"
+                }
+            }
         }
     },
     "flashcardImages": {
@@ -471,6 +565,78 @@
             "referencedBy": {}
         }
     },
+    "wcReport": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": ["wcClaim"],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["wcInjury"],
+        "relationshipDetails": {
+            "entityName": "wcReport",
+            "table_name": "wc_report",
+            "foreignKeys": {
+                "wcClaim": {
+                    "foreign_table": "wc_claim",
+                    "foreign_entity": "wcClaim",
+                    "column": "claim_id",
+                    "fieldName": "claimId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-one",
+                    "constraint_name": "wc_report_claim_id_fkey"
+                }
+            },
+            "referencedBy": {
+                "wcInjury": {
+                    "foreign_table": "wc_injury",
+                    "foreign_entity": "wcInjury",
+                    "field": "reportId",
+                    "column": "report_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "wc_injury_report_id_fkey"
+                }
+            }
+        }
+    },
+    "wcInjury": {
+        "selfReferential": [],
+        "manyToMany": ["wcImpairmentDefinition", "wcReport"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "wcInjury",
+            "table_name": "wc_injury",
+            "foreignKeys": {
+                "wcImpairmentDefinition": {
+                    "foreign_table": "wc_impairment_definition",
+                    "foreign_entity": "wcImpairmentDefinition",
+                    "column": "impairment_definition_id",
+                    "fieldName": "impairmentDefinitionId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "wc_injury_impairment_definition_id_fkey"
+                },
+                "wcReport": {
+                    "foreign_table": "wc_report",
+                    "foreign_entity": "wcReport",
+                    "column": "report_id",
+                    "fieldName": "reportId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "wc_injury_report_id_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
     "aiProvider": {
         "selfReferential": [],
         "manyToMany": [],
@@ -749,49 +915,6 @@
             "referencedBy": {}
         }
     },
-    "dataInputComponent": {
-        "selfReferential": [],
-        "manyToMany": [],
-        "oneToOne": [],
-        "manyToOne": [],
-        "oneToMany": [],
-        "undefined": [],
-        "inverseReferences": ["messageBroker", "broker", "dataBroker"],
-        "relationshipDetails": {
-            "entityName": "dataInputComponent",
-            "table_name": "data_input_component",
-            "foreignKeys": {},
-            "referencedBy": {
-                "messageBroker": {
-                    "foreign_table": "message_broker",
-                    "foreign_entity": "messageBroker",
-                    "field": "defaultComponent",
-                    "column": "default_component",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "constraint_name": "message_broker_default_component_fkey"
-                },
-                "broker": {
-                    "foreign_table": "broker",
-                    "foreign_entity": "broker",
-                    "field": "customSourceComponent",
-                    "column": "custom_source_component",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "constraint_name": "broker_custom_component_fkey"
-                },
-                "dataBroker": {
-                    "foreign_table": "data_broker",
-                    "foreign_entity": "dataBroker",
-                    "field": "defaultComponent",
-                    "column": "default_component",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "constraint_name": "data_broker_default_component_fkey"
-                }
-            }
-        }
-    },
     "dataOutputComponent": {
         "selfReferential": [],
         "manyToMany": [],
@@ -799,12 +922,22 @@
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": [],
+        "inverseReferences": ["dataBroker"],
         "relationshipDetails": {
             "entityName": "dataOutputComponent",
             "table_name": "data_output_component",
             "foreignKeys": {},
-            "referencedBy": {}
+            "referencedBy": {
+                "dataBroker": {
+                    "foreign_table": "data_broker",
+                    "foreign_entity": "dataBroker",
+                    "field": "outputComponent",
+                    "column": "output_component",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "data_broker_output_component_fkey"
+                }
+            }
         }
     },
     "extractor": {
@@ -1431,6 +1564,31 @@
             }
         }
     },
+    "wcClaim": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["wcReport"],
+        "relationshipDetails": {
+            "entityName": "wcClaim",
+            "table_name": "wc_claim",
+            "foreignKeys": {},
+            "referencedBy": {
+                "wcReport": {
+                    "foreign_table": "wc_report",
+                    "foreign_entity": "wcReport",
+                    "field": "claimId",
+                    "column": "claim_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "wc_report_claim_id_fkey"
+                }
+            }
+        }
+    },
     "userPreferences": {
         "selfReferential": [],
         "manyToMany": [],
@@ -1448,12 +1606,12 @@
     },
     "dataBroker": {
         "selfReferential": [],
-        "manyToMany": [],
+        "manyToMany": ["dataInputComponent", "dataOutputComponent"],
         "oneToOne": [],
-        "manyToOne": ["dataInputComponent"],
+        "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": ["messageBroker"],
+        "inverseReferences": ["brokerValue", "messageBroker"],
         "relationshipDetails": {
             "entityName": "dataBroker",
             "table_name": "data_broker",
@@ -1461,15 +1619,34 @@
                 "dataInputComponent": {
                     "foreign_table": "data_input_component",
                     "foreign_entity": "dataInputComponent",
-                    "column": "default_component",
-                    "fieldName": "defaultComponent",
+                    "column": "input_component",
+                    "fieldName": "inputComponent",
                     "foreign_field": "id",
                     "foreign_column": "id",
-                    "relationship_type": "many-to-one",
+                    "relationship_type": "many-to-many",
                     "constraint_name": "data_broker_default_component_fkey"
+                },
+                "dataOutputComponent": {
+                    "foreign_table": "data_output_component",
+                    "foreign_entity": "dataOutputComponent",
+                    "column": "output_component",
+                    "fieldName": "outputComponent",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "data_broker_output_component_fkey"
                 }
             },
             "referencedBy": {
+                "brokerValue": {
+                    "foreign_table": "broker_value",
+                    "foreign_entity": "brokerValue",
+                    "field": "dataBroker",
+                    "column": "data_broker",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "broker_value_data_broker_fkey"
+                },
                 "messageBroker": {
                     "foreign_table": "message_broker",
                     "foreign_entity": "messageBroker",
