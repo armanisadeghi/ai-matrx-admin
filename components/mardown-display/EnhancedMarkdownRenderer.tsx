@@ -6,7 +6,7 @@ import { parseMarkdownContent } from "../brokers/output/markdown-utils";
 import { parseMarkdownTable } from "./parse-markdown-table";
 import { enhancedMarkdownParser } from "./enhanced-parser";
 import EnhancedMarkdownCard from "./EnhancedMarkdownCard";
-import { DisplayTheme, THEMES } from "./themes";
+import { DisplayTheme, SIMPLE_THEME_OPTIONS } from "./themes";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
@@ -208,19 +208,18 @@ const EnhancedContentRenderer = ({
                             </button>
                         ))}
                     </div>
-
                     <Select value={currentTheme} onValueChange={handleThemeChange}>
                         <SelectTrigger className="w-[180px] h-8">
                             <SelectValue placeholder="Select theme" />
                         </SelectTrigger>
                         <SelectContent>
-                            {Object.keys(THEMES).map((themeKey) => (
-                                <SelectItem key={themeKey} value={themeKey}>
-                                    {themeKey}
+                            {SIMPLE_THEME_OPTIONS.map((option) => (
+                                <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
                                 </SelectItem>
                             ))}
                         </SelectContent>
-                    </Select>
+                    </Select>{" "}
                 </div>
             </div>
             <div className="p-4">{renderContent()}</div>
