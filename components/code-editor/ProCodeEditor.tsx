@@ -3,7 +3,6 @@
 import {useState, useEffect} from 'react';
 import Editor, {useMonaco, DiffEditor} from '@monaco-editor/react';
 import {useMeasure} from "@uidotdev/usehooks";
-import {useTheme} from "next-themes";
 import {Card} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {ScrollArea} from '@/components/ui/scroll-area';
@@ -21,7 +20,7 @@ import {
     PanelLeftClose,
     FileCode2,
 } from 'lucide-react';
-import theme from "tailwindcss/defaultTheme";
+import { useMonacoTheme } from './useMonacoTheme';
 
 interface File {
     id: string;
@@ -50,8 +49,9 @@ const LANGUAGES = [
 
 const ProCodeEditor = () => {
     const [ref, { width, height }] = useMeasure();
-    const { theme: systemTheme } = useTheme();
     const monaco = useMonaco();
+    const isDark = useMonacoTheme();
+
     const [isDiffView, setIsDiffView] = useState(false);
     const [activeFile, setActiveFile] = useState<string>('main.js');
     const [files, setFiles] = useState<File[]>([{
@@ -368,7 +368,7 @@ const ProCodeEditor = () => {
                             height={`${height - (showOutput ? 200 : 50)}px`}
                             defaultLanguage={getCurrentFile()?.language}
                             {...editorProps}
-                            theme={systemTheme === 'dark' ? 'customDark' : 'customLight'}
+                            theme={isDark ? 'customDark' : 'customLight'}
                             options={{
                                 minimap: {enabled: true},
                                 fontSize: 14,

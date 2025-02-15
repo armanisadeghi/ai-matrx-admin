@@ -1,6 +1,6 @@
 'use client';
 
-import AdvancedCodeEditor from '../components/AdvancedCodeEditor';
+import AdvancedCodeEditor from '@/components/code-editor/AdvancedCodeEditor';
 
 export default function Page() {
     return (

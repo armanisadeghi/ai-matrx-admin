@@ -85,7 +85,7 @@ export function StoreTester() {
 
     const handleFileDelete = async (id: string) => {
         try {
-            const { error } = await store.deleteItem(store.getStoreName(), id);
+            const { error } = await store.deleteItem(store.getStoreName(), parseInt(id));
             if (error) throw error;
 
             setSuccess('File deleted successfully');

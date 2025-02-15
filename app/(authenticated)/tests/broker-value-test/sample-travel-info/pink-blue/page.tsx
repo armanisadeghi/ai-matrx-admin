@@ -7,7 +7,7 @@ import { CompiledRecipe } from "@/components/playground/hooks/recipes/useCompile
 import { useCallback, useState } from "react";
 import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
 import { parseMarkdownContent } from "@/components/brokers/output/markdown-utils";
-import { parseDynamicMarkdownContent } from "@/components/brokers/output/dynamic-markdown";
+
 
 import FunMarkdownRenderer from "./FunMarkdown";
 import AnimatedEventComponent from "@/components/brokers/output/AnimatedEventComponent";

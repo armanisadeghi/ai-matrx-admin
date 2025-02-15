@@ -1,14 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Editor, { useMonaco } from '@monaco-editor/react';
+import { useState, useEffect } from "react";
+import Editor, { useMonaco } from "@monaco-editor/react";
 import { useMeasure } from "@uidotdev/usehooks";
-import { useTheme } from "next-themes";
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import {
     Play,
@@ -25,15 +24,16 @@ import {
     PanelLeftClose,
     PanelRightClose,
     RefreshCw,
-} from 'lucide-react';
+} from "lucide-react";
+import { useMonacoTheme } from "./useMonacoTheme";
 
 const LANGUAGES = [
-    { id: 'javascript', name: 'JavaScript', icon: '📜' },
-    { id: 'typescript', name: 'TypeScript', icon: '💪' },
-    { id: 'html', name: 'HTML', icon: '🌐' },
-    { id: 'css', name: 'CSS', icon: '🎨' },
-    { id: 'json', name: 'JSON', icon: '📋' },
-    { id: 'python', name: 'Python', icon: '🐍' },
+    { id: "javascript", name: "JavaScript", icon: "📜" },
+    { id: "typescript", name: "TypeScript", icon: "💪" },
+    { id: "html", name: "HTML", icon: "🌐" },
+    { id: "css", name: "CSS", icon: "🎨" },
+    { id: "json", name: "JSON", icon: "📋" },
+    { id: "python", name: "Python", icon: "🐍" },
 ];
 
 const defaultCode = `// Welcome to the Advanced Code Editor!
@@ -69,81 +69,59 @@ interface File {
 
 const AdvancedCodeEditor = () => {
     const [ref, { width, height }] = useMeasure();
-    const { theme: systemTheme } = useTheme();
     const monaco = useMonaco();
-    const [activeFile, setActiveFile] = useState<string>('main.js');
+    const [activeFile, setActiveFile] = useState<string>("main.js");
     const [files, setFiles] = useState<File[]>([
-        { id: '1', name: 'main.js', language: 'javascript', content: defaultCode },
-        { id: '2', name: 'styles.css', language: 'css', content: '/* Add your styles here */' },
+        { id: "1", name: "main.js", language: "javascript", content: defaultCode },
+        { id: "2", name: "styles.css", language: "css", content: "/* Add your styles here */" },
     ]);
-    const [output, setOutput] = useState<Array<{ type: 'log' | 'error' | 'result', content: string }>>([]);
+    const [output, setOutput] = useState<Array<{ type: "log" | "error" | "result"; content: string }>>([]);
     const [isRunning, setIsRunning] = useState(false);
     const [showSidebar, setShowSidebar] = useState(true);
     const [showOutput, setShowOutput] = useState(true);
+    const isDark = useMonacoTheme();
 
-    // Set editor theme based on system theme
-    useEffect(() => {
-        if (monaco) {
-            monaco.editor.defineTheme('customDark', {
-                base: 'vs-dark',
-                inherit: true,
-                rules: [],
-                colors: {
-                    'editor.background': '#1a1b26',
-                }
-            });
-
-            monaco.editor.defineTheme('customLight', {
-                base: 'vs',
-                inherit: true,
-                rules: [],
-                colors: {
-                    'editor.background': '#ffffff',
-                }
-            });
-        }
-    }, [monaco]);
-
-    const getCurrentFile = () => files.find(f => f.name === activeFile) || files[0];
+    const getCurrentFile = () => files.find((f) => f.name === activeFile) || files[0];
 
     const runCode = async () => {
         setIsRunning(true);
         setOutput([]);
-        const logs: Array<{ type: 'log' | 'error' | 'result', content: string }> = [];
+        const logs: Array<{ type: "log" | "error" | "result"; content: string }> = [];
 
         const customConsole = {
             log: (...args: any[]) => {
                 logs.push({
-                    type: 'log',
-                    content: args.map(arg =>
-                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-                    ).join(' ')
+                    type: "log",
+                    content: args.map((arg) => (typeof arg === "object" ? JSON.stringify(arg, null, 2) : String(arg))).join(" "),
                 });
                 setOutput([...logs]);
-            }
+            },
         };
 
         try {
             const currentFile = getCurrentFile();
-            const func = new Function('console', `
+            const func = new Function(
+                "console",
+                `
         try {
           ${currentFile.content}
         } catch (error) {
           console.log('Error:', error.message);
         }
-      `);
+      `
+            );
 
             const result = func(customConsole);
             if (result !== undefined) {
                 logs.push({
-                    type: 'result',
-                    content: `Returned: ${typeof result === 'object' ? JSON.stringify(result, null, 2) : result}`
+                    type: "result",
+                    content: `Returned: ${typeof result === "object" ? JSON.stringify(result, null, 2) : result}`,
                 });
             }
         } catch (error) {
             logs.push({
-                type: 'error',
-                content: `Error: ${error.message}`
+                type: "error",
+                content: `Error: ${error.message}`,
             });
         }
 
@@ -155,8 +133,8 @@ const AdvancedCodeEditor = () => {
         const newFile = {
             id: Date.now().toString(),
             name: `file${files.length + 1}.js`,
-            language: 'javascript',
-            content: '// New file'
+            language: "javascript",
+            content: "// New file",
         };
         setFiles([...files, newFile]);
         setActiveFile(newFile.name);
@@ -164,9 +142,7 @@ const AdvancedCodeEditor = () => {
 
     const handleFileChange = (content: string | undefined) => {
         if (!content) return;
-        setFiles(files.map(f =>
-            f.name === activeFile ? { ...f, content } : f
-        ));
+        setFiles(files.map((f) => (f.name === activeFile ? { ...f, content } : f)));
     };
 
     const formatCode = () => {
@@ -183,11 +159,7 @@ const AdvancedCodeEditor = () => {
             <Card className="flex flex-col w-full h-full dark:bg-slate-900">
                 <div className="flex items-center justify-between p-2 border-b dark:border-slate-700">
                     <div className="flex items-center space-x-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowSidebar(!showSidebar)}
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => setShowSidebar(!showSidebar)}>
                             {showSidebar ? <PanelLeftClose size={18} /> : <Files size={18} />}
                         </Button>
 
@@ -198,10 +170,10 @@ const AdvancedCodeEditor = () => {
                             <SelectContent>
                                 {LANGUAGES.map((lang) => (
                                     <SelectItem key={lang.id} value={lang.id}>
-                    <span className="flex items-center">
-                      <span className="mr-2">{lang.icon}</span>
-                        {lang.name}
-                    </span>
+                                        <span className="flex items-center">
+                                            <span className="mr-2">{lang.icon}</span>
+                                            {lang.name}
+                                        </span>
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -209,34 +181,16 @@ const AdvancedCodeEditor = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={formatCode}
-                            title="Format Code"
-                        >
+                        <Button variant="ghost" size="icon" onClick={formatCode} title="Format Code">
                             <Divide size={18} />
                         </Button>
 
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setShowOutput(!showOutput)}
-                            title="Toggle Output"
-                        >
+                        <Button variant="ghost" size="icon" onClick={() => setShowOutput(!showOutput)} title="Toggle Output">
                             <Terminal size={18} />
                         </Button>
 
-                        <Button
-                            onClick={runCode}
-                            disabled={isRunning}
-                            className="flex items-center"
-                        >
-                            {isRunning ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Play className="mr-2 h-4 w-4" />
-                            )}
+                        <Button onClick={runCode} disabled={isRunning} className="flex items-center">
+                            {isRunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
                             Run
                         </Button>
                     </div>
@@ -257,8 +211,8 @@ const AdvancedCodeEditor = () => {
                                         key={file.id}
                                         className={`flex items-center p-2 rounded-md cursor-pointer ${
                                             activeFile === file.name
-                                                ? 'bg-slate-200 dark:bg-slate-800'
-                                                : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                                                ? "bg-slate-200 dark:bg-slate-800"
+                                                : "hover:bg-slate-100 dark:hover:bg-slate-800"
                                         }`}
                                         onClick={() => setActiveFile(file.name)}
                                     >
@@ -276,11 +230,11 @@ const AdvancedCodeEditor = () => {
                             defaultLanguage={getCurrentFile()?.language}
                             value={getCurrentFile()?.content}
                             onChange={handleFileChange}
-                            theme={systemTheme === 'dark' ? 'customDark' : 'customLight'}
+                            theme={isDark ? "customDark" : "customLight"}
                             options={{
                                 minimap: { enabled: true },
                                 fontSize: 14,
-                                lineNumbers: 'on',
+                                lineNumbers: "on",
                                 roundedSelection: false,
                                 scrollBeyondLastLine: false,
                                 automaticLayout: true,
@@ -297,12 +251,7 @@ const AdvancedCodeEditor = () => {
                     <div className="h-[200px] border-t dark:border-slate-700">
                         <div className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800">
                             <span className="text-sm font-medium">Output</span>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setOutput([])}
-                                title="Clear Console"
-                            >
+                            <Button variant="ghost" size="icon" onClick={() => setOutput([])} title="Clear Console">
                                 <RefreshCw size={16} />
                             </Button>
                         </div>
@@ -311,16 +260,16 @@ const AdvancedCodeEditor = () => {
                                 <div
                                     key={index}
                                     className={`font-mono text-sm mb-1 ${
-                                        item.type === 'error'
-                                            ? 'text-red-500'
-                                            : item.type === 'result'
-                                                ? 'text-green-500'
-                                                : 'text-slate-700 dark:text-slate-300'
+                                        item.type === "error"
+                                            ? "text-red-500"
+                                            : item.type === "result"
+                                            ? "text-green-500"
+                                            : "text-slate-700 dark:text-slate-300"
                                     }`}
                                 >
-                                    {item.type === 'log' && '> '}
-                                    {item.type === 'error' && '⚠ '}
-                                    {item.type === 'result' && '← '}
+                                    {item.type === "log" && "> "}
+                                    {item.type === "error" && "⚠ "}
+                                    {item.type === "result" && "← "}
                                     {item.content}
                                 </div>
                             ))}

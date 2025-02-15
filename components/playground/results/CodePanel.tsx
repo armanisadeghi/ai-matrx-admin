@@ -5,7 +5,7 @@ import { ImperativePanelHandle, Panel, PanelResizeHandle } from 'react-resizable
 import { Button, Card } from '@/components/ui';
 import MarkdownRenderer from '@/components/mardown-display/MarkdownRenderer';
 import DraggableToolbar, { ToolbarAction } from '../components/DraggableToolbar';
-import { Eye, Code, FileText, Copy, Braces } from 'lucide-react';
+import { Eye, Code, FileText, Copy } from 'lucide-react';
 
 interface ResultPanelProps {
     id: string;
@@ -20,11 +20,11 @@ interface ResultPanelProps {
     onDebugClick?: (id: string) => void;
 }
 
-export function ResultPanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick }: ResultPanelProps) {
+export function CodePanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick }: ResultPanelProps) {
     const panelRef = useRef<ImperativePanelHandle>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [previousSize, setPreviousSize] = useState(50);
-    const [viewMode, setViewMode] = useState<'rendered' | 'raw' | 'processed' | 'parsedAsJson'>('rendered');
+    const [viewMode, setViewMode] = useState<'rendered' | 'raw' | 'processed'>('rendered');
     const [showCopySuccess, setShowCopySuccess] = useState(false);
 
     const toggleCollapse = () => {
@@ -66,11 +66,6 @@ export function ResultPanel({ id, order, number, label, streamingText, onDelete,
             label: 'View Processed',
             icon: <FileText className='h-4 w-4' />,
             onClick: () => setViewMode('processed'),
-        },
-        {
-            label: 'View Parsed as JSON',
-            icon: <Braces className='h-4 w-4' />,
-            onClick: () => setViewMode('parsedAsJson'),
         },
     ];
 
@@ -146,4 +141,4 @@ export function ResultPanel({ id, order, number, label, streamingText, onDelete,
     );
 }
 
-export default ResultPanel;
+export default CodePanel;
