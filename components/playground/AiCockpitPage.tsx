@@ -14,7 +14,7 @@ import AddTemplateMessages from '@/components/playground/messages/AddTemplateMes
 import { useDispatch } from 'react-redux';
 import { useEntityTools } from '@/lib/redux';
 import { getLayoutOptions } from './recipes/constants';
-import { useAiCockpit } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
+import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';
 
 

@@ -66,6 +66,142 @@ export const THEMES = {
             },
         },
     },
+    corporate: {
+        container: {
+            background: "from-blue-50 to-slate-50 dark:from-blue-950 dark:to-slate-950",
+            border: "border-blue-200 dark:border-blue-800",
+        },
+        title: {
+            gradient: "from-blue-600 to-slate-500 dark:from-blue-400 dark:to-slate-300",
+            text: "text-blue-800 dark:text-blue-100",
+            secondary: "text-blue-600 dark:text-blue-300",
+        },
+        item: {
+            background: "bg-white dark:bg-blue-950/50",
+            border: "border-blue-100 dark:border-blue-700",
+            title: "text-blue-700 dark:text-blue-300",
+            description: "text-blue-600 dark:text-blue-400",
+        },
+        debug: {
+            background: "bg-blue-50 dark:bg-blue-950",
+            border: "border-blue-200 dark:border-blue-800",
+            text: "text-blue-700 dark:text-blue-300",
+        },
+        table: {
+            header: "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700",
+            headerText: "text-slate-900 dark:text-slate-100",
+            row: {
+                even: "bg-white dark:bg-transparent",
+                odd: "bg-slate-50/50 dark:bg-slate-900/30",
+                hover: "hover:bg-slate-50 dark:hover:bg-slate-800/20",
+            },
+            border: "border-slate-200 dark:border-slate-700",
+            text: "text-slate-700 dark:text-slate-200",
+        },
+        card: {
+            background: "bg-white dark:bg-blue-950/50",
+            border: "border-blue-200 dark:border-blue-700",
+            shadow: "shadow-sm",
+            hover: "hover:border-blue-300 dark:hover:border-blue-600",
+        },
+        button: {
+            primary: {
+                background: "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600",
+                text: "text-white",
+            },
+            secondary: {
+                background: "bg-white hover:bg-blue-50 dark:bg-blue-800 dark:hover:bg-blue-700",
+                text: "text-blue-700 dark:text-blue-200",
+                border: "border-blue-300 dark:border-blue-600",
+            },
+        },
+        input: {
+            background: "bg-white dark:bg-blue-950/50",
+            border: "border-blue-300 dark:border-blue-600",
+            text: "text-blue-700 dark:text-blue-200",
+            placeholder: "placeholder-blue-400 dark:placeholder-blue-500",
+            focus: "focus:border-blue-500 dark:focus:border-blue-400",
+        },
+        sidebar: {
+            background: "bg-gradient-to-b from-blue-50/90 to-slate-50/90 dark:from-blue-950/90 dark:to-slate-950/90",
+            border: "border-blue-200 dark:border-blue-700",
+            item: {
+                active: "bg-blue-100 dark:bg-blue-800",
+                hover: "hover:bg-blue-50 dark:hover:bg-blue-800/70",
+                text: "text-blue-600 dark:text-blue-300",
+                activeText: "text-blue-900 dark:text-blue-100",
+            },
+        },
+    },
+    corporateSubtle: {
+        container: {
+            background: "from-slate-50 to-gray-50 dark:from-slate-950 dark:to-gray-950",
+            border: "border-slate-200 dark:border-slate-800",
+        },
+        title: {
+            gradient: "from-slate-600 to-gray-600 dark:from-slate-400 dark:to-gray-400",
+            text: "text-slate-800 dark:text-slate-200",
+            secondary: "text-slate-600 dark:text-slate-400",
+        },
+        item: {
+            background: "bg-white dark:bg-slate-950/50",
+            border: "border-slate-200 dark:border-slate-800",
+            title: "text-slate-700 dark:text-slate-300",
+            description: "text-slate-600 dark:text-slate-400",
+        },
+        debug: {
+            background: "bg-slate-50 dark:bg-slate-950",
+            border: "border-slate-200 dark:border-slate-800",
+            text: "text-slate-700 dark:text-slate-300",
+        },
+        table: {
+            header: "bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800",
+            headerText: "text-slate-700 dark:text-slate-300",
+            row: {
+                even: "bg-white dark:bg-transparent",
+                odd: "bg-slate-50/30 dark:bg-slate-900/20",
+                hover: "hover:bg-slate-50 dark:hover:bg-slate-800/10",
+            },
+            border: "border-slate-200 dark:border-slate-800",
+            text: "text-slate-700 dark:text-slate-300",
+        },
+        card: {
+            background: "bg-white dark:bg-slate-950/50",
+            border: "border-slate-200 dark:border-slate-800",
+            shadow: "shadow-sm",
+            hover: "hover:border-slate-300 dark:hover:border-slate-700",
+        },
+        button: {
+            primary: {
+                background: "bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500",
+                text: "text-white",
+            },
+            secondary: {
+                background: "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800",
+                text: "text-slate-700 dark:text-slate-300",
+                border: "border-slate-300 dark:border-slate-700",
+            },
+        },
+        input: {
+            background: "bg-white dark:bg-slate-950/50",
+            border: "border-slate-300 dark:border-slate-700",
+            text: "text-slate-700 dark:text-slate-300",
+            placeholder: "placeholder-slate-400 dark:placeholder-slate-500",
+            focus: "focus:border-slate-400 dark:focus:border-slate-600",
+        },
+        sidebar: {
+            background: "bg-gradient-to-b from-slate-50/95 to-gray-50/95 dark:from-slate-950/95 dark:to-gray-950/95",
+            border: "border-slate-200 dark:border-slate-800",
+            item: {
+                active: "bg-slate-100 dark:bg-slate-900",
+                hover: "hover:bg-slate-50 dark:hover:bg-slate-900/70",
+                text: "text-slate-600 dark:text-slate-400",
+                activeText: "text-slate-800 dark:text-slate-200",
+            },
+        },
+    },
+
+
     pinkBlue: {
         container: {
             background: "from-pink-50 to-cyan-50 dark:from-pink-950 dark:to-cyan-950",
@@ -816,6 +952,10 @@ export type DisplayTheme = keyof typeof THEMES;
 export const THEME_OPTIONS = [
     { value: 'professional', label: 'Professional', description: 'Clean and minimal grayscale design' },
     { value: 'corporate', label: 'Corporate', description: 'Professional blue and slate composition' },
+    { value: 'corporateSubtle', label: 'Corporate Subtle', description: 'Professional blue and slate composition' },
+    { value: 'neutral', label: 'Neutral', description: 'Clean and minimal grayscale design' },
+    { value: 'slate', label: 'Slate', description: 'Clean and minimal grayscale design' },
+    { value: 'blue', label: 'Blue', description: 'Clean and minimal grayscale design' },
     { value: 'pinkBlue', label: 'Pink & Blue', description: 'Vibrant pink and cyan gradient' },
     { value: 'oceanBreeze', label: 'Ocean Breeze', description: 'Calming blue and teal combination' },
     { value: 'forestMist', label: 'Forest Mist', description: 'Serene green and emerald blend' },
@@ -830,6 +970,10 @@ export const THEME_OPTIONS = [
 export const SIMPLE_THEME_OPTIONS = [
     { value: 'professional', label: 'Professional' },
     { value: 'corporate', label: 'Corporate' },
+    { value: 'corporateSubtle', label: 'Corporate Subtle' },
+    { value: 'neutral', label: 'Neutral' },
+    { value: 'slate', label: 'Slate' },
+    { value: 'blue', label: 'Blue' },
     { value: 'pinkBlue', label: 'Pink & Blue' },
     { value: 'oceanBreeze', label: 'Ocean Breeze' },
     { value: 'forestMist', label: 'Forest Mist' },
@@ -840,36 +984,3 @@ export const SIMPLE_THEME_OPTIONS = [
     { value: 'vibrantFun', label: 'Vibrant Fun' }
 ];
 
-// If you need to group them by style:
-export const GROUPED_THEME_OPTIONS = [
-    {
-        label: 'Professional',
-        options: [
-            { value: 'professional', label: 'Professional' },
-            { value: 'corporate', label: 'Corporate' }
-        ]
-    },
-    {
-        label: 'Gradients',
-        options: [
-            { value: 'pinkBlue', label: 'Pink & Blue' },
-            { value: 'oceanBreeze', label: 'Ocean Breeze' },
-            { value: 'forestMist', label: 'Forest Mist' }
-        ]
-    },
-    {
-        label: 'Natural',
-        options: [
-            { value: 'sunsetGlow', label: 'Sunset Glow' },
-            { value: 'warmEarth', label: 'Warm Earth' },
-            { value: 'mintChocolate', label: 'Mint Chocolate' }
-        ]
-    },
-    {
-        label: 'Vibrant',
-        options: [
-            { value: 'royalPurple', label: 'Royal Purple' },
-            { value: 'vibrantFun', label: 'Vibrant Fun' }
-        ]
-    }
-];

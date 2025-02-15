@@ -46,7 +46,7 @@ const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: Enhan
           isFullWidth ? 'w-full' : ''
         }`}
       >
-        <h2 className={`text-2xl font-bold bg-gradient-to-r ${themeColors.title.gradient} bg-clip-text text-transparent`}>
+        <h2 className={`text-2xl font-bold bg-gradient-to-r ${themeColors.title.text} bg-clip-text text-transparent`}>
           {renderContent(section.title, 'title')}
         </h2>
 
