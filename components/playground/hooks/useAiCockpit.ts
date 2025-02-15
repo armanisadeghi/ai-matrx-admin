@@ -1,4 +1,4 @@
-import { EntityKeys, MatrxRecordId } from "@/types";
+import { EntityKeys } from "@/types";
 import { useCallback, useEffect, useState } from "react";
 import { useRecipeAgentSettings } from "@/hooks/aiCockpit/useRecipeAgentSettings";
 import { useProcessedRecipeMessages } from "@/hooks/aiCockpit/useProcessedRecipeMessages";
@@ -12,7 +12,7 @@ import {
 import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
 import { useDoubleJoinedActiveParentProcessing } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
 import { useCreateRecord } from "@/app/entities/hooks/crud/useDirectCreateRecord";
-
+import { useOrchestrateSave } from "@/hooks/useOrchestrateSave";
 
 export function useAiCockpit() {
     const [compiledRecipe, setCompiledRecipe] = useState<CompiledRecipe | null>(null);
@@ -20,6 +20,7 @@ export function useAiCockpit() {
     const [taskBrokers, setTaskBrokers] = useState<BrokerValue[]>([]);
     const [recipeOverrides, setRecipeOverrides] = useState<RecipeOverrides[]>([]);
     const [recipeTaskData, setRecipeTaskData] = useState<RecipeTaskData[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
 
     const {
         activeParentMatrxId: activeRecipeMatrxId,
@@ -27,6 +28,7 @@ export function useAiCockpit() {
         firstRelHook,
         secondRelHook,
     } = useDoubleJoinedActiveParentProcessing("recipeMessage", "aiAgent");
+    
     const recipeMessageHook = useProcessedRecipeMessages(firstRelHook);
     const { messages, deleteMessage, addMessage, handleDragDrop } = recipeMessageHook;
     const recipeAgentSettingsHook = useRecipeAgentSettings(secondRelHook);
@@ -71,12 +73,27 @@ export function useAiCockpit() {
         }
     }, [activeRecipeId, recompileRecipe, recipeVersion, createCompiledRecord]);
 
+    const { 
+        save: orchestratedSave, 
+        registerComponentSave,
+        savingComponents
+    } = useOrchestrateSave(
+        saveCompiledRecipe,
+        {
+            onError: (error, componentId) => {
+                console.error(`Save failed for ${componentId || 'main recipe'}:`, error);
+            },
+            onSaveComplete: () => {
+                recompileRecipe();
+            }
+        }
+    );
+
     const getLatestTasks = useCallback(async () => {
         const { recipeTaskDataList } = recompileRecipe();
         return recipeTaskDataList;
     }, [recompileRecipe]);
 
-    // Single initialization effect
     useEffect(() => {
         if (activeRecipeId) {
             recompileRecipe();
@@ -94,9 +111,17 @@ export function useAiCockpit() {
     const socketHook = useCockpitSocket(getLatestTasks);
 
     const handlePlay = useCallback(async () => {
-        await saveCompiledRecipe();
-        socketHook.handleSend();
-    }, [saveCompiledRecipe, socketHook]);
+        if (isSaving) return;
+        setIsSaving(true);
+        try {
+            await orchestratedSave();
+            socketHook.handleSend();
+        } catch (error) {
+            console.error('Error during play operation:', error);
+        } finally {
+            setIsSaving(false);
+        }
+    }, [orchestratedSave, socketHook, isSaving]);
 
     const tools = {
         recipe: firstRelHook.parentTools,
@@ -123,7 +148,10 @@ export function useAiCockpit() {
         recompileRecipe,
         onPlay: handlePlay,
         recipeVersion,
-        saveCompiledRecipe,
+        saveCompiledRecipe: orchestratedSave,
+        registerComponentSave,
+        savingComponents,
+        isSaving,
         tools,
     };
 }

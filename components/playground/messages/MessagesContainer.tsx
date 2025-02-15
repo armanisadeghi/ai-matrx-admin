@@ -18,7 +18,8 @@ interface MessagesContainerProps {
 }
 
 function MessagesContainer({ cockpitControls: playgroundControls }: MessagesContainerProps) {
-    const { messages, deleteMessage, addMessage, handleDragDrop } = playgroundControls.aiCockpitHook;
+    const { messages, deleteMessage, addMessage, handleDragDrop, registerComponentSave } = playgroundControls.aiCockpitHook;
+
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());
     const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
@@ -162,6 +163,7 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
                                             isCollapsed={isCollapsed}
                                             onToggleEditor={() => toggleEditor(message.matrxRecordId)}
                                             onDragDrop={handleDragDrop}
+                                            registerComponentSave={registerComponentSave}
                                         />
                                     </Panel>
                                     {!isLastPanel && <PanelResizeHandle />}

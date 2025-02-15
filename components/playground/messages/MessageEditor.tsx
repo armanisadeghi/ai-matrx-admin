@@ -5,7 +5,6 @@ import { EditorWithProviders } from '@/providers/rich-text-editor/withManagedEdi
 import { Card } from '@/components/ui';
 import { MatrxRecordId, MessageTemplateProcessed } from '@/types';
 import MessageToolbar from './MessageToolbar';
-import { ProcessedRecipeMessages } from './types';
 import DebugPanel from './AdminToolbar';
 import { BrokerMetaData, ChipData } from '@/types/editor.types';
 import useChipHandlers from '../hooks/brokers/useChipHandlers';
@@ -34,6 +33,7 @@ interface MessageEditorProps {
     onDragDrop?: (draggedId: MatrxRecordId, targetId: MatrxRecordId) => void;
     deleteMessage?: (childRecordId: MatrxRecordId) => void;
     onOrderChange?: (draggedId: MatrxRecordId, dropTargetId: MatrxRecordId) => void;
+    registerComponentSave?: (componentId: string, saveFn: () => Promise<void>) => void;
 }
 
 export const MessageEditor: React.FC<MessageEditorProps> = ({
@@ -49,6 +49,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     onDragDrop,
     onOrderChange,
     deleteMessage,
+    registerComponentSave,
     ...props
 }) => {
     const dispatch = useAppDispatch();
@@ -86,26 +87,43 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         [messageActions, dispatch, messageRecordId]
     );
 
-    const handleSave = useCallback(() => {
+    const handleSaveAsync = useCallback(async () => {
         console.log('Saving message:', messageRecordId);
         if (isSaving || initialRenderHold) {
             console.log('Skipping save:', isSaving, initialRenderHold);
             return;
         }
+        
         const processedContent = context.getEncodedText(messageRecordId);
         if (processedContent === lastSavedContent) {
             return;
         }
 
         setIsSaving(true);
-        updateMessageContent(processedContent);
-        updateRecord(messageRecordId);
-        setLastSavedContent(processedContent);
+        try {
+            updateMessageContent(processedContent);
+            await updateRecord(messageRecordId);
+            setLastSavedContent(processedContent);
+        } finally {
+            setTimeout(() => {
+                setIsSaving(false);
+            }, 200);
+        }
+    }, [context, messageRecordId, updateMessageContent, updateRecord, isSaving, lastSavedContent, initialRenderHold]);
 
-        setTimeout(() => {
-            setIsSaving(false);
-        }, 500);
-    }, [context, messageRecordId, updateMessageContent, updateRecord, isSaving, lastSavedContent]);
+    // Keep the original handleSave for direct calls (blur, etc)
+    const handleSave = useCallback(() => {
+        handleSaveAsync().catch(error => {
+            console.error('Error saving message:', error);
+        });
+    }, [handleSaveAsync]);
+
+    // Register with the orchestration system if available
+    useEffect(() => {
+        if (registerComponentSave) {
+            return registerComponentSave(`message-editor-${messageRecordId}`, handleSaveAsync);
+        }
+    }, [registerComponentSave, messageRecordId, handleSaveAsync]);
 
     const createNewBroker = useCallback(
         async (brokerMetadata: BrokerMetaData) => {

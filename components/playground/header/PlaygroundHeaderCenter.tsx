@@ -8,7 +8,8 @@ import PlaygroundHistoryDialog from './PlaygroundHistoryDialog';
 import PlaygroundNavContainer from './PlaygroundNavContainer';
 import { usePreferenceValue } from '@/hooks/user-preferences/usePreferenceValue';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
-import { UseAiCockpitHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
+import { UseAiCockpitHook } from '../hooks/useAiCockpit';
+
 
 interface PlaygroundHeaderCenterProps {
     currentMode?: string;

@@ -17,7 +17,6 @@ import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';
 
-
 interface PanelRefs {
     leftPanel: ImperativePanelHandle | null;
     messagesPanel: ImperativePanelHandle | null;
@@ -38,7 +37,7 @@ export default function AiCockpitPage() {
 
     const aiCockpitHook = useAiCockpit();
 
-    const { activeRecipeId, messages, onPlay } = aiCockpitHook;
+    const { activeRecipeId, messages, onPlay, registerComponentSave } = aiCockpitHook;
 
     const dispatch = useDispatch();
     const { actions, selectors, store } = useEntityTools('recipe');
