@@ -17,6 +17,7 @@ import { getLayoutOptions } from './recipes/constants';
 import { useAiCockpit } from '@/components/playground/hooks/useAiCockpit';
 import { CockpitControls } from './types';
 
+
 interface PanelRefs {
     leftPanel: ImperativePanelHandle | null;
     messagesPanel: ImperativePanelHandle | null;
