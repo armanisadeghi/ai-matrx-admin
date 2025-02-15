@@ -128,7 +128,6 @@ export class SocketManager {
                 console.log('Task confirmed. Listening for event:', response.event_name);
                 this.addDynamicEventListener(response.event_name, callback);
             } else {
-                console.log(`Server did not provide custom event name. Listening for: ${basicEventName}`);
                 this.addDynamicEventListener(basicEventName, (fallbackResponse) => {
                     callback(fallbackResponse);
                 });

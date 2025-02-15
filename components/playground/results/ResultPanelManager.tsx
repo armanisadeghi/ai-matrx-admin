@@ -34,6 +34,29 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
     } = socketHook;
 
     const recordTabs = tabs.filter((tab) => tab.isRecord);
+    
+    // Calculate minPanelSize based on number of panels
+    const minPanelSize = recordTabs.length > 0 ? 100 / recordTabs.length : 100;
+
+    // Don't render PanelGroup if there are no panels and we're not in compiled view
+    if (recordTabs.length === 0 && currentView !== 'compiled') {
+        return (
+            <div className='h-full flex flex-col'>
+                <div className='flex-1' />
+                <div>
+                    <MultiSwitchToggle
+                        variant='geometric'
+                        width='w-28'
+                        height='h-10'
+                        disabled={false}
+                        states={responseFormats}
+                        onChange={setCurrentView}
+                        value={currentView}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className='h-full flex flex-col'>
@@ -54,7 +77,8 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
                             streamingText: streamingResponses[index] || '',
                             onDelete: deleteSettings,
                             debug: process.env.NODE_ENV === 'development',
-                            onDebugClick: (id) => console.log('Debug clicked:', id)
+                            onDebugClick: (id) => console.log('Debug clicked:', id),
+                            minSize: minPanelSize
                         })
                     )}
                 </PanelGroup>

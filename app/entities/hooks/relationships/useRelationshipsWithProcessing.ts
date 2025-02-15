@@ -1,23 +1,12 @@
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from "@/types";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { toPkValue } from "@/lib/redux/entity/utils/entityPrimaryKeys";
 import { useSequentialDelete } from "../crud/useSequentialDelete";
 import { getStandardRelationship, KnownRelDef, SimpleRelDef } from "./definitionConversionUtil";
 import _ from "lodash";
 import { useRelationshipDirectCreate } from "../crud/useDirectRelCreate";
 import { useStableRelationships } from "./new/useStableRelationships";
-import { useRecipeAgentSettings } from "@/hooks/aiCockpit/useRecipeAgentSettings";
-import { useProcessedRecipeMessages } from "@/hooks/aiCockpit/useProcessedRecipeMessages";
-import {
-    BrokerValue,
-    CompiledRecipe,
-    RecipeOverrides,
-    RecipeTaskData,
-    useRecipeCompiler,
-} from "@/components/playground/hooks/recipes/useCompileRecipe";
-import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
-import { useCreateRecord } from "../crud/useDirectCreateRecord";
 
 export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) {
     const {
@@ -33,7 +22,7 @@ export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: M
 
         // Parent data
         parentId,
-        parentRecords,
+        parentRecord,
         parentMatrxid,
 
         // Join/Relationship data
@@ -94,7 +83,7 @@ export function useRelFetchProcessing(relDefSimple: SimpleRelDef, anyParentId: M
 
         // Parent data
         parentId,
-        parentRecords,
+        parentRecord,
         parentMatrxid,
 
         // Join/Relationship data

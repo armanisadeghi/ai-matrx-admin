@@ -296,12 +296,10 @@ export const hasUserIdField = (entityKey: EntityKeys): boolean => {
 
 export const addUserIdToData = (entityKey: EntityKeys, data: any) => {
     const hasUserId = hasUserIdField(entityKey);
-    console.log('hasUserId', hasUserId);
     const userId = getGlobalUserId();
-    console.log('userId', userId);
     
     if (hasUserId && userId && !data['user_id']) {
-        console.log('adding userId to data', { ...data, user_id: userId });
+        console.log('adding userId to data for Entity: ', entityKey, { ...data, user_id: userId });
         return { ...data, user_id: userId };
     }
     

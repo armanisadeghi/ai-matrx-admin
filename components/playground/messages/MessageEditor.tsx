@@ -1,22 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAppDispatch, useEntityTools } from '@/lib/redux';
-import { useUpdateRecord } from '@/app/entities/hooks/crud/useUpdateRecord';
-import { EditorWithProviders } from '@/providers/rich-text-editor/withManagedEditor';
-import { Card } from '@/components/ui';
-import { MatrxRecordId, MessageTemplateProcessed } from '@/types';
-import MessageToolbar from './MessageToolbar';
-import DebugPanel from './AdminToolbar';
-import { BrokerMetaData, ChipData } from '@/types/editor.types';
-import useChipHandlers from '../hooks/brokers/useChipHandlers';
-import { TextPlaceholderEffect } from './TextPlaceholderEffect';
-import { useEditorContext } from '@/providers/rich-text-editor/Provider';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useAppDispatch, useEntityTools } from "@/lib/redux";
+import { useUpdateRecord } from "@/app/entities/hooks/crud/useUpdateRecord";
+import { EditorWithProviders } from "@/providers/rich-text-editor/withManagedEditor";
+import { Card } from "@/components/ui";
+import { MatrxRecordId, MessageTemplateProcessed } from "@/types";
+import MessageToolbar from "./MessageToolbar";
+import DebugPanel from "./AdminToolbar";
+import { BrokerMetaData, ChipData } from "@/types/editor.types";
+import useChipHandlers from "../hooks/brokers/useChipHandlers";
+import { TextPlaceholderEffect } from "./TextPlaceholderEffect";
+import { useEditorContext } from "@/providers/rich-text-editor/Provider";
 
 const DEBUG_STATUS = true;
+const DEBUG_PRINTS = false;
 
 interface ChipChangeData {
     chipId: string;
     brokerId?: string;
-    action: 'add' | 'update' | 'remove';
+    action: "add" | "update" | "remove";
     data: Partial<ChipData>;
 }
 
@@ -54,15 +55,16 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 }) => {
     const dispatch = useAppDispatch();
     const context = useEditorContext();
-    const { updateRecord } = useUpdateRecord('messageTemplate');
+    const { updateRecord } = useUpdateRecord("messageTemplate");
     const [initialRenderHold, setInitialRenderHold] = useState(false);
 
     const [isSaving, setIsSaving] = useState(false);
-    const [lastSavedContent, setLastSavedContent] = useState('');
+    const [lastSavedContent, setLastSavedContent] = useState("");
     const [isEditorHidden, setIsEditorHidden] = useState(isCollapsed);
     const [debugVisible, setDebugVisible] = useState(false);
-    const { actions: messageActions } = useEntityTools('messageTemplate');
-    const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu, addDialogHandler } = useChipHandlers(messageRecordId);
+    const { actions: messageActions } = useEntityTools("messageTemplate");
+    const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu, addDialogHandler } =
+        useChipHandlers(messageRecordId);
 
     useEffect(() => {
         setIsEditorHidden(isCollapsed);
@@ -79,7 +81,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
             dispatch(
                 messageActions.updateUnsavedField({
                     recordId: messageRecordId,
-                    field: 'content',
+                    field: "content",
                     value: content,
                 })
             );
@@ -88,12 +90,15 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     );
 
     const handleSaveAsync = useCallback(async () => {
-        console.log('Saving message:', messageRecordId);
+        if (DEBUG_PRINTS) {
+            console.log("Saving message:", messageRecordId);
+        }
         if (isSaving || initialRenderHold) {
-            console.log('Skipping save:', isSaving, initialRenderHold);
+            console.log("Skipping save:", isSaving, initialRenderHold);
+
             return;
         }
-        
+
         const processedContent = context.getEncodedText(messageRecordId);
         if (processedContent === lastSavedContent) {
             return;
@@ -113,8 +118,8 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 
     // Keep the original handleSave for direct calls (blur, etc)
     const handleSave = useCallback(() => {
-        handleSaveAsync().catch(error => {
-            console.error('Error saving message:', error);
+        handleSaveAsync().catch((error) => {
+            console.error("Error saving message:", error);
         });
     }, [handleSaveAsync]);
 
@@ -129,10 +134,10 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         async (brokerMetadata: BrokerMetaData) => {
             try {
                 // await context.chips.syncChipToBroker(chipData.id, `id:${newBrokerId}`);
-                console.log('Message Editor was informated of a new broker:', brokerMetadata);
+                console.log("Message Editor was informated of a new broker:", brokerMetadata);
                 handleSave();
             } catch (error) {
-                console.error('Failed to create relationship:', error);
+                console.error("Failed to create relationship:", error);
             }
         },
         [handleSave]
@@ -140,62 +145,67 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 
     const addExistingBrokerToSelection = useCallback(
         (brokerId: string) => {
-            console.log('Adding broker to selection:', brokerId);
+            console.log("Adding broker to selection:", brokerId);
         },
         [messageRecordId]
     );
 
     const associateBrokerWithMessage = useCallback(
         (brokerId: string) => {
-            console.log('Associating broker with message:', brokerId);
+            console.log("Associating broker with message:", brokerId);
         },
         [messageRecordId]
     );
 
-
     const handleBlur = useCallback(() => {
-        console.log('Editor blurred:', messageRecordId);
+        if (DEBUG_PRINTS) {
+            console.log("Editor blurred:", messageRecordId);
+        }
         handleSave();
     }, [handleSave]);
 
     const handleDelete = useCallback(() => {
-        console.log('Deleting message:', messageRecordId);
+        if (DEBUG_PRINTS) {
+            console.log("Deleting message:", messageRecordId);
+        }
         deleteMessage(messageRecordId);
     }, [messageRecordId, onDelete]);
 
     const handleAddMedia = useCallback(() => {
         // Implementation for adding media
-        console.log('Adding media');
+        if (DEBUG_PRINTS) {
+            console.log("Adding media");
+        }
     }, []);
 
     const handleLinkBroker = useCallback(() => {
         // Implementation for linking broker
-        console.log('Linking broker');
+        console.log("Linking broker");
     }, []);
 
     const handleShowChips = useCallback(() => {
-        context.setContentMode(messageRecordId, 'encodeChips');
-        console.log('Showing chips');
+        context.setContentMode(messageRecordId, "encodeChips");
+        console.log("Showing chips");
     }, []);
 
     const handleShowEncoded = useCallback(() => {
-        context.setContentMode(messageRecordId, 'encodeVisible');
-        console.log('Showing encoded');
+        context.setContentMode(messageRecordId, "encodeVisible");
+        console.log("Showing encoded");
     }, []);
 
     const handleShowEncodedId = useCallback(() => {
-        context.setContentMode(messageRecordId, 'recordKey');
-        console.log('Showing encoded id');
+        context.setContentMode(messageRecordId, "recordKey");
+        console.log("Showing encoded id");
     }, []);
 
     const handleShowNames = useCallback(() => {
-        context.setContentMode(messageRecordId, 'name');
-        console.log('Showing names');
+        context.setContentMode(messageRecordId, "name");
+        console.log("Showing names");
     }, []);
 
     const handleShowDefaultValue = useCallback(() => {
-        context.setContentMode(messageRecordId, 'defaultValue');
-        console.log('Showing default value');
+        context.setContentMode(messageRecordId, "defaultValue");
+        console.log("Showing default value");
     }, []);
 
     const handleToggleVisibility = useCallback(() => {
@@ -206,11 +216,11 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     }, [messageRecordId, onToggleEditor]);
 
     const handleRoleChange = useCallback(
-        (messageRecordId: MatrxRecordId, newRole: 'user' | 'assistant' | 'system') => {
+        (messageRecordId: MatrxRecordId, newRole: "user" | "assistant" | "system") => {
             dispatch(
                 messageActions.updateUnsavedField({
                     recordId: messageRecordId,
-                    field: 'role',
+                    field: "role",
                     value: newRole,
                 })
             );
@@ -224,7 +234,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     }, []);
 
     return (
-        <Card className='h-full p-0 overflow-hidden bg-background border-elevation2'>
+        <Card className="h-full p-0 overflow-hidden bg-background border-elevation2">
             <MessageToolbar
                 messageRecordId={messageRecordId}
                 role={message.role}
@@ -244,15 +254,10 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                 debug={DEBUG_STATUS}
                 onDebugClick={toggleDebug}
             />
-            {debugVisible && (
-                <DebugPanel
-                    editorId={messageRecordId}
-                    message={message}
-                />
-            )}
-            <div className={`transition-all duration-200 ${isEditorHidden ? 'h-0 overflow-hidden' : 'h-[calc(100%-2rem)]'}`}>
+            {debugVisible && <DebugPanel editorId={messageRecordId} message={message} />}
+            <div className={`transition-all duration-200 ${isEditorHidden ? "h-0 overflow-hidden" : "h-[calc(100%-2rem)]"}`}>
                 {initialRenderHold ? (
-                    <div className='flex items-center justify-center h-full'>
+                    <div className="flex items-center justify-center h-full">
                         <TextPlaceholderEffect />
                     </div>
                 ) : (
@@ -277,6 +282,6 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     );
 };
 
-MessageEditor.displayName = 'MessageEditor';
+MessageEditor.displayName = "MessageEditor";
 
 export default MessageEditor;

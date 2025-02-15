@@ -12,6 +12,7 @@ export interface BasePanelProps {
     onLabelChange?: (id: string, newLabel: string) => void;
     debug?: boolean;
     onDebugClick?: (id: string) => void;
+    minSize?: number;
 }
 
 export interface PanelConfig {

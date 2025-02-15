@@ -1,19 +1,34 @@
 import { useAppSelector, useEntityTools } from '@/lib/redux';
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toPkValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
-import { usePrevious, useDebounce } from '@uidotdev/usehooks';
+import { useDebounce } from '@uidotdev/usehooks';
 import { isEqual } from 'lodash';
 import { SimpleRelDef } from '../definitionConversionUtil';
 import { useGetOrFetchRecord, useGetorFetchRecords } from '../../records/useGetOrFetch';
 import { RelationshipMapper } from '../relationshipDefinitions';
 import { processJoinedData } from '../utils';
 
+
+const DEBUG_PRINTS = true;
+
 export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) => {
     const parentId = anyParentId ? (typeof anyParentId === 'string' && anyParentId.includes(':') ? toPkValue(anyParentId) : anyParentId.toString()) : undefined;
 
-    const previousParentId = usePrevious(parentId);
-    const parentChanged = previousParentId !== parentId;
+    const [activeParentId, setActiveParentId] = useState(parentId);
+
+    useEffect(() => {
+        setActiveParentId(parentId);
+    }, [parentId]);
+
+    
+    const parentChanged = activeParentId !== parentId;
+
+    console.log('-------------');
+    console.log('parentChanged', parentChanged);
+    console.log('parentId', parentId);
+    console.log('activeParentId', activeParentId);
+    console.log('-------------');
 
     const stableRef = useRef({
         lastStableRecords: null,
@@ -23,6 +38,10 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
         stabilizedAfterParentChange: false,
         lastStableChildIds: null as string[] | null,
     });
+
+    if (DEBUG_PRINTS) {
+        console.log('stableRef', stableRef.current);
+    }
 
     // Track parent changes and reset stability
     if (parentChanged) {
@@ -43,11 +62,16 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
     const { selectors: joinSelectors } = joinTools;
 
     // Data fetching
-    const parentRecords = useGetOrFetchRecord({ entityName: parentEntity, simpleId: parentId });
-    const parentMatrxid = parentRecords?.matrxRecordId;
+    const parentRecord = useGetOrFetchRecord({ entityName: parentEntity, simpleId: activeParentId });
+    const parentMatrxid = parentRecord?.matrxRecordId;
+
     const isParentLoading = useAppSelector(parentSelectors.selectIsLoading);
     const isRawJoinLoading = useAppSelector(joinSelectors.selectIsLoading);
     const initialJoinRecords = useAppSelector(joinSelectors.selectAllEffectiveRecordsWithKeys);
+
+    if (DEBUG_PRINTS) {
+        console.log('--- initialJoinRecords', initialJoinRecords);
+    }
 
     // Stability checks
     const areRecordsEffectivelyEqual = (prev: any, current: any) => {
@@ -58,6 +82,10 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
     };
 
     const hasChanged = !areRecordsEffectivelyEqual(stableRef.current.previousRawRecords, initialJoinRecords);
+
+    if (DEBUG_PRINTS) {
+        console.log('hasChanged', hasChanged);
+    }
 
     // Update stable records when data stabilizes
     if (!hasChanged && initialJoinRecords) {
@@ -88,11 +116,19 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
         [mapper]
     );
 
+    if (DEBUG_PRINTS) {
+        console.log('rawChildIds', rawChildIds);
+    }
+
     const joinRecords = useDebounce(rawJoinRecords, 200);
     const joiningMatrxIds = useDebounce(rawJoiningMatrxIds, 200);
     const joinIds = useDebounce(rawJoinIds, 200);
     const childMatrxIds = useDebounce(rawChildMatrxIds, 200);
     const childIds = useDebounce(rawChildIds, 200);
+
+    if (DEBUG_PRINTS) {
+        console.log('childIds with debounce', childIds);
+    }
 
     // Single consolidated loading state that respects the initial state and parent changes
     const isJoinLoading = useDebounce(parentId ? isParentLoading || isRawJoinLoading || !stableRef.current.stabilizedAfterParentChange : false, 200);
@@ -100,12 +136,34 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
     const childSelectors = childTools.selectors;
     const isChildLoading = useAppSelector(childSelectors.selectIsLoading);
 
+    if (DEBUG_PRINTS) {
+        console.log('isJoinLoading', isJoinLoading);
+        console.log('isChildLoading', isChildLoading);
+    }
+
     const shouldProcess = useDebounce(!isJoinLoading && !isChildLoading, 200);
+
+    if (DEBUG_PRINTS) {
+        console.log('shouldProcess', shouldProcess);
+    }
 
     const currentChildRecords = useGetorFetchRecords(childEntity, childMatrxIds, shouldProcess) as EntityDataWithKey<EntityKeys>[];
 
+    if (DEBUG_PRINTS) {
+        console.log('currentChildRecords', currentChildRecords);
+    }
+
     const unprocessedChildRecords = useDebounce(currentChildRecords, 300);
+
+    if (DEBUG_PRINTS) {
+        console.log('unprocessedChildRecords', unprocessedChildRecords);
+    }
+
     const [needsReprocess, setNeedsReprocess] = useState(true);
+
+    if (DEBUG_PRINTS) {
+        console.log('needsReprocess', needsReprocess);
+    }
 
     // This could be called from the drag-and-drop handler
     const triggerProcessing = useCallback(() => {
@@ -129,6 +187,10 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
         });
     }, [unprocessedChildRecords, joinRecords, relDefSimple, parentMatrxid, needsReprocess]);
 
+    if (DEBUG_PRINTS) {
+        console.log('childRecords', childRecords);
+    }
+
     return {
         // Entity names
         parentEntity,
@@ -142,7 +204,7 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
 
         // Parent data
         parentId,
-        parentRecords,
+        parentRecord,
         parentMatrxid,
 
         // Join/Relationship data

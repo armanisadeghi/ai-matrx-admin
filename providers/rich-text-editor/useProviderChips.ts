@@ -161,9 +161,6 @@ export const useProviderChips = (
 
     const getOrFetchAllBrokers = useCallback(
         (editorId: string, recordIds: MatrxRecordId[]) => {
-            console.log('createNewChipData With:', editorId, recordIds);
-
-            // Filter out records that are already pending for this editor
             const newRecordIds = recordIds.filter((id) => !pendingRecords.some((pr) => pr.recordId === id && pr.editorId === editorId));
 
             // Add new records to pending set
@@ -261,7 +258,6 @@ export const useProviderChips = (
             editorId: string,
             requestOptions: ChipRequestOptions = {}
         ): Promise<{ matrxRecordId: MatrxRecordId; brokerMetadata: BrokerMetaData; messageBrokerRecord: MessageBrokerData }> => {
-            console.log('createNewChipData With:', editorId, requestOptions);
             const nextColor = getNextColor();
 
             const initialBrokerMetadata = makeBrokerMetadata(requestOptions, nextColor);

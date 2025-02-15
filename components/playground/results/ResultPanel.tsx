@@ -18,12 +18,13 @@ interface ResultPanelProps {
     onLabelChange?: (id: string, newLabel: string) => void;
     debug?: boolean;
     onDebugClick?: (id: string) => void;
+    minSize?: number;
 }
 
-export function ResultPanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick }: ResultPanelProps) {
+export function ResultPanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick, minSize }: ResultPanelProps) {
     const panelRef = useRef<ImperativePanelHandle>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [previousSize, setPreviousSize] = useState(50);
+    const [previousSize, setPreviousSize] = useState(minSize);
     const [viewMode, setViewMode] = useState<'rendered' | 'raw' | 'processed' | 'parsedAsJson'>('rendered');
     const [showCopySuccess, setShowCopySuccess] = useState(false);
 
