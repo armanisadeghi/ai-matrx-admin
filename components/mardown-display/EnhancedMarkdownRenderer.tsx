@@ -4,11 +4,12 @@ import { Braces, Code, Eye, FileText, LayoutDashboard, LayoutTemplate } from "lu
 import { Card } from "@/components/ui";
 import { parseMarkdownContent } from "../brokers/output/markdown-utils";
 import { parseMarkdownTable } from "./parse-markdown-table";
-import { enhancedMarkdownParser } from "./enhanced-parser";
 import EnhancedMarkdownCard from "./EnhancedMarkdownCard";
 import { DisplayTheme, SIMPLE_THEME_OPTIONS } from "./themes";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-
+import { separatedMarkdownParser } from "./parser-separated";
+import { enhancedMarkdownParser } from "./enhanced-parser";
+import MultiSectionMarkdownCard from "./MultiSectionMarkdownCard";
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
 
@@ -43,6 +44,11 @@ const VIEW_MODES = {
     sectionCards: {
         icon: LayoutDashboard,
         label: "Section Cards",
+        supportedTypes: ["markdown"],
+    },
+    multiSectionCards: {
+        icon: LayoutTemplate,
+        label: "Multi Section Cards",
         supportedTypes: ["markdown"],
     },
     enhancedSectionCards: {
@@ -91,10 +97,8 @@ const EnhancedContentRenderer = ({
         return "text";
     }, [content]);
 
-    // Filter available modes based on content type
-    const availableModes = useMemo(() => {
-        return Object.entries(VIEW_MODES).filter(([_, config]) => config.supportedTypes.includes(contentType));
-    }, [contentType]);
+    // Get available modes without filtering
+    const availableModes = useMemo(() => Object.entries(VIEW_MODES), []);
 
     // Set initial mode based on content type
     const [activeMode, setActiveMode] = useState(() => {
@@ -145,6 +149,17 @@ const EnhancedContentRenderer = ({
                     console.error("Failed to parse content for section cards:", error);
                     return <div className="text-red-500">Failed to parse content</div>;
                 }
+            case "multiSectionCards":
+                try {
+                    const parsedContent = separatedMarkdownParser(content);
+                    return (
+                        <MultiSectionMarkdownCard parsed={parsedContent} theme={currentTheme} fontSize={fontSize} className={className} />
+                    );
+                } catch (error) {
+                    console.error("Failed to parse content for section cards:", error);
+                    return <div className="text-red-500">Failed to parse content</div>;
+                }
+
             case "sectionCards":
                 try {
                     const parsedContent = parseMarkdownContent(content);
