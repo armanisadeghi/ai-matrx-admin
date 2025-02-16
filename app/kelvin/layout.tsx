@@ -3,14 +3,16 @@ import {createClient} from "@/utils/supabase/server";
 import {Providers} from "@/app/Providers";
 import {mapUserData} from '@/utils/userDataMapper';
 import {LayoutWithSidebar} from "@/components/layout/MatrixLayout";
-import {adminSidebarLinks, appSidebarLinks} from "@/constants";
-import {generateClientGlobalCache} from '@/utils/schema/schema-processing/processSchema';
+import {appSidebarLinks, adminSidebarLinks} from "@/constants";
+import {generateClientGlobalCache, initializeSchemaSystem} from '@/utils/schema/schema-processing/processSchema';
 import {getTestDirectories} from '@/utils/directoryStructure';
 import {InitialReduxState} from "@/types/reduxTypes";
 import {ClientDebugWrapper} from '@/components/admin/ClientDebugWrapper';
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import {headers} from 'next/headers';
+import { setGlobalUserId } from '@/lib/globalState';
 
+const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
 
 export default async function AuthenticatedLayout(
@@ -40,6 +42,8 @@ export default async function AuthenticatedLayout(
     }
 
     const userData = mapUserData(user);
+    setGlobalUserId(userData.id);
+
     const testDirectories = await getTestDirectories();
 
     const {data: preferences, error} = await supabase
@@ -48,9 +52,9 @@ export default async function AuthenticatedLayout(
         .eq('user_id', userData.id)
         .single();
 
-    // if (error) {
-    //     console.error('Error loading preferences from Supabase:', error);
-    // }
+    if (error) {
+        console.error('Error loading preferences from Supabase:', error);
+    }
 
     const initialReduxState: InitialReduxState = {
         user: userData,
@@ -63,7 +67,7 @@ export default async function AuthenticatedLayout(
         <Providers initialReduxState={initialReduxState}>
             <LayoutWithSidebar {...layoutProps}>
                 <NavigationLoader/>
-                {children}
+                    {children}
                 <ClientDebugWrapper user={userData}/>
             </LayoutWithSidebar>
         </Providers>
