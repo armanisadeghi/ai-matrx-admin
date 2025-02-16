@@ -1,6 +1,7 @@
-import React  from "react";
-import { Copy, Check, Download, Expand, Eye, Minimize } from "lucide-react";
+import React from "react";
+import { Copy, Check, Download, Expand, Eye, Minimize, Edit2 } from "lucide-react";
 import { cn } from "@/styles/themes/utils";
+import LanguageDisplay from "./LanguageDisplay";
 
 interface CodeBlockHeaderProps {
     language: string;
@@ -15,6 +16,7 @@ interface CodeBlockHeaderProps {
     toggleCollapse: (e?: React.MouseEvent) => void;
     isCopied: boolean;
 }
+
 
 export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
     language,
@@ -43,7 +45,7 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
             </div>
             <div className="flex items-center space-x-2">
-                <span className="text-sm text-neutral-500 dark:text-neutral-400 font-mono">{language}</span>
+                <LanguageDisplay language={language} />
                 <span className="text-xs text-neutral-400 dark:text-neutral-500">
                     {linesCount} {linesCount === 1 ? "line" : "lines"}
                 </span>
@@ -80,8 +82,9 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
     toggleEdit,
     toggleExpand,
 }) => {
-    const buttonClass = "p-1.5 rounded-md text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors";
-    
+    const buttonClass =
+        "p-1.5 rounded-md text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors";
+
     return (
         <div className="flex items-center space-x-2">
             <button onClick={handleCopy} className={buttonClass} title={isCopied ? "Copied!" : "Copy code"}>
@@ -103,5 +106,23 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
     );
 };
 
+export const EditButton = ({ isEditing, toggleEdit }) => {
+    if (isEditing) return null;
+
+    return (
+        <button
+            onClick={toggleEdit}
+            className={cn(
+                "absolute top-4 right-2 z-10 p-1 rounded-md bg-transparent backdrop-blur-sm",
+                "hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors shadow-sm",
+                "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-100",
+                ""
+            )}
+            title="Edit code"
+        >
+            <Edit2 size={16} />
+        </button>
+    );
+};
 
 export default CodeBlockHeader;

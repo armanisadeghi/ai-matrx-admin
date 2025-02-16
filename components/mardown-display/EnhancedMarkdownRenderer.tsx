@@ -1,16 +1,18 @@
 import React, { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { Braces, Code, Eye, FileText, LayoutDashboard, LayoutTemplate } from "lucide-react";
+import { AlignCenterVertical, Baseline, Braces, Code, Eye, FileText, LayoutDashboard, LayoutTemplate } from "lucide-react";
 import { Card } from "@/components/ui";
 import { parseMarkdownContent } from "../brokers/output/markdown-utils";
-import { parseMarkdownTable } from "./parse-markdown-table";
 import EnhancedMarkdownCard from "./EnhancedMarkdownCard";
-import { DisplayTheme, SIMPLE_THEME_OPTIONS } from "./themes";
+import { DisplayTheme, SIMPLE_THEME_OPTIONS, THEMES } from "./themes";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { separatedMarkdownParser } from "./parser-separated";
 import { enhancedMarkdownParser } from "./enhanced-parser";
 import MultiSectionMarkdownCard from "./MultiSectionMarkdownCard";
-const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
+import JsonDisplay from "./JsonDisplay";
+import MarkdownRenderer from "./MarkdownRenderer";
+import QuestionnaireRenderer from './QuestionnaireRenderer';
+
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
 
 // Define supported content types and their detection logic
@@ -31,39 +33,44 @@ const CONTENT_TYPES = {
 
 // Define view modes configuration
 const VIEW_MODES = {
-    rendered: {
-        icon: Eye,
-        label: "Rendered View",
-        supportedTypes: ["markdown"],
-    },
     raw: {
-        icon: Code,
+        icon: Baseline,
         label: "Raw Text",
         supportedTypes: ["markdown", "json"],
     },
-    sectionCards: {
-        icon: LayoutDashboard,
-        label: "Section Cards",
+    rendered: {
+        icon: Eye,
+        label: "Rendered",
         supportedTypes: ["markdown"],
     },
-    multiSectionCards: {
-        icon: LayoutTemplate,
-        label: "Multi Section Cards",
+    sectionCards: {
+        icon: LayoutDashboard,
+        label: "Cards",
         supportedTypes: ["markdown"],
     },
     enhancedSectionCards: {
         icon: LayoutTemplate,
-        label: "Enhanced Section Cards",
+        label: "Enhanced Cards",
         supportedTypes: ["markdown"],
+    },
+    multiSectionCards: {
+        icon: AlignCenterVertical,
+        label: "Multi Section Cards",
+        supportedTypes: ["markdown"],
+    },
+    questionnaire: {
+        icon: FileText,
+        label: "Questionnaire",
+        supportedTypes: ["questionnaire"],
+    },
+    parsedAsJson: {
+        icon: Braces,
+        label: "Processed",
+        supportedTypes: ["json"],
     },
     structured: {
         icon: FileText,
         label: "Structured",
-        supportedTypes: ["json"],
-    },
-    parsedAsJson: {
-        icon: Braces,
-        label: "Parsed as JSON",
         supportedTypes: ["json"],
     },
 };
@@ -89,7 +96,7 @@ const EnhancedContentRenderer = ({
     onModeChange = (mode: string) => {},
     onThemeChange = (theme: DisplayTheme) => {},
 }: EnhancedContentRendererProps) => {
-    // Detect content type
+
     const contentType = useMemo(() => {
         for (const [type, detector] of Object.entries(CONTENT_TYPES)) {
             if (detector(content)) return type;
@@ -120,23 +127,7 @@ const EnhancedContentRenderer = ({
         onThemeChange?.(newTheme);
     };
 
-    // Memoize markdown components config
-    const markdownComponents = useMemo(
-        () => ({
-            table: ({ node, ...props }) => {
-                const tableData = parseMarkdownTable(content);
-                if (!tableData) return null;
-                return (
-                    <div className="overflow-x-auto my-4">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">{/* Table implementation */}</table>
-                    </div>
-                );
-            },
-            p: ({ node, ...props }) => <p style={{ fontSize: `${fontSize}px` }} className="mb-2" {...props} />,
-        }),
-        [fontSize, content]
-    );
-
+    const themeColors = THEMES[currentTheme];
     const renderContent = () => {
         switch (activeMode) {
             case "raw":
@@ -168,55 +159,44 @@ const EnhancedContentRenderer = ({
                     console.error("Failed to parse content for section cards:", error);
                     return <div className="text-red-500">Failed to parse content</div>;
                 }
+            case "questionnaire":
+                const parsedContent = separatedMarkdownParser(content);
+                return <QuestionnaireRenderer data={parsedContent} theme={currentTheme}/>;
             case "structured":
-                try {
-                    const structuredContent = JSON.parse(content);
-                    return (
-                        <pre className="p-4 whitespace-pre-wrap overflow-y-auto font-mono text-sm">
-                            {JSON.stringify(structuredContent, null, 2)}
-                        </pre>
-                    );
-                } catch {
-                    return <div className="text-red-500">Invalid JSON content</div>;
-                }
+                return <JsonDisplay content={content} parseFunction={separatedMarkdownParser} />;
+
             case "parsedAsJson":
-                try {
-                    const parsedContent = parseMarkdownContent(content);
-                    return (
-                        <pre className="p-4 whitespace-pre-wrap overflow-y-auto font-mono text-sm">
-                            {JSON.stringify(parsedContent, null, 2)}
-                        </pre>
-                    );
-                } catch {
-                    return <div className="text-red-500">Invalid JSON content</div>;
-                }
+                return <JsonDisplay content={content} parseFunction={parseMarkdownContent} />;
             case "rendered":
             default:
                 return (
-                    <div className="flex-1 p-2 overflow-y-auto overflow-x-hidden">
-                        <ReactMarkdown remarkPlugins={[]} components={markdownComponents}>
-                            {content}
-                        </ReactMarkdown>
+                    <div className='flex-1 p-2 overflow-y-auto overflow-x-hidden scrollbar-thin'>
+                        <MarkdownRenderer
+                            content={content}
+                            type='message'
+                            role='assistant'
+                            fontSize={fontSize}
+                        />
                     </div>
                 );
         }
     };
 
     return (
-        <Card className="w-full">
-            <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-2">
+        <Card className="w-full h-screen flex flex-col">
+            {/* Fixed header section */}
+            <div className="flex-none border-b border-gray-200 dark:border-gray-700 p-2">
                 <div className="flex justify-between items-center">
-                    <div className="flex space-x-4">
+                    <div className="flex space-x-1">
                         {availableModes.map(([mode, { icon: Icon, label }]) => (
                             <button
                                 key={mode}
                                 onClick={() => handleModeChange(mode)}
                                 className={`flex items-center space-x-2 px-3 py-1 rounded-md transition-colors
-                  ${
-                      activeMode === mode
-                          ? "bg-gray-200 dark:bg-gray-800 text-neutral-700 dark:text-neutral-300"
-                          : "hover:bg-gray-200 dark:hover:bg-gray-800"
-                  }`}
+                                    ${activeMode === mode
+                                        ? "bg-gray-200 dark:bg-gray-800 text-neutral-700 dark:text-neutral-300"
+                                        : "hover:bg-gray-200 dark:hover:bg-gray-800"
+                                    }`}
                             >
                                 <Icon className="h-4 w-4" />
                                 <span>{label}</span>
@@ -224,7 +204,7 @@ const EnhancedContentRenderer = ({
                         ))}
                     </div>
                     <Select value={currentTheme} onValueChange={handleThemeChange}>
-                        <SelectTrigger className="w-[180px] h-8">
+                        <SelectTrigger className="w-[160px] h-8">
                             <SelectValue placeholder="Select theme" />
                         </SelectTrigger>
                         <SelectContent>
@@ -234,10 +214,14 @@ const EnhancedContentRenderer = ({
                                 </SelectItem>
                             ))}
                         </SelectContent>
-                    </Select>{" "}
+                    </Select>
                 </div>
             </div>
-            <div className="p-4">{renderContent()}</div>
+
+            {/* Scrollable content section */}
+            <div className={`flex-1 overflow-y-auto p-0 ${themeColors.container.background}`}>
+                {renderContent()}
+            </div>
         </Card>
     );
 };

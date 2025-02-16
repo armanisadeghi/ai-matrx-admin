@@ -71,7 +71,7 @@ export function EnhancedResultsPanel({
     ];
 
     const renderContent = () => (
-        <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
+        <div className="h-full">
             <EnhancedContentRenderer
                 content={streamingText}
                 type="message"
@@ -84,6 +84,7 @@ export function EnhancedResultsPanel({
         </div>
     );
 
+    
     if (isCollapsed) {
         return (
             <div className="h-6 flex-none border bg-background">

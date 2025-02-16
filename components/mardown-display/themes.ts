@@ -218,6 +218,11 @@ export const THEMES = {
             title: "text-pink-700 dark:text-pink-300",
             description: "text-pink-600 dark:text-pink-400",
         },
+        link: {
+            background: "bg-pink-50 dark:bg-pink-950",
+            border: "border-pink-200 dark:border-pink-800",
+            text: "text-blue-700 dark:text-blue-300",
+        },
         debug: {
             background: "bg-pink-50 dark:bg-pink-950",
             border: "border-pink-200 dark:border-pink-800",
@@ -1039,4 +1044,3 @@ export const CODE_THEMES = [
     { id: 'vscDarkPlus', name: 'VS Code Dark+' },
   ];
 
-  
