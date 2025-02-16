@@ -9,8 +9,8 @@ import rehypeRaw from 'rehype-raw';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
-import { TableWrapper, CodeBlock, LinkWrapper } from '.';
-import {LanguageKey, SUPPORTED_LANGUAGES } from '@/providers/ShikiProvider';
+import { TableWrapper, LinkWrapper } from '.';
+import CodeBlock from '../mardown-display/CodeBlock';
 
 interface MessageContentDisplayProps {
     content: string;
@@ -33,14 +33,11 @@ const MarkdownComponents = {
         // Get language from match, default to 'typescript' if none specified
         const language = match ? match[1] : 'typescript';
 
-        // Verify the language is supported, fallback to typescript if not
-        const isLanguageSupported = language in SUPPORTED_LANGUAGES;
-        const finalLanguage = isLanguageSupported ? language : 'typescript';
 
         return (
             <CodeBlock
                 code={code}
-                language={finalLanguage as LanguageKey}
+                language={language}
                 inline={false}
                 className={className}
                 {...props}

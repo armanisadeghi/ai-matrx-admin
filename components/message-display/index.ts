@@ -1,6 +1,6 @@
 import LinkWrapper from './blocks/LinkWrapper';
 import TableWrapper from './blocks/TableWrapper';
-import CodeBlock from './blocks/CodeBlock';
+import CodeBlock from '../mardown-display/CodeBlock';
 
 import MessageContentDisplay from './MessageContentDisplay';
 

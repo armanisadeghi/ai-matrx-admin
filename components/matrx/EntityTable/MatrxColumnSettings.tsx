@@ -2,8 +2,9 @@ import React from "react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import MatrxCheckbox from "@/components/matrx/MatrxCheckbox";
 import {MatrxColumnSettingsProps} from "@/types/entityTableTypes";
+import { EntityKeys } from "@/types/entityTypes";
 
-const MatrxColumnSettings: React.FC<MatrxColumnSettingsProps> = (
+const MatrxColumnSettings: React.FC<MatrxColumnSettingsProps<EntityKeys>> = (
     {
         open,
         onOpenChange,

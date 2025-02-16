@@ -17,17 +17,16 @@ import {cn} from "@/styles/themes";
 import TableTopOptions from "@/components/matrx/EntityTable/TableTopOptions";
 import TableBottomSection from "@/components/matrx/EntityTable/TableBottomSection";
 import MatrxColumnSettings from "@/components/matrx/EntityTable/MatrxColumnSettings";
-import {EntityData, EntityKeys} from '@/types/entityTypes';
+import {AllEntityFieldKeys, EntityData, EntityKeys} from '@/types/entityTypes';
 import {EntityCommandContext, EntityCommandName} from "@/components/matrx/MatrxCommands/EntityCommand";
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { selectFieldPrettyName } from '@/lib/redux/schema/globalCacheSelectors';
+import { useAppDispatch } from '@/lib/redux/hooks';
 import {createEntitySelectors} from "@/lib/redux/entity/concepts/paramSelectors";
+import { FieldSelectOption } from '@/lib/redux/entity/utils/direct-schema';
 
 export interface MatrxServerTableProps<TEntity extends EntityKeys> {
-    // Entity Configuration
     entityKey: TEntity;
     data: EntityData<TEntity>[];
-    primaryKey: keyof EntityData<TEntity>;
+    primaryKey: AllEntityFieldKeys;
 
     // Command Configuration
     commands?: {
@@ -62,7 +61,7 @@ export interface MatrxServerTableProps<TEntity extends EntityKeys> {
     onPageSizeChange?: (pageSize: number) => void;
     serverPage?: number;
     serverPageSize?: number;
-    columnHeaders?: Record<string, string>;
+    fieldSelectOptions: FieldSelectOption[];
     displayField?: string;
 
     // Parent Control Props
@@ -74,29 +73,22 @@ export interface MatrxServerTableProps<TEntity extends EntityKeys> {
 
 const generateColumns = <TEntity extends EntityKeys>(
     entityData: EntityData<TEntity>,
-    primaryKey: keyof EntityData<TEntity>,
-    columnHeaders?: Record<string, string>
+    fieldSelectOptions: FieldSelectOption[]
 ): ColumnDef<EntityData<TEntity>>[] => {
     if (!entityData) return [];
 
-    return Object.keys(entityData).map((key) => {
-        if (key === 'actions') {
-            return {
-                id: 'actions',
-                header: columnHeaders?.['actions'] || 'Actions',
-                cell: () => null,
-                enableSorting: false, // Disable sorting for actions column
-            } as ColumnDef<EntityData<TEntity>>;
-        }
+    const columnHeadersMap = Object.fromEntries(fieldSelectOptions.map(({ value, label }) => [value, label]));
 
-        return {
-            id: key,
-            header: columnHeaders?.[key] || key.charAt(0).toUpperCase() + key.slice(1),
-            accessorFn: (row: EntityData<TEntity>) => row[key as keyof EntityData<TEntity>],
-            enableSorting: true, // Enable sorting for data columns
-        } as ColumnDef<EntityData<TEntity>>;
-    });
+    return Object.keys(entityData).map((key) => ({
+        id: key,
+        header: columnHeadersMap[key] || key,
+        accessorFn: key === 'actions' ? undefined : (row: EntityData<TEntity>) => row[key as AllEntityFieldKeys],
+        cell: key === 'actions' ? () => null : undefined,
+        enableSorting: key !== 'actions',
+    })) as ColumnDef<EntityData<TEntity>>[];
 };
+
+
 const getColumnId = <TEntity extends EntityKeys>(
     column: ColumnDef<EntityData<TEntity>>
 ): string => {
@@ -133,15 +125,13 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
         onPageSizeChange,
         serverPage = 1,
         serverPageSize = 10,
-        columnHeaders = {},
+        fieldSelectOptions,
         displayField,
         useParentModal = false,
         useParentRowHandling = false,
         useParentFormState = false,
     }: MatrxServerTableProps<TEntity>) => {
 
-    const dispatch = useAppDispatch();
-    const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
 
     const allData = useMemo(() => {
         return data.map((row, index) => ({
@@ -152,26 +142,20 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
         }));
     }, [data, primaryKey, displayField]);
 
-    // Dynamically generate column definitions based on data keys
     const allColumns = useMemo(() => {
         if (allData.length === 0) return [];
-        const entityData = allData[0];
-        return generateColumns(entityData, primaryKey, columnHeaders);
-    }, [allData, primaryKey, columnHeaders]);
-
-    // Use pretty names for column names when available
-    const allColumnNames = useMemo(() =>
-            allColumns.map((col) => {
-                const columnId = getColumnId(col);
-                return columnHeaders[columnId] || (typeof col.header === 'string' ? col.header : '');
-            }),
-        [allColumns, columnHeaders]
+        return generateColumns(allData[0], fieldSelectOptions);
+    }, [allData, fieldSelectOptions]);
+    
+    const allColumnNames = useMemo(
+        () => allColumns.map((col) => (typeof col.header === 'string' ? col.header : '')),
+        [allColumns]
     );
-
+    
     const [visibleColumnAccessors, setVisibleColumnAccessors] = useState<string[]>(
         defaultVisibleColumns.length > 0 ? defaultVisibleColumns : allColumnNames
     );
-
+    
     const [columnSettingsOpen, setColumnSettingsOpen] = useState(false);
 
     const handleCommandExecute = async (
@@ -278,8 +262,6 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
                         entityKey,
                         data: {} as EntityData<TEntity>,
                         index: -1,
-                        dispatch,
-                        selectors,
                     });
                 }}
                 setColumnSettingsOpen={setColumnSettingsOpen}
@@ -329,7 +311,7 @@ const MatrxServerTable = <TEntity extends EntityKeys>(
                 columns={allColumns}
                 visibleColumns={visibleColumnAccessors}
                 setVisibleColumns={setVisibleColumnAccessors}
-                columnHeaders={columnHeaders}
+                columnHeaders={allColumnNames}
             />
         </div>
     );

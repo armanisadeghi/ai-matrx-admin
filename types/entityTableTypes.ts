@@ -11,7 +11,7 @@ import React from "react";
 import {FlexibleId} from '@/types/FlexibleId';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
 import {ActionContext} from '@/components/matrx/EntityTable/EnhancedAction/EntityMatrxActions';
-
+import { FieldSelectOption } from '@/lib/redux/entity/utils/direct-schema';
 // Base Types - Keeping original TableData for backward compatibility
 export interface TableData {
     id?: FlexibleId;
@@ -35,6 +35,7 @@ export interface MatrxServerTableProps<TEntity extends EntityKeys> {
     onPageSizeChange?: (pageSize: number) => void;
     serverPage?: number;
     serverPageSize?: number;
+    fieldSelectOptions: FieldSelectOption[];
     columnHeaders?: Record<string, string>; // Add this to support pretty names
     displayField?: string; // Add this to support display field
 }

@@ -54,7 +54,7 @@ export const appletDefinitions: AppletDefinition[] = [
         key: "recipes",
         title: "Recipes",
         description: "Create and share automation recipes",
-        icon: <BookOpen size={24} />,
+        icon: <BookOpen size={36} />,
         category: "Automation",
         link: "/applets/recipes",
         features: ["Recipe Creation", "Template Library", "Sharing Options"]
@@ -252,7 +252,7 @@ export const appletDefinitions: AppletDefinition[] = [
         key: "flashcards",
         title: "Flashcards",
         description: "Create and study flashcards",
-        icon: <Layers size={24} />, // Changed from Cards to Layers
+        icon: <Layers size={24} />,
         category: "Education",
         link: "/applets/flashcards",
         features: ["Card Creation", "Study Sessions", "Progress Tracking"]

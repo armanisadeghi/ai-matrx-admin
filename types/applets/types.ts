@@ -142,7 +142,7 @@ export interface AppletConfig {
         description?: string;
     }>;
     sections?: AppletSection[];
-    entities?: EntityKeys[];  // Should be strictly typed
+    entities?: EntityKeys[];
     displayName?: string;
     beta?: boolean;
     comingSoon?: boolean;

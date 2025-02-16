@@ -12,7 +12,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { InitialReduxState } from '@/types/reduxTypes';
 import { SocketProvider } from '@/providers/SocketProvider';
 import { RefProvider } from '@/lib/refs';
-import { ShikiProvider } from '@/providers/ShikiProvider';
+// import { ShikiProvider } from '@/providers/ShikiProvider';
 import { RecoilRoot } from 'recoil';
 import { ToastProvider } from '@/providers';
 import { AudioModalProvider } from '@/providers/AudioModalProvider';
@@ -68,9 +68,9 @@ export function Providers({ children, initialReduxState }: { children: React.Rea
                                                                         <TooltipProvider delayDuration={200}>
                                                                             <AudioModalProvider>
                                                                                 <ModuleHeaderProvider>
-                                                                                    <ShikiProvider initialLanguages={['typescript', 'javascript']}>
+                                                                                    {/* <ShikiProvider initialLanguages={['typescript', 'javascript']}> */}
                                                                                         {children}
-                                                                                    </ShikiProvider>
+                                                                                    {/* </ShikiProvider> */}
                                                                                 </ModuleHeaderProvider>
                                                                                 <Toaster />
                                                                             </AudioModalProvider>

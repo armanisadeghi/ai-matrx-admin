@@ -13,7 +13,17 @@ import {
     IconWand
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { ToolSection } from "@/types/applets/types";
+
+interface ToolSection {
+    id: string;
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    link: string;
+    category: string;
+    count?: number;
+    badge?: string;
+}
 
 export default function ToolsAppletPage() {
     const toolSections: ToolSection[] = [

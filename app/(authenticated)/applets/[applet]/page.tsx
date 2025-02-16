@@ -1,19 +1,21 @@
 // app/(authenticated)/applets/[applet]/page.tsx
 import { notFound } from 'next/navigation';
-import { AppletConfig, AppletLayoutType } from '@/types/applets/applet-config';
 
 // Import all layouts
 import { ToolsLayout } from "@/components/applet/applets/layouts/ToolsLayout";
 import { ConversationalLayout } from "@/components/applet/applets/layouts/ConversationalLayout";
-import {appletConfigs} from "@/config/applets/index";
-import {ListLayout} from "@/components/applet/applets/layouts/ListLayout";
-import {GridLayout} from "@/components/applet/applets/layouts/GridLayout";
-import {DashboardLayout} from "@/components/applet/applets/layouts/DashboardLayout";
+import { appletConfigs } from "@/config/applets/index";
+import { ListLayout } from "@/components/applet/applets/layouts/ListLayout";
+import { GridLayout } from "@/components/applet/applets/layouts/GridLayout";
+import { DashboardLayout } from "@/components/applet/applets/layouts/DashboardLayout";
+import { AppletConfig, AppletLayoutType } from '@/types/applets/types';
+
+interface AppletPageParams {
+    applet: string;
+}
 
 interface AppletPageProps {
-    params: {
-        applet: string;
-    };
+    params: Promise<AppletPageParams>;
 }
 
 const layouts: Record<AppletLayoutType, React.ComponentType<{ config: AppletConfig }>> = {
@@ -24,8 +26,11 @@ const layouts: Record<AppletLayoutType, React.ComponentType<{ config: AppletConf
     listLayout: ListLayout,
 };
 
-export default function AppletPage({ params }: AppletPageProps) {
-    const config = appletConfigs[params.applet];
+export default async function AppletPage({ params }: AppletPageProps) {
+    const { applet } = await params;
+    console.log("applet", applet);
+    const config = appletConfigs[applet];
+    console.log("config", config);
 
     if (!config) {
         notFound();

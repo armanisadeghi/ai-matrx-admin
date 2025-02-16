@@ -253,6 +253,12 @@ export const getEntitySelectOptions = (): EntitySelectOption[] => {
     }));
 };
 
+export const getEntityPrettyFields = (entityKey: EntityKeys): PrettyFieldName<EntityKeys, FieldKeys>[] => {
+    const fieldMappings = getFieldNameToCanonical()[entityKey];
+    const fieldKeys = Object.values(fieldMappings) as FieldKeys[];
+    return fieldKeys.map((fieldKey) => toPrettyFieldName(entityKey, fieldKey) as PrettyFieldName<EntityKeys, FieldKeys>);
+};
+
 export const getFieldSelectOptions = (entityKey: EntityKeys): FieldSelectOption[] => {
     const fieldMappings = getFieldNameToCanonical()[entityKey];
     const fieldKeys = Object.values(fieldMappings) as FieldKeys[];

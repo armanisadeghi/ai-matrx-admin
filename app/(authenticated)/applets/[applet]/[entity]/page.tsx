@@ -5,17 +5,21 @@ import {notFound} from 'next/navigation';
 import {EntityKeys} from "@/types/entityTypes";
 import EntityTable from '@/components/applet/entity/EntityTable';
 
-
-interface EntityPageProps {
-    params: {
-        applet: string;
-        entity: EntityKeys;
-    };
+interface EntityPageParams {
+    applet: string;
+    entity: EntityKeys;
 }
 
-export default function EntityPage({params}: EntityPageProps) {
-    if (params.applet === 'tools') {
-        const entityConfig = toolEntities.find(e => e.id === params.entity);
+interface EntityPageProps {
+    params: Promise<EntityPageParams>;
+}
+
+export default async function EntityPage({params}: EntityPageProps) {
+    // Await the params since they're now a Promise
+    const { applet, entity } = await params;
+    
+    if (applet === 'tools') {
+        const entityConfig = toolEntities.find(e => e.id === entity);
 
         if (!entityConfig) {
             return notFound();

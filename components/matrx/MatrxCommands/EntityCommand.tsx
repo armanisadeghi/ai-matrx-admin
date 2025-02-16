@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import {useCallback} from "react";
-import {EntityKeys, EntityData} from "@/types/entityTypes";
+import {EntityKeys, EntityData, MatrxRecordId} from "@/types/entityTypes";
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
 import {useAppDispatch, useAppSelector} from '@/lib/redux/hooks';
 import {Button} from "@/components/ui/button";
@@ -23,14 +23,14 @@ import {
 import {showConfirmDialog, showErrorToast} from "@/components/matrx/MatrxCommands/helpers";
 import {cn} from '@/lib/utils';
 import {AppDispatch} from "@/lib/redux/store";
-import {EntityState} from "@/lib/redux/entity/types/stateTypes";
-// import {createEntityActions} from '@/lib/redux/entity/entityActionCreator';
+import { useEntityTools } from "@/lib/redux";
 
 // Entity-specific command context
 export interface EntityCommandContext<TEntity extends EntityKeys> extends TableCommandContext {
     entityKey: TEntity;
     data: EntityData<TEntity>;
-    selectors: EntityState<TEntity>;
+    matrxRecordId: MatrxRecordId;
+    selectors: ReturnType<typeof createEntitySelectors>;
     index: number;
     dispatch: AppDispatch;
 }
@@ -74,12 +74,12 @@ export function createEntityCommand<TEntity extends EntityKeys>(
             scope: config.scope,
             entityKey: config.entityKey,
             data,
-            selectors,
             index,
+            selectors,
             dispatch
         };
 
-        const loading = useAppSelector(selectors.selectLoading);
+        const loading = useAppSelector(selectors.selectIsLoading);
         const isVisible = config.isVisible?.(context) ?? true;
         const isEnabled = !loading && (config.isEnabled?.(context) ?? true);
 
@@ -445,19 +445,19 @@ export function EntityCommandGroup<TEntity extends EntityKeys>(
     const dispatch = useAppDispatch();
     const {toast} = useToast();
 
-    const entitySelectors = createEntitySelectors(entityKey);
-    const entityActions = createEntityActions(entityKey);
+    
+    const {selectors, actions} = useEntityTools(entityKey);
 
-    const activeItem = useAppSelector(entitySelectors.selectSelectedItem);
-    const loading = useAppSelector(entitySelectors.selectLoading);
+    const activeItem = useAppSelector(selectors.selectActiveRecord);
+    const loading = useAppSelector(selectors.selectIsLoading);
 
     const handleSetActiveItem = useCallback((index: number) => {
         if (onSetActiveItem) {
             onSetActiveItem(index);
         } else {
-            dispatch(entityActions.setSelectedItem({index}));
+            dispatch(actions.setActiveRecord(index.toString()));
         }
-    }, [dispatch, entityActions, onSetActiveItem]);
+    }, [dispatch, actions, onSetActiveItem]);
 
     const getCommandConfig = (actionName: EntityCommandName): SimpleCommandConfig & {
         hidden?: boolean;
