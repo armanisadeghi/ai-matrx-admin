@@ -9,7 +9,7 @@ import { useToastManager } from "@/hooks/useToastManager";
 import { THEMES } from "./themes";
 
 const MarkdownTable = ({ data, className = "", fontSize = 16, theme = "professional" }: MarkdownTableProps) => {
-    const tableFontsize = fontSize + 6;
+    const tableFontsize = fontSize + 4;
     const toast = useToastManager();
     const tableTheme = THEMES[theme].table || THEMES.professional.table;
 
