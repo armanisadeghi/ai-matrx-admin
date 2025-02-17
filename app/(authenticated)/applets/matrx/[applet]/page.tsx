@@ -28,10 +28,10 @@ const layouts: Record<AppletLayoutType, React.ComponentType<{ config: AppletConf
 
 export default async function AppletPage({ params }: AppletPageProps) {
     const { applet } = await params;
-    console.log("applet", applet);
-    const config = appletConfigs[applet];
-    console.log("config", config);
 
+    const config = appletConfigs[applet];
+
+    
     if (!config) {
         notFound();
     }

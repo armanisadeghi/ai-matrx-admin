@@ -1,30 +1,4 @@
 {
-    "brokerValue": {
-        "selfReferential": [],
-        "manyToMany": ["dataBroker"],
-        "oneToOne": [],
-        "manyToOne": [],
-        "oneToMany": [],
-        "undefined": [],
-        "inverseReferences": [],
-        "relationshipDetails": {
-            "entityName": "brokerValue",
-            "table_name": "broker_value",
-            "foreignKeys": {
-                "dataBroker": {
-                    "foreign_table": "data_broker",
-                    "foreign_entity": "dataBroker",
-                    "column": "data_broker",
-                    "fieldName": "dataBroker",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "relationship_type": "many-to-many",
-                    "constraint_name": "broker_value_data_broker_fkey"
-                }
-            },
-            "referencedBy": {}
-        }
-    },
     "aiModelEndpoint": {
         "selfReferential": [],
         "manyToMany": ["aiEndpoint", "aiModel"],
@@ -56,32 +30,6 @@
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
                     "constraint_name": "ai_model_endpoint_ai_model_id_fkey"
-                }
-            },
-            "referencedBy": {}
-        }
-    },
-    "flashcardHistory": {
-        "selfReferential": [],
-        "manyToMany": ["flashcardData"],
-        "oneToOne": [],
-        "manyToOne": [],
-        "oneToMany": [],
-        "undefined": [],
-        "inverseReferences": [],
-        "relationshipDetails": {
-            "entityName": "flashcardHistory",
-            "table_name": "flashcard_history",
-            "foreignKeys": {
-                "flashcardData": {
-                    "foreign_table": "flashcard_data",
-                    "foreign_entity": "flashcardData",
-                    "column": "flashcard_id",
-                    "fieldName": "flashcardId",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "relationship_type": "many-to-many",
-                    "constraint_name": "flashcard_history_flashcard_id_fkey"
                 }
             },
             "referencedBy": {}
@@ -128,6 +76,58 @@
                     "constraint_name": "data_broker_default_component_fkey"
                 }
             }
+        }
+    },
+    "brokerValue": {
+        "selfReferential": [],
+        "manyToMany": ["dataBroker"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "brokerValue",
+            "table_name": "broker_value",
+            "foreignKeys": {
+                "dataBroker": {
+                    "foreign_table": "data_broker",
+                    "foreign_entity": "dataBroker",
+                    "column": "data_broker",
+                    "fieldName": "dataBroker",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "broker_value_data_broker_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
+    "flashcardHistory": {
+        "selfReferential": [],
+        "manyToMany": ["flashcardData"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "flashcardHistory",
+            "table_name": "flashcard_history",
+            "foreignKeys": {
+                "flashcardData": {
+                    "foreign_table": "flashcard_data",
+                    "foreign_entity": "flashcardData",
+                    "column": "flashcard_id",
+                    "fieldName": "flashcardId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "flashcard_history_flashcard_id_fkey"
+                }
+            },
+            "referencedBy": {}
         }
     },
     "compiledRecipe": {
@@ -435,6 +435,32 @@
             }
         }
     },
+    "applet": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": ["recipe"],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "applet",
+            "table_name": "applet",
+            "foreignKeys": {
+                "recipe": {
+                    "foreign_table": "recipe",
+                    "foreign_entity": "recipe",
+                    "column": "recipe_id",
+                    "fieldName": "recipeId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-one",
+                    "constraint_name": "applet_recipe_id_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
     "flashcardData": {
         "selfReferential": [],
         "manyToMany": [],
@@ -549,7 +575,7 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
-                    "constraint_name": "recipe_processors_processor_fkey"
+                    "constraint_name": "recipe_processor_processor_fkey"
                 },
                 "recipe": {
                     "foreign_table": "recipe",
@@ -559,7 +585,7 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
-                    "constraint_name": "recipe_processors_recipe_fkey"
+                    "constraint_name": "recipe_processor_recipe_fkey"
                 }
             },
             "referencedBy": {}
@@ -965,6 +991,7 @@
         "inverseReferences": [
             "compiledRecipe",
             "aiAgent",
+            "applet",
             "recipeDisplay",
             "recipeProcessor",
             "recipeModel",
@@ -996,6 +1023,15 @@
                     "foreign_column": "id",
                     "constraint_name": "ai_agent_recipe_id_fkey"
                 },
+                "applet": {
+                    "foreign_table": "applet",
+                    "foreign_entity": "applet",
+                    "field": "recipeId",
+                    "column": "recipe_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "applet_recipe_id_fkey"
+                },
                 "recipeDisplay": {
                     "foreign_table": "recipe_display",
                     "foreign_entity": "recipeDisplay",
@@ -1012,7 +1048,7 @@
                     "column": "recipe",
                     "foreign_field": "id",
                     "foreign_column": "id",
-                    "constraint_name": "recipe_processors_recipe_fkey"
+                    "constraint_name": "recipe_processor_recipe_fkey"
                 },
                 "recipeModel": {
                     "foreign_table": "recipe_model",
@@ -1039,7 +1075,7 @@
                     "column": "recipe",
                     "foreign_field": "id",
                     "foreign_column": "id",
-                    "constraint_name": "recipe_tools_recipe_fkey"
+                    "constraint_name": "recipe_tool_recipe_fkey"
                 },
                 "recipeFunction": {
                     "foreign_table": "recipe_function",
@@ -1210,7 +1246,7 @@
                     "column": "tool",
                     "foreign_field": "id",
                     "foreign_column": "id",
-                    "constraint_name": "recipe_tools_tool_fkey"
+                    "constraint_name": "recipe_tool_tool_fkey"
                 }
             }
         }
@@ -1447,7 +1483,7 @@
                     "column": "processor",
                     "foreign_field": "id",
                     "foreign_column": "id",
-                    "constraint_name": "recipe_processors_processor_fkey"
+                    "constraint_name": "recipe_processor_processor_fkey"
                 }
             }
         }
@@ -1523,7 +1559,7 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
-                    "constraint_name": "recipe_tools_recipe_fkey"
+                    "constraint_name": "recipe_tool_recipe_fkey"
                 },
                 "tool": {
                     "foreign_table": "tool",
@@ -1533,7 +1569,7 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
-                    "constraint_name": "recipe_tools_tool_fkey"
+                    "constraint_name": "recipe_tool_tool_fkey"
                 }
             },
             "referencedBy": {}
@@ -1690,6 +1726,57 @@
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
                     "constraint_name": "recipe_message_recipe_id_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
+    "category": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["subcategory"],
+        "relationshipDetails": {
+            "entityName": "category",
+            "table_name": "category",
+            "foreignKeys": {},
+            "referencedBy": {
+                "subcategory": {
+                    "foreign_table": "subcategory",
+                    "foreign_entity": "subcategory",
+                    "field": "categoryId",
+                    "column": "category_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "subcategory_category_id_fkey"
+                }
+            }
+        }
+    },
+    "subcategory": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": ["category"],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "subcategory",
+            "table_name": "subcategory",
+            "foreignKeys": {
+                "category": {
+                    "foreign_table": "category",
+                    "foreign_entity": "category",
+                    "column": "category_id",
+                    "fieldName": "categoryId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-one",
+                    "constraint_name": "subcategory_category_id_fkey"
                 }
             },
             "referencedBy": {}

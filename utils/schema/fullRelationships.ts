@@ -1,123 +1,59 @@
+import { AnyEntityDatabaseTable, EntityKeys } from "@/types";
 
-    
-    import { AnyEntityDatabaseTable, EntityKeys } from "@/types";
-    
-    export type EntityRelationshipType =
-        | "self-referential"
-        | "one-to-one"
-        | "one-to-many"
-        | "many-to-one"
-        | "many-to-many";
-    
-    export type ForeignKeyDetails = {
-        foreignTable: AnyEntityDatabaseTable;
-        foreignEntity: EntityKeys;
-        column: string;
-        fieldName: string;
-        foreignField: string;
-        foreignColumn: string;
-        relationshipType: EntityRelationshipType;
-        constraintName: string;
-    };
-    
-    export type ReferencedByDetails = {
-        foreignTable: AnyEntityDatabaseTable;
-        foreignEntity: EntityKeys;
-        field: string;
-        column: string;
-        foreignField: string;
-        foreignColumn: string;
-        constraintName: string;
-    };
-    
-    export type RelationshipDetails = {
-        entityName: EntityKeys;
-        tableName: AnyEntityDatabaseTable;
-        foreignKeys: Partial<Record<EntityKeys, ForeignKeyDetails>> | Record<string, never>;
-        referencedBy: Partial<Record<EntityKeys, ReferencedByDetails>> | Record<string, never>;
-    };
-    
-    export type FullEntityRelationships = {
-        selfReferential: EntityKeys[];
-        manyToMany: EntityKeys[];
-        oneToOne: EntityKeys[];
-        manyToOne: EntityKeys[];
-        oneToMany: EntityKeys[];
-        undefined: EntityKeys[];
-        inverseReferences: EntityKeys[];
-        relationshipDetails: RelationshipDetails;
-    };
-    
-    export const asEntityRelationships = (data: any): Record<EntityKeys, FullEntityRelationships> => {
-        return data as Record<EntityKeys, FullEntityRelationships>;
-    };
-    
-    export const entityRelationships = {
-    brokerValue: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "dataBroker"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
-        relationshipDetails: {
-            entityName: "brokerValue",
-            tableName: "broker_value",
-            foreignKeys: {
-                dataBroker: {
-                    foreignTable: "data_broker",
-                    foreignEntity: "dataBroker",
-                    column: "data_broker",
-                    fieldName: "dataBroker",
-                    foreignField: "id",
-                    foreignColumn: "id",
-                    relationshipType: "many-to-many",
-                    constraintName: "broker_value_data_broker_fkey"
-                }
-            },
-            referencedBy: {
-                
-            }
-        }
-    },
+export type EntityRelationshipType = "self-referential" | "one-to-one" | "one-to-many" | "many-to-one" | "many-to-many";
+
+export type ForeignKeyDetails = {
+    foreignTable: AnyEntityDatabaseTable;
+    foreignEntity: EntityKeys;
+    column: string;
+    fieldName: string;
+    foreignField: string;
+    foreignColumn: string;
+    relationshipType: EntityRelationshipType;
+    constraintName: string;
+};
+
+export type ReferencedByDetails = {
+    foreignTable: AnyEntityDatabaseTable;
+    foreignEntity: EntityKeys;
+    field: string;
+    column: string;
+    foreignField: string;
+    foreignColumn: string;
+    constraintName: string;
+};
+
+export type RelationshipDetails = {
+    entityName: EntityKeys;
+    tableName: AnyEntityDatabaseTable;
+    foreignKeys: Partial<Record<EntityKeys, ForeignKeyDetails>> | Record<string, never>;
+    referencedBy: Partial<Record<EntityKeys, ReferencedByDetails>> | Record<string, never>;
+};
+
+export type FullEntityRelationships = {
+    selfReferential: EntityKeys[];
+    manyToMany: EntityKeys[];
+    oneToOne: EntityKeys[];
+    manyToOne: EntityKeys[];
+    oneToMany: EntityKeys[];
+    undefined: EntityKeys[];
+    inverseReferences: EntityKeys[];
+    relationshipDetails: RelationshipDetails;
+};
+
+export const asEntityRelationships = (data: any): Record<EntityKeys, FullEntityRelationships> => {
+    return data as Record<EntityKeys, FullEntityRelationships>;
+};
+
+export const entityRelationships = {
     aiModelEndpoint: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "aiEndpoint",
-            "aiModel"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["aiEndpoint", "aiModel"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "aiModelEndpoint",
             tableName: "ai_model_endpoint",
@@ -130,7 +66,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "ai_model_endpoint_ai_endpoint_id_fkey"
+                    constraintName: "ai_model_endpoint_ai_endpoint_id_fkey",
                 },
                 aiModel: {
                     foreignTable: "ai_model",
@@ -140,36 +76,89 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "ai_model_endpoint_ai_model_id_fkey"
-                }
+                    constraintName: "ai_model_endpoint_ai_model_id_fkey",
+                },
             },
+            referencedBy: {},
+        },
+    },
+    dataInputComponent: {
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["messageBroker", "broker", "dataBroker"],
+        relationshipDetails: {
+            entityName: "dataInputComponent",
+            tableName: "data_input_component",
+            foreignKeys: {},
             referencedBy: {
-                
-            }
-        }
+                messageBroker: {
+                    foreignTable: "message_broker",
+                    foreignEntity: "messageBroker",
+                    field: "defaultComponent",
+                    column: "default_component",
+                    foreignField: "id",
+                    foreignColumn: "id",
+                    constraintName: "message_broker_default_component_fkey",
+                },
+                broker: {
+                    foreignTable: "broker",
+                    foreignEntity: "broker",
+                    field: "customSourceComponent",
+                    column: "custom_source_component",
+                    foreignField: "id",
+                    foreignColumn: "id",
+                    constraintName: "broker_custom_component_fkey",
+                },
+                dataBroker: {
+                    foreignTable: "data_broker",
+                    foreignEntity: "dataBroker",
+                    field: "inputComponent",
+                    column: "input_component",
+                    foreignField: "id",
+                    foreignColumn: "id",
+                    constraintName: "data_broker_default_component_fkey",
+                },
+            },
+        },
+    },
+    brokerValue: {
+        selfReferential: [],
+        manyToMany: ["dataBroker"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
+        relationshipDetails: {
+            entityName: "brokerValue",
+            tableName: "broker_value",
+            foreignKeys: {
+                dataBroker: {
+                    foreignTable: "data_broker",
+                    foreignEntity: "dataBroker",
+                    column: "data_broker",
+                    fieldName: "dataBroker",
+                    foreignField: "id",
+                    foreignColumn: "id",
+                    relationshipType: "many-to-many",
+                    constraintName: "broker_value_data_broker_fkey",
+                },
+            },
+            referencedBy: {},
+        },
     },
     flashcardHistory: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "flashcardData"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["flashcardData"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "flashcardHistory",
             tableName: "flashcard_history",
@@ -182,97 +171,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "flashcard_history_flashcard_id_fkey"
-                }
-            },
-            referencedBy: {
-                
-            }
-        }
-    },
-    dataInputComponent: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "messageBroker",
-            "broker",
-            "dataBroker"
-        ],
-        relationshipDetails: {
-            entityName: "dataInputComponent",
-            tableName: "data_input_component",
-            foreignKeys: {
-                
-            },
-            referencedBy: {
-                messageBroker: {
-                    foreignTable: "message_broker",
-                    foreignEntity: "messageBroker",
-                    field: "defaultComponent",
-                    column: "default_component",
-                    foreignField: "id",
-                    foreignColumn: "id",
-                    constraintName: "message_broker_default_component_fkey"
+                    constraintName: "flashcard_history_flashcard_id_fkey",
                 },
-                broker: {
-                    foreignTable: "broker",
-                    foreignEntity: "broker",
-                    field: "customSourceComponent",
-                    column: "custom_source_component",
-                    foreignField: "id",
-                    foreignColumn: "id",
-                    constraintName: "broker_custom_component_fkey"
-                },
-                dataBroker: {
-                    foreignTable: "data_broker",
-                    foreignEntity: "dataBroker",
-                    field: "inputComponent",
-                    column: "input_component",
-                    foreignField: "id",
-                    foreignColumn: "id",
-                    constraintName: "data_broker_default_component_fkey"
-                }
-            }
-        }
+            },
+            referencedBy: {},
+        },
     },
     compiledRecipe: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "recipe"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["recipe"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "compiledRecipe",
             tableName: "compiled_recipe",
@@ -285,42 +197,24 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "compiled_recipe_recipe_id_fkey"
-                }
+                    constraintName: "compiled_recipe_recipe_id_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     flashcardSets: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "flashcardSetRelations"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["flashcardSetRelations"],
         relationshipDetails: {
             entityName: "flashcardSets",
             tableName: "flashcard_sets",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 flashcardSetRelations: {
                     foreignTable: "flashcard_set_relations",
@@ -329,67 +223,34 @@
                     column: "set_id",
                     foreignField: "setId",
                     foreignColumn: "set_id",
-                    constraintName: "flashcard_set_relations_set_id_fkey"
-                }
-            }
-        }
+                    constraintName: "flashcard_set_relations_set_id_fkey",
+                },
+            },
+        },
     },
     emails: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "emails",
             tableName: "emails",
-            foreignKeys: {
-                
-            },
-            referencedBy: {
-                
-            }
-        }
+            foreignKeys: {},
+            referencedBy: {},
+        },
     },
     flashcardSetRelations: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "flashcardData",
-            "flashcardSets"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["flashcardData", "flashcardSets"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "flashcardSetRelations",
             tableName: "flashcard_set_relations",
@@ -402,7 +263,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "flashcard_set_relations_flashcard_id_fkey"
+                    constraintName: "flashcard_set_relations_flashcard_id_fkey",
                 },
                 flashcardSets: {
                     foreignTable: "flashcard_sets",
@@ -412,42 +273,24 @@
                     foreignField: "setId",
                     foreignColumn: "set_id",
                     relationshipType: "many-to-many",
-                    constraintName: "flashcard_set_relations_set_id_fkey"
-                }
+                    constraintName: "flashcard_set_relations_set_id_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     wcImpairmentDefinition: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "wcInjury"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["wcInjury"],
         relationshipDetails: {
             entityName: "wcImpairmentDefinition",
             tableName: "wc_impairment_definition",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 wcInjury: {
                     foreignTable: "wc_injury",
@@ -456,33 +299,19 @@
                     column: "impairment_definition_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "wc_injury_impairment_definition_id_fkey"
-                }
-            }
-        }
+                    constraintName: "wc_injury_impairment_definition_id_fkey",
+                },
+            },
+        },
     },
     flashcardImages: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            "flashcardData"
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["flashcardData"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "flashcardImages",
             tableName: "flashcard_images",
@@ -495,37 +324,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-one",
-                    constraintName: "flashcard_images_flashcard_id_fkey"
-                }
+                    constraintName: "flashcard_images_flashcard_id_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     aiAgent: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "aiSettings",
-            "recipe"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["aiSettings", "recipe"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "aiAgent",
             tableName: "ai_agent",
@@ -538,7 +350,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "ai_agent_ai_settings_id_fkey"
+                    constraintName: "ai_agent_ai_settings_id_fkey",
                 },
                 recipe: {
                     foreignTable: "recipe",
@@ -548,38 +360,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "ai_agent_recipe_id_fkey"
-                }
+                    constraintName: "ai_agent_recipe_id_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     aiSettings: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "aiEndpoint",
-            "aiModel",
-            "aiProvider"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "aiAgent"
-        ],
+        selfReferential: [],
+        manyToMany: ["aiEndpoint", "aiModel", "aiProvider"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["aiAgent"],
         relationshipDetails: {
             entityName: "aiSettings",
             tableName: "ai_settings",
@@ -592,7 +386,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "ai_settings_ai_endpoint_fkey"
+                    constraintName: "ai_settings_ai_endpoint_fkey",
                 },
                 aiModel: {
                     foreignTable: "ai_model",
@@ -602,7 +396,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "ai_settings_ai_model_fkey"
+                    constraintName: "ai_settings_ai_model_fkey",
                 },
                 aiProvider: {
                     foreignTable: "ai_provider",
@@ -612,8 +406,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "ai_settings_ai_provider_fkey"
-                }
+                    constraintName: "ai_settings_ai_provider_fkey",
+                },
             },
             referencedBy: {
                 aiAgent: {
@@ -623,33 +417,19 @@
                     column: "ai_settings_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "ai_agent_ai_settings_id_fkey"
-                }
-            }
-        }
+                    constraintName: "ai_agent_ai_settings_id_fkey",
+                },
+            },
+        },
     },
     audioRecording: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "audioLabel"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["audioLabel"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "audioRecording",
             tableName: "audio_recording",
@@ -662,43 +442,24 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "audio_recording_label_fkey"
-                }
+                    constraintName: "audio_recording_label_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     messageTemplate: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "messageBroker",
-            "recipeMessage"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["messageBroker", "recipeMessage"],
         relationshipDetails: {
             entityName: "messageTemplate",
             tableName: "message_template",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 messageBroker: {
                     foreignTable: "message_broker",
@@ -707,7 +468,7 @@
                     column: "message_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "message_broker_message_id_fkey"
+                    constraintName: "message_broker_message_id_fkey",
                 },
                 recipeMessage: {
                     foreignTable: "recipe_message",
@@ -716,41 +477,49 @@
                     column: "message_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_message_message_id_fkey"
-                }
-            }
-        }
+                    constraintName: "recipe_message_message_id_fkey",
+                },
+            },
+        },
+    },
+    applet: {
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["recipe"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
+        relationshipDetails: {
+            entityName: "applet",
+            tableName: "applet",
+            foreignKeys: {
+                recipe: {
+                    foreignTable: "recipe",
+                    foreignEntity: "recipe",
+                    column: "recipe_id",
+                    fieldName: "recipeId",
+                    foreignField: "id",
+                    foreignColumn: "id",
+                    relationshipType: "many-to-one",
+                    constraintName: "applet_recipe_id_fkey",
+                },
+            },
+            referencedBy: {},
+        },
     },
     flashcardData: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "flashcardHistory",
-            "flashcardSetRelations",
-            "flashcardImages"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["flashcardHistory", "flashcardSetRelations", "flashcardImages"],
         relationshipDetails: {
             entityName: "flashcardData",
             tableName: "flashcard_data",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 flashcardHistory: {
                     foreignTable: "flashcard_history",
@@ -759,7 +528,7 @@
                     column: "flashcard_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "flashcard_history_flashcard_id_fkey"
+                    constraintName: "flashcard_history_flashcard_id_fkey",
                 },
                 flashcardSetRelations: {
                     foreignTable: "flashcard_set_relations",
@@ -768,7 +537,7 @@
                     column: "flashcard_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "flashcard_set_relations_flashcard_id_fkey"
+                    constraintName: "flashcard_set_relations_flashcard_id_fkey",
                 },
                 flashcardImages: {
                     foreignTable: "flashcard_images",
@@ -777,67 +546,34 @@
                     column: "flashcard_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "flashcard_images_flashcard_id_fkey"
-                }
-            }
-        }
+                    constraintName: "flashcard_images_flashcard_id_fkey",
+                },
+            },
+        },
     },
     audioRecordingUsers: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "audioRecordingUsers",
             tableName: "audio_recording_users",
-            foreignKeys: {
-                
-            },
-            referencedBy: {
-                
-            }
-        }
+            foreignKeys: {},
+            referencedBy: {},
+        },
     },
     recipeDisplay: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "displayOption",
-            "recipe"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["displayOption", "recipe"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "recipeDisplay",
             tableName: "recipe_display",
@@ -850,7 +586,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_display_display_fkey"
+                    constraintName: "recipe_display_display_fkey",
                 },
                 recipe: {
                     foreignTable: "recipe",
@@ -860,37 +596,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_display_recipe_fkey"
-                }
+                    constraintName: "recipe_display_recipe_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     recipeProcessor: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "processor",
-            "recipe"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["processor", "recipe"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "recipeProcessor",
             tableName: "recipe_processor",
@@ -903,7 +622,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_processors_processor_fkey"
+                    constraintName: "recipe_processor_processor_fkey",
                 },
                 recipe: {
                     foreignTable: "recipe",
@@ -913,36 +632,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_processors_recipe_fkey"
-                }
+                    constraintName: "recipe_processor_recipe_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     wcReport: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            "wcClaim"
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "wcInjury"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["wcClaim"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["wcInjury"],
         relationshipDetails: {
             entityName: "wcReport",
             tableName: "wc_report",
@@ -955,8 +658,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-one",
-                    constraintName: "wc_report_claim_id_fkey"
-                }
+                    constraintName: "wc_report_claim_id_fkey",
+                },
             },
             referencedBy: {
                 wcInjury: {
@@ -966,34 +669,19 @@
                     column: "report_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "wc_injury_report_id_fkey"
-                }
-            }
-        }
+                    constraintName: "wc_injury_report_id_fkey",
+                },
+            },
+        },
     },
     wcInjury: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "wcImpairmentDefinition",
-            "wcReport"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["wcImpairmentDefinition", "wcReport"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "wcInjury",
             tableName: "wc_injury",
@@ -1006,7 +694,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "wc_injury_impairment_definition_id_fkey"
+                    constraintName: "wc_injury_impairment_definition_id_fkey",
                 },
                 wcReport: {
                     foreignTable: "wc_report",
@@ -1016,43 +704,24 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "wc_injury_report_id_fkey"
-                }
+                    constraintName: "wc_injury_report_id_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     aiProvider: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "aiSettings",
-            "aiModel"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["aiSettings", "aiModel"],
         relationshipDetails: {
             entityName: "aiProvider",
             tableName: "ai_provider",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 aiSettings: {
                     foreignTable: "ai_settings",
@@ -1061,7 +730,7 @@
                     column: "ai_provider",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "ai_settings_ai_provider_fkey"
+                    constraintName: "ai_settings_ai_provider_fkey",
                 },
                 aiModel: {
                     foreignTable: "ai_model",
@@ -1070,35 +739,19 @@
                     column: "model_provider",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "ai_model_model_provider_fkey"
-                }
-            }
-        }
+                    constraintName: "ai_model_model_provider_fkey",
+                },
+            },
+        },
     },
     messageBroker: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "dataBroker",
-            "dataInputComponent",
-            "messageTemplate"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["dataBroker", "dataInputComponent", "messageTemplate"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "messageBroker",
             tableName: "message_broker",
@@ -1111,7 +764,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "message_broker_broker_id_fkey"
+                    constraintName: "message_broker_broker_id_fkey",
                 },
                 dataInputComponent: {
                     foreignTable: "data_input_component",
@@ -1121,7 +774,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "message_broker_default_component_fkey"
+                    constraintName: "message_broker_default_component_fkey",
                 },
                 messageTemplate: {
                     foreignTable: "message_template",
@@ -1131,42 +784,24 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "message_broker_message_id_fkey"
-                }
+                    constraintName: "message_broker_message_id_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     audioLabel: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "audioRecording"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["audioRecording"],
         relationshipDetails: {
             entityName: "audioLabel",
             tableName: "audio_label",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 audioRecording: {
                     foreignTable: "audio_recording",
@@ -1175,40 +810,23 @@
                     column: "label",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "audio_recording_label_fkey"
-                }
-            }
-        }
+                    constraintName: "audio_recording_label_fkey",
+                },
+            },
+        },
     },
     aiEndpoint: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "aiModelEndpoint",
-            "aiSettings"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["aiModelEndpoint", "aiSettings"],
         relationshipDetails: {
             entityName: "aiEndpoint",
             tableName: "ai_endpoint",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 aiModelEndpoint: {
                     foreignTable: "ai_model_endpoint",
@@ -1217,7 +835,7 @@
                     column: "ai_endpoint_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "ai_model_endpoint_ai_endpoint_id_fkey"
+                    constraintName: "ai_model_endpoint_ai_endpoint_id_fkey",
                 },
                 aiSettings: {
                     foreignTable: "ai_settings",
@@ -1226,34 +844,19 @@
                     column: "ai_endpoint",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "ai_settings_ai_endpoint_fkey"
-                }
-            }
-        }
+                    constraintName: "ai_settings_ai_endpoint_fkey",
+                },
+            },
+        },
     },
     action: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "automationMatrix",
-            "transformer"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["automationMatrix", "transformer"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "action",
             tableName: "action",
@@ -1266,7 +869,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "action_matrix_fkey"
+                    constraintName: "action_matrix_fkey",
                 },
                 transformer: {
                     foreignTable: "transformer",
@@ -1276,38 +879,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "action_transformer_fkey"
-                }
+                    constraintName: "action_transformer_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     aiModel: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            "aiProvider"
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "aiModelEndpoint",
-            "aiSettings",
-            "recipeModel"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["aiProvider"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["aiModelEndpoint", "aiSettings", "recipeModel"],
         relationshipDetails: {
             entityName: "aiModel",
             tableName: "ai_model",
@@ -1320,8 +905,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-one",
-                    constraintName: "ai_model_model_provider_fkey"
-                }
+                    constraintName: "ai_model_model_provider_fkey",
+                },
             },
             referencedBy: {
                 aiModelEndpoint: {
@@ -1331,7 +916,7 @@
                     column: "ai_model_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "ai_model_endpoint_ai_model_id_fkey"
+                    constraintName: "ai_model_endpoint_ai_model_id_fkey",
                 },
                 aiSettings: {
                     foreignTable: "ai_settings",
@@ -1340,7 +925,7 @@
                     column: "ai_model",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "ai_settings_ai_model_fkey"
+                    constraintName: "ai_settings_ai_model_fkey",
                 },
                 recipeModel: {
                     foreignTable: "recipe_model",
@@ -1349,40 +934,23 @@
                     column: "ai_model",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_model_ai_model_fkey"
-                }
-            }
-        }
+                    constraintName: "recipe_model_ai_model_fkey",
+                },
+            },
+        },
     },
     automationMatrix: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "action",
-            "automationBoundaryBroker"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["action", "automationBoundaryBroker"],
         relationshipDetails: {
             entityName: "automationMatrix",
             tableName: "automation_matrix",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 action: {
                     foreignTable: "action",
@@ -1391,7 +959,7 @@
                     column: "matrix",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "action_matrix_fkey"
+                    constraintName: "action_matrix_fkey",
                 },
                 automationBoundaryBroker: {
                     foreignTable: "automation_boundary_broker",
@@ -1400,72 +968,38 @@
                     column: "matrix",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "boundary_brokers_matrix_fkey"
-                }
-            }
-        }
+                    constraintName: "boundary_brokers_matrix_fkey",
+                },
+            },
+        },
     },
     fileStructure: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "fileStructure",
             tableName: "file_structure",
-            foreignKeys: {
-                
-            },
-            referencedBy: {
-                
-            }
-        }
+            foreignKeys: {},
+            referencedBy: {},
+        },
     },
     dataOutputComponent: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "dataBroker"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["dataBroker"],
         relationshipDetails: {
             entityName: "dataOutputComponent",
             tableName: "data_output_component",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 dataBroker: {
                     foreignTable: "data_broker",
@@ -1474,80 +1008,49 @@
                     column: "output_component",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "data_broker_output_component_fkey"
-                }
-            }
-        }
+                    constraintName: "data_broker_output_component_fkey",
+                },
+            },
+        },
     },
     extractor: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "extractor",
             tableName: "extractor",
-            foreignKeys: {
-                
-            },
-            referencedBy: {
-                
-            }
-        }
+            foreignKeys: {},
+            referencedBy: {},
+        },
     },
     recipe: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
         inverseReferences: [
             "compiledRecipe",
             "aiAgent",
+            "applet",
             "recipeDisplay",
             "recipeProcessor",
             "recipeModel",
             "recipeBroker",
             "recipeTool",
             "recipeFunction",
-            "recipeMessage"
+            "recipeMessage",
         ],
         relationshipDetails: {
             entityName: "recipe",
             tableName: "recipe",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 compiledRecipe: {
                     foreignTable: "compiled_recipe",
@@ -1556,7 +1059,7 @@
                     column: "recipe_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "compiled_recipe_recipe_id_fkey"
+                    constraintName: "compiled_recipe_recipe_id_fkey",
                 },
                 aiAgent: {
                     foreignTable: "ai_agent",
@@ -1565,7 +1068,16 @@
                     column: "recipe_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "ai_agent_recipe_id_fkey"
+                    constraintName: "ai_agent_recipe_id_fkey",
+                },
+                applet: {
+                    foreignTable: "applet",
+                    foreignEntity: "applet",
+                    field: "recipeId",
+                    column: "recipe_id",
+                    foreignField: "id",
+                    foreignColumn: "id",
+                    constraintName: "applet_recipe_id_fkey",
                 },
                 recipeDisplay: {
                     foreignTable: "recipe_display",
@@ -1574,7 +1086,7 @@
                     column: "recipe",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_display_recipe_fkey"
+                    constraintName: "recipe_display_recipe_fkey",
                 },
                 recipeProcessor: {
                     foreignTable: "recipe_processor",
@@ -1583,7 +1095,7 @@
                     column: "recipe",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_processors_recipe_fkey"
+                    constraintName: "recipe_processor_recipe_fkey",
                 },
                 recipeModel: {
                     foreignTable: "recipe_model",
@@ -1592,7 +1104,7 @@
                     column: "recipe",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_model_recipe_fkey"
+                    constraintName: "recipe_model_recipe_fkey",
                 },
                 recipeBroker: {
                     foreignTable: "recipe_broker",
@@ -1601,7 +1113,7 @@
                     column: "recipe",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_broker_recipe_fkey"
+                    constraintName: "recipe_broker_recipe_fkey",
                 },
                 recipeTool: {
                     foreignTable: "recipe_tool",
@@ -1610,7 +1122,7 @@
                     column: "recipe",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_tools_recipe_fkey"
+                    constraintName: "recipe_tool_recipe_fkey",
                 },
                 recipeFunction: {
                     foreignTable: "recipe_function",
@@ -1619,7 +1131,7 @@
                     column: "recipe",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_function_recipe_fkey"
+                    constraintName: "recipe_function_recipe_fkey",
                 },
                 recipeMessage: {
                     foreignTable: "recipe_message",
@@ -1628,34 +1140,19 @@
                     column: "recipe_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_message_recipe_id_fkey"
-                }
-            }
-        }
+                    constraintName: "recipe_message_recipe_id_fkey",
+                },
+            },
+        },
     },
     recipeBroker: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "broker",
-            "recipe"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["broker", "recipe"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "recipeBroker",
             tableName: "recipe_broker",
@@ -1668,7 +1165,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_broker_broker_fkey"
+                    constraintName: "recipe_broker_broker_fkey",
                 },
                 recipe: {
                     foreignTable: "recipe",
@@ -1678,37 +1175,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_broker_recipe_fkey"
-                }
+                    constraintName: "recipe_broker_recipe_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     recipeModel: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "aiModel",
-            "recipe"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["aiModel", "recipe"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "recipeModel",
             tableName: "recipe_model",
@@ -1721,7 +1201,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_model_ai_model_fkey"
+                    constraintName: "recipe_model_ai_model_fkey",
                 },
                 recipe: {
                     foreignTable: "recipe",
@@ -1731,37 +1211,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_model_recipe_fkey"
-                }
+                    constraintName: "recipe_model_recipe_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     systemFunction: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            "registeredFunction"
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "tool",
-            "recipeFunction"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["registeredFunction"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["tool", "recipeFunction"],
         relationshipDetails: {
             entityName: "systemFunction",
             tableName: "system_function",
@@ -1774,8 +1237,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-one",
-                    constraintName: "system_function_function_fkey"
-                }
+                    constraintName: "system_function_function_fkey",
+                },
             },
             referencedBy: {
                 tool: {
@@ -1785,7 +1248,7 @@
                     column: "system_function",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "tool_system_function_fkey"
+                    constraintName: "tool_system_function_fkey",
                 },
                 recipeFunction: {
                     foreignTable: "recipe_function",
@@ -1794,33 +1257,19 @@
                     column: "function",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_function_function_fkey"
-                }
-            }
-        }
+                    constraintName: "recipe_function_function_fkey",
+                },
+            },
+        },
     },
     tool: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            "systemFunction"
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "recipeTool"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["systemFunction"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["recipeTool"],
         relationshipDetails: {
             entityName: "tool",
             tableName: "tool",
@@ -1833,8 +1282,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-one",
-                    constraintName: "tool_system_function_fkey"
-                }
+                    constraintName: "tool_system_function_fkey",
+                },
             },
             referencedBy: {
                 recipeTool: {
@@ -1844,67 +1293,34 @@
                     column: "tool",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_tools_tool_fkey"
-                }
-            }
-        }
+                    constraintName: "recipe_tool_tool_fkey",
+                },
+            },
+        },
     },
     bucketStructures: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "bucketStructures",
             tableName: "bucket_structures",
-            foreignKeys: {
-                
-            },
-            referencedBy: {
-                
-            }
-        }
+            foreignKeys: {},
+            referencedBy: {},
+        },
     },
     registeredFunction: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            "broker"
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "systemFunction",
-            "arg"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["broker"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["systemFunction", "arg"],
         relationshipDetails: {
             entityName: "registeredFunction",
             tableName: "registered_function",
@@ -1917,8 +1333,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-one",
-                    constraintName: "registered_function_return_broker_fkey"
-                }
+                    constraintName: "registered_function_return_broker_fkey",
+                },
             },
             referencedBy: {
                 systemFunction: {
@@ -1928,7 +1344,7 @@
                     column: "rf_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "system_function_function_fkey"
+                    constraintName: "system_function_function_fkey",
                 },
                 arg: {
                     foreignTable: "arg",
@@ -1937,33 +1353,19 @@
                     column: "registered_function",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "args_registered_function_fkey"
-                }
-            }
-        }
+                    constraintName: "args_registered_function_fkey",
+                },
+            },
+        },
     },
     arg: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            "registeredFunction"
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["registeredFunction"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "arg",
             tableName: "arg",
@@ -1976,37 +1378,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-one",
-                    constraintName: "args_registered_function_fkey"
-                }
+                    constraintName: "args_registered_function_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     automationBoundaryBroker: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "broker",
-            "automationMatrix"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["broker", "automationMatrix"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "automationBoundaryBroker",
             tableName: "automation_boundary_broker",
@@ -2019,7 +1404,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "boundary_brokers_broker_fkey"
+                    constraintName: "boundary_brokers_broker_fkey",
                 },
                 automationMatrix: {
                     foreignTable: "automation_matrix",
@@ -2029,38 +1414,20 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "boundary_brokers_matrix_fkey"
-                }
+                    constraintName: "boundary_brokers_matrix_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     broker: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            "dataInputComponent"
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "recipeBroker",
-            "registeredFunction",
-            "automationBoundaryBroker"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["dataInputComponent"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["recipeBroker", "registeredFunction", "automationBoundaryBroker"],
         relationshipDetails: {
             entityName: "broker",
             tableName: "broker",
@@ -2073,8 +1440,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-one",
-                    constraintName: "broker_custom_component_fkey"
-                }
+                    constraintName: "broker_custom_component_fkey",
+                },
             },
             referencedBy: {
                 recipeBroker: {
@@ -2084,7 +1451,7 @@
                     column: "broker",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_broker_broker_fkey"
+                    constraintName: "recipe_broker_broker_fkey",
                 },
                 registeredFunction: {
                     foreignTable: "registered_function",
@@ -2093,7 +1460,7 @@
                     column: "return_broker",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "registered_function_return_broker_fkey"
+                    constraintName: "registered_function_return_broker_fkey",
                 },
                 automationBoundaryBroker: {
                     foreignTable: "automation_boundary_broker",
@@ -2102,39 +1469,23 @@
                     column: "broker",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "boundary_brokers_broker_fkey"
-                }
-            }
-        }
+                    constraintName: "boundary_brokers_broker_fkey",
+                },
+            },
+        },
     },
     displayOption: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "recipeDisplay"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["recipeDisplay"],
         relationshipDetails: {
             entityName: "displayOption",
             tableName: "display_option",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 recipeDisplay: {
                     foreignTable: "recipe_display",
@@ -2143,34 +1494,19 @@
                     column: "display",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_display_display_fkey"
-                }
-            }
-        }
+                    constraintName: "recipe_display_display_fkey",
+                },
+            },
+        },
     },
     processor: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "recipeProcessor",
-            "processor"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["recipeProcessor", "processor"],
         relationshipDetails: {
             entityName: "processor",
             tableName: "processor",
@@ -2183,8 +1519,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "self-referential",
-                    constraintName: "processors_depends_default_fkey"
-                }
+                    constraintName: "processors_depends_default_fkey",
+                },
             },
             referencedBy: {
                 recipeProcessor: {
@@ -2194,34 +1530,19 @@
                     column: "processor",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "recipe_processors_processor_fkey"
-                }
-            }
-        }
+                    constraintName: "recipe_processor_processor_fkey",
+                },
+            },
+        },
     },
     recipeFunction: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "systemFunction",
-            "recipe"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["systemFunction", "recipe"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "recipeFunction",
             tableName: "recipe_function",
@@ -2234,7 +1555,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_function_function_fkey"
+                    constraintName: "recipe_function_function_fkey",
                 },
                 recipe: {
                     foreignTable: "recipe",
@@ -2244,70 +1565,35 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_function_recipe_fkey"
-                }
+                    constraintName: "recipe_function_recipe_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     bucketTreeStructures: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "bucketTreeStructures",
             tableName: "bucket_tree_structures",
-            foreignKeys: {
-                
-            },
-            referencedBy: {
-                
-            }
-        }
+            foreignKeys: {},
+            referencedBy: {},
+        },
     },
     recipeTool: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "recipe",
-            "tool"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["recipe", "tool"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "recipeTool",
             tableName: "recipe_tool",
@@ -2320,7 +1606,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_tools_recipe_fkey"
+                    constraintName: "recipe_tool_recipe_fkey",
                 },
                 tool: {
                     foreignTable: "tool",
@@ -2330,42 +1616,24 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_tools_tool_fkey"
-                }
+                    constraintName: "recipe_tool_tool_fkey",
+                },
             },
-            referencedBy: {
-                
-            }
-        }
+            referencedBy: {},
+        },
     },
     transformer: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "action"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["action"],
         relationshipDetails: {
             entityName: "transformer",
             tableName: "transformer",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 action: {
                     foreignTable: "action",
@@ -2374,39 +1642,23 @@
                     column: "transformer",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "action_transformer_fkey"
-                }
-            }
-        }
+                    constraintName: "action_transformer_fkey",
+                },
+            },
+        },
     },
     wcClaim: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "wcReport"
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["wcReport"],
         relationshipDetails: {
             entityName: "wcClaim",
             tableName: "wc_claim",
-            foreignKeys: {
-                
-            },
+            foreignKeys: {},
             referencedBy: {
                 wcReport: {
                     foreignTable: "wc_report",
@@ -2415,68 +1667,34 @@
                     column: "claim_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "wc_report_claim_id_fkey"
-                }
-            }
-        }
+                    constraintName: "wc_report_claim_id_fkey",
+                },
+            },
+        },
     },
     userPreferences: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "userPreferences",
             tableName: "user_preferences",
-            foreignKeys: {
-                
-            },
-            referencedBy: {
-                
-            }
-        }
+            foreignKeys: {},
+            referencedBy: {},
+        },
     },
     dataBroker: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "dataInputComponent",
-            "dataOutputComponent"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            "brokerValue",
-            "messageBroker"
-        ],
+        selfReferential: [],
+        manyToMany: ["dataInputComponent", "dataOutputComponent"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["brokerValue", "messageBroker"],
         relationshipDetails: {
             entityName: "dataBroker",
             tableName: "data_broker",
@@ -2489,7 +1707,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "data_broker_default_component_fkey"
+                    constraintName: "data_broker_default_component_fkey",
                 },
                 dataOutputComponent: {
                     foreignTable: "data_output_component",
@@ -2499,8 +1717,8 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "data_broker_output_component_fkey"
-                }
+                    constraintName: "data_broker_output_component_fkey",
+                },
             },
             referencedBy: {
                 brokerValue: {
@@ -2510,7 +1728,7 @@
                     column: "data_broker",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "broker_value_data_broker_fkey"
+                    constraintName: "broker_value_data_broker_fkey",
                 },
                 messageBroker: {
                     foreignTable: "message_broker",
@@ -2519,34 +1737,19 @@
                     column: "broker_id",
                     foreignField: "id",
                     foreignColumn: "id",
-                    constraintName: "message_broker_broker_id_fkey"
-                }
-            }
-        }
+                    constraintName: "message_broker_broker_id_fkey",
+                },
+            },
+        },
     },
     recipeMessage: {
-        selfReferential: [
-            
-        ],
-        manyToMany: [
-            "messageTemplate",
-            "recipe"
-        ],
-        oneToOne: [
-            
-        ],
-        manyToOne: [
-            
-        ],
-        oneToMany: [
-            
-        ],
-        undefined: [
-            
-        ],
-        inverseReferences: [
-            
-        ],
+        selfReferential: [],
+        manyToMany: ["messageTemplate", "recipe"],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
         relationshipDetails: {
             entityName: "recipeMessage",
             tableName: "recipe_message",
@@ -2559,7 +1762,7 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_message_message_id_fkey"
+                    constraintName: "recipe_message_message_id_fkey",
                 },
                 recipe: {
                     foreignTable: "recipe",
@@ -2569,12 +1772,61 @@
                     foreignField: "id",
                     foreignColumn: "id",
                     relationshipType: "many-to-many",
-                    constraintName: "recipe_message_recipe_id_fkey"
-                }
+                    constraintName: "recipe_message_recipe_id_fkey",
+                },
             },
+            referencedBy: {},
+        },
+    },
+    category: {
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: [],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: ["subcategory"],
+        relationshipDetails: {
+            entityName: "category",
+            tableName: "category",
+            foreignKeys: {},
             referencedBy: {
-                
-            }
-        }
-    }
+                subcategory: {
+                    foreignTable: "subcategory",
+                    foreignEntity: "subcategory",
+                    field: "categoryId",
+                    column: "category_id",
+                    foreignField: "id",
+                    foreignColumn: "id",
+                    constraintName: "subcategory_category_id_fkey",
+                },
+            },
+        },
+    },
+    subcategory: {
+        selfReferential: [],
+        manyToMany: [],
+        oneToOne: [],
+        manyToOne: ["category"],
+        oneToMany: [],
+        undefined: [],
+        inverseReferences: [],
+        relationshipDetails: {
+            entityName: "subcategory",
+            tableName: "subcategory",
+            foreignKeys: {
+                category: {
+                    foreignTable: "category",
+                    foreignEntity: "category",
+                    column: "category_id",
+                    fieldName: "categoryId",
+                    foreignField: "id",
+                    foreignColumn: "id",
+                    relationshipType: "many-to-one",
+                    constraintName: "subcategory_category_id_fkey",
+                },
+            },
+            referencedBy: {},
+        },
+    },
 } as const;

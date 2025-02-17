@@ -58,17 +58,16 @@ const getQuestionType = (typeString = "") => {
 
 // Individual question type components with Other handling
 const CheckboxQuestion = ({ options = [], onChange, value = [], theme }) => {
-    // Initialize with Set from value prop
     const [selectedValues, setSelectedValues] = useState(new Set(value));
     // Extract existing "Other" value if present
     const [otherValue, setOtherValue] = useState(() => {
-        const otherValue = value.find((v) => v.startsWith("Other:"));
+        const otherValue = Array.isArray(value) ? value.find((v) => v?.startsWith("Other:")) : undefined;
         return otherValue ? otherValue.replace("Other: ", "") : "";
     });
 
     useEffect(() => {
         setSelectedValues(new Set(value));
-        const otherValue = value.find((v) => v.startsWith("Other:"));
+        const otherValue = Array.isArray(value) ? value.find((v) => v?.startsWith("Other:")) : undefined;
         if (otherValue) {
             setOtherValue(otherValue.replace("Other: ", ""));
         }
@@ -164,7 +163,7 @@ const DropdownQuestion = ({ options = [], onChange, value = "", theme }) => {
                 </SelectTrigger>
                 <SelectContent>
                     {options.map((option, index) => (
-                        <SelectItem key={index} value={option.name}>
+                        <SelectItem key={index} value={option.name} >
                             {isOtherOption(option) ? "Other" : option.name}
                         </SelectItem>
                     ))}
@@ -239,14 +238,45 @@ const ToggleQuestion = ({ options = [], onChange, value = false, theme }) => (
 );
 
 const TextQuestion = ({ onChange, value = "", theme }) => (
-    <Textarea className={`w-full min-h-[100px] ${theme.input.background} border-2 ${theme.input.border} ${theme.input.text}`} value={value} onChange={(e) => onChange(e.target.value)} />
+    <Textarea
+        className={`w-full min-h-[100px] ${theme.input.background} border-2 ${theme.input.border} ${theme.input.text}`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+    />
 );
 
-const SliderQuestion = ({ onChange, value = 0, theme }) => (
-    <Slider defaultValue={[value]} max={10000} step={1} className="w-full" onValueChange={onChange} />
-);
+const SliderQuestion = ({ onChange, value, questionData, theme }) => {
+    const range = extractSliderRange(questionData.intro);
+    const { min, max } = range || {};
+    const currentValue = value ?? Math.floor(max / 2);
 
-const InputQuestion = ({ onChange, value = "", theme }) => <Input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={`w-full ${theme.input.background} border-2 ${theme.input.border} ${theme.input.text}`} />;
+    return (
+        <div className="w-full">
+            <Slider
+                value={[currentValue]}
+                min={min}
+                max={max}
+                step={1}
+                className={`w-full ${theme.input.background} border-1 ${theme.input.border} rounded-2xl ${theme.input.text} mb-2`}
+                onValueChange={onChange}
+            />
+            <div className="flex justify-between text-sm text-muted-foreground">
+                <span>{min}</span>
+                <span>Current: {currentValue}</span>
+                <span>{max}</span>
+            </div>
+        </div>
+    );
+};
+
+const InputQuestion = ({ onChange, value = "", theme }) => (
+    <Input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`w-full ${theme.input.background} border-2 ${theme.input.border} ${theme.input.text}`}
+    />
+);
 
 // Question component that determines which type to render
 const QuestionComponent = ({ questionData, options, onChange, value, theme }) => {
@@ -267,19 +297,17 @@ const QuestionComponent = ({ questionData, options, onChange, value, theme }) =>
             case "TOGGLE":
                 return <ToggleQuestion options={options} onChange={onChange} value={value} theme={theme} />;
             case "SLIDER":
-                return <SliderQuestion onChange={onChange} value={value} theme={theme} />;
+                return <SliderQuestion onChange={onChange} value={value} questionData={questionData} theme={theme} />;
             case "TEXT":
                 return <TextQuestion onChange={onChange} value={value} theme={theme} />;
             case "INPUT":
                 return <InputQuestion onChange={onChange} value={value} theme={theme} />;
             default:
-                return <TextQuestion onChange={onChange} value={value} theme={theme}/>;
+                return <TextQuestion onChange={onChange} value={value} theme={theme} />;
         }
     };
 
     const description = intro.startsWith("Type:") ? "" : intro;
-
-    console.log(theme);
 
     return (
         <Card className={`w-full mb-4 ${theme.card.background}`}>
@@ -351,43 +379,63 @@ const DebugToggle = ({ active, onClick }) => {
     );
 };
 
-// Main questionnaire renderer
+const cleanQuestionTitle = (title) => {
+    return title.replace(/^Q\d*:\s*|^Question:\s*/i, "");
+};
+
+const extractSliderRange = (intro) => {
+    if (!intro.includes("Type: Slider")) {
+        return null;
+    }
+
+    const rangeMatch = intro.match(/Range:\s*([-]?\d+)(?:\s*\([^)]*\))?\s*-\s*([-]?\d+)(?:\s*\([^)]*\))?/);
+
+    if (rangeMatch) {
+        return {
+            min: parseInt(rangeMatch[1]),
+            max: parseInt(rangeMatch[2]),
+        };
+    }
+
+    return { min: 0, max: 100 };
+};
+
 const QuestionnaireRenderer = ({ data, theme }) => {
     const [formState, setFormState] = useState({});
     const [questionData, setQuestionData] = useState({});
     const [debugMode, setDebugMode] = useState(false);
     const themeColors = THEMES[theme];
 
-    // Initialize form state with default values
     useEffect(() => {
         if (data?.sections) {
             const initialState = data.sections.reduce((acc, section) => {
                 if (section.intro?.includes("Type:")) {
                     const type = extractType(section.intro);
                     const questionType = getQuestionType(type);
+                    const cleanTitle = cleanQuestionTitle(section.title);
 
-                    // Set default values based on question type
                     switch (questionType) {
+                        case "SLIDER": {
+                            const range = extractSliderRange(section.intro);
+                            acc[cleanTitle] = Math.floor(range.max / 2);
+                            break;
+                        }
                         case "TOGGLE":
-                            acc[section.title] = false;
+                            acc[cleanTitle] = false;
                             break;
                         case "CHECKBOX":
-                            acc[section.title] = [];
-                            break;
-                        case "SLIDER":
-                            acc[section.title] = 0;
+                            acc[cleanTitle] = [];
                             break;
                         case "DROPDOWN":
                         case "RADIO":
-                            // Optional: could set to first option if you want
-                            acc[section.title] = "";
+                            acc[cleanTitle] = "";
                             break;
                         case "TEXT":
                         case "INPUT":
-                            acc[section.title] = "";
+                            acc[cleanTitle] = "";
                             break;
                         default:
-                            acc[section.title] = null;
+                            acc[cleanTitle] = null;
                     }
                 }
                 return acc;
@@ -395,16 +443,28 @@ const QuestionnaireRenderer = ({ data, theme }) => {
 
             setFormState(initialState);
 
-            // Keep the existing question data initialization
             const questions = data.sections.reduce((acc, section) => {
                 if (section.intro?.includes("Type:")) {
+                    const cleanTitle = cleanQuestionTitle(section.title);
                     const options = findOptionsForQuestion(data.sections, section.title);
-                    acc[section.title] = {
-                        type: extractType(section.intro),
-                        question: section.title,
+                    const type = extractType(section.intro);
+
+                    // Initialize with base question data
+                    acc[cleanTitle] = {
+                        type: type,
+                        question: cleanTitle,
                         options: options,
                         intro: section.intro,
+                        customSettings: {}, // Default empty object for custom settings
                     };
+
+                    // Add type-specific custom settings
+                    if (type === "Slider") {
+                        acc[cleanTitle].customSettings = {
+                            range: extractSliderRange(section.intro),
+                        };
+                    }
+                    // Future type-specific settings can be added here
                 }
                 return acc;
             }, {});
@@ -423,9 +483,10 @@ const QuestionnaireRenderer = ({ data, theme }) => {
     }
 
     const handleChange = (questionTitle, value) => {
+        const cleanTitle = cleanQuestionTitle(questionTitle);
         setFormState((prev) => ({
             ...prev,
-            [questionTitle]: value,
+            [cleanTitle]: value,
         }));
     };
 
@@ -439,14 +500,23 @@ const QuestionnaireRenderer = ({ data, theme }) => {
                     }
 
                     const options = findOptionsForQuestion(data.sections, section.title);
+                    const cleanTitle = cleanQuestionTitle(section.title);
+                    const type = extractType(section.intro);
+
+                    // Prepare custom settings based on question type
+                    const customSettings = type === "Slider" ? { range: extractSliderRange(section.intro) } : {};
 
                     return (
                         <QuestionComponent
                             key={index}
-                            questionData={section}
+                            questionData={{
+                                ...section,
+                                title: cleanTitle,
+                                customSettings,
+                            }}
                             options={options}
-                            onChange={(value) => handleChange(section.title, value)}
-                            value={formState[section.title]}
+                            onChange={(value) => handleChange(cleanTitle, value)}
+                            value={formState[cleanTitle]}
                             theme={themeColors}
                         />
                     );

@@ -7,8 +7,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -522,8 +526,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -972,8 +980,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -1544,8 +1556,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -2440,8 +2456,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -3085,8 +3105,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -3527,8 +3551,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -4943,6 +4971,967 @@
             }
         ]
     },
+    "applet": {
+        "schemaType": "table",
+        "entityName": "applet",
+        "uniqueTableId": "supabase_automation_matrix:public:applet",
+        "uniqueEntityId": "supabase_automation_matrix:applet",
+        "primaryKey": "id",
+        "primaryKeyMetadata": {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
+        "displayFieldMetadata": {
+            "fieldName": "name",
+            "databaseFieldName": "name"
+        },
+        "defaultFetchStrategy": "fk",
+        "componentProps": {
+            "subComponent": "default",
+            "variant": "default",
+            "placeholder": "default",
+            "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default",
+            "onBlur": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default",
+            "numberType": "default"
+        },
+        "entityFields": {
+            "id": {
+                "fieldNameFormats": {
+                    "frontend": "id",
+                    "backend": "id",
+                    "database": "id",
+                    "pretty": "Id",
+                    "component": "Id",
+                    "kebab": "id",
+                    "sqlFunctionRef": "p_id",
+                    "RestAPI": "id",
+                    "GraphQL": "id",
+                    "custom": "id"
+                },
+                "name": "id",
+                "displayName": "Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:id",
+                "uniqueFieldId": "supabase_automation_matrix:applet:id",
+                "dataType": "uuid",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": true,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Id\" field for applet. This is a required field. Your entry must be an uuid data type.",
+                    "backend": "\"Id\" field for the applet table. This is a required field. Your entry must be an uuid data type."
+                }
+            },
+            "name": {
+                "fieldNameFormats": {
+                    "frontend": "name",
+                    "backend": "name",
+                    "database": "name",
+                    "pretty": "Name",
+                    "component": "Name",
+                    "kebab": "name",
+                    "sqlFunctionRef": "p_name",
+                    "RestAPI": "name",
+                    "GraphQL": "name",
+                    "custom": "name"
+                },
+                "name": "name",
+                "displayName": "Name",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:name",
+                "uniqueFieldId": "supabase_automation_matrix:applet:name",
+                "dataType": "string",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": true,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Name\" field for applet. This is a required field. Your entry must be an string data type. This must be a unique value.",
+                    "backend": "\"Name\" field for the applet table. This is a required field. Your entry must be an string data type. This must be a unique value."
+                }
+            },
+            "description": {
+                "fieldNameFormats": {
+                    "frontend": "description",
+                    "backend": "description",
+                    "database": "description",
+                    "pretty": "Description",
+                    "component": "Description",
+                    "kebab": "description",
+                    "sqlFunctionRef": "p_description",
+                    "RestAPI": "description",
+                    "GraphQL": "description",
+                    "custom": "description"
+                },
+                "name": "description",
+                "displayName": "Description",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:description",
+                "uniqueFieldId": "supabase_automation_matrix:applet:description",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "TEXTAREA",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Description\" field for applet. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Description\" field for the applet table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "creator": {
+                "fieldNameFormats": {
+                    "frontend": "creator",
+                    "backend": "creator",
+                    "database": "creator",
+                    "pretty": "Creator",
+                    "component": "Creator",
+                    "kebab": "creator",
+                    "sqlFunctionRef": "p_creator",
+                    "RestAPI": "creator",
+                    "GraphQL": "creator",
+                    "custom": "creator"
+                },
+                "name": "creator",
+                "displayName": "Creator",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:creator",
+                "uniqueFieldId": "supabase_automation_matrix:applet:creator",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Creator\" field for applet. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Creator\" field for the applet table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "type": {
+                "fieldNameFormats": {
+                    "frontend": "type",
+                    "backend": "type",
+                    "database": "type",
+                    "pretty": "Type",
+                    "component": "Type",
+                    "kebab": "type",
+                    "sqlFunctionRef": "p_type",
+                    "RestAPI": "type",
+                    "GraphQL": "type",
+                    "custom": "type"
+                },
+                "name": "type",
+                "displayName": "Type",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:type",
+                "uniqueFieldId": "supabase_automation_matrix:applet:type",
+                "dataType": "string",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "SELECT",
+                "componentProps": {
+                    "subComponent": "enumSelect",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": [
+                        {
+                            "label": "Other",
+                            "value": "other"
+                        },
+                        {
+                            "label": "Recipe",
+                            "value": "recipe"
+                        },
+                        {
+                            "label": "Workflow",
+                            "value": "workflow"
+                        }
+                    ],
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": [
+                    "other",
+                    "recipe",
+                    "workflow"
+                ],
+                "enumValues": [
+                    "other",
+                    "recipe",
+                    "workflow"
+                ],
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Type\" field for applet. This is a required field. Your entry must be an string data type.",
+                    "backend": "\"Type\" field for the applet table. This is a required field. Your entry must be an string data type."
+                }
+            },
+            "recipeId": {
+                "fieldNameFormats": {
+                    "frontend": "recipeId",
+                    "backend": "recipe_id",
+                    "database": "recipe_id",
+                    "pretty": "Recipe Id",
+                    "component": "RecipeId",
+                    "kebab": "recipe-id",
+                    "sqlFunctionRef": "p_recipe_id",
+                    "RestAPI": "recipeId",
+                    "GraphQL": "recipeId",
+                    "custom": "recipeId"
+                },
+                "name": "recipeId",
+                "displayName": "Recipe Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:recipe_id",
+                "uniqueFieldId": "supabase_automation_matrix:applet:recipeId",
+                "dataType": "uuid",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "FK_SELECT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": {
+                    "table": "recipe",
+                    "column": "id",
+                    "entity": "recipe",
+                    "field": "id"
+                },
+                "description": {
+                    "frontend": "\"Recipe Id\" field for applet. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.",
+                    "backend": "\"Recipe Id\" field for the applet table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
+                }
+            },
+            "slug": {
+                "fieldNameFormats": {
+                    "frontend": "slug",
+                    "backend": "slug",
+                    "database": "slug",
+                    "pretty": "Slug",
+                    "component": "Slug",
+                    "kebab": "slug",
+                    "sqlFunctionRef": "p_slug",
+                    "RestAPI": "slug",
+                    "GraphQL": "slug",
+                    "custom": "slug"
+                },
+                "name": "slug",
+                "displayName": "Slug",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:slug",
+                "uniqueFieldId": "supabase_automation_matrix:applet:slug",
+                "dataType": "string",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Slug\" field for applet. This is a required field. Your entry must be an string data type. This must be a unique value.",
+                    "backend": "\"Slug\" field for the applet table. This is a required field. Your entry must be an string data type. This must be a unique value."
+                }
+            },
+            "createdAt": {
+                "fieldNameFormats": {
+                    "frontend": "createdAt",
+                    "backend": "created_at",
+                    "database": "created_at",
+                    "pretty": "Created At",
+                    "component": "CreatedAt",
+                    "kebab": "created-at",
+                    "sqlFunctionRef": "p_created_at",
+                    "RestAPI": "createdAt",
+                    "GraphQL": "createdAt",
+                    "custom": "createdAt"
+                },
+                "name": "createdAt",
+                "displayName": "Created At",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:created_at",
+                "uniqueFieldId": "supabase_automation_matrix:applet:createdAt",
+                "dataType": "date",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "DATE_PICKER",
+                "componentProps": {
+                    "subComponent": "timestamptz",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "Date",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Created At\" field for applet. This is a required field. Your entry must be an date data type.",
+                    "backend": "\"Created At\" field for the applet table. This is a required field. Your entry must be an date data type."
+                }
+            },
+            "userId": {
+                "fieldNameFormats": {
+                    "frontend": "userId",
+                    "backend": "user_id",
+                    "database": "user_id",
+                    "pretty": "User Id",
+                    "component": "UserId",
+                    "kebab": "user-id",
+                    "sqlFunctionRef": "p_user_id",
+                    "RestAPI": "userId",
+                    "GraphQL": "userId",
+                    "custom": "userId"
+                },
+                "name": "userId",
+                "displayName": "User Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:user_id",
+                "uniqueFieldId": "supabase_automation_matrix:applet:userId",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"User Id\" field for applet. This is an optional field. Your entry must be an uuid data type.",
+                    "backend": "\"User Id\" field for the applet table. This is an optional field. Your entry must be an uuid data type."
+                }
+            },
+            "isPublic": {
+                "fieldNameFormats": {
+                    "frontend": "isPublic",
+                    "backend": "is_public",
+                    "database": "is_public",
+                    "pretty": "Is Public",
+                    "component": "IsPublic",
+                    "kebab": "is-public",
+                    "sqlFunctionRef": "p_is_public",
+                    "RestAPI": "isPublic",
+                    "GraphQL": "isPublic",
+                    "custom": "isPublic"
+                },
+                "name": "isPublic",
+                "displayName": "Is Public",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:is_public",
+                "uniqueFieldId": "supabase_automation_matrix:applet:isPublic",
+                "dataType": "boolean",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "SWITCH",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "boolean",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Is Public\" field for applet. This is an optional field. Your entry must be an boolean data type.",
+                    "backend": "\"Is Public\" field for the applet table. This is an optional field. Your entry must be an boolean data type."
+                }
+            },
+            "dataSourceConfig": {
+                "fieldNameFormats": {
+                    "frontend": "dataSourceConfig",
+                    "backend": "data_source_config",
+                    "database": "data_source_config",
+                    "pretty": "Data Source Config",
+                    "component": "DataSourceConfig",
+                    "kebab": "data-source-config",
+                    "sqlFunctionRef": "p_data_source_config",
+                    "RestAPI": "dataSourceConfig",
+                    "GraphQL": "dataSourceConfig",
+                    "custom": "dataSourceConfig"
+                },
+                "name": "dataSourceConfig",
+                "displayName": "Data Source Config",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:data_source_config",
+                "uniqueFieldId": "supabase_automation_matrix:applet:dataSourceConfig",
+                "dataType": "object",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "JSON_EDITOR",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "Record<string, unknown>",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Data Source Config\" field for applet. This is an optional field. Your entry must be an object data type.",
+                    "backend": "\"Data Source Config\" field for the applet table. This is an optional field. Your entry must be an object data type."
+                }
+            },
+            "resultComponentConfig": {
+                "fieldNameFormats": {
+                    "frontend": "resultComponentConfig",
+                    "backend": "result_component_config",
+                    "database": "result_component_config",
+                    "pretty": "Result Component Config",
+                    "component": "ResultComponentConfig",
+                    "kebab": "result-component-config",
+                    "sqlFunctionRef": "p_result_component_config",
+                    "RestAPI": "resultComponentConfig",
+                    "GraphQL": "resultComponentConfig",
+                    "custom": "resultComponentConfig"
+                },
+                "name": "resultComponentConfig",
+                "displayName": "Result Component Config",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:result_component_config",
+                "uniqueFieldId": "supabase_automation_matrix:applet:resultComponentConfig",
+                "dataType": "object",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "JSON_EDITOR",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "Record<string, unknown>",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Result Component Config\" field for applet. This is an optional field. Your entry must be an object data type.",
+                    "backend": "\"Result Component Config\" field for the applet table. This is an optional field. Your entry must be an object data type."
+                }
+            },
+            "nextStepConfig": {
+                "fieldNameFormats": {
+                    "frontend": "nextStepConfig",
+                    "backend": "next_step_config",
+                    "database": "next_step_config",
+                    "pretty": "Next Step Config",
+                    "component": "NextStepConfig",
+                    "kebab": "next-step-config",
+                    "sqlFunctionRef": "p_next_step_config",
+                    "RestAPI": "nextStepConfig",
+                    "GraphQL": "nextStepConfig",
+                    "custom": "nextStepConfig"
+                },
+                "name": "nextStepConfig",
+                "displayName": "Next Step Config",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:next_step_config",
+                "uniqueFieldId": "supabase_automation_matrix:applet:nextStepConfig",
+                "dataType": "object",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "JSON_EDITOR",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "Record<string, unknown>",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Next Step Config\" field for applet. This is an optional field. Your entry must be an object data type.",
+                    "backend": "\"Next Step Config\" field for the applet table. This is an optional field. Your entry must be an object data type."
+                }
+            },
+            "recipeReference": {
+                "fieldNameFormats": {
+                    "frontend": "recipeReference",
+                    "backend": "recipe_reference",
+                    "database": "ref_recipe",
+                    "pretty": "Recipe Reference",
+                    "component": "RecipeReference",
+                    "kebab": "recipeReference",
+                    "sqlFunctionRef": "p_ref_recipe",
+                    "RestAPI": "recipeReference",
+                    "GraphQL": "recipeReference",
+                    "custom": "recipeReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:recipe:id",
+                "uniqueFieldId": "supabase_automation_matrix:recipe:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "recipe",
+                    "typeReference": "TypeBrand<AutomationEntity<'recipe'>[]>"
+                }
+            }
+        },
+        "entityNameFormats": {
+            "frontend": "applet",
+            "backend": "applet",
+            "database": "applet",
+            "pretty": "Applet",
+            "component": "Applet",
+            "kebab": "applet",
+            "sqlFunctionRef": "p_applet",
+            "RestAPI": "applet",
+            "GraphQL": "applet",
+            "custom": "applet"
+        },
+        "relationships": [
+            {
+                "column": "recipe_id",
+                "relatedTable": "recipe",
+                "relatedColumn": "id"
+            }
+        ]
+    },
     "arg": {
         "schemaType": "table",
         "entityName": "arg",
@@ -4951,8 +5940,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -5328,8 +6321,24 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
-                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "typeReference": [
+                    "bool",
+                    "dict",
+                    "float",
+                    "int",
+                    "list",
+                    "str",
+                    "url"
+                ],
+                "enumValues": [
+                    "bool",
+                    "dict",
+                    "float",
+                    "int",
+                    "list",
+                    "str",
+                    "url"
+                ],
                 "entityName": "arg",
                 "databaseTable": "arg",
                 "foreignKeyReference": null,
@@ -5526,8 +6535,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -5873,8 +6886,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -6619,8 +7636,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -7000,8 +8021,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -7330,8 +8355,28 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["api", "chance", "database", "environment", "file", "function", "generated_data", "none", "user_input"],
-                "enumValues": ["api", "chance", "database", "environment", "file", "function", "generated_data", "none", "user_input"],
+                "typeReference": [
+                    "api",
+                    "chance",
+                    "database",
+                    "environment",
+                    "file",
+                    "function",
+                    "generated_data",
+                    "none",
+                    "user_input"
+                ],
+                "enumValues": [
+                    "api",
+                    "chance",
+                    "database",
+                    "environment",
+                    "file",
+                    "function",
+                    "generated_data",
+                    "none",
+                    "user_input"
+                ],
                 "entityName": "automationBoundaryBroker",
                 "databaseTable": "automation_boundary_broker",
                 "foreignKeyReference": null,
@@ -7416,8 +8461,20 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["api_response", "database", "file", "function", "user_output"],
-                "enumValues": ["api_response", "database", "file", "function", "user_output"],
+                "typeReference": [
+                    "api_response",
+                    "database",
+                    "file",
+                    "function",
+                    "user_output"
+                ],
+                "enumValues": [
+                    "api_response",
+                    "database",
+                    "file",
+                    "function",
+                    "user_output"
+                ],
                 "entityName": "automationBoundaryBroker",
                 "databaseTable": "automation_boundary_broker",
                 "foreignKeyReference": null,
@@ -7508,8 +8565,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -8066,8 +9127,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -8378,8 +9443,24 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
-                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "typeReference": [
+                    "bool",
+                    "dict",
+                    "float",
+                    "int",
+                    "list",
+                    "str",
+                    "url"
+                ],
+                "enumValues": [
+                    "bool",
+                    "dict",
+                    "float",
+                    "int",
+                    "list",
+                    "str",
+                    "url"
+                ],
                 "entityName": "broker",
                 "databaseTable": "broker",
                 "foreignKeyReference": null,
@@ -8545,8 +9626,28 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["api", "chance", "database", "environment", "file", "function", "generated_data", "none", "user_input"],
-                "enumValues": ["api", "chance", "database", "environment", "file", "function", "generated_data", "none", "user_input"],
+                "typeReference": [
+                    "api",
+                    "chance",
+                    "database",
+                    "environment",
+                    "file",
+                    "function",
+                    "generated_data",
+                    "none",
+                    "user_input"
+                ],
+                "enumValues": [
+                    "api",
+                    "chance",
+                    "database",
+                    "environment",
+                    "file",
+                    "function",
+                    "generated_data",
+                    "none",
+                    "user_input"
+                ],
                 "entityName": "broker",
                 "databaseTable": "broker",
                 "foreignKeyReference": null,
@@ -9156,8 +10257,20 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["api_response", "database", "file", "function", "user_output"],
-                "enumValues": ["api_response", "database", "file", "function", "user_output"],
+                "typeReference": [
+                    "api_response",
+                    "database",
+                    "file",
+                    "function",
+                    "user_output"
+                ],
+                "enumValues": [
+                    "api_response",
+                    "database",
+                    "file",
+                    "function",
+                    "user_output"
+                ],
                 "entityName": "broker",
                 "databaseTable": "broker",
                 "foreignKeyReference": null,
@@ -9903,8 +11016,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -10353,7 +11470,7 @@
                 "displayName": "Tags",
                 "uniqueColumnId": "supabase_automation_matrix:public:broker_value:tags",
                 "uniqueFieldId": "supabase_automation_matrix:brokerValue:tags",
-                "dataType": "any // ERROR! Original Value: _text Type Not Found!",
+                "dataType": "string[]",
                 "isRequired": false,
                 "maxLength": "null",
                 "isArray": true,
@@ -10363,7 +11480,7 @@
                 "defaultGeneratorFunction": null,
                 "validationFunctions": [],
                 "exclusionRules": [],
-                "defaultComponent": "INPUT",
+                "defaultComponent": "TEXT_ARRAY",
                 "componentProps": {
                     "subComponent": "default",
                     "variant": "default",
@@ -10372,7 +11489,7 @@
                     "size": "default",
                     "textSize": "default",
                     "textColor": "default",
-                    "rows": "default",
+                    "rows": 3,
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
@@ -10397,8 +11514,8 @@
                 "databaseTable": "broker_value",
                 "foreignKeyReference": null,
                 "description": {
-                    "frontend": "\"Tags\" field for brokerValue. This is an optional field. Your entry must be an any // ERROR! Original Value: _text Type Not Found! data type. You can enter one or more entries.",
-                    "backend": "\"Tags\" field for the broker_value table. This is an optional field. Your entry must be an any // ERROR! Original Value: _text Type Not Found! data type. You can enter one or more entries."
+                    "frontend": "\"Tags\" field for brokerValue. This is an optional field. Your entry must be an string[] data type. You can enter one or more entries.",
+                    "backend": "\"Tags\" field for the broker_value table. This is an optional field. Your entry must be an string[] data type. You can enter one or more entries."
                 }
             },
             "comments": {
@@ -10584,8 +11701,12 @@
         "primaryKey": "bucketId",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["bucketId"],
-            "database_fields": ["bucket_id"],
+            "fields": [
+                "bucketId"
+            ],
+            "database_fields": [
+                "bucket_id"
+            ],
             "where_template": {
                 "bucket_id": null
             }
@@ -10835,8 +11956,12 @@
         "primaryKey": "bucketId",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["bucketId"],
-            "database_fields": ["bucket_id"],
+            "fields": [
+                "bucketId"
+            ],
+            "database_fields": [
+                "bucket_id"
+            ],
             "where_template": {
                 "bucket_id": null
             }
@@ -11078,6 +12203,487 @@
         },
         "relationships": []
     },
+    "category": {
+        "schemaType": "table",
+        "entityName": "category",
+        "uniqueTableId": "supabase_automation_matrix:public:category",
+        "uniqueEntityId": "supabase_automation_matrix:category",
+        "primaryKey": "id",
+        "primaryKeyMetadata": {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
+        "displayFieldMetadata": {
+            "fieldName": "name",
+            "databaseFieldName": "name"
+        },
+        "defaultFetchStrategy": "ifk",
+        "componentProps": {
+            "subComponent": "default",
+            "variant": "default",
+            "placeholder": "default",
+            "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default",
+            "onBlur": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default",
+            "numberType": "default"
+        },
+        "entityFields": {
+            "id": {
+                "fieldNameFormats": {
+                    "frontend": "id",
+                    "backend": "id",
+                    "database": "id",
+                    "pretty": "Id",
+                    "component": "Id",
+                    "kebab": "id",
+                    "sqlFunctionRef": "p_id",
+                    "RestAPI": "id",
+                    "GraphQL": "id",
+                    "custom": "id"
+                },
+                "name": "id",
+                "displayName": "Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:category:id",
+                "uniqueFieldId": "supabase_automation_matrix:category:id",
+                "dataType": "uuid",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": true,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "category",
+                "databaseTable": "category",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Id\" field for category. This is a required field. Your entry must be an uuid data type.",
+                    "backend": "\"Id\" field for the category table. This is a required field. Your entry must be an uuid data type."
+                }
+            },
+            "name": {
+                "fieldNameFormats": {
+                    "frontend": "name",
+                    "backend": "name",
+                    "database": "name",
+                    "pretty": "Name",
+                    "component": "Name",
+                    "kebab": "name",
+                    "sqlFunctionRef": "p_name",
+                    "RestAPI": "name",
+                    "GraphQL": "name",
+                    "custom": "name"
+                },
+                "name": "name",
+                "displayName": "Name",
+                "uniqueColumnId": "supabase_automation_matrix:public:category:name",
+                "uniqueFieldId": "supabase_automation_matrix:category:name",
+                "dataType": "string",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": true,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "category",
+                "databaseTable": "category",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Name\" field for category. This is a required field. Your entry must be an string data type. This must be a unique value.",
+                    "backend": "\"Name\" field for the category table. This is a required field. Your entry must be an string data type. This must be a unique value."
+                }
+            },
+            "description": {
+                "fieldNameFormats": {
+                    "frontend": "description",
+                    "backend": "description",
+                    "database": "description",
+                    "pretty": "Description",
+                    "component": "Description",
+                    "kebab": "description",
+                    "sqlFunctionRef": "p_description",
+                    "RestAPI": "description",
+                    "GraphQL": "description",
+                    "custom": "description"
+                },
+                "name": "description",
+                "displayName": "Description",
+                "uniqueColumnId": "supabase_automation_matrix:public:category:description",
+                "uniqueFieldId": "supabase_automation_matrix:category:description",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "TEXTAREA",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "category",
+                "databaseTable": "category",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Description\" field for category. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Description\" field for the category table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "slug": {
+                "fieldNameFormats": {
+                    "frontend": "slug",
+                    "backend": "slug",
+                    "database": "slug",
+                    "pretty": "Slug",
+                    "component": "Slug",
+                    "kebab": "slug",
+                    "sqlFunctionRef": "p_slug",
+                    "RestAPI": "slug",
+                    "GraphQL": "slug",
+                    "custom": "slug"
+                },
+                "name": "slug",
+                "displayName": "Slug",
+                "uniqueColumnId": "supabase_automation_matrix:public:category:slug",
+                "uniqueFieldId": "supabase_automation_matrix:category:slug",
+                "dataType": "string",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "category",
+                "databaseTable": "category",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Slug\" field for category. This is a required field. Your entry must be an string data type.",
+                    "backend": "\"Slug\" field for the category table. This is a required field. Your entry must be an string data type."
+                }
+            },
+            "icon": {
+                "fieldNameFormats": {
+                    "frontend": "icon",
+                    "backend": "icon",
+                    "database": "icon",
+                    "pretty": "Icon",
+                    "component": "Icon",
+                    "kebab": "icon",
+                    "sqlFunctionRef": "p_icon",
+                    "RestAPI": "icon",
+                    "GraphQL": "icon",
+                    "custom": "icon"
+                },
+                "name": "icon",
+                "displayName": "Icon",
+                "uniqueColumnId": "supabase_automation_matrix:public:category:icon",
+                "uniqueFieldId": "supabase_automation_matrix:category:icon",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "Briefcase",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "category",
+                "databaseTable": "category",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Icon\" field for category. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Icon\" field for the category table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "createdAt": {
+                "fieldNameFormats": {
+                    "frontend": "createdAt",
+                    "backend": "created_at",
+                    "database": "created_at",
+                    "pretty": "Created At",
+                    "component": "CreatedAt",
+                    "kebab": "created-at",
+                    "sqlFunctionRef": "p_created_at",
+                    "RestAPI": "createdAt",
+                    "GraphQL": "createdAt",
+                    "custom": "createdAt"
+                },
+                "name": "createdAt",
+                "displayName": "Created At",
+                "uniqueColumnId": "supabase_automation_matrix:public:category:created_at",
+                "uniqueFieldId": "supabase_automation_matrix:category:createdAt",
+                "dataType": "date",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "DATE_PICKER",
+                "componentProps": {
+                    "subComponent": "timestamptz",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "Date",
+                "enumValues": null,
+                "entityName": "category",
+                "databaseTable": "category",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Created At\" field for category. This is a required field. Your entry must be an date data type.",
+                    "backend": "\"Created At\" field for the category table. This is a required field. Your entry must be an date data type."
+                }
+            },
+            "subcategoryInverse": {
+                "fieldNameFormats": {
+                    "frontend": "subcategoryInverse",
+                    "backend": "subcategory_Inverse",
+                    "database": "ifk_subcategory",
+                    "pretty": "Subcategory Inverse",
+                    "component": "SubcategoryInverse",
+                    "kebab": "subcategoryInverse",
+                    "sqlFunctionRef": "p_ifk_subcategory",
+                    "RestAPI": "subcategoryInverse",
+                    "GraphQL": "subcategoryInverse",
+                    "custom": "subcategoryInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:subcategory",
+                "uniqueEntityId": "supabase_automation_matrix:subcategory",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "subcategory",
+                    "databaseTable": "subcategory",
+                    "typeReference": "TypeBrand<AutomationEntity<'subcategory'>[]>"
+                }
+            }
+        },
+        "entityNameFormats": {
+            "frontend": "category",
+            "backend": "category",
+            "database": "category",
+            "pretty": "Category",
+            "component": "Category",
+            "kebab": "category",
+            "sqlFunctionRef": "p_category",
+            "RestAPI": "category",
+            "GraphQL": "category",
+            "custom": "category"
+        },
+        "relationships": [
+            {
+                "relatedTable": "subcategory",
+                "relatedColumn": "category_id",
+                "mainTableColumn": "id"
+            }
+        ]
+    },
     "compiledRecipe": {
         "schemaType": "table",
         "entityName": "compiledRecipe",
@@ -11086,8 +12692,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -11767,8 +13377,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -12014,8 +13628,24 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
-                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "typeReference": [
+                    "bool",
+                    "dict",
+                    "float",
+                    "int",
+                    "list",
+                    "str",
+                    "url"
+                ],
+                "enumValues": [
+                    "bool",
+                    "dict",
+                    "float",
+                    "int",
+                    "list",
+                    "str",
+                    "url"
+                ],
                 "entityName": "dataBroker",
                 "databaseTable": "data_broker",
                 "foreignKeyReference": null,
@@ -12110,7 +13740,7 @@
                 "isRequired": false,
                 "maxLength": "null",
                 "isArray": false,
-                "defaultValue": "6463aae0-9480-4c4c-90b8-e3ce9c11a103",
+                "defaultValue": "null",
                 "isPrimaryKey": false,
                 "isDisplayField": false,
                 "defaultGeneratorFunction": null,
@@ -12571,8 +14201,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -12686,17 +14320,17 @@
                 "displayName": "Options",
                 "uniqueColumnId": "supabase_automation_matrix:public:data_input_component:options",
                 "uniqueFieldId": "supabase_automation_matrix:dataInputComponent:options",
-                "dataType": "object",
+                "dataType": "string[]",
                 "isRequired": false,
                 "maxLength": "null",
-                "isArray": false,
+                "isArray": true,
                 "defaultValue": "null",
                 "isPrimaryKey": false,
                 "isDisplayField": false,
                 "defaultGeneratorFunction": null,
                 "validationFunctions": [],
                 "exclusionRules": [],
-                "defaultComponent": "JSON_EDITOR",
+                "defaultComponent": "TEXT_ARRAY",
                 "componentProps": {
                     "subComponent": "default",
                     "variant": "default",
@@ -12705,7 +14339,7 @@
                     "size": "default",
                     "textSize": "default",
                     "textColor": "default",
-                    "rows": "default",
+                    "rows": 3,
                     "animation": "default",
                     "fullWidthValue": "default",
                     "fullWidth": "default",
@@ -12724,14 +14358,14 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": "Record<string, unknown>",
+                "typeReference": "string[]",
                 "enumValues": null,
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
                 "description": {
-                    "frontend": "\"Options\" field for dataInputComponent. This is an optional field. Your entry must be an object data type.",
-                    "backend": "\"Options\" field for the data_input_component table. This is an optional field. Your entry must be an object data type."
+                    "frontend": "\"Options\" field for dataInputComponent. This is an optional field. Your entry must be an string[] data type. You can enter one or more entries.",
+                    "backend": "\"Options\" field for the data_input_component table. This is an optional field. Your entry must be an string[] data type. You can enter one or more entries."
                 }
             },
             "includeOther": {
@@ -14281,8 +15915,34 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
-                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "typeReference": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
+                "enumValues": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -14395,8 +16055,34 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
-                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "typeReference": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
+                "enumValues": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -14509,8 +16195,34 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
-                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "typeReference": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
+                "enumValues": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -14623,8 +16335,34 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
-                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "typeReference": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
+                "enumValues": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -14737,8 +16475,34 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
-                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "typeReference": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
+                "enumValues": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -14851,8 +16615,34 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
-                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "typeReference": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
+                "enumValues": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -14965,8 +16755,34 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
-                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "typeReference": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
+                "enumValues": [
+                    "2xl",
+                    "2xs",
+                    "3xl",
+                    "3xs",
+                    "4xl",
+                    "5xl",
+                    "default",
+                    "l",
+                    "m",
+                    "s",
+                    "xl",
+                    "xs"
+                ],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -15043,8 +16859,16 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["default", "horizontal", "vertical"],
-                "enumValues": ["default", "horizontal", "vertical"],
+                "typeReference": [
+                    "default",
+                    "horizontal",
+                    "vertical"
+                ],
+                "enumValues": [
+                    "default",
+                    "horizontal",
+                    "vertical"
+                ],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -15167,8 +16991,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -15978,8 +17806,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -16390,8 +18222,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -16444,7 +18280,7 @@
                 "isRequired": true,
                 "maxLength": "null",
                 "isArray": false,
-                "defaultValue": "extensions.uuid_generate_v4()",
+                "defaultValue": "",
                 "isPrimaryKey": true,
                 "isDisplayField": false,
                 "defaultGeneratorFunction": null,
@@ -16901,8 +18737,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -17148,8 +18988,24 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
-                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "typeReference": [
+                    "bool",
+                    "dict",
+                    "float",
+                    "int",
+                    "list",
+                    "str",
+                    "url"
+                ],
+                "enumValues": [
+                    "bool",
+                    "dict",
+                    "float",
+                    "int",
+                    "list",
+                    "str",
+                    "url"
+                ],
                 "entityName": "extractor",
                 "databaseTable": "extractor",
                 "foreignKeyReference": null,
@@ -17311,8 +19167,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -18017,8 +19877,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -19209,8 +21073,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -19825,8 +21693,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -20371,8 +22243,14 @@
         "primaryKey": "flashcardId, setId",
         "primaryKeyMetadata": {
             "type": "composite",
-            "fields": ["flashcardId", "setId"],
-            "database_fields": ["flashcard_id", "set_id"],
+            "fields": [
+                "flashcardId",
+                "setId"
+            ],
+            "database_fields": [
+                "flashcard_id",
+                "set_id"
+            ],
             "where_template": {
                 "flashcard_id": null,
                 "set_id": null
@@ -20692,8 +22570,12 @@
         "primaryKey": "setId",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["setId"],
-            "database_fields": ["set_id"],
+            "fields": [
+                "setId"
+            ],
+            "database_fields": [
+                "set_id"
+            ],
             "where_template": {
                 "set_id": null
             }
@@ -21499,8 +23381,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -21983,8 +23869,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -22149,8 +24039,16 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["assistant", "system", "user"],
-                "enumValues": ["assistant", "system", "user"],
+                "typeReference": [
+                    "assistant",
+                    "system",
+                    "user"
+                ],
+                "enumValues": [
+                    "assistant",
+                    "system",
+                    "user"
+                ],
                 "entityName": "messageTemplate",
                 "databaseTable": "message_template",
                 "foreignKeyReference": null,
@@ -22235,8 +24133,20 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["base64_image", "blob", "image_url", "other", "text"],
-                "enumValues": ["base64_image", "blob", "image_url", "other", "text"],
+                "typeReference": [
+                    "base64_image",
+                    "blob",
+                    "image_url",
+                    "other",
+                    "text"
+                ],
+                "enumValues": [
+                    "base64_image",
+                    "blob",
+                    "image_url",
+                    "other",
+                    "text"
+                ],
                 "entityName": "messageTemplate",
                 "databaseTable": "message_template",
                 "foreignKeyReference": null,
@@ -22459,8 +24369,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -22905,8 +24819,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -23408,8 +25326,22 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["active_testing", "archived", "draft", "in_review", "live", "other"],
-                "enumValues": ["active_testing", "archived", "draft", "in_review", "live", "other"],
+                "typeReference": [
+                    "active_testing",
+                    "archived",
+                    "draft",
+                    "in_review",
+                    "live",
+                    "other"
+                ],
+                "enumValues": [
+                    "active_testing",
+                    "archived",
+                    "draft",
+                    "in_review",
+                    "live",
+                    "other"
+                ],
                 "entityName": "recipe",
                 "databaseTable": "recipe",
                 "foreignKeyReference": null,
@@ -23596,6 +25528,31 @@
                     "entityName": "aiAgent",
                     "databaseTable": "ai_agent",
                     "typeReference": "TypeBrand<AutomationEntity<'aiAgent'>[]>"
+                }
+            },
+            "appletInverse": {
+                "fieldNameFormats": {
+                    "frontend": "appletInverse",
+                    "backend": "applet_Inverse",
+                    "database": "ifk_applet",
+                    "pretty": "Applet Inverse",
+                    "component": "AppletInverse",
+                    "kebab": "appletInverse",
+                    "sqlFunctionRef": "p_ifk_applet",
+                    "RestAPI": "appletInverse",
+                    "GraphQL": "appletInverse",
+                    "custom": "appletInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:applet",
+                "uniqueEntityId": "supabase_automation_matrix:applet",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "applet",
+                    "databaseTable": "applet",
+                    "typeReference": "TypeBrand<AutomationEntity<'applet'>[]>"
                 }
             },
             "recipeDisplayInverse": {
@@ -23798,6 +25755,11 @@
                 "mainTableColumn": "id"
             },
             {
+                "relatedTable": "applet",
+                "relatedColumn": "recipe_id",
+                "mainTableColumn": "id"
+            },
+            {
                 "relatedTable": "recipe_display",
                 "relatedColumn": "recipe",
                 "mainTableColumn": "id"
@@ -23842,8 +25804,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -24144,8 +26110,14 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["input_broker", "output_broker"],
-                "enumValues": ["input_broker", "output_broker"],
+                "typeReference": [
+                    "input_broker",
+                    "output_broker"
+                ],
+                "enumValues": [
+                    "input_broker",
+                    "output_broker"
+                ],
                 "entityName": "recipeBroker",
                 "databaseTable": "recipe_broker",
                 "foreignKeyReference": null,
@@ -24301,8 +26273,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -24751,8 +26727,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -25087,7 +27067,16 @@
                     "save_data",
                     "validation"
                 ],
-                "enumValues": ["comparison", "decision", "other", "post_processing", "pre-Processing", "rating", "save_data", "validation"],
+                "enumValues": [
+                    "comparison",
+                    "decision",
+                    "other",
+                    "post_processing",
+                    "pre-Processing",
+                    "rating",
+                    "save_data",
+                    "validation"
+                ],
                 "entityName": "recipeFunction",
                 "databaseTable": "recipe_function",
                 "foreignKeyReference": null,
@@ -25243,8 +27232,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -25628,8 +27621,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -25934,8 +27931,16 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["primary_model", "trial_model", "verified_model"],
-                "enumValues": ["primary_model", "trial_model", "verified_model"],
+                "typeReference": [
+                    "primary_model",
+                    "trial_model",
+                    "verified_model"
+                ],
+                "enumValues": [
+                    "primary_model",
+                    "trial_model",
+                    "verified_model"
+                ],
                 "entityName": "recipeModel",
                 "databaseTable": "recipe_model",
                 "foreignKeyReference": null,
@@ -26091,8 +28096,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -26476,8 +28485,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -26861,8 +28874,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -27394,6 +29411,621 @@
             }
         ]
     },
+    "subcategory": {
+        "schemaType": "table",
+        "entityName": "subcategory",
+        "uniqueTableId": "supabase_automation_matrix:public:subcategory",
+        "uniqueEntityId": "supabase_automation_matrix:subcategory",
+        "primaryKey": "id",
+        "primaryKeyMetadata": {
+            "type": "single",
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
+            "where_template": {
+                "id": null
+            }
+        },
+        "displayFieldMetadata": {
+            "fieldName": "name",
+            "databaseFieldName": "name"
+        },
+        "defaultFetchStrategy": "fk",
+        "componentProps": {
+            "subComponent": "default",
+            "variant": "default",
+            "placeholder": "default",
+            "size": "default",
+            "textSize": "default",
+            "textColor": "default",
+            "rows": "default",
+            "animation": "default",
+            "fullWidthValue": "default",
+            "fullWidth": "default",
+            "disabled": "default",
+            "className": "default",
+            "type": "default",
+            "onChange": "default",
+            "onBlur": "default",
+            "formatString": "default",
+            "minDate": "default",
+            "maxDate": "default",
+            "numberType": "default"
+        },
+        "entityFields": {
+            "id": {
+                "fieldNameFormats": {
+                    "frontend": "id",
+                    "backend": "id",
+                    "database": "id",
+                    "pretty": "Id",
+                    "component": "Id",
+                    "kebab": "id",
+                    "sqlFunctionRef": "p_id",
+                    "RestAPI": "id",
+                    "GraphQL": "id",
+                    "custom": "id"
+                },
+                "name": "id",
+                "displayName": "Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:subcategory:id",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:id",
+                "dataType": "uuid",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": true,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "subcategory",
+                "databaseTable": "subcategory",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Id\" field for subcategory. This is a required field. Your entry must be an uuid data type.",
+                    "backend": "\"Id\" field for the subcategory table. This is a required field. Your entry must be an uuid data type."
+                }
+            },
+            "categoryId": {
+                "fieldNameFormats": {
+                    "frontend": "categoryId",
+                    "backend": "category_id",
+                    "database": "category_id",
+                    "pretty": "Category Id",
+                    "component": "CategoryId",
+                    "kebab": "category-id",
+                    "sqlFunctionRef": "p_category_id",
+                    "RestAPI": "categoryId",
+                    "GraphQL": "categoryId",
+                    "custom": "categoryId"
+                },
+                "name": "categoryId",
+                "displayName": "Category Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:subcategory:category_id",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:categoryId",
+                "dataType": "uuid",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "FK_SELECT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "subcategory",
+                "databaseTable": "subcategory",
+                "foreignKeyReference": {
+                    "table": "category",
+                    "column": "id",
+                    "entity": "category",
+                    "field": "id"
+                },
+                "description": {
+                    "frontend": "\"Category Id\" field for subcategory. This is a required field. Your entry must be an uuid data type. This field is a reference to a category.",
+                    "backend": "\"Category Id\" field for the subcategory table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the category table."
+                }
+            },
+            "name": {
+                "fieldNameFormats": {
+                    "frontend": "name",
+                    "backend": "name",
+                    "database": "name",
+                    "pretty": "Name",
+                    "component": "Name",
+                    "kebab": "name",
+                    "sqlFunctionRef": "p_name",
+                    "RestAPI": "name",
+                    "GraphQL": "name",
+                    "custom": "name"
+                },
+                "name": "name",
+                "displayName": "Name",
+                "uniqueColumnId": "supabase_automation_matrix:public:subcategory:name",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:name",
+                "dataType": "string",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": true,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "subcategory",
+                "databaseTable": "subcategory",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Name\" field for subcategory. This is a required field. Your entry must be an string data type.",
+                    "backend": "\"Name\" field for the subcategory table. This is a required field. Your entry must be an string data type."
+                }
+            },
+            "description": {
+                "fieldNameFormats": {
+                    "frontend": "description",
+                    "backend": "description",
+                    "database": "description",
+                    "pretty": "Description",
+                    "component": "Description",
+                    "kebab": "description",
+                    "sqlFunctionRef": "p_description",
+                    "RestAPI": "description",
+                    "GraphQL": "description",
+                    "custom": "description"
+                },
+                "name": "description",
+                "displayName": "Description",
+                "uniqueColumnId": "supabase_automation_matrix:public:subcategory:description",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:description",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "subcategory",
+                "databaseTable": "subcategory",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Description\" field for subcategory. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Description\" field for the subcategory table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "slug": {
+                "fieldNameFormats": {
+                    "frontend": "slug",
+                    "backend": "slug",
+                    "database": "slug",
+                    "pretty": "Slug",
+                    "component": "Slug",
+                    "kebab": "slug",
+                    "sqlFunctionRef": "p_slug",
+                    "RestAPI": "slug",
+                    "GraphQL": "slug",
+                    "custom": "slug"
+                },
+                "name": "slug",
+                "displayName": "Slug",
+                "uniqueColumnId": "supabase_automation_matrix:public:subcategory:slug",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:slug",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "subcategory",
+                "databaseTable": "subcategory",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Slug\" field for subcategory. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Slug\" field for the subcategory table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "icon": {
+                "fieldNameFormats": {
+                    "frontend": "icon",
+                    "backend": "icon",
+                    "database": "icon",
+                    "pretty": "Icon",
+                    "component": "Icon",
+                    "kebab": "icon",
+                    "sqlFunctionRef": "p_icon",
+                    "RestAPI": "icon",
+                    "GraphQL": "icon",
+                    "custom": "icon"
+                },
+                "name": "icon",
+                "displayName": "Icon",
+                "uniqueColumnId": "supabase_automation_matrix:public:subcategory:icon",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:icon",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "Target",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "subcategory",
+                "databaseTable": "subcategory",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Icon\" field for subcategory. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Icon\" field for the subcategory table. This is an optional field. Your entry must be an string data type."
+                }
+            },
+            "features": {
+                "fieldNameFormats": {
+                    "frontend": "features",
+                    "backend": "features",
+                    "database": "features",
+                    "pretty": "Features",
+                    "component": "Features",
+                    "kebab": "features",
+                    "sqlFunctionRef": "p_features",
+                    "RestAPI": "features",
+                    "GraphQL": "features",
+                    "custom": "features"
+                },
+                "name": "features",
+                "displayName": "Features",
+                "uniqueColumnId": "supabase_automation_matrix:public:subcategory:features",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:features",
+                "dataType": "string[]",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": true,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "TEXT_ARRAY",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 3,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string[]",
+                "enumValues": null,
+                "entityName": "subcategory",
+                "databaseTable": "subcategory",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Features\" field for subcategory. This is a required field. Your entry must be an string[] data type. You can enter one or more entries.",
+                    "backend": "\"Features\" field for the subcategory table. This is a required field. Your entry must be an string[] data type. You can enter one or more entries."
+                }
+            },
+            "createdAt": {
+                "fieldNameFormats": {
+                    "frontend": "createdAt",
+                    "backend": "created_at",
+                    "database": "created_at",
+                    "pretty": "Created At",
+                    "component": "CreatedAt",
+                    "kebab": "created-at",
+                    "sqlFunctionRef": "p_created_at",
+                    "RestAPI": "createdAt",
+                    "GraphQL": "createdAt",
+                    "custom": "createdAt"
+                },
+                "name": "createdAt",
+                "displayName": "Created At",
+                "uniqueColumnId": "supabase_automation_matrix:public:subcategory:created_at",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:createdAt",
+                "dataType": "date",
+                "isRequired": true,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "DATE_PICKER",
+                "componentProps": {
+                    "subComponent": "timestamptz",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": true
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "Date",
+                "enumValues": null,
+                "entityName": "subcategory",
+                "databaseTable": "subcategory",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Created At\" field for subcategory. This is a required field. Your entry must be an date data type.",
+                    "backend": "\"Created At\" field for the subcategory table. This is a required field. Your entry must be an date data type."
+                }
+            },
+            "categoryReference": {
+                "fieldNameFormats": {
+                    "frontend": "categoryReference",
+                    "backend": "category_reference",
+                    "database": "ref_category",
+                    "pretty": "Category Reference",
+                    "component": "CategoryReference",
+                    "kebab": "categoryReference",
+                    "sqlFunctionRef": "p_ref_category",
+                    "RestAPI": "categoryReference",
+                    "GraphQL": "categoryReference",
+                    "custom": "categoryReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:category:id",
+                "uniqueFieldId": "supabase_automation_matrix:category:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "category",
+                    "typeReference": "TypeBrand<AutomationEntity<'category'>[]>"
+                }
+            }
+        },
+        "entityNameFormats": {
+            "frontend": "subcategory",
+            "backend": "subcategory",
+            "database": "subcategory",
+            "pretty": "Subcategory",
+            "component": "Subcategory",
+            "kebab": "subcategory",
+            "sqlFunctionRef": "p_subcategory",
+            "RestAPI": "subcategory",
+            "GraphQL": "subcategory",
+            "custom": "subcategory"
+        },
+        "relationships": [
+            {
+                "column": "category_id",
+                "relatedTable": "category",
+                "relatedColumn": "id"
+            }
+        ]
+    },
     "systemFunction": {
         "schemaType": "table",
         "entityName": "systemFunction",
@@ -27402,8 +30034,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -28008,8 +30644,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -28649,8 +31289,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -28996,8 +31640,12 @@
         "primaryKey": "userId",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["userId"],
-            "database_fields": ["user_id"],
+            "fields": [
+                "userId"
+            ],
+            "database_fields": [
+                "user_id"
+            ],
             "where_template": {
                 "user_id": null
             }
@@ -29317,8 +31965,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -29989,8 +32641,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -30423,8 +33079,20 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["index", "little", "middle", "ring", "thumb"],
-                "enumValues": ["index", "little", "middle", "ring", "thumb"],
+                "typeReference": [
+                    "index",
+                    "little",
+                    "middle",
+                    "ring",
+                    "thumb"
+                ],
+                "enumValues": [
+                    "index",
+                    "little",
+                    "middle",
+                    "ring",
+                    "thumb"
+                ],
                 "entityName": "wcImpairmentDefinition",
                 "databaseTable": "wc_impairment_definition",
                 "foreignKeyReference": null,
@@ -30487,8 +33155,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }
@@ -30988,8 +33660,16 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": ["default", "left", "right"],
-                "enumValues": ["default", "left", "right"],
+                "typeReference": [
+                    "default",
+                    "left",
+                    "right"
+                ],
+                "enumValues": [
+                    "default",
+                    "left",
+                    "right"
+                ],
                 "entityName": "wcInjury",
                 "databaseTable": "wc_injury",
                 "foreignKeyReference": null,
@@ -31535,8 +34215,12 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": ["id"],
-            "database_fields": ["id"],
+            "fields": [
+                "id"
+            ],
+            "database_fields": [
+                "id"
+            ],
             "where_template": {
                 "id": null
             }

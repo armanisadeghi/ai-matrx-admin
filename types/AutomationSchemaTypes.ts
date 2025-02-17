@@ -71,6 +71,7 @@ export type AutomationTableName =
     | "aiModelEndpoint"
     | "aiProvider"
     | "aiSettings"
+    | "applet"
     | "arg"
     | "audioLabel"
     | "audioRecording"
@@ -81,6 +82,7 @@ export type AutomationTableName =
     | "brokerValue"
     | "bucketStructures"
     | "bucketTreeStructures"
+    | "category"
     | "compiledRecipe"
     | "dataBroker"
     | "dataInputComponent"
@@ -106,6 +108,7 @@ export type AutomationTableName =
     | "recipeProcessor"
     | "recipeTool"
     | "registeredFunction"
+    | "subcategory"
     | "systemFunction"
     | "tool"
     | "transformer"
@@ -178,6 +181,13 @@ export type AiSettingsRecordWithKey = Expand<EntityDataWithKey<"aiSettings">>;
 export type AiSettingsProcessed = Expand<ProcessedEntityData<"aiSettings">>;
 export type AiSettingsData = Expand<EntityDataMixed<"aiSettings">>;
 
+export type AppletType = AutomationEntity<"applet">;
+export type AppletDataRequired = Expand<EntityData<"applet">>;
+export type AppletDataOptional = Expand<EntityDataOptional<"applet">>;
+export type AppletRecordWithKey = Expand<EntityDataWithKey<"applet">>;
+export type AppletProcessed = Expand<ProcessedEntityData<"applet">>;
+export type AppletData = Expand<EntityDataMixed<"applet">>;
+
 export type ArgType = AutomationEntity<"arg">;
 export type ArgDataRequired = Expand<EntityData<"arg">>;
 export type ArgDataOptional = Expand<EntityDataOptional<"arg">>;
@@ -247,6 +257,13 @@ export type BucketTreeStructuresDataOptional = Expand<EntityDataOptional<"bucket
 export type BucketTreeStructuresRecordWithKey = Expand<EntityDataWithKey<"bucketTreeStructures">>;
 export type BucketTreeStructuresProcessed = Expand<ProcessedEntityData<"bucketTreeStructures">>;
 export type BucketTreeStructuresData = Expand<EntityDataMixed<"bucketTreeStructures">>;
+
+export type CategoryType = AutomationEntity<"category">;
+export type CategoryDataRequired = Expand<EntityData<"category">>;
+export type CategoryDataOptional = Expand<EntityDataOptional<"category">>;
+export type CategoryRecordWithKey = Expand<EntityDataWithKey<"category">>;
+export type CategoryProcessed = Expand<ProcessedEntityData<"category">>;
+export type CategoryData = Expand<EntityDataMixed<"category">>;
 
 export type CompiledRecipeType = AutomationEntity<"compiledRecipe">;
 export type CompiledRecipeDataRequired = Expand<EntityData<"compiledRecipe">>;
@@ -422,6 +439,13 @@ export type RegisteredFunctionDataOptional = Expand<EntityDataOptional<"register
 export type RegisteredFunctionRecordWithKey = Expand<EntityDataWithKey<"registeredFunction">>;
 export type RegisteredFunctionProcessed = Expand<ProcessedEntityData<"registeredFunction">>;
 export type RegisteredFunctionData = Expand<EntityDataMixed<"registeredFunction">>;
+
+export type SubcategoryType = AutomationEntity<"subcategory">;
+export type SubcategoryDataRequired = Expand<EntityData<"subcategory">>;
+export type SubcategoryDataOptional = Expand<EntityDataOptional<"subcategory">>;
+export type SubcategoryRecordWithKey = Expand<EntityDataWithKey<"subcategory">>;
+export type SubcategoryProcessed = Expand<ProcessedEntityData<"subcategory">>;
+export type SubcategoryData = Expand<EntityDataMixed<"subcategory">>;
 
 export type SystemFunctionType = AutomationEntity<"systemFunction">;
 export type SystemFunctionDataRequired = Expand<EntityData<"systemFunction">>;
