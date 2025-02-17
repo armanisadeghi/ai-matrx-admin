@@ -137,7 +137,7 @@
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": [],
+        "inverseReferences": ["applet"],
         "relationshipDetails": {
             "entityName": "compiledRecipe",
             "table_name": "compiled_recipe",
@@ -153,7 +153,17 @@
                     "constraint_name": "compiled_recipe_recipe_id_fkey"
                 }
             },
-            "referencedBy": {}
+            "referencedBy": {
+                "applet": {
+                    "foreign_table": "applet",
+                    "foreign_entity": "applet",
+                    "field": "compiledRecipeId",
+                    "column": "compiled_recipe_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "applet_compiled_recipe_id_fkey"
+                }
+            }
         }
     },
     "flashcardSets": {
@@ -437,9 +447,9 @@
     },
     "applet": {
         "selfReferential": [],
-        "manyToMany": [],
+        "manyToMany": ["compiledRecipe", "subcategory"],
         "oneToOne": [],
-        "manyToOne": ["recipe"],
+        "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
         "inverseReferences": [],
@@ -447,15 +457,25 @@
             "entityName": "applet",
             "table_name": "applet",
             "foreignKeys": {
-                "recipe": {
-                    "foreign_table": "recipe",
-                    "foreign_entity": "recipe",
-                    "column": "recipe_id",
-                    "fieldName": "recipeId",
+                "compiledRecipe": {
+                    "foreign_table": "compiled_recipe",
+                    "foreign_entity": "compiledRecipe",
+                    "column": "compiled_recipe_id",
+                    "fieldName": "compiledRecipeId",
                     "foreign_field": "id",
                     "foreign_column": "id",
-                    "relationship_type": "many-to-one",
-                    "constraint_name": "applet_recipe_id_fkey"
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "applet_compiled_recipe_id_fkey"
+                },
+                "subcategory": {
+                    "foreign_table": "subcategory",
+                    "foreign_entity": "subcategory",
+                    "column": "subcategory_id",
+                    "fieldName": "subcategoryId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "applet_subcategory_id_fkey"
                 }
             },
             "referencedBy": {}
@@ -991,14 +1011,13 @@
         "inverseReferences": [
             "compiledRecipe",
             "aiAgent",
-            "applet",
             "recipeDisplay",
             "recipeProcessor",
             "recipeModel",
             "recipeBroker",
+            "recipeMessage",
             "recipeTool",
-            "recipeFunction",
-            "recipeMessage"
+            "recipeFunction"
         ],
         "relationshipDetails": {
             "entityName": "recipe",
@@ -1022,15 +1041,6 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "constraint_name": "ai_agent_recipe_id_fkey"
-                },
-                "applet": {
-                    "foreign_table": "applet",
-                    "foreign_entity": "applet",
-                    "field": "recipeId",
-                    "column": "recipe_id",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "constraint_name": "applet_recipe_id_fkey"
                 },
                 "recipeDisplay": {
                     "foreign_table": "recipe_display",
@@ -1068,6 +1078,15 @@
                     "foreign_column": "id",
                     "constraint_name": "recipe_broker_recipe_fkey"
                 },
+                "recipeMessage": {
+                    "foreign_table": "recipe_message",
+                    "foreign_entity": "recipeMessage",
+                    "field": "recipeId",
+                    "column": "recipe_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "recipe_message_recipe_id_fkey"
+                },
                 "recipeTool": {
                     "foreign_table": "recipe_tool",
                     "foreign_entity": "recipeTool",
@@ -1085,15 +1104,6 @@
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "constraint_name": "recipe_function_recipe_fkey"
-                },
-                "recipeMessage": {
-                    "foreign_table": "recipe_message",
-                    "foreign_entity": "recipeMessage",
-                    "field": "recipeId",
-                    "column": "recipe_id",
-                    "foreign_field": "id",
-                    "foreign_column": "id",
-                    "constraint_name": "recipe_message_recipe_id_fkey"
                 }
             }
         }
@@ -1763,7 +1773,7 @@
         "manyToOne": ["category"],
         "oneToMany": [],
         "undefined": [],
-        "inverseReferences": [],
+        "inverseReferences": ["applet"],
         "relationshipDetails": {
             "entityName": "subcategory",
             "table_name": "subcategory",
@@ -1779,7 +1789,17 @@
                     "constraint_name": "subcategory_category_id_fkey"
                 }
             },
-            "referencedBy": {}
+            "referencedBy": {
+                "applet": {
+                    "foreign_table": "applet",
+                    "foreign_entity": "applet",
+                    "field": "subcategoryId",
+                    "column": "subcategory_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "applet_subcategory_id_fkey"
+                }
+            }
         }
     }
 }

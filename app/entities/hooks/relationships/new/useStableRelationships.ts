@@ -10,7 +10,8 @@ import { RelationshipMapper } from '../relationshipDefinitions';
 import { processJoinedData } from '../utils';
 
 
-const DEBUG_PRINTS = true;
+const VERBOSE_PRINTS = false;
+const DEBUG_PRINTS = false;
 
 export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: MatrxRecordId | string | number) => {
     const parentId = anyParentId ? (typeof anyParentId === 'string' && anyParentId.includes(':') ? toPkValue(anyParentId) : anyParentId.toString()) : undefined;
@@ -24,11 +25,13 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
     
     const parentChanged = activeParentId !== parentId;
 
-    // console.log('-------------');
-    // console.log('parentChanged', parentChanged);
-    // console.log('parentId', parentId);
-    // console.log('activeParentId', activeParentId);
-    // console.log('-------------');
+    if (DEBUG_PRINTS) {
+        console.log('-------------');
+        console.log('parentChanged', parentChanged);
+        console.log('parentId', parentId);
+        console.log('activeParentId', activeParentId);
+        console.log('-------------');
+    }
 
     const stableRef = useRef({
         lastStableRecords: null,
@@ -39,7 +42,7 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
         lastStableChildIds: null as string[] | null,
     });
 
-    if (DEBUG_PRINTS) {
+    if (VERBOSE_PRINTS) {
         console.log('stableRef', stableRef.current);
     }
 
@@ -54,6 +57,12 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
     const joiningEntity = relDefSimple.join.name;
     const childEntity = relDefSimple.child.name;
 
+    if (VERBOSE_PRINTS) {
+        console.log('parentEntity', parentEntity);
+        console.log('joiningEntity', joiningEntity);
+        console.log('childEntity', childEntity);
+    }
+
     // Entity tooling setup
     const parentTools = useEntityTools(parentEntity);
     const joinTools = useEntityTools(joiningEntity);
@@ -64,6 +73,11 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
     // Data fetching
     const parentRecord = useGetOrFetchRecord({ entityName: parentEntity, simpleId: activeParentId });
     const parentMatrxid = parentRecord?.matrxRecordId;
+
+    if (DEBUG_PRINTS) {
+        console.log('parentRecord', parentRecord);
+        console.log('parentMatrxid', parentMatrxid);
+    }
 
     const isParentLoading = useAppSelector(parentSelectors.selectIsLoading);
     const isRawJoinLoading = useAppSelector(joinSelectors.selectIsLoading);

@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { BrokerComponentRenderer } from '@/components/brokers/wrappers/withWrapper';
-import { UsePrepareRecipeToRunReturn } from '@/hooks/run-recipe/usePrepareRecipeToRun';
+import { RunGenericHookType } from '@/hooks/run-recipe/useRunApps';
 
 interface BrokerComponentsDisplayProps {
-  prepareRecipeHook: UsePrepareRecipeToRunReturn;
+  prepareRecipeHook: RunGenericHookType;
   recipeTitle: string;
   recipeDescription: string;
   recipeActionText: string;

@@ -1,10 +1,10 @@
-import { useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
+import { FetchMode, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
 import { useThrottle } from '@uidotdev/usehooks';
 import { useEffect } from 'react';
 
-export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: MatrxRecordId[], shouldProcess = true) {
+export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: MatrxRecordId[], shouldProcess = true, fetchMode: FetchMode = 'fkIfk') {
     const dispatch = useAppDispatch();
     const { selectors, actions } = useEntityTools(entityName);
     const recordsWithKeys = useAppSelector((state) => selectors.selectRecordsWithKeys(state, matrxRecordIds)) as EntityDataWithKey<EntityKeys>[];
@@ -14,7 +14,7 @@ export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: Mat
             dispatch(
                 actions.getOrFetchSelectedRecords({
                     matrxRecordIds,
-                    fetchMode: 'fkIfk',
+                    fetchMode: fetchMode,
                 })
             );
         }
@@ -28,9 +28,10 @@ type UseGetOrFetchRecordProps = {
     matrxRecordId?: MatrxRecordId;
     simpleId?: string | number;
     shouldProcess?: boolean;
+    fetchMode?: FetchMode;
 };
 
-export function useGetOrFetchRecord({ entityName, matrxRecordId, simpleId, shouldProcess = true }: UseGetOrFetchRecordProps) {
+export function useGetOrFetchRecord({ entityName, matrxRecordId, simpleId, shouldProcess = true, fetchMode = 'fkIfk' }: UseGetOrFetchRecordProps) {
     const dispatch = useAppDispatch();
     const { selectors, actions } = useEntityTools(entityName);
 
@@ -42,7 +43,7 @@ export function useGetOrFetchRecord({ entityName, matrxRecordId, simpleId, shoul
             dispatch(
                 actions.getOrFetchSelectedRecords({
                     matrxRecordIds: [recordId],
-                    fetchMode: 'fkIfk',
+                    fetchMode: fetchMode,
                 })
             );
         }

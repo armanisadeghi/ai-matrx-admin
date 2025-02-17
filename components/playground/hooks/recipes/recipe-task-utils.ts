@@ -37,17 +37,16 @@ export function createRecipeOverrides(settingsList: Record<string, any>[]): Reci
     }));
 }
 
+
 export function createRecipeTaskDataList(
     compiledRecipe: CompiledRecipe,
-    activeRecipeId: string
 ): RecipeTaskData[] {
-    const { brokers, settings } = compiledRecipe;
-
+    const { id, brokers, settings } = compiledRecipe;
     const recipeTaskBrokers = createRecipeTaskBrokers(brokers as DataBrokerRecordWithKey[]);
     const recipeOverrides = createRecipeOverrides(settings);
 
     return recipeOverrides.map((override) => ({
-        recipe_id: activeRecipeId,
+        recipe_id: id,
         broker_values: recipeTaskBrokers,
         overrides: override,
     }));
@@ -55,8 +54,7 @@ export function createRecipeTaskDataList(
 
 export function createRecipeTaskData(
     compiledRecipe: CompiledRecipe,
-    activeRecipeId: string
 ): RecipeTaskData {
-    const recipeTaskDataList = createRecipeTaskDataList(compiledRecipe, activeRecipeId);
+    const recipeTaskDataList = createRecipeTaskDataList(compiledRecipe);
     return recipeTaskDataList[0];
 }

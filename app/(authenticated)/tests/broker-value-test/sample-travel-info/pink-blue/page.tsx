@@ -26,7 +26,7 @@ export default function PinkBlueBrokerPage() {
     const { compiledRecipe } = prepareRecipeHook;
 
     const getLatestTasks = useCallback(async () => {
-        const firstRecipeTask = createRecipeTaskData(compiledRecipe as unknown as CompiledRecipe, recipeId);
+        const firstRecipeTask = createRecipeTaskData(compiledRecipe as unknown as CompiledRecipe);
 
         return [firstRecipeTask];
     }, [compiledRecipe]);

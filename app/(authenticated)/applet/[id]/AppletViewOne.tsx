@@ -11,6 +11,7 @@ import AnimatedEventComponent from "@/components/brokers/output/AnimatedEventCom
 import MultiSectionMarkdownCard from "@/components/mardown-display/MultiSectionMarkdownCard";
 import { separatedMarkdownParser } from "@/components/mardown-display/parser-separated";
 import { THEMES } from "@/components/mardown-display/themes";
+import { useRunApps } from "@/hooks/run-recipe/useRunApps";
 
 const TEXT_IDS = [
     "8255edc9-5170-4f67-8d40-718e77a3561c",
@@ -24,23 +25,15 @@ const className = "";
 
 interface AppletViewOneProps {
     appletId: string;
-}   
+}
 
 export const AppletViewOne = ({ appletId }: AppletViewOneProps) => {
-    
-
-    
-    const [recipeId, setRecipeId] = useState(TEXT_IDS[2]);
-    const recipeRecordKey = `id:${recipeId}`;
-    const prepareRecipeHook = usePrepareRecipeToRun({
-        recipeRecordKey: recipeRecordKey,
-        version: "latest",
-    });
+    const prepareRecipeHook = useRunApps(appletId);
 
     const { compiledRecipe } = prepareRecipeHook;
 
     const getLatestTasks = useCallback(async () => {
-        const firstRecipeTask = createRecipeTaskData(compiledRecipe as unknown as CompiledRecipe, recipeId);
+        const firstRecipeTask = createRecipeTaskData(compiledRecipe as unknown as CompiledRecipe);
 
         return [firstRecipeTask];
     }, [compiledRecipe]);
@@ -63,6 +56,6 @@ export const AppletViewOne = ({ appletId }: AppletViewOneProps) => {
             )}
         </div>
     );
-}
+};
 
 export default AppletViewOne;

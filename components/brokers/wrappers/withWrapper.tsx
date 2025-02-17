@@ -20,12 +20,13 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { useCreateUpdateBrokerValue } from "../hooks/useBrokerValueNew";
-import { BrokerWithComponent, UsePrepareRecipeToRunReturn } from "@/hooks/run-recipe/usePrepareRecipeToRun";
+import { UsePrepareRecipeToRunReturn } from "@/hooks/run-recipe/usePrepareRecipeToRun";
+import { BrokerWithComponent, BrokerWithComponentsMap } from "@/hooks/run-recipe/types";
 import { useOtherOption } from "../value-components/hooks/useOtherOption";
 import { Plus, Minus, Check } from "lucide-react";
 import TextArrayInput from "@/components/ui/matrx/TextArrayInput";
 import { generateColorStyle, TAILWIND_COLORS, TailwindColor  } from "@/constants/rich-text-constants";
-
+import { RunGenericHookType } from "@/hooks/run-recipe/useRunApps";
 interface BrokerComponentProps extends BrokerWithComponent {
     value: any;
     onChange: (value: any) => void;
@@ -654,11 +655,11 @@ export const BrokerWrapper = React.memo<BrokerWrapperProps>(({ brokerId, brokerN
 BrokerWrapper.displayName = "BrokerWrapper";
 
 interface BrokerComponentRendererProps {
-    prepareRecipeHook: UsePrepareRecipeToRunReturn;
+    prepareRecipeHook: RunGenericHookType   ;
 }
 
 export const BrokerComponentRenderer: React.FC<BrokerComponentRendererProps> = ({ prepareRecipeHook }) => {
-    const { brokerComponentMetadataMap, recipeRecordKey, selectedVersion, isReduxLoading } = prepareRecipeHook;
+    const { brokerComponentMetadataMap, isReduxLoading } = prepareRecipeHook;
 
     if (isReduxLoading) {
         return (

@@ -7,12 +7,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -526,12 +522,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -980,12 +972,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -1556,12 +1544,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -2456,12 +2440,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -3105,12 +3085,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -3551,12 +3527,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -4979,12 +4951,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -4993,7 +4961,7 @@
             "fieldName": "name",
             "databaseFieldName": "name"
         },
-        "defaultFetchStrategy": "fk",
+        "defaultFetchStrategy": "m2mAndFk",
         "componentProps": {
             "subComponent": "default",
             "variant": "default",
@@ -5344,16 +5312,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "other",
-                    "recipe",
-                    "workflow"
-                ],
-                "enumValues": [
-                    "other",
-                    "recipe",
-                    "workflow"
-                ],
+                "typeReference": ["other", "recipe", "workflow"],
+                "enumValues": ["other", "recipe", "workflow"],
                 "entityName": "applet",
                 "databaseTable": "applet",
                 "foreignKeyReference": null,
@@ -5362,25 +5322,25 @@
                     "backend": "\"Type\" field for the applet table. This is a required field. Your entry must be an string data type."
                 }
             },
-            "recipeId": {
+            "compiledRecipeId": {
                 "fieldNameFormats": {
-                    "frontend": "recipeId",
-                    "backend": "recipe_id",
-                    "database": "recipe_id",
-                    "pretty": "Recipe Id",
-                    "component": "RecipeId",
-                    "kebab": "recipe-id",
-                    "sqlFunctionRef": "p_recipe_id",
-                    "RestAPI": "recipeId",
-                    "GraphQL": "recipeId",
-                    "custom": "recipeId"
+                    "frontend": "compiledRecipeId",
+                    "backend": "compiled_recipe_id",
+                    "database": "compiled_recipe_id",
+                    "pretty": "Compiled Recipe Id",
+                    "component": "CompiledRecipeId",
+                    "kebab": "compiled-recipe-id",
+                    "sqlFunctionRef": "p_compiled_recipe_id",
+                    "RestAPI": "compiledRecipeId",
+                    "GraphQL": "compiledRecipeId",
+                    "custom": "compiledRecipeId"
                 },
-                "name": "recipeId",
-                "displayName": "Recipe Id",
-                "uniqueColumnId": "supabase_automation_matrix:public:applet:recipe_id",
-                "uniqueFieldId": "supabase_automation_matrix:applet:recipeId",
+                "name": "compiledRecipeId",
+                "displayName": "Compiled Recipe Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:compiled_recipe_id",
+                "uniqueFieldId": "supabase_automation_matrix:applet:compiledRecipeId",
                 "dataType": "uuid",
-                "isRequired": true,
+                "isRequired": false,
                 "maxLength": "null",
                 "isArray": false,
                 "defaultValue": "null",
@@ -5413,7 +5373,7 @@
                     "step": "default",
                     "numberType": "default",
                     "options": "default",
-                    "required": true
+                    "required": false
                 },
                 "structure": "single",
                 "isNative": true,
@@ -5422,14 +5382,14 @@
                 "entityName": "applet",
                 "databaseTable": "applet",
                 "foreignKeyReference": {
-                    "table": "recipe",
+                    "table": "compiled_recipe",
                     "column": "id",
-                    "entity": "recipe",
+                    "entity": "compiledRecipe",
                     "field": "id"
                 },
                 "description": {
-                    "frontend": "\"Recipe Id\" field for applet. This is a required field. Your entry must be an uuid data type. This field is a reference to a recipe.",
-                    "backend": "\"Recipe Id\" field for the applet table. This is a required field. Your entry must be an uuid data type. This field is a foreign key reference to the recipe table."
+                    "frontend": "\"Compiled Recipe Id\" field for applet. This is an optional field. Your entry must be an uuid data type. This field is a reference to a compiledRecipe.",
+                    "backend": "\"Compiled Recipe Id\" field for the applet table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the compiled_recipe table."
                 }
             },
             "slug": {
@@ -5887,28 +5847,122 @@
                     "backend": "\"Next Step Config\" field for the applet table. This is an optional field. Your entry must be an object data type."
                 }
             },
-            "recipeReference": {
+            "subcategoryId": {
                 "fieldNameFormats": {
-                    "frontend": "recipeReference",
-                    "backend": "recipe_reference",
-                    "database": "ref_recipe",
-                    "pretty": "Recipe Reference",
-                    "component": "RecipeReference",
-                    "kebab": "recipeReference",
-                    "sqlFunctionRef": "p_ref_recipe",
-                    "RestAPI": "recipeReference",
-                    "GraphQL": "recipeReference",
-                    "custom": "recipeReference"
+                    "frontend": "subcategoryId",
+                    "backend": "subcategory_id",
+                    "database": "subcategory_id",
+                    "pretty": "Subcategory Id",
+                    "component": "SubcategoryId",
+                    "kebab": "subcategory-id",
+                    "sqlFunctionRef": "p_subcategory_id",
+                    "RestAPI": "subcategoryId",
+                    "GraphQL": "subcategoryId",
+                    "custom": "subcategoryId"
                 },
-                "uniqueColumnId": "supabase_automation_matrix:recipe:id",
-                "uniqueFieldId": "supabase_automation_matrix:recipe:id",
+                "name": "subcategoryId",
+                "displayName": "Subcategory Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:applet:subcategory_id",
+                "uniqueFieldId": "supabase_automation_matrix:applet:subcategoryId",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "FK_SELECT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "applet",
+                "databaseTable": "applet",
+                "foreignKeyReference": {
+                    "table": "subcategory",
+                    "column": "id",
+                    "entity": "subcategory",
+                    "field": "id"
+                },
+                "description": {
+                    "frontend": "\"Subcategory Id\" field for applet. This is an optional field. Your entry must be an uuid data type. This field is a reference to a subcategory.",
+                    "backend": "\"Subcategory Id\" field for the applet table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the subcategory table."
+                }
+            },
+            "compiledRecipeReference": {
+                "fieldNameFormats": {
+                    "frontend": "compiledRecipeReference",
+                    "backend": "compiled_recipe_reference",
+                    "database": "ref_compiled_recipe",
+                    "pretty": "Compiled Recipe Reference",
+                    "component": "CompiledRecipeReference",
+                    "kebab": "compiled-recipeReference",
+                    "sqlFunctionRef": "p_ref_compiled_recipe",
+                    "RestAPI": "compiledRecipeReference",
+                    "GraphQL": "compiledRecipeReference",
+                    "custom": "compiledRecipeReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:compiled_recipe:id",
+                "uniqueFieldId": "supabase_automation_matrix:compiledRecipe:id",
                 "type": "object",
                 "format": "single",
                 "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
                 "structure": {
                     "structure": "foreignKey",
-                    "databaseTable": "recipe",
-                    "typeReference": "TypeBrand<AutomationEntity<'recipe'>[]>"
+                    "databaseTable": "compiled_recipe",
+                    "typeReference": "TypeBrand<AutomationEntity<'compiledRecipe'>[]>"
+                }
+            },
+            "subcategoryReference": {
+                "fieldNameFormats": {
+                    "frontend": "subcategoryReference",
+                    "backend": "subcategory_reference",
+                    "database": "ref_subcategory",
+                    "pretty": "Subcategory Reference",
+                    "component": "SubcategoryReference",
+                    "kebab": "subcategoryReference",
+                    "sqlFunctionRef": "p_ref_subcategory",
+                    "RestAPI": "subcategoryReference",
+                    "GraphQL": "subcategoryReference",
+                    "custom": "subcategoryReference"
+                },
+                "uniqueColumnId": "supabase_automation_matrix:subcategory:id",
+                "uniqueFieldId": "supabase_automation_matrix:subcategory:id",
+                "type": "object",
+                "format": "single",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "foreignKey",
+                    "databaseTable": "subcategory",
+                    "typeReference": "TypeBrand<AutomationEntity<'subcategory'>[]>"
                 }
             }
         },
@@ -5926,8 +5980,13 @@
         },
         "relationships": [
             {
-                "column": "recipe_id",
-                "relatedTable": "recipe",
+                "column": "compiled_recipe_id",
+                "relatedTable": "compiled_recipe",
+                "relatedColumn": "id"
+            },
+            {
+                "column": "subcategory_id",
+                "relatedTable": "subcategory",
                 "relatedColumn": "id"
             }
         ]
@@ -5940,12 +5999,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -6321,24 +6376,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "bool",
-                    "dict",
-                    "float",
-                    "int",
-                    "list",
-                    "str",
-                    "url"
-                ],
-                "enumValues": [
-                    "bool",
-                    "dict",
-                    "float",
-                    "int",
-                    "list",
-                    "str",
-                    "url"
-                ],
+                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
                 "entityName": "arg",
                 "databaseTable": "arg",
                 "foreignKeyReference": null,
@@ -6535,12 +6574,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -6886,12 +6921,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -7636,12 +7667,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -8021,12 +8048,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -8355,28 +8378,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "api",
-                    "chance",
-                    "database",
-                    "environment",
-                    "file",
-                    "function",
-                    "generated_data",
-                    "none",
-                    "user_input"
-                ],
-                "enumValues": [
-                    "api",
-                    "chance",
-                    "database",
-                    "environment",
-                    "file",
-                    "function",
-                    "generated_data",
-                    "none",
-                    "user_input"
-                ],
+                "typeReference": ["api", "chance", "database", "environment", "file", "function", "generated_data", "none", "user_input"],
+                "enumValues": ["api", "chance", "database", "environment", "file", "function", "generated_data", "none", "user_input"],
                 "entityName": "automationBoundaryBroker",
                 "databaseTable": "automation_boundary_broker",
                 "foreignKeyReference": null,
@@ -8461,20 +8464,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "api_response",
-                    "database",
-                    "file",
-                    "function",
-                    "user_output"
-                ],
-                "enumValues": [
-                    "api_response",
-                    "database",
-                    "file",
-                    "function",
-                    "user_output"
-                ],
+                "typeReference": ["api_response", "database", "file", "function", "user_output"],
+                "enumValues": ["api_response", "database", "file", "function", "user_output"],
                 "entityName": "automationBoundaryBroker",
                 "databaseTable": "automation_boundary_broker",
                 "foreignKeyReference": null,
@@ -8565,12 +8556,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -9127,12 +9114,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -9443,24 +9426,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "bool",
-                    "dict",
-                    "float",
-                    "int",
-                    "list",
-                    "str",
-                    "url"
-                ],
-                "enumValues": [
-                    "bool",
-                    "dict",
-                    "float",
-                    "int",
-                    "list",
-                    "str",
-                    "url"
-                ],
+                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
                 "entityName": "broker",
                 "databaseTable": "broker",
                 "foreignKeyReference": null,
@@ -9626,28 +9593,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "api",
-                    "chance",
-                    "database",
-                    "environment",
-                    "file",
-                    "function",
-                    "generated_data",
-                    "none",
-                    "user_input"
-                ],
-                "enumValues": [
-                    "api",
-                    "chance",
-                    "database",
-                    "environment",
-                    "file",
-                    "function",
-                    "generated_data",
-                    "none",
-                    "user_input"
-                ],
+                "typeReference": ["api", "chance", "database", "environment", "file", "function", "generated_data", "none", "user_input"],
+                "enumValues": ["api", "chance", "database", "environment", "file", "function", "generated_data", "none", "user_input"],
                 "entityName": "broker",
                 "databaseTable": "broker",
                 "foreignKeyReference": null,
@@ -10257,20 +10204,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "api_response",
-                    "database",
-                    "file",
-                    "function",
-                    "user_output"
-                ],
-                "enumValues": [
-                    "api_response",
-                    "database",
-                    "file",
-                    "function",
-                    "user_output"
-                ],
+                "typeReference": ["api_response", "database", "file", "function", "user_output"],
+                "enumValues": ["api_response", "database", "file", "function", "user_output"],
                 "entityName": "broker",
                 "databaseTable": "broker",
                 "foreignKeyReference": null,
@@ -11016,12 +10951,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -11701,12 +11632,8 @@
         "primaryKey": "bucketId",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "bucketId"
-            ],
-            "database_fields": [
-                "bucket_id"
-            ],
+            "fields": ["bucketId"],
+            "database_fields": ["bucket_id"],
             "where_template": {
                 "bucket_id": null
             }
@@ -11956,12 +11883,8 @@
         "primaryKey": "bucketId",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "bucketId"
-            ],
-            "database_fields": [
-                "bucket_id"
-            ],
+            "fields": ["bucketId"],
+            "database_fields": ["bucket_id"],
             "where_template": {
                 "bucket_id": null
             }
@@ -12211,12 +12134,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -12692,12 +12611,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -12706,7 +12621,7 @@
             "fieldName": "id",
             "databaseFieldName": "id"
         },
-        "defaultFetchStrategy": "fk",
+        "defaultFetchStrategy": "fkIfkAndM2M",
         "componentProps": {
             "subComponent": "default",
             "variant": "default",
@@ -13347,6 +13262,31 @@
                     "databaseTable": "recipe",
                     "typeReference": "TypeBrand<AutomationEntity<'recipe'>[]>"
                 }
+            },
+            "appletInverse": {
+                "fieldNameFormats": {
+                    "frontend": "appletInverse",
+                    "backend": "applet_Inverse",
+                    "database": "ifk_applet",
+                    "pretty": "Applet Inverse",
+                    "component": "AppletInverse",
+                    "kebab": "appletInverse",
+                    "sqlFunctionRef": "p_ifk_applet",
+                    "RestAPI": "appletInverse",
+                    "GraphQL": "appletInverse",
+                    "custom": "appletInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:applet",
+                "uniqueEntityId": "supabase_automation_matrix:applet",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "applet",
+                    "databaseTable": "applet",
+                    "typeReference": "TypeBrand<AutomationEntity<'applet'>[]>"
+                }
             }
         },
         "entityNameFormats": {
@@ -13366,6 +13306,11 @@
                 "column": "recipe_id",
                 "relatedTable": "recipe",
                 "relatedColumn": "id"
+            },
+            {
+                "relatedTable": "applet",
+                "relatedColumn": "compiled_recipe_id",
+                "mainTableColumn": "id"
             }
         ]
     },
@@ -13377,12 +13322,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -13628,24 +13569,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "bool",
-                    "dict",
-                    "float",
-                    "int",
-                    "list",
-                    "str",
-                    "url"
-                ],
-                "enumValues": [
-                    "bool",
-                    "dict",
-                    "float",
-                    "int",
-                    "list",
-                    "str",
-                    "url"
-                ],
+                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
                 "entityName": "dataBroker",
                 "databaseTable": "data_broker",
                 "foreignKeyReference": null,
@@ -14201,12 +14126,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -15915,34 +15836,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
-                "enumValues": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
+                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -16055,34 +15950,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
-                "enumValues": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
+                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -16195,34 +16064,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
-                "enumValues": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
+                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -16335,34 +16178,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
-                "enumValues": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
+                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -16475,34 +16292,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
-                "enumValues": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
+                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -16615,34 +16406,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
-                "enumValues": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
+                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -16755,34 +16520,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
-                "enumValues": [
-                    "2xl",
-                    "2xs",
-                    "3xl",
-                    "3xs",
-                    "4xl",
-                    "5xl",
-                    "default",
-                    "l",
-                    "m",
-                    "s",
-                    "xl",
-                    "xs"
-                ],
+                "typeReference": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
+                "enumValues": ["2xl", "2xs", "3xl", "3xs", "4xl", "5xl", "default", "l", "m", "s", "xl", "xs"],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -16859,16 +16598,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "default",
-                    "horizontal",
-                    "vertical"
-                ],
-                "enumValues": [
-                    "default",
-                    "horizontal",
-                    "vertical"
-                ],
+                "typeReference": ["default", "horizontal", "vertical"],
+                "enumValues": ["default", "horizontal", "vertical"],
                 "entityName": "dataInputComponent",
                 "databaseTable": "data_input_component",
                 "foreignKeyReference": null,
@@ -16991,12 +16722,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -17806,12 +17533,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -18222,12 +17945,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -18737,12 +18456,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -18988,24 +18703,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "bool",
-                    "dict",
-                    "float",
-                    "int",
-                    "list",
-                    "str",
-                    "url"
-                ],
-                "enumValues": [
-                    "bool",
-                    "dict",
-                    "float",
-                    "int",
-                    "list",
-                    "str",
-                    "url"
-                ],
+                "typeReference": ["bool", "dict", "float", "int", "list", "str", "url"],
+                "enumValues": ["bool", "dict", "float", "int", "list", "str", "url"],
                 "entityName": "extractor",
                 "databaseTable": "extractor",
                 "foreignKeyReference": null,
@@ -19167,12 +18866,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -19225,7 +18920,7 @@
                 "isRequired": true,
                 "maxLength": "null",
                 "isArray": false,
-                "defaultValue": "public.file_structure_id_seq",
+                "defaultValue": "file_structure_id_seq",
                 "isPrimaryKey": true,
                 "isDisplayField": false,
                 "defaultGeneratorFunction": null,
@@ -19877,12 +19572,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -21073,12 +20764,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -21693,12 +21380,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -22243,14 +21926,8 @@
         "primaryKey": "flashcardId, setId",
         "primaryKeyMetadata": {
             "type": "composite",
-            "fields": [
-                "flashcardId",
-                "setId"
-            ],
-            "database_fields": [
-                "flashcard_id",
-                "set_id"
-            ],
+            "fields": ["flashcardId", "setId"],
+            "database_fields": ["flashcard_id", "set_id"],
             "where_template": {
                 "flashcard_id": null,
                 "set_id": null
@@ -22570,12 +22247,8 @@
         "primaryKey": "setId",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "setId"
-            ],
-            "database_fields": [
-                "set_id"
-            ],
+            "fields": ["setId"],
+            "database_fields": ["set_id"],
             "where_template": {
                 "set_id": null
             }
@@ -23381,12 +23054,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -23869,12 +23538,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -24039,16 +23704,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "assistant",
-                    "system",
-                    "user"
-                ],
-                "enumValues": [
-                    "assistant",
-                    "system",
-                    "user"
-                ],
+                "typeReference": ["assistant", "system", "user"],
+                "enumValues": ["assistant", "system", "user"],
                 "entityName": "messageTemplate",
                 "databaseTable": "message_template",
                 "foreignKeyReference": null,
@@ -24133,20 +23790,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "base64_image",
-                    "blob",
-                    "image_url",
-                    "other",
-                    "text"
-                ],
-                "enumValues": [
-                    "base64_image",
-                    "blob",
-                    "image_url",
-                    "other",
-                    "text"
-                ],
+                "typeReference": ["base64_image", "blob", "image_url", "other", "text"],
+                "enumValues": ["base64_image", "blob", "image_url", "other", "text"],
                 "entityName": "messageTemplate",
                 "databaseTable": "message_template",
                 "foreignKeyReference": null,
@@ -24369,12 +24014,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -24819,12 +24460,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -25326,22 +24963,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "active_testing",
-                    "archived",
-                    "draft",
-                    "in_review",
-                    "live",
-                    "other"
-                ],
-                "enumValues": [
-                    "active_testing",
-                    "archived",
-                    "draft",
-                    "in_review",
-                    "live",
-                    "other"
-                ],
+                "typeReference": ["active_testing", "archived", "draft", "in_review", "live", "other"],
+                "enumValues": ["active_testing", "archived", "draft", "in_review", "live", "other"],
                 "entityName": "recipe",
                 "databaseTable": "recipe",
                 "foreignKeyReference": null,
@@ -25530,31 +25153,6 @@
                     "typeReference": "TypeBrand<AutomationEntity<'aiAgent'>[]>"
                 }
             },
-            "appletInverse": {
-                "fieldNameFormats": {
-                    "frontend": "appletInverse",
-                    "backend": "applet_Inverse",
-                    "database": "ifk_applet",
-                    "pretty": "Applet Inverse",
-                    "component": "AppletInverse",
-                    "kebab": "appletInverse",
-                    "sqlFunctionRef": "p_ifk_applet",
-                    "RestAPI": "appletInverse",
-                    "GraphQL": "appletInverse",
-                    "custom": "appletInverse"
-                },
-                "uniqueTableId": "supabase_automation_matrix:applet",
-                "uniqueEntityId": "supabase_automation_matrix:applet",
-                "type": "array",
-                "format": "array",
-                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
-                "structure": {
-                    "structure": "inverseForeignKey",
-                    "entityName": "applet",
-                    "databaseTable": "applet",
-                    "typeReference": "TypeBrand<AutomationEntity<'applet'>[]>"
-                }
-            },
             "recipeDisplayInverse": {
                 "fieldNameFormats": {
                     "frontend": "recipeDisplayInverse",
@@ -25655,6 +25253,31 @@
                     "typeReference": "TypeBrand<AutomationEntity<'recipeBroker'>[]>"
                 }
             },
+            "recipeMessageInverse": {
+                "fieldNameFormats": {
+                    "frontend": "recipeMessageInverse",
+                    "backend": "recipe_message_Inverse",
+                    "database": "ifk_recipe_message",
+                    "pretty": "Recipe Message Inverse",
+                    "component": "RecipeMessageInverse",
+                    "kebab": "recipe-messageInverse",
+                    "sqlFunctionRef": "p_ifk_recipe_message",
+                    "RestAPI": "recipeMessageInverse",
+                    "GraphQL": "recipeMessageInverse",
+                    "custom": "recipeMessageInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:recipe_message",
+                "uniqueEntityId": "supabase_automation_matrix:recipeMessage",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "recipeMessage",
+                    "databaseTable": "recipe_message",
+                    "typeReference": "TypeBrand<AutomationEntity<'recipeMessage'>[]>"
+                }
+            },
             "recipeToolInverse": {
                 "fieldNameFormats": {
                     "frontend": "recipeToolInverse",
@@ -25704,31 +25327,6 @@
                     "databaseTable": "recipe_function",
                     "typeReference": "TypeBrand<AutomationEntity<'recipeFunction'>[]>"
                 }
-            },
-            "recipeMessageInverse": {
-                "fieldNameFormats": {
-                    "frontend": "recipeMessageInverse",
-                    "backend": "recipe_message_Inverse",
-                    "database": "ifk_recipe_message",
-                    "pretty": "Recipe Message Inverse",
-                    "component": "RecipeMessageInverse",
-                    "kebab": "recipe-messageInverse",
-                    "sqlFunctionRef": "p_ifk_recipe_message",
-                    "RestAPI": "recipeMessageInverse",
-                    "GraphQL": "recipeMessageInverse",
-                    "custom": "recipeMessageInverse"
-                },
-                "uniqueTableId": "supabase_automation_matrix:recipe_message",
-                "uniqueEntityId": "supabase_automation_matrix:recipeMessage",
-                "type": "array",
-                "format": "array",
-                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
-                "structure": {
-                    "structure": "inverseForeignKey",
-                    "entityName": "recipeMessage",
-                    "databaseTable": "recipe_message",
-                    "typeReference": "TypeBrand<AutomationEntity<'recipeMessage'>[]>"
-                }
             }
         },
         "entityNameFormats": {
@@ -25755,11 +25353,6 @@
                 "mainTableColumn": "id"
             },
             {
-                "relatedTable": "applet",
-                "relatedColumn": "recipe_id",
-                "mainTableColumn": "id"
-            },
-            {
                 "relatedTable": "recipe_display",
                 "relatedColumn": "recipe",
                 "mainTableColumn": "id"
@@ -25780,6 +25373,11 @@
                 "mainTableColumn": "id"
             },
             {
+                "relatedTable": "recipe_message",
+                "relatedColumn": "recipe_id",
+                "mainTableColumn": "id"
+            },
+            {
                 "relatedTable": "recipe_tool",
                 "relatedColumn": "recipe",
                 "mainTableColumn": "id"
@@ -25787,11 +25385,6 @@
             {
                 "relatedTable": "recipe_function",
                 "relatedColumn": "recipe",
-                "mainTableColumn": "id"
-            },
-            {
-                "relatedTable": "recipe_message",
-                "relatedColumn": "recipe_id",
                 "mainTableColumn": "id"
             }
         ]
@@ -25804,12 +25397,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -26110,14 +25699,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "input_broker",
-                    "output_broker"
-                ],
-                "enumValues": [
-                    "input_broker",
-                    "output_broker"
-                ],
+                "typeReference": ["input_broker", "output_broker"],
+                "enumValues": ["input_broker", "output_broker"],
                 "entityName": "recipeBroker",
                 "databaseTable": "recipe_broker",
                 "foreignKeyReference": null,
@@ -26273,12 +25856,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -26727,12 +26306,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -27067,16 +26642,7 @@
                     "save_data",
                     "validation"
                 ],
-                "enumValues": [
-                    "comparison",
-                    "decision",
-                    "other",
-                    "post_processing",
-                    "pre-Processing",
-                    "rating",
-                    "save_data",
-                    "validation"
-                ],
+                "enumValues": ["comparison", "decision", "other", "post_processing", "pre-Processing", "rating", "save_data", "validation"],
                 "entityName": "recipeFunction",
                 "databaseTable": "recipe_function",
                 "foreignKeyReference": null,
@@ -27232,12 +26798,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -27621,12 +27183,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -27931,16 +27489,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "primary_model",
-                    "trial_model",
-                    "verified_model"
-                ],
-                "enumValues": [
-                    "primary_model",
-                    "trial_model",
-                    "verified_model"
-                ],
+                "typeReference": ["primary_model", "trial_model", "verified_model"],
+                "enumValues": ["primary_model", "trial_model", "verified_model"],
                 "entityName": "recipeModel",
                 "databaseTable": "recipe_model",
                 "foreignKeyReference": null,
@@ -28096,12 +27646,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -28485,12 +28031,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -28874,12 +28416,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -29419,12 +28957,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -29433,7 +28967,7 @@
             "fieldName": "name",
             "databaseFieldName": "name"
         },
-        "defaultFetchStrategy": "fk",
+        "defaultFetchStrategy": "fkIfkAndM2M",
         "componentProps": {
             "subComponent": "default",
             "variant": "default",
@@ -30004,6 +29538,31 @@
                     "databaseTable": "category",
                     "typeReference": "TypeBrand<AutomationEntity<'category'>[]>"
                 }
+            },
+            "appletInverse": {
+                "fieldNameFormats": {
+                    "frontend": "appletInverse",
+                    "backend": "applet_Inverse",
+                    "database": "ifk_applet",
+                    "pretty": "Applet Inverse",
+                    "component": "AppletInverse",
+                    "kebab": "appletInverse",
+                    "sqlFunctionRef": "p_ifk_applet",
+                    "RestAPI": "appletInverse",
+                    "GraphQL": "appletInverse",
+                    "custom": "appletInverse"
+                },
+                "uniqueTableId": "supabase_automation_matrix:applet",
+                "uniqueEntityId": "supabase_automation_matrix:applet",
+                "type": "array",
+                "format": "array",
+                "defaultComponent": "ACCORDION_VIEW_ADD_EDIT",
+                "structure": {
+                    "structure": "inverseForeignKey",
+                    "entityName": "applet",
+                    "databaseTable": "applet",
+                    "typeReference": "TypeBrand<AutomationEntity<'applet'>[]>"
+                }
             }
         },
         "entityNameFormats": {
@@ -30023,6 +29582,11 @@
                 "column": "category_id",
                 "relatedTable": "category",
                 "relatedColumn": "id"
+            },
+            {
+                "relatedTable": "applet",
+                "relatedColumn": "subcategory_id",
+                "mainTableColumn": "id"
             }
         ]
     },
@@ -30034,12 +29598,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -30644,12 +30204,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -31289,12 +30845,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -31640,12 +31192,8 @@
         "primaryKey": "userId",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "userId"
-            ],
-            "database_fields": [
-                "user_id"
-            ],
+            "fields": ["userId"],
+            "database_fields": ["user_id"],
             "where_template": {
                 "user_id": null
             }
@@ -31965,12 +31513,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -32641,12 +32185,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -33079,20 +32619,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "index",
-                    "little",
-                    "middle",
-                    "ring",
-                    "thumb"
-                ],
-                "enumValues": [
-                    "index",
-                    "little",
-                    "middle",
-                    "ring",
-                    "thumb"
-                ],
+                "typeReference": ["index", "little", "middle", "ring", "thumb"],
+                "enumValues": ["index", "little", "middle", "ring", "thumb"],
                 "entityName": "wcImpairmentDefinition",
                 "databaseTable": "wc_impairment_definition",
                 "foreignKeyReference": null,
@@ -33155,12 +32683,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }
@@ -33660,16 +33184,8 @@
                 },
                 "structure": "single",
                 "isNative": true,
-                "typeReference": [
-                    "default",
-                    "left",
-                    "right"
-                ],
-                "enumValues": [
-                    "default",
-                    "left",
-                    "right"
-                ],
+                "typeReference": ["default", "left", "right"],
+                "enumValues": ["default", "left", "right"],
                 "entityName": "wcInjury",
                 "databaseTable": "wc_injury",
                 "foreignKeyReference": null,
@@ -34215,12 +33731,8 @@
         "primaryKey": "id",
         "primaryKeyMetadata": {
             "type": "single",
-            "fields": [
-                "id"
-            ],
-            "database_fields": [
-                "id"
-            ],
+            "fields": ["id"],
+            "database_fields": ["id"],
             "where_template": {
                 "id": null
             }

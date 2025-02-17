@@ -123,7 +123,7 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
 
         const recipeTaskBrokers = createRecipeTaskBrokers(matchingBrokers);
         const recipeOverrides = createRecipeOverrides(settingsList);
-        const recipeTaskDataList = createRecipeTaskDataList(compiledRecipe, activeRecipeId);
+        const recipeTaskDataList = createRecipeTaskDataList(compiledRecipe);
 
         return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
     }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);
@@ -132,4 +132,10 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
         recipeRecord,
         compileRecipe,
     };
+}
+
+export function useCompileRecipeSimple({ activeRecipeMatrxId, activeRecipeId, messages, processedSettings, recipeSelectors }) {
+    const selectors = recipeSelectors;
+    const recipeRecord = useAppSelector((state) => selectors.selectRecordWithKey(state, activeRecipeMatrxId)) as RecipeRecordWithKey;
+    const { selectors: brokerSelectors } = useEntityTools("dataBroker");
 }

@@ -1,92 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-    AiSettingsData,
-    BrokerValueData,
-    DataInputComponentData,
-    DataInputComponentRecordWithKey,
-    DataOutputComponentData,
-    MatrxRecordId,
-    MessageBrokerData,
-    MessageTemplateDataOptional,
-    RecipeRecordWithKey,
-} from "@/types";
 import { useGetorFetchRecords, useGetOrFetchRecord } from "@/app/entities/hooks/records/useGetOrFetch";
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
 import { useDebounce } from "@uidotdev/usehooks";
+import { DataInputComponentRecordWithKey, MatrxRecordId, RecipeRecordWithKey } from "@/types";
+import { BrokerWithComponentsMap, CompiledRecipeEntry, CompiledRecipeRecordWithKey } from "./types";
 
-export type DataBrokerData = {
-    id: string;
-    name: string;
-    dataType?: "str" | "bool" | "dict" | "float" | "int" | "list" | "url";
-    outputComponent?: string;
-    dataInputComponentReference?: DataInputComponentData[];
-    defaultValue?: string;
-    inputComponent?: string;
-    color?:
-        | "blue"
-        | "amber"
-        | "cyan"
-        | "emerald"
-        | "fuchsia"
-        | "gray"
-        | "green"
-        | "indigo"
-        | "lime"
-        | "neutral"
-        | "orange"
-        | "pink"
-        | "purple"
-        | "red"
-        | "rose"
-        | "sky"
-        | "slate"
-        | "stone"
-        | "teal"
-        | "violet"
-        | "yellow"
-        | "zinc";
-    dataOutputComponentReference?: DataOutputComponentData[];
-    brokerValueInverse?: BrokerValueData[];
-    messageBrokerInverse?: MessageBrokerData[];
-};
-
-type CompiledRecipeEntry = {
-    id: string;
-    name: string;
-    brokers: DataBrokerData[];
-    messages: MessageTemplateDataOptional[];
-    settings: AiSettingsData[];
-};
-
-type CompiledRecipeRecordWithKey = {
-    id: string;
-    compiledRecipe: Record<string, unknown>;
-    recipeId: string;
-    createdAt: Date;
-    userId: string;
-    isPublic: boolean;
-    version: number;
-    updatedAt: Date;
-    authenticatedRead: boolean;
-    matrxRecordId: MatrxRecordId;
-};
 
 interface UsePrepareRecipeToRunProps {
     recipeRecordKey: MatrxRecordId;
     version?: "latest" | number;
 }
 
-export type BrokerWithComponent = {
-    brokerId: string;
-    brokerRecordKey: MatrxRecordId;
-    brokerName: string;
-    componentRecordKey: MatrxRecordId;
-    componentMetadata: DataInputComponentData;
-};
-
-export type BrokerWithComponentsMap = Record<string, BrokerWithComponent>;
 
 export function usePrepareRecipeToRun({ recipeRecordKey, version = "latest" }: UsePrepareRecipeToRunProps) {
     const initialVersion = version === "latest" ? null : version;
