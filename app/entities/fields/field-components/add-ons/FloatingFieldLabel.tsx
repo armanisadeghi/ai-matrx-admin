@@ -33,12 +33,12 @@ export const FloatingFieldLabel = React.memo(
             ? cn(
                 "absolute -top-2 text-sm",
                 disabled
-                  ? "[&]:text-gray-400 dark:[&]:text-gray-400"
+                  ? "[&]:text-blue-400 dark:[&]:text-blue-400"
                   : error
                   ? "[&]:text-destructive dark:[&]:text-destructive"
                   : "[&]:text-blue-500 dark:[&]:text-blue-500"
               )
-            : "top-3 [&]:text-gray-400 dark:[&]:text-gray-400",
+            : "top-3 [&]:text-blue-400 dark:[&]:text-blue-400",
           className
         )}
       >
@@ -67,12 +67,12 @@ export const FloatingSelectLabel = React.memo(
             ? cn(
                 "absolute -top-2.5 text-sm",
                 disabled
-                  ? "[&]:text-gray-400 dark:[&]:text-gray-400"
+                  ? "[&]:text-blue-400 dark:[&]:text-blue-400"
                   : error
                   ? "[&]:text-destructive dark:[&]:text-destructive"
                   : "[&]:text-blue-500 dark:[&]:text-blue-500"
               )
-            : "top-3 [&]:text-gray-400 dark:[&]:text-gray-400",
+            : "top-3 [&]:text-blue-400 dark:[&]:text-blue-400",
           className
         )}
       >
@@ -97,7 +97,7 @@ export const StandardFieldLabel = React.memo(
         htmlFor={htmlFor}
         className={cn(
           "block text-sm font-medium mb-1",
-          disabled ? "text-muted-foreground" : "text-foreground",
+          disabled ? "text-blue-400 dark:text-blue-400" : "text-blue-500 dark:text-blue-500",
           error && "text-destructive",
           className
         )}

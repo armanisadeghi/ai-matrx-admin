@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef } from 'react';
-import { Plus, X, Edit, Eye } from 'lucide-react';
+import { Plus, X, Edit, Eye, Copy } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FieldComponentProps } from '../types';
@@ -27,9 +27,16 @@ const EntityTextArray = forwardRef<HTMLInputElement, EntityTextArrayProps>(({
       return [];
     }
   });
+
+  const label = dynamicFieldInfo.displayName;
   
   const [inputValue, setInputValue] = useState('');
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(!disabled);
+
+  // Update edit mode when disabled state changes
+  useEffect(() => {
+    setIsEditMode(!disabled);
+  }, [disabled]);
 
   useEffect(() => {
     onChange(tags);
@@ -58,6 +65,11 @@ const EntityTextArray = forwardRef<HTMLInputElement, EntityTextArrayProps>(({
     }
   };
 
+  const handleCopyToClipboard = () => {
+    const textToCopy = tags.join(', ');
+    navigator.clipboard.writeText(textToCopy);
+  };
+
   const ActionButton: React.FC<{
     onClick: () => void;
     icon: React.ReactNode;
@@ -79,7 +91,7 @@ const EntityTextArray = forwardRef<HTMLInputElement, EntityTextArrayProps>(({
   );
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-2 border-1 border-slate-200 dark:border-slate-700 rounded-md p-2">
       <div className="relative w-full">
         <Input
           ref={ref}
@@ -87,7 +99,7 @@ const EntityTextArray = forwardRef<HTMLInputElement, EntityTextArrayProps>(({
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Enter tag"
+          placeholder={`Enter ${label}`}
           disabled={disabled || !isEditMode}
           className="w-full pr-20"
         />
@@ -100,17 +112,17 @@ const EntityTextArray = forwardRef<HTMLInputElement, EntityTextArrayProps>(({
                 icon={<Plus className="h-4 w-4" />}
               />
               <ActionButton
-                onClick={() => setIsEditMode(false)}
-                disabled={disabled}
-                icon={<Eye className="h-4 w-4" />}
+                onClick={handleCopyToClipboard}
+                icon={<Copy className="h-4 w-4" />}
               />
             </>
           ) : (
-            <ActionButton
-              onClick={() => setIsEditMode(true)}
-              disabled={disabled}
-              icon={<Edit className="h-4 w-4" />}
-            />
+            <>
+              <ActionButton
+                onClick={handleCopyToClipboard}
+                icon={<Copy className="h-4 w-4" />}
+              />
+            </>
           )}
         </div>
       </div>
@@ -133,7 +145,7 @@ const EntityTextArray = forwardRef<HTMLInputElement, EntityTextArrayProps>(({
           </div>
         ))}
         {tags.length === 0 && (
-          <div className="text-sm text-muted-foreground italic">No tags added</div>
+          <div className="text-sm text-muted-foreground italic">No {label} added</div>
         )}
       </div>
     </div>

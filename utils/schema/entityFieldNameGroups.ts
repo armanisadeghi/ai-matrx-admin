@@ -114,7 +114,7 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
             "description",
             "creator",
             "type",
-            "recipeId",
+            "compiledRecipeId",
             "slug",
             "createdAt",
             "userId",
@@ -122,6 +122,7 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
             "dataSourceConfig",
             "resultComponentConfig",
             "nextStepConfig",
+            "subcategoryId",
         ],
         primaryKeyFields: ["id"],
         nativeFieldsNoPk: [
@@ -129,7 +130,7 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
             "description",
             "creator",
             "type",
-            "recipeId",
+            "compiledRecipeId",
             "slug",
             "createdAt",
             "userId",
@@ -137,6 +138,7 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
             "dataSourceConfig",
             "resultComponentConfig",
             "nextStepConfig",
+            "subcategoryId",
         ],
     },
     arg: {

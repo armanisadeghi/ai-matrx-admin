@@ -27,6 +27,10 @@ export const primaryKeys = {
         frontendFields: ["id"],
         databaseColumns: ["id"],
     },
+    applet: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
     arg: {
         frontendFields: ["id"],
         databaseColumns: ["id"],
@@ -66,6 +70,10 @@ export const primaryKeys = {
     bucketTreeStructures: {
         frontendFields: ["bucket_id"],
         databaseColumns: ["bucketId"],
+    },
+    category: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
     },
     compiledRecipe: {
         frontendFields: ["id"],
@@ -164,6 +172,10 @@ export const primaryKeys = {
         databaseColumns: ["id"],
     },
     registeredFunction: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
+    subcategory: {
         frontendFields: ["id"],
         databaseColumns: ["id"],
     },
