@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useGetorFetchRecords, useGetOrFetchRecord } from "@/app/entities/hooks/records/useGetOrFetch";
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
 import { useDebounce } from "@uidotdev/usehooks";
-import { DataInputComponentRecordWithKey, MatrxRecordId, RecipeRecordWithKey } from "@/types";
+import { DataInputComponentRecordWithKey, MatrxRecordId, RecipeRecordWithKey, AppletRecordWithKey } from "@/types";
 import { BrokerWithComponentsMap, CompiledRecipeEntry, CompiledRecipeRecordWithKey } from "./types";
 
 
@@ -45,7 +45,7 @@ export function usePrepareRecipeToRun({ recipeRecordKey, version = "latest" }: U
     const dataInputComponentsLoading = useAppSelector((state) => dataInputSelectors.selectIsLoading(state));
     const recipeLoading = useAppSelector((state) => recipeSelectors.selectIsLoading(state));
     const compiledRecipeLoading = useAppSelector((state) => compiledRecipeSelectors.selectIsLoading(state));
-    const isReduxLoading = useDebounce(dataInputComponentsLoading || recipeLoading || compiledRecipeLoading, 400);
+    const isLoading = useDebounce(dataInputComponentsLoading || recipeLoading || compiledRecipeLoading, 400);
 
     const compiledRecipe = activeCompiledRecipeRecord?.compiledRecipe as CompiledRecipeEntry;
 
@@ -65,12 +65,12 @@ export function usePrepareRecipeToRun({ recipeRecordKey, version = "latest" }: U
     const stableComponentMetadata = useDebounce(componentMetadata, 300);
     
     const hasAllInputComponents = useMemo(() => {
-        if (isReduxLoading || !neededBrokers || !stableComponentMetadata) return false;
+        if (isLoading || !neededBrokers || !stableComponentMetadata) return false;
         return uniqueComponentIds.every(
             componentId => componentId && 
             stableComponentMetadata.some(metadata => metadata.id === componentId)
         );
-    }, [uniqueComponentIds, stableComponentMetadata, isReduxLoading]);
+    }, [uniqueComponentIds, stableComponentMetadata, isLoading]);
 
     const brokerComponentMetadataMap = useMemo(() => {
         if (!hasAllInputComponents || !neededBrokers) {
@@ -100,15 +100,17 @@ export function usePrepareRecipeToRun({ recipeRecordKey, version = "latest" }: U
         return map;
     }, [hasAllInputComponents, neededBrokers, stableComponentMetadata]);
 
+    const appletRecord = [] as AppletRecordWithKey[];
 
     return {
         brokerComponentMetadataMap,
         hasAllInputComponents,
-        isReduxLoading,
+        isLoading,
         compiledRecipe,
         activeCompiledRecipeRecord,
         selectedVersion,
         recipeRecordKey,
+        appletRecord,
     };
 }
 

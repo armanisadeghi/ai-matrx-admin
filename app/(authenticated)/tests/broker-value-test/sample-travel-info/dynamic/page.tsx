@@ -20,7 +20,7 @@ export default function DynamicPage() {
 
     const {
         brokerComponentMetadataMap,
-        isReduxLoading,
+        isLoading,
         compiledRecipe,
         activeCompiledRecipeRecord,
         selectedVersion,
@@ -58,7 +58,7 @@ export default function DynamicPage() {
                     
                     <DebugSection 
                         title="Redux Loading State"
-                        data={isReduxLoading}
+                        data={isLoading}
                     />
                     
                     <DebugSection 

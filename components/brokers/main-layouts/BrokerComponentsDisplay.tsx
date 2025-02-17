@@ -6,27 +6,23 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { BrokerComponentRenderer } from "@/components/brokers/wrappers/withWrapper";
-import { UsePrepareRecipeToRunReturn } from "@/hooks/run-recipe/usePrepareRecipeToRun";
+import { BrokerComponentsDisplayProps } from "./types";
 
-interface BrokerComponentsDisplayProps {
-    prepareRecipeHook: UsePrepareRecipeToRunReturn;
-    recipeTitle: string;
-    recipeDescription: string;
-    recipeActionText: string;
-}
 
 export const BrokerComponentsDisplay = ({
     prepareRecipeHook,
-    recipeTitle,
-    recipeDescription,
-    recipeActionText,
+    recipeTitle = "Let's Get Started",
+    recipeDescription = "Please provide the following information to get started.",
+    recipeActionText = "Submit",
+    onSubmit = () => {},
 }: BrokerComponentsDisplayProps) => {
     const [isOpen, setIsOpen] = useState(true);
 
     const handleSubmit = () => {
+        onSubmit();
         setIsOpen(false);
-    };
-
+      };
+    
     return (
         <Card className="w-full max-w-2xl mx-auto">
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>

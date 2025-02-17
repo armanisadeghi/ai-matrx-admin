@@ -659,9 +659,9 @@ interface BrokerComponentRendererProps {
 }
 
 export const BrokerComponentRenderer: React.FC<BrokerComponentRendererProps> = ({ prepareRecipeHook }) => {
-    const { brokerComponentMetadataMap, isReduxLoading } = prepareRecipeHook;
+    const { brokerComponentMetadataMap, isLoading } = prepareRecipeHook;
 
-    if (isReduxLoading) {
+    if (isLoading) {
         return (
             <div className="space-y-4">
                 <BrokerSkeleton />

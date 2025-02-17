@@ -1,37 +1,59 @@
-import { useMemo } from "react";
-import { useEntityData } from "@/lib/redux/entity/hooks/coreHooks";
+import { useEffect, useMemo, useState } from "react";
 import { useGetOrFetchRecord, useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
-import { BrokerWithComponentsMap, CompiledRecipeEntry, CompiledRecipeRecordWithKey } from "./types";
+import { BrokerWithComponentsMap, DataBrokerData, CompiledRecipeEntry, CompiledRecipeRecordWithKey } from "./types";
 import { createEntitySelectors, useAppSelector } from "@/lib/redux";
 import { useDebounce } from "@uidotdev/usehooks";
 import { AppletRecordWithKey, DataInputComponentRecordWithKey } from "@/types";
 import { UsePrepareRecipeToRunReturn } from "./usePrepareRecipeToRun";
-export function useRunApps(appletId: string) {
-    const { actions, selectors } = useEntityData("applet");
-    const dataInputSelectors = useMemo(() => createEntitySelectors("dataInputComponent"), []);
+
+export function useAppletRecipe(appletId: string) {
     const compiledRecipeSelectors = useMemo(() => createEntitySelectors("compiledRecipe"), []);
-    const recipeSelectors = useMemo(() => createEntitySelectors("recipe"), []);
-
     const appletRecord = useGetOrFetchRecord({ entityName: "applet", simpleId: appletId }) as AppletRecordWithKey;
-    const appletType = appletRecord?.type;
-
     const compiledId = appletRecord?.compiledRecipeId;
     const activeCompiledRecipeRecord = useGetOrFetchRecord({
         entityName: "compiledRecipe",
         simpleId: compiledId,
     }) as CompiledRecipeRecordWithKey;
-    const recipeId = activeCompiledRecipeRecord?.recipeId;
 
-    const dataInputComponentsLoading = useAppSelector((state) => dataInputSelectors.selectIsLoading(state));
-    const recipeLoading = useAppSelector((state) => recipeSelectors.selectIsLoading(state));
+    const recipeId = activeCompiledRecipeRecord?.recipeId;
+    const recipeRecordKey = `id:${recipeId}`;
+
+    const appletLoading = useAppSelector((state) => compiledRecipeSelectors.selectIsLoading(state));
     const compiledRecipeLoading = useAppSelector((state) => compiledRecipeSelectors.selectIsLoading(state));
-    const isReduxLoading = useDebounce(dataInputComponentsLoading || recipeLoading || compiledRecipeLoading, 400);
+    const isLoading = useDebounce(appletLoading || compiledRecipeLoading, 400);
 
     const compiledRecipe = activeCompiledRecipeRecord?.compiledRecipe as CompiledRecipeEntry;
-
-    console.log("compiledRecipe", compiledRecipe);
+    const selectedVersion = activeCompiledRecipeRecord?.version;
 
     const neededBrokers = useMemo(() => compiledRecipe?.brokers ?? [], [compiledRecipe?.brokers]);
+
+    return {
+        isLoading,
+        activeCompiledRecipeRecord,
+        compiledRecipe,
+        selectedVersion,
+        recipeRecordKey,
+        neededBrokers,
+        appletRecord,
+    };
+}
+
+type BrokerComponentsProps = {
+    neededBrokers: DataBrokerData[];
+    isAppletLoading: boolean;
+};
+
+export function useBrokerComponents({ neededBrokers, isAppletLoading }: BrokerComponentsProps) {
+    const [shouldFetch, setShouldFetch] = useState(false);
+    const dataInputSelectors = useMemo(() => createEntitySelectors("dataInputComponent"), []);
+    const isComponentLoading = useAppSelector((state) => dataInputSelectors.selectIsLoading(state));
+
+    useEffect(() => {
+        if (isAppletLoading) return;
+        if (neededBrokers.length > 0) {
+            setShouldFetch(true);
+        }
+    }, [neededBrokers, isAppletLoading]);
 
     const { uniqueComponentIds, uniqueComponentRecordKeys } = useMemo(() => {
         return {
@@ -40,52 +62,92 @@ export function useRunApps(appletId: string) {
         };
     }, [neededBrokers]);
 
-    const componentMetadata = useGetorFetchRecords("dataInputComponent", uniqueComponentRecordKeys) as DataInputComponentRecordWithKey[];
+    const componentMetadata = useGetorFetchRecords(
+        "dataInputComponent",
+        uniqueComponentRecordKeys,
+        shouldFetch
+    ) as DataInputComponentRecordWithKey[];
 
-    const stableComponentMetadata = useDebounce(componentMetadata, 300);
+    const rawIsLoading = isComponentLoading || isAppletLoading;
 
-    const hasAllInputComponents = useMemo(() => {
-        if (isReduxLoading || !neededBrokers || !stableComponentMetadata) return false;
-        return uniqueComponentIds.every(
-            (componentId) => componentId && stableComponentMetadata.some((metadata) => metadata.id === componentId)
-        );
-    }, [uniqueComponentIds, stableComponentMetadata, isReduxLoading]);
+    const stableState = useDebounce(
+        {
+            isLoading: rawIsLoading,
+            componentMetadata,
+            uniqueComponentIds,
+            neededBrokers,
+        },
+        200
+    );
 
-    const brokerComponentMetadataMap = useMemo(() => {
-        if (!hasAllInputComponents || !neededBrokers) {
-            return null;
+    const { hasAllInputComponents, brokerComponentMetadataMap } = useMemo(() => {
+        const hasAll =
+            !stableState.isLoading &&
+            stableState.neededBrokers &&
+            stableState.componentMetadata &&
+            stableState.uniqueComponentIds.every(
+                (componentId) => componentId && stableState.componentMetadata.some((metadata) => metadata.id === componentId)
+            );
+
+        let metadataMap: BrokerWithComponentsMap | null = null;
+
+        if (hasAll && stableState.neededBrokers) {
+            metadataMap = {};
+            stableState.neededBrokers.forEach((broker) => {
+                if (broker?.id) {
+                    const componentData = stableState.componentMetadata.find((metadata) => metadata.id === broker.inputComponent);
+
+                    if (componentData) {
+                        metadataMap![broker.id] = {
+                            brokerId: broker.id,
+                            brokerName: broker.name,
+                            brokerRecordKey: `id:${broker.id}`,
+                            componentRecordKey: `id:${broker.inputComponent}`,
+                            componentMetadata: componentData,
+                        };
+                    }
+                }
+            });
         }
 
-        const map: BrokerWithComponentsMap = {};
-
-        neededBrokers.forEach((broker) => {
-            if (broker?.id) {
-                const componentData = stableComponentMetadata.find((metadata) => metadata.id === broker.inputComponent);
-
-                if (componentData) {
-                    map[broker.id] = {
-                        brokerId: broker.id,
-                        brokerName: broker.name,
-                        brokerRecordKey: `id:${broker.id}`,
-                        componentRecordKey: `id:${broker.inputComponent}`,
-                        componentMetadata: componentData,
-                    };
-                }
-            }
-        });
-
-        return map;
-    }, [hasAllInputComponents, neededBrokers, stableComponentMetadata]);
+        return {
+            hasAllInputComponents: hasAll,
+            brokerComponentMetadataMap: metadataMap,
+        };
+    }, [stableState]);
 
     return {
         brokerComponentMetadataMap,
         hasAllInputComponents,
-        isReduxLoading,
-        compiledRecipe,
-        activeCompiledRecipeRecord,
+        isLoading: stableState.isLoading,
     };
 }
 
-export type UseRunAppsReturn = ReturnType<typeof useRunApps>;
 
-export type RunGenericHookType = UseRunAppsReturn | UsePrepareRecipeToRunReturn;
+export function useRunRecipeApplet(appletId: string) {
+    const {
+        isLoading: isAppletLoading,
+        activeCompiledRecipeRecord,
+        compiledRecipe,
+        selectedVersion,
+        recipeRecordKey,
+        neededBrokers,
+        appletRecord,
+    } = useAppletRecipe(appletId);
+    const { brokerComponentMetadataMap, hasAllInputComponents, isLoading } = useBrokerComponents({ neededBrokers, isAppletLoading });
+
+    return {
+        brokerComponentMetadataMap,
+        hasAllInputComponents,
+        isLoading,
+        compiledRecipe,
+        activeCompiledRecipeRecord,
+        selectedVersion,
+        recipeRecordKey,
+        appletRecord,
+    };
+}
+
+export type UseRunRecipeAppletReturn = ReturnType<typeof useRunRecipeApplet>;
+
+export type RunGenericHookType = UseRunRecipeAppletReturn | UsePrepareRecipeToRunReturn;
