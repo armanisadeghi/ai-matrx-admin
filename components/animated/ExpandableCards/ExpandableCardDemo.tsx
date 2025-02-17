@@ -206,10 +206,10 @@ export const CloseIcon = () => {
 
 const cards = [
     {
-        description: "Lana Del Rey",
-        title: "Summertime Sadness",
+        description: "By Armani Sadeghi",
+        title: "Las Vegas Party Trip Planner",
         src: "https://assets.aceternity.com/demos/lana-del-rey.jpeg",
-        ctaText: "Play",
+        ctaText: "Try Free",
         ctaLink: "https://ui.aceternity.com/templates",
         content: () => {
             return (

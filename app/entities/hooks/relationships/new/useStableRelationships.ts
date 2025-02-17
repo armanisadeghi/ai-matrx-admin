@@ -24,11 +24,11 @@ export const useStableRelationships = (relDefSimple: SimpleRelDef, anyParentId: 
     
     const parentChanged = activeParentId !== parentId;
 
-    console.log('-------------');
-    console.log('parentChanged', parentChanged);
-    console.log('parentId', parentId);
-    console.log('activeParentId', activeParentId);
-    console.log('-------------');
+    // console.log('-------------');
+    // console.log('parentChanged', parentChanged);
+    // console.log('parentId', parentId);
+    // console.log('activeParentId', activeParentId);
+    // console.log('-------------');
 
     const stableRef = useRef({
         lastStableRecords: null,
