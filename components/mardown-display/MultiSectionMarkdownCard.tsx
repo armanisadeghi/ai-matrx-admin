@@ -89,7 +89,7 @@ function BulletCard({
  */
 function NestedList({
   items,
-  themeColors,
+  themeColors = THEMES.professional,
   parentIndex = 0,
 }: {
   items: ListItem[];
@@ -154,7 +154,7 @@ const MultiSectionMarkdownCard = ({
   // --------------------------------------
   const renderSectionContent = useMemo(
     () =>
-      (section: Section, sectionIndex: number, isFullWidth = false) => {
+      (section: Section, sectionIndex: number, isFullWidth = true) => {
         const sectionKey = generateUniqueKey("section", sectionIndex);
         const nested = hasNestedItems(section.items);
 
@@ -322,7 +322,7 @@ const MultiSectionMarkdownCard = ({
       {/* Intro - Always full width */}
       {intro && (
         <div
-          className={`p-2 ${themeColors.debug.background} border ${themeColors.debug.border} rounded-md shadow-sm`}
+          className={`p-2 ${themeColors.item.background} border ${themeColors.item.border} rounded-md shadow-sm`}
         >
           <div className="text-gray-700 dark:text-gray-300">
             {renderContent(intro, "text")}
@@ -361,7 +361,7 @@ const MultiSectionMarkdownCard = ({
       {/* Outro - Always full width */}
       {outro && (
         <div
-          className={`p-2 ${themeColors.debug.background} border ${themeColors.debug.border} rounded-md shadow-sm`}
+          className={`p-2 ${themeColors.item.background} border ${themeColors.item.border} rounded-md shadow-sm`}
         >
           <div className="text-gray-700 dark:text-gray-300">
             {renderContent(outro, "text")}

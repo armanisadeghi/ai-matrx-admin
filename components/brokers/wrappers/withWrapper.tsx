@@ -20,8 +20,7 @@ import {
 } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { useCreateUpdateBrokerValue } from "../hooks/useBrokerValueNew";
-import { UsePrepareRecipeToRunReturn } from "@/hooks/run-recipe/usePrepareRecipeToRun";
-import { BrokerWithComponent, BrokerWithComponentsMap } from "@/hooks/run-recipe/types";
+import { BrokerWithComponent } from "@/hooks/run-recipe/types";
 import { useOtherOption } from "../value-components/hooks/useOtherOption";
 import { Plus, Minus, Check } from "lucide-react";
 import TextArrayInput from "@/components/ui/matrx/TextArrayInput";
@@ -610,7 +609,7 @@ const COMPONENT_MAP = {
     // temp testing.
     BrokerInput: BrokerInput,
     BrokerTextarea: BrokerTextarea,
-    BrokerSelect: BrokerSelectPinkBlue,
+    BrokerSelect: BrokerSelect,
 
     BrokerSlider: BrokerSlider,
     BrokerSwitch: BrokerSwitch,
@@ -622,9 +621,9 @@ const COMPONENT_MAP = {
     BrokerTextArrayInput: BrokerTextArrayInput,
     BrokerColorPicker: BrokerColorPicker,
     BrokerTailwindColorPicker: BrokerTailwindColorPicker,
-    BrokerTextareaPinkBlue: BrokerTextareaPinkBlue,
-    BrokerInputPinkBlue: BrokerInputPinkBlue,
-    BrokerSelectPinkBlue: BrokerSelectPinkBlue,
+    BrokerTextareaPinkBlue: BrokerTextarea,
+    BrokerInputPinkBlue: BrokerInput,
+    BrokerSelectPinkBlue: BrokerSelect,
 };
 
 interface BrokerWrapperProps {
@@ -661,13 +660,6 @@ interface BrokerComponentRendererProps {
 export const BrokerComponentRenderer: React.FC<BrokerComponentRendererProps> = ({ prepareRecipeHook }) => {
     const { brokerComponentMetadataMap, isLoading } = prepareRecipeHook;
 
-    if (isLoading) {
-        return (
-            <div className="space-y-4">
-                <BrokerSkeleton />
-            </div>
-        );
-    }
 
     return (
         <>

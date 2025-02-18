@@ -163,7 +163,7 @@ const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: Enhan
     <div className="w-full p-1 space-y-4">
       {/* Intro - Always full width */}
       {intro && (
-        <div className={`p-2 ${themeColors.debug.background} border ${themeColors.debug.border} rounded-md shadow-sm`}>
+        <div className={`p-2 ${themeColors.item.background} border ${themeColors.item.border} rounded-md shadow-sm`}>
           <div className="text-gray-700 dark:text-gray-300">
             {renderContent(intro, 'text')}
           </div>
@@ -189,7 +189,7 @@ const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: Enhan
 
       {/* Outro - Always full width */}
       {outro && (
-        <div className={`p-2 ${themeColors.debug.background} border ${themeColors.debug.border} rounded-md shadow-sm`}>
+        <div className={`p-2 ${themeColors.item.background} border ${themeColors.item.border} rounded-md shadow-sm`}>
           <div className="text-gray-700 dark:text-gray-300">
             {renderContent(outro, 'text')}
           </div>
