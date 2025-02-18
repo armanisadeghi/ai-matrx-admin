@@ -4,8 +4,6 @@ import { createRecipeTaskData } from "@/components/playground/hooks/recipes/reci
 import { CompiledRecipe } from "@/components/playground/hooks/recipes/useCompileRecipe";
 import { useCallback } from "react";
 import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
-import MultiSectionMarkdownCard from "@/components/mardown-display/MultiSectionMarkdownCard";
-import { separatedMarkdownParser } from "@/components/mardown-display/parser-separated";
 import { useRunRecipeApplet } from "@/hooks/run-recipe/useRunApps";
 import BrokerInputCard from "@/components/brokers/main-layouts/BrokerInputCard";
 import { MatrxRecordId } from "@/types";
@@ -13,6 +11,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppletThemeName } from "@/components/brokers/main-layouts/applet-themes";
 import { AppletHeroSections, AppletHeroSectionType } from "@/components/applet/reusable-sections/AppletHero";
+import EnhancedContentRenderer from "@/components/mardown-display/EnhancedMarkdownRenderer";
+import { useDebounce } from "@uidotdev/usehooks";
 import SimpleContentRenderer from "@/components/mardown-display/SimpleContentRenderer";
 
 const fontSize = 16;
@@ -53,21 +53,23 @@ const DEBUG_THEME = true;
 const DEBUG_THEME_NAME = "pinkBlue";
 
 const layoutOption = {
-    "976c56e5-263c-4815-b2ec-e6d1be04003a": "multiSectionCards",
+    "976c56e5-263c-4815-b2ec-e6d1be04003a": "rendered",
     "da794450-9b3e-46ae-a68a-ff33cb0ab1f0": "multiSectionCards",
-}
+};
 
 export const AppletViewOne = ({ appletId, allThemes }: AppletViewOneProps) => {
     const prepareRecipeHook = useRunRecipeApplet(appletId);
     const { compiledRecipe, appletRecord, isLoading, hasAllInputComponents } = prepareRecipeHook;
-    const loading = isLoading || !hasAllInputComponents;
+    
+    const loading = useDebounce(isLoading || !hasAllInputComponents, 1000);
+    console.log("loading", loading);
+
     const appletRecordData = appletRecord as AppletRecord;
     let appletTheme = allThemes[appletRecordData?.theme || "default"];
     if (DEBUG_THEME) {
         appletTheme = allThemes[DEBUG_THEME_NAME];
     }
-    
-
+    const layout = layoutOption[appletId] || "rendered";
     const legacyTheme = appletRecordData?.theme || "professional";
 
     const getLatestTasks = useCallback(async () => {
@@ -75,10 +77,10 @@ export const AppletViewOne = ({ appletId, allThemes }: AppletViewOneProps) => {
         return [firstRecipeTask];
     }, [compiledRecipe]);
 
-    const { streamingResponses, responseRef, handleSend, handleClear, isResponseActive } = useCockpitSocket(getLatestTasks);
-    const parsedContent = separatedMarkdownParser(streamingResponses[0] || "");
+    const { streamingResponses, handleSend } = useCockpitSocket(getLatestTasks);
+
     const appletHeroName = appletRecordData?.heroSection || "BASIC";
-    
+
     const AppletHeroComponent = AppletHeroSections[appletHeroName];
 
     if (loading) {
@@ -103,9 +105,23 @@ export const AppletViewOne = ({ appletId, allThemes }: AppletViewOneProps) => {
                     theme={appletTheme}
                     onSubmit={handleSend}
                 />
-                {isResponseActive && (
-                    <SimpleContentRenderer content={streamingResponses[0] || ""} layout="multiSectionCards" fontSize={fontSize} role="assistant" className={className} theme={legacyTheme} />
-                )}
+
+                <EnhancedContentRenderer
+                    content={streamingResponses[0] || ""}
+                    type='message'
+                    fontSize={fontSize}
+                    role="assistant"
+                    className={className}
+                    theme={legacyTheme}
+                />
+                {/* <SimpleContentRenderer
+                    content={streamingResponses[0] || ""}
+                    layout={layout}
+                    fontSize={fontSize}
+                    role="assistant"
+                    className={className}
+                    theme={legacyTheme}
+                /> */}
             </div>
         </div>
     );

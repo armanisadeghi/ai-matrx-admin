@@ -15,10 +15,8 @@ import QuestionnaireRenderer from './QuestionnaireRenderer';
 
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
 
-// Define supported content types and their detection logic
 const CONTENT_TYPES = {
     markdown: (content) => {
-        // Basic markdown detection - check for common markdown syntax
         return /(?:\*\*|\#|\-\s|\[.+\]\(.+\)|\|.*\|)/.test(content);
     },
     json: (content) => {
@@ -31,7 +29,6 @@ const CONTENT_TYPES = {
     },
 };
 
-// Define view modes configuration
 const VIEW_MODES = {
     raw: {
         icon: Baseline,
@@ -82,6 +79,7 @@ export interface EnhancedContentRendererProps {
     role?: string;
     className?: string;
     theme?: DisplayTheme;
+    showTabs?: boolean;
     onModeChange?: (mode: string) => void;
     onThemeChange?: (theme: DisplayTheme) => void;
 }
@@ -97,17 +95,8 @@ const EnhancedContentRenderer = ({
     onThemeChange = (theme: DisplayTheme) => {},
 }: EnhancedContentRendererProps) => {
 
-    const contentType = useMemo(() => {
-        for (const [type, detector] of Object.entries(CONTENT_TYPES)) {
-            if (detector(content)) return type;
-        }
-        return "text";
-    }, [content]);
-
-    // Get available modes without filtering
     const availableModes = useMemo(() => Object.entries(VIEW_MODES), []);
 
-    // Set initial mode based on content type
     const [activeMode, setActiveMode] = useState(() => {
         const defaultMode = availableModes[0]?.[0] || "raw";
         return defaultMode;
@@ -128,6 +117,7 @@ const EnhancedContentRenderer = ({
     };
 
     const themeColors = THEMES[currentTheme];
+
     const renderContent = () => {
         switch (activeMode) {
             case "raw":

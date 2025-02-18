@@ -24,6 +24,8 @@ interface MarkdownRendererProps {
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, fontSize = 16, role = "assistant", className }) => {
     const tableData = parseMarkdownTable(content);
 
+    console.log(content);
+
     const components = {
         p: ({ node, ...props }) => <p style={{ fontSize: `${fontSize}px` }} className="mb-2" {...props} />,
         ul: ({ node, ...props }) => <ul style={{ fontSize: `${fontSize}px` }} className="list-disc pl-5 mb-2" {...props} />,

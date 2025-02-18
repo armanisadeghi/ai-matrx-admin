@@ -34,6 +34,7 @@ type UseGetOrFetchRecordProps = {
 export function useGetOrFetchRecord({ entityName, matrxRecordId, simpleId, shouldProcess = true, fetchMode = 'fkIfk' }: UseGetOrFetchRecordProps) {
     const dispatch = useAppDispatch();
     const { selectors, actions } = useEntityTools(entityName);
+    console.log("entityName", entityName);
 
     const recordId = useThrottle(matrxRecordId || toMatrxIdFromValue(entityName, simpleId!), 1000);
     const recordWithKey = useAppSelector((state) => selectors.selectRecordWithKey(state, recordId)) as EntityDataWithKey<EntityKeys> | null;
