@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppletThemeName } from "@/components/brokers/main-layouts/applet-themes";
 import { AppletHeroSections, AppletHeroSectionType } from "@/components/applet/reusable-sections/AppletHero";
+import SimpleContentRenderer from "@/components/mardown-display/SimpleContentRenderer";
 
 const fontSize = 16;
 const className = "";
@@ -50,6 +51,11 @@ type AppletRecord = {
 
 const DEBUG_THEME = true;
 const DEBUG_THEME_NAME = "pinkBlue";
+
+const layoutOption = {
+    "976c56e5-263c-4815-b2ec-e6d1be04003a": "multiSectionCards",
+    "da794450-9b3e-46ae-a68a-ff33cb0ab1f0": "multiSectionCards",
+}
 
 export const AppletViewOne = ({ appletId, allThemes }: AppletViewOneProps) => {
     const prepareRecipeHook = useRunRecipeApplet(appletId);
@@ -98,7 +104,7 @@ export const AppletViewOne = ({ appletId, allThemes }: AppletViewOneProps) => {
                     onSubmit={handleSend}
                 />
                 {isResponseActive && (
-                    <MultiSectionMarkdownCard parsed={parsedContent} theme={legacyTheme} fontSize={fontSize} className={className} />
+                    <SimpleContentRenderer content={streamingResponses[0] || ""} layout="multiSectionCards" fontSize={fontSize} role="assistant" className={className} theme={legacyTheme} />
                 )}
             </div>
         </div>
