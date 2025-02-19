@@ -1,8 +1,7 @@
 import { FetchMode, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { toMatrxIdFromValue } from '@/lib/redux/entity/utils/entityPrimaryKeys';
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
-import { useThrottle } from '@uidotdev/usehooks';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 export function useGetorFetchRecords(entityName: EntityKeys, matrxRecordIds: MatrxRecordId[], shouldProcess = true, fetchMode: FetchMode = 'fkIfk') {
     const dispatch = useAppDispatch();
@@ -34,9 +33,8 @@ type UseGetOrFetchRecordProps = {
 export function useGetOrFetchRecord({ entityName, matrxRecordId, simpleId, shouldProcess = true, fetchMode = 'fkIfk' }: UseGetOrFetchRecordProps) {
     const dispatch = useAppDispatch();
     const { selectors, actions } = useEntityTools(entityName);
-    console.log("entityName", entityName);
 
-    const recordId = useThrottle(matrxRecordId || toMatrxIdFromValue(entityName, simpleId!), 1000);
+    const recordId = useMemo(() => matrxRecordId || toMatrxIdFromValue(entityName, simpleId!), [entityName, matrxRecordId, simpleId]);
     const recordWithKey = useAppSelector((state) => selectors.selectRecordWithKey(state, recordId)) as EntityDataWithKey<EntityKeys> | null;
 
     useEffect(() => {

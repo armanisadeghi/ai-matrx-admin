@@ -7,6 +7,7 @@ import { DataBrokerRecordWithKey, RecipeRecordWithKey } from "@/types";
 import { createNormalizer } from "@/utils/dataSchemaNormalizer";
 import { useCallback } from "react";
 import { createRecipeTaskBrokers, createRecipeOverrides, createRecipeTaskDataList } from "./recipe-task-utils";
+import { CompiledRecipeEntry } from "@/hooks/run-recipe/types";
 
 export type BasicMessage = {
     type: "text" | "base64_image" | "blob" | "image_url" | "other" | string;
@@ -96,9 +97,12 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
     const { selectors: brokerSelectors } = useEntityTools("dataBroker");
 
     const uniqueBrokerRecordIds = getUniqueBrokerRecordIds(messages);
+
     const matchingBrokers = useAppSelector((state) =>
         brokerSelectors.selectRecordsWithKeys(state, uniqueBrokerRecordIds)
     ) as DataBrokerRecordWithKey[];
+
+    console.log("--- matchingBrokers", matchingBrokers);
 
     const compileRecipe = useCallback(() => {
         const messageList: BasicMessage[] = messages.map((message) => ({
@@ -114,16 +118,18 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
 
         const compiledRecipe = {
             id: recipeRecord?.id,
-            matrxRecordId: activeRecipeMatrxId,
             name: recipeRecord?.name,
             messages: messageList,
             brokers: matchingBrokers,
             settings: settingsList,
+            matrxRecordId: activeRecipeMatrxId,
         } as CompiledRecipe;
 
         const recipeTaskBrokers = createRecipeTaskBrokers(matchingBrokers);
         const recipeOverrides = createRecipeOverrides(settingsList);
         const recipeTaskDataList = createRecipeTaskDataList(compiledRecipe);
+
+        console.log("--- recipeTaskDataList", recipeTaskDataList);
 
         return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
     }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);

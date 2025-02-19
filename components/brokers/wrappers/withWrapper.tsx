@@ -658,7 +658,7 @@ interface BrokerComponentRendererProps {
 }
 
 export const BrokerComponentRenderer: React.FC<BrokerComponentRendererProps> = ({ prepareRecipeHook }) => {
-    const { brokerComponentMetadataMap, isLoading } = prepareRecipeHook;
+    const { brokerComponentMetadataMap } = prepareRecipeHook;
 
 
     return (

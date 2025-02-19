@@ -1,18 +1,10 @@
 import { cn } from '@/lib/utils';
+import { AppletTheme } from '@/components/brokers/main-layouts/applet-themes';
 
 interface HeroSectionProps {
     title?: string;
     description?: string;
-    appletTheme: {
-        containerBg: string;
-        containerBorder: string;
-        titleBasics: string;
-        titleText: string;
-        titleSize: string;
-        descriptionBasics: string;
-        descriptionText: string;
-        descriptionSize: string;
-    };
+    appletTheme: AppletTheme;
     className?: string;
 }
 

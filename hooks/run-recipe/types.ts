@@ -1,6 +1,7 @@
 import {
     AiSettingsData,
     BrokerValueData,
+    DataBrokerData,
     DataInputComponentData,
     DataInputComponentRecordWithKey,
     DataOutputComponentData,
@@ -11,48 +12,13 @@ import {
 } from "@/types";
 
 
-export type DataBrokerData = {
-    id: string;
-    name: string;
-    dataType?: "str" | "bool" | "dict" | "float" | "int" | "list" | "url";
-    outputComponent?: string;
-    dataInputComponentReference?: DataInputComponentData[];
-    defaultValue?: string;
-    inputComponent?: string;
-    color?:
-        | "blue"
-        | "amber"
-        | "cyan"
-        | "emerald"
-        | "fuchsia"
-        | "gray"
-        | "green"
-        | "indigo"
-        | "lime"
-        | "neutral"
-        | "orange"
-        | "pink"
-        | "purple"
-        | "red"
-        | "rose"
-        | "sky"
-        | "slate"
-        | "stone"
-        | "teal"
-        | "violet"
-        | "yellow"
-        | "zinc";
-    dataOutputComponentReference?: DataOutputComponentData[];
-    brokerValueInverse?: BrokerValueData[];
-    messageBrokerInverse?: MessageBrokerData[];
-};
-
 export type CompiledRecipeEntry = {
     id: string;
     name: string;
     brokers: DataBrokerData[];
     messages: MessageTemplateDataOptional[];
     settings: AiSettingsData[];
+    matrxRecordId: MatrxRecordId;
 };
 
 export type CompiledRecipeRecordWithKey = {

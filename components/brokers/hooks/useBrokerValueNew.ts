@@ -1,26 +1,13 @@
 "use client";
 
-import { DataBrokerData, EntityDataWithKey, MatrxRecordId } from "@/types";
 import { useUser } from "@/lib/hooks/useUser";
 import { useCallback, useEffect, useState } from "react";
-import { createEntitySelectors, useAppSelector, useEntityTools } from "@/lib/redux";
-import { DataBrokerDataWithKey, DataInputComponent } from "../types";
+import {  useAppSelector, useEntityTools } from "@/lib/redux";
+import { BrokerValueData, DataBrokerRecordWithKey } from "@/types";
 import useCreateUpdateRecord from "@/app/entities/hooks/crud/useCreateUpdateRecord";
 
-type BrokerValueData = {
-    id: string;
-    createdAt: Date;
-    dataBroker?: string;
-    userId?: string;
-    tags?: string[];
-    data?: Record<string, unknown>;
-    category?: string;
-    subCategory?: string;
-    comments?: string;
-    dataBrokerReference?: DataBrokerData[];
-};
 
-export const useCreateUpdateBrokerValue = (brokerId: string) => {
+export const useCreateUpdateBrokerValue = (brokerId: string) => {    
     const { start, updateField, updateFields, save, currentRecordId, recordDataWithDefaults, recordDataWithoutDefaults, fieldDefaults } =
         useCreateUpdateRecord({
             entityKey: "brokerValue",
@@ -29,7 +16,7 @@ export const useCreateUpdateBrokerValue = (brokerId: string) => {
     const brokerRecordKey = `id:${brokerId}`;
     const broker = useAppSelector((state) =>
         brokerSelectors.selectRecordWithKey(state, brokerRecordKey)
-    ) as unknown as DataBrokerDataWithKey;
+    ) as DataBrokerRecordWithKey;
     const brokerDataType = broker?.dataType || "str";
 
     const [recordId, setRecordId] = useState<string | null>(currentRecordId);
@@ -43,7 +30,8 @@ export const useCreateUpdateBrokerValue = (brokerId: string) => {
     const { userId } = useUser();
 
     useEffect(() => {
-        const recordId = start();
+        const initialData = {dataBroker: brokerId};
+        const recordId = start(initialData);
         setRecordId(recordId);
     }, []);
 

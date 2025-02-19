@@ -110,31 +110,36 @@ export class SocketManager {
 
     startTask(eventName: string, data: any, callback: (response: any) => void) {
         const socket = this.getSocket();
-
+      
         if (!socket || !socket.connected) {
-            console.error('Socket not initialized or not connected');
-            return;
+          console.error('Socket not initialized or not connected');
+          return;
         }
-
+      
         console.log(`Emitting task: ${eventName}`);
-
+              const sid = socket.id;
+        const taskName = data[0]?.task || 'unknown_task';
+        const taskIndex = data[0]?.index || 0;
+        const fallbackEventName = `${sid}_${taskName}_${taskIndex}`;
+      
+        const fallbackListener = (fallbackResponse: any) => {
+          callback(fallbackResponse);
+        };
+        this.addDynamicEventListener(fallbackEventName, fallbackListener);
+      
         socket.emit(eventName, data, (response: { event_name?: string }) => {
-            const sid = socket.id;
-            const taskName = data[0]?.task || 'unknown_task';
-            const taskIndex = data[0]?.index || 0;
-            const basicEventName = `${sid}_${taskName}_${taskIndex}`;
-
-            if (response?.event_name) {
-                console.log('Task confirmed. Listening for event:', response.event_name);
-                this.addDynamicEventListener(response.event_name, callback);
-            } else {
-                this.addDynamicEventListener(basicEventName, (fallbackResponse) => {
-                    callback(fallbackResponse);
-                });
-            }
+          if (response?.event_name) {
+            console.log('Task confirmed. Switching listener to event:', response.event_name);
+      
+            this.removeDynamicEventListener(fallbackEventName);
+      
+            this.addDynamicEventListener(response.event_name, (finalResponse: any) => {
+              callback(finalResponse);
+            });
+          }
         });
-    }
-
+      }
+      
     startStreamingTasks<T>(event: string, tasks: T[], onStreamUpdate: (index: number, data: string) => void) {
         tasks.forEach((taskData, index) => {
             const singleTaskPayload = [
@@ -205,7 +210,7 @@ export class SocketManager {
 
         // Add the listener for the dynamic event
         socket.on(dynamicEventName, (data: any) => {
-            // console.log(`Received response for event: ${dynamicEventName}`, data); // Log the response
+            console.log(`Received response for event: ${dynamicEventName}`, data); // Log the response
             callback(data); // Pass the data to the provided callback
         });
 

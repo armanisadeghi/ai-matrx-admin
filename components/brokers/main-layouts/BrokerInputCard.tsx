@@ -18,7 +18,7 @@ const BrokerContent = ({
     isOpen,
     setIsOpen
 }) => {
-    const { brokerComponentMetadataMap } = prepareRecipeHook;
+    const { brokerComponentMetadataMap, handleSend } = prepareRecipeHook;
 
     useEffect(() => {
         if (brokerComponentMetadataMap && Object.keys(brokerComponentMetadataMap).length > 0) {
@@ -33,6 +33,7 @@ const BrokerContent = ({
             <div className="flex justify-end">
                 <Button
                     onClick={() => {
+                        handleSend();
                         onSubmit();
                         setIsOpen(false);
                     }}

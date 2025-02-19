@@ -34,16 +34,10 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Better Structured Dynamic Task Builder',
+        path: 'test-five',
         relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
+        description: 'This one is designed to allow us to dynamically build any socket task and test it, without frontend changes.'
     },
     {
         title: 'Modular Socket IO Recipe Tester',

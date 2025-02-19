@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useGetOrFetchRecord, useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
-import { BrokerWithComponentsMap, DataBrokerData, CompiledRecipeEntry, CompiledRecipeRecordWithKey } from "./types";
-import { createEntitySelectors, useAppSelector } from "@/lib/redux";
+import { BrokerWithComponentsMap, CompiledRecipeEntry, CompiledRecipeRecordWithKey } from "./types";
+import { createEntitySelectors, useAppSelector, useEntityTools } from "@/lib/redux";
 import { useDebounce } from "@uidotdev/usehooks";
-import { AppletRecordWithKey, DataInputComponentRecordWithKey } from "@/types";
+import { AppletRecordWithKey, BrokerValueRecordWithKey, DataBrokerData, DataInputComponentRecordWithKey } from "@/types";
 import { UsePrepareRecipeToRunReturn } from "./usePrepareRecipeToRun";
+import { useCompiledToSocket } from "@/lib/redux/socket/hooks/useCompiledToSocket";
 
 export function useAppletRecipe(appletId: string) {
     const compiledRecipeSelectors = useMemo(() => createEntitySelectors("compiledRecipe"), []);
@@ -27,8 +28,6 @@ export function useAppletRecipe(appletId: string) {
 
     const neededBrokers = useMemo(() => compiledRecipe?.brokers ?? [], [compiledRecipe?.brokers]);
 
-    console.log("compiledRecipe", compiledRecipe);
-
     return {
         isLoading,
         activeCompiledRecipeRecord,
@@ -49,8 +48,9 @@ export function useBrokerComponents({ neededBrokers, isAppletLoading }: BrokerCo
     const dataInputSelectors = useMemo(() => createEntitySelectors("dataInputComponent"), []);
     const isComponentLoading = useAppSelector((state) => dataInputSelectors.selectIsLoading(state));
 
-    const { uniqueComponentIds, uniqueComponentRecordKeys } = useMemo(() => {
+    const { uniqueComponentIds, uniqueComponentRecordKeys, neededBrokerIds } = useMemo(() => {
         return {
+            neededBrokerIds: [...new Set(neededBrokers.map(broker => broker.id))],
             uniqueComponentIds: [...new Set(neededBrokers.map(broker => broker.inputComponent))],
             uniqueComponentRecordKeys: [...new Set(neededBrokers.map((broker) => `id:${broker.inputComponent}`))]
         };
@@ -98,12 +98,41 @@ export function useBrokerComponents({ neededBrokers, isAppletLoading }: BrokerCo
 
     const isLoading = useDebounce(isAppletLoading || isComponentLoading, 300);
 
+
+
     return {
         brokerComponentMetadataMap,
         hasAllInputComponents,
         isLoading,
+        neededBrokerIds,
     };
 }
+
+
+export function useGetBrokerValues(neededBrokerIds: string[]) {
+
+    // NO LONGER IN USE
+
+    const {selectors } = useEntityTools("brokerValue");
+
+    const allBrokerValueRecords = useAppSelector((state) => selectors.selectAllEffectiveRecords(state)) as Record<string, BrokerValueRecordWithKey>;
+
+    const brokerValueRecordsWithBrokerKeys = useMemo(() => {
+        if (!allBrokerValueRecords) return {};
+        return Object.entries(allBrokerValueRecords)
+            .filter(([_, record]) => neededBrokerIds.includes(record.dataBroker))
+            .reduce((acc, [_, record]) => {
+                acc[record.dataBroker] = record;
+                return acc;
+            }, {} as Record<string, BrokerValueRecordWithKey>);
+    }, [allBrokerValueRecords, neededBrokerIds]);
+
+    return {
+        brokerValueRecordsWithBrokerKeys
+    };
+}
+
+
 
 
 export function useRunRecipeApplet(appletId: string) {
@@ -116,7 +145,19 @@ export function useRunRecipeApplet(appletId: string) {
         neededBrokers,
         appletRecord,
     } = useAppletRecipe(appletId);
+
+
     const { brokerComponentMetadataMap, hasAllInputComponents, isLoading } = useBrokerComponents({ neededBrokers, isAppletLoading });
+
+
+    const {
+        streamingResponses,
+        responseRef,
+        handleSend,
+        handleClear,
+        isResponseActive,
+    } = useCompiledToSocket({ compiledRecipe });
+
 
     return {
         brokerComponentMetadataMap,
@@ -127,6 +168,11 @@ export function useRunRecipeApplet(appletId: string) {
         selectedVersion,
         recipeRecordKey,
         appletRecord,
+        streamingResponses,
+        responseRef,
+        handleSend,
+        handleClear,
+        isResponseActive,
     };
 }
 
