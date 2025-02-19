@@ -46,7 +46,7 @@ const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: Enhan
           isFullWidth ? 'w-full' : ''
         }`}
       >
-        <h2 className={`text-2xl font-bold bg-gradient-to-r ${themeColors.title.text} bg-clip-text text-transparent`}>
+        <h2 className={`text-lg font-bold bg-gradient-to-r ${themeColors.title.text} bg-clip-text text-transparent`}>
           {renderContent(section.title, 'title')}
         </h2>
 
@@ -69,13 +69,13 @@ const EnhancedMarkdownCard = ({ parsed, theme, fontSize, className = '' }: Enhan
                       url={urls[0]}
                       className={`p-3 rounded-lg bg-white dark:bg-black/20 shadow-sm border ${themeColors.item.border} hover:scale-[1.02] transition-transform duration-200`}
                     >
-                      <h3 className={`text-lg font-semibold ${themeColors.item.title}`}>
+                      <h3 className={`text-md font-semibold ${themeColors.item.title}`}>
                         {cleanText || 'Link'}
                       </h3>
                     </LinkDisplay>
                   ) : (
                     <div className={`p-3 rounded-lg bg-white dark:bg-black/20 shadow-sm border ${themeColors.item.border} hover:scale-[1.02] transition-transform duration-200`}>
-                      <h3 className={`text-lg font-semibold ${themeColors.item.title}`}>
+                      <h3 className={`text-md font-semibold ${themeColors.item.title}`}>
                         {item.name}
                       </h3>
                     </div>

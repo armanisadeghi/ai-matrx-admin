@@ -66,7 +66,7 @@ function BulletCard({
           url={urls[0]}
           className={`p-3 rounded-lg bg-white dark:bg-black/20 shadow-sm border ${themeColors.item.border} hover:scale-[1.02] transition-transform duration-200`}
         >
-          <h3 className={`text-lg font-semibold ${themeColors.item.title}`}>
+          <h3 className={`text-md font-semibold ${themeColors.item.title}`}>
             {cleanText || "Link"}
           </h3>
         </LinkDisplay>
@@ -74,7 +74,7 @@ function BulletCard({
         <div
           className={`p-3 rounded-lg bg-white dark:bg-black/20 shadow-sm border ${themeColors.item.border} hover:scale-[1.02] transition-transform duration-200`}
         >
-          <h3 className={`text-lg font-semibold ${themeColors.item.title}`}>
+          <h3 className={`text-md font-semibold ${themeColors.item.title}`}>
             {itemText}
           </h3>
         </div>
@@ -167,14 +167,14 @@ const MultiSectionMarkdownCard = ({
           >
             {/* Section Title */}
             <h2
-              className={`text-2xl font-bold ${themeColors.title.text}`}
+              className={`text-lg font-bold ${themeColors.title.text}`}
               >
               {renderContent(section.title, "title")}
             </h2>
 
             {/* Section Intro */}
             {section.intro && (
-              <div className={`pt-2 text-lg ${themeColors.title.secondary}`}>
+              <div className={`pt-2 text-md ${themeColors.title.secondary}`}>
                 {renderContent(section.intro, "text")}
               </div>
             )}

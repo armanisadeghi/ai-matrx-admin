@@ -76,7 +76,7 @@ export function EnhancedResultsPanel({
                 content={streamingText}
                 type="message"
                 role="assistant"
-                fontSize={18}
+                fontSize={16}
                 onModeChange={setViewMode}
                 theme={theme}
                 onThemeChange={onThemeChange}
