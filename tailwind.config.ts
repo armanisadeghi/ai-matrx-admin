@@ -29,6 +29,9 @@ const config: Config = {
         extend: {
             colors,
             ...animations,
+            minWidth: {
+                '128': '32rem',
+            },
             borderRadius: {
                 xl: 'calc(var(--radius) + 4px)',
                 lg: 'var(--radius)',
