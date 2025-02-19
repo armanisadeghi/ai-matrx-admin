@@ -35,7 +35,6 @@ export interface RelatedRecord {
 }
 
 
-// Core Types
 export type AppletLayoutType =
     | 'toolsLayout'
     | 'conversationalLayout'
@@ -60,7 +59,7 @@ export type AppletCategory =
 // Entity-Related Types
 export interface ToolEntityConfig {
     id: string;
-    entityKey: EntityKeys;  // Strict typing from your system
+    entityKey: EntityKeys;
     title: string;
     description: string;
     icon: ReactNode;
@@ -142,7 +141,7 @@ export interface AppletConfig {
         description?: string;
     }>;
     sections?: AppletSection[];
-    entities?: EntityKeys[];  // Should be strictly typed
+    entities?: EntityKeys[];
     displayName?: string;
     beta?: boolean;
     comingSoon?: boolean;

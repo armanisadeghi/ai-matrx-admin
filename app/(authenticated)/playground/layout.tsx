@@ -20,10 +20,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 />
             </div> */}
             <MatrxDynamicPanel
-                initialPosition='right'
+                initialPosition='left'
                 defaultExpanded={false}
                 expandButtonProps={{
-                    label: 'Entity State',
+                    label: 'Admin Entity State',
                 }}
             >
                 <EnhancedEntityAnalyzer
@@ -31,7 +31,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     selectedEntityKey='dataBroker'
                 />
             </MatrxDynamicPanel>
-            <MatrxDynamicPanel
+            {/* <MatrxDynamicPanel
                 initialPosition='left'
                 defaultExpanded={false}
                 expandButtonProps={{
@@ -40,7 +40,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
                 <EditorAnalyzer />
                 <EditorStateVisualizer />
-            </MatrxDynamicPanel>
+            </MatrxDynamicPanel> */}
 
             <main className='flex-1'>{children}</main>
         </div>

@@ -31,6 +31,7 @@ import EntityShowSelectedAccordion from "../relationships/EntityShowSelectedAcco
 import EntitySelectSpecial from "./field-components/EntitySelectSpecial";
 import EntitySpecialField from "./field-components/custom-fields/EntitySpecialField";
 import EntityForeignKeySelect from "./field-components/relationship-fields/EntityForeignKeySelect";
+import EntityTextArray from "./field-components/EntityTextArray";
 
 
 export const ENTITY_FIELD_COMPONENTS = {
@@ -47,6 +48,7 @@ export const ENTITY_FIELD_COMPONENTS = {
     UUID_ARRAY: EntityUUIDArray,
     RELATIONAL_INPUT: RelationalInput,
     SPECIAL: EntitySpecialField,
+    TEXT_ARRAY: EntityTextArray,
     FK_SELECT: EntityForeignKeySelect,
 
 
@@ -86,14 +88,16 @@ export const ENTITY_FIELD_COMPONENTS = {
 //   },
 
 const default_component_count = {
-    "UUID_FIELD": 38,
-    "INPUT": 37,
-    "FK_SELECT": 44,
-    "TEXTAREA": 48,
-    "SWITCH": 15,
-    "JSON_EDITOR": 43,
-    "NUMBER_INPUT": 26,
-    "DATE_PICKER": 16,
-    "SELECT": 18,
+    "UUID_FIELD": 59,
+    "INPUT": 61,
+    "FK_SELECT": 49,
+    "TEXTAREA": 57,
+    "SWITCH": 19,
+    "JSON_EDITOR": 47,
+    "NUMBER_INPUT": 45,
+    "DATE_PICKER": 29,
+    "SELECT": 30,
+    "TEXT_ARRAY": 3,
+    "TIME_PICKER": 2,
     "UUID_ARRAY": 2
 } as const;

@@ -5,7 +5,7 @@ import { ImperativePanelHandle, Panel, PanelResizeHandle } from 'react-resizable
 import { Button, Card } from '@/components/ui';
 import MarkdownRenderer from '@/components/mardown-display/MarkdownRenderer';
 import DraggableToolbar, { ToolbarAction } from '../components/DraggableToolbar';
-import { Eye, Code, FileText, Copy } from 'lucide-react';
+import { Eye, Code, FileText, Copy, Braces } from 'lucide-react';
 
 interface ResultPanelProps {
     id: string;
@@ -18,13 +18,14 @@ interface ResultPanelProps {
     onLabelChange?: (id: string, newLabel: string) => void;
     debug?: boolean;
     onDebugClick?: (id: string) => void;
+    minSize?: number;
 }
 
-export function ResultPanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick }: ResultPanelProps) {
+export function ResultPanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick, minSize }: ResultPanelProps) {
     const panelRef = useRef<ImperativePanelHandle>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [previousSize, setPreviousSize] = useState(50);
-    const [viewMode, setViewMode] = useState<'rendered' | 'raw' | 'processed'>('rendered');
+    const [previousSize, setPreviousSize] = useState(minSize);
+    const [viewMode, setViewMode] = useState<'rendered' | 'raw' | 'processed' | 'parsedAsJson'>('rendered');
     const [showCopySuccess, setShowCopySuccess] = useState(false);
 
     const toggleCollapse = () => {
@@ -67,13 +68,18 @@ export function ResultPanel({ id, order, number, label, streamingText, onDelete,
             icon: <FileText className='h-4 w-4' />,
             onClick: () => setViewMode('processed'),
         },
+        {
+            label: 'View Parsed as JSON',
+            icon: <Braces className='h-4 w-4' />,
+            onClick: () => setViewMode('parsedAsJson'),
+        },
     ];
 
     const renderContent = () => {
         switch (viewMode) {
             case 'raw':
             case 'processed':
-                return <pre className='p-4 whitespace-pre-wrap font-mono text-sm'>{streamingText}</pre>;
+                return <pre className='p-4 whitespace-pre-wrap overflow-y-auto font-mono text-sm'>{streamingText}</pre>;
             case 'rendered':
             default:
                 return (

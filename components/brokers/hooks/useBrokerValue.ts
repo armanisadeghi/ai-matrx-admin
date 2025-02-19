@@ -1,4 +1,4 @@
-import { DataInputComponentData, DataInputComponentRecordWithKey, DataOutputComponentData, EntityDataWithKey, MatrxRecordId, MessageBrokerData } from '@/types';
+import { EntityDataWithKey, MatrxRecordId } from '@/types';
 import { useCreateWithId } from '@/app/entities/hooks/crud/useDirectCreateRecord';
 import { useUser } from '@/lib/hooks/useUser';
 import { useCallback, useEffect, useState } from 'react';
@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useFieldUpdate } from '@/app/entities/hooks/unsaved-records/useUpdateFields';
 import { createEntitySelectors, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { DataBrokerDataWithKey, DataInputComponent } from '../types';
-
+import useCreateUpdateRecord from '@/app/entities/hooks/crud/useCreateUpdateRecord';
 
 interface CreateBrokerValueOptions {
     onSuccess?: (newRecordWithKey: EntityDataWithKey<'brokerValue'>) => void;
@@ -35,6 +35,49 @@ type BrokerValueRecordWithKey = {
     comments: string;
     matrxRecordId?: MatrxRecordId;
 }
+
+export const useCreateUpdateBrokerValue = ({ onSuccess, onError, showToast = false }: CreateBrokerValueOptions = {}) => {
+    const {
+        start,
+        updateField,
+        updateFields,
+        save,
+        currentRecordId,
+        recordDataWithDefaults,
+        recordDataWithoutDefaults,
+        fieldDefaults,
+    } = useCreateUpdateRecord({
+        entityKey: 'brokerValue',
+    });
+
+    const { userId } = useUser();
+
+    return useCallback(
+        (broker: DataBrokerDataWithKey, additionalData: OptionalBrokerValueData = {}) => {
+            const id = additionalData.id || uuidv4();
+            const matrxRecordId = `id:${id}`;
+
+            const brokerValueData: BrokerValueRecordWithKey = {
+                id,
+                userId,
+                dataBroker: broker.id,
+                data: { "value": broker.defaultValue },
+                ...(additionalData.tags && { tags: additionalData.tags }),
+                ...(additionalData.data && { data: additionalData.data }),
+                ...(additionalData.category && { category: additionalData.category }),
+                ...(additionalData.subCategory && { subCategory: additionalData.subCategory }),
+                ...(additionalData.comments && { comments: additionalData.comments }),
+            };
+
+            const newRecordWithKey = start(brokerValueData);
+
+            return newRecordWithKey as unknown as BrokerValueRecordWithKey;
+        },
+        [start, updateField, updateFields, save, currentRecordId, recordDataWithDefaults, recordDataWithoutDefaults, fieldDefaults, userId]
+    );
+};
+
+
 
 
 export const useCreateBrokerValue = ({ onSuccess, onError, showToast = false }: CreateBrokerValueOptions = {}) => {
@@ -69,8 +112,6 @@ export const useCreateBrokerValue = ({ onSuccess, onError, showToast = false }: 
                 matrxRecordId,
             })
 
-            console.log('useCreateBrokerValue newRecordWithKey', newRecordWithKey);
-
             return newRecordWithKey as unknown as BrokerValueRecordWithKey;
         },
         [createWithId, userId]
@@ -79,8 +120,7 @@ export const useCreateBrokerValue = ({ onSuccess, onError, showToast = false }: 
 
 export function useBrokerValue(broker: DataBrokerDataWithKey) {
     const dispatch = useAppDispatch();
-    const primaryEntity = 'brokerValue';
-    const { actions, selectors } = useEntityTools(primaryEntity);
+    const { actions } = useEntityTools('brokerValue');
     const [brokerValueRecord, setBrokerValueRecord] = useState<BrokerValueRecordWithKey | null>(null);
     const recordId = brokerValueRecord?.matrxRecordId;
 
@@ -106,7 +146,7 @@ export function useBrokerValue(broker: DataBrokerDataWithKey) {
     }, [broker]);
 
 
-    const updateMyField = useFieldUpdate(primaryEntity, recordId, 'data');
+    const updateMyField = useFieldUpdate('brokerValue', recordId, 'data');
 
     const convertValue = (value: any): any => {
         switch (broker?.dataType) {

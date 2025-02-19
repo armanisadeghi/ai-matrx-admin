@@ -80,7 +80,7 @@ export const EditorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const registerEditor = useCallback((editorId: string, initialContent = '', initialLayout?: LayoutMetadata) => {
         if (registeredEditors.current.has(editorId)) return;
 
-        console.log('Initial content:', initialContent);
+        // console.log('Initial content:', initialContent);
 
         registeredEditors.current.add(editorId);
         setEditors((prev) => {

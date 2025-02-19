@@ -180,6 +180,7 @@
     "remark-gfm": "latest",
     "remark-math": "latest",
     "remirror": "latest",
+    "replicate": "^1.0.1",
     "sharp": "latest",
     "shiki": "latest",
     "socket.io-client": "latest",

@@ -20,6 +20,7 @@ import { createRecordKey, getRecordIdByRecord, parseRecordKeys } from '@/lib/red
 import EntityLogger from '@/lib/redux/entity/utils/entityLogger';
 import { mapFieldDataToFormField } from '@/lib/redux/entity/utils/tempFormHelper';
 import { uniqBy } from 'lodash';
+import { ObjectSpaceNormalMap } from 'three';
 
 interface FieldNameGroups<TEntity extends EntityKeys> {
     nativeFields: EntityAnyFieldKey<TEntity>[];
@@ -956,6 +957,21 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+    const selectAllEffectiveRecordsArray = createSelector(
+        [selectAllRecords, selectUnsavedRecords],
+        (records, unsavedRecords): EntityDataWithKey<EntityKeys>[] => {
+          const mergedRecords = {
+            ...(records ?? {}),
+            ...(unsavedRecords ?? {}),
+          };
+      
+          return Object.entries(mergedRecords).map(([recordKey, record]) => ({
+            ...record,
+            matrxRecordId: recordKey,
+          }));
+        }
+      );
+
     // Then this can be simplified to just convert the object to array
     const selectAllEffectiveRecordsWithKeys = createSelector([selectAllEffectiveRecords], (effectiveRecords): EntityDataWithKey<EntityKeys>[] => {
         if (!effectiveRecords) {
@@ -963,6 +979,36 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
         return Object.values(effectiveRecords);
     });
+
+
+    const selectEffectiveRecordsByMultipleFieldsValue = createSelector(
+        [selectAllEffectiveRecords, (_: RootState, filters: EntityFieldFilter<TEntity>[]) => filters],
+        (records, filters): EntityDataWithKey<EntityKeys>[] => {
+            if (!records) return [];
+            if (!filters.length) return [];
+    
+            const filteredRecords = Object.values(records).filter(record => 
+                filters.every(({ field, value }) => record[field] === value)
+            );
+            return filteredRecords;
+        }
+    );
+
+    const selectEffectiveRecordsByFieldValues = createSelector(
+        [
+            selectAllEffectiveRecords,
+            (_: RootState, field: AllEntityFieldKeys, possibleValues: any[]) => ({ field, possibleValues })
+        ],
+        (records, { field, possibleValues }): EntityDataWithKey<EntityKeys>[] => {
+            if (!records) return [];
+            if (!possibleValues || possibleValues.length === 0) return [];
+            
+            const filteredRecords = Object.values(records).filter(record => 
+                possibleValues.includes(record[field])
+            );
+            return filteredRecords;
+        }
+    );
 
     const selectEnhancedRecords = createSelector(
         [selectQuickReference, selectAllEffectiveRecordsWithKeys],
@@ -1021,7 +1067,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectEffectiveRecordOrDefaults = createSelector(
         [selectEntity, selectDefaultValues, (_, recordId: MatrxRecordId) => recordId],
         (entity, defaultValues, recordId) => {
-            const isTemporary = recordId.startsWith('new-record-');
+            const isTemporary = recordId?.startsWith('new-record-');
             const record = entity.unsavedRecords?.[recordId] || entity.records?.[recordId];
 
             if (!record) {
@@ -1521,6 +1567,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectRecordsByKeys,
 
         selectAllEffectiveRecords,
+        selectAllEffectiveRecordsArray,
         selectEffectiveRecordsByKeys,
 
         selectRecordsKeyPairs,
@@ -1531,7 +1578,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectRecordsWithKeysByPrimaryKeys,
         selectRecordsWithKeysBySimpleIds,
         selectAllEffectiveRecordsWithKeys,
-
+        selectEffectiveRecordsByMultipleFieldsValue,
+        selectEffectiveRecordsByFieldValues,
 
         selectEnhancedRecords,
         selectEnhancedRecordByKey,

@@ -6,9 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { BasicSettings, StyleSettings, NumberSettings, OptionsSettings, OrientationSettings } from "./ComponentSettingsBuilder";
-import useTrackedUnsavedRecord from "@/app/entities/hooks/unsaved-records/useTrackedUnsavedRecord";
 import { SingleBrokerSection } from "@/components/brokers/value-sections/single-broker/SingleBrokerSection";
 import { DataInputComponent } from "@/components/brokers/types";
+import useCreateUpdateRecord from "@/app/entities/hooks/crud/useCreateUpdateRecord";
 
 const BUILDER_GUIDANCE_TEXT = `1. BUILD COMPONENTS: Used for one or more Brokers.
 2. MORE REUSABLE:  Inputs, Textareas, "True/False" or "Yes/No".
@@ -37,26 +37,31 @@ const INITIAL_DATA = {
 const debug = false;
 
 export default function ComponentEditor() {
-    const { startWithData, updateField, create, recordData } = useTrackedUnsavedRecord({
+    const {
+        start,
+        updateField,
+        save,
+        recordDataWithDefaults,
+    } = useCreateUpdateRecord({
         entityKey: "dataInputComponent",
     });
 
-    const componentInfo = recordData as DataInputComponent;
+    const componentInfo = recordDataWithDefaults as DataInputComponent;
 
     const componentId = useMemo(() => {
-        return startWithData(INITIAL_DATA);
-    }, [startWithData]);
+        return start(INITIAL_DATA);
+    }, []);
 
-    const handleComponentChange = (value: BrokerComponentType) => {
+    const handleUpdateField = (value: BrokerComponentType) => {
         updateField("component", value);
     };
 
     const handleSave = () => {
-        create();
+        save();
     };
 
     const handleReset = () => {
-        startWithData(INITIAL_DATA);
+        start(INITIAL_DATA);
     };
 
     const showNumberSettings =
@@ -75,7 +80,7 @@ export default function ComponentEditor() {
                 <div className="w-1/4 border-r flex flex-col">
                     {/* Component Type Select */}
                     <div className="p-4 border-b shrink-0">
-                        <Select value={componentInfo?.component || ""} onValueChange={handleComponentChange}>
+                        <Select value={componentInfo?.component || ""} onValueChange={handleUpdateField}>
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Choose component type" />
                             </SelectTrigger>

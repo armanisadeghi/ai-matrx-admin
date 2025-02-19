@@ -7,7 +7,6 @@ import CollapsibleSidebarPanel from './components/CollapsibleSidebarPanel';
 import { ResultPanelManager } from '@/components/playground/results/ResultPanelManager';
 import MessagesContainer from './messages/MessagesContainer';
 import { CockpitPanelComponent, CockpitControls } from './types';
-import { useAiCockpit } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import CompiledRecipeDisplay from './results/CompiledRecipeDisplay';
 
 interface CockpitPanelsProps {
@@ -50,7 +49,7 @@ const CockpitPanels = forwardRef<{ leftPanel: ImperativePanelHandle | null; righ
         const [showMessages, setShowMessages] = useState(false);
         const [showResults, setShowResults] = useState(false);
 
-        const { activeRecipeMatrxId } = useAiCockpit();
+        const { activeRecipeMatrxId } = cockpitControls.aiCockpitHook;
 
         useEffect(() => {
             if (activeRecipeMatrxId) {

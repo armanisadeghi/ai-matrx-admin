@@ -1,5 +1,6 @@
-import { UseAiCockpitHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
+
 import { type FC } from 'react';
+import { UseAiCockpitHook } from './hooks/useAiCockpit';
 
 export interface CockpitControls {
     onToggleBrokers: () => void;

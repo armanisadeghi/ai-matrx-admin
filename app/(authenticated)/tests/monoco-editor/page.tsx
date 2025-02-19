@@ -1,7 +1,7 @@
 // app/(authenticated)/tests/monoco-editor/page.tsx
 'use client';
 
-import CodeEditor from './components/CodeEditor';
+import CodeEditor from '@/components/code-editor/CodeEditor';
 
 export default function Page() {
     return (

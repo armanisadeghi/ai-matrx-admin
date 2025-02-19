@@ -1,7 +1,7 @@
 // app/(authenticated)/tests/monoco-editor/page.tsx
 'use client';
 
-import ProCodeEditor from '../components/ProCodeEditor';
+import ProCodeEditor from '@/components/code-editor/ProCodeEditor';
 
 export default function Page() {
     return (

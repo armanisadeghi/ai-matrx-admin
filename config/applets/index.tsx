@@ -1,7 +1,7 @@
 // config/applets/index.tsx
 import { toolsConfig } from './tools';
 import { aiChatConfig } from './ai-chat';
-import { AppletConfig, AppletLayoutType, AppletCategory } from "@/types/applets/applet-config";
+import { AppletConfig, AppletLayoutType, AppletCategory } from "@/types/applets/types";
 import { appletDefinitions } from './applet-definitions';
 
 
@@ -22,13 +22,12 @@ function getLayoutForCategory(category: AppletCategory): AppletLayoutType {
     }
 }
 
-
 const convertedConfigs = appletDefinitions.reduce<Record<string, AppletConfig>>((acc, applet) => {
     acc[applet.key] = {
         ...applet,
         layout: getLayoutForCategory(applet.category as AppletCategory),
         sections: [],
-    };
+    } as AppletConfig;
     return acc;
 }, {});
 

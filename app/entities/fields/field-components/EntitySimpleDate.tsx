@@ -1,5 +1,3 @@
-// app/entities/fields/field-components/EntitySimpleDate.tsx
-
 import React, { useMemo, useState } from "react";
 import { format, parseISO } from "date-fns";
 import { Input } from "@/components/ui/input";
@@ -21,6 +19,12 @@ import {
 } from "@/utils/schema/dateTimeUtils";
 
 type EntitySimpleDateProps = FieldComponentProps<string>;
+
+// Default configuration for date input
+const DEFAULT_INPUT_CONFIG = {
+  inputType: "datetime-local",
+  displayFormat: "yyyy-MM-dd HH:mm:ss",
+};
 
 const EntitySimpleDate = React.forwardRef<
   HTMLInputElement,
@@ -48,9 +52,11 @@ const EntitySimpleDate = React.forwardRef<
     const [tooltipText, setTooltipText] = useState("");
     const [showTooltip, setShowTooltip] = useState(false);
 
-    const dbType = dynamicFieldInfo.componentProps
-      ?.subComponent as SupabaseDateType;
-    const inputConfig = useMemo(() => getInputConfig(dbType), [dbType]);
+    const dbType = dynamicFieldInfo.componentProps?.subComponent as SupabaseDateType;
+    const inputConfig = useMemo(() => {
+      const config = dbType ? getInputConfig(dbType) : null;
+      return config || DEFAULT_INPUT_CONFIG;
+    }, [dbType]);
 
     const { getInputStyles } = useFieldStyles({
       variant,
@@ -103,7 +109,8 @@ const EntitySimpleDate = React.forwardRef<
             formattedDate = formatTime(dateObj);
             break;
           default:
-            throw new Error(`Unsupported date type: ${dbType}`);
+            // Use ISO string as fallback for unknown types
+            formattedDate = dateObj.toISOString();
         }
 
         onChange(formattedDate);

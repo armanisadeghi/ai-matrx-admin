@@ -75,12 +75,28 @@ export const StaticFieldConfig = React.memo((props: StaticFieldConfigProps) => {
 
     const fieldMetadata = useAppSelector(selectField) as EntityStateField;
 
+    // "UUID_FIELD": 59,
+    // "INPUT": 61,
+    // "FK_SELECT": 49,
+    // "TEXTAREA": 57,
+    // "SWITCH": 19,
+    // "JSON_EDITOR": 47,
+    // "NUMBER_INPUT": 45,
+    // "DATE_PICKER": 29,
+    // "SELECT": 30,
+    // "TEXT_ARRAY": 3,
+    // "TIME_PICKER": 2,
+    // "UUID_ARRAY": 2
+
+
     const safeComponent = useMemo(
         () =>
             noErrors(fieldMetadata?.defaultComponent, 'INPUT', [
                 'INPUT',
                 'TEXTAREA',
                 'SWITCH',
+                'TEXT_ARRAY',
+                'TIME_PICKER',
                 'SELECT',
                 'UUID_FIELD',
                 'UUID_ARRAY',

@@ -1026,7 +1026,7 @@ export function* handleDirectCreate<TEntity extends EntityKeys>({
 
     const dataForInsert = addUserIdToData(entityKey, receivedData);
 
-    entityLogger.log('info', 'Recieved Data for insert with potentially added user_id:', dataForInsert);
+    entityLogger.log('debug', 'Recieved Data for insert with potentially added user_id:', dataForInsert);
 
     try {
         const { data, error } = yield api.insert(dataForInsert).select().single();

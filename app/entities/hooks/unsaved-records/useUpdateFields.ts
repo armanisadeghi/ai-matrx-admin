@@ -71,3 +71,50 @@ export const useFieldUpdate = (entityKey: EntityKeys, recordId: MatrxRecordId | 
         [dispatch, actions, recordId, fieldName, fields]
     );
 };
+
+
+interface UseUpdateRecordFieldsResult {
+    updateField: (fieldName: string, value: FieldValue) => void;
+    updateFields: (updates: FieldUpdates) => void;
+}
+
+
+export const useUpdateRecordFields = (entityKey: EntityKeys, recordId: MatrxRecordId): UseUpdateRecordFieldsResult => {
+    const dispatch = useDispatch();
+    const { actions, fields } = useEntityTools(entityKey);
+    const validFieldNames = new Set(Object.keys(fields));
+
+    const updateField = useCallback(
+        (fieldName: string, value: FieldValue) => {
+            if (validFieldNames.has(fieldName)) {
+                dispatch(
+                    actions.updateUnsavedField({
+                        recordId,
+                        field: fieldName,
+                        value,
+                    })
+                );
+            }
+        },
+        [dispatch, actions, validFieldNames]
+    );
+
+    const updateFields = useCallback(
+        (updates: FieldUpdates) => {
+            const validUpdates = Object.entries(updates)
+                .filter(([fieldName]) => validFieldNames.has(fieldName))
+                .map(([fieldName, value]) => ({
+                    recordId,
+                    field: fieldName,
+                    value,
+                }));
+
+            if (validUpdates.length > 0) {
+                dispatch(actions.updateUnsavedFields({ updates: validUpdates }));
+            }
+        },
+        [dispatch, actions, validFieldNames]
+    );
+
+    return { updateField, updateFields };
+};

@@ -1,5 +1,5 @@
 // config/applets/ai-chat.ts
-import { AppletConfig } from "@/types/applets/applet-config";
+import { AppletConfig } from "@/types/applets/types";
 import {
     IconMessage,
     IconBrain,

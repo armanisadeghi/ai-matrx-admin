@@ -1,4 +1,4 @@
-import { AppletConfig } from "@/types/applets/applet-config";
+import { AppletConfig } from "@/types/applets/types";
 
 // components/applet/applets/layouts/GridLayout.tsx
 export function GridLayout({ config }: { config: AppletConfig }) {
