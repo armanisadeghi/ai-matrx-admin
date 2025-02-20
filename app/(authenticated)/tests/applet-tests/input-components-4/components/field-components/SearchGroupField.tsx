@@ -134,7 +134,7 @@ const SearchGroupField: React.FC<SearchGroupFieldProps> = ({
       actionButton={isLast ? actionButton : undefined}
       className={className}
     >
-      <div className="w-full min-w-96 p-2 bg-white dark:bg-gray-800 border dark:border-gray-700">
+      <div className="w-full min-w-96 p-2 bg-white rounded-xl dark:bg-gray-800 border dark:border-gray-700">
         <h3 className="text-lg font-medium mb-6">{label}</h3>
         <div>
           {fields.map(field => (

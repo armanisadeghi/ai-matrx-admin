@@ -91,7 +91,7 @@ const EntityTextArray = forwardRef<HTMLInputElement, EntityTextArrayProps>(({
   );
 
   return (
-    <div className="w-full space-y-2 border-1 border-slate-200 dark:border-slate-700 rounded-md p-2">
+    <div className="w-full space-y-2 border-1 border-slate-200 dark:border-slate-700 rounded-md p-2 relative">
       <div className="relative w-full">
         <Input
           ref={ref}
@@ -104,26 +104,18 @@ const EntityTextArray = forwardRef<HTMLInputElement, EntityTextArrayProps>(({
           className="w-full pr-20"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-0.5">
-          {isEditMode ? (
-            <>
-              <ActionButton
-                onClick={handleAddTag}
-                disabled={disabled}
-                icon={<Plus className="h-4 w-4" />}
-              />
-              <ActionButton
-                onClick={handleCopyToClipboard}
-                icon={<Copy className="h-4 w-4" />}
-              />
-            </>
-          ) : (
-            <>
-              <ActionButton
-                onClick={handleCopyToClipboard}
-                icon={<Copy className="h-4 w-4" />}
-              />
-            </>
+          {isEditMode && (
+            <ActionButton
+              onClick={handleAddTag}
+              disabled={disabled}
+              icon={<Plus className="h-4 w-4" />}
+            />
           )}
+          <ActionButton
+            onClick={handleCopyToClipboard}
+            disabled={tags.length === 0}
+            icon={<Copy className="h-4 w-4" />}
+          />
         </div>
       </div>
 

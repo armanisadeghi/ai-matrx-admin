@@ -90,7 +90,7 @@ const FieldRow: React.FC<FieldRowProps> = ({
   });
 
   return (
-    <div className={`flex w-full rounded-lg border dark:border-gray-700 ${className}`}>
+    <div className={`flex rounded-full border shadow-lg bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}>
       {enhancedChildren}
     </div>
   );

@@ -86,10 +86,19 @@ const EntityTagsManager = forwardRef<HTMLInputElement, TagsManagerProps>(
         );
 
         return (
-            <div className="w-full border-1 border-slate-200 dark:border-slate-700 rounded-xl p-2">
-                <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2 flex-1">
-                        {!disabled && (
+            <div className="w-full border-1 border-slate-200 dark:border-slate-700 rounded-xl p-2 relative">
+                {/* Position copy button absolutely in the top-right corner */}
+                <div className="absolute top-2 right-2">
+                    <ActionButton 
+                        onClick={handleCopyToClipboard} 
+                        disabled={tags.length === 0}
+                        icon={<Copy className="h-4 w-4" />} 
+                    />
+                </div>
+
+                <div className="mb-2">
+                    {!disabled && (
+                        <div className="flex items-center">
                             <input
                                 ref={ref}
                                 type="text"
@@ -102,15 +111,16 @@ const EntityTagsManager = forwardRef<HTMLInputElement, TagsManagerProps>(
                                 disabled={disabled}
                                 className={`h-4 px-2 rounded-md border border-input bg-background text-sm ${className}`}
                             />
-                        )}
-                        <div className="flex gap-0.5">
-                            {!disabled && <ActionButton onClick={handleAddTag} disabled={disabled} icon={<Plus className="h-4 w-4" />} />}
-                            <ActionButton onClick={handleCopyToClipboard} icon={<Copy className="h-4 w-4" />} />
+                            <ActionButton 
+                                onClick={handleAddTag} 
+                                disabled={disabled} 
+                                icon={<Plus className="h-4 w-4" />} 
+                            />
                         </div>
-                    </div>
+                    )}
                 </div>
 
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1 pr-8"> {/* Add right padding to avoid overlap with the copy button */}
                     {tags.map((tag) => (
                         <div key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-background border rounded-full text-sm">
                             <span>{tag}</span>
@@ -124,7 +134,7 @@ const EntityTagsManager = forwardRef<HTMLInputElement, TagsManagerProps>(
                             )}
                         </div>
                     ))}
-                    {tags.length === 0 && <div className="text-sm text-muted-foreground italic">No tags added</div>}
+                    {tags.length === 0 && <div className="text-sm text-muted-foreground italic pl-12">No tags added</div>}
                 </div>
             </div>
         );
