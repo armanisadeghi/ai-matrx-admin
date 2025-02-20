@@ -4,33 +4,32 @@ import { useUser } from "@/lib/hooks/useUser";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useAppDispatch, useAppSelector, useEntityTools } from "@/lib/redux";
 import { DataBrokerRecordWithKey } from "@/types";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 import { useThrottle } from "@uidotdev/usehooks";
+import { useGetOrFetchRecord } from "@/app/entities/hooks/records/useGetOrFetch";
 
 export const useValueBroker = (brokerId: string) => {
     const dispatch = useAppDispatch();
     const { actions: brokerValueActions } = useEntityTools("brokerValue");
     const { selectors: brokerSelectors } = useEntityTools("dataBroker");
-    
+
     const tempIdRef = useRef(uuidv4());
     const tempIdKeyRef = useRef(`new-record-${tempIdRef.current}`);
 
-    const broker = useAppSelector((state) => 
-        brokerSelectors.selectRecordWithKey(state, `id:${brokerId}`)
-    ) as DataBrokerRecordWithKey;
-    
+    const broker = useGetOrFetchRecord({ entityName: "dataBroker", simpleId: brokerId }) as DataBrokerRecordWithKey;
+
     const brokerDataType = broker?.dataType || "str";
 
     const [localValue, setLocalValue] = useState<any>(null);
     const throttledValue = useThrottle(localValue, 1000);
-    
+
     const [initialData, setInitialData] = useState<any>(null);
     const [isInitialized, setIsInitialized] = useState(false);
     const { userId } = useUser();
 
     useEffect(() => {
         if (!broker || isInitialized) return;
-        
+
         setLocalValue(broker.defaultValue);
         setInitialData({
             id: tempIdRef.current,
@@ -38,22 +37,24 @@ export const useValueBroker = (brokerId: string) => {
             dataBroker: broker.id,
             data: { value: broker.defaultValue },
         });
-        
+
         setIsInitialized(true);
     }, [broker, userId, isInitialized]);
 
     useEffect(() => {
         if (!initialData) return;
-        
-        dispatch(brokerValueActions.startRecordCreationWithData({
-            tempId: tempIdKeyRef.current,
-            initialData,
-        }));
+
+        dispatch(
+            brokerValueActions.startRecordCreationWithData({
+                tempId: tempIdKeyRef.current,
+                initialData,
+            })
+        );
     }, [initialData, dispatch, brokerValueActions]);
 
     useEffect(() => {
         if (throttledValue === null || !isInitialized) return;
-        
+
         const dataValue = { value: throttledValue };
         dispatch(
             brokerValueActions.updateUnsavedField({
@@ -81,11 +82,17 @@ export const useValueBroker = (brokerId: string) => {
         }
     };
 
-    const setValue = useCallback((newValue: any) => {
-        const convertedValue = convertValue(newValue);
-        setLocalValue(convertedValue);
-    }, [brokerDataType]);
-    
+    const setValue = useCallback(
+        (newValue: any) => {
+            const convertedValue = convertValue(newValue);
+            setLocalValue(convertedValue);
+        },
+        [brokerDataType]
+    );
+
+    console.log("Broker Name", broker?.name);
+    console.log("localValue", localValue);
+
     return {
         currentValue: localValue,
         setValue,

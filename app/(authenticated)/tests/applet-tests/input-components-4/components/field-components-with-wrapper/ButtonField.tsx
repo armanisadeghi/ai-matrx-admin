@@ -1,55 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import SearchField from '../SearchField';
 import { useValueBroker } from '@/hooks/applets/useValueBroker';
+import { FieldProps, ButtonFieldConfig } from './types';
 
-// Types for button values
-type ButtonValue = string;
-
-// Main component props
-interface ButtonSearchFieldProps {
-  id: string;
-  label: string;
-  placeholder?: string;
-  title?: string;
-  values: ButtonValue[];
-  defaultSelected?: ButtonValue; 
-  onSelect?: (value: ButtonValue) => void;
-  isLast?: boolean;
-  actionButton?: React.ReactNode;
-  width?: string;
-  gridCols?: string;
-  buttonClassName?: string;
-  customContent?: React.ReactNode;
-}
-
-const ButtonSearchField: React.FC<ButtonSearchFieldProps> = ({
+const ButtonField: React.FC<FieldProps<ButtonFieldConfig>> = ({
   id,
   label,
   placeholder = "Select an option",
-  title,
-  values,
-  defaultSelected,
-  onSelect,
-  isLast,
-  actionButton,
-  width = "max-w-sm",
-  gridCols = "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
-  buttonClassName = "py-2 px-3 border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-700",
-  customContent
+  isLast = false,
+  actionButton = null,
+  defaultValue,
+  onValueChange,
+  customConfig = {},
+  customContent = null
 }) => {
+  // Extract button config options with defaults
+  const {
+    values = [],
+    title,
+    width = "max-w-sm",
+    gridCols = "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
+    buttonClassName = "py-2 px-3 border rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 dark:border-gray-700"
+  } = customConfig as ButtonFieldConfig;
+
   // Use value broker for managing the selected value
   const { currentValue, setValue } = useValueBroker(id);
   
-  // Local UI state (not related to the actual value)
+  // UI state
   const [isActive, setIsActive] = useState<boolean>(false);
   
-  // Initialize with defaultSelected if provided and no currentValue exists
+  // Initialize with defaultValue if provided and no currentValue exists
   useEffect(() => {
-    // Only set default if we have a defaultSelected and no currentValue yet
-    if (defaultSelected && currentValue === null) {
-      setValue(defaultSelected);
+    if (defaultValue !== undefined && currentValue === null) {
+      setValue(defaultValue);
     }
-  }, [defaultSelected, currentValue, setValue]);
+  }, [defaultValue, currentValue, setValue]);
   
   // Display placeholder or selected value
   const displayPlaceholder = currentValue || placeholder;
@@ -65,11 +50,11 @@ const ButtonSearchField: React.FC<ButtonSearchFieldProps> = ({
   };
   
   // Handle selection
-  const handleSelect = (value: ButtonValue) => {
+  const handleSelect = (value: string) => {
     setValue(value);
     setIsActive(false);
-    if (onSelect) {
-      onSelect(value);
+    if (onValueChange) {
+      onValueChange(value);
     }
   };
 
@@ -106,4 +91,4 @@ const ButtonSearchField: React.FC<ButtonSearchFieldProps> = ({
   );
 };
 
-export default ButtonSearchField;
+export default ButtonField;

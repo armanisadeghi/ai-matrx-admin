@@ -3,13 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, History, Save } from 'lucide-react';
-import { QuickReferenceRecord } from '@/lib/redux/entity/types/stateTypes';
 import PlaygroundHistoryDialog from './PlaygroundHistoryDialog';
 import PlaygroundNavContainer from './PlaygroundNavContainer';
-import { usePreferenceValue } from '@/hooks/user-preferences/usePreferenceValue';
-import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
 import { UseAiCockpitHook } from '../hooks/useAiCockpit';
-
+import QuickRefSearchableSelect from '@/app/entities/quick-reference/QuickRefSearchableSelect';
 
 interface PlaygroundHeaderCenterProps {
     currentMode?: string;
@@ -63,7 +60,7 @@ const PlaygroundHeaderCenter = ({
                     </Button>
 
                     <div className='min-w-[160px] max-w-[320px] w-full'>
-                        <QuickRefSelect
+                        <QuickRefSearchableSelect
                             entityKey='recipe'
                         />
                     </div>

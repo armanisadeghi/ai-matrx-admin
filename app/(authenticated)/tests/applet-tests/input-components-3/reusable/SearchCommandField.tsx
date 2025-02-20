@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Command,
   CommandEmpty,
@@ -8,17 +8,19 @@ import {
   CommandList
 } from '@/components/ui/command';
 import SearchField from '../SearchField';
+import { useValueBroker } from '@/hooks/applets/useValueBroker';
 
 // Types for command items
 type CommandItemConfig = {
-  label: string;
   value: string;
+  label: string;
   icon?: React.ReactNode;
 };
 
-type CommandGroupConfig = {
+export type CommandGroupConfig = {
+  brokerId: string;
   heading: string;
-  items: CommandItemConfig[];
+  items: any[];
 };
 
 // Main component props
@@ -51,40 +53,51 @@ const SearchCommandField: React.FC<SearchCommandFieldProps> = ({
   width = "w-96",
   customContent = null
 }) => {
-  // Internal state management
+  // Use value broker for managing the selected value
+  const { currentValue, setValue } = useValueBroker(id);
+  
+  // UI state (not related to the persisted value)
   const [isActive, setIsActive] = useState<boolean>(false);
-  const [selectedValue, setSelectedValue] = useState<string | undefined>(defaultSelected);
   const [selectedLabel, setSelectedLabel] = useState<string>("");
 
-  // When component mounts or defaultSelected changes, find and set the selected label
-  React.useEffect(() => {
-    if (defaultSelected) {
+  // Initialize with defaultSelected if provided and no currentValue exists
+  useEffect(() => {
+    if (defaultSelected && currentValue === null) {
+      setValue(defaultSelected);
+    }
+  }, [defaultSelected, currentValue, setValue]);
+
+  // Find and set the selected label whenever currentValue changes
+  useEffect(() => {
+    if (currentValue) {
       for (const group of groups) {
-        const item = group.items.find(item => item.value === defaultSelected);
+        const item = group.items.find(item => item.value === currentValue);
         if (item) {
           setSelectedLabel(item.label);
           break;
         }
       }
+    } else {
+      setSelectedLabel("");
     }
-  }, [defaultSelected, groups]);
+  }, [currentValue, groups]);
 
   // Display placeholder or selected value
   const displayPlaceholder = selectedLabel || placeholder;
 
   // Handle field click
-  const handleClick = (id: string) => {
+  const handleClick = () => {
     setIsActive(true);
   };
   
   // Handle open state change
-  const handleOpenChange = (open: string | null) => {
-    setIsActive(Boolean(open));
+  const handleOpenChange = (open: boolean) => {
+    setIsActive(open);
   };
   
   // Handle selection
   const handleSelect = (value: string, itemLabel: string, groupHeading?: string) => {
-    setSelectedValue(value);
+    setValue(value);
     setSelectedLabel(itemLabel);
     setIsActive(false);
     if (onSelect) {
@@ -98,8 +111,8 @@ const SearchCommandField: React.FC<SearchCommandFieldProps> = ({
       label={label}
       placeholder={displayPlaceholder}
       isActive={isActive}
-      onClick={handleClick}
-      onOpenChange={handleOpenChange}
+      onClick={() => handleClick()}
+      onOpenChange={(open) => handleOpenChange(open)}
       isLast={isLast}
       actionButton={actionButton}
     >

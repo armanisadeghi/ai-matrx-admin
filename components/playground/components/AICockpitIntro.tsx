@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { PlusCircle, Book, Boxes, Sparkles } from 'lucide-react';
 import { BackgroundBeamsWithCollision } from '@/components/ui/background-beams-with-collision';
 import QuickRefSelect from '@/app/entities/quick-reference/QuickRefSelectFloatingLabel';
+import QuickRefSearchableSelect from '@/app/entities/quick-reference/QuickRefSearchableSelect';
 
 const AICockpitIntro = ({ onNewRecipe }) => {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -79,7 +80,7 @@ const AICockpitIntro = ({ onNewRecipe }) => {
                                 </div>
                                 <h2 className='text-xl font-semibold mb-2 text-slate-900 dark:text-white'>Use Saved</h2>
                                 <p className='text-slate-600 pb-2 dark:text-slate-400'>Access your previously created recipes and workflows.</p>
-                                <QuickRefSelect
+                                <QuickRefSearchableSelect
                                     entityKey='recipe'
                                     fetchMode='fkIfk'
                                 />

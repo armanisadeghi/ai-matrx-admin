@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Users, Calendar, Globe, Menu, Home, Map } from 'lucide-react';
+import { Search, Users, Calendar, Globe, Menu, Home, Map, LandPlot, LayoutPanelLeft } from 'lucide-react';
 import { 
   Popover,
   PopoverContent,
@@ -54,12 +54,13 @@ export const SearchBar = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 transition-colors">
+    <div className="w-full bg-white dark:bg-gray-900 transition-colors">
+
       {/* Top Navigation */}
-      <div className="flex items-center justify-between py-4">
+      <div className="flex items-center justify-between pt-2 pb-2 px-6">
         <div className="flex items-center">
           <div className="text-rose-500 dark:text-rose-400 mr-12">
-            <Home size={32} className="text-rose-500 dark:text-rose-400" />
+            <LayoutPanelLeft size={32} className="text-rose-500 dark:text-rose-400" />
           </div>
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-64">
             <TabsList className="bg-transparent border-b border-gray-200 dark:border-gray-700 w-full justify-start gap-8">
@@ -93,7 +94,7 @@ export const SearchBar = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="mt-2 mb-6 relative">
+      <div className="max-w-4xl mx-auto mt-2 mb-6 relative ">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex rounded-full border shadow-sm overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700">
             <TabsContent value="stays" className="w-full m-0 p-0">

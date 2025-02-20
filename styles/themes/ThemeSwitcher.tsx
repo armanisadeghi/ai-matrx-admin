@@ -11,7 +11,7 @@ interface ThemeSwitcherProps {
     open: boolean;
 }
 
-export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ className, open }) => {
+export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ className, open = false }) => {
     const { mode, toggleMode } = useTheme();
 
     React.useEffect(() => {
@@ -55,3 +55,35 @@ export const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ className, open })
         </button>
     );
 };
+
+
+interface ThemeSwitcherIconProps {
+    className?: string;
+  }
+  
+  export const ThemeSwitcherIcon: React.FC<ThemeSwitcherIconProps> = ({ className }) => {
+    const { mode, toggleMode } = useTheme();
+  
+    React.useEffect(() => {
+      document.cookie = `theme=${mode};path=/`;
+      document.documentElement.setAttribute('data-theme', mode);
+    }, [mode]);
+  
+    return (
+      <button
+        onClick={toggleMode}
+        className={cn(
+          "flex items-center justify-center rounded-full p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700",
+          className
+        )}
+        aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {mode === 'dark' ? (
+          <Sun className="h-5 w-5" />
+        ) : (
+          <Moon className="h-5 w-5" />
+        )}
+      </button>
+    );
+  };
+  
