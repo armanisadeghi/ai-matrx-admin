@@ -15,12 +15,14 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useMonacoTheme } from "./useMonacoTheme";
+import PreviewPanel from "./PreviewPanel";
+import Terminal from "./Terminal";
 import {
   isFrontendLanguage,
   PROGRAMMING_LANGUAGE_OPTIONS,
-} from "@/app/kelvin/code-editor/version-2/constants/programming-languages";
-import PreviewPanel from "./PreviewPanel";
-import Terminal from "./Terminal";
+} from "@/constants/programming-languages";
+import { Play } from "lucide-react";
+import { CODE_SNIPPETS } from "@/constants/code-snippets";
 
 interface PistonRunResult {
   stdout: string;
@@ -134,6 +136,19 @@ const CodeEditor = ({
     }
   };
 
+  const handleLanguageChange = (value) => {
+    const newLanguage = value;
+    setLanguage(newLanguage);
+    const snippetKey = newLanguage === "csharp" ? "csharp.net" : newLanguage;
+    const snippet = CODE_SNIPPETS[snippetKey as keyof typeof CODE_SNIPPETS];
+
+    setContextCode(snippet || "");
+
+    if (onChange) {
+      onChange(snippet);
+    }
+  };
+
   console.log({ output });
 
   return (
@@ -141,7 +156,12 @@ const CodeEditor = ({
       <Card className="flex flex-col w-full h-full bg-neutral-100 dark:bg-neutral-700">
         <div className="flex items-center justify-between p-2 border-b">
           <div className="flex gap-2">
-            <Select value={language} onValueChange={setLanguage}>
+            <Select
+              value={language}
+              onValueChange={(value) => {
+                handleLanguageChange(value);
+              }}
+            >
               <SelectTrigger className="w-[140px] h-[36px]">
                 <SelectValue placeholder="Language" />
               </SelectTrigger>
@@ -168,35 +188,39 @@ const CodeEditor = ({
           </div>
 
           <Button variant="default" onClick={handleExecute}>
+            <Play />
             Run Code
           </Button>
         </div>
 
         <div className="flex-grow relative">
-          <Editor
-            height={`${height - 100}px`}
-            width={`${width}px`}
-            defaultLanguage={language}
-            language={language}
-            defaultValue={defaultValue}
-            theme={isDark ? "customDark" : "customLight"}
-            onChange={handleCodeChange}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: "on",
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-            }}
-          />
-        </div>
+          <div className="flex flex-col h-full">
+            <Editor
+              height={`${height - 300}px`}
+              width={`${width}px`}
+              defaultLanguage={language}
+              language={language}
+              defaultValue={contextCode}
+              value={contextCode}
+              theme={theme}
+              onChange={handleCodeChange}
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: "on",
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+              }}
+            />
 
-        <div className={`transition-all duration-300`}>
-          {isCurrentLanguageFrontend ? (
-            <PreviewPanel code={contextCode} language={language} />
-          ) : (
-            <Terminal output={output} loading={loading} error={error} />
-          )}
+            <div className="transition-all duration-300 shrink">
+              {isCurrentLanguageFrontend ? (
+                <PreviewPanel code={contextCode} language={language} />
+              ) : (
+                <Terminal output={output} loading={loading} error={error} />
+              )}
+            </div>
+          </div>
         </div>
       </Card>
     </div>
