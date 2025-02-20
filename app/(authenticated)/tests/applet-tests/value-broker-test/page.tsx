@@ -1,15 +1,11 @@
 "use client";
 
-import { useValueBroker } from "@/components/brokers/hooks/useValueBroker";
-import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
-import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
+import { useValueBroker } from "@/hooks/applets/useValueBroker";
 import { useGetOrFetchRecord } from "@/app/entities/hooks/records/useGetOrFetch";
 
 export default function ValueBrokerTestPage() {
     const brokerId = "008cd2f3-a5bc-4856-9b64-e77b4e40d6c7";
-
     const broker = useGetOrFetchRecord({ entityName: "dataBroker", simpleId: brokerId });
-
     const { currentValue, setValue } = useValueBroker(brokerId);
 
     return (
@@ -47,15 +43,6 @@ export default function ValueBrokerTestPage() {
                     </div>
                 </div>
             </div>
-            <MatrxDynamicPanel
-                initialPosition="left"
-                defaultExpanded={false}
-                expandButtonProps={{
-                    label: "Entity State",
-                }}
-            >
-                <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="brokerValue" />
-            </MatrxDynamicPanel>
         </>
     );
 }

@@ -32,7 +32,7 @@ import EntitySelectSpecial from "./field-components/EntitySelectSpecial";
 import EntitySpecialField from "./field-components/custom-fields/EntitySpecialField";
 import EntityForeignKeySelect from "./field-components/relationship-fields/EntityForeignKeySelect";
 import EntityTextArray from "./field-components/EntityTextArray";
-
+import EntitySearchableFkSelect from "./field-components/relationship-fields/EntitySearchableFkSelect";
 
 export const ENTITY_FIELD_COMPONENTS = {
     INPUT: EntityInput,
@@ -49,8 +49,8 @@ export const ENTITY_FIELD_COMPONENTS = {
     RELATIONAL_INPUT: RelationalInput,
     SPECIAL: EntitySpecialField,
     TEXT_ARRAY: EntityTextArray,
-    FK_SELECT: EntityForeignKeySelect,
-
+    FK_SELECT_NON_SEARCHABLE: EntityForeignKeySelect,
+    FK_SELECT: EntitySearchableFkSelect,
 
     SLIDER: EntitySlider,    
     BUTTON: EntityButton,

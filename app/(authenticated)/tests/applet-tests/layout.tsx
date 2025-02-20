@@ -3,6 +3,8 @@
 import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
 import { filteredPages, MODULE_HOME, MODULE_NAME} from './config';
 import React from "react";
+import EnhancedEntityAnalyzer from '@/components/admin/redux/EnhancedEntityAnalyzer';
+import MatrxDynamicPanel from '@/components/matrx/resizable/MatrxDynamicPanel';
 
 export default function Layout({children}: { children: React.ReactNode }) {
     return (
@@ -17,6 +19,15 @@ export default function Layout({children}: { children: React.ReactNode }) {
             <main className="flex-1">
                 {children}
             </main>
+            <MatrxDynamicPanel
+                initialPosition="left"
+                defaultExpanded={false}
+                expandButtonProps={{
+                    label: "Entity State",
+                }}
+            >
+                <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="brokerValue" />
+            </MatrxDynamicPanel>
         </div>
     );
 }

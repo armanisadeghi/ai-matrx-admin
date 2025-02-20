@@ -46,10 +46,10 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Input Components 4 (With Layout)',
+        path: 'input-components-4',
         relative: true,
-        description: ''
+        description: 'Airbnb Inspired Broker Input Components'
     },
     {
         title: 'Broker Value Test',

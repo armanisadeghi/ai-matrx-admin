@@ -15,7 +15,8 @@ import ButtonSearchField from "../reusable/ButtonSearchField";
 
 const clothingGroups = [
   {
-      heading: "Categories",
+    brokerId: "2a53fd15-acb5-42dc-9169-e79e6eb95eb4",
+    heading: "Categories",
       items: [
           { label: "T-shirts & Tops", value: "tshirts-tops", icon: <Tag size={16} /> },
           { label: "Dresses", value: "dresses", icon: <GiDress size={16} /> },
@@ -32,14 +33,20 @@ const clothingGroups = [
 
 const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
 
+
+
+
 export const ShoppingSearchBar = () => {
     const [searchFocus, setSearchFocus] = useState(null);
+
+    console.log("searchFocus", searchFocus);
+
 
     // Step 1: Define the content for each tab
     const clothingContent = (
         <div className="flex w-full">
             <SearchCommandField
-                id="what-clothing"
+                id="2a53fd15-acb5-42dc-9169-e79e6eb95eb4"
                 label="What"
                 placeholder="Search clothing items"
                 inputPlaceholder="T-shirts, jeans, dresses..."
@@ -51,7 +58,7 @@ export const ShoppingSearchBar = () => {
 
             {/* Size selector with internal state management */}
             <ButtonSearchField
-                id="size-filter"
+                id="2a9a3e13-1666-4e8d-bba8-780f93edada5"
                 label="Size"
                 placeholder="Select size"
                 title="Choose a size"
