@@ -10,7 +10,8 @@ const InputField: React.FC<FieldProps<InputFieldConfig>> = ({
   defaultValue,
   onValueChange,
   customConfig = {},
-  customContent = null
+  customContent = null,
+  isMobile
 }) => {
   // Extract input config options with defaults
   const {
@@ -21,7 +22,7 @@ const InputField: React.FC<FieldProps<InputFieldConfig>> = ({
     pattern,
     autoComplete,
     width = "w-full max-w-md",
-    inputClassName = "w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+    inputClassName = "w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
   } = customConfig as InputFieldConfig;
 
   // Use value broker for managing the input value

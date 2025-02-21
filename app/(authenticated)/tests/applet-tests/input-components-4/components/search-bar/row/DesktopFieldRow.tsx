@@ -17,14 +17,16 @@ interface FieldRowProps {
   onActiveFieldChange?: (id: string | null) => void;
   actionButton?: ReactNode;
   className?: string;
+  isMobile?: boolean;
 }
 
-const FieldRow: React.FC<FieldRowProps> = ({
+const DesktopFieldRow: React.FC<FieldRowProps> = ({
   children,
   activeFieldId: externalActiveFieldId,
   onActiveFieldChange,
   actionButton,
   className = '',
+  isMobile = false,
 }) => {
   // Use internal state if no external control is provided
   const [internalActiveFieldId, setInternalActiveFieldId] = useState<string | null>(null);
@@ -96,4 +98,4 @@ const FieldRow: React.FC<FieldRowProps> = ({
   );
 };
 
-export default FieldRow;
+export default DesktopFieldRow;

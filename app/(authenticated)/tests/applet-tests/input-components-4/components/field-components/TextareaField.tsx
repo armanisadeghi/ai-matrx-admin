@@ -10,7 +10,8 @@ const TextareaField: React.FC<FieldProps<TextareaFieldConfig>> = ({
   defaultValue,
   onValueChange,
   customConfig = {},
-  customContent = null
+  customContent = null,
+  isMobile
 }) => {
   // Extract textarea config options with defaults
   const {
@@ -18,7 +19,7 @@ const TextareaField: React.FC<FieldProps<TextareaFieldConfig>> = ({
     maxLength,
     resize = "vertical",
     width = "w-full max-w-md",
-    textareaClassName = "w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+    textareaClassName = "w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
   } = customConfig as TextareaFieldConfig;
 
   // Use value broker for managing the textarea value

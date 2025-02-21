@@ -19,7 +19,8 @@ const SelectField: React.FC<FieldProps<SelectFieldConfig>> = ({
   defaultValue,
   onValueChange,
   customConfig = {},
-  customContent = null
+  customContent = null,
+  isMobile = false
 }) => {
   // Extract select config options with defaults
   const {

@@ -1,9 +1,8 @@
 // app/booking/layout.tsx
 "use client";
 
-import AppletSearchBar from "./components/AppletSearchBar";
+import AppletSearchBar from "./components/search-bar/bar/AppletSearchBar";
 import { AppletHeader, HeaderConfig } from "./components/header/AppletHeader";
-import { SearchTabProvider } from "@/context/SearchTabContext";
 import { ReactNode } from "react";
 import { TabConfig } from "./components/header/HeaderTabs";
 import { ButtonConfig } from "./components/header/HeaderButtons";
@@ -28,12 +27,10 @@ const headerConfig: HeaderConfig = {
 
 export default function BookingLayout({ children }: { children: ReactNode }) {
     return (
-        <SearchTabProvider>
-            <div className="w-full h-full">
-                <AppletHeader config={headerConfig} />
-                <AppletSearchBar config={searchConfig} />
-                <div className="w-full h-full">{children}</div>
-            </div>
-        </SearchTabProvider>
+        <div className="w-full h-full">
+            <AppletHeader config={headerConfig} />
+            <AppletSearchBar config={searchConfig} />
+            <div className="w-full h-full">{children}</div>
+        </div>
     );
 }

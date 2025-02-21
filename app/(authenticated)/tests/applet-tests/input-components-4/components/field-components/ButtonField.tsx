@@ -10,7 +10,8 @@ const ButtonField: React.FC<FieldProps<ButtonFieldConfig>> = ({
   defaultValue,
   onValueChange,
   customConfig = {},
-  customContent = null
+  customContent = null,
+  isMobile
 }) => {
   // Extract button config options with defaults
   const {

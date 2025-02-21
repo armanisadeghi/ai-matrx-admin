@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ButtonField, SelectField, InputField, TextareaField } from './index';
-import { GroupFieldConfig, FieldGroupProps } from './types';
-import SearchField from '../SearchField';
+import { ButtonField, SelectField, InputField, TextareaField } from '../components/field-components/index';
+import { GroupFieldConfig, FieldGroupProps } from '../components/field-components/types';
+import SearchField from '../components/search-bar/field/SearchField';
 
 const FieldGroup: React.FC<FieldGroupProps> = ({
   id,
@@ -16,7 +16,8 @@ const FieldGroup: React.FC<FieldGroupProps> = ({
   onCancel,
   isExpanded: externalIsExpanded,
   width = "w-full max-w-3xl",
-  maxHeight = "max-h-[80vh]"
+  maxHeight = "max-h-[80vh]",
+  isMobile = false
 }) => {
   // UI state
   const [isActive, setIsActive] = useState<boolean>(externalIsExpanded ?? false);

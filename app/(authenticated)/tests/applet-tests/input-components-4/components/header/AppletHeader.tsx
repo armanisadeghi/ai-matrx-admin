@@ -3,7 +3,7 @@
 import React from "react";
 import { DesktopAppletHeader } from "./DesktopAppletHeader";
 import MobileAppletHeader from "./MobileAppletHeader";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useSearchTab } from "@/context/SearchTabContext";
 
 import { TabConfig } from "./HeaderTabs";
 import { ButtonConfig } from "./HeaderButtons";
@@ -18,7 +18,7 @@ interface AppletHeaderProps {
 }
 
 export const AppletHeader = ({ config }: AppletHeaderProps) => {
-  const isMobile = useIsMobile();
+  const { isMobile } = useSearchTab();
   
   return isMobile ? (
     <MobileAppletHeader config={config} />

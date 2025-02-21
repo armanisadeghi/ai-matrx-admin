@@ -7,7 +7,7 @@ import {
   CommandItem,
   CommandList
 } from '@/components/ui/command';
-import SearchField from '../SearchField';
+import SearchField from '../../components/search-bar/field/SearchField';
 import { useValueBroker } from '@/hooks/applets/useValueBroker';
 import { FieldProps, SelectFieldConfig, SelectOption } from './types';
 

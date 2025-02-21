@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
     ResizablePanelGroup,
     ResizablePanel,
@@ -133,27 +133,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
     const panelGroupRef = React.useRef<ImperativePanelGroupHandle>(null);
     const isVertical = currentPosition === 'top' || currentPosition === 'bottom';
     const isStartPosition = currentPosition === 'left' || currentPosition === 'top';
-
-
-    const [isMobile, setIsMobile] = useState(false);
-
-    // Effect to handle resize and determine if we're on mobile
-    useEffect(() => {
-      const handleResize = () => {
-        setIsMobile(window.innerWidth < 768); // 768px is standard md breakpoint
-      };
-      
-      handleResize();
-      
-      window.addEventListener('resize', handleResize);
-      
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    }, []);
-  
-
-    
 
     React.useEffect(() => {
         setCurrentPosition(initialPosition);
@@ -397,14 +376,6 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
         </ResizablePanel>
     ];
 
-    if (isMobile) {
-        return (
-            <div className={cn(styles.container, "z-[100]", className)}>
-                {children}
-            </div>
-        );
-    }
-    
     return (
         <div
             className={cn(styles.container, "z-[100]", className)}

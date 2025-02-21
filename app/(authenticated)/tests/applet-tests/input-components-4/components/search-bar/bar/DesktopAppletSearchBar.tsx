@@ -3,18 +3,18 @@
 import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
-import FieldRow from "./field-components/FieldRow";
-import SearchGroupField from "./field-components/SearchGroupField";
+import FieldRow from "../row/FieldRow";
+import SearchGroupField from "../group/SearchGroupField";
 import { useSearchTab } from "@/context/SearchTabContext";
-import { TabSearchConfig } from "./field-components/types";
+import { TabSearchConfig } from "../../field-components/types";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
-import { ALL_BROKER_IDS } from "../constants";
+import { ALL_BROKER_IDS } from "../../../constants";
 
-interface AppletSearchBarProps {
+interface DesktopAppletSearchBarProps {
     config: TabSearchConfig;
 }
 
-const AppletSearchBar: React.FC<AppletSearchBarProps> = ({ config }) => {
+const DesktopAppletSearchBar: React.FC<DesktopAppletSearchBarProps> = ({ config }) => {
     const { activeTab } = useSearchTab();
     const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
 
@@ -51,6 +51,7 @@ const AppletSearchBar: React.FC<AppletSearchBarProps> = ({ config }) => {
                         onClick={() => {}} // Managed by FieldRow
                         onOpenChange={() => {}} // Managed by FieldRow
                         isLast={index === activeSearchGroups.length - 1}
+                        isMobile={false}
                     />
                 ))}
             </FieldRow>
@@ -58,4 +59,4 @@ const AppletSearchBar: React.FC<AppletSearchBarProps> = ({ config }) => {
     );
 };
 
-export default AppletSearchBar;
+export default DesktopAppletSearchBar;

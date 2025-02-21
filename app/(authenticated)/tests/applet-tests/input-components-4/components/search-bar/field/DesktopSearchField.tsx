@@ -1,21 +1,9 @@
 // SearchField.tsx
-import React, { ReactNode } from "react";
+import React from "react";
+import { SearchFieldProps } from "./SearchField";
 
-interface SearchFieldProps {
-    id: string;
-    label: string;
-    placeholder: string;
-    isActive: boolean;
-    onClick: (id: string) => void;
-    onOpenChange: (open: boolean) => void;
-    isLast?: boolean;
-    actionButton?: ReactNode;
-    children: ReactNode;
-    className?: string;
-    preventClose?: boolean; // Added this missing prop
-}
 
-const SearchField: React.FC<SearchFieldProps> = ({
+const DesktopSearchField: React.FC<SearchFieldProps> = ({
     id,
     label,
     placeholder,
@@ -27,6 +15,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
     children,
     className = "",
     preventClose = false, // Default to false
+    isMobile = false,
 }) => {
     const handleOutsideClick = () => {
         // Only close if not prevented
@@ -75,4 +64,4 @@ const SearchField: React.FC<SearchFieldProps> = ({
     );
 };
 
-export default SearchField;
+export default DesktopSearchField;
