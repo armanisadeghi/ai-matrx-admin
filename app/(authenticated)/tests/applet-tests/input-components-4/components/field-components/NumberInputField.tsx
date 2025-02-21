@@ -1,4 +1,3 @@
-// NumberInputField.tsx
 import React, { useEffect } from 'react';
 import { useValueBroker } from '@/hooks/applets/useValueBroker';
 import { FieldProps, InputFieldConfig } from './types';
@@ -8,7 +7,6 @@ interface NumberInputFieldConfig extends InputFieldConfig {
   max?: number;
   step?: number;
   iconSize?: number;
-  showLabel?: boolean;
   subtitle?: string;
   helpText?: string;
 }
@@ -30,7 +28,6 @@ const NumberInputField: React.FC<FieldProps<NumberInputFieldConfig>> = ({
     step = 1,
     iconSize = 16,
     width = "w-full",
-    showLabel = true,
     subtitle,
     helpText,
   } = customConfig as NumberInputFieldConfig;
@@ -68,6 +65,9 @@ const NumberInputField: React.FC<FieldProps<NumberInputFieldConfig>> = ({
     }
   };
 
+  // Always use subtitle if available, otherwise use placeholder
+  const displaySubtitle = subtitle || placeholder;
+
   // Determine if buttons should be disabled
   const isDecrementDisabled = numericValue <= min;
   const isIncrementDisabled = numericValue >= max;
@@ -78,24 +78,16 @@ const NumberInputField: React.FC<FieldProps<NumberInputFieldConfig>> = ({
 
   return (
     <div className={`${width}`}>
-      <div className="grid grid-cols-2 items-center py-2">
-        {showLabel && (
-          <div className="flex flex-col">
-            <span className="font-medium text-gray-900 dark:text-gray-100">{label}</span>
-            {subtitle && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {subtitle}
-              </span>
-            )}
-            {helpText && (
-              <button className="text-sm text-blue-500 dark:text-blue-400 underline mt-1 text-left">
-                {helpText}
-              </button>
-            )}
-          </div>
-        )}
+      <div className="grid grid-cols-2 items-center">
+        {/* Left side - always present */}
+        <div className="flex flex-col">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {displaySubtitle}
+          </span>
+        </div>
         
-        <div className={`flex items-center justify-end ${!showLabel ? 'col-span-2' : ''}`}>
+        {/* Right side - always present */}
+        <div className="flex items-center justify-end">
           {/* Decrement button */}
           <button
             type="button"

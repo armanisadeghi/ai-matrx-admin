@@ -16,52 +16,40 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Applet Building Stepper',
+        path: 'applet-build-stepper',
         relative: true,
-        description: ''
+        description: 'This is decent, but not at all the modern and clean look I want.'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Nice demo with selecting any recipe and adjusting the display style.',
+        path: 'connected-broker-test',
         relative: true,
-        description: ''
+        description: 'Definitely one we could expand to show all options. (But getting some errors)'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Components with sliding wrapper',
+        path: 'one-column-live',
         relative: true,
-        description: ''
+        description: 'Components with sliding wrapper, but seems to have some problems, and no way to run a recipe.'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Dynamic Components, normal colors',
+        path: 'sample-travel-info/dynamic',
         relative: true,
-        description: ''
+        description: 'Normal colors but with some issues with pink background on components'
     },
     {
-        title: 'Single Section Test Two',
-        path: 'single-section-test-two',
+        title: 'Live Recipe Pink Blue',
+        path: 'sample-travel-info/pink-blue',
         relative: true,
-        description: ''
+        description: 'Live recipe display but not properly done.'
     },
     {
-        title: 'Max Height With Scrolling',
-        path: 'max-height-scroll-test',
+        title: 'Sample Travel Info',
+        path: 'sample-travel-info',
         relative: true,
-        description: ''
-    },
-    {
-        title: 'No Title Test',
-        path: 'no-title-test',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Single Section Test',
-        path: 'single-section-test',
-        relative: true,
-        description: ''
+        description: 'Hard-coded component display'
     },
 ];
 

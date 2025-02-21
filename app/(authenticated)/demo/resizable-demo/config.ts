@@ -46,10 +46,10 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Resizable Builder',
+        path: 'resizable-builder',
         relative: true,
-        description: ''
+        description: 'An attempt to create a UI to show how you can structure the layouts.'
     },
     {
         title: 'Nested With Header Footer',

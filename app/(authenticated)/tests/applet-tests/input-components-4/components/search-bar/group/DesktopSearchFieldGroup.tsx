@@ -1,13 +1,14 @@
 // SearchGroupField.tsx
 import React, { useEffect, useRef } from "react";
-import SearchField from "../field/SearchField";
 import { GroupFieldConfig } from "../../field-components/types";
 import { fieldController } from "../../field-components/FieldController";
+import DesktopSearchField from "../field/DesktopSearchField";
 
 interface SearchGroupFieldProps {
     id: string;
     label: string;
     placeholder: string;
+    description?: string;
     fields: GroupFieldConfig[];
     isActive: boolean;
     onClick: (id: string) => void;
@@ -22,6 +23,7 @@ const DesktopSearchGroup: React.FC<SearchGroupFieldProps> = ({
     id,
     label,
     placeholder,
+    description,
     fields,
     isActive,
     onClick,
@@ -41,11 +43,8 @@ const DesktopSearchGroup: React.FC<SearchGroupFieldProps> = ({
         });
     }, [fields]);
 
-    const desctopContainerClassName = "w-full min-w-96 p-2 bg-white rounded-xl dark:bg-gray-800 border dark:border-gray-700";
-    const mobileContainerClassName = "w-full min-w-96 p-2 bg-white rounded-xl dark:bg-gray-800 border dark:border-gray-700";
-
     return (
-        <SearchField
+        <DesktopSearchField
             id={id}
             label={label}
             placeholder={placeholder}
@@ -57,8 +56,9 @@ const DesktopSearchGroup: React.FC<SearchGroupFieldProps> = ({
             className={className}
             isMobile={isMobile}
         >
-            <div className={isMobile ? mobileContainerClassName : desctopContainerClassName}>
-                <h3 className="text-lg font-medium mb-6">{label}</h3>
+            <div className="w-full min-w-96 p-2 bg-white rounded-xl dark:bg-gray-800 border dark:border-gray-700">
+                <h3 className="text-lg text-rose-500 font-medium mb-1">{label}</h3>
+                <div className="pr-1 mb-5 text-sm text-gray-500 dark:text-gray-400">{description}</div>
                 <div>
                     {fields.map((field) => (
                         <div key={field.brokerId} className="mb-6 last:mb-0">
@@ -70,7 +70,7 @@ const DesktopSearchGroup: React.FC<SearchGroupFieldProps> = ({
                     ))}
                 </div>
             </div>
-        </SearchField>
+        </DesktopSearchField>
     );
 };
 

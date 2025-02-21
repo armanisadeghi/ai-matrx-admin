@@ -4,7 +4,9 @@ import React from "react";
 export interface MobileSearchFieldProps {
     id: string;
     label: string;
-    placeholder: string;
+    groupLabel?: string;
+    groupDescription?: string;
+    groupPlaceholder?: string;
     isActive: boolean;
     onClick: (id: string) => void;
     onOpenChange: (open: boolean) => void;
@@ -19,7 +21,9 @@ export interface MobileSearchFieldProps {
 const MobileSearchField: React.FC<MobileSearchFieldProps> = ({
     id,
     label,
-    placeholder,
+    groupLabel,
+    groupDescription,
+    groupPlaceholder,
     isActive,
     onClick,
     onOpenChange,
@@ -45,16 +49,19 @@ const MobileSearchField: React.FC<MobileSearchFieldProps> = ({
         onClick(id);
     };
 
+    const groupDescriptionOrPlaceholder = groupDescription || groupPlaceholder;
+
     // If active, only show the expanded content, not the button
     if (isActive) {
         return (
             <div className="field-container relative w-full">
                 <div 
-                    className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-fadeIn"
+                    className="w-full bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-fadeIn"
                     onClick={handleOutsideClick}
                 >
                     <div className="p-2 pl-4 border-b border-gray-200 dark:border-gray-700">
-                        <div className="font-bold text-2xl text-gray-800 dark:text-gray-200">{label}</div>
+                        <div className="font-bold text-2xl text-gray-800 dark:text-gray-200">{groupLabel}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{groupDescriptionOrPlaceholder}</div>
                     </div>
                     {children}
                 </div>
@@ -71,8 +78,8 @@ const MobileSearchField: React.FC<MobileSearchFieldProps> = ({
         >
             <div className="flex items-center justify-between">
                 <div>
-                    <div className="font-semibold text-sm text-gray-800 dark:text-gray-200">{label}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</div>
+                    <div className="font-semibold text-sm text-gray-800 dark:text-gray-200">{groupLabel}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{groupPlaceholder}</div>
                 </div>
                 {actionButton && <div>{actionButton}</div>}
             </div>

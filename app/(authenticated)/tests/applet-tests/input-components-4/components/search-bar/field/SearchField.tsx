@@ -19,54 +19,12 @@ export interface SearchFieldProps {
     hideWhenInactive?: boolean;
 }
 
-const SearchField: React.FC<SearchFieldProps> = ({
-    id,
-    label,
-    placeholder,
-    isActive,
-    onClick,
-    onOpenChange,
-    isLast = false,
-    actionButton = null,
-    children,
-    className = "",
-    preventClose = false,
-    isMobile = false,
-    hideWhenInactive = true,
-}) => {
-
-    
+const SearchField: React.FC<SearchFieldProps> = (props) => {
     // Render different components based on mobile status
-    return isMobile ? (
-        <MobileSearchField
-            id={id}
-            label={label}
-            placeholder={placeholder}
-            isActive={isActive}
-            onClick={onClick}
-            onOpenChange={onOpenChange}
-            isLast={isLast}
-            actionButton={actionButton}
-            children={children}
-            className={className}
-            preventClose={preventClose}
-            isMobile={isMobile}
-        />
+    return props.isMobile ? (
+        <MobileSearchField {...props} />
     ) : (
-        <DesktopSearchField
-            id={id}
-            label={label}
-            placeholder={placeholder}
-            isActive={isActive}
-            onClick={onClick}
-            onOpenChange={onOpenChange}
-            isLast={isLast}
-            actionButton={actionButton}
-            children={children}
-            className={className}
-            preventClose={preventClose}
-            isMobile={isMobile}
-        />
+        <DesktopSearchField {...props} />
     );
 };
 

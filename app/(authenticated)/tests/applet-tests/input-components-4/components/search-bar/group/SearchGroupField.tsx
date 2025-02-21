@@ -9,6 +9,7 @@ interface SearchGroupFieldProps {
     id: string;
     label: string;
     placeholder: string;
+    description?: string;
     fields: GroupFieldConfig[];
     isActive: boolean;
     onClick: (id: string) => void;

@@ -2,7 +2,7 @@
 import React, { useState, ReactNode, Children, cloneElement, isValidElement, ReactElement } from 'react';
 
 // Define the expected shape of child components' props
-interface FieldChildProps {
+export interface FieldChildProps {
   id: string;
   isActive?: boolean;
   onClick?: (id: string) => void;
@@ -11,7 +11,7 @@ interface FieldChildProps {
   actionButton?: ReactNode;
 }
 
-interface FieldRowProps {
+export interface FieldRowProps {
   children: ReactNode;
   activeFieldId?: string | null;
   onActiveFieldChange?: (id: string | null) => void;

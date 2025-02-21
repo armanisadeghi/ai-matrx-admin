@@ -17,7 +17,7 @@ export default function Layout(
     return (
         <div className="flex flex-col h-full w-full overflow-hidden">
             {/* Make the header sticky */}
-            <ModuleHeaderWithProvider
+            {/* <ModuleHeaderWithProvider
                 pages={filteredPages}
                 currentPath={currentPath}
                 moduleHome={MODULE_HOME}
@@ -35,7 +35,7 @@ export default function Layout(
                     defaultExpanded={false}
                     selectedEntityKey="brokerValue"
                 />
-            </MatrxDynamicPanel>
+            </MatrxDynamicPanel> */}
             <main className="flex-1 overflow-hidden">
                 {children}
             </main>

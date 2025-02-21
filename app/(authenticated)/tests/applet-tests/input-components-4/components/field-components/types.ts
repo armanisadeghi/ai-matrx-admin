@@ -86,6 +86,7 @@ export interface CheckboxGroupFieldConfig extends FieldDisplayProps {
     width?: string;
     direction?: 'vertical' | 'horizontal';
     checkboxClassName?: string;
+    minOptionWidth?: number;
 }
 
 // Radio group configurations
@@ -173,6 +174,7 @@ export interface GroupFieldConfig {
     brokerId: string;
     label: string;
     placeholder?: string;
+    helpText?: string;
     type: "button" | "select" | "input" | "textarea" | "number" | "date" |"checkbox" | "radio" | "slider" | "multiselect";
     customConfig?: 
         | ButtonFieldConfig 
@@ -185,14 +187,22 @@ export interface GroupFieldConfig {
         | SliderFieldConfig
         | MultiSelectFieldConfig;
     isRequired?: boolean;
-    helpText?: string;
     isMobile?: boolean;
 }
+
+export interface GroupConfig {
+    tab: TabConfig;
+    fields: GroupFieldConfig[];
+    title?: string;
+    description?: string;
+}
+
 
 export interface SearchGroupConfig {
     id: string;
     label: string;
     placeholder: string;
+    description?: string;
     fields: GroupFieldConfig[];
 }
 
@@ -201,13 +211,6 @@ export interface TabSearchConfig {
 }
 
 // Group configuration
-export interface GroupConfig {
-    tab: TabConfig;
-    fields: GroupFieldConfig[];
-    title?: string;
-    description?: string;
-}
-
 // Group component props
 export interface FieldGroupProps {
     id: string;

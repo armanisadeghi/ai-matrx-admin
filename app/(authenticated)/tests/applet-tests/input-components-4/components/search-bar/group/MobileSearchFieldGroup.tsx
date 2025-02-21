@@ -1,13 +1,14 @@
-// MobileSearchGroupField.tsx
 import React, { useEffect, useRef } from "react";
 import MobileSearchField from "../field/MobileSearchField";
 import { GroupFieldConfig } from "../../field-components/types";
 import { fieldController } from "../../field-components/FieldController";
+import TruncatedHelpText from "../common/TruncatedHelpText";
 
 interface MobileSearchGroupFieldProps {
     id: string;
     label: string;
     placeholder: string;
+    description?: string;
     fields: GroupFieldConfig[];
     isActive: boolean;
     onClick: (id: string) => void;
@@ -23,6 +24,7 @@ const MobileSearchGroupField: React.FC<MobileSearchGroupFieldProps> = ({
     id,
     label,
     placeholder,
+    description,
     fields,
     isActive,
     onClick,
@@ -30,19 +32,18 @@ const MobileSearchGroupField: React.FC<MobileSearchGroupFieldProps> = ({
     isLast = false,
     actionButton,
     className = "",
-    preventClose = true, // Default to true for mobile
+    preventClose = true,
 }) => {
     const fieldRefs = useRef<Map<string, React.ReactNode>>(new Map());
 
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.brokerId)) {
-                fieldRefs.current.set(field.brokerId, fieldController(field, true)); // Pass true for isMobile
+                fieldRefs.current.set(field.brokerId, fieldController(field, true));
             }
         });
     }, [fields]);
 
-    // Handle clicks within the content to prevent closing
     const handleContentClick = (e: React.MouseEvent) => {
         if (preventClose) {
             e.stopPropagation();
@@ -52,20 +53,18 @@ const MobileSearchGroupField: React.FC<MobileSearchGroupFieldProps> = ({
     return (
         <MobileSearchField
             id={id}
-            label={label}
-            placeholder={placeholder}
+            groupLabel={label}
+            groupDescription={description}
+            groupPlaceholder={placeholder}
             isActive={isActive}
             onClick={onClick}
             onOpenChange={onOpenChange}
             isLast={isLast}
-            actionButton={undefined} // No action button needed anymore
+            actionButton={undefined}
             className={className}
             preventClose={preventClose}
         >
-            <div 
-                className="w-full p-6 bg-white dark:bg-gray-800"
-                onClick={handleContentClick}
-            >
+            <div className="w-full p-6 bg-white dark:bg-gray-800" onClick={handleContentClick}>
                 <div>
                     {fields.map((field) => (
                         <div key={field.brokerId} className="mb-6 last:mb-0">
@@ -74,8 +73,8 @@ const MobileSearchGroupField: React.FC<MobileSearchGroupFieldProps> = ({
                                 {/* Directly render the saved component */}
                                 {fieldRefs.current.get(field.brokerId)}
                             </div>
-                            {field.helpText && (
-                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
+                            {field.customConfig.helpText && (
+                                <TruncatedHelpText text={field.customConfig.helpText} maxWidth="100%" className="mt-1" />
                             )}
                         </div>
                     ))}

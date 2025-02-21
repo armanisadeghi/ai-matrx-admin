@@ -46,6 +46,7 @@ const DesktopAppletSearchBar: React.FC<DesktopAppletSearchBarProps> = ({ config 
                         id={group.id}
                         label={group.label}
                         placeholder={group.placeholder}
+                        description={group.description}
                         fields={group.fields}
                         isActive={activeFieldId === group.id}
                         onClick={() => {}} // Managed by FieldRow

@@ -1,25 +1,7 @@
-// CheckboxGroupField.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useValueBroker } from '@/hooks/applets/useValueBroker';
-import { FieldProps } from './types';
+import { CheckboxGroupFieldConfig, FieldProps } from './types';
 
-// Define the checkbox option type
-export interface CheckboxOption {
-  id: string;
-  label: string;
-  value: string;
-  checked?: boolean;
-}
-
-// Define the checkbox group config
-export interface CheckboxGroupFieldConfig {
-  options: CheckboxOption[];
-  includeOther?: boolean;
-  otherPlaceholder?: string;
-  width?: string;
-  direction?: 'vertical' | 'horizontal';
-  checkboxClassName?: string;
-}
 
 const CheckboxGroupField: React.FC<FieldProps<CheckboxGroupFieldConfig>> = ({
   id,
@@ -36,16 +18,53 @@ const CheckboxGroupField: React.FC<FieldProps<CheckboxGroupFieldConfig>> = ({
     includeOther = false,
     otherPlaceholder = "Please specify...",
     width = "w-full",
-    direction = "vertical",
+    direction = "auto", // Default to auto now
     checkboxClassName = "rounded-md border-gray-300 dark:border-gray-600 text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800",
+    minOptionWidth = 180, // Default minimum width for each option
   } = customConfig;
+
+  // Calculate columns based on container width
+  const [columns, setColumns] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Use value broker for managing the selected values
   const { currentValue, setValue } = useValueBroker(id);
-
+  
   // Track "Other" text input separately
   const [otherValue, setOtherValue] = useState('');
   const [showOtherInput, setShowOtherInput] = useState(false);
+
+  // Function to calculate optimal column count
+  const calculateColumns = () => {
+    if (direction !== 'auto' || !containerRef.current) return;
+    
+    const containerWidth = containerRef.current.clientWidth;
+    const optimalColumns = Math.floor(containerWidth / minOptionWidth);
+    
+    // Ensure at least 1 column, but no more than needed for the options
+    const newColumnCount = Math.max(1, Math.min(optimalColumns, options.length));
+    setColumns(newColumnCount);
+  };
+
+  // Calculate columns on mount and window resize
+  useEffect(() => {
+    if (direction === 'auto') {
+      calculateColumns();
+      
+      const handleResize = () => {
+        calculateColumns();
+      };
+      
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    } else if (direction === 'horizontal') {
+      // For horizontal, use flexible layout
+      setColumns(0); // Special value for flex layout
+    } else {
+      // For vertical, use single column
+      setColumns(1);
+    }
+  }, [direction, options.length, minOptionWidth]);
 
   // Initialize with default values
   useEffect(() => {
@@ -150,18 +169,25 @@ const CheckboxGroupField: React.FC<FieldProps<CheckboxGroupFieldConfig>> = ({
     return <>{customContent}</>;
   }
 
+  // Generate CSS grid template columns based on column count
+  const gridTemplateColumns = columns > 1 ? `repeat(${columns}, 1fr)` : 'auto';
+  
+  // Determine layout style based on direction and columns
+  const layoutStyle: React.CSSProperties = {
+    display: columns === 0 ? 'flex' : 'grid',
+    gridTemplateColumns: columns > 0 ? gridTemplateColumns : undefined,
+    flexWrap: columns === 0 ? 'wrap' as 'wrap' : undefined,
+    gap: '0.5rem',
+  };
+
   return (
-    <div className={width}>
-      {label && (
-        <div className="mb-2 font-medium text-gray-800 dark:text-gray-200">{label}</div>
-      )}
-      
-      <div className={`space-y-2 ${direction === 'horizontal' ? 'sm:space-y-0 sm:flex sm:flex-wrap sm:gap-4' : ''}`}>
+    <div className={width} ref={containerRef}>
+      <div style={layoutStyle} className="gap-2">
         {options.map((option) => {
           const isChecked = Array.isArray(currentValue) && currentValue.includes(option.value);
           
           return (
-            <div key={option.id} className={`flex items-center ${direction === 'horizontal' ? 'sm:w-auto' : ''}`}>
+            <div key={option.id} className="flex items-center">
               <input
                 type="checkbox"
                 id={`${id}-${option.id}`}
@@ -180,42 +206,42 @@ const CheckboxGroupField: React.FC<FieldProps<CheckboxGroupFieldConfig>> = ({
             </div>
           );
         })}
-        
-        {includeOther && (
-          <div className="space-y-2">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id={`${id}-other`}
-                name={`${id}[]`}
-                value="other"
-                checked={Array.isArray(currentValue) && currentValue.includes('other')}
-                onChange={(e) => handleCheckboxChange(e, 'other')}
-                className={checkboxClassName}
-              />
-              <label
-                htmlFor={`${id}-other`}
-                className="ml-2 text-sm text-gray-700 dark:text-gray-300"
-              >
-                Other
-              </label>
-            </div>
-            
-            {showOtherInput && (
-              <div className="pl-6">
-                <input
-                  type="text"
-                  id={`${id}-other-input`}
-                  value={otherValue}
-                  onChange={handleOtherInputChange}
-                  placeholder={otherPlaceholder}
-                  className="w-full p-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
-                />
-              </div>
-            )}
-          </div>
-        )}
       </div>
+      
+      {includeOther && (
+        <div className="mt-2 space-y-2">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id={`${id}-other`}
+              name={`${id}[]`}
+              value="other"
+              checked={Array.isArray(currentValue) && currentValue.includes('other')}
+              onChange={(e) => handleCheckboxChange(e, 'other')}
+              className={checkboxClassName}
+            />
+            <label
+              htmlFor={`${id}-other`}
+              className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+            >
+              Other
+            </label>
+          </div>
+          
+          {showOtherInput && (
+            <div className="pl-6">
+              <input
+                type="text"
+                id={`${id}-other-input`}
+                value={otherValue}
+                onChange={handleOtherInputChange}
+                placeholder={otherPlaceholder}
+                className="w-full p-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+              />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
