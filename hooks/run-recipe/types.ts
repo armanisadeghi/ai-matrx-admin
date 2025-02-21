@@ -41,6 +41,8 @@ export type BrokerWithComponent = {
     brokerName: string;
     componentRecordKey: MatrxRecordId;
     componentMetadata: DataInputComponentData;
+    brokerDataType?: string;
+    brokerDefaultValue?: string;
 };
 
 export type BrokerWithComponentsMap = Record<string, BrokerWithComponent>;

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+
 import FieldRow from "./field-components/FieldRow";
 import SearchGroupField from "./field-components/SearchGroupField";
 import { useSearchTab } from "@/context/SearchTabContext";

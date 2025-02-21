@@ -10,6 +10,7 @@ import {
     CompiledRecipeData,
     AllEntityFieldKeys,
     FetchStrategy,
+    AppletData,
 } from "@/types";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { RootState } from "@/lib/redux/store";
@@ -166,7 +167,6 @@ export const useEntityWithFetch = <TEntity extends EntityKeys>(entityName: TEnti
         defaultFetchStrategy,
     } = useEntitySelectors(entityName);
 
-    // Use useState instead of creating a new Set on each render
     const [matrxIdSet, setMatrxIdSet] = useState<Set<MatrxRecordId>>(new Set());
     const [fetchMode, setFetchMode] = useState<FetchMode>('fkIfk');
     const [shouldFetch, setShouldFetch] = useState(false);
@@ -706,5 +706,144 @@ export const useCompiledRecipes = (): UseCompiledRecipesReturn => {
         compiledRecipeIsLoading,
         compiledRecipeIsError,
         compiledRecipeQuickRefRecords,
+    };
+};
+
+
+type UseAppletsWithFetchReturn = {
+    appletSelectors: EntitySelectors<"applet">;
+    appletActions: EntityActions<"applet">;
+    appletRecords: Record<MatrxRecordId, AppletData>;
+    appletUnsavedRecords: Record<MatrxRecordId, Partial<AppletData>>;
+    appletSelectedRecordIds: MatrxRecordId[];
+    appletIsLoading: boolean;
+    appletIsError: boolean;
+    appletQuickRefRecords: QuickReferenceRecord[];
+    addAppletMatrxId: (recordId: MatrxRecordId) => void;
+    addAppletMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAppletMatrxId: (recordId: MatrxRecordId) => void;
+    removeAppletMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAppletPkValue: (pkValue: string) => void;
+    addAppletPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAppletPkValue: (pkValue: string) => void;
+    removeAppletPkValues: (pkValues: Record<string, unknown>) => void;
+    isAppletMissingRecords: boolean;
+    setAppletShouldFetch: (shouldFetch: boolean) => void;
+    setAppletFetchMode: (fetchMode: FetchMode) => void;
+};
+
+
+export const useAppletsWithFetch = (): UseAppletsWithFetchReturn => {
+    const {
+        selectors: appletSelectors,
+        actions: appletActions,
+        allRecords: appletRecords,
+        unsavedRecords: appletUnsavedRecords,
+        selectedRecordIds: appletSelectedRecordIds,
+        isLoading: appletIsLoading,
+        isError: appletIsError,
+        quickRefRecords: appletQuickRefRecords,
+        addMatrxId: addAppletMatrxId,
+        addMatrxIds: addAppletMatrxIds,
+        removeMatrxId: removeAppletMatrxId,
+        removeMatrxIds: removeAppletMatrxIds,
+        addPkValue: addAppletPkValue,
+        addPkValues: addAppletPkValues,
+        removePkValue: removeAppletPkValue,
+        removePkValues: removeAppletPkValues,
+        isMissingRecords: isAppletMissingRecords,
+        setShouldFetch: setAppletShouldFetch,
+        setFetchMode: setAppletFetchMode,
+    } = useEntityWithFetch("applet");
+
+    return {
+        appletSelectors,
+        appletActions,
+        appletRecords,
+        appletUnsavedRecords,
+        appletSelectedRecordIds,
+        appletIsLoading,
+        appletIsError,
+        appletQuickRefRecords,
+        addAppletMatrxId,
+        addAppletMatrxIds,
+        removeAppletMatrxId,
+        removeAppletMatrxIds,
+        addAppletPkValue,
+        addAppletPkValues,
+        removeAppletPkValue,
+        removeAppletPkValues,
+        isAppletMissingRecords,
+        setAppletShouldFetch,
+        setAppletFetchMode,
+    };
+};
+
+type UseCompiledRecipesWithFetchReturn = {
+    compiledRecipeSelectors: EntitySelectors<"compiledRecipe">;
+    compiledRecipeActions: EntityActions<"compiledRecipe">;
+    compiledRecipeRecords: Record<MatrxRecordId, CompiledRecipeData>;
+    compiledRecipeUnsavedRecords: Record<MatrxRecordId, Partial<CompiledRecipeData>>;
+    compiledRecipeSelectedRecordIds: MatrxRecordId[];
+    compiledRecipeIsLoading: boolean;
+    compiledRecipeIsError: boolean;
+    compiledRecipeQuickRefRecords: QuickReferenceRecord[];
+    addCompiledRecipeMatrxId: (recordId: MatrxRecordId) => void;
+    addCompiledRecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCompiledRecipeMatrxId: (recordId: MatrxRecordId) => void;
+    removeCompiledRecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCompiledRecipePkValue: (pkValue: string) => void;
+    addCompiledRecipePkValues: (pkValues: Record<string, unknown>) => void;
+    removeCompiledRecipePkValue: (pkValue: string) => void;
+    removeCompiledRecipePkValues: (pkValues: Record<string, unknown>) => void;
+    isCompiledRecipeMissingRecords: boolean;
+    setCompiledRecipeShouldFetch: (shouldFetch: boolean) => void;
+    setCompiledRecipeFetchMode: (fetchMode: FetchMode) => void;
+};
+
+
+export const useCompiledRecipesWithFetch = (): UseCompiledRecipesWithFetchReturn => {
+    const {
+        selectors: compiledRecipeSelectors,
+        actions: compiledRecipeActions,
+        allRecords: compiledRecipeRecords,
+        unsavedRecords: compiledRecipeUnsavedRecords,
+        selectedRecordIds: compiledRecipeSelectedRecordIds,
+        isLoading: compiledRecipeIsLoading,
+        isError: compiledRecipeIsError,
+        quickRefRecords: compiledRecipeQuickRefRecords,
+        addMatrxId: addCompiledRecipeMatrxId,
+        addMatrxIds: addCompiledRecipeMatrxIds,
+        removeMatrxId: removeCompiledRecipeMatrxId,
+        removeMatrxIds: removeCompiledRecipeMatrxIds,
+        addPkValue: addCompiledRecipePkValue,
+        addPkValues: addCompiledRecipePkValues,
+        removePkValue: removeCompiledRecipePkValue,
+        removePkValues: removeCompiledRecipePkValues,
+        isMissingRecords: isCompiledRecipeMissingRecords,
+        setShouldFetch: setCompiledRecipeShouldFetch,
+        setFetchMode: setCompiledRecipeFetchMode,
+    } = useEntityWithFetch("compiledRecipe");
+
+    return {
+        compiledRecipeSelectors,
+        compiledRecipeActions,
+        compiledRecipeRecords,
+        compiledRecipeUnsavedRecords,
+        compiledRecipeSelectedRecordIds,
+        compiledRecipeIsLoading,
+        compiledRecipeIsError,
+        compiledRecipeQuickRefRecords,
+        addCompiledRecipeMatrxId,
+        addCompiledRecipeMatrxIds,
+        removeCompiledRecipeMatrxId,
+        removeCompiledRecipeMatrxIds,
+        addCompiledRecipePkValue,
+        addCompiledRecipePkValues,
+        removeCompiledRecipePkValue,
+        removeCompiledRecipePkValues,
+        isCompiledRecipeMissingRecords,
+        setCompiledRecipeShouldFetch,
+        setCompiledRecipeFetchMode,
     };
 };

@@ -1,7 +1,7 @@
 // app/booking/layout.tsx
 "use client";
 
-import AppletSearchBar from "./components/TravelSearchBar";
+import AppletSearchBar from "./components/AppletSearchBar";
 import { AppletHeader, HeaderConfig } from "./components/header/AppletHeader";
 import { SearchTabProvider } from "@/context/SearchTabContext";
 import { ReactNode } from "react";
@@ -9,7 +9,7 @@ import { TabConfig } from "./components/header/HeaderTabs";
 import { ButtonConfig } from "./components/header/HeaderButtons";
 import { searchConfig } from "./constants";
 
-const tabConfig: TabConfig[] = [
+export const tabConfig: TabConfig[] = [
     { value: "stays", label: "Stays" },
     { value: "vegas-nightlife", label: "Vegas Nightlife" },
     { value: "restaurants", label: "Restaurants" },
