@@ -23,7 +23,8 @@ import {
     LayoutGrid,
     ClipboardType, LandPlot,
     Microscope,
-    Brain
+    Brain,
+    LayoutPanelLeft
 } from "lucide-react";
 import React from "react";
 import { BsFileEarmarkRichtextFill } from "react-icons/bs";
@@ -202,13 +203,13 @@ export const secondaryLinks = [
             <Microscope className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
-    // {
-    //     label: 'Matrx Editor Tests',
-    //     href: '/tests/matrx-editor', // https://lucide.dev/icons/
-    //     icon: (
-    //         <BsFileEarmarkRichtextFill className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-    //     ),
-    // },
+    {
+        label: 'Applet Components',
+        href: '/tests/applet-tests/input-components-4', // https://lucide.dev/icons/
+        icon: (
+            <LayoutPanelLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
     {
         label: 'Final Form Test',
         href: '/tests/forms/entity-final-test', // https://lucide.dev/icons/
