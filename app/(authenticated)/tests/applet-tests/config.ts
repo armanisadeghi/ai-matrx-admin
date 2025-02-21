@@ -40,10 +40,10 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Multi Broker ValueTest',
+        path: 'multi-broker-test',
         relative: true,
-        description: ''
+        description: 'Test Changing multiple broker values at once'
     },
     {
         title: 'Input Components 4 (With Layout)',

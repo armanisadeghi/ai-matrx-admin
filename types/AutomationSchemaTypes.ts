@@ -6,6 +6,7 @@ import {
     EntityDataMixed,
     EntityDataOptional,
     EntityDataWithKey,
+    EntityKeys,
     ProcessedEntityData,
 } from "@/types/entityTypes";
 
@@ -502,3 +503,59 @@ export type WcReportDataOptional = Expand<EntityDataOptional<"wcReport">>;
 export type WcReportRecordWithKey = Expand<EntityDataWithKey<"wcReport">>;
 export type WcReportProcessed = Expand<ProcessedEntityData<"wcReport">>;
 export type WcReportData = Expand<EntityDataMixed<"wcReport">>;
+
+import { EntityState } from "@/lib/redux/entity/types/stateTypes";
+
+export type ExpandExcept<T, KeysToExclude extends string[] = []> = T extends object
+    ? {
+          [K in keyof T]: K extends KeysToExclude[number] ? T[K] : ExpandExcept<T[K], KeysToExclude>;
+      }
+    : T;
+
+export type EntityStateType<TEntity extends EntityKeys> = ExpandExcept<EntityState<TEntity>, ["entityFields", "relationships", "unsavedRecords", "primaryKeyMetadata", "primaryKeyValues", "metadata"]>;
+
+export type DataBrokerState = EntityStateType<"dataBroker">;
+export type RecipeState = EntityStateType<"recipe">;
+export type BrokerValueState = EntityStateType<"brokerValue">;
+export type BucketStructuresState = EntityStateType<"bucketStructures">;
+export type BucketTreeStructuresState = EntityStateType<"bucketTreeStructures">;
+export type CategoryState = EntityStateType<"category">;
+export type CompiledRecipeState = EntityStateType<"compiledRecipe">;
+export type DataInputComponentState = EntityStateType<"dataInputComponent">;
+export type DataOutputComponentState = EntityStateType<"dataOutputComponent">;
+export type DisplayOptionState = EntityStateType<"displayOption">;
+export type EmailsState = EntityStateType<"emails">;
+export type ExtractorState = EntityStateType<"extractor">;
+export type FileStructureState = EntityStateType<"fileStructure">;
+export type FlashcardDataState = EntityStateType<"flashcardData">;
+export type FlashcardHistoryState = EntityStateType<"flashcardHistory">;
+export type FlashcardImagesState = EntityStateType<"flashcardImages">;
+export type FlashcardSetRelationsState = EntityStateType<"flashcardSetRelations">;
+export type FlashcardSetsState = EntityStateType<"flashcardSets">;
+export type MessageBrokerState = EntityStateType<"messageBroker">;
+export type MessageTemplateState = EntityStateType<"messageTemplate">;
+export type ProcessorState = EntityStateType<"processor">;
+export type RecipeBrokerState = EntityStateType<"recipeBroker">;
+export type RecipeDisplayState = EntityStateType<"recipeDisplay">;
+export type RecipeFunctionState = EntityStateType<"recipeFunction">;
+export type RecipeMessageState = EntityStateType<"recipeMessage">;
+export type RecipeModelState = EntityStateType<"recipeModel">;
+export type RecipeProcessorState = EntityStateType<"recipeProcessor">;
+export type RecipeToolState = EntityStateType<"recipeTool">;
+export type RegisteredFunctionState = EntityStateType<"registeredFunction">;
+export type SubcategoryState = EntityStateType<"subcategory">;
+export type SystemFunctionState = EntityStateType<"systemFunction">;
+export type ToolState = EntityStateType<"tool">;
+export type TransformerState = EntityStateType<"transformer">;
+export type UserPreferencesState = EntityStateType<"userPreferences">;
+export type WcClaimState = EntityStateType<"wcClaim">;
+export type WcImpairmentDefinitionState = EntityStateType<"wcImpairmentDefinition">;
+export type WcInjuryState = EntityStateType<"wcInjury">;
+export type WcReportState = EntityStateType<"wcReport">;
+
+
+
+
+export type ExpandedEntityData<T extends EntityKeys> = Expand<EntityData<T>>;
+
+export type RecipeNewType = ExpandedEntityData<"recipe">;

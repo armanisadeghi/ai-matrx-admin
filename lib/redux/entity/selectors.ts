@@ -21,6 +21,7 @@ import EntityLogger from '@/lib/redux/entity/utils/entityLogger';
 import { mapFieldDataToFormField } from '@/lib/redux/entity/utils/tempFormHelper';
 import { uniqBy } from 'lodash';
 import { ObjectSpaceNormalMap } from 'three';
+import { getEntitySlice } from './entitySlice';
 
 interface FieldNameGroups<TEntity extends EntityKeys> {
     nativeFields: EntityAnyFieldKey<TEntity>[];
@@ -269,7 +270,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectEffectiveRecordsByKeys = createSelector(
         [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
-        (entity, recordKeys): TEntity[] => {
+        (entity, recordKeys): EntityData<TEntity>[] => {
             if (!recordKeys) return [];
             if (!entity) return [];
 
@@ -282,9 +283,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                     const unsavedRecord = entity.unsavedRecords?.[recordKey];
                     if (unsavedRecord) return unsavedRecord;
 
-                    return (entity.records?.[recordKey] as TEntity) || null;
+                    return (entity.records?.[recordKey] as EntityData<TEntity>) || null;
                 })
-                .filter((record): record is TEntity => record !== null);
+                .filter((record): record is EntityData<TEntity> => record !== null);
         }
     );
 
@@ -1603,3 +1604,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     
     };
 };
+
+export type EntitySelectors<TEntity extends EntityKeys> = ReturnType<typeof createEntitySelectors<TEntity>>;
+
+
+
+
+

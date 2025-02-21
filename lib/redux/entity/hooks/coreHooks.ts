@@ -1,8 +1,9 @@
 // lib/redux/entity/hooks/coreHooks.ts
 import { AllEntityFieldKeys, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import { createEntitySelectors, createRecordKey, getEntitySlice, parseRecordKey, useAppDispatch, useAppSelector, useAppStore } from '@/lib/redux';
+import { createEntitySelectors, createRecordKey, getEntitySlice, parseRecordKey, RootState, useAppDispatch, useAppSelector, useAppStore } from '@/lib/redux';
 import { useCallback, useMemo } from 'react';
 import { getEntityMetadata } from '../utils/direct-schema';
+import { EntityState } from '../types/stateTypes';
 
 export const useEntityActions = (entityKey: EntityKeys) => {
     const dispatch = useAppDispatch();
@@ -22,6 +23,11 @@ export const useEntityCore = (entityKey: EntityKeys) => {
         store,
     };
 };
+
+export const useEntityState = <TEntity extends EntityKeys>(entityKey: TEntity) => {
+    return useAppSelector((state: RootState) => state.entities[entityKey] as EntityState<TEntity>);
+  };
+    
 
 export const useEntityTools = (entityKey: EntityKeys) => {
     const store = useAppStore();

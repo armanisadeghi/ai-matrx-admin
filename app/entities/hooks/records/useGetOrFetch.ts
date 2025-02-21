@@ -50,3 +50,63 @@ export function useGetOrFetchRecord({ entityName, matrxRecordId, simpleId, shoul
 
     return recordWithKey;
 }
+
+type UseGetorFetchByKeysProps = {
+    entityName: EntityKeys;
+    matrxRecordIds?: Set<MatrxRecordId>;
+    simpleIds?: Set<string | number>;
+    shouldProcess?: boolean;
+    fetchMode?: FetchMode;
+};
+
+
+
+export function useGetorFetchByKeys({entityName, matrxRecordIds, simpleIds, shouldProcess = true, fetchMode = 'fkIfk'}: UseGetorFetchByKeysProps) {
+    const matrxRecordIdsArray = Array.from(matrxRecordIds);
+    const simpleIdsArray = Array.from(simpleIds);
+    const dispatch = useAppDispatch();
+    const { selectors, actions } = useEntityTools(entityName);
+    const recordsWithKeys = useAppSelector((state) => selectors.selectRecordsWithKeys(state, matrxRecordIdsArray)) as EntityDataWithKey<EntityKeys>[];
+
+    useEffect(() => {
+        if (matrxRecordIds && shouldProcess) {
+            dispatch(
+                actions.getOrFetchSelectedRecords({
+                    matrxRecordIds: matrxRecordIdsArray,
+                    fetchMode: fetchMode,
+                })
+            );
+        }
+    }, [dispatch, actions, entityName, matrxRecordIds, shouldProcess]);
+
+    return recordsWithKeys;
+}
+
+type UseGetorFetchByIdsProps = {
+    entityName: EntityKeys;
+    simpleIds?: Set<string | number>;
+    shouldProcess?: boolean;
+    fetchMode?: FetchMode;
+};
+
+
+
+export function useGetorFetchByIds({entityName, simpleIds, shouldProcess = true, fetchMode = 'fkIfk'}: UseGetorFetchByIdsProps) {
+    const matrxRecordIds = useMemo(() => Array.from(simpleIds).map(id => toMatrxIdFromValue(entityName, id)) || [], [entityName, simpleIds]);
+    const dispatch = useAppDispatch();
+    const { selectors, actions } = useEntityTools(entityName);
+    const recordsWithKeys = useAppSelector((state) => selectors.selectRecordsWithKeys(state, matrxRecordIds)) as EntityDataWithKey<EntityKeys>[];
+
+    useEffect(() => {
+        if (matrxRecordIds && shouldProcess) {
+            dispatch(
+                actions.getOrFetchSelectedRecords({
+                    matrxRecordIds: matrxRecordIds,
+                    fetchMode: fetchMode,
+                })
+            );
+        }
+    }, [dispatch, actions, entityName, matrxRecordIds, shouldProcess]);
+
+    return recordsWithKeys;
+}

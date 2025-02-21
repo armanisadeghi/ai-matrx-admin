@@ -267,7 +267,7 @@ export type EntityRecordMap<TEntity extends EntityKeys> = Record<MatrxRecordId, 
 // --- Main Slice State ---
 export interface EntityState<TEntity extends EntityKeys> {
     entityMetadata: EntityMetadata; // Field info is here: entityMetadata.fields has this: EntityStateField[]
-    records: EntityRecordMap<EntityKeys>; // Data is here
+    records: Record<MatrxRecordId, EntityData<TEntity>>
     unsavedRecords: Record<MatrxRecordId, Partial<EntityData<TEntity>>>;
     pendingOperations: MatrxRecordId[]; // Array instead of Set
     quickReference: QuickReferenceState;
@@ -281,6 +281,7 @@ export interface EntityState<TEntity extends EntityKeys> {
     flags: EntityFlags;
     metrics: EntityMetrics;
 }
+
 
 export type FlagStatusOptions = 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR';
 

@@ -404,6 +404,28 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 state.flags.hasUnsavedChanges = true;
                 state.flags.operationMode = 'create';
             },
+            startCreateWithInitialData: (
+                state: EntityState<TEntity>,
+                action: PayloadAction<{
+                    tempId: string;
+                    initialData: Partial<EntityData<TEntity>>;
+                }>
+            ) => {
+                entityLogger.log('info', 'startCreateWithInitialData Action Payload: ', action.payload);
+                const { tempId, initialData } = action.payload;
+                setLoading(state, 'CREATE', true);
+            
+                // Create a new object reference with all previous records preserved
+                state.unsavedRecords = {
+                    ...state.unsavedRecords,
+                    [tempId]: initialData
+                };
+                
+                state.flags.hasUnsavedChanges = true;
+                state.flags.operationMode = 'create';
+                entityLogger.log('info', 'startCreateWithInitialData Unsaved Record: ', state.unsavedRecords[tempId]);
+                entityLogger.log('info', 'All Unsaved Records: ', state.unsavedRecords);
+            },
 
             startBatchRecordCreation: (
                 state: EntityState<TEntity>,
@@ -587,8 +609,11 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 }>
             ) => {
                 const { recordId, field, value } = action.payload;
+                entityLogger.log('info', 'updateUnsavedField', { recordId, field, value });
                 const existingRecord = state.unsavedRecords[recordId];
+                entityLogger.log('info', 'existingRecord', existingRecord);
                 if (existingRecord?.[field] !== value) {
+                    entityLogger.log('info', 'updating unsaved record');
                     state.unsavedRecords[recordId] = {
                         ...existingRecord,
                         [field]: value,
@@ -600,6 +625,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                         }
                     }
                 }
+                console.log("Record State After Update: ", state.unsavedRecords[recordId]);
             },
             updateUnsavedFields: (
                 state: EntityState<TEntity>,
@@ -954,3 +980,10 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
         actions: slice.actions,
     };
 };
+
+export type EntitySlice<TEntity extends EntityKeys> = ReturnType<typeof createEntitySlice<TEntity>>;
+export type EntityActions<TEntity extends EntityKeys> = EntitySlice<TEntity>['actions'];
+
+
+
+

@@ -204,7 +204,7 @@ export const removeFromUnsavedRecords = <TEntity extends EntityKeys>(state: Enti
 export const clearUnsavedRecords = <TEntity extends EntityKeys>(state: EntityState<TEntity>) => {
     state.unsavedRecords = {};
     state.flags.hasUnsavedChanges = false;
-    utilsLogger.log('debug', 'Cleared all unsaved records');
+    utilsLogger.log('warn', 'Cleared all unsaved records');
 };
 
 export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {
@@ -398,7 +398,6 @@ export const removeSelections = (state: EntityState<EntityKeys>) => {
     if (state.selection.selectedRecords.length > 0) {
         state.selection.lastSelected = state.selection.selectedRecords[0];
     }
-    clearUnsavedRecords(state);
     state.selection.selectedRecords = [];
     state.selection.selectionMode = 'none';
     removeActiveRecord(state);

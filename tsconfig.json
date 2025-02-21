@@ -42,7 +42,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": false,
-    "allowUnreachableCode": true,
+    "allowUnreachableCode": false,
     "noErrorTruncation": true,
     "strictFunctionTypes": false,
     "strictBindCallApply": false,

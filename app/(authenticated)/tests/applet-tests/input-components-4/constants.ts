@@ -139,7 +139,7 @@ export const searchConfig: TabSearchConfig = {
             placeholder: "Select venue type",
             fields: [
                 {
-                    brokerId: "2fbca494-474e-44a1-b3d8-60b81a1d8050",
+                    brokerId: "d58dffe2-cab7-4292-b4b8-27b7c34bfb32",
                     label: "Venue Type",
                     type: "select",
                     placeholder: "Select venue type",
@@ -165,7 +165,7 @@ export const searchConfig: TabSearchConfig = {
             placeholder: "Select cuisine",
             fields: [
                 {
-                    brokerId: "3b040013-17d4-4f47-b751-e0f45bd94f75",
+                    brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
                     label: "Cuisine Type",
                     type: "select",
                     placeholder: "Select cuisine",
@@ -193,11 +193,11 @@ export const ALL_BROKER_IDS = [
     "id:26e49411-3df9-443f-951f-0000d658041b",
     "id:3a5fde7c-bd88-4b05-b635-85ab2cc024a8",
     "id:88b23240-2185-4bf4-8a53-0884f025ae99",
-    "id:3b040013-17d4-4f47-b751-e0f45bd94f75",
+    "id:0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
     "id:9dea5382-93f5-4b01-8387-b30500aee8e7",
-    "id:2fbca494-474e-44a1-b3d8-60b81a1d8050",
+    "id:d58dffe2-cab7-4292-b4b8-27b7c34bfb32",
     "id:c3c1fbe0-45c5-4f9a-bc39-3c0a1cf84f71",
-]
+];
 
 
 
