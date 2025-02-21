@@ -1,7 +1,7 @@
 // app/booking/layout.tsx
 "use client";
 
-import TravelSearchBar from "./components/TravelSearchBar";
+import AppletSearchBar from "./components/TravelSearchBar";
 import { AppletHeader, HeaderConfig } from "./components/header/AppletHeader";
 import { SearchTabProvider } from "@/context/SearchTabContext";
 import { ReactNode } from "react";
@@ -31,7 +31,7 @@ export default function BookingLayout({ children }: { children: ReactNode }) {
         <SearchTabProvider>
             <div className="w-full h-full">
                 <AppletHeader config={headerConfig} />
-                <TravelSearchBar config={searchConfig} />
+                <AppletSearchBar config={searchConfig} />
                 <div className="w-full h-full">{children}</div>
             </div>
         </SearchTabProvider>

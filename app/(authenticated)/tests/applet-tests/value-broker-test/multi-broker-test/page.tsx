@@ -55,7 +55,7 @@ export default function ValueBrokerTestPage() {
         <div className="p-6 w-full bg-white dark:bg-gray-800 min-h-screen">
             <h1 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Value Broker Test Page</h1>
 
-            <BrokerSelection 
+            <BrokerSelection
                 selectedId={selectedId}
                 setSelectedId={setSelectedId}
                 handleAddBroker={handleAddBroker}
@@ -64,31 +64,17 @@ export default function ValueBrokerTestPage() {
 
             <MultiBrokerAdder onAddBrokers={handleAddMultipleBrokers} />
 
-            <BrokerValueEditor
-                brokerToValueAssociation={brokerToValueAssociation}
-                currentValue={currentValue}
-                setValue={setValue}
-            />
+            <BrokerValueEditor brokerToValueAssociation={brokerToValueAssociation} currentValue={currentValue} setValue={setValue} />
 
-            <HookStatusDisplay 
-                isInitialized={isInitialized} 
-                addedBrokers={addedBrokers} 
-                isReady={isReady}
-            />
+            <HookStatusDisplay isInitialized={isInitialized} addedBrokers={addedBrokers} isReady={isReady} />
 
-            <BrokerValueAssociationTable 
-                brokerToValueAssociation={brokerToValueAssociation} 
-            />
+            <BrokerValueAssociationTable brokerToValueAssociation={brokerToValueAssociation} />
 
-            <AddedBrokersTable 
-                initializedRecords={initializedRecords} 
-            />
+            <AddedBrokersTable initializedRecords={initializedRecords} />
 
-            <DataBrokerRecordsTable 
-                dataBrokerRecords={dataBrokerRecords} 
-            />
+            <DataBrokerRecordsTable dataBrokerRecords={dataBrokerRecords} />
 
-            <RawDataDisplay 
+            <RawDataDisplay
                 initializedRecords={initializedRecords}
                 brokerToValueAssociation={brokerToValueAssociation}
                 dataBrokerRecords={dataBrokerRecords}

@@ -9,16 +9,16 @@ import { TabSearchConfig } from "./field-components/types";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
 import { ALL_BROKER_IDS } from "../constants";
 
-interface TravelSearchBarProps {
+interface AppletSearchBarProps {
     config: TabSearchConfig;
 }
 
-const TravelSearchBar: React.FC<TravelSearchBarProps> = ({ config }) => {
+const AppletSearchBar: React.FC<AppletSearchBarProps> = ({ config }) => {
     const { activeTab } = useSearchTab();
     const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
 
     const dataBrokers = useGetorFetchRecords("dataBroker", ALL_BROKER_IDS);
-    // Reset active field when tab changes
+
     useEffect(() => {
         setActiveFieldId(null);
     }, [activeTab]);
@@ -47,8 +47,8 @@ const TravelSearchBar: React.FC<TravelSearchBarProps> = ({ config }) => {
                         placeholder={group.placeholder}
                         fields={group.fields}
                         isActive={activeFieldId === group.id}
-                        onClick={() => {}} // This will be managed by FieldRow
-                        onOpenChange={() => {}} // This will be managed by FieldRow
+                        onClick={() => {}} // Managed by FieldRow
+                        onOpenChange={() => {}} // Managed by FieldRow
                         isLast={index === activeSearchGroups.length - 1}
                     />
                 ))}
@@ -57,4 +57,4 @@ const TravelSearchBar: React.FC<TravelSearchBarProps> = ({ config }) => {
     );
 };
 
-export default TravelSearchBar;
+export default AppletSearchBar;
