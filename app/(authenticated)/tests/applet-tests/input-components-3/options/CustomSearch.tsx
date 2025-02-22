@@ -5,13 +5,13 @@ import SearchBarContainer from "../SearchBarContainer";
 import SearchField from "../SearchField";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Slider } from "@/components/ui/slider";
-import SearchCommandField from "../reusable/SearchCommandField";
+import SearchCommandField from "./SearchCommandField";
 import { GiDress } from "react-icons/gi";
 import { PiPants, PiSneaker } from "react-icons/pi";
 import { TbJacket } from "react-icons/tb";
 import { CiDiscount1 } from "react-icons/ci";
 import { IoBag } from "react-icons/io5";
-import ButtonSearchField from "../reusable/ButtonSearchField";
+import ButtonSearchField from "./ButtonSearchField";
 
 const clothingGroups = [
   {

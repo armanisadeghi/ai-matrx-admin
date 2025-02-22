@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, {useState, useCallback} from 'react';
-import {Card} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
-import {cn} from '@/lib/utils';
-import {motion, AnimatePresence} from 'framer-motion';
-import {Copy, ChevronDown, ChevronRight, Plus, Minus} from 'lucide-react';
+import React, { useState, useCallback } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { Copy, ChevronDown, ChevronRight, Plus, Minus } from "lucide-react";
 
 interface MiniEditableJsonViewerProps extends React.HTMLAttributes<HTMLDivElement> {
     data: object | string;
@@ -24,24 +24,13 @@ const MiniJsonViewerItem: React.FC<{
     onAdd: () => void;
     onNest: () => void;
     onUnnest: () => void;
-}> = ({
-          keyName,
-          value,
-          depth,
-          isExpanded,
-          onToggle,
-          onEdit,
-          onDelete,
-          onAdd,
-          onNest,
-          onUnnest
-      }) => {
-    const isObject = typeof value === 'object' && value !== null;
+}> = ({ keyName, value, depth, isExpanded, onToggle, onEdit, onDelete, onAdd, onNest, onUnnest }) => {
+    const isObject = typeof value === "object" && value !== null;
     const isArray = Array.isArray(value);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
-        onEdit(isArray ? newValue.split(',').map(v => v.trim()) : newValue);
+        onEdit(isArray ? newValue.split(",").map((v) => v.trim()) : newValue);
     };
 
     return (
@@ -49,7 +38,7 @@ const MiniJsonViewerItem: React.FC<{
             <div className="flex items-center">
                 {isObject && (
                     <Button variant="ghost" size="sm" className="p-0 h-auto" onClick={onToggle}>
-                        {isExpanded ? <ChevronDown className="h-4 w-4"/> : <ChevronRight className="h-4 w-4"/>}
+                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                     </Button>
                 )}
                 <input
@@ -70,17 +59,17 @@ const MiniJsonViewerItem: React.FC<{
                         onChange={handleChange}
                         className={cn(
                             "ml-2 border-b border-gray-300 focus:outline-none focus:border-blue-500",
-                            typeof value === 'string' && "text-success",
-                            typeof value === 'number' && "text-info",
-                            typeof value === 'boolean' && "text-warning"
+                            typeof value === "string" && "text-success",
+                            typeof value === "number" && "text-info",
+                            typeof value === "boolean" && "text-warning"
                         )}
                     />
                 )}
                 <Button variant="ghost" size="sm" onClick={onAdd}>
-                    <Plus className="h-4 w-4"/>
+                    <Plus className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" onClick={onDelete}>
-                    <Minus className="h-4 w-4"/>
+                    <Minus className="h-4 w-4" />
                 </Button>
                 {isObject && (
                     <Button variant="ghost" size="sm" onClick={onNest}>
@@ -96,10 +85,10 @@ const MiniJsonViewerItem: React.FC<{
             {isObject && isExpanded && (
                 <AnimatePresence>
                     <motion.div
-                        initial={{opacity: 0, height: 0}}
-                        animate={{opacity: 1, height: 'auto'}}
-                        exit={{opacity: 0, height: 0}}
-                        transition={{duration: 0.2}}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
                     >
                         {Object.entries(value).map(([k, v]) => (
                             <MiniJsonViewerItem
@@ -109,11 +98,11 @@ const MiniJsonViewerItem: React.FC<{
                                 depth={depth + 1}
                                 isExpanded={isExpanded}
                                 onToggle={onToggle}
-                                onEdit={(newValue) => onEdit({...value, [k]: newValue})}
-                                onDelete={() => onEdit({...value, [k]: undefined})}
-                                onAdd={() => onEdit({...value, [k]: {...value[k], newKey: ''}})}
-                                onNest={() => onEdit({...value, [k]: {...value[k], nestedKey: {}}})}
-                                onUnnest={() => onEdit({...value, [k]: {...value[k], unNestedKey: value[k]}})}
+                                onEdit={(newValue) => onEdit({ ...value, [k]: newValue })}
+                                onDelete={() => onEdit({ ...value, [k]: undefined })}
+                                onAdd={() => onEdit({ ...value, [k]: { ...value[k], newKey: "" } })}
+                                onNest={() => onEdit({ ...value, [k]: { ...value[k], nestedKey: {} } })}
+                                onUnnest={() => onEdit({ ...value, [k]: { ...value[k], unNestedKey: value[k] } })}
                             />
                         ))}
                     </motion.div>
@@ -123,17 +112,16 @@ const MiniJsonViewerItem: React.FC<{
     );
 };
 
-export const MiniEditableJsonViewer: React.FC<MiniEditableJsonViewerProps> = (
-    {
-        data,
-        className,
-        initialExpanded = false,
-        maxHeight = '400px',
-        ...props
-    }) => {
+export const MiniEditableJsonViewer: React.FC<MiniEditableJsonViewerProps> = ({
+    data,
+    className,
+    initialExpanded = false,
+    maxHeight = "400px",
+    ...props
+}) => {
     const [isCopied, setIsCopied] = useState(false);
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
-    const [jsonData, setJsonData] = useState<any>(typeof data === 'string' ? JSON.parse(data) : data);
+    const [jsonData, setJsonData] = useState<any>(typeof data === "string" ? JSON.parse(data) : data);
     const [error, setError] = useState<string | null>(null);
 
     const copyToClipboard = () => {
@@ -143,7 +131,7 @@ export const MiniEditableJsonViewer: React.FC<MiniEditableJsonViewerProps> = (
     };
 
     const toggleExpand = useCallback((key: string) => {
-        setExpandedKeys(prev => {
+        setExpandedKeys((prev) => {
             const newSet = new Set(prev);
             if (newSet.has(key)) {
                 newSet.delete(key);
@@ -167,8 +155,8 @@ export const MiniEditableJsonViewer: React.FC<MiniEditableJsonViewerProps> = (
         let keys: string[] = [];
         for (const key in obj) {
             keys.push(key);
-            if (typeof obj[key] === 'object' && obj[key] !== null) {
-                keys = keys.concat(getAllKeys(obj[key]).map(k => `${key}.${k}`));
+            if (typeof obj[key] === "object" && obj[key] !== null) {
+                keys = keys.concat(getAllKeys(obj[key]).map((k) => `${key}.${k}`));
             }
         }
         return keys;
@@ -179,17 +167,14 @@ export const MiniEditableJsonViewer: React.FC<MiniEditableJsonViewerProps> = (
             setJsonData(newData);
             setError(null);
         } catch (err) {
-            setError('Invalid JSON format');
+            setError("Invalid JSON format");
         }
     };
 
     return (
         <div
-            className={cn(
-                "relative bg-background text-foreground p-4 rounded-md overflow-auto",
-                className
-            )}
-            style={{maxHeight}}
+            className={cn("relative bg-background text-foreground p-4 rounded-md overflow-auto", className)}
+            style={{ maxHeight }}
             {...props}
         >
             <div className="flex justify-end space-x-2 mb-2">
@@ -215,8 +200,8 @@ export const MiniEditableJsonViewer: React.FC<MiniEditableJsonViewerProps> = (
                     onClick={copyToClipboard}
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                    <Copy className="h-4 w-4 mr-2"/>
-                    {isCopied ? 'Copied!' : 'Copy'}
+                    <Copy className="h-4 w-4 mr-2" />
+                    {isCopied ? "Copied!" : "Copy"}
                 </Button>
             </div>
             {error && <div className="text-red-500">{error}</div>}
@@ -226,29 +211,28 @@ export const MiniEditableJsonViewer: React.FC<MiniEditableJsonViewerProps> = (
                 value={jsonData}
                 depth={0}
                 isExpanded={initialExpanded}
-                onToggle={() => toggleExpand('root')}
+                onToggle={() => toggleExpand("root")}
                 onEdit={handleEdit}
                 onDelete={() => handleEdit({})}
-                onAdd={() => handleEdit({...jsonData, newKey: ''})}
-                onNest={() => handleEdit({...jsonData, nestedKey: {}})}
-                onUnnest={() => handleEdit({...jsonData, unNestedKey: jsonData})}
+                onAdd={() => handleEdit({ ...jsonData, newKey: "" })}
+                onNest={() => handleEdit({ ...jsonData, nestedKey: {} })}
+                onUnnest={() => handleEdit({ ...jsonData, unNestedKey: jsonData })}
             />
         </div>
     );
 };
 
-interface MiniFullEditableJsonViewerProps extends Omit<MiniEditableJsonViewerProps, 'className'> {
+interface MiniFullEditableJsonViewerProps extends Omit<MiniEditableJsonViewerProps, "className"> {
     title?: string;
     className?: string;
 }
 
-export const MiniFullEditableJsonViewer: React.FC<MiniFullEditableJsonViewerProps> = (
-    {
-        data,
-        title = "Editable JSON Data",
-        className,
-        ...props
-    }) => {
+export const MiniFullEditableJsonViewer: React.FC<MiniFullEditableJsonViewerProps> = ({
+    data,
+    title = "Editable JSON Data",
+    className,
+    ...props
+}) => {
     return (
         <Card className={cn("p-4 bg-card", className)}>
             <h3 className="text-lg font-semibold mb-2 text-foreground">{title}</h3>

@@ -11,12 +11,7 @@ interface JsonViewerProps {
     className?: string;
 }
 
-const MiniJsonViewer: React.FC<JsonViewerProps> = ({
-                                                   data,
-                                                   maxHeight = "400px",
-                                                   initialExpanded = false,
-                                                   className,
-                                               }) => {
+const MiniJsonViewer: React.FC<JsonViewerProps> = ({ data, maxHeight = "400px", initialExpanded = false, className }) => {
     const [expanded, setExpanded] = useState(initialExpanded);
     const [copyFeedback, setCopyFeedback] = useState(false);
 
@@ -35,9 +30,7 @@ const MiniJsonViewer: React.FC<JsonViewerProps> = ({
         } else if (typeof value === "boolean") {
             return <span className="text-red-500">{value ? "true" : "false"}</span>;
         } else if (Array.isArray(value)) {
-            return (
-                <span className="text-purple-500">[{value.length} items]</span>
-            );
+            return <span className="text-purple-500">[{value.length} items]</span>;
         } else if (typeof value === "object" && value !== null) {
             return <span className="text-gray-500">{"{...}"}</span>;
         }
