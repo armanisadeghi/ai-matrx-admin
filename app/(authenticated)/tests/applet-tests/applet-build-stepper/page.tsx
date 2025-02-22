@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { CheckCircle, Circle, ChevronRight, Settings, Zap, Code, Database, Palette, Layout, Globe } from 'lucide-react';
 
@@ -55,14 +57,14 @@ const AppletStepper = () => {
       >
         <div className="flex items-center justify-center">
           {isCompleted ? (
-            <CheckCircle size={24} className="text-indigo-600" />
+            <CheckCircle size={24} className="text-blue-600" />
           ) : (
-            <div className={`flex items-center justify-center h-6 w-6 rounded-full border-2 ${isActive ? 'border-indigo-600 text-indigo-600' : 'border-gray-400 text-gray-400'}`}>
+            <div className={`flex items-center justify-center h-6 w-6 rounded-full border-2 ${isActive ? 'border-blue-600 text-blue-600' : 'border-gray-400 text-gray-400'}`}>
               {step.icon}
             </div>
           )}
         </div>
-        <span className={`ml-2 text-sm font-medium ${isActive ? 'text-indigo-600' : 'text-gray-600'}`}>
+        <span className={`ml-2 text-sm font-medium ${isActive ? 'text-blue-600' : 'text-gray-600'}`}>
           {step.title}
         </span>
         {step.id !== steps.length && (
@@ -78,14 +80,14 @@ const AppletStepper = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold mb-4">Choose a template</h2>
-              <p className="text-gray-600 mb-6">Start with a template or build from scratch</p>
+              <h2 className="text-2xl font-bold mb-1">Choose a template</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">Start with a template or build from scratch</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 px-4">
                 {templates.map(template => (
                   <div 
                     key={template.id}
-                    className={`p-4 rounded-lg border-2 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all ${selectedTemplate === template.id ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200'}`}
+                    className={`p-4 rounded-lg border-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all ${selectedTemplate === template.id ? 'border-blue-600 bg-blue-50' : 'border-gray-200 dark:border-gray-600'}`}
                     onClick={() => setSelectedTemplate(template.id)}
                   >
                     <h3 className="font-medium">{template.name}</h3>
@@ -96,13 +98,13 @@ const AppletStepper = () => {
             </div>
             
             <div className="mt-8">
-              <h3 className="font-medium mb-2">Or, start with your data</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-400 cursor-pointer">
+              <h2 className="text-gray-600 dark:text-gray-400 mb-6">Or, start with your data</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+                <div className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 cursor-pointer">
                   <h4 className="font-medium">Import spreadsheets</h4>
                   <p className="text-sm text-gray-600 mt-1">Turn CSV, Excel, and Google Sheets into a powerful app.</p>
                 </div>
-                <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-400 cursor-pointer">
+                <div className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-600 hover:border-blue-400 cursor-pointer">
                   <h4 className="font-medium">Import documents</h4>
                   <p className="text-sm text-gray-600 mt-1">Turn contracts, presentations, and other docs into structured data.</p>
                 </div>
@@ -117,19 +119,19 @@ const AppletStepper = () => {
             <p className="text-gray-600 mb-6">Choose AI capabilities for your application</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-400 cursor-pointer">
+              <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-blue-400 cursor-pointer">
                 <h3 className="font-medium">Natural Language Processing</h3>
                 <p className="text-sm text-gray-600 mt-1">Extract insights, summarize content, and analyze sentiment</p>
               </div>
-              <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-400 cursor-pointer">
+              <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-blue-400 cursor-pointer">
                 <h3 className="font-medium">Image Recognition</h3>
                 <p className="text-sm text-gray-600 mt-1">Identify objects, faces, and scenes in images</p>
               </div>
-              <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-400 cursor-pointer">
+              <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-blue-400 cursor-pointer">
                 <h3 className="font-medium">Predictive Analytics</h3>
                 <p className="text-sm text-gray-600 mt-1">Forecast trends and predict future outcomes</p>
               </div>
-              <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-400 cursor-pointer">
+              <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-blue-400 cursor-pointer">
                 <h3 className="font-medium">Document AI</h3>
                 <p className="text-sm text-gray-600 mt-1">Extract structured data from documents and forms</p>
               </div>
@@ -159,7 +161,7 @@ const AppletStepper = () => {
                 </div>
               </div>
               
-              <button className="mt-4 text-indigo-600 text-sm font-medium flex items-center">
+              <button className="mt-4 text-blue-600 text-sm font-medium flex items-center">
                 <span>Add new table</span>
                 <span className="ml-1">+</span>
               </button>
@@ -179,7 +181,7 @@ const AppletStepper = () => {
                   type="text"
                   value={appName}
                   onChange={(e) => setAppName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               
@@ -200,15 +202,15 @@ const AppletStepper = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Layout</label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-lg border-2 border-indigo-600 bg-indigo-50">
+                  <div className="p-4 rounded-lg border-2 border-blue-600 bg-blue-50">
                     <h3 className="font-medium">Dashboard</h3>
                     <p className="text-sm text-gray-600 mt-1">Overview with key metrics</p>
                   </div>
-                  <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-400 cursor-pointer">
+                  <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-blue-400 cursor-pointer">
                     <h3 className="font-medium">List View</h3>
                     <p className="text-sm text-gray-600 mt-1">Detailed record listing</p>
                   </div>
-                  <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-400 cursor-pointer">
+                  <div className="p-4 rounded-lg border-2 border-gray-200 hover:border-blue-400 cursor-pointer">
                     <h3 className="font-medium">Kanban</h3>
                     <p className="text-sm text-gray-600 mt-1">Visual process management</p>
                   </div>
@@ -228,7 +230,7 @@ const AppletStepper = () => {
               <p className="text-sm text-gray-600 mb-4">Create rules that run when conditions are met</p>
               
               <div className="space-y-4">
-                <div className="p-3 bg-white rounded-lg border border-gray-200">
+                <div className="p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200">
                   <div className="flex items-center text-sm">
                     <span className="font-medium">When</span>
                     <span className="mx-2 px-2 py-1 bg-blue-100 text-blue-800 rounded">Task status changes to "Complete"</span>
@@ -239,7 +241,7 @@ const AppletStepper = () => {
                   </div>
                 </div>
                 
-                <button className="w-full py-2 flex items-center justify-center text-indigo-600 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-50">
+                <button className="w-full py-2 flex items-center justify-center text-blue-600 border-2 border-dashed border-blue-300 rounded-lg hover:bg-blue-50">
                   <span>Add new automation</span>
                   <span className="ml-1">+</span>
                 </button>
@@ -250,53 +252,53 @@ const AppletStepper = () => {
       case 6:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold mb-4">Deploy your AI applet</h2>
-            <p className="text-gray-600 mb-6">Publish and share your application</p>
+            <h2 className="text-2xl font-bold mb-4">Deploy your Applet</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">Publish and share your application</p>
             
-            <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <h3 className="font-medium mb-4">Deployment Options</h3>
               
               <div className="space-y-4">
-                <div className="flex items-center p-3 bg-white rounded-lg border border-gray-200">
+                <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
                   <input
                     type="radio"
                     id="private"
                     name="deployment"
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                     defaultChecked
                   />
-                  <label htmlFor="private" className="ml-3 block text-sm font-medium text-gray-700">
+                  <label htmlFor="private" className="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Private (Only invited members)
                   </label>
                 </div>
                 
-                <div className="flex items-center p-3 bg-white rounded-lg border border-gray-200">
+                <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
                   <input
                     type="radio"
                     id="team"
                     name="deployment"
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                   />
-                  <label htmlFor="team" className="ml-3 block text-sm font-medium text-gray-700">
+                  <label htmlFor="team" className="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Team (All workspace members)
                   </label>
                 </div>
                 
-                <div className="flex items-center p-3 bg-white rounded-lg border border-gray-200">
+                <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
                   <input
                     type="radio"
                     id="public"
                     name="deployment"
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                   />
-                  <label htmlFor="public" className="ml-3 block text-sm font-medium text-gray-700">
+                  <label htmlFor="public" className="ml-3 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Public (Anyone with the link)
                   </label>
                 </div>
               </div>
               
               <div className="mt-6">
-                <button className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   Launch Applet
                 </button>
               </div>
@@ -309,12 +311,12 @@ const AppletStepper = () => {
   };
   
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white rounded-xl shadow-sm">
+    <div className="w-full h-full p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold">{appName || 'Untitled Applet'}</h1>
-          <p className="text-gray-600">Create your AI-powered application in minutes</p>
+          <p className="text-gray-600 dark:text-gray-400">Create your Applet with full AI Integration in minutes</p>
         </div>
         <div className="flex space-x-2">
           <button className="p-2 text-gray-500 hover:text-gray-700 rounded-md">
@@ -337,14 +339,14 @@ const AppletStepper = () => {
         </div>
         <div className="mt-4 h-1 bg-gray-200 rounded-full">
           <div 
-            className="h-1 bg-indigo-600 rounded-full transition-all duration-300"
+            className="h-1 bg-blue-600 rounded-full transition-all duration-300"
             style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
           ></div>
         </div>
       </div>
       
       {/* Step Content */}
-      <div className="mb-8 min-h-96">
+      <div className="mb-8 min-h-96 p-4">
         {renderStepContent()}
       </div>
       
@@ -352,7 +354,7 @@ const AppletStepper = () => {
       <div className="flex justify-between">
         <button
           onClick={prevStep}
-          className={`px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 ${
+          className={`px-4 py-2 bg-blue-300 dark:bg-blue-600  border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 ${
             currentStep === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'
           }`}
           disabled={currentStep === 1}
@@ -364,8 +366,8 @@ const AppletStepper = () => {
           onClick={nextStep}
           className={`px-4 py-2 rounded-md text-sm font-medium ${
             currentStep === steps.length
-              ? 'bg-green-600 hover:bg-green-700 text-white'
-              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+              ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+              : 'bg-blue-600 hover:bg-blue-700 text-white'
           }`}
         >
           {currentStep === steps.length ? 'Finish' : 'Continue'}
