@@ -206,6 +206,40 @@
             "referencedBy": {}
         }
     },
+    "projects": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["projectMembers", "tasks"],
+        "relationshipDetails": {
+            "entityName": "projects",
+            "table_name": "projects",
+            "foreignKeys": {},
+            "referencedBy": {
+                "projectMembers": {
+                    "foreign_table": "project_members",
+                    "foreign_entity": "projectMembers",
+                    "field": "projectId",
+                    "column": "project_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "project_members_project_id_fkey"
+                },
+                "tasks": {
+                    "foreign_table": "tasks",
+                    "foreign_entity": "tasks",
+                    "field": "projectId",
+                    "column": "project_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "tasks_project_id_fkey"
+                }
+            }
+        }
+    },
     "flashcardSetRelations": {
         "selfReferential": [],
         "manyToMany": ["flashcardData", "flashcardSets"],
@@ -329,6 +363,86 @@
             "referencedBy": {}
         }
     },
+    "projectMembers": {
+        "selfReferential": [],
+        "manyToMany": ["projects"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "projectMembers",
+            "table_name": "project_members",
+            "foreignKeys": {
+                "projects": {
+                    "foreign_table": "projects",
+                    "foreign_entity": "projects",
+                    "column": "project_id",
+                    "fieldName": "projectId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "project_members_project_id_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
+    "tasks": {
+        "selfReferential": [],
+        "manyToMany": ["projects"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["taskAssignments", "taskAttachments", "taskComments"],
+        "relationshipDetails": {
+            "entityName": "tasks",
+            "table_name": "tasks",
+            "foreignKeys": {
+                "projects": {
+                    "foreign_table": "projects",
+                    "foreign_entity": "projects",
+                    "column": "project_id",
+                    "fieldName": "projectId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "tasks_project_id_fkey"
+                }
+            },
+            "referencedBy": {
+                "taskAssignments": {
+                    "foreign_table": "task_assignments",
+                    "foreign_entity": "taskAssignments",
+                    "field": "taskId",
+                    "column": "task_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "task_assignments_task_id_fkey"
+                },
+                "taskAttachments": {
+                    "foreign_table": "task_attachments",
+                    "foreign_entity": "taskAttachments",
+                    "field": "taskId",
+                    "column": "task_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "task_attachments_task_id_fkey"
+                },
+                "taskComments": {
+                    "foreign_table": "task_comments",
+                    "foreign_entity": "taskComments",
+                    "field": "taskId",
+                    "column": "task_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "task_comments_task_id_fkey"
+                }
+            }
+        }
+    },
     "aiSettings": {
         "selfReferential": [],
         "manyToMany": ["aiEndpoint", "aiModel", "aiProvider"],
@@ -445,37 +559,53 @@
             }
         }
     },
-    "applet": {
+    "taskAssignments": {
         "selfReferential": [],
-        "manyToMany": ["compiledRecipe", "subcategory"],
+        "manyToMany": ["tasks"],
         "oneToOne": [],
         "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
         "inverseReferences": [],
         "relationshipDetails": {
-            "entityName": "applet",
-            "table_name": "applet",
+            "entityName": "taskAssignments",
+            "table_name": "task_assignments",
             "foreignKeys": {
-                "compiledRecipe": {
-                    "foreign_table": "compiled_recipe",
-                    "foreign_entity": "compiledRecipe",
-                    "column": "compiled_recipe_id",
-                    "fieldName": "compiledRecipeId",
+                "tasks": {
+                    "foreign_table": "tasks",
+                    "foreign_entity": "tasks",
+                    "column": "task_id",
+                    "fieldName": "taskId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
-                    "constraint_name": "applet_compiled_recipe_id_fkey"
-                },
-                "subcategory": {
-                    "foreign_table": "subcategory",
-                    "foreign_entity": "subcategory",
-                    "column": "subcategory_id",
-                    "fieldName": "subcategoryId",
+                    "constraint_name": "task_assignments_task_id_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
+    "taskAttachments": {
+        "selfReferential": [],
+        "manyToMany": ["tasks"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "taskAttachments",
+            "table_name": "task_attachments",
+            "foreignKeys": {
+                "tasks": {
+                    "foreign_table": "tasks",
+                    "foreign_entity": "tasks",
+                    "column": "task_id",
+                    "fieldName": "taskId",
                     "foreign_field": "id",
                     "foreign_column": "id",
                     "relationship_type": "many-to-many",
-                    "constraint_name": "applet_subcategory_id_fkey"
+                    "constraint_name": "task_attachments_task_id_fkey"
                 }
             },
             "referencedBy": {}
@@ -536,6 +666,32 @@
             "entityName": "audioRecordingUsers",
             "table_name": "audio_recording_users",
             "foreignKeys": {},
+            "referencedBy": {}
+        }
+    },
+    "taskComments": {
+        "selfReferential": [],
+        "manyToMany": ["tasks"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "taskComments",
+            "table_name": "task_comments",
+            "foreignKeys": {
+                "tasks": {
+                    "foreign_table": "tasks",
+                    "foreign_entity": "tasks",
+                    "column": "task_id",
+                    "fieldName": "taskId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "task_comments_task_id_fkey"
+                }
+            },
             "referencedBy": {}
         }
     },
@@ -1800,6 +1956,42 @@
                     "constraint_name": "applet_subcategory_id_fkey"
                 }
             }
+        }
+    },
+    "applet": {
+        "selfReferential": [],
+        "manyToMany": ["compiledRecipe", "subcategory"],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "applet",
+            "table_name": "applet",
+            "foreignKeys": {
+                "compiledRecipe": {
+                    "foreign_table": "compiled_recipe",
+                    "foreign_entity": "compiledRecipe",
+                    "column": "compiled_recipe_id",
+                    "fieldName": "compiledRecipeId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "applet_compiled_recipe_id_fkey"
+                },
+                "subcategory": {
+                    "foreign_table": "subcategory",
+                    "foreign_entity": "subcategory",
+                    "column": "subcategory_id",
+                    "fieldName": "subcategoryId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-many",
+                    "constraint_name": "applet_subcategory_id_fkey"
+                }
+            },
+            "referencedBy": {}
         }
     }
 }

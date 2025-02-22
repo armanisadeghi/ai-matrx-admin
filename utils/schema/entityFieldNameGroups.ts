@@ -123,6 +123,8 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
             "resultComponentConfig",
             "nextStepConfig",
             "subcategoryId",
+            "ctaText",
+            "theme",
         ],
         primaryKeyFields: ["id"],
         nativeFieldsNoPk: [
@@ -139,6 +141,8 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
             "resultComponentConfig",
             "nextStepConfig",
             "subcategoryId",
+            "ctaText",
+            "theme",
         ],
     },
     arg: {
@@ -426,6 +430,16 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
         primaryKeyFields: ["id"],
         nativeFieldsNoPk: ["name", "dependsDefault", "defaultExtractors", "params"],
     },
+    projectMembers: {
+        nativeFields: ["id", "projectId", "userId", "role", "createdAt"],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: ["projectId", "userId", "role", "createdAt"],
+    },
+    projects: {
+        nativeFields: ["id", "name", "description", "createdAt", "updatedAt", "createdBy"],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: ["name", "description", "createdAt", "updatedAt", "createdBy"],
+    },
     recipe: {
         nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions"],
         primaryKeyFields: ["id"],
@@ -480,6 +494,26 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
         nativeFields: ["id", "name", "description", "sample", "inputParams", "outputOptions", "rfId"],
         primaryKeyFields: ["id"],
         nativeFieldsNoPk: ["name", "description", "sample", "inputParams", "outputOptions", "rfId"],
+    },
+    taskAssignments: {
+        nativeFields: ["id", "taskId", "userId", "assignedBy", "assignedAt"],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: ["taskId", "userId", "assignedBy", "assignedAt"],
+    },
+    taskAttachments: {
+        nativeFields: ["id", "taskId", "fileName", "fileType", "fileSize", "filePath", "uploadedBy", "uploadedAt"],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: ["taskId", "fileName", "fileType", "fileSize", "filePath", "uploadedBy", "uploadedAt"],
+    },
+    taskComments: {
+        nativeFields: ["id", "taskId", "userId", "content", "createdAt", "updatedAt"],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: ["taskId", "userId", "content", "createdAt", "updatedAt"],
+    },
+    tasks: {
+        nativeFields: ["id", "title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "createdBy"],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: ["title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "createdBy"],
     },
     tool: {
         nativeFields: ["id", "name", "source", "description", "parameters", "requiredArgs", "systemFunction", "additionalParams"],

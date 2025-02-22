@@ -139,6 +139,14 @@ export const primaryKeys = {
         frontendFields: ["id"],
         databaseColumns: ["id"],
     },
+    projectMembers: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
+    projects: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
     recipe: {
         frontendFields: ["id"],
         databaseColumns: ["id"],
@@ -180,6 +188,22 @@ export const primaryKeys = {
         databaseColumns: ["id"],
     },
     systemFunction: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
+    taskAssignments: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
+    taskAttachments: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
+    taskComments: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
+    tasks: {
         frontendFields: ["id"],
         databaseColumns: ["id"],
     },

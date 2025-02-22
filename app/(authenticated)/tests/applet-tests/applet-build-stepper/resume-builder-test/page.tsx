@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, Check, User, Briefcase, GraduationCap, Award, Calendar } from 'lucide-react';
 

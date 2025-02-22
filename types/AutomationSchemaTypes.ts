@@ -100,6 +100,8 @@ export type AutomationTableName =
     | "messageBroker"
     | "messageTemplate"
     | "processor"
+    | "projectMembers"
+    | "projects"
     | "recipe"
     | "recipeBroker"
     | "recipeDisplay"
@@ -111,6 +113,10 @@ export type AutomationTableName =
     | "registeredFunction"
     | "subcategory"
     | "systemFunction"
+    | "taskAssignments"
+    | "taskAttachments"
+    | "taskComments"
+    | "tasks"
     | "tool"
     | "transformer"
     | "userPreferences"
@@ -378,6 +384,20 @@ export type ProcessorRecordWithKey = Expand<EntityDataWithKey<"processor">>;
 export type ProcessorProcessed = Expand<ProcessedEntityData<"processor">>;
 export type ProcessorData = Expand<EntityDataMixed<"processor">>;
 
+export type ProjectMembersType = AutomationEntity<"projectMembers">;
+export type ProjectMembersDataRequired = Expand<EntityData<"projectMembers">>;
+export type ProjectMembersDataOptional = Expand<EntityDataOptional<"projectMembers">>;
+export type ProjectMembersRecordWithKey = Expand<EntityDataWithKey<"projectMembers">>;
+export type ProjectMembersProcessed = Expand<ProcessedEntityData<"projectMembers">>;
+export type ProjectMembersData = Expand<EntityDataMixed<"projectMembers">>;
+
+export type ProjectsType = AutomationEntity<"projects">;
+export type ProjectsDataRequired = Expand<EntityData<"projects">>;
+export type ProjectsDataOptional = Expand<EntityDataOptional<"projects">>;
+export type ProjectsRecordWithKey = Expand<EntityDataWithKey<"projects">>;
+export type ProjectsProcessed = Expand<ProcessedEntityData<"projects">>;
+export type ProjectsData = Expand<EntityDataMixed<"projects">>;
+
 export type RecipeType = AutomationEntity<"recipe">;
 export type RecipeDataRequired = Expand<EntityData<"recipe">>;
 export type RecipeDataOptional = Expand<EntityDataOptional<"recipe">>;
@@ -455,6 +475,34 @@ export type SystemFunctionRecordWithKey = Expand<EntityDataWithKey<"systemFuncti
 export type SystemFunctionProcessed = Expand<ProcessedEntityData<"systemFunction">>;
 export type SystemFunctionData = Expand<EntityDataMixed<"systemFunction">>;
 
+export type TaskAssignmentsType = AutomationEntity<"taskAssignments">;
+export type TaskAssignmentsDataRequired = Expand<EntityData<"taskAssignments">>;
+export type TaskAssignmentsDataOptional = Expand<EntityDataOptional<"taskAssignments">>;
+export type TaskAssignmentsRecordWithKey = Expand<EntityDataWithKey<"taskAssignments">>;
+export type TaskAssignmentsProcessed = Expand<ProcessedEntityData<"taskAssignments">>;
+export type TaskAssignmentsData = Expand<EntityDataMixed<"taskAssignments">>;
+
+export type TaskAttachmentsType = AutomationEntity<"taskAttachments">;
+export type TaskAttachmentsDataRequired = Expand<EntityData<"taskAttachments">>;
+export type TaskAttachmentsDataOptional = Expand<EntityDataOptional<"taskAttachments">>;
+export type TaskAttachmentsRecordWithKey = Expand<EntityDataWithKey<"taskAttachments">>;
+export type TaskAttachmentsProcessed = Expand<ProcessedEntityData<"taskAttachments">>;
+export type TaskAttachmentsData = Expand<EntityDataMixed<"taskAttachments">>;
+
+export type TaskCommentsType = AutomationEntity<"taskComments">;
+export type TaskCommentsDataRequired = Expand<EntityData<"taskComments">>;
+export type TaskCommentsDataOptional = Expand<EntityDataOptional<"taskComments">>;
+export type TaskCommentsRecordWithKey = Expand<EntityDataWithKey<"taskComments">>;
+export type TaskCommentsProcessed = Expand<ProcessedEntityData<"taskComments">>;
+export type TaskCommentsData = Expand<EntityDataMixed<"taskComments">>;
+
+export type TasksType = AutomationEntity<"tasks">;
+export type TasksDataRequired = Expand<EntityData<"tasks">>;
+export type TasksDataOptional = Expand<EntityDataOptional<"tasks">>;
+export type TasksRecordWithKey = Expand<EntityDataWithKey<"tasks">>;
+export type TasksProcessed = Expand<ProcessedEntityData<"tasks">>;
+export type TasksData = Expand<EntityDataMixed<"tasks">>;
+
 export type ToolType = AutomationEntity<"tool">;
 export type ToolDataRequired = Expand<EntityData<"tool">>;
 export type ToolDataOptional = Expand<EntityDataOptional<"tool">>;
@@ -503,6 +551,11 @@ export type WcReportDataOptional = Expand<EntityDataOptional<"wcReport">>;
 export type WcReportRecordWithKey = Expand<EntityDataWithKey<"wcReport">>;
 export type WcReportProcessed = Expand<ProcessedEntityData<"wcReport">>;
 export type WcReportData = Expand<EntityDataMixed<"wcReport">>;
+
+
+
+// ==================================== MANUALLY ADDED ====================================
+
 
 import { EntityState } from "@/lib/redux/entity/types/stateTypes";
 

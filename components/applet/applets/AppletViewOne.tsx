@@ -45,6 +45,8 @@ type AppletRecord = {
 const layoutOption = {
     "976c56e5-263c-4815-b2ec-e6d1be04003a": "rendered",
     "da794450-9b3e-46ae-a68a-ff33cb0ab1f0": "multiSectionCards",
+    "2057969c-1b22-4b47-b406-2692045466b4": "rendered",
+    "4b752655-290c-47e3-a0db-6c5795cc5aa5": "rendered",
 };
 
 
@@ -66,7 +68,7 @@ export const AppletViewOne = ({ appletId }: AppletViewOneProps) => {
     const appletRecordData = appletRecord as AppletRecord;
 
     const allThemes = useMemo(() => APPLET_THEMES, []);
-    const appletThemeName = 'pinkBlue'
+    const appletThemeName = 'professional'
     const appletTheme = allThemes[appletThemeName] as AppletTheme;
 
     const layout = layoutOption[appletId] || "rendered";

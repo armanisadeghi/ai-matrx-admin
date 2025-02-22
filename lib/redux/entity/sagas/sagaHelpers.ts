@@ -256,15 +256,16 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('WITH FULL RELATION CONVERSION', entityKey);
     const payload = action.payload;
+    const DEBUG_LEVEL = 'info';
 
-    entityLogger.log('debug', 'Starting with payload:', payload);
+    entityLogger.log(DEBUG_LEVEL, 'Starting with payload:', payload);
 
     try {
         const flexibleQueryOptions: FlexibleQueryOptions = {
             entityNameAnyFormat: entityKey,
         };
 
-        entityLogger.log('debug', 'Flexible Query Options', flexibleQueryOptions);
+        entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options', flexibleQueryOptions);
 
         optionalActionKeys.forEach((key) => {
             if (key in payload && payload[key] !== undefined) {
@@ -273,17 +274,19 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             }
         });
 
-        entityLogger.log('debug', 'Flexible Query Options with optional keys', flexibleQueryOptions);
+        entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options with optional keys', flexibleQueryOptions);
 
         if (payload.columns || payload.fields) {
             flexibleQueryOptions.columns = payload.columns || payload.fields;
         }
 
-        entityLogger.log('debug', 'Flexible Query Options with columns', flexibleQueryOptions);
+        entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options with columns', flexibleQueryOptions);
 
         const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(selectUnifiedDatabaseObjectConversion, flexibleQueryOptions);
 
-        entityLogger.log('debug', 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
+        entityLogger.log(DEBUG_LEVEL, 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
+        entityLogger.log(DEBUG_LEVEL, 'Unified Database Object Table Name:', unifiedDatabaseObject.tableName);
+        entityLogger.log(DEBUG_LEVEL, 'Unified Database Object Primary Keys and Values:', unifiedDatabaseObject.primaryKeysAndValues);
 
         const rpcArgs = {
             p_table_name: unifiedDatabaseObject.tableName,
@@ -299,10 +302,10 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             throw error;
         }
 
-        entityLogger.log('debug', 'Full response data:', data);
+        entityLogger.log(DEBUG_LEVEL, 'Full response data:', data);
 
         const frontendResponse = yield select(selectFrontendConversion, { entityName: entityKey, data: data });
-        entityLogger.log('debug', 'Frontend Conversion', frontendResponse);
+        entityLogger.log(DEBUG_LEVEL, 'Frontend Conversion', frontendResponse);
         yield put(actions.fetchOneWithFkIfkSuccess(frontendResponse));
 
         const transformed = transformDatabaseResponse(data);
@@ -311,7 +314,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
 
         for (const relatedEntity of transformed.relatedEntities) {
             const frontendEntityName: EntityKeys = yield select(selectEntityFrontendName, relatedEntity.tableName);
-            entityLogger.log('debug', 'Related Entity Frontend Entity Name', frontendEntityName);
+            entityLogger.log(DEBUG_LEVEL, 'Related Entity Frontend Entity Name', frontendEntityName);
 
             // Initialize array if this is the first record for this entity
             if (!groupedEntities[frontendEntityName]) {
@@ -336,7 +339,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
             const relatedActions = getSliceActions(frontendEntityName as EntityKeys);
             if (relatedActions) {
                 yield put(relatedActions.fetchedAsRelatedSuccess(records));
-                entityLogger.log('debug', `Updated ${records.length} records for entity:`, frontendEntityName);
+                entityLogger.log(DEBUG_LEVEL, `Updated ${records.length} records for entity:`, frontendEntityName);
             } else {
                 console.warn(`No actions found for entity key: ${frontendEntityName}`);
             }

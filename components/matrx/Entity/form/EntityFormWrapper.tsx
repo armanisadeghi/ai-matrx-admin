@@ -1,10 +1,10 @@
 import {useMemo} from 'react';
 import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
 import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {EntityFormState, FlexEntityFormProps} from '@/components/matrx/Entity/types/entityForm';
+import {FlexEntityFormProps} from '@/components/matrx/Entity/types/entityForm';
 import {transformFieldsToFormFields} from '@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType';
-import {MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import { useEntityForm } from '@/lib/redux/entity/hooks/useEntityForm';
+import { EntityFormState } from '@/types';
 
 interface EntityFormWrapperProps<TEntity extends EntityKeys> {
     entityFormState: ReturnType<typeof useEntityForm>;

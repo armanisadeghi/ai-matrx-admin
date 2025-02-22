@@ -3,7 +3,7 @@ import { getGlobalCache } from './processSchema';
 
 // Base getters
 export function getEntity(entityName: EntityKeys) {
-    const cache = getGlobalCache(['getEntity']);
+    const cache = getGlobalCache();
     if (!cache) return null;
     return cache.schema[entityName];
 }
