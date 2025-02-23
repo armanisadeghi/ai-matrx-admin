@@ -316,7 +316,10 @@ export const BrokerTextarea: React.FC<BrokerComponentProps> = ({
             value={value ?? ""}
             onChange={(e) => onChange(e.target.value)}
             placeholder={componentMetadata.placeholder}
-            className={cn(componentMetadata.componentClassName)}
+            className={cn(
+                "min-h-64 !border !border-gray-200 !dark:!border-gray-700",
+                componentMetadata.componentClassName
+            )}
         />
     );
 };

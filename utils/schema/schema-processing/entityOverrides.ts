@@ -1,23 +1,8 @@
+// File: utils/schema/schema-processing/entityOverrides.ts
 import { EntityKeys } from "@/types";
 import { EntityOverrides } from "./overrideTypes";
 
-// Entity-level overrides (modular approach)
-const brokerEntityOverrides: EntityOverrides<'broker'> = {
-    schemaType: null,
-    entityName: null,
-    uniqueTableId: null,
-    uniqueEntityId: null,
-    primaryKey: null,
-    primaryKeyMetadata: null,
-    displayFieldMetadata: { fieldName: 'displayName', databaseFieldName: 'display_name' },
-    defaultFetchStrategy: null,
-    componentProps: null,
-    entityNameFormats: null,
-    relationships: null,
-    entityFields: null
-};
-
-const recipeMessageEntityOverrides: EntityOverrides<'recipe'> = {
+const actionEntityOverrides: EntityOverrides<"action"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -29,11 +14,10 @@ const recipeMessageEntityOverrides: EntityOverrides<'recipe'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-
-const actionEntityOverrides: EntityOverrides<'action'> = {
+const aiAgentEntityOverrides: EntityOverrides<"aiAgent"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -45,10 +29,10 @@ const actionEntityOverrides: EntityOverrides<'action'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const aiEndpointEntityOverrides: EntityOverrides<'aiEndpoint'> = {
+const aiEndpointEntityOverrides: EntityOverrides<"aiEndpoint"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -60,40 +44,25 @@ const aiEndpointEntityOverrides: EntityOverrides<'aiEndpoint'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const aiModelEntityOverrides: EntityOverrides<'aiModel'> = {
+const aiModelEntityOverrides: EntityOverrides<"aiModel"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
     uniqueEntityId: null,
     primaryKey: null,
     primaryKeyMetadata: null,
-    displayFieldMetadata: { fieldName: 'commonName', databaseFieldName: 'common_name' },
+    displayFieldMetadata: { fieldName: "commonName", databaseFieldName: "common_name" },
     defaultFetchStrategy: null,
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const aiModelEndpointEntityOverrides: EntityOverrides<'aiModelEndpoint'> = {
-    schemaType: null,
-    entityName: null,
-    uniqueTableId: null,
-    uniqueEntityId: null,
-    primaryKey: null,
-    primaryKeyMetadata: null,
-    displayFieldMetadata: null,
-    defaultFetchStrategy: null,
-    componentProps: null,
-    entityNameFormats: null,
-    relationships: null,
-    entityFields: null
-};
-
-const aiProviderEntityOverrides: EntityOverrides<'aiProvider'> = {
+const aiModelEndpointEntityOverrides: EntityOverrides<"aiModelEndpoint"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -105,10 +74,10 @@ const aiProviderEntityOverrides: EntityOverrides<'aiProvider'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const aiSettingsEntityOverrides: EntityOverrides<'aiSettings'> = {
+const aiProviderEntityOverrides: EntityOverrides<"aiProvider"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -120,10 +89,10 @@ const aiSettingsEntityOverrides: EntityOverrides<'aiSettings'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const argEntityOverrides: EntityOverrides<'arg'> = {
+const aiSettingsEntityOverrides: EntityOverrides<"aiSettings"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -135,10 +104,10 @@ const argEntityOverrides: EntityOverrides<'arg'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const automationBoundaryBrokerEntityOverrides: EntityOverrides<'automationBoundaryBroker'> = {
+const appletEntityOverrides: EntityOverrides<"applet"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -150,10 +119,10 @@ const automationBoundaryBrokerEntityOverrides: EntityOverrides<'automationBounda
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const automationMatrixEntityOverrides: EntityOverrides<'automationMatrix'> = {
+const argEntityOverrides: EntityOverrides<"arg"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -165,10 +134,10 @@ const automationMatrixEntityOverrides: EntityOverrides<'automationMatrix'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const bucketStructuresEntityOverrides: EntityOverrides<'bucketStructures'> = {
+const audioLabelEntityOverrides: EntityOverrides<"audioLabel"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -180,10 +149,10 @@ const bucketStructuresEntityOverrides: EntityOverrides<'bucketStructures'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const bucketTreeStructuresEntityOverrides: EntityOverrides<'bucketTreeStructures'> = {
+const audioRecordingEntityOverrides: EntityOverrides<"audioRecording"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -195,10 +164,10 @@ const bucketTreeStructuresEntityOverrides: EntityOverrides<'bucketTreeStructures
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const dataInputComponentEntityOverrides: EntityOverrides<'dataInputComponent'> = {
+const audioRecordingUsersEntityOverrides: EntityOverrides<"audioRecordingUsers"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -210,10 +179,10 @@ const dataInputComponentEntityOverrides: EntityOverrides<'dataInputComponent'> =
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const dataOutputComponentEntityOverrides: EntityOverrides<'dataOutputComponent'> = {
+const automationBoundaryBrokerEntityOverrides: EntityOverrides<"automationBoundaryBroker"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -225,10 +194,10 @@ const dataOutputComponentEntityOverrides: EntityOverrides<'dataOutputComponent'>
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const displayOptionEntityOverrides: EntityOverrides<'displayOption'> = {
+const automationMatrixEntityOverrides: EntityOverrides<"automationMatrix"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -240,10 +209,25 @@ const displayOptionEntityOverrides: EntityOverrides<'displayOption'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const emailsEntityOverrides: EntityOverrides<'emails'> = {
+const brokerEntityOverrides: EntityOverrides<"broker"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: { fieldName: "displayName", databaseFieldName: "display_name" },
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const brokerValueEntityOverrides: EntityOverrides<"brokerValue"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -255,10 +239,10 @@ const emailsEntityOverrides: EntityOverrides<'emails'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const extractorEntityOverrides: EntityOverrides<'extractor'> = {
+const bucketStructuresEntityOverrides: EntityOverrides<"bucketStructures"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -270,10 +254,10 @@ const extractorEntityOverrides: EntityOverrides<'extractor'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const fileStructureEntityOverrides: EntityOverrides<'fileStructure'> = {
+const bucketTreeStructuresEntityOverrides: EntityOverrides<"bucketTreeStructures"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -285,10 +269,10 @@ const fileStructureEntityOverrides: EntityOverrides<'fileStructure'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const flashcardDataEntityOverrides: EntityOverrides<'flashcardData'> = {
+const categoryEntityOverrides: EntityOverrides<"category"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -300,10 +284,10 @@ const flashcardDataEntityOverrides: EntityOverrides<'flashcardData'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const flashcardHistoryEntityOverrides: EntityOverrides<'flashcardHistory'> = {
+const compiledRecipeEntityOverrides: EntityOverrides<"compiledRecipe"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -315,10 +299,10 @@ const flashcardHistoryEntityOverrides: EntityOverrides<'flashcardHistory'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const flashcardImagesEntityOverrides: EntityOverrides<'flashcardImages'> = {
+const dataBrokerEntityOverrides: EntityOverrides<"dataBroker"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -330,10 +314,10 @@ const flashcardImagesEntityOverrides: EntityOverrides<'flashcardImages'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const flashcardSetRelationsEntityOverrides: EntityOverrides<'flashcardSetRelations'> = {
+const dataInputComponentEntityOverrides: EntityOverrides<"dataInputComponent"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -345,10 +329,10 @@ const flashcardSetRelationsEntityOverrides: EntityOverrides<'flashcardSetRelatio
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const flashcardSetsEntityOverrides: EntityOverrides<'flashcardSets'> = {
+const dataOutputComponentEntityOverrides: EntityOverrides<"dataOutputComponent"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -360,10 +344,10 @@ const flashcardSetsEntityOverrides: EntityOverrides<'flashcardSets'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const messageBrokerEntityOverrides: EntityOverrides<'messageBroker'> = {
+const displayOptionEntityOverrides: EntityOverrides<"displayOption"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -375,25 +359,10 @@ const messageBrokerEntityOverrides: EntityOverrides<'messageBroker'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const messageTemplateEntityOverrides: EntityOverrides<'messageTemplate'> = {
-    schemaType: null,
-    entityName: null,
-    uniqueTableId: null,
-    uniqueEntityId: null,
-    primaryKey: null,
-    primaryKeyMetadata: null,
-    displayFieldMetadata: { fieldName: 'role', databaseFieldName: 'role' },
-    defaultFetchStrategy: null,
-    componentProps: null,
-    entityNameFormats: null,
-    relationships: null,
-    entityFields: null
-};
-
-const processorEntityOverrides: EntityOverrides<'processor'> = {
+const emailsEntityOverrides: EntityOverrides<"emails"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -405,10 +374,10 @@ const processorEntityOverrides: EntityOverrides<'processor'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const recipeBrokerEntityOverrides: EntityOverrides<'recipeBroker'> = {
+const extractorEntityOverrides: EntityOverrides<"extractor"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -420,10 +389,10 @@ const recipeBrokerEntityOverrides: EntityOverrides<'recipeBroker'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const recipeDisplayEntityOverrides: EntityOverrides<'recipeDisplay'> = {
+const fileStructureEntityOverrides: EntityOverrides<"fileStructure"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -435,10 +404,10 @@ const recipeDisplayEntityOverrides: EntityOverrides<'recipeDisplay'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const recipeFunctionEntityOverrides: EntityOverrides<'recipeFunction'> = {
+const flashcardDataEntityOverrides: EntityOverrides<"flashcardData"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -450,10 +419,10 @@ const recipeFunctionEntityOverrides: EntityOverrides<'recipeFunction'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const recipeModelEntityOverrides: EntityOverrides<'recipeModel'> = {
+const flashcardHistoryEntityOverrides: EntityOverrides<"flashcardHistory"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -465,10 +434,10 @@ const recipeModelEntityOverrides: EntityOverrides<'recipeModel'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const recipeProcessorEntityOverrides: EntityOverrides<'recipeProcessor'> = {
+const flashcardImagesEntityOverrides: EntityOverrides<"flashcardImages"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -480,10 +449,10 @@ const recipeProcessorEntityOverrides: EntityOverrides<'recipeProcessor'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const recipeToolEntityOverrides: EntityOverrides<'recipeTool'> = {
+const flashcardSetRelationsEntityOverrides: EntityOverrides<"flashcardSetRelations"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -495,10 +464,10 @@ const recipeToolEntityOverrides: EntityOverrides<'recipeTool'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const registeredFunctionEntityOverrides: EntityOverrides<'registeredFunction'> = {
+const flashcardSetsEntityOverrides: EntityOverrides<"flashcardSets"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -510,10 +479,10 @@ const registeredFunctionEntityOverrides: EntityOverrides<'registeredFunction'> =
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const systemFunctionEntityOverrides: EntityOverrides<'systemFunction'> = {
+const messageBrokerEntityOverrides: EntityOverrides<"messageBroker"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -525,10 +494,25 @@ const systemFunctionEntityOverrides: EntityOverrides<'systemFunction'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const toolEntityOverrides: EntityOverrides<'tool'> = {
+const messageTemplateEntityOverrides: EntityOverrides<"messageTemplate"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: { fieldName: "role", databaseFieldName: "role" },
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const processorEntityOverrides: EntityOverrides<"processor"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -540,10 +524,10 @@ const toolEntityOverrides: EntityOverrides<'tool'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const transformerEntityOverrides: EntityOverrides<'transformer'> = {
+const projectMembersEntityOverrides: EntityOverrides<"projectMembers"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -555,10 +539,10 @@ const transformerEntityOverrides: EntityOverrides<'transformer'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-const userPreferencesEntityOverrides: EntityOverrides<'userPreferences'> = {
+const projectsEntityOverrides: EntityOverrides<"projects"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -570,30 +554,361 @@ const userPreferencesEntityOverrides: EntityOverrides<'userPreferences'> = {
     componentProps: null,
     entityNameFormats: null,
     relationships: null,
-    entityFields: null
+    entityFields: null,
 };
 
-
-
-const recipeEntityOverrides: EntityOverrides<'recipe'> = {
-    defaultFetchStrategy: 'fkAndIfk',
+const recipeEntityOverrides: EntityOverrides<"recipe"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: "fkAndIfk",
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
 };
 
+const recipeBrokerEntityOverrides: EntityOverrides<"recipeBroker"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
 
-// Combine dynamically
+const recipeDisplayEntityOverrides: EntityOverrides<"recipeDisplay"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const recipeFunctionEntityOverrides: EntityOverrides<"recipeFunction"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const recipeMessageEntityOverrides: EntityOverrides<"recipeMessage"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const recipeModelEntityOverrides: EntityOverrides<"recipeModel"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const recipeProcessorEntityOverrides: EntityOverrides<"recipeProcessor"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const recipeToolEntityOverrides: EntityOverrides<"recipeTool"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const registeredFunctionEntityOverrides: EntityOverrides<"registeredFunction"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const subcategoryEntityOverrides: EntityOverrides<"subcategory"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const systemFunctionEntityOverrides: EntityOverrides<"systemFunction"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const taskAssignmentsEntityOverrides: EntityOverrides<"taskAssignments"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const taskAttachmentsEntityOverrides: EntityOverrides<"taskAttachments"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const taskCommentsEntityOverrides: EntityOverrides<"taskComments"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const tasksEntityOverrides: EntityOverrides<"tasks"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const toolEntityOverrides: EntityOverrides<"tool"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const transformerEntityOverrides: EntityOverrides<"transformer"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const userPreferencesEntityOverrides: EntityOverrides<"userPreferences"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const wcClaimEntityOverrides: EntityOverrides<"wcClaim"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const wcImpairmentDefinitionEntityOverrides: EntityOverrides<"wcImpairmentDefinition"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const wcInjuryEntityOverrides: EntityOverrides<"wcInjury"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const wcReportEntityOverrides: EntityOverrides<"wcReport"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
 export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> = {
     action: actionEntityOverrides,
+    aiAgent: aiAgentEntityOverrides,
     aiEndpoint: aiEndpointEntityOverrides,
     aiModel: aiModelEntityOverrides,
     aiModelEndpoint: aiModelEndpointEntityOverrides,
     aiProvider: aiProviderEntityOverrides,
     aiSettings: aiSettingsEntityOverrides,
+    applet: appletEntityOverrides,
     arg: argEntityOverrides,
+    audioLabel: audioLabelEntityOverrides,
+    audioRecording: audioRecordingEntityOverrides,
+    audioRecordingUsers: audioRecordingUsersEntityOverrides,
     automationBoundaryBroker: automationBoundaryBrokerEntityOverrides,
     automationMatrix: automationMatrixEntityOverrides,
     broker: brokerEntityOverrides,
+    brokerValue: brokerValueEntityOverrides,
     bucketStructures: bucketStructuresEntityOverrides,
     bucketTreeStructures: bucketTreeStructuresEntityOverrides,
+    category: categoryEntityOverrides,
+    compiledRecipe: compiledRecipeEntityOverrides,
+    dataBroker: dataBrokerEntityOverrides,
     dataInputComponent: dataInputComponentEntityOverrides,
     dataOutputComponent: dataOutputComponentEntityOverrides,
     displayOption: displayOptionEntityOverrides,
@@ -608,17 +923,28 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     messageBroker: messageBrokerEntityOverrides,
     messageTemplate: messageTemplateEntityOverrides,
     processor: processorEntityOverrides,
+    projectMembers: projectMembersEntityOverrides,
+    projects: projectsEntityOverrides,
     recipe: recipeEntityOverrides,
     recipeBroker: recipeBrokerEntityOverrides,
     recipeDisplay: recipeDisplayEntityOverrides,
     recipeFunction: recipeFunctionEntityOverrides,
+    recipeMessage: recipeMessageEntityOverrides,
     recipeModel: recipeModelEntityOverrides,
     recipeProcessor: recipeProcessorEntityOverrides,
     recipeTool: recipeToolEntityOverrides,
     registeredFunction: registeredFunctionEntityOverrides,
+    subcategory: subcategoryEntityOverrides,
     systemFunction: systemFunctionEntityOverrides,
+    taskAssignments: taskAssignmentsEntityOverrides,
+    taskAttachments: taskAttachmentsEntityOverrides,
+    taskComments: taskCommentsEntityOverrides,
+    tasks: tasksEntityOverrides,
     tool: toolEntityOverrides,
     transformer: transformerEntityOverrides,
     userPreferences: userPreferencesEntityOverrides,
-    recipeMessage: recipeMessageEntityOverrides
+    wcClaim: wcClaimEntityOverrides,
+    wcImpairmentDefinition: wcImpairmentDefinitionEntityOverrides,
+    wcInjury: wcInjuryEntityOverrides,
+    wcReport: wcReportEntityOverrides,
 };

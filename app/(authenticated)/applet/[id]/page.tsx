@@ -15,7 +15,7 @@ export default async function AppletPage({ params }: AppletPageProps) {
     const { id } = await params;
     
     return (
-        <div className="h-full w-full p-2">
+        <div className="h-full w-full bg-gray-200 dark:bg-gray-900">
             <AppletViewOne appletId={id} />
             <ThemeClassesPreloader />
         </div>

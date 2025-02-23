@@ -4,6 +4,10 @@ import { initialAutomationTableSchema } from '../initialSchemas';
 import { FieldOverrideName, AllEntityFieldOverrides, ProcessedField, EntityProcessedFields } from './overrideTypes';
 import { applyCalculatedFields } from './fieldCalculatedOverrides';
 
+// https://claude.ai/chat/1e5472cc-a4fa-42d6-b7a4-0dce43d400ae
+
+
+
 // Helper to check if a value is effectively empty (reused from before)
 export function isEmptyOverride(value: any): boolean {
     if (value === null || value === undefined || value === '') return true;

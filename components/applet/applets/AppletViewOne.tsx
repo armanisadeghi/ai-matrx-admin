@@ -81,7 +81,7 @@ export const AppletViewOne = ({ appletId }: AppletViewOneProps) => {
     const content = streamingResponses[0] || "";
 
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full bg-gray-200 dark:bg-gray-900">
             <AppletHeroComponent
                 title={appletRecordData?.name}
                 description={appletRecordData?.description}

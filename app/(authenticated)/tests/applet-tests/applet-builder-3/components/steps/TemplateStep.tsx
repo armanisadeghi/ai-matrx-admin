@@ -1,35 +1,58 @@
 // components/steps/TemplateStep.tsx
-import { FileSpreadsheet, FileText, LayoutDashboard } from 'lucide-react';
+import { Brain, BrainCircuit, FileSpreadsheet, FileText, LayoutDashboard, Target } from 'lucide-react';
 import { Card } from '../common';
 import { StepHeader } from '../common';
 import { useAppletStore } from '../../hooks/useAppletState';
+import { GiTeamIdea } from "react-icons/gi";
+import { FaFreeCodeCamp } from "react-icons/fa6";
+import { MdEngineering } from "react-icons/md";
+import { MdOutlineSettingsInputComposite } from "react-icons/md";
 
 const TEMPLATES = [
   {
-    id: 'project',
-    name: 'Project Management',
-    description: 'Track tasks, deadlines, and team assignments',
-    icon: <LayoutDashboard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+    id: 'currentRecipe',
+    name: 'Current Recipe',
+    description: 'Use a recipe you already have to create your Applet',
+    icon: <Brain className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
   },
   {
-    id: 'data',
-    name: 'Data Management',
-    description: 'Organize and analyze structured data',
-    icon: <FileSpreadsheet className="h-5 w-5 text-green-600 dark:text-green-400" />
+    id: 'createRecipe',
+    name: 'Create a New Recipe',
+    description: 'Create a new recipe for your Applet',
+    icon: <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
   },
   {
-    id: 'collab',
+    id: 'teamRecipe',
+    name: 'Team Collaboration',
+    description: 'Use a shared recipe from your team.',
+    icon: <GiTeamIdea className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+  },
+  {
+    id: 'systemRecipe',
+    name: 'System Recipe',
+    description: 'Use a pre-built recipe to get started quickly',
+    icon: <BrainCircuit className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+  },
+  {
+    id: 'freeCollab',
     name: 'Collaboration Hub',
-    description: 'Create shared workspaces for your team',
-    icon: <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-  }
+    description: 'Use a free collaboration from talented prompt engineers',
+    icon: <FaFreeCodeCamp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+  },
+  {
+    id: 'paidCollab',
+    name: 'Paid Collaboration',
+    description: 'Find your perfect prompt engineer and collaborate on a paid recipe',
+    icon: <MdEngineering className="h-5 w-5 text-rose-600 dark:text-rose-400" />
+  },
 ] as const;
+
 
 export function TemplateStep() {
   const { selectedTemplate, setTemplate } = useAppletStore();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <StepHeader
         title="Choose a template"
         description="Start with a template or build from scratch"
@@ -65,20 +88,20 @@ export function TemplateStep() {
 
       <div className="pt-8 border-t border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-          Or, start with your data
+          Or, choose from one of these options.
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-400">
             <div className="flex items-start space-x-3">
               <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                <FileSpreadsheet className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <MdOutlineSettingsInputComposite className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <h4 className="font-medium text-gray-900 dark:text-white">
-                  Import spreadsheets
+                  Import from OpenAI, Anthropic, Google, Xai, Groq, and more.
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Turn CSV, Excel, and Google Sheets into a powerful app
+                  Directly paste and generate a recipe from a provider's playground code.
                 </p>
               </div>
             </div>
@@ -91,10 +114,10 @@ export function TemplateStep() {
               </div>
               <div>
                 <h4 className="font-medium text-gray-900 dark:text-white">
-                  Import documents
+                  Build your app first, then add a recipe later.
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Turn contracts, presentations, and other docs into structured data
+                  Create your app first, then add a recipe later.
                 </p>
               </div>
             </div>

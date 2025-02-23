@@ -17,7 +17,7 @@ export const BasicHeroSection = ({
     return (
         <div 
             className={cn(
-                'w-full',
+                'w-full rounded-lg',
                 appletTheme.containerBg,
                 appletTheme.containerBorder,
                 className
