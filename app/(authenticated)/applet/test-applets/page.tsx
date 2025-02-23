@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Provider } from 'react-redux';
 import { useAppletRecipe, useBrokerComponents } from '@/hooks/run-recipe/useRunApps';
 
 // Mock types/imports if not available in test environment

@@ -158,3 +158,5 @@ export {
 } from './matrx/matrix-switch'
 
 export {TextDivider} from '@/components/matrx/TextDivider';
+
+export {default as ConfigBuilder} from '@/components/matrx/ConfigBuilder/index';
