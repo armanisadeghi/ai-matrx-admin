@@ -8,8 +8,9 @@ export const AVAILABLE_NAMESPACES = {
 } as const;
 
 export const AVAILABLE_SERVICES = {
-    SampleService: 'Sample Service',
     RecipeService: 'Recipe Service',
+    CockpitService: 'Cockpit Service',
+    MarkdownService: 'Markdown Service',
     ScrapeService: 'Scrape Service',
     TranscriptionService: 'Transcription Service',
     Translate: 'Translation Service',
@@ -31,7 +32,9 @@ export const AVAILABLE_SERVICES = {
 
 export const SERVICE_EVENTS = {
     RecipeService: ['simple_recipe', 'advanced_recipe', 'batch_recipe', 'add_recipe'],
+    CockpitService: ['cockpit_instant'],
     ScrapeService: ['scrape_single', 'scrape_batch'],
+    markdown_service: ['classify_markdown', 'extract_all_code_blocks', 'extract_code_blocks', 'extract_section_blocks', "extract_paragraphs","remove_first_and_last_paragraph"],
 } as const;
 
 export const EVENT_TASKS = {
@@ -211,87 +214,6 @@ export const EVENT_TASKS = {
     },
 } as const;
 
-export const TASK_MAP = {
-    simple_recipe: ['get_options', 'run_recipe', 'validate_recipe', 'get_recipe_brokers', 'edit_recipe', 'add_recipe', 'test_connection'],
-    scrape_service: [
-        'get_options',
-        'scrape_single',
-        'scrape_soup',
-        'get_soup',
-        'add_noise_config',
-        'add_filter_config',
-        'add_main_content_config',
-        'scrape_page',
-        'scrape_site',
-        'scrape_batch',
-        'get_cached_data',
-        'custom_parse_cached_data',
-        'test_connection',
-    ],
-    TranscriptionService: [
-        'transcribe_to_presentation',
-        'get_options',
-        'transcribe_audio',
-        'transcribe_video',
-        'audio_to_notes',
-        'audio_to_presentation',
-        'audio_to_plan',
-        'custom_transcribe',
-        'test_connection',
-    ],
-    Translate: ['get_options', 'start_translation', 'pause_translation', 'stop_translation', 'validate_translation', 'edit_translation', 'test_connection'],
-    TextClassification: [
-        'get_options',
-        // Things added by Jatin
-        'get_edit_options',
-        'get_find_options',
-        'add_document',
-        'add_metric',
-        'add_identifier',
-        'add_search',
-        'add_edit_step',
-        'get_snapshot',
-        'get_state',
-        'load_from_state',
-        'process',
-        'load_state',
-        // -------------------
-        'start_classification',
-        'pause_classification',
-        'stop_classification',
-        'validate_classification',
-        'edit_classification',
-        'test_connection',
-    ],
-    VideoProcessing: ['get_options', 'start_processing', 'pause_processing', 'stop_processing', 'validate_processing', 'edit_processing', 'test_connection'],
-    AudioProcessing: ['get_options', 'start_processing', 'pause_processing', 'stop_processing', 'validate_processing', 'edit_processing', 'test_connection'],
-    ImageProcessing: ['get_options', 'start_processing', 'pause_processing', 'stop_processing', 'validate_processing', 'edit_processing', 'test_connection'],
-    Workflows: ['get_options', 'start_workflow', 'pause_workflow', 'stop_workflow', 'validate_workflow', 'edit_workflow', 'add_workflow', 'test_connection'],
-    Chat: ['get_options', 'start_chat', 'pause_chat', 'stop_chat', 'validate_chat', 'edit_chat', 'test_connection'],
-    SearchConsole: ['get_options', 'start_console', 'pause_console', 'stop_console', 'validate_console', 'edit_console', 'test_connection'],
-    Keyword: [
-        'get_options',
-        'start_keyword_research',
-        'pause_keyword_research',
-        'stop_keyword_research',
-        'validate_keyword_research',
-        'edit_keyword_research',
-        'test_connection',
-    ],
-    SocialMedia: ['get_options', 'start_post', 'pause_post', 'stop_post', 'validate_post', 'edit_post', 'test_connection'],
-    Email: [
-        'get_options',
-        'start_email_campaign',
-        'pause_email_campaign',
-        'stop_email_campaign',
-        'validate_email_campaign',
-        'edit_email_campaign',
-        'test_connection',
-    ],
-    SMS: ['get_options', 'start_sms_campaign', 'pause_sms_campaign', 'stop_sms_campaign', 'validate_sms_campaign', 'edit_sms_campaign', 'test_connection'],
-    Shopify: ['get_options', 'start_sync', 'pause_sync', 'stop_sync', 'validate_sync', 'edit_sync', 'test_connection'],
-    WordPress: ['get_options', 'start_sync', 'pause_sync', 'stop_sync', 'validate_sync', 'edit_sync', 'test_connection'],
-};
 
 export const TASK_CONTEXT_VALIDATION = {
     run_recipe: {

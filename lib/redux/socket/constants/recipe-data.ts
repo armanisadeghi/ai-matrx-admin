@@ -1,4 +1,26 @@
 export const RECIPE_DATABASE = {
+    "97101b4d-14bb-4096-89a9-e75b7f08cd9a": {
+        "name": "Name That Capital",
+        "brokers": [
+            {
+                "id": "6903c292-824a-4fa8-9ddb-be552f3e8968",
+                "name": "Country, State or Province",
+                "dataType": "str",
+                "required": true,
+                "default_value": null,
+                "ready": "True"
+              }          
+        ],
+        "default_overrides": {
+            "model_override": "claude-3-5-sonnet-20241022",
+            "processor_overrides": "{}",
+            "other_overrides": "{}"
+        }
+    },
+
+
+
+
     "6615f9a50134cf41e405087b": {
         "name": "Extract Job Code From AMA Medical Report",
         "brokers": [

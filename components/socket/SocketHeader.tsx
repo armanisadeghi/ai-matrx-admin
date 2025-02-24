@@ -16,6 +16,7 @@ import {
     AVAILABLE_SERVICES,
     SERVICE_EVENTS
 } from '@/lib/redux/socket/constants/task-context';
+import { SocketHook } from "@/lib/redux/socket/hooks/useSocket";
 
 interface StatusIndicatorProps {
     isActive: boolean;
@@ -35,19 +36,16 @@ const StatusIndicator = ({isActive, label, icon}: StatusIndicatorProps) => (
     </div>
 );
 
-interface RecipeSocketHeaderProps {
-    namespace: string;
-    event: string;
-    streamEnabled: boolean;
-    setNamespace: (value: string) => void;
-    setEvent: (value: string) => void;
-    setStreamEnabled: (value: boolean) => void;
-    isConnected: boolean;
-    isAuthenticated: boolean;
+interface SocketHeaderProps {
+    socketHook: SocketHook;
 }
 
-export function RecipeSocketHeader(
+export function SocketHeader(
     {
+        socketHook
+    }: SocketHeaderProps) {
+
+    const {
         namespace,
         event,
         streamEnabled,
@@ -56,7 +54,8 @@ export function RecipeSocketHeader(
         setStreamEnabled,
         isConnected,
         isAuthenticated
-    }: RecipeSocketHeaderProps) {
+    } = socketHook;
+
     const [customNamespace, setCustomNamespace] = useState(false);
     const [customEvent, setCustomEvent] = useState(false);
     const [selectedService, setSelectedService] = useState('RecipeService');
@@ -189,3 +188,5 @@ export function RecipeSocketHeader(
         </div>
     );
 }
+
+export default SocketHeader;

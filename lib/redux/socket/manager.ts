@@ -1,14 +1,14 @@
 // lib/redux/socket/manager.ts
 
-import { SagaCoordinator } from '@/lib/redux/sagas/SagaCoordinator';
-import { supabase } from '@/utils/supabase/client';
+import { SagaCoordinator } from "@/lib/redux/sagas/SagaCoordinator";
+import { supabase } from "@/utils/supabase/client";
 
 export class SocketManager {
     private static instance: SocketManager;
     private socket: any | null = null;
     private dynamicEventListeners: Map<string, (data: any) => void> = new Map();
-    private readonly PRODUCTION_URL = 'https://server.app.matrxserver.com'
-    private readonly LOCAL_URL = 'http://localhost:8000';
+    private readonly PRODUCTION_URL = "https://server.app.matrxserver.com";
+    private readonly LOCAL_URL = "http://localhost:8000";
 
     private constructor() {}
 
@@ -24,21 +24,21 @@ export class SocketManager {
             return process.env.NEXT_PUBLIC_SOCKET_OVERRIDE;
         }
 
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === "production") {
             return this.PRODUCTION_URL;
         }
 
         try {
-            const testSocket = await fetch(this.LOCAL_URL, { 
-                method: 'HEAD',
-                signal: AbortSignal.timeout(2000)
+            const testSocket = await fetch(this.LOCAL_URL, {
+                method: "HEAD",
+                signal: AbortSignal.timeout(2000),
             });
-            
+
             if (testSocket.ok) {
                 return this.LOCAL_URL;
             }
         } catch (error) {
-            console.log('Local server not available, falling back to production URL');
+            console.log("Local server not available, falling back to production URL");
         }
 
         return this.PRODUCTION_URL;
@@ -46,37 +46,36 @@ export class SocketManager {
 
     async connect() {
         if (!this.socket) {
-            if (typeof window !== 'undefined') {
+            if (typeof window !== "undefined") {
                 try {
-                    const { io } = await import('socket.io-client');
+                    const { io } = await import("socket.io-client");
                     const socketAddress = await this.getSocketAddress();
                     const session = await supabase.auth.getSession();
 
                     // Connect directly to the required namespace
                     this.socket = io(`${socketAddress}/UserSession`, {
-                        transports: ['polling', 'websocket'],
+                        transports: ["polling", "websocket"],
                         withCredentials: true,
                         auth: {
-                            token: session.data.session.access_token
-                        }
+                            token: session.data.session.access_token,
+                        },
                     });
 
                     // Add error handler
-                    this.socket.on('connect_error', (error: Error) => {
-                        console.log('Socket connection error:', error.message);
+                    this.socket.on("connect_error", (error: Error) => {
+                        console.log("Socket connection error:", error.message);
                     });
 
                     this.registerEventHandlers();
                     console.log(`SocketManager: Connected to ${socketAddress}/UserSession`);
                 } catch (error) {
-                    console.error('SocketManager: Error connecting socket', error);
+                    console.error("SocketManager: Error connecting socket", error);
                 }
             } else {
-                console.log('SocketManager: window is undefined, skipping socket connection');
+                console.log("SocketManager: window is undefined, skipping socket connection");
             }
         }
     }
-
 
     disconnect() {
         if (this.socket) {
@@ -90,7 +89,7 @@ export class SocketManager {
 
     getSocket(): any {
         if (!this.socket) {
-            throw new Error('Socket is not initialized. Call connect() first.');
+            throw new Error("Socket is not initialized. Call connect() first.");
         }
         return this.socket;
     }
@@ -99,9 +98,9 @@ export class SocketManager {
         const sagaCoordinator = SagaCoordinator.getInstance();
         const socket = this.getSocket();
 
-        socket.on('connect', () => {});
+        socket.on("connect", () => {});
 
-        socket.on('disconnect', () => {});
+        socket.on("disconnect", () => {});
 
         socket.onAny((eventName: string, ...args: any[]) => {
             sagaCoordinator.emitSocketEvent({ eventName, args });
@@ -110,36 +109,41 @@ export class SocketManager {
 
     startTask(eventName: string, data: any, callback: (response: any) => void) {
         const socket = this.getSocket();
-      
+
         if (!socket || !socket.connected) {
-          console.error('Socket not initialized or not connected');
-          return;
+            console.error("Socket not initialized or not connected");
+            return;
         }
-      
+
         console.log(`Emitting task: ${eventName}`);
-              const sid = socket.id;
-        const taskName = data[0]?.task || 'unknown_task';
+        console.log("--------------------------------");
+        console.log("Data:", data);
+        console.log("--------------------------------");
+        const sid = socket.id;
+        const taskName = data[0]?.task || "unknown_task";
+        console.log("Task name:", taskName);
         const taskIndex = data[0]?.index || 0;
+        console.log("Task index:", taskIndex);
         const fallbackEventName = `${sid}_${taskName}_${taskIndex}`;
-      
+        console.log("Fallback event name:", fallbackEventName);
         const fallbackListener = (fallbackResponse: any) => {
-          callback(fallbackResponse);
+            callback(fallbackResponse);
         };
         this.addDynamicEventListener(fallbackEventName, fallbackListener);
-      
+
         socket.emit(eventName, data, (response: { event_name?: string }) => {
-          if (response?.event_name) {
-            console.log('Task confirmed. Switching listener to event:', response.event_name);
-      
-            this.removeDynamicEventListener(fallbackEventName);
-      
-            this.addDynamicEventListener(response.event_name, (finalResponse: any) => {
-              callback(finalResponse);
-            });
-          }
+            if (response?.event_name) {
+                console.log("Task confirmed. Switching listener to event:", response.event_name);
+
+                this.removeDynamicEventListener(fallbackEventName);
+
+                this.addDynamicEventListener(response.event_name, (finalResponse: any) => {
+                    callback(finalResponse);
+                });
+            }
         });
-      }
-      
+    }
+
     startStreamingTasks<T>(event: string, tasks: T[], onStreamUpdate: (index: number, data: string) => void) {
         tasks.forEach((taskData, index) => {
             const singleTaskPayload = [
@@ -162,7 +166,7 @@ export class SocketManager {
         const socket = this.getSocket();
 
         if (!socket) {
-            console.error('Socket not initialized');
+            console.error("Socket not initialized");
             return;
         }
 
@@ -185,7 +189,7 @@ export class SocketManager {
         const socket = this.getSocket();
 
         if (!socket) {
-            console.error('Socket not initialized');
+            console.error("Socket not initialized");
             return;
         }
 
@@ -201,7 +205,7 @@ export class SocketManager {
         const socket = this.getSocket();
 
         if (!socket) {
-            console.error('Socket is not initialized.');
+            console.error("Socket is not initialized.");
             return;
         }
 
@@ -227,7 +231,7 @@ export class SocketManager {
         const socket = this.getSocket();
 
         if (!socket) {
-            console.error('Socket not initialized');
+            console.error("Socket not initialized");
             return;
         }
 
