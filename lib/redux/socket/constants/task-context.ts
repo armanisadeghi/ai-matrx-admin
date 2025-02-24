@@ -34,7 +34,14 @@ export const SERVICE_EVENTS = {
     RecipeService: ['simple_recipe', 'advanced_recipe', 'batch_recipe', 'add_recipe'],
     CockpitService: ['cockpit_instant'],
     ScrapeService: ['scrape_single', 'scrape_batch'],
-    markdown_service: ['classify_markdown', 'extract_all_code_blocks', 'extract_code_blocks', 'extract_section_blocks', "extract_paragraphs","remove_first_and_last_paragraph"],
+    MarkdownService: ['classify_markdown', 'extract_all_code_blocks', 'extract_code_blocks', 'extract_section_blocks', "extract_paragraphs","remove_first_and_last_paragraph"],
+} as const;
+
+export const SERVICE_EVENT_TASKS = {
+    RecipeService: ['simple_recipe', 'advanced_recipe', 'batch_recipe', 'add_recipe'],
+    CockpitService: ['cockpit_instant'],
+    ScrapeService: ['scrape_single', 'scrape_batch'],
+    MarkdownService: ['classify_markdown', 'extract_all_code_blocks', 'extract_code_blocks', 'extract_section_blocks', "extract_paragraphs","remove_first_and_last_paragraph"],
 } as const;
 
 export const EVENT_TASKS = {

@@ -1,6 +1,6 @@
-// File Location: components/socket/recipes/RecipeSocketHeader.tsx
-import React, {useState} from "react";
-import {Wifi, WifiOff, Shield, ShieldOff, Radio} from 'lucide-react';
+// File: components/socket/SocketHeader.tsx
+import React, { useState, useEffect } from "react";
+import { Wifi, WifiOff, Shield, ShieldOff, Radio } from 'lucide-react';
 import {
     Input,
     Label,
@@ -11,12 +11,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui';
-import {
-    AVAILABLE_NAMESPACES,
-    AVAILABLE_SERVICES,
-    SERVICE_EVENTS
-} from '@/lib/redux/socket/constants/task-context';
+
+
 import { SocketHook } from "@/lib/redux/socket/hooks/useSocket";
+import { AVAILABLE_NAMESPACES, AVAILABLE_SERVICES, SERVICE_TASKS } from "@/app/(authenticated)/tests/socket-tests/socket-final-test/constants";
 
 interface StatusIndicatorProps {
     isActive: boolean;
@@ -27,7 +25,7 @@ interface StatusIndicatorProps {
     };
 }
 
-const StatusIndicator = ({isActive, label, icon}: StatusIndicatorProps) => (
+const StatusIndicator = ({ isActive, label, icon }: StatusIndicatorProps) => (
     <div className="flex items-center space-x-2">
         <div className={`${isActive ? 'text-green-500' : 'text-red-500'}`}>
             {isActive ? icon.active : icon.inactive}
@@ -40,25 +38,32 @@ interface SocketHeaderProps {
     socketHook: SocketHook;
 }
 
-export function SocketHeader(
-    {
-        socketHook
-    }: SocketHeaderProps) {
-
+export function SocketHeader({ socketHook }: SocketHeaderProps) {
     const {
         namespace,
-        event,
+        service,
+        taskType,
         streamEnabled,
         setNamespace,
-        setEvent,
+        setService,
+        setTaskType,
         setStreamEnabled,
         isConnected,
         isAuthenticated
     } = socketHook;
 
     const [customNamespace, setCustomNamespace] = useState(false);
-    const [customEvent, setCustomEvent] = useState(false);
-    const [selectedService, setSelectedService] = useState('RecipeService');
+    const [availableTaskTypes, setAvailableTaskTypes] = useState<string[]>([]);
+
+    // Update available task types when service changes
+    useEffect(() => {
+        if (service && service in SERVICE_TASKS) {
+            const serviceTasks = SERVICE_TASKS[service as keyof typeof SERVICE_TASKS];
+            setAvailableTaskTypes(Object.keys(serviceTasks));
+        } else {
+            setAvailableTaskTypes([]);
+        }
+    }, [service]);
 
     return (
         <div className="p-4 pb-6 space-y-4 bg-gray-200 dark:bg-gray-900 border-3 border-gray-300 dark:border-gray-600 rounded-3xl">
@@ -69,24 +74,24 @@ export function SocketHeader(
                         isActive={isConnected}
                         label="Connected"
                         icon={{
-                            active: <Wifi className="h-4 w-4"/>,
-                            inactive: <WifiOff className="h-4 w-4"/>
+                            active: <Wifi className="h-4 w-4" />,
+                            inactive: <WifiOff className="h-4 w-4" />
                         }}
                     />
                     <StatusIndicator
                         isActive={isAuthenticated}
                         label="Authenticated"
                         icon={{
-                            active: <Shield className="h-4 w-4"/>,
-                            inactive: <ShieldOff className="h-4 w-4"/>
+                            active: <Shield className="h-4 w-4" />,
+                            inactive: <ShieldOff className="h-4 w-4" />
                         }}
                     />
                     <StatusIndicator
                         isActive={streamEnabled}
                         label="Streaming"
                         icon={{
-                            active: <Radio className="h-4 w-4"/>,
-                            inactive: <Radio className="h-4 w-4"/>
+                            active: <Radio className="h-4 w-4" />,
+                            inactive: <Radio className="h-4 w-4" />
                         }}
                     />
                 </div>
@@ -100,6 +105,7 @@ export function SocketHeader(
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
+                {/* Namespace Selection */}
                 <div className="space-y-2">
                     <Label>Namespace</Label>
                     {customNamespace ? (
@@ -109,42 +115,54 @@ export function SocketHeader(
                             className="mt-1"
                         />
                     ) : (
-                         <Select
-                             value={namespace}
-                             onValueChange={(value) => {
-                                 if (value === 'custom') {
-                                     setCustomNamespace(true);
-                                 } else {
-                                     setNamespace(value);
-                                 }
-                             }}
-                         >
-                             <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
-                                 <SelectValue placeholder="Select namespace..."/>
-                             </SelectTrigger>
-                             <SelectContent>
-                                 {Object.entries(AVAILABLE_NAMESPACES).map(([key, label]) => (
-                                     <SelectItem key={key} value={key} className="bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 cursor-pointer">
-                                         {label}
-                                     </SelectItem>
-                                 ))}
-                             </SelectContent>
-                         </Select>
-                     )}
+                        <Select
+                            value={namespace}
+                            onValueChange={(value) => {
+                                if (value === 'custom') {
+                                    setCustomNamespace(true);
+                                } else {
+                                    setNamespace(value);
+                                }
+                            }}
+                        >
+                            <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
+                                <SelectValue placeholder="Select namespace..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {Object.entries(AVAILABLE_NAMESPACES).map(([key, label]) => (
+                                    <SelectItem 
+                                        key={key} 
+                                        value={key} 
+                                        className="bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 cursor-pointer"
+                                    >
+                                        {label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
                 </div>
 
+                {/* Service Selection */}
                 <div className="space-y-2">
                     <Label>Service</Label>
                     <Select
-                        value={selectedService}
-                        onValueChange={setSelectedService}
+                        value={service}
+                        onValueChange={(value) => {
+                            setService(value);
+                            setTaskType(""); // Reset task type when service changes
+                        }}
                     >
                         <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
-                            <SelectValue placeholder="Select service..."/>
+                            <SelectValue placeholder="Select service..." />
                         </SelectTrigger>
                         <SelectContent>
                             {Object.entries(AVAILABLE_SERVICES).map(([key, label]) => (
-                                <SelectItem key={key} value={key} className="bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 cursor-pointer">
+                                <SelectItem 
+                                    key={key} 
+                                    value={key} 
+                                    className="bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 cursor-pointer"
+                                >
                                     {label}
                                 </SelectItem>
                             ))}
@@ -152,37 +170,29 @@ export function SocketHeader(
                     </Select>
                 </div>
 
+                {/* Task Type Selection */}
                 <div className="space-y-2">
-                    <Label>Event</Label>
-                    {customEvent ? (
-                        <Input
-                            value={event}
-                            onChange={(e) => setEvent(e.target.value)}
-                            className="mt-1"
-                        />
-                    ) : (
-                         <Select
-                             value={event}
-                             onValueChange={(value) => {
-                                 if (value === 'custom') {
-                                     setCustomEvent(true);
-                                 } else {
-                                     setEvent(value);
-                                 }
-                             }}
-                         >
-                             <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
-                                 <SelectValue placeholder="Select event..."/>
-                             </SelectTrigger>
-                             <SelectContent>
-                                 {SERVICE_EVENTS[selectedService as keyof typeof SERVICE_EVENTS]?.map((eventName) => (
-                                     <SelectItem key={eventName} value={eventName} className="bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 cursor-pointer">
-                                         {eventName}
-                                     </SelectItem>
-                                 ))}
-                             </SelectContent>
-                         </Select>
-                     )}
+                    <Label>Task Type</Label>
+                    <Select
+                        value={taskType}
+                        onValueChange={setTaskType}
+                        disabled={!service}
+                    >
+                        <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
+                            <SelectValue placeholder={service ? "Select task type..." : "Select service first"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availableTaskTypes.map((taskName) => (
+                                <SelectItem 
+                                    key={taskName} 
+                                    value={taskName} 
+                                    className="bg-gray-200 dark:bg-gray-900 hover:bg-gray-300 dark:hover:bg-gray-800 cursor-pointer"
+                                >
+                                    {taskName}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
         </div>

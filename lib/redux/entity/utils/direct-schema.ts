@@ -175,8 +175,6 @@ export const getEntityMetadata = (entityKey: EntityKeys) => {
     const schema = getSchema();
     if (!ENTITY_METADATA.has(entityKey)) {
         const metadata = schema[entityKey];
-        console.log('entityKey', entityKey);
-        console.log('metadata', metadata);
         if (metadata) {
             ENTITY_METADATA.set(entityKey, metadata);
         }

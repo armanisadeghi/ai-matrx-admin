@@ -1,4 +1,4 @@
-// Updated DynamicForm component
+// Updated DynamicForm component with field overrides
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,14 +10,31 @@ import { formatJsonForClipboard } from "../utils/json-utils";
 import { Schema, SchemaField } from "../constants";
 import { RefreshCcw, Send, Copy, Plus, Trash } from "lucide-react";
 
+// Define field override types
+export type FieldType = "input" | "textarea" | "switch";
+
+export interface FieldOverride {
+    type: FieldType;
+    props?: Record<string, any>; // Additional props to pass to the field component
+}
+
+export type FieldOverrides = Record<string, FieldOverride>;
+
 interface DynamicFormProps {
     schema: Schema;
     onChange: (data: any) => void;
     initialData?: any;
     onSubmit: (data: any) => void;
+    fieldOverrides?: FieldOverrides; // New prop for field overrides
 }
 
-const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onChange, initialData = {}, onSubmit }) => {
+const DynamicForm: React.FC<DynamicFormProps> = ({
+    schema,
+    onChange,
+    initialData = {},
+    onSubmit,
+    fieldOverrides = {}, // Default to empty object
+}) => {
     const [formData, setFormData] = React.useState(initialData);
     const [errors, setErrors] = React.useState<{ [key: string]: boolean }>({});
     const [notices, setNotices] = React.useState<{ [key: string]: string }>({});
@@ -49,7 +66,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onChange, initialData
             const newData = { ...prev };
             const path = key.split(/\.|\[|\]/).filter(Boolean);
             let current = newData;
-
             for (let i = 0; i < path.length - 1; i++) {
                 const segment = path[i];
                 if (!current[segment]) {
@@ -115,9 +131,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onChange, initialData
         const textToCopy = formatJsonForClipboard(formData);
         navigator.clipboard
             .writeText(textToCopy)
-            .then(() => {
-                console.log("Data copied to clipboard successfully");
-            })
+            .then(() => {})
             .catch((err) => {
                 console.error("Failed to copy to clipboard:", err);
             });
@@ -135,6 +149,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onChange, initialData
             }
             return prev;
         });
+    };
+
+    // Function to get the field override for a given path
+    const getFieldOverride = (path: string): FieldOverride | undefined => {
+        return fieldOverrides[path];
     };
 
     const renderField = (key: string, field: SchemaField, path: string = "") => {
@@ -214,16 +233,23 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onChange, initialData
             </div>
         );
 
+        // Get field override if exists
+        const override = getFieldOverride(fullPath);
+
         const inputField = () => {
+            // Handle boolean fields
             if (field.DATA_TYPE === "boolean" || (field.DATA_TYPE === null && typeof field.DEFAULT === "boolean")) {
                 return (
                     <Switch
                         checked={!!value}
                         onCheckedChange={(checked) => handleChange(fullPath, checked)}
                         onBlur={() => handleBlur(fullPath, field, value)}
+                        {...(override?.props || {})}
                     />
                 );
             }
+
+            // Handle object fields
             if (field.DATA_TYPE === "object") {
                 const stringValue = typeof value === "string" ? value : JSON.stringify(value, null, 2);
                 return (
@@ -236,11 +262,53 @@ const DynamicForm: React.FC<DynamicFormProps> = ({ schema, onChange, initialData
                                 hasError ? "border-red-500" : ""
                             } min-h-[200px]`}
                             placeholder={`${formatPlaceholder(key)} as JSON`}
+                            {...(override?.props || {})}
                         />
                         {notice && <span className="text-yellow-600 text-sm">{notice}</span>}
                     </div>
                 );
             }
+
+            // Apply overrides for regular fields
+            if (override) {
+                switch (override.type) {
+                    case "textarea":
+                        return (
+                            <Textarea
+                                value={value || ""}
+                                onChange={(e) => handleChange(fullPath, e.target.value)}
+                                onBlur={() => handleBlur(fullPath, field, value)}
+                                className={`w-full bg-background ${hasError ? "border-red-500" : ""}`}
+                                placeholder={formatPlaceholder(key)}
+                                {...(override.props || {})}
+                            />
+                        );
+                    case "switch":
+                        return (
+                            <Switch
+                                checked={!!value}
+                                onCheckedChange={(checked) => handleChange(fullPath, checked)}
+                                onBlur={() => handleBlur(fullPath, field, value)}
+                                {...(override.props || {})}
+                            />
+                        );
+                    case "input":
+                    default:
+                        return (
+                            <Input
+                                type="text"
+                                value={value || ""}
+                                onChange={(e) => handleChange(fullPath, e.target.value)}
+                                onBlur={() => handleBlur(fullPath, field, value)}
+                                className={`w-full bg-background ${hasError ? "border-red-500" : ""}`}
+                                placeholder={formatPlaceholder(key)}
+                                {...(override.props || {})}
+                            />
+                        );
+                }
+            }
+
+            // Default to Input if no override
             return (
                 <Input
                     type="text"

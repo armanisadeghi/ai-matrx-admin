@@ -46,7 +46,7 @@ interface ProvidersProps {
 export function Providers({ children, initialReduxState }: ProvidersProps) {
     setGlobalUserId(initialReduxState.user.id);
     const isMobile = useIsMobile();
-    console.log("isMobile", isMobile);
+
     return (
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
             <RecoilRoot>

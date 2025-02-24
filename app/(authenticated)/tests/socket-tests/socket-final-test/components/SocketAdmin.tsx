@@ -8,24 +8,35 @@ import AccordionWrapper from "./AccordionWrapper";
 import { cn } from "@/lib/utils";
 import { SocketHeader } from "@/components/socket/SocketHeader";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
+import SocketDebugPanel from "./SocketDebugPanel";
+import { FieldOverrides } from "./DynamicForm";
 interface SocketAdminProps {
     className?: string;
 }
 
+
+const FIELD_OVERRIDES: FieldOverrides = {
+    "raw_markdown": {
+        type: "textarea",
+        props: {
+            rows: 10,
+        },
+    },
+};
+
 export const SocketAdmin = ({ className }: SocketAdminProps) => {
     const socketHook = useSocket();
 
-    const { event, setEvent, tasks, setTaskData, handleSend } = socketHook;
+    const {
+        taskType,
+        tasks,
+        setTaskData,
+        handleSend,
+    } = socketHook;
 
-    const availableTasks = Object.keys(SOCKET_TASKS);
-
-    const handleEventTaskChange = (eventName: string) => {
-        setEvent(eventName);
-        // You might want to add additional logic here if needed
-    };
 
     const handleChange = (data: any) => {
-        console.log("Form data changed:", data);
+        setTaskData(data);
     };
 
     const handleSubmit = (data: any) => {
@@ -47,13 +58,13 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 p-4 shadow-sm"
                                 >
                                     <AccordionWrapper
-                                        title={`Task ${taskIndex + 1}: ${event || "Select a task"}`}
+                                        title={`Task ${taskIndex + 1}: ${taskType || "Select a task"}`}
                                         value={`task-${taskIndex}`}
                                         defaultOpen={taskIndex === 0}
                                     >
                                         <div className="space-y-6 pt-4">
-                                            {event && SOCKET_TASKS[event] ? (
-                                                <DynamicForm schema={SOCKET_TASKS[event]} onChange={handleChange} onSubmit={handleSubmit} />
+                                            {taskType && SOCKET_TASKS[taskType] ? (
+                                                <DynamicForm schema={SOCKET_TASKS[taskType]} onChange={handleChange} onSubmit={handleSubmit} fieldOverrides={FIELD_OVERRIDES} />
                                             ) : (
                                                 <div className="text-gray-500 dark:text-gray-400 text-center py-4">
                                                     Please select a task type from the header
@@ -71,7 +82,21 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
             <div className="mt-8">
                 <SocketAccordionResponse socketHook={socketHook} />
             </div>
+            
+            {/* Debug Panel */}
+            <div className="mt-8 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 shadow-sm">
+                <AccordionWrapper
+                    title="Socket Debug Panel"
+                    value="socket-debug"
+                    defaultOpen={false}
+                >
+                    <div className="pt-4">
+                        <SocketDebugPanel socketHook={socketHook} />
+                    </div>
+                </AccordionWrapper>
+            </div>
         </div>
     );
 };
+
 export default SocketAdmin;

@@ -228,6 +228,31 @@ export const CLASSIFY_MARKDOWN: Schema = {
     },
 };
 
+// manually created
+export const SCRAPE_SINGLE: Schema = {
+    scrape_url: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+    },
+};
+
+// manually created
+
+export const SCRAPE_BATCH: Schema = {
+    scrape_urls: {
+        REQUIRED: true,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+    },
+};
+
 export const GET_COMPILED_RECIPE: Schema = {
     compiled_id: {
         REQUIRED: true,
@@ -374,7 +399,54 @@ export const COCKPIT_INSTANT: Schema = {
     },
 };
 
-export const SOCKET_TASKS = {
+export const AVAILABLE_NAMESPACES = {
+    UserSession: "User Session",
+    AdminSession: "Admin Session",
+    Direct: "No Namespace",
+    custom: "Custom Namespace",
+} as const;
+
+export const AVAILABLE_SERVICES = {
+    simple_recipe: "Recipe Service",
+    cockpit_service: "Cockpit Service",
+    markdown_service: "Markdown Service",
+    scrape_service: "Scrape Service",
+} as const;
+
+export const SERVICE_TASKS = {
+    simple_recipe: {
+        run_recipe: RUN_RECIPE,
+        run_compiled_recipe: RUN_COMPILED_RECIPE,
+        add_recipe: ADD_RECIPE,
+        get_recipe: GET_RECIPE,
+        get_compiled_recipe: GET_COMPILED_RECIPE,
+    },
+    cockpit_service: {
+        cockpit_instant: COCKPIT_INSTANT,
+    },
+    markdown_service: {
+        classify_markdown: CLASSIFY_MARKDOWN,
+        extract_all_code_blocks: EXTRACT_ALL_CODE_BLOCKS,
+        extract_code_blocks: EXTRACT_CODE_BLOCKS,
+        extract_section_blocks: EXTRACT_SECTION_BLOCKS,
+        extract_paragraphs: EXTRACT_PARAGRAPHS,
+        remove_first_and_last_paragraph: REMOVE_FIRST_AND_LAST_PARAGRAPH,
+    },
+    scrape_service: {
+        scrape_single: SCRAPE_SINGLE,
+        scrape_batch: SCRAPE_BATCH,
+    },
+} as const;
+
+export const SOCKET_TASKS = Object.entries(SERVICE_TASKS).reduce(
+    (acc, [_, serviceTasks]) => ({
+        ...acc,
+        ...serviceTasks,
+    }),
+    {}
+);
+
+export const SOCKET_TASKS_OLD = {
     cockpit_instant: COCKPIT_INSTANT,
     run_recipe: RUN_RECIPE,
     run_compiled_recipe: RUN_COMPILED_RECIPE,

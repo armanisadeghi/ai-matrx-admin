@@ -155,8 +155,10 @@ export class SocketManager {
             ];
 
             this.startTask(event, singleTaskPayload, (response) => {
+                console.log("Streaming response:", response);
                 if (response?.data) {
                     onStreamUpdate(index, response.data);
+                    console.log("Streaming response Data:", response.data);
                 }
             });
         });
