@@ -63,6 +63,8 @@ import {
     selectFieldNameMappingForEntity,
 } from './globalCacheSelectors';
 import { KeyMapping, UnifiedQueryOptions } from './globalCacheSelectors';
+import { SchemaEntity } from '@/types/schema';
+import { SchemaField } from '@/app/(authenticated)/tests/socket-tests/socket-final-test/constants';
 
 export const useSchema = () => {
     // Direct State Access Selectors
