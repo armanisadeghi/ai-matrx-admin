@@ -18,7 +18,7 @@ import {
 } from "@/components/ui";
 import { useEffect, useState } from "react";
 import { SocketHook } from "@/lib/redux/socket/hooks/useSocket";
-import { CopyButton } from "@/app/(authenticated)/tests/socket-tests/socket-final-test/components/CopyButton";
+import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 
 interface SocketResponseProps {
     socketHook: SocketHook;

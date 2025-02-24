@@ -6,9 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { formatLabel, formatPlaceholder } from "../utils/label-util";
-import { formatJsonForClipboard } from "../utils/json-utils";
-import { Schema, SchemaField } from "../constants";
+
+import { Schema, SchemaField } from "@/constants/socket-constants";
 import { RefreshCcw, Send, Copy, Plus, Trash } from "lucide-react";
+import { formatJsonForClipboard } from "../utils/json-utils";
 
 // Define field override types
 export type FieldType = "input" | "textarea" | "switch";

@@ -1,15 +1,15 @@
 "use client";
 import { Card, CardContent } from "@/components/ui";
 import { useSocket } from "@/lib/redux/socket/hooks/useSocket";
-import { SOCKET_TASKS } from "../constants";
-import DynamicForm from "./DynamicForm";
-import AccordionWrapper from "./AccordionWrapper";
+import { SOCKET_TASKS } from "@/constants/socket-constants";
+import DynamicForm from "../form-builder/DynamicForm";
+import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
 import { cn } from "@/lib/utils";
 import { SocketHeader } from "@/components/socket/SocketHeader";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
-import SocketDebugPanel from "./SocketDebugPanel";
-import { SocketTaskBuilder } from "./SocketTaskBuilder";
-import { FieldOverrides } from "./DynamicForm";
+import SocketDebugPanel from "../SocketDebugPanel";
+import { SocketTaskBuilder } from "../SocketTaskBuilder";
+import { FieldOverrides } from "../form-builder/DynamicForm";
 
 interface SocketAdminProps {
     className?: string;

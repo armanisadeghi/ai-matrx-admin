@@ -1,6 +1,6 @@
 // File: components/socket/SocketHeader.tsx
 import React, { useState, useEffect } from "react";
-import { Wifi, WifiOff, Shield, ShieldOff, Radio } from 'lucide-react';
+import { Wifi, WifiOff, Shield, ShieldOff, Radio, CheckCircle, XCircle } from 'lucide-react';
 import {
     Input,
     Label,
@@ -14,7 +14,7 @@ import {
 
 
 import { SocketHook } from "@/lib/redux/socket/hooks/useSocket";
-import { AVAILABLE_NAMESPACES, AVAILABLE_SERVICES, SERVICE_TASKS } from "@/app/(authenticated)/tests/socket-tests/socket-final-test/constants";
+import { AVAILABLE_NAMESPACES, AVAILABLE_SERVICES, SERVICE_TASKS } from "@/constants/socket-constants";
 
 interface StatusIndicatorProps {
     isActive: boolean;
@@ -49,7 +49,8 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
         setTaskType,
         setStreamEnabled,
         isConnected,
-        isAuthenticated
+        isAuthenticated,
+        isResponseActive,
     } = socketHook;
 
     const [customNamespace, setCustomNamespace] = useState(false);
@@ -88,10 +89,18 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                     />
                     <StatusIndicator
                         isActive={streamEnabled}
-                        label="Streaming"
+                        label="Stream Enabled"
                         icon={{
                             active: <Radio className="h-4 w-4" />,
                             inactive: <Radio className="h-4 w-4" />
+                        }}
+                    />
+                    <StatusIndicator
+                        isActive={isResponseActive}
+                        label="Response Active"
+                        icon={{
+                            active: <CheckCircle className="h-4 w-4" />,
+                            inactive: <XCircle className="h-4 w-4" />
                         }}
                     />
                 </div>

@@ -406,6 +406,35 @@ export const AVAILABLE_NAMESPACES = {
     custom: "Custom Namespace",
 } as const;
 
+export const URL_DEFINITION: Schema = {
+    url: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+    },
+};
+
+
+export const QUICK_SCRAPE: Schema = {
+    urls: {
+        REQUIRED: true,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+    },
+};
+
+
+
+// Manually created ================================
+
+
+
 export const AVAILABLE_SERVICES = {
     simple_recipe: "Recipe Service",
     cockpit_service: "Cockpit Service",
@@ -433,8 +462,7 @@ export const SERVICE_TASKS = {
         remove_first_and_last_paragraph: REMOVE_FIRST_AND_LAST_PARAGRAPH,
     },
     scrape_service: {
-        scrape_single: SCRAPE_SINGLE,
-        scrape_batch: SCRAPE_BATCH,
+        quick_scrape: QUICK_SCRAPE,
     },
 } as const;
 

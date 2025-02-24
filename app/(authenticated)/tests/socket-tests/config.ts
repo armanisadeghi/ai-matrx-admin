@@ -45,24 +45,6 @@ export const pages: ModulePage[] = [
         relative: true,
         description: ''
     },
-    {
-        title: 'Socket IO Test Three',
-        path: 'test-three',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Socket IO Test Two',
-        path: 'test-two',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Initial Socket IO Test',
-        path: 'test-one',
-        relative: true,
-        description: ''
-    },
 ];
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');

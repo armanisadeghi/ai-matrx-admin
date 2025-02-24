@@ -6,7 +6,6 @@ import { Task } from './types';
 import { getObjectAtPath, getParentPath, processTasksForSubmission } from './utils';
 import TaskFieldEditor from './TaskFieldEditor';
 import TaskStructureExplorer from './TaskStructureExplorer';
-
 import NotificationToast from './NotificationToast';
 import PathBreadcrumbs from './PathBreadcrumbs';
 import ResponseViewer from './ResponseViewer';

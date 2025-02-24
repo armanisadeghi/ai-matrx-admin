@@ -31,3 +31,5 @@ export const formatJsonForClipboard = (data: any): string => {
     const cleanedData = cleanObject(data);
     return JSON.stringify(cleanedData, null, 2);
   };
+
+  
