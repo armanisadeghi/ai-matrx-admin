@@ -12,11 +12,7 @@ const inter = Inter({
 export default function Page() {
 
     const testConfig = {
-        "test": "test",
-        "test2": "test2",
-        "test3": "test3",
-        "test4": "test4",
-        "test5": "test5",
+        
     }
 
     const handleConfigChange = (config: any) => {

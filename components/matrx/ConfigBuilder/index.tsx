@@ -127,7 +127,15 @@ const ConfigBuilder = ({ initialConfig, onConfigChange, className }: ConfigBuild
         if (deleteKey) {
             const newConfig = { ...config };
             delete newConfig[deleteKey];
+
+            // Update the state
             setConfig(newConfig);
+
+            // Notify parent of the updated configuration
+            if (onConfigChange) {
+                onConfigChange(newConfig);
+            }
+
             setDeleteKey("");
             setShowDeleteDialog(false);
         }
@@ -153,7 +161,6 @@ const ConfigBuilder = ({ initialConfig, onConfigChange, className }: ConfigBuild
             setError("Field name is required");
             return;
         }
-
         let processedValue: ConfigValue;
         try {
             switch (type) {
@@ -178,14 +185,21 @@ const ConfigBuilder = ({ initialConfig, onConfigChange, className }: ConfigBuild
                     processedValue = value;
             }
 
-            setConfig((prev) => ({
-                ...prev,
+            // Create the new configuration with the updated field
+            const updatedConfig = {
+                ...config,
                 [field]: processedValue,
-            }));
-            resetForm();
+            };
+
+            // Update the state
+            setConfig(updatedConfig);
+
+            // Notify parent of the updated configuration
             if (onConfigChange) {
-                onConfigChange(config);
+                onConfigChange(updatedConfig);
             }
+
+            resetForm();
         } catch (err) {
             setError(`Invalid ${type} value: ${err instanceof Error ? err.message : "Unknown error"}`);
         }
@@ -254,7 +268,10 @@ const ConfigBuilder = ({ initialConfig, onConfigChange, className }: ConfigBuild
 
     return (
         <div
-            className={cn(`border rounded border-gray-200 dark:border-gray-700 ${inter.className} bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-extralight tracking-tight antialiased h-full`, className)}
+            className={cn(
+                `border rounded border-gray-200 dark:border-gray-700 ${inter.className} bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm font-extralight tracking-tight antialiased h-full`,
+                className
+            )}
         >
             <div className="flex gap-2 p-2">
                 <div className="w-1/2">

@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import { IoLogoReact } from "react-icons/io5";
+import { TbBrandSocketIo } from "react-icons/tb";
 
 //brokers/component-editor
 
@@ -231,6 +232,13 @@ export const secondaryLinks = [
         href: '/playground',
         icon: (
             <Repeat1 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    {
+        label: 'Socket Test',
+        href: '/tests/socket-tests/socket-final-test',
+        icon: (
+            <TbBrandSocketIo className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
     {

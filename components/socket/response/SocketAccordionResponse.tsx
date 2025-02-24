@@ -189,7 +189,7 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
                                                             {displayModes[prop.path] ? (
                                                                 <Textarea
                                                                     id={`prop-${idx}`}
-                                                                    className="text-xs font-mono resize-y min-h-8"
+                                                                    className="text-xs font-mono resize-y h-48"
                                                                     value={
                                                                         typeof prop.value === "object"
                                                                             ? safeStringify(prop.value)
