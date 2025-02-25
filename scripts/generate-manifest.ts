@@ -1,8 +1,9 @@
-// scripts/generate-manifest.js
-const path = require('path');
-const fs = require('fs').promises;
+// scripts/generate-manifest.ts
+import path from 'path';
 
-async function findProjectRoot(startPath) {
+import fs from 'fs/promises';
+
+async function findProjectRoot(startPath: string) {
     let currentPath = startPath;
     const root = path.parse(currentPath).root;
 
