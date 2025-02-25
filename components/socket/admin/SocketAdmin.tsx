@@ -9,7 +9,7 @@ import { SocketHeader } from "@/components/socket/SocketHeader";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
 import SocketDebugPanel from "../SocketDebugPanel";
 import { SocketTaskBuilder } from "../SocketTaskBuilder";
-import { FieldOverrides } from "../form-builder/DynamicForm";
+import { FieldOverrides } from "../form-builder/FormField";
 
 interface SocketAdminProps {
     className?: string;
@@ -44,7 +44,7 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
     };
 
     return (
-        <div className={cn("w-full h-full py-4 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-2xl", className)}>
+        <div className={cn("w-full h-full py-4 px-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-2xl", className)}>
             <Card className="bg-gray-100 dark:bg-gray-800 rounded-2xl">
                 <CardContent className="space-y-8">
                     <div className="space-y-6">

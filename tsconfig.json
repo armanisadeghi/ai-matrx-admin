@@ -62,7 +62,7 @@
     "cartesia.d.ts",
     "components/FileManager/FilePreview/pdf-preview/PDFPreview.tsx",
     "features/rich-text-editor/utils/PatternUtilsOLD.ts"
-, "app/(authenticated)/demo/component-demo/json-again/grok"  ],
+, "app/(authenticated)/demo/component-demo/json-again/grok", "components/socket/form-builder/DynamicFormBackUp.tsx"  ],
   "exclude": [
     "node_modules",
     "_armani",

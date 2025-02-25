@@ -11,6 +11,7 @@ interface JsonToCollapsibleProps {
     data: any;
     level?: number;  // Changed from baseLevel
     className?: string;
+    defaultExpanded?: boolean;
 }
 
 type CollapsibleItem = {
@@ -42,7 +43,8 @@ export function MatrxJsonToCollapsible(
         title,
         data,
         level = 0,
-        className
+        className,
+        defaultExpanded = false
     }: JsonToCollapsibleProps) {
     const isSimpleArray = (arr: any[]): boolean =>
         Array.isArray(arr) && arr.every(item =>
@@ -242,6 +244,7 @@ export function MatrxJsonToCollapsible(
                 items={processedData.items}
                 level={level}
                 id={`json-collapsible-${title}`}
+                defaultExpanded={defaultExpanded}
             />
         </div>
     );

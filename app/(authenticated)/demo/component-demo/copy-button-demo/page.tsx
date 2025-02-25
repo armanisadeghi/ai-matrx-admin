@@ -1,168 +1,411 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Copy, CheckCircle2 } from 'lucide-react';
+import React, { useState } from "react";
+import { InlineCopyButton } from "@/components/matrx/buttons/InlineCopyButton";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
-// InlineCopyButton component
-const InlineCopyButton = ({
-  content,
-  position = 'top-right',
-  size = 'sm',
-  className = '',
-  showTooltip = true,
-  tooltipText = 'Copy to clipboard',
-  successDuration = 2000
-}) => {
-  const [copied, setCopied] = useState(false);
-  const [showTooltipState, setShowTooltipState] = useState(false);
+export default function CopyButtonTestPage() {
+    const [testResult, setTestResult] = useState<string>("");
+    const [activeTab, setActiveTab] = useState("basic");
 
-  // Size mapping
-  const sizeClasses = {
-    xs: 'h-4 w-4',
-    sm: 'h-5 w-5',
-    md: 'h-6 w-6'
-  };
+    // Example of a complex JSON object with nested stringified JSON
+    const complexJsonExample = {
+        id: 123,
+        name: "Product Example",
+        metadata: JSON.stringify({
+            tags: ["electronics", "sale"],
+            variants: JSON.stringify([
+                { color: "red", stock: 5 },
+                { color: "blue", stock: 10 },
+            ]),
+        }),
+        details: {
+            description: "This is a sample product",
+            price: 99.99,
+            specifications: JSON.stringify({
+                dimensions: "10x20x5",
+                weight: "1.5kg",
+            }),
+        },
+    };
 
-  // Position mapping
-  const positionClasses = {
-    'top-right': 'absolute top-2 right-2',
-    'top-left': 'absolute top-2 left-2',
-    'bottom-right': 'absolute bottom-2 right-2',
-    'bottom-left': 'absolute bottom-2 left-2'
-  };
+    // Test function to verify clipboard content
+    const verifyClipboard = async () => {
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            setTestResult(`Content from clipboard: ${clipboardText.slice(0, 100)}${clipboardText.length > 100 ? "..." : ""}`);
+        } catch (err) {
+            setTestResult(`Error reading clipboard: ${err}`);
+        }
+    };
 
-  const handleCopy = async (e) => {
-    e.stopPropagation();
-    
-    try {
-      // In the demo we won't actually copy, just simulate it
-      setCopied(true);
-      
-      setTimeout(() => {
-        setCopied(false);
-      }, successDuration);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
+    return (
+        <div className="container mx-auto py-8 px-4 bg-gray-50 dark:bg-gray-900">
+            <h1 className="text-3xl font-bold mb-8">InlineCopyButton Test Page</h1>
 
-  const handleMouseEnter = () => {
-    if (showTooltip) {
-      setShowTooltipState(true);
-    }
-  };
+            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md dark:bg-gray-900 dark:border-yellow-200">
+                <h2 className="text-lg font-medium mb-2">Clipboard Test</h2>
+                <div className="flex gap-4 items-center">
+                    <Button onClick={verifyClipboard} variant="outline">
+                        Verify Clipboard Content
+                    </Button>
+                    <span className="text-sm">{testResult}</span>
+                </div>
+            </div>
 
-  const handleMouseLeave = () => {
-    setShowTooltipState(false);
-  };
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
+                <TabsList>
+                    <TabsTrigger value="basic">Basic Examples</TabsTrigger>
+                    <TabsTrigger value="json">JSON Examples</TabsTrigger>
+                    <TabsTrigger value="positioning">Positioning</TabsTrigger>
+                    <TabsTrigger value="sizing">Sizing</TabsTrigger>
+                </TabsList>
 
-  return (
-    <div 
-      className={`${positionClasses[position]} ${className} inline-flex`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <button
-        onClick={handleCopy}
-        className="bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded-md transition-colors duration-200 z-10"
-        aria-label={tooltipText}
-      >
-        {copied ? (
-          <CheckCircle2 className={`${sizeClasses[size]} text-green-500`} />
-        ) : (
-          <Copy className={`${sizeClasses[size]} text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200`} />
-        )}
-      </button>
-      
-      {showTooltipState && !copied && (
-        <div className="absolute top-full mt-1 right-0 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
-          {tooltipText}
+                {/* Basic Examples */}
+                <TabsContent value="basic">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Text Example</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                    <InlineCopyButton
+                                        content="This is some plain text that will be copied exactly as is."
+                                        formatJson={false}
+                                    />
+                                    <p>This is some plain text that will be copied exactly as is.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Code Example</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                    <InlineCopyButton
+                                        content="function sayHello() {\n  console.log('Hello world!');\n}"
+                                        formatJson={false}
+                                    />
+                                    <pre className="font-mono text-sm">
+                                        {`function sayHello() {
+  console.log('Hello world!');
+}`}
+                                    </pre>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>URL Example</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded">
+                                    <span className="font-mono">https://example.com/very/long/path</span>
+                                    <InlineCopyButton
+                                        content="https://example.com/very/long/path/that/would/be/annoying/to/select/manually"
+                                        position="top-right"
+                                        tooltipText="Copy URL"
+                                        formatJson={false}
+                                        className="ml-2"
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>API Key Example</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded">
+                                    <div className="font-mono">sk_test_12345...67890</div>
+                                    <InlineCopyButton
+                                        content="sk_test_123456789012345678901234567890"
+                                        position="top-right"
+                                        tooltipText="Copy API key"
+                                        formatJson={false}
+                                        className="ml-2"
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                {/* JSON Examples */}
+                <TabsContent value="json">
+                    <div className="grid grid-cols-1 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Simple JSON Object</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                    <InlineCopyButton
+                                        content={{ name: "John", age: 30, roles: ["admin", "user"] }}
+                                        tooltipText="Copy JSON"
+                                    />
+                                    <pre className="font-mono text-sm">
+                                        {`{
+  "name": "John",
+  "age": 30,
+  "roles": ["admin", "user"]
+}`}
+                                    </pre>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>JSON String</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                    <InlineCopyButton
+                                        content='{"name":"Jane","data":"{\"items\":[1,2,3]}"}'
+                                        tooltipText="Copy and format JSON"
+                                    />
+                                    <pre className="font-mono text-sm">{`{"name":"Jane","data":"{\"items\":[1,2,3]}"}`}</pre>
+                                    <p className="mt-2 text-sm text-gray-500">
+                                        (Click copy to get properly formatted JSON with nested objects parsed)
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Complex Nested JSON</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                    <InlineCopyButton content={complexJsonExample} tooltipText="Copy formatted JSON" />
+                                    <pre className="font-mono text-sm overflow-x-auto">{JSON.stringify(complexJsonExample, null, 2)}</pre>
+                                    <p className="mt-2 text-sm text-gray-500">(Copy button will auto-parse nested stringified JSON)</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                {/* Positioning Examples */}
+                <TabsContent value="positioning">
+                    <div className="grid grid-cols-2 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Top Right (Default)</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-center items-center h-40">
+                                    <span>Content</span>
+                                    <InlineCopyButton content="Top Right Position" position="top-right" formatJson={false} />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Top Left</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-center items-center h-40">
+                                    <span>Content</span>
+                                    <InlineCopyButton content="Top Left Position" position="top-left" formatJson={false} />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Bottom Right</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-center items-center h-40">
+                                    <span>Content</span>
+                                    <InlineCopyButton content="Bottom Right Position" position="bottom-right" formatJson={false} />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Bottom Left</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-center items-center h-40">
+                                    <span>Content</span>
+                                    <InlineCopyButton content="Bottom Left Position" position="bottom-left" formatJson={false} />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="col-span-2">
+                            <CardHeader>
+                                <CardTitle>Inline Usage</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                    <p className="mb-4">Sometimes you need the copy button to appear within text content:</p>
+
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <span>Your repository URL is:</span>
+                                        <code className="relative px-3 py-1 bg-gray-200 dark:bg-gray-800 rounded font-mono">
+                                            https://github.com/username/repo
+                                            <InlineCopyButton
+                                                content="https://github.com/username/repo"
+                                                formatJson={false}
+                                                size="xs"
+                                                className="absolute top-1/2 -translate-y-1/2 right-1"
+                                            />
+                                        </code>
+                                    </div>
+
+                                    <p>This approach works well for short snippets that need to be copyable.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                {/* Sizing Examples */}
+                <TabsContent value="sizing">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Extra Small (XS)</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center h-24">
+                                    <InlineCopyButton
+                                        content="Extra Small Size"
+                                        size="xs"
+                                        position="top-right"
+                                        formatJson={false}
+                                        className="static"
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Small (SM, Default)</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center h-24">
+                                    <InlineCopyButton
+                                        content="Small Size"
+                                        size="sm"
+                                        position="top-right"
+                                        formatJson={false}
+                                        className="static"
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Medium (MD)</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center h-24">
+                                    <InlineCopyButton
+                                        content="Medium Size"
+                                        size="md"
+                                        position="top-right"
+                                        formatJson={false}
+                                        className="static"
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+            </Tabs>
+
+            <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-semibold mb-4">Component Options</h2>
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th className="text-left pb-2">Prop</th>
+                            <th className="text-left pb-2">Type</th>
+                            <th className="text-left pb-2">Default</th>
+                            <th className="text-left pb-2">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td className="py-2 font-mono">content</td>
+                            <td className="py-2">string | object</td>
+                            <td className="py-2">-</td>
+                            <td className="py-2">The content to copy to clipboard</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">position</td>
+                            <td className="py-2">string</td>
+                            <td className="py-2">'top-right'</td>
+                            <td className="py-2">Button position (top-right, top-left, bottom-right, bottom-left)</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">size</td>
+                            <td className="py-2">string</td>
+                            <td className="py-2">'sm'</td>
+                            <td className="py-2">Button size (xs, sm, md)</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">className</td>
+                            <td className="py-2">string</td>
+                            <td className="py-2">''</td>
+                            <td className="py-2">Additional CSS classes</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">showTooltip</td>
+                            <td className="py-2">boolean</td>
+                            <td className="py-2">true</td>
+                            <td className="py-2">Whether to show tooltip on hover</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">tooltipText</td>
+                            <td className="py-2">string</td>
+                            <td className="py-2">'Copy to clipboard'</td>
+                            <td className="py-2">Text to display in tooltip</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">successDuration</td>
+                            <td className="py-2">number</td>
+                            <td className="py-2">2000</td>
+                            <td className="py-2">Duration (ms) to show success state</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">formatJson</td>
+                            <td className="py-2">boolean</td>
+                            <td className="py-2">true</td>
+                            <td className="py-2">Whether to format JSON before copying</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">onCopySuccess</td>
+                            <td className="py-2">function</td>
+                            <td className="py-2">undefined</td>
+                            <td className="py-2">Callback function when copy succeeds</td>
+                        </tr>
+                        <tr>
+                            <td className="py-2 font-mono">onCopyError</td>
+                            <td className="py-2">function</td>
+                            <td className="py-2">undefined</td>
+                            <td className="py-2">Callback function when copy fails</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-      )}
-      
-      {copied && showTooltip && (
-        <div className="absolute top-full mt-1 right-0 bg-green-600 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
-          Copied!
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Demo component
-const CopyButtonDemo = () => {
-  return (
-    <div className="p-6 space-y-8 max-w-3xl">
-      <h2 className="text-xl font-semibold">InlineCopyButton Demo</h2>
-      
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-medium mb-2">Card with Code</h3>
-          <div className="relative p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-            <InlineCopyButton content="console.log('Hello, world!');" />
-            <pre className="text-sm overflow-x-auto font-mono">
-              console.log('Hello, world!');
-            </pre>
-          </div>
-        </div>
-        
-        <div>
-          <h3 className="text-lg font-medium mb-2">API Key Example</h3>
-          <div className="relative flex items-center p-3 bg-gray-100 dark:bg-gray-800 rounded">
-            <div className="font-mono">
-              sk_test_12345...67890
-            </div>
-            <InlineCopyButton 
-              content="sk_test_123456789012345678901234567890" 
-              position="top-right"
-              tooltipText="Copy API key"
-              className="ml-2"
-            />
-          </div>
-        </div>
-        
-        <div>
-          <h3 className="text-lg font-medium mb-2">Different Positions</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="relative p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-center items-center min-h-32">
-              <span>Top Right</span>
-              <InlineCopyButton content="Top Right" position="top-right" />
-            </div>
-            <div className="relative p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-center items-center min-h-32">
-              <span>Top Left</span>
-              <InlineCopyButton content="Top Left" position="top-left" />
-            </div>
-            <div className="relative p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-center items-center min-h-32">
-              <span>Bottom Right</span>
-              <InlineCopyButton content="Bottom Right" position="bottom-right" />
-            </div>
-            <div className="relative p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-center items-center min-h-32">
-              <span>Bottom Left</span>
-              <InlineCopyButton content="Bottom Left" position="bottom-left" />
-            </div>
-          </div>
-        </div>
-        
-        <div>
-          <h3 className="text-lg font-medium mb-2">Different Sizes</h3>
-          <div className="flex space-x-8">
-            <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center">
-              <span className="mr-8">XS</span>
-              <InlineCopyButton content="Extra Small" size="xs" position="top-right" className="static" />
-            </div>
-            <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center">
-              <span className="mr-8">SM</span>
-              <InlineCopyButton content="Small" size="sm" position="top-right" className="static" />
-            </div>
-            <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center">
-              <span className="mr-8">MD</span>
-              <InlineCopyButton content="Medium" size="md" position="top-right" className="static" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default CopyButtonDemo;
+    );
+}

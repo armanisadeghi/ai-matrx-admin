@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -74,10 +75,10 @@ export const InlineCopyButton = ({
 
   // Position mapping
   const positionClasses = {
-    'top-right': 'absolute top-2 right-2',
-    'top-left': 'absolute top-2 left-2',
-    'bottom-right': 'absolute bottom-2 right-2',
-    'bottom-left': 'absolute bottom-2 left-2'
+    'top-right': 'absolute top-1 right-1',
+    'top-left': 'absolute top-1 left-1',
+    'bottom-right': 'absolute bottom-1 right-1',
+    'bottom-left': 'absolute bottom-1 left-1'
   };
 
   const handleCopy = async (e: React.MouseEvent) => {
