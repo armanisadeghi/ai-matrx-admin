@@ -2,7 +2,9 @@
 const stringMap: Record<string, string> = {
     id: "ID",
     url: "URL",
+    urls: "URLs",
     api: "API",
+    api_key: "API Key",
 };
 
 export const formatLabel = (key: string): string => {

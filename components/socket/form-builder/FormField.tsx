@@ -10,6 +10,7 @@ import { SchemaField } from "@/constants/socket-constants";
 
 // Define field override types
 export type FieldType = "input" | "textarea" | "switch";
+
 export interface FieldOverride {
     type: FieldType;
     props?: Record<string, any>; // Additional props to pass to the field component
@@ -231,9 +232,7 @@ const FormField: React.FC<FormFieldProps> = ({
                         value={stringValue}
                         onChange={(e) => onChange(fullPath, e.target.value)}
                         onBlur={() => onBlur(fullPath, field, stringValue)}
-                        className={`w-full font-mono text-sm bg-background border-input ${
-                            hasError ? "border-red-500" : ""
-                        } min-h-[200px]`}
+                        className={`w-full font-mono text-sm bg-background border-input ${hasError ? "border-red-500" : ""} min-h-[200px]`}
                         placeholder={`${formatPlaceholder(fieldKey)} as JSON`}
                         {...(override?.props || {})}
                     />

@@ -39,7 +39,6 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
         }
     }, [isResponseActive]);
 
-    // Update raw response when streaming or responses change
     useEffect(() => {
         const combined = {
             streamingResponse,
@@ -51,7 +50,6 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
     // Remove any "STREAM_END" from the streaming response
     const cleanStreamingResponse = streamingResponse.replace(/STREAM_END/g, "");
 
-    // Safe stringify for any JS value
     const safeStringify = (value: any, indent = 2): string => {
         try {
             return JSON.stringify(value, null, indent);
@@ -60,7 +58,6 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
         }
     };
 
-    // Get flattened object properties for the properties browser
     const getObjectProperties = (obj: any, prefix = ""): { key: string; path: string; value: any }[] => {
         if (!obj || typeof obj !== "object") return [];
         return Object.entries(obj).flatMap(([key, value]) => {

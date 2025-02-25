@@ -1,3 +1,5 @@
+import { FieldOverrides } from "@/components/socket/form-builder/FormField";
+
 export interface SchemaField {
     REQUIRED: boolean;
     DEFAULT: any;
@@ -466,13 +468,23 @@ export const SERVICE_TASKS = {
     },
 } as const;
 
-export const SOCKET_TASKS = Object.entries(SERVICE_TASKS).reduce(
+export const SOCKET_TASKS: { [key: string]: Schema } = Object.entries(SERVICE_TASKS).reduce(
     (acc, [_, serviceTasks]) => ({
         ...acc,
         ...serviceTasks,
     }),
     {}
 );
+
+export const FIELD_OVERRIDES: FieldOverrides = {
+    raw_markdown: {
+        type: "textarea",
+        props: {
+            rows: 10,
+        },
+    },
+};
+
 
 export const SOCKET_TASKS_OLD = {
     cockpit_instant: COCKPIT_INSTANT,
@@ -488,3 +500,27 @@ export const SOCKET_TASKS_OLD = {
     extract_paragraphs: EXTRACT_PARAGRAPHS,
     remove_first_and_last_paragraph: REMOVE_FIRST_AND_LAST_PARAGRAPH,
 };
+
+
+export const SERVICES_DETAILS = {
+    simple_recipe: {
+        name: "Recipe Service",
+        description: "A service for running recipes",
+        icon: "🧠",
+    },
+    cockpit_service: {
+        name: "Cockpit Service",
+        description: "A service for running cockpits",
+        icon: "Airplane",
+    },
+    markdown_service: {
+        name: "Markdown Service",
+        description: "A service for running markdown",
+        icon: "📄",
+    },
+    scrape_service: {
+        name: "Scrape Service",
+        description: "A service for scraping",
+        icon: "🕸️",
+    },
+} as const;

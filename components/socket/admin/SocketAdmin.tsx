@@ -1,35 +1,23 @@
 "use client";
 import { Card, CardContent } from "@/components/ui";
 import { useSocket } from "@/lib/redux/socket/hooks/useSocket";
-import { SOCKET_TASKS } from "@/constants/socket-constants";
+import { FIELD_OVERRIDES, SOCKET_TASKS } from "@/constants/socket-constants";
 import DynamicForm from "../form-builder/DynamicForm";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
 import { cn } from "@/lib/utils";
-import { SocketHeader } from "@/components/socket/SocketHeader";
+import { SocketHeader } from "@/components/socket/headers/SocketHeader";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
 import SocketDebugPanel from "../SocketDebugPanel";
 import { SocketTaskBuilder } from "../SocketTaskBuilder";
-import { FieldOverrides } from "../form-builder/FormField";
 
 interface SocketAdminProps {
     className?: string;
 }
-
-const FIELD_OVERRIDES: FieldOverrides = {
-    raw_markdown: {
-        type: "textarea",
-        props: {
-            rows: 10,
-        },
-    },
-};
-
 export const SocketAdmin = ({ className }: SocketAdminProps) => {
     const socketHook = useSocket();
     const { taskType, tasks, setTaskData, handleSend } = socketHook;
 
     const handleChange = (data: any) => {
-        console.log("Data changed:", data);
         setTaskData(data);
     };
 
@@ -39,7 +27,6 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
     };
 
     const handleConfigChange = (config: any) => {
-        console.log("Config changed:", config);
         setTaskData(config);
     };
 
