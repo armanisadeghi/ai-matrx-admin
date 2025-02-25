@@ -11,45 +11,24 @@ import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrap
 
 const DEBUG_MODE = true;
 
-export default function SocketFormBuilder() {
+export default function Page() {
     const quickScrapeTask = SOCKET_TASKS.quick_scrape;
 
     const socketHook = useSocket();
 
     const {
-        namespace,
         setNamespace,
-        service,
         setService,
-        taskType,
         setTaskType,
-
-        // Stream and connection state
-        streamEnabled,
-        setStreamEnabled,
-        isResponseActive,
-        isConnected,
-        isAuthenticated,
-
-        // Task state and handlers
-        tasks,
         setTaskData,
-
-        // Response state
-        streamingResponse,
-        responses,
-        responseRef,
-
-        // Action handlers
         handleSend,
-        handleClear,
     } = socketHook;
 
     useEffect(() => {
         setNamespace("UserSession");
         setService("scrape_service");
         setTaskType("quick_scrape");
-    }, [setNamespace, setService, setTaskType]);
+    }, []);
 
     const handleChange = (data: any) => {
         setTaskData(data);

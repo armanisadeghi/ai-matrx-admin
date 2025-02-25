@@ -35,39 +35,71 @@ export function CompactSocketHeader({ socketHook, defaultService, defaultTask }:
         isAuthenticated,
         streamEnabled,
         isResponseActive,
+        namespace,
+        setNamespace,
+        setStreamEnabled
     } = socketHook;
-
+    
     const [availableTaskTypes, setAvailableTaskTypes] = useState<string[]>([]);
+    const [isInitialized, setIsInitialized] = useState(false);
 
-    // Set default namespace to UserSession and apply default service/task if provided
+    // Initialize namespace and stream - runs only once
     useEffect(() => {
-        if (socketHook.namespace !== "UserSession") {
-            socketHook.setNamespace("UserSession");
-        }
-        // Stream is always enabled
-        if (!socketHook.streamEnabled) {
-            socketHook.setStreamEnabled(true);
+        if (namespace !== "UserSession") {
+            setNamespace("UserSession");
         }
         
-        // Set default service and task if provided
+        if (!streamEnabled) {
+            setStreamEnabled(true);
+        }
+        
+        setIsInitialized(true);
+    }, []);
+
+    // Set default service/task only once after initialization
+    useEffect(() => {
+        if (!isInitialized) return;
+        
+        // Only set defaults if they're provided and don't match current values
         if (defaultService && service !== defaultService) {
             setService(defaultService);
         }
+    }, [isInitialized, defaultService, service, setService]);
+
+    // Set default task only after service is set correctly
+    useEffect(() => {
+        if (!isInitialized) return;
         
-        if (defaultTask && taskType !== defaultTask) {
+        if (defaultTask && taskType !== defaultTask && service === defaultService) {
             setTaskType(defaultTask);
         }
-    }, [socketHook, defaultService, defaultTask, service, taskType, setService, setTaskType]);
+    }, [isInitialized, defaultTask, taskType, service, defaultService, setTaskType]);
 
-    // Update available task types when service changes
+    // Update available tasks when service changes - isolated effect
     useEffect(() => {
-        if (service && service in SERVICE_TASKS) {
+        if (!service) {
+            setAvailableTaskTypes([]);
+            return;
+        }
+        
+        if (service in SERVICE_TASKS) {
             const serviceTasks = SERVICE_TASKS[service as keyof typeof SERVICE_TASKS];
             setAvailableTaskTypes(Object.keys(serviceTasks));
         } else {
             setAvailableTaskTypes([]);
         }
     }, [service]);
+
+    // Handle service change without triggering cascading updates
+    const handleServiceChange = (newService: string) => {
+        if (newService !== service) {
+            setService(newService);
+            // Only reset task if we're not using defaults
+            if (!defaultTask) {
+                setTaskType("");
+            }
+        }
+    };
 
     return (
         <div className="flex items-center justify-between px-3 py-2 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm">
@@ -86,7 +118,7 @@ export function CompactSocketHeader({ socketHook, defaultService, defaultTask }:
                     {isResponseActive ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
                 </div>
             </div>
-
+            
             {/* Service and Task Display/Selection */}
             <div className="flex items-center space-x-2">
                 {/* Service Display/Selection */}
@@ -99,10 +131,7 @@ export function CompactSocketHeader({ socketHook, defaultService, defaultTask }:
                 ) : (
                     <Select
                         value={service}
-                        onValueChange={(value) => {
-                            setService(value);
-                            setTaskType(""); // Reset task type when service changes
-                        }}
+                        onValueChange={handleServiceChange}
                     >
                         <SelectTrigger className="h-8 min-w-32 bg-transparent border-gray-300 dark:border-gray-700 rounded-md">
                             <SelectValue placeholder="Service" />
@@ -120,7 +149,7 @@ export function CompactSocketHeader({ socketHook, defaultService, defaultTask }:
                         </SelectContent>
                     </Select>
                 )}
-
+                
                 {/* Task Type Display/Selection */}
                 {defaultTask ? (
                     <div className="h-8 min-w-32 flex items-center">

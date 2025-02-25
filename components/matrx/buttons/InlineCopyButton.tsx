@@ -7,7 +7,7 @@ import { Copy, CheckCircle2 } from 'lucide-react';
 interface InlineCopyButtonProps {
   content: string | object;
   position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-  size?: 'xs' | 'sm' | 'md';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   showTooltip?: boolean;
   tooltipText?: string;
@@ -70,7 +70,9 @@ export const InlineCopyButton = ({
   const sizeClasses = {
     xs: 'h-4 w-4',
     sm: 'h-5 w-5',
-    md: 'h-6 w-6'
+    md: 'h-6 w-6',
+    lg: 'h-7 w-7',
+    xl: 'h-8 w-8'
   };
 
   // Position mapping

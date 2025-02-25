@@ -11,7 +11,7 @@ import {
   processOrganizedData,
   truncateText,
   isScraperLoading,
-} from "../scraper-one/scraper-utils"; // Adjust the import path as needed
+} from "@/features/scraper/utils/scraper-utils";
 import { SocketHook } from "@/lib/redux/socket/hooks/useSocket";
 
 interface SocketResponseProps {
@@ -25,16 +25,9 @@ const ScraperResults = ({ socketHook }: SocketResponseProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    console.log("SocketHook Responses:", responses);
-
-    // Filter out initialization messages and process responses
     const filteredResponses = filterContentResponses(responses);
     const processedData = filteredResponses.map((response) => extractScraperData(response));
-
-    console.log("Processed Scraped Data:", processedData);
     setScrapedData(processedData);
-
-    // Update loading state
     setIsLoading(isScraperLoading(streamingResponse));
   }, [responses, streamingResponse]);
 
@@ -51,7 +44,6 @@ const ScraperResults = ({ socketHook }: SocketResponseProps) => {
   const handleCopy = (text: string, index: number) => {
     const success = copyToClipboard(text);
     if (success) {
-      alert(`Content from Result ${index + 1} copied to clipboard!`);
     } else {
       alert("Failed to copy content. Check console for details.");
     }
