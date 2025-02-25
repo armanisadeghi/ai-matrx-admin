@@ -1,22 +1,23 @@
 // /layout.tsx
 
-import ModuleHeaderWithProvider from '@/components/matrx/navigation/module-header/ModuleHeader';
-import { filteredPages, MODULE_HOME, MODULE_NAME} from './config';
+import ResponsiveModuleHeaderWithProvider from "@/components/matrx/navigation/ResponsiveModuleHeaderWithProvider";
+import { filteredPages, MODULE_HOME, MODULE_NAME } from "./config";
 import React from "react";
 
-export default function Layout({children}: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: React.ReactNode }) {
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+
     return (
         <div className="flex flex-col h-full">
             <div className="sticky top-0 z-50">
-                <ModuleHeaderWithProvider
+                <ResponsiveModuleHeaderWithProvider
                     pages={filteredPages}
+                    currentPath={currentPath}
                     moduleHome={MODULE_HOME}
                     moduleName={MODULE_NAME}
                 />
             </div>
-            <main className="flex-1">
-                {children}
-            </main>
+            <main className="flex-1">{children}</main>
         </div>
     );
 }

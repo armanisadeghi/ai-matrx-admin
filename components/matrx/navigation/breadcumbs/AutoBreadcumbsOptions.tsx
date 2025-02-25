@@ -29,7 +29,7 @@ const variantStyles: Record<BreadcrumbVariant, BreadcrumbStyles> = {
         separator: <ChevronRight className="w-4 h-4 text-default-400"/>,
         item: [
             "px-2 py-0.5 border-small border-default-400 rounded-small",
-            "data-[current=true]:bg-default-200 data-[current=true]:text-default-foreground",
+            "data-[current=true]:bg-default-300 data-[current=true]:text-default-foreground",
             "data-[disabled=true]:border-default-400 data-[disabled=true]:bg-default-100",
         ],
         icon: Component,

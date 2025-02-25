@@ -5,7 +5,7 @@ import ModuleHeaderDesktop from "./ModuleHeaderDesktop";
 import ModuleHeaderMobile from "./ModuleHeaderMobile";
 import { ModuleHeaderProps } from "./types";
 
-export default function ModuleHeaderWithProvider(props: ModuleHeaderProps) {
+export default function ResponsiveModuleHeaderWithProvider(props: ModuleHeaderProps) {
     const { width } = useWindowSize();
     
     return width < 768

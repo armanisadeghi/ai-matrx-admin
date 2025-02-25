@@ -126,7 +126,7 @@ export default function ModuleHeaderWithProvider(
             initial="initial"
             animate="animate"
             className={cn(
-                "h-12 flex items-center justify-between bg-background/60 backdrop-blur-sm border-b px-4",
+                "h-12 flex items-center justify-between bg-background/60 backdrop-blur-sm border-b px-4 border border-green-500",
                 "overflow-hidden",
                 className
             )}

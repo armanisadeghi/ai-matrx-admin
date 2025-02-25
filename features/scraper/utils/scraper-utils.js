@@ -51,7 +51,8 @@ export const extractScraperData = (pageData) => {
   let contentFilterDetails = [];
   let noiseRemoverDetails = [];
   let hashes = [];
-  
+  let contentOutline = [];
+
   try {
     // Handle string response
     if (typeof pageData === 'string') {
@@ -91,7 +92,6 @@ export const extractScraperData = (pageData) => {
       };
     }
 
-    // Extract content
     overview = parsedContent.overview || {};
     textData = parsedContent.text_data || "";
     organizedData = parsedContent.organized_data || {};
@@ -99,6 +99,12 @@ export const extractScraperData = (pageData) => {
     contentFilterDetails = parsedContent.content_filter_removal_details || [];
     noiseRemoverDetails = parsedContent.noise_remover_removal_details || [];
     hashes = parsedContent.hashes || [];
+    contentOutline = parsedContent.overview.outline || [];
+
+    const allRemovals = [
+      ...(contentFilterDetails || []).map(item => ({ ...item, remover: "Content Filter" })),
+      ...(noiseRemoverDetails || []).map(item => ({ ...item, remover: "Noise Remover" })),
+    ];
     
     return {
       isError: false,
@@ -110,7 +116,9 @@ export const extractScraperData = (pageData) => {
       contentFilterDetails,
       noiseRemoverDetails,
       hashes,
-      parsedContent
+      parsedContent,
+      allRemovals,
+      contentOutline
     };
   } catch (error) {
     console.error("Error extracting data:", error);

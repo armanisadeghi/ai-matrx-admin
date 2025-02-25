@@ -1,0 +1,44 @@
+{
+    "unassociated": [
+        {
+            "Before": "",
+            "List": ["Clubs"],
+            "After": ""
+        }
+    ],
+    "H3: Upcoming Events": [
+        {
+            "Before": "Book a spot for a great time.",
+            "List": [
+                [
+                    [["Jan"], [10]],
+                    ["DJ Party", "Friday, Jan. 10, 2025 at 10:00 pm", "City · Venue · Ages: 21+"]
+                ],
+                [
+                    [["Feb"], [15]],
+                    ["Live Set", "Saturday, Feb. 15, 2025 at 10:00 pm", "City · Venue · Ages: 21+"]
+                ],
+                [
+                    [["Mar"], [5]],
+                    ["Dance Night", "Wednesday, Mar. 5, 2025 at 10:00 pm", "City · Venue · Ages: 21+"]
+                ],
+                [
+                    [["Apr"], [20]],
+                    ["Guest DJ", "Sunday, Apr. 20, 2025 at 10:00 pm", "City · Venue · Ages: 21+"]
+                ],
+                [
+                    [["May"], [1]],
+                    ["Special Event", "Thursday, May 1, 2025 at 10:00 pm", "City · Venue · Ages: 21+"]
+                ]
+            ],
+            "After": ""
+        }
+    ],
+    "H4: Which clubs are open?": [
+        {
+            "Before": "",
+            "List": [["Jan 1, 2020"], ["Feb 2, 2023"], ["Mar 3, 2024"]],
+            "After": "Tags: Venue"
+        }
+    ]
+}

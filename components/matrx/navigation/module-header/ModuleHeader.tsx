@@ -67,7 +67,7 @@ export default function ModuleHeaderWithProvider(
             initial="initial"
             animate="animate"
             className={cn(
-                "h-10 flex items-center justify-between bg-background/60 backdrop-blur-sm border-b px-4",
+                "h-10 flex items-center justify-between bg-background/60 backdrop-blur-sm border-b px-4 border border-blue-500",
                 "overflow-hidden",
                 className
             )}

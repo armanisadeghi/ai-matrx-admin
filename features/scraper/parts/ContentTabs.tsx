@@ -39,10 +39,13 @@ const ContentTabs = ({ activeTab, setActiveTab }) => {
         <TabsTrigger value="structured">Structured Data</TabsTrigger>
         <TabsTrigger value="text">Text Content</TabsTrigger>
         <TabsTrigger value="metadata">Metadata</TabsTrigger>
-        <TabsTrigger value="content-filter">Content Filter</TabsTrigger>
-        <TabsTrigger value="noise-remover">Noise Remover</TabsTrigger>
+        <TabsTrigger value="removals">Filter Details</TabsTrigger>
+        <TabsTrigger value="seo-analysis">SEO Analysis</TabsTrigger>
         <TabsTrigger value="hashes">Hashes</TabsTrigger>
-        <TabsTrigger value="raw">Raw JSON</TabsTrigger>
+        <TabsTrigger value="raw">Raw</TabsTrigger>
+        <TabsTrigger value="raw-explorer">Explorer</TabsTrigger>
+        <TabsTrigger value="fancy-json-explorer">Fancy Explorer</TabsTrigger>
+        <TabsTrigger value="bookmark-viewer">Bookmark Viewer</TabsTrigger>
       </TabsList>
       
       <button 

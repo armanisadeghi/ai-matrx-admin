@@ -3,7 +3,7 @@
 // ModuleHeaderMobile.tsx
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Home, Menu } from 'lucide-react';
+import { ChevronLeft, Home, ShieldPlus } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,9 +51,11 @@ export function ModuleHeaderMobile({
             initial="initial"
             animate="animate"
             className={cn(
-                "h-12 flex items-center justify-between bg-background/60 backdrop-blur-sm border-b px-2",
+                "h-10 flex items-center justify-between bg-gray-200 dark:bg-gray-900 backdrop-blur-sm border-b-2 border-gray-200 dark:border-gray-700 px-1",
+                "overflow-hidden",
                 className
             )}
+
         >
             <div className="flex items-center gap-1">
                 <Link href="..">
@@ -69,14 +71,13 @@ export function ModuleHeaderMobile({
                 </Link>
             </div>
 
-            <div className="flex-1 mx-2 truncate">
+            <div className="flex-1 mx-2 truncate bg-gray-200 dark:bg-gray-900">
                 <PageSelection pages={pages} moduleHome={moduleHome} />
             </div>
-
             <Sheet>
                 <SheetTrigger asChild>
                     <Button variant="ghost" size="icon">
-                        <Menu className="h-4 w-4" />
+                        <ShieldPlus className="h-4 w-4" />
                     </Button>
                 </SheetTrigger>
                 <SheetContent>

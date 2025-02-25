@@ -33,7 +33,7 @@ const buttonVariants = {
 export default function AdminShortcuts() {
     return (
         <TooltipProvider>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center">
                 {adminShortcuts.map((shortcut) => (
                     <Tooltip key={shortcut.path}>
                         <TooltipTrigger asChild>
@@ -51,9 +51,9 @@ export default function AdminShortcuts() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="hover:bg-accent"
+                                        className="hover:bg-accent p-0"
                                     >
-                                        <shortcut.icon className="h-4 w-4"/>
+                                        <shortcut.icon className="h-4 w-4 p-0"/>
                                     </Button>
                                 </a>
                             </motion.div>
