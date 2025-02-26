@@ -89,14 +89,14 @@ export const THEMES = {
             text: "text-gray-700 dark:text-gray-300",
         },
         table: {
-            header: "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700",
-            headerText: "text-gray-900 dark:text-gray-100",
+            header: "bg-gray-300 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer",
+            headerText: "text-bold text-gray-900 dark:text-gray-100",
             row: {
-                even: "bg-white dark:bg-transparent",
-                odd: "bg-gray-50/50 dark:bg-gray-900/30",
-                hover: "hover:bg-gray-50 dark:hover:bg-gray-800/20",
+                even: "bg-white dark:bg-transparent cursor-pointer",
+                odd: "bg-gray-50/50 dark:bg-gray-900/30 cursor-pointer",
+                hover: "hover:bg-gray-50 dark:hover:bg-gray-600/20 cursor-pointer",
             },
-            border: "border-gray-200 dark:border-gray-700",
+            border: "border-gray-300 dark:border-gray-900",
             text: "text-gray-700 dark:text-gray-200",
         },
         card: {

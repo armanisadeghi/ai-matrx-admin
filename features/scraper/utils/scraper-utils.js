@@ -323,3 +323,45 @@ export const isScraperLoading = (streamingResponse) => {
     (typeof streamingResponse === 'object' && streamingResponse !== null)
   );
 };
+
+
+
+export const convertOrganizedDataToString = (organizedData) => {
+  if (!organizedData || Object.keys(organizedData).length === 0) {
+      return "No organized content available";
+  }
+
+  const processedData = processOrganizedData(organizedData);
+  if (processedData.length === 0) {
+      return "No organized content available";
+  }
+
+  let result = "";
+
+  processedData.forEach((section) => {
+      // Add heading with proper spacing
+      result += `${section.heading.text}\n`;
+      // Add dashes under heading based on level
+      result += "-".repeat(Math.min(section.heading.level * 2, 6)) + "\n\n";
+
+      // Process content items
+      section.content.forEach((item) => {
+          if (item.type === "paragraph") {
+              result += `${item.content}\n\n`;
+          } else if (item.type === "list") {
+              item.items.forEach((listItem) => {
+                  result += `- ${listItem}\n`;
+              });
+              result += "\n";
+          } else {
+              result += `${item.keys.join(", ")}\n\n`;
+          }
+      });
+
+      // Add extra space between sections
+      result += "\n";
+  });
+
+  // Remove trailing whitespace
+  return result.trim();
+};

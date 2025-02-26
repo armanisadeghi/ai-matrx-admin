@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useInitializeSocket } from '@/lib/redux/socket/useInitializeSocket';
 import { SocketManager } from '@/lib/redux/socket/manager';
-import { RECIPE_DATABASE } from "../constants/recipe-data";
+import { RECIPE_DATABASE } from "../../constants/recipe-data";
 
 
 export interface RecipeOverrides {

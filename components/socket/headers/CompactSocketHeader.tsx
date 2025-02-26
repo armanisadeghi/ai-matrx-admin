@@ -43,7 +43,6 @@ export function CompactSocketHeader({ socketHook, defaultService, defaultTask }:
     const [availableTaskTypes, setAvailableTaskTypes] = useState<string[]>([]);
     const [isInitialized, setIsInitialized] = useState(false);
 
-    // Initialize namespace and stream - runs only once
     useEffect(() => {
         if (namespace !== "UserSession") {
             setNamespace("UserSession");
@@ -56,26 +55,23 @@ export function CompactSocketHeader({ socketHook, defaultService, defaultTask }:
         setIsInitialized(true);
     }, []);
 
-    // Set default service/task only once after initialization
     useEffect(() => {
         if (!isInitialized) return;
-        
-        // Only set defaults if they're provided and don't match current values
-        if (defaultService && service !== defaultService) {
+        if(!defaultService) return;
+        if (defaultService) {
             setService(defaultService);
         }
-    }, [isInitialized, defaultService, service, setService]);
+    }, [isInitialized, defaultService]);
 
-    // Set default task only after service is set correctly
     useEffect(() => {
         if (!isInitialized) return;
+        if(!defaultTask) return;
         
-        if (defaultTask && taskType !== defaultTask && service === defaultService) {
+        if (defaultTask) {
             setTaskType(defaultTask);
         }
-    }, [isInitialized, defaultTask, taskType, service, defaultService, setTaskType]);
+    }, [isInitialized, defaultTask]);
 
-    // Update available tasks when service changes - isolated effect
     useEffect(() => {
         if (!service) {
             setAvailableTaskTypes([]);
@@ -90,11 +86,9 @@ export function CompactSocketHeader({ socketHook, defaultService, defaultTask }:
         }
     }, [service]);
 
-    // Handle service change without triggering cascading updates
     const handleServiceChange = (newService: string) => {
         if (newService !== service) {
             setService(newService);
-            // Only reset task if we're not using defaults
             if (!defaultTask) {
                 setTaskType("");
             }

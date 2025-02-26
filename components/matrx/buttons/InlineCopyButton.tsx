@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -131,33 +130,33 @@ export const InlineCopyButton = ({
 
   return (
     <div 
-      className={`${positionClasses[position]} ${className} inline-flex`}
+      className={`${positionClasses[position]} ${className} inline-flex z-10`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <button
-        onClick={handleCopy}
-        className="bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded-md transition-colors duration-200 z-10"
-        aria-label={tooltipText}
-      >
-        {copied ? (
-          <CheckCircle2 className={`${sizeClasses[size]} text-green-500`} />
-        ) : (
-          <Copy className={`${sizeClasses[size]} text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200`} />
+        <button
+          onClick={handleCopy}
+          className="bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded-md transition-colors duration-200 z-10"
+          aria-label={tooltipText}
+        >
+          {copied ? (
+            <CheckCircle2 className={`${sizeClasses[size]} text-green-500`} />
+          ) : (
+            <Copy className={`${sizeClasses[size]} text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200`} />
+          )}
+        </button>
+        
+        {showTooltipState && !copied && (
+          <div className="absolute top-full mt-1 right-0 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
+            {tooltipText}
+          </div>
         )}
-      </button>
-      
-      {showTooltipState && !copied && (
-        <div className="absolute top-full mt-1 right-0 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
-          {tooltipText}
-        </div>
-      )}
-      
-      {copied && showTooltip && (
-        <div className="absolute top-full mt-1 right-0 bg-green-600 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
-          Copied!
-        </div>
-      )}
+        
+        {copied && showTooltip && (
+          <div className="absolute top-full mt-1 right-0 bg-green-600 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
+            Copied!
+          </div>
+        )}
     </div>
   );
 };

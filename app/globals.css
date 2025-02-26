@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
     :root {
         --background: 48 22% 100%;
@@ -23,9 +22,9 @@
         --secondary-foreground: 275 35% 20%;
         --muted: 240 4.8% 95.9%;
         --muted-foreground: 240 3.8% 46.1%;
-        --accent: 262 83% 58%;  /* More vibrant accent */
+        --accent: 262 83% 58%; /* More vibrant accent */
         --accent-foreground: 240 5.9% 10%;
-        --destructive: 0 84% 60%;  /* Brighter destructive */
+        --destructive: 0 84% 60%; /* Brighter destructive */
         --destructive-foreground: 0 0% 98%;
         --border: 240 5.9% 90%;
         --input: 240 5.9% 90%;
@@ -36,7 +35,6 @@
         --warning: 38 92% 50%;
         --warning-foreground: 48 96% 98%;
 
-
         --chart-1: 12 76% 61%;
         --chart-2: 173 58% 39%;
         --chart-3: 197 37% 24%;
@@ -44,8 +42,8 @@
         --chart-5: 27 87% 67%;
 
         /* Enhanced accent colors */
-        --accent-2: 280 70% 50%;  /* More saturated */
-        --accent-3: 200 95% 40%;  /* Brighter */
+        --accent-2: 280 70% 50%; /* More saturated */
+        --accent-3: 200 95% 40%; /* Brighter */
         --info: 200 98% 39%;
 
         /* Adjusted hover state colors for more contrast */
@@ -70,13 +68,12 @@
 
         /* Animation specific */
         --animation-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        --animation-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+        --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
         /* Custom checkerboard pattern for light mode */
         --checkerboard: linear-gradient(45deg, hsl(0, 0%, 94%) 25%, transparent 25%),
-        linear-gradient(-45deg, hsl(0, 0%, 94%) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, hsl(0, 0%, 85%) 75%),
-        linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 85%) 75%);
+            linear-gradient(-45deg, hsl(0, 0%, 94%) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, hsl(0, 0%, 85%) 75%),
+            linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 85%) 75%);
         --sidebar-background: 0 0% 98%;
         --sidebar-foreground: 240 5.3% 26.1%;
         --sidebar-primary: 240 5.9% 10%;
@@ -86,15 +83,23 @@
         --sidebar-border: 220 13% 91%;
         --sidebar-ring: 217.2 91.2% 59.8%;
 
-        
+        --typography-fontFamily-sans: var(--font-inter), var(--font-opensans), var(--font-roboto), var(--font-montserrat), ui-sans-serif,
+            system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+            "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        --typography-fontFamily-heading: var(--font-montserrat), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+        --typography-fontFamily-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
+        /* Typography scale options for improved readability */
+        --typography-p-lineHeight: 1.6;
+        --typography-p-margin: 1rem;
+        --typography-letter-spacing: 0.01em;
     }
 
     .dark {
         --background: 0 0% 12%;
         --matrix-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='.1'/%3E%3C/svg%3E");
         --matrx-old-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
-        --matrx-card-background: url('/dark-turbulence-noise.svg');
+        --matrx-card-background: url("/dark-turbulence-noise.svg");
         --foreground: 0 0% 98%;
         --card: 0 0% 8%;
         --card-foreground: 0 0% 98%;
@@ -147,8 +152,6 @@
         --elevation-2: 0 0% 25%;
         --elevation-3: 0 0% 35%;
 
-
-
         /* Gradients */
         --gradient-1: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)));
         --gradient-2: linear-gradient(to right, hsl(var(--chart-1)), hsl(var(--chart-2)));
@@ -156,13 +159,12 @@
 
         /* Animation specific */
         --animation-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        --animation-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+        --animation-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
         /* Custom checkerboard pattern for dark mode */
         --checkerboard: linear-gradient(45deg, hsl(0, 0%, 31%) 25%, transparent 25%),
-        linear-gradient(-45deg, hsl(0, 0%, 31%) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, hsl(0, 0%, 24%) 75%),
-        linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 24%) 75%);
+            linear-gradient(-45deg, hsl(0, 0%, 31%) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, hsl(0, 0%, 24%) 75%),
+            linear-gradient(-45deg, transparent 75%, hsl(0, 0%, 24%) 75%);
         --sidebar-background: 240 5.9% 10%;
         --sidebar-foreground: 240 4.8% 95.9%;
         --sidebar-primary: 224.3 76.3% 48%;
@@ -174,8 +176,6 @@
     }
 }
 
-
-
 @layer base {
     * {
         @apply border-border;
@@ -186,14 +186,38 @@
     }
     body {
         @apply bg-texture-light dark:bg-texture-dark text-foreground;
-
-        /* font-feature-settings: "rlig" 1, "calt" 1; */
         font-synthesis-weight: none;
         text-rendering: optimizeLegibility;
         font-size: 1.0625rem; /* Slightly larger than default, equivalent to 17px */
-
+        letter-spacing: var(--typography-letter-spacing);
+        line-height: var(--typography-p-lineHeight);
     }
-    input, textarea, select {
+    /* Improved paragraph spacing */
+    p {
+        margin-bottom: var(--typography-p-margin);
+    }
+
+    /* Improved heading readability */
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-heading font-medium;
+        letter-spacing: -0.015em;
+        line-height: 1.2;
+    }
+
+    /* Code readability */
+    code,
+    pre {
+        @apply font-mono;
+    }
+
+    input,
+    textarea,
+    select {
         font-size: 1.0625rem; /* Match body font size for form elements */
     }
 }
@@ -204,9 +228,7 @@
     }
 }
 
-
 @layer utilities {
-
     .light-mode-shadow {
         box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
@@ -309,9 +331,7 @@
     .scrollbar-thin::-webkit-scrollbar-thumb:active {
         background-color: var(--secondary); /* Different color when the thumb is active */
     }
-
 }
-
 
 /* Contrast Red */
 .contrast-red {
@@ -397,11 +417,11 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
+    * {
+        @apply border-border;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
 }
 
@@ -428,10 +448,9 @@
     pointer-events: auto !important;
 }
 
-
 .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: #4B5563 transparent;
+    scrollbar-color: #4b5563 transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -443,7 +462,7 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #4B5563;
+    background-color: #4b5563;
     border-radius: 3px;
 }
 
@@ -467,8 +486,8 @@
     @apply whitespace-pre-wrap break-words w-full;
 }
 
-[data-theme='dark'] .shiki,
-[data-theme='dark'] .shiki span {
+[data-theme="dark"] .shiki,
+[data-theme="dark"] .shiki span {
     color-scheme: dark;
 }
 

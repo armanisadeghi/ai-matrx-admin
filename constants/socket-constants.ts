@@ -7,6 +7,7 @@ export interface SchemaField {
     DATA_TYPE: string | null;
     CONVERSION: string | null;
     REFERENCE: any;
+    iconName?: string;
 }
 
 export interface Schema {
@@ -94,6 +95,7 @@ export const OVERRIDE_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Brain",
     },
     processor_overrides: {
         REQUIRED: false,
@@ -102,6 +104,7 @@ export const OVERRIDE_DEFINITION: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Settings",
     },
     other_overrides: {
         REQUIRED: false,
@@ -110,6 +113,7 @@ export const OVERRIDE_DEFINITION: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Braces"
     },
 };
 
@@ -121,6 +125,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "User",
     },
     id: {
         REQUIRED: true,
@@ -129,6 +134,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
     value: {
         REQUIRED: false,
@@ -137,6 +143,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Parentheses",
     },
     ready: {
         REQUIRED: false,
@@ -145,6 +152,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Check",
     },
 };
 
@@ -156,6 +164,7 @@ export const REMOVE_FIRST_AND_LAST_PARAGRAPH: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "TableOfContents",
     },
 };
 
@@ -167,6 +176,7 @@ export const EXTRACT_PARAGRAPHS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "TableOfContents",
     },
 };
 
@@ -178,6 +188,7 @@ export const EXTRACT_SECTION_BLOCKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "TableOfContents",
     },
     section_type: {
         REQUIRED: true,
@@ -186,6 +197,7 @@ export const EXTRACT_SECTION_BLOCKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Combine",
     },
 };
 
@@ -197,6 +209,7 @@ export const EXTRACT_CODE_BLOCKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "TableOfContents",
     },
     language: {
         REQUIRED: false,
@@ -205,6 +218,7 @@ export const EXTRACT_CODE_BLOCKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Code",
     },
 };
 
@@ -216,6 +230,7 @@ export const EXTRACT_ALL_CODE_BLOCKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "TableOfContents",
     },
 };
 
@@ -227,6 +242,7 @@ export const CLASSIFY_MARKDOWN: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "TableOfContents",
     },
 };
 
@@ -239,6 +255,7 @@ export const SCRAPE_SINGLE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Link",
     },
 };
 
@@ -252,6 +269,7 @@ export const SCRAPE_BATCH: Schema = {
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Link",
     },
 };
 
@@ -263,6 +281,7 @@ export const GET_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
 };
 
@@ -274,6 +293,7 @@ export const GET_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
 };
 
@@ -285,6 +305,7 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
     compiled_id: {
         REQUIRED: true,
@@ -293,6 +314,7 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
     compiled_recipe: {
         REQUIRED: true,
@@ -301,6 +323,7 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Braces",
     },
 };
 
@@ -312,6 +335,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
     compiled_id: {
         REQUIRED: true,
@@ -320,6 +344,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
     compiled_recipe: {
         REQUIRED: true,
@@ -328,6 +353,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Braces",
     },
     stream: {
         REQUIRED: true,
@@ -336,6 +362,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Airplay",
     },
 };
 
@@ -347,6 +374,7 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
     broker_values: {
         REQUIRED: true,
@@ -355,6 +383,7 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
+        iconName: "Parentheses",
     },
     overrides: {
         REQUIRED: false,
@@ -363,6 +392,7 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: OVERRIDE_DEFINITION,
+        iconName: "Braces",
     },
     stream: {
         REQUIRED: true,
@@ -371,6 +401,7 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Airplay",
     },
 };
 
@@ -382,6 +413,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Key",
     },
     broker_values: {
         REQUIRED: true,
@@ -390,6 +422,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
+        iconName: "Parentheses",
     },
     overrides: {
         REQUIRED: false,
@@ -398,6 +431,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: OVERRIDE_DEFINITION,
+        iconName: "Braces",
     },
 };
 
@@ -416,6 +450,7 @@ export const URL_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Link",
     },
 };
 
@@ -428,6 +463,7 @@ export const QUICK_SCRAPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
+        iconName: "Link",
     },
 };
 

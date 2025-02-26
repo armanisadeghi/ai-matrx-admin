@@ -1,19 +1,19 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
+import React, { useMemo } from "react";
+import { FancyInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { FancyTextarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash } from "lucide-react";
+import { Plus, Trash, Link } from "lucide-react";
 import { formatLabel, formatPlaceholder } from "../utils/label-util";
 import { SchemaField } from "@/constants/socket-constants";
+import ArrayField from "./ArrayField";
+import * as LucideIcons from "lucide-react";
 
-// Define field override types
 export type FieldType = "input" | "textarea" | "switch";
-
 export interface FieldOverride {
     type: FieldType;
-    props?: Record<string, any>; // Additional props to pass to the field component
+    props?: Record<string, any>;
 }
 export type FieldOverrides = Record<string, FieldOverride>;
 
@@ -48,79 +48,47 @@ const FormField: React.FC<FormFieldProps> = ({
     const hasError = errors[fullPath];
     const notice = notices[fullPath] || "";
 
-    // Function to get the field override for a given path
     const getFieldOverride = (path: string): FieldOverride | undefined => {
         return fieldOverrides[path];
     };
 
-    // Handle array fields
     if (field.DATA_TYPE === "array") {
-        // Initialize if not an array
-        if (!Array.isArray(value)) value = field.DEFAULT || [];
-
-        // If it's an array of primitives (strings, numbers, etc.)
-        if (!field.REFERENCE) {
-            return (
-                <div className="grid grid-cols-12 gap-4 mb-4 w-full">
-                    <Label className="col-span-1 text-sm font-medium">
-                        <div className="flex items-start gap-1">
-                            <span className="text-slate-700 dark:text-slate-300">{formatLabel(fieldKey)}</span>
-                            {field.REQUIRED && <span className="text-red-500 text-sm leading-none">*</span>}
-                        </div>
-                    </Label>
-                    <div className="col-span-11 w-full">
-                        <div className="space-y-2 w-full">
-                            {value.map((item: any, index: number) => (
-                                <div key={`${fullPath}[${index}]`} className="flex items-center gap-2 w-full">
-                                    <Input
-                                        type="text"
-                                        value={item || ""}
-                                        onChange={(e) => {
-                                            const newArray = [...value];
-                                            newArray[index] = e.target.value;
-                                            onChange(fullPath, newArray);
-                                        }}
-                                        onBlur={() => onBlur(fullPath, field, value)}
-                                        className={`w-full bg-background ${hasError ? "border-red-500" : ""}`}
-                                        placeholder={`${formatPlaceholder(fieldKey)} item ${index + 1}`}
-                                    />
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => {
-                                            const newArray = value.filter((_: any, i: number) => i !== index);
-                                            onChange(fullPath, newArray);
-                                        }}
-                                    >
-                                        <Trash className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                            ))}
-                            <Button
-                                onClick={() => {
-                                    const newArray = [...value, ""];
-                                    onChange(fullPath, newArray);
-                                }}
-                                variant="outline"
-                                className="border-gray-500 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg"
-                            >
-                                <Plus className="w-5 h-5 mr-1" />
-                                Add {formatLabel(fieldKey)}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            );
+        if (!Array.isArray(value) || value.length === 0) {
+            value = field.DEFAULT && Array.isArray(field.DEFAULT) && field.DEFAULT.length > 0 ? field.DEFAULT : field.REFERENCE ? [{}] : [];
         }
 
-        // For array of objects
+        if (!field.REFERENCE) {
+            return (
+                <ArrayField
+                    fieldKey={fieldKey}
+                    field={field}
+                    fullPath={fullPath}
+                    value={value}
+                    hasError={hasError}
+                    onChange={onChange}
+                    onBlur={onBlur}
+                />
+            );
+        }    
+
+        const handleRemoveItem = (index: number) => {
+            if (value.length <= 1) {
+                const updatedValue = [{}];
+                onChange(fullPath, updatedValue);
+            } else {
+                const updatedValue = value.filter((_, i) => i !== index);
+                onChange(fullPath, updatedValue);
+            }
+            onDeleteArrayItem?.(fullPath, index);
+        };
+
         return (
             <div className="w-full">
                 <div className="grid grid-cols-12 gap-2 mb-2">
                     <div className="col-span-1 text-slate-700 dark:text-slate-300 font-medium">{formatLabel(fieldKey)}</div>
                     <div className="col-span-11">
                         <div className="border-l border-slate-200 dark:border-slate-700 pl-4">
-                            {value.map((_: any, index: number) => (
+                            {value.map((item: any, index: number) => (
                                 <div key={`${fullPath}[${index}]`} className="relative">
                                     {Object.entries(field.REFERENCE).map(([nestedKey, nestedField]) => (
                                         <FormField
@@ -128,7 +96,7 @@ const FormField: React.FC<FormFieldProps> = ({
                                             fieldKey={nestedKey}
                                             field={nestedField as SchemaField}
                                             path={`${fullPath}[${index}]`}
-                                            value={value[index]?.[nestedKey] ?? (nestedField as SchemaField).DEFAULT}
+                                            value={item?.[nestedKey] ?? (nestedField as SchemaField).DEFAULT}
                                             errors={errors}
                                             notices={notices}
                                             formData={formData}
@@ -142,7 +110,7 @@ const FormField: React.FC<FormFieldProps> = ({
                                         variant="destructive"
                                         size="sm"
                                         className="absolute right-0 top-0 mt-2 mr-2"
-                                        onClick={() => onDeleteArrayItem?.(fieldKey, index)}
+                                        onClick={() => handleRemoveItem(index)}
                                     >
                                         <Trash className="w-5 h-5 p-0" />
                                     </Button>
@@ -207,11 +175,10 @@ const FormField: React.FC<FormFieldProps> = ({
         </div>
     );
 
-    // Get field override if exists
     const override = getFieldOverride(fullPath);
-
+    const iconName = field.iconName || "File";
+    const Icon = (LucideIcons as any)[iconName] || LucideIcons.File;
     const inputField = () => {
-        // Handle boolean fields
         if (field.DATA_TYPE === "boolean" || (field.DATA_TYPE === null && typeof field.DEFAULT === "boolean")) {
             return (
                 <Switch
@@ -223,12 +190,11 @@ const FormField: React.FC<FormFieldProps> = ({
             );
         }
 
-        // Handle object fields
         if (field.DATA_TYPE === "object") {
             const stringValue = typeof value === "string" ? value : JSON.stringify(value, null, 2);
             return (
                 <div>
-                    <Textarea
+                    <FancyTextarea
                         value={stringValue}
                         onChange={(e) => onChange(fullPath, e.target.value)}
                         onBlur={() => onBlur(fullPath, field, stringValue)}
@@ -241,13 +207,13 @@ const FormField: React.FC<FormFieldProps> = ({
             );
         }
 
-        // Apply overrides for regular fields
         if (override) {
             switch (override.type) {
                 case "textarea":
                     return (
-                        <Textarea
+                        <FancyTextarea
                             value={value || ""}
+                            prefix={<Icon className="w-4 h-4" />}
                             onChange={(e) => onChange(fullPath, e.target.value)}
                             onBlur={() => onBlur(fullPath, field, value)}
                             className={`w-full bg-background ${hasError ? "border-red-500" : ""}`}
@@ -267,8 +233,9 @@ const FormField: React.FC<FormFieldProps> = ({
                 case "input":
                 default:
                     return (
-                        <Input
+                        <FancyInput
                             type="text"
+                            prefix={<Icon className="w-4 h-4" />}
                             value={value || ""}
                             onChange={(e) => onChange(fullPath, e.target.value)}
                             onBlur={() => onBlur(fullPath, field, value)}
@@ -280,10 +247,10 @@ const FormField: React.FC<FormFieldProps> = ({
             }
         }
 
-        // Default to Input if no override
         return (
-            <Input
+            <FancyInput
                 type="text"
+                prefix={<Icon className="w-4 h-4" />}
                 value={value || ""}
                 onChange={(e) => onChange(fullPath, e.target.value)}
                 onBlur={() => onBlur(fullPath, field, value)}

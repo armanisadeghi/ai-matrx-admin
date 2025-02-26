@@ -81,7 +81,7 @@ const MarkdownTable = ({ data, className = "", fontSize = 16, theme = "professio
 
     return (
         <div className="w-full space-y-4 my-4">
-            <div className={cn("overflow-x-auto rounded-lg border", tableTheme.border)}>
+            <div className={cn("overflow-x-auto rounded-xl border-3", tableTheme.border)}>
                 <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${tableFontsize}px` }}>
                     <thead>
                         <tr className={cn("border-b", tableTheme.border, tableTheme.header)}>

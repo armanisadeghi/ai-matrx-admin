@@ -92,7 +92,6 @@ export const animations = {
                 transform: "scale(0.95) translateY(10px)",
             },
         },
-        // Add the fadeIn keyframes here
         fadeIn: {
             "0%": {
                 opacity: "0",
@@ -102,6 +101,14 @@ export const animations = {
                 opacity: "1",
                 transform: "translateY(0)",
             },
+        },
+        "smooth-drop": {
+            "0%": { height: "0"},
+            "100%": { height: "auto"},
+        },
+        "smooth-lift": {
+            "0%": { height: "auto" },
+            "100%": { height: "0" },
         },
     },
     animation: {
@@ -122,7 +129,8 @@ export const animations = {
         "slide-up": "slide-up 0.3s ease-out",
         "scale-in": "scale-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         "scale-out": "scale-out 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        // Add the fadeIn animation here
         fadeIn: "fadeIn 0.2s ease-out forwards",
+        "smooth-drop": "smooth-drop 0.6s ease-in-out",
+        "smooth-lift": "smooth-lift 0.6s ease-in-out",
     },
 };

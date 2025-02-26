@@ -62,8 +62,15 @@ const config: Config = {
                 '9xl': ['8.2rem', {lineHeight: '1'}]
             },
             fontFamily: {
-                sans: ["var(--typography-fontFamily-sans)", ...fontFamily.sans],
-                heading: ["var(--typography-fontFamily-heading)", ...fontFamily.sans]
+                sans: [
+                    "var(--font-inter)",
+                    "var(--font-opensans)", 
+                    "var(--font-roboto)",
+                    "var(--typography-fontFamily-sans)", 
+                    ...fontFamily.sans
+                ],
+                heading: ["var(--typography-fontFamily-heading)", ...fontFamily.sans],
+                mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
             },
             boxShadow: {
                 input: '0px 2px 3px -1px rgba(0,0,0,0.1), 0px 1px 0px 0px rgba(25,28,33,0.02), 0px 0px 0px 1px rgba(25,28,33,0.08)'
@@ -84,15 +91,32 @@ const config: Config = {
                 bounce: 'var(--animated-menu-bounce)',
                 smooth: 'var(--animated-menu-smooth)'
             },
+            typography: {
+                DEFAULT: {
+                    css: {
+                        fontFamily: 'var(--font-inter), var(--font-opensans), var(--font-roboto), var(--typography-fontFamily-sans), ui-sans-serif, system-ui, sans-serif',
+                        lineHeight: 1.6,
+                        p: {
+                            marginBottom: '1rem',
+                        },
+                        'code::before': {
+                            content: '""',
+                        },
+                        'code::after': {
+                            content: '""',
+                        },
+                    },
+                },
+            },
         }
     },
     plugins: [
         ...plugins,
+        require('@tailwindcss/typography'),
         function({ addUtilities, theme }) {
             addUtilities({ ...textureUtilities });
             createUtilities({ addUtilities, theme });
         }
     ]
 };
-
 export default config;

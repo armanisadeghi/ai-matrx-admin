@@ -6,7 +6,7 @@ import { RecipeSocketHeader } from '@/components/socket/recipes/RecipeSocketHead
 import { SocketTaskComponent } from '@/components/socket/tasks/SocketTask';
 import { SocketActions } from '@/components/socket/actions/SocketActions';
 import { SocketResponse } from '@/components/socket/response/SocketResponse';
-import { useRecipeSocket } from '@/lib/redux/socket/hooks/useRecipeSocket';
+import { useRecipeSocket } from '@/lib/redux/socket/hooks/legacy/useRecipeSocket';
 
 export default function Page() {
     const {

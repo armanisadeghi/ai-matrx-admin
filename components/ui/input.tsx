@@ -187,5 +187,68 @@ const CopyInput = React.forwardRef<HTMLInputElement, InputProps>(
   
 CopyInput.displayName = 'CopyInput';
 
+interface FancyInputProps extends Omit<InputProps, 'prefix'> {
+    prefix?: React.ReactNode;
+    wrapperClassName?: string;
+  }
+  
+  const FancyInput = React.forwardRef<HTMLInputElement, FancyInputProps>(
+    ({ prefix, className, wrapperClassName, ...props }, ref) => {
+      const [hasCopied, setHasCopied] = React.useState(false);
+      
+      const handleCopy = async () => {
+        if (props.value || props.defaultValue) {
+          await navigator.clipboard.writeText(String(props.value || props.defaultValue));
+          setHasCopied(true);
+          
+          // Reset the copied state after 450ms
+          setTimeout(() => {
+            setHasCopied(false);
+          }, 450);
+        }
+      };
+  
+      return (
+        <div className={cn('relative', wrapperClassName)}>
+          {prefix && (
+            <div className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
+              {prefix}
+            </div>
+          )}
+          <Input
+            ref={ref}
+            className={cn(
+              prefix && 'pl-10', 
+              'pr-8', // Add right padding for the copy button
+              className
+            )}
+            {...props}
+          />
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-md transition-colors"
+            aria-label="Copy to clipboard"
+          >
+            {hasCopied ? (
+              <motion.div
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.8 }}
+                className="text-green-500"
+              >
+                <Check className="h-4 w-4" />
+              </motion.div>
+            ) : (
+              <Copy className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+            )}
+          </button>
+        </div>
+      );
+    }
+  );
+  
+  FancyInput.displayName = 'FancyInput';
+  
 
-export { Input, BasicInput, InputWithPrefix, CopyInput };
+export { Input, BasicInput, InputWithPrefix, CopyInput, FancyInput };

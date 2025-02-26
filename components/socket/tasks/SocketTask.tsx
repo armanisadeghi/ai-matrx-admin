@@ -16,7 +16,7 @@ import {
     SelectValue,
 } from '@/components/ui';
 import { SquarePlus, Trash2 } from 'lucide-react';
-import { SocketTask } from '@/lib/redux/socket/hooks/useRecipeSocket';
+import { SocketTask } from '@/lib/redux/socket/hooks/legacy/useRecipeSocket';
 import { RECIPE_DATABASE } from '@/lib/redux/socket/constants/recipe-data';
 import { RecipeBrokerDisplay } from '../recipes/RecipeBrokerDisplay';
 import { RecipeOverrides } from '../recipes/RecipeOverrides';

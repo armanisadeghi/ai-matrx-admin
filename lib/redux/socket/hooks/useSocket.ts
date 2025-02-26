@@ -17,8 +17,6 @@ export interface SocketTask {
 export const useSocket = () => {
     useInitializeSocket();
     const socketManager = SocketManager.getInstance();
-
-    // Core selection state
     const [namespace, setNamespace] = useState("UserSession");
     const [service, setService] = useState("");
     const [taskType, setTaskType] = useState("");
@@ -92,21 +90,13 @@ export const useSocket = () => {
         );
     }, [streamEnabled]);
 
-    // Reset task type when service changes
-    useEffect(() => {
-        if (service) {
-            setTaskType("");
-        }
-    }, [service]);
 
     const setTaskData = (taskData: TaskData | TaskData[]) => {
-        console.log("Setting task data:", taskData);
         const taskArray = Array.isArray(taskData) ? taskData : [taskData];
-        console.log("Task array:", taskArray);
 
         setTasks(
             taskArray.map((data, index) => ({
-                task: taskType, // The task type is the event/task name
+                task: taskType,
                 index,
                 stream: streamEnabled,
                 taskData: data,
@@ -116,6 +106,8 @@ export const useSocket = () => {
 
     const handleSend = () => {
         if (!service || !taskType) {
+            console.log("current service", service);
+            console.log("current taskType", taskType);
             console.error("Service and task type must be selected");
             return;
         }

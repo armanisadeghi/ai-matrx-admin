@@ -83,7 +83,7 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                     </div>
                 </CardContent>
             </Card>
-            <div className="mt-8">
+            <div className="mt-8 px-2">
                 <SocketAccordionResponse socketHook={socketHook} />
             </div>
 

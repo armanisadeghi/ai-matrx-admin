@@ -266,7 +266,7 @@ export function useAppletValues({ dataBrokerHook, neededBrokerIds }: UseAppletVa
         brokerValueHook,
     });
 
-    const { createBrokerValue, isReady } = valueBrokerHook;
+    const { createBrokerValue, isReady, setValue } = valueBrokerHook;
 
     useEffect(() => {
         if (isReady) {
@@ -278,7 +278,8 @@ export function useAppletValues({ dataBrokerHook, neededBrokerIds }: UseAppletVa
     
     return {
         brokerValueHook,
-        isReady
+        isReady,
+        setValue,
     };
 }
 
@@ -286,6 +287,64 @@ export function useAppletValues({ dataBrokerHook, neededBrokerIds }: UseAppletVa
 
 export function useAppletStream(appletId: string) {
     const runRecipeHook = useRunRecipeAppletNew(appletId);
+    const { compiledRecipe, dataBrokerHook, neededBrokerIds } = runRecipeHook;
+
+    const appletValuesHook = useAppletValues({ dataBrokerHook, neededBrokerIds });
+
+    const { streamingResponses, responseRef, handleSend, handleClear, isResponseActive } = useCompiledToSocket({ compiledRecipe });
+
+    return {
+        streamingResponses,
+        responseRef,
+        handleSend,
+        handleClear,
+        isResponseActive,
+        appletValuesHook,
+        runRecipeHook,
+    };
+}
+
+
+
+// New and incomplete code that has never been tested, but the concept is to use it for recipe calls from data, instead of the UI.
+// But it might be pointless because we can probably do it much more directly.
+
+export function useRecipeWithoutComponents(compiledRecipeId: string) {
+    const compiledRecipeHook = useCompiledRecipe(compiledRecipeId);
+    const { neededBrokerIds, compiledRecipe } = compiledRecipeHook;
+    const dataBrokerHook = useDataBrokersWithFetch();
+    const { addDataBrokerPkValue } = dataBrokerHook;
+
+    useEffect(() => {
+        if (neededBrokerIds) {
+            neededBrokerIds.forEach((brokerId) => {
+                addDataBrokerPkValue(brokerId);
+            });
+        }
+    }, [neededBrokerIds, addDataBrokerPkValue]);
+
+    const stableReturn = useMemo(
+        () => ({
+            compiledRecipe,
+            compiledRecipeHook,
+            dataBrokerHook,
+            neededBrokerIds,
+        }),
+        [
+            compiledRecipe,
+            compiledRecipeHook,
+            dataBrokerHook,
+            neededBrokerIds,
+        ]
+    );
+
+    return stableReturn;
+}
+
+// see comments above
+
+export function useRecipeWithoutComponentsStream(compiledRecipeId: string) {
+    const runRecipeHook = useRecipeWithoutComponents(compiledRecipeId);
     const { compiledRecipe, dataBrokerHook, neededBrokerIds } = runRecipeHook;
 
     const appletValuesHook = useAppletValues({ dataBrokerHook, neededBrokerIds });
