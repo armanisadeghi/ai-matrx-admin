@@ -1,6 +1,5 @@
-import { IndexedDBStore } from "@/app/dashboard/code-editor/utils/local-indexedDB";
-import { getSyncManager } from "@/app/dashboard/code-editor/utils/supabase/supabase-sync-manager";
-import { IRepoData } from "@/app/dashboard/code-editor/types";
+import { IndexedDBStore } from "../local-indexedDB";
+import {IRepoData} from "@/app/kelvin/code-editor/version-3/types";
 
 class SupabaseIndexedDBStore extends IndexedDBStore {
     private syncManager: any | null = null;

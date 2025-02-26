@@ -3,11 +3,9 @@
 import { DiffEditor, EditorProps as MonacoEditorProps } from "@monaco-editor/react";
 import React, { useEffect, useRef, useState } from "react";
 import { getLanguageFromExtension } from "../../utils";
-import { editor as coreEditor } from "monaco-editor-core";
-import { useEditorSave } from "@/app/dashboard/code-editor/hooks";
-import IStandaloneEditorConstructionOptions = coreEditor.IStandaloneEditorConstructionOptions;
+import { useEditorSave } from "../../hooks";
 
-const OPTIONS: IStandaloneEditorConstructionOptions = {
+const OPTIONS: any = {
     acceptSuggestionOnCommitCharacter: true,
     acceptSuggestionOnEnter: "on",
     accessibilitySupport: "auto",

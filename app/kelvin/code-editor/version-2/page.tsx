@@ -3,11 +3,9 @@
 import {IconPlayerPlay} from "@tabler/icons-react";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {Button} from "@/components/ui";
-import {
-    CODE_SNIPPETS,
-    PROGRAMMING_LANGUAGE_OPTIONS
-} from "@/app/kelvin/code-editor/version-2/constants/programming-languages";
-import CodeEditor from "@/app/(authenticated)/tests/monoco-editor/components/CodeEditor";
+import {PROGRAMMING_LANGUAGE_OPTIONS} from "@/constants/programming-languages";
+import {CODE_SNIPPETS} from "@/constants/code-snippets";
+import CodeEditor from "@components/code-editor/CodeEditor";
 
 export default function Page() {
     const editorRef = useRef(null);
@@ -27,7 +25,8 @@ export default function Page() {
         );
     }, [contextLanguage]);
 
-    const handleLanguageChange = (value: string) => {
+    const handleLanguageChange = (evt: any) => {
+        const value = evt.currentTarget.value
         const newLanguage = PROGRAMMING_LANGUAGE_OPTIONS.find((item) => item.language === value).language;
         setProgramLanguage(newLanguage);
         setSourceCode(CODE_SNIPPETS[newLanguage]);
@@ -128,15 +127,10 @@ export default function Page() {
                 <p>file upload</p>
                 <select
                     aria-label="Change language"
-                    data={PROGRAMMING_LANGUAGE_OPTIONS.map((item) => ({
-                        label: `${item.language} (${item.version})`,
-                        value: item.language,
-                    }))}
                     onChange={handleLanguageChange}
                     value={programLanguage}>
-                    <option value="">hc-black</option>
-                    <option value="">vs-dark</option>
-                    <option value="">vs-light</option>
+                    {PROGRAMMING_LANGUAGE_OPTIONS.map(prog => <option value={prog.language}
+                                                                      key={prog.language}>{prog.language}</option>)}
                 </select>
             </div>
             <div>

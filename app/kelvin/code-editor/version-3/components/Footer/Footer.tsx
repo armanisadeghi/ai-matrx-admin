@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
-import { AskAi } from "@/app/dashboard/code-editor/components";
+import { AskAi } from "./tabs";
 
 type FooterProps = {
     executionResult: ReactNode;

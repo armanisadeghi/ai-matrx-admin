@@ -1,6 +1,5 @@
 "use client";
 
-import { ActionIcon, Button, RunCode } from "@/app/dashboard/code-editor/components/Buttons";
 import {
     IconBolt,
     IconHome,
@@ -10,8 +9,9 @@ import {
     IconQuestionMark,
     IconTrash,
 } from "@tabler/icons-react";
-import { IRepoData } from "@/app/dashboard/code-editor/types";
 import { useState } from "react";
+import { IRepoData } from "../../types";
+import {ActionIcon, Button, RunCode} from "@/app/kelvin/code-editor/version-3/components";
 
 const iconSize = 18;
 

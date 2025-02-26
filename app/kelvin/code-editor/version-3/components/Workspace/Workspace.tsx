@@ -1,6 +1,5 @@
 "use client";
 
-import { useDisclosure } from "@mantine/hooks";
 import { IconBrandGithub, IconFolderPlus, IconQuestionMark, IconReload } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -10,7 +9,7 @@ import { indexedDBStore } from "../../utils";
 import { Button } from "../Buttons";
 import { NewProjectDrawer, NewTabOptions } from "../NewProjectDrawer";
 import { ProjectCard } from "./ProjectCard";
-import { TextInput } from "@/app/dashboard/code-editor/components";
+import { TextInput } from "../Inputs";
 
 const store = indexedDBStore;
 
@@ -18,9 +17,14 @@ export const Workspace: React.FC = () => {
     const [repositories, setRepositories] = useState<IRepoData[]>([]);
     const [selectedRepo, setSelectedRepo] = useState<IRepoData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [opened, { open, close }] = useDisclosure(false);
+    // Replace useDisclosure with useState
+    const [opened, setOpened] = useState(false);
     const router = useRouter();
     const [selectedNewTab, setSelectedNewTab] = useState<NewTabOptions>();
+
+    // Create open and close functions to mimic useDisclosure behavior
+    const open = () => setOpened(true);
+    const close = () => setOpened(false);
 
     // let syncManagerInstance = null; // Declare this variable outside the useEffect
 
@@ -84,7 +88,7 @@ export const Workspace: React.FC = () => {
             const repo = await store.getRepository(repoName);
             setSelectedRepo(repo || null);
             router.push(
-                `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/code-editor/workspace/${encodeURIComponent(repoName)}`,
+                `${process.env.NEXT_PUBLIC_BASE_URL}/kelvin/code-editor/version-3/workspace/${encodeURIComponent(repoName)}`,
             );
         } catch (error) {
             console.error("Error loading repository:", error);

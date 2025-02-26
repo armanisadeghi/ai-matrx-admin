@@ -1,4 +1,4 @@
-import { indexedDBStore } from "@/app/dashboard/code-editor/utils";
+import {indexedDBStore} from "@/app/kelvin/code-editor/version-3/utils";
 
 const store = indexedDBStore;
 

@@ -4,14 +4,11 @@ import MonacoEditor, { EditorProps as MonacoEditorProps } from "@monaco-editor/r
 import React, { useEffect, useRef, useState } from "react";
 import { findParentStructure, getLanguageFromExtension, getPlaceholderText, IParentStructure } from "../../utils";
 import * as monaco from "monaco-editor";
-import { editor as coreEditor } from "monaco-editor-core";
-import { useEditorSave } from "@/app/dashboard/code-editor/hooks";
-import { createChatStart, sendAiMessage } from "@/app/dashboard/code-editor/supabase/aiChat";
 import { useRecoilValue } from "recoil";
-import { activeUserAtom } from "@/state/userAtoms";
-import IStandaloneEditorConstructionOptions = coreEditor.IStandaloneEditorConstructionOptions;
+import {useEditorSave} from "@/app/kelvin/code-editor/version-3/hooks";
+import {useSession} from "@talkjs/react";
 
-const OPTIONS: IStandaloneEditorConstructionOptions = {
+const OPTIONS: any = {
     acceptSuggestionOnCommitCharacter: true,
     acceptSuggestionOnEnter: "on",
     accessibilitySupport: "auto",
@@ -179,7 +176,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ repoName, value, onChang
     const language = getLanguageFromExtension(filename);
     const editorRef = useRef<any>(null);
     const { saveFileContent } = useEditorSave(editorRef, repoName, filename, setIsLoading);
-    const userId = useRecoilValue(activeUserAtom).matrixId;
     const suggestionsWidgetRef = useRef<monaco.editor.IContentWidget | null>(null);
 
     const handleEditorDidMount = (editor, monacoInstance) => {
@@ -197,7 +193,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ repoName, value, onChang
             contextMenuOrder: 1,
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI], // Ctrl+I or Cmd+I
             run: (_editor) => {
-                showAiSuggestionsWidget(editor, userId, language);
+                console.log("Running AI Suggestions");
             },
         });
 
@@ -329,20 +325,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ repoName, value, onChang
 
             try {
                 const prompt = formatMessage(parentStructure, instructions, language);
-                console.log({ prompt });
-                const newChat = await createChatStart(prompt, userId);
+                console.log("Running AI prompts", { prompt });
 
-                const response = await sendAiMessage({
-                    chatId: newChat.chatId,
-                    messagesEntry: [
-                        {
-                            role: "user",
-                            content: prompt,
-                        },
-                    ],
-                });
-
-                const aiResponse = response.data;
+                const aiResponse = "AI responses will appear here";
                 responseElement.innerHTML = `
                 <div class="response-content">
                     <pre class="${responseContentClass} overflow-x-auto" style="max-height: 150px;">

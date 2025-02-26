@@ -2,7 +2,7 @@ import { IconPackages, IconTrash } from "@tabler/icons-react";
 
 import { HTMLAttributes } from "react";
 import { IRepoData } from "../../types";
-import { Button } from "@/app/dashboard/code-editor/components";
+import {Button} from "@/app/kelvin/code-editor/version-3/components";
 
 type ProjectCardProps = HTMLAttributes<HTMLDivElement> & {
     repo: IRepoData;

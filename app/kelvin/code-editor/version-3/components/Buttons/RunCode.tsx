@@ -1,4 +1,4 @@
-import { Button } from "@/app/dashboard/code-editor/components";
+import { Button } from "@/components/ui";
 
 interface RunCodeProps {
     loading?: boolean;
@@ -8,7 +8,7 @@ interface RunCodeProps {
 export const RunCode: React.FC<RunCodeProps> = ({ onRunCode, loading }) => {
     return (
         <div>
-            <Button onClick={onRunCode} loading={loading}>
+            <Button onClick={onRunCode}>
                 {loading ? "Running..." : "Run Code"}
             </Button>
         </div>

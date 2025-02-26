@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { Paper, Title } from "@mantine/core";
+import React, {useEffect, useState} from "react";
 
-import { AddFileFolder } from "./AddFileFolder";
-import { buildTree, FileTree } from "./FolderStructure";
-import { IRepoData } from "@/app/dashboard/code-editor/types";
-import { supabaseIndexedDBStore } from "@/app/dashboard/code-editor/utils";
+import {AddFileFolder} from "./AddFileFolder";
+import {buildTree, FileTree} from "./FolderStructure";
+import {indexedDBStore} from "@/app/kelvin/code-editor/version-3/utils";
+import {IRepoData} from "@/app/kelvin/code-editor/version-3/types";
 
 export const ProjectManager: React.FC<{ projectName: string }> = ({ projectName }) => {
     const [project, setProject] = useState<IRepoData | null>(null);
@@ -15,7 +14,7 @@ export const ProjectManager: React.FC<{ projectName: string }> = ({ projectName 
 
     const loadProject = async () => {
         try {
-            const loadedProject = await supabaseIndexedDBStore.getRepository(projectName);
+            const loadedProject = await indexedDBStore.getRepository(projectName);
             setProject(loadedProject || null);
         } catch (error) {
             console.error("Error loading project:", error);
@@ -29,14 +28,14 @@ export const ProjectManager: React.FC<{ projectName: string }> = ({ projectName 
     };
 
     if (!project) {
-        return <div>Loading...</div>;
+        return <div className="flex items-center justify-center p-4">Loading...</div>;
     }
 
     return (
-        <Paper p="md">
-            <Title order={2}>{project.name}</Title>
+        <div className="bg-white dark:bg-neutral-800 rounded-md shadow-sm p-4">
+            <h2 className="text-xl font-bold mb-4">{project.name}</h2>
             <AddFileFolder projectName={project.name} onAdd={loadProject} />
             <FileTree treeData={buildTree(project)} onFileSelect={handleFileSelect} repoName={project?.name} />
-        </Paper>
+        </div>
     );
 };

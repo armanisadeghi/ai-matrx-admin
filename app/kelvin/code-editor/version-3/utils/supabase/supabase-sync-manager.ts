@@ -1,7 +1,7 @@
 "use server";
 
-import { indexedDBStore } from "@/app/dashboard/code-editor/utils/local-indexedDB";
 import { createClient } from "@/utils/supabase/server";
+import { indexedDBStore } from "../local-indexedDB";
 
 const supabase = createClient();
 

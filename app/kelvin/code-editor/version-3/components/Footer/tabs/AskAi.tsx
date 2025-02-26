@@ -1,15 +1,13 @@
-import { useCallback, useState } from "react";
-import { Button, Textarea } from "@/app/dashboard/code-editor/components";
-import { IconSend } from "@tabler/icons-react";
-import { createChatStart, sendAiMessage } from "@/app/dashboard/code-editor/supabase/aiChat";
-import { useRecoilValue } from "recoil";
-import { activeUserAtom } from "@/state/userAtoms";
+import {useCallback, useState} from "react";
+import {IconSend} from "@tabler/icons-react";
+import {useRecoilValue} from "recoil";
+import {Textarea} from "@/app/kelvin/code-editor/version-3/components";
+import {Button} from "@components/ui";
 
 export const AskAi = () => {
     const [aiResponse, setAiResponse] = useState<string[]>([]);
     const [aiResponseLoading, setAiResponseLoading] = useState(false);
     const [userInput, setUserInput] = useState("");
-    const userId = useRecoilValue(activeUserAtom).matrixId;
 
     const handleInputChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setUserInput(event.target.value);
@@ -25,16 +23,13 @@ export const AskAi = () => {
             if (text) {
                 console.log(`User input:: ${text}`);
 
-                const newChat = await createChatStart(text, userId);
+                const newChat = "Started new chat"
 
-                console.log({ newChat });
+                console.log({newChat});
 
-                const response: { data: string } = await sendAiMessage({
-                    chatId: newChat.chatId,
-                    messagesEntry: newChat?.messages,
-                });
+                const response: { data: string } = {data: "Response from new chat"}
 
-                console.log({ response });
+                console.log({response});
 
                 setAiResponse((prevState) => [...prevState, response.data]);
                 setUserInput("");
@@ -60,10 +55,9 @@ export const AskAi = () => {
                 />
                 <Button
                     variant="primary"
-                    leftSection={<IconSend size={18} />}
                     onClick={handleSubmitMessage}
-                    loading={aiResponseLoading}
                 >
+                    <IconSend size={18}/>
                     Send
                 </Button>
             </div>
