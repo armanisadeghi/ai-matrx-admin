@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { extractScraperData } from "../utils/scraper-utils";
@@ -19,19 +19,22 @@ import FancyJsonExplorer from "./FancyJsonExplorer";
 import BookmarkViewer from "./BookmarkViewer";
 import { formatJson } from "@/utils/json-cleaner-utility";
 import SEOAnalysisPage from "@/features/scraper/parts/SEOAnalysisPage";
-import RecipeContent from "./recipes/RecipeContent";
+import PersistentRecipeContent from "./recipes/AlwaysMounted";
 import { useRunRecipeSocket } from "@/lib/redux/socket/hooks/task-socket-hooks/runRecipeSocket";
 import { convertOrganizedDataToString } from "../utils/scraper-utils";
-import { useState, useEffect } from "react";
 import HeaderAnalysis from "./HeaderAnalysis";
 
+interface PageContentProps {
+  pageData: any;
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+}
 
-const recipeId = "07e85962-71c8-4a2d-acb0-80d1771a4594";
+const recipeIdFactChecker = "07e85962-71c8-4a2d-acb0-80d1771a4594";
 const brokerId = "59dd12d8-8bec-40ae-af24-09d2cf28a806";
+const recipeIdSEO = "0288e091-6252-4cca-b140-7ba94b4eb206";
 
-
-
-const PageContent = ({ pageData, activeTab, setActiveTab }) => {
+const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiveTab }) => {
     if (!pageData) {
         return <div className="p-4 text-gray-500 dark:text-gray-400">No data available for this page</div>;
     }
@@ -48,13 +51,11 @@ const PageContent = ({ pageData, activeTab, setActiveTab }) => {
     }
 
     const { statusValue, overview, textData, organizedData, structuredData, allRemovals, hashes, contentOutline } = data;
+    const [readyToSubmit, setReadyToSubmit] = useState<boolean>(false);
+    const [brokersSet, setBrokersSet] = useState<boolean>(false);
 
-    const [readyToSubmit, setReadyToSubmit] = useState(false);
-    const [brokersSet, setBrokersSet] = useState(false);
     const value = convertOrganizedDataToString(organizedData);
-
-    const runRecipeHook = useRunRecipeSocket({ recipeId });
-
+    const runRecipeHook = useRunRecipeSocket({ recipeId: recipeIdFactChecker });
     const { handleSubmit, socketHook, addBrokerValue, addBrokerValueBatch, setModelOverride } = runRecipeHook;
 
     useEffect(() => {
@@ -66,8 +67,7 @@ const PageContent = ({ pageData, activeTab, setActiveTab }) => {
         addBrokerValue(brokerId, value);
         setBrokersSet(true);
         setReadyToSubmit(true);
-    }, [value, brokersSet, organizedData]);
-
+    }, [value, brokersSet, organizedData, addBrokerValue, brokerId]);
 
     useEffect(() => {
         if (!readyToSubmit || !brokersSet) return;
@@ -105,8 +105,9 @@ const PageContent = ({ pageData, activeTab, setActiveTab }) => {
                         <SEOAnalysisPage overview={overview} structuredData={structuredData} />
                     </TabsContent>
                     <TabsContent value="recipe-content" className="m-0 h-full overflow-auto">
-                        <RecipeContent
+                        <PersistentRecipeContent
                             socketHook={socketHook}
+                            isVisible={activeTab === "recipe-content"}
                         />
                     </TabsContent>
                     <TabsContent value="hashes" className="m-0 h-full overflow-auto">
