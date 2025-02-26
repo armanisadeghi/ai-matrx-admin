@@ -40,8 +40,9 @@ const ContentTabs = ({ activeTab, setActiveTab }) => {
         <TabsTrigger value="text">Text Content</TabsTrigger>
         <TabsTrigger value="metadata">Metadata</TabsTrigger>
         <TabsTrigger value="removals">Filter Details</TabsTrigger>
+        <TabsTrigger value="header-analysis">Header Analysis</TabsTrigger>
         <TabsTrigger value="seo-analysis">SEO Analysis</TabsTrigger>
-        <TabsTrigger value="recipe-content">Recipe Content</TabsTrigger>
+        <TabsTrigger value="recipe-content">Fact-Checker</TabsTrigger>
         <TabsTrigger value="hashes">Hashes</TabsTrigger>
         <TabsTrigger value="raw">Raw</TabsTrigger>
         <TabsTrigger value="raw-explorer">Explorer</TabsTrigger>

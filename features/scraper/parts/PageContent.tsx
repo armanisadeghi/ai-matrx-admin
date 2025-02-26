@@ -23,7 +23,7 @@ import RecipeContent from "./recipes/RecipeContent";
 import { useRunRecipeSocket } from "@/lib/redux/socket/hooks/task-socket-hooks/runRecipeSocket";
 import { convertOrganizedDataToString } from "../utils/scraper-utils";
 import { useState, useEffect } from "react";
-
+import HeaderAnalysis from "./HeaderAnalysis";
 
 
 const recipeId = "07e85962-71c8-4a2d-acb0-80d1771a4594";
@@ -97,6 +97,9 @@ const PageContent = ({ pageData, activeTab, setActiveTab }) => {
                     </TabsContent>
                     <TabsContent value="removals" className="m-0 h-full overflow-auto">
                         <RemovalDetails allRemovals={allRemovals} />
+                    </TabsContent>
+                    <TabsContent value="header-analysis" className="m-0 h-full overflow-auto">
+                        <HeaderAnalysis overview={overview} />
                     </TabsContent>
                     <TabsContent value="seo-analysis" className="m-0 h-full overflow-auto">
                         <SEOAnalysisPage overview={overview} structuredData={structuredData} />
