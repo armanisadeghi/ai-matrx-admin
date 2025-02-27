@@ -113,7 +113,7 @@ export const OVERRIDE_DEFINITION: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
-        iconName: "Braces"
+        iconName: "Braces",
     },
 };
 
@@ -143,7 +143,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        iconName: "Parentheses",
+        iconName: "LetterText",
     },
     ready: {
         REQUIRED: false,
@@ -454,7 +454,6 @@ export const URL_DEFINITION: Schema = {
     },
 };
 
-
 export const QUICK_SCRAPE: Schema = {
     urls: {
         REQUIRED: true,
@@ -467,14 +466,141 @@ export const QUICK_SCRAPE: Schema = {
     },
 };
 
-
-
 // Manually created ================================
 
+export const BROKER_DEFINITION_NEW: Schema = {
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Key",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "LetterText",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Check",
+    },
+};
 
+
+export const ADD_BROKER: Schema = {
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Key",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "LetterText",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Check",
+    },
+};
+
+export const UPDATE_BROKER_VALUE: Schema = {
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Key",
+    },
+    value: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "LetterText",
+    },
+};
+
+export const SET_BROKER_READY: Schema = {
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Key",
+    },
+};
+
+export const ADD_MODEL_OVERRIDE: Schema = {
+    model_override: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Brain",
+    },
+};
+
+export const ADD_PROCESSOR_OVERRIDE: Schema = {
+    processor_override: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Settings",
+    },
+};
+
+export const ADD_OTHER_OVERRIDE: Schema = {
+    other_override: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Braces",
+    },
+};
 
 export const AVAILABLE_SERVICES = {
     simple_recipe: "Recipe Service",
+    advanced_recipe: "Advanced Recipe Service",
     cockpit_service: "Cockpit Service",
     markdown_service: "Markdown Service",
     scrape_service: "Scrape Service",
@@ -487,6 +613,15 @@ export const SERVICE_TASKS = {
         add_recipe: ADD_RECIPE,
         get_recipe: GET_RECIPE,
         get_compiled_recipe: GET_COMPILED_RECIPE,
+    },
+    advanced_recipe: {
+        run_recipe: RUN_RECIPE,
+        add_broker: ADD_BROKER,
+        update_broker_value: UPDATE_BROKER_VALUE,
+        set_broker_ready: SET_BROKER_READY,
+        add_model_override: ADD_MODEL_OVERRIDE,
+        add_processor_override: ADD_PROCESSOR_OVERRIDE,
+        add_other_override: ADD_OTHER_OVERRIDE,
     },
     cockpit_service: {
         cockpit_instant: COCKPIT_INSTANT,
@@ -521,7 +656,6 @@ export const FIELD_OVERRIDES: FieldOverrides = {
     },
 };
 
-
 export const SOCKET_TASKS_OLD = {
     cockpit_instant: COCKPIT_INSTANT,
     run_recipe: RUN_RECIPE,
@@ -537,11 +671,15 @@ export const SOCKET_TASKS_OLD = {
     remove_first_and_last_paragraph: REMOVE_FIRST_AND_LAST_PARAGRAPH,
 };
 
-
 export const SERVICES_DETAILS = {
     simple_recipe: {
         name: "Recipe Service",
         description: "A service for running recipes",
+        icon: "🧠",
+    },
+    advanced_recipe: {
+        name: "Advanced Recipe Service",
+        description: "A service for running advanced recipes",
         icon: "🧠",
     },
     cockpit_service: {

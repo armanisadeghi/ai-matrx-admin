@@ -13,6 +13,7 @@ export interface MarkdownTableProps {
     className?: string;
     fontSize?: number;
     theme?: DisplayTheme;
+    onSave?: (data: MarkdownTableData) => void;
 }
 
 export interface SectionItem {

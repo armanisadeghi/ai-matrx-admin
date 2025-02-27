@@ -245,6 +245,9 @@ importers:
       '@uidotdev/usehooks':
         specifier: github:uidotdev/usehooks
         version: https://codeload.github.com/uidotdev/usehooks/tar.gz/90fbbb4cc085e74e50c36a62a5759a40c62bb98e(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      ag-grid-community:
+        specifier: ^33.1.1
+        version: 33.1.1
       ag-grid-react:
         specifier: ^33.0.3
         version: 33.0.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -4561,8 +4564,14 @@ packages:
   ag-charts-types@11.0.3:
     resolution: {integrity: sha512-q7O2viQXPyO014QVH7KjFCUmQ/NvMBx9ReZtramQ44u+/aAa0ttLi/coK+V0Hse4/MG1eB/2XhgymdooQ0Kalg==}
 
+  ag-charts-types@11.1.1:
+    resolution: {integrity: sha512-bRmUcf5VVhEEekhX8Vk0NSwa8Te8YM/zchjyYKR2CX4vDYiwoohM1Jg9RFvbIhVbLC1S6QrPEbx5v2C6RDfpSA==}
+
   ag-grid-community@33.0.3:
     resolution: {integrity: sha512-HZeVmVieZ5Gm9j09Itecqm+OIX8X6cU4TJToUbsXv3DxdO9SK5/s8aAJAwBHtNRXOhHrhqQYwrY2yc3OtzWwcQ==}
+
+  ag-grid-community@33.1.1:
+    resolution: {integrity: sha512-CNubIro0ipj4nfQ5WJPG9Isp7UI6MMDvNzrPdHNf3W+IoM8Uv3RUhjEn7xQqpQHuu6o/tMjrqpacipMUkhzqnw==}
 
   ag-grid-react@33.0.3:
     resolution: {integrity: sha512-6IcraSVqsUG/hzTeZ0D0dtddAcZKcWdN75ek/O+lCA6r22abJPe33nHBYVezkTV8k6D3JhA24mlTwduzn0GZLQ==}
@@ -15214,9 +15223,15 @@ snapshots:
 
   ag-charts-types@11.0.3: {}
 
+  ag-charts-types@11.1.1: {}
+
   ag-grid-community@33.0.3:
     dependencies:
       ag-charts-types: 11.0.3
+
+  ag-grid-community@33.1.1:
+    dependencies:
+      ag-charts-types: 11.1.1
 
   ag-grid-react@33.0.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:

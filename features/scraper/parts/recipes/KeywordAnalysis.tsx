@@ -9,7 +9,7 @@ import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import { RecipeTaskData } from "@/lib/redux/socket/recipe-class/RecipeTaskData";
 import { RecipeTaskManager } from "@/lib/redux/socket/recipe-class/RecipeTaskManager";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
-import MarkdownTable from "@/components/mardown-display/MarkdownTable";
+import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import { Columns2 } from "lucide-react";
 
 interface KeywordAnalysisPageProps {

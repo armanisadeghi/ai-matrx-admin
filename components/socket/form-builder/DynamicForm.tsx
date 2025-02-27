@@ -18,7 +18,6 @@ interface FormFieldsProps {
     fieldOverrides?: FieldOverrides;
 }
 
-// FormFields component remains unchanged
 const FormFields = React.memo(
     ({ schema, formData, errors, notices, onChange, onBlur, onDeleteArrayItem, fieldOverrides = {} }: FormFieldsProps) => {
         return (

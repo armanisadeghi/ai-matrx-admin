@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { ParsedContent } from "./types";
-import MarkdownTable from "./MarkdownTable";
+import MarkdownTable from "./tables/MarkdownTable";
 import { DisplayTheme, THEMES } from "./themes";
 import { extractUrls, LinkDisplay } from "./LinkDisplay";
 

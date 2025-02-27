@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
 import CodeBlock from "./CodeBlock";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
-import MarkdownTable from "./MarkdownTable";
+import MarkdownTable from "./tables/MarkdownTable";
 import { InlineCopyButton } from "@/components/ui";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), {

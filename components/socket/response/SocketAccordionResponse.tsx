@@ -10,6 +10,7 @@ import {
     TabsList,
     TabsTrigger,
     TabsContent,
+    ScrollArea,
 } from "@/components/ui";
 import { useEffect, useState } from "react";
 import { SocketHook } from "@/lib/redux/socket/hooks/useSocket";
@@ -21,7 +22,8 @@ import StructuredDataTab from "./tabs/StructuredDataTab";
 import RecursivePropertiesBrowser from "./tabs/RecursivePropertiesBrowser";
 import JsonToCollapsible from "@/components/matrx/matrx-collapsible/json-to-collapsible";
 import StreamTextTab from "./tabs/StreamTextTab";
-
+import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
+import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 interface SocketResponseProps {
     socketHook: SocketHook;
 }
@@ -105,12 +107,25 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
                                     </TabsTrigger>
                                     <TabsTrigger value="properties">Recursive Properties Browser</TabsTrigger>
                                     <TabsTrigger value="jsonToCollapsible">JSON to Collapsible</TabsTrigger>
+                                    <TabsTrigger value="markdown">Markdown</TabsTrigger>
                                     <TabsTrigger value="debug">Debug View</TabsTrigger>
                                 </TabsList>
 
                                 {/* Stream Output Tab */}
                                 <StreamOutputTab cleanStreamingResponse={cleanStreamingResponse} responseRef={responseRef} />
                                 <StreamTextTab streamingResponse={streamingResponse} responseRef={responseRef} />
+
+                                <TabsContent value="markdown">
+                                    <ScrollArea className="w-full rounded-md border p-4 h-96">
+                                        <FullscreenWrapper
+                                            buttonPosition="top-right-inside"
+                                            expandButtonTitle="View in fullscreen"
+                                            closeButtonTitle="Exit fullscreen"
+                                        >
+                                            <MarkdownRenderer content={streamingResponse} type="message" />
+                                        </FullscreenWrapper>
+                                    </ScrollArea>
+                                </TabsContent>
 
                                 {/* Structured Data Tab */}
                                 <StructuredDataTab responses={responses} safeStringify={safeStringify} />

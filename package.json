@@ -93,6 +93,7 @@
     "@types/uuid": "latest",
     "@types/vscode-webview": "^1.57.5",
     "@uidotdev/usehooks": "github:uidotdev/usehooks",
+    "ag-grid-community": "^33.1.1",
     "ag-grid-react": "^33.0.3",
     "ai": "latest",
     "anthropic-vertex-ai": "latest",

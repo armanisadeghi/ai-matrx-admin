@@ -3,14 +3,14 @@ import { TabsContent, ScrollArea } from "@/components/ui";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 
 interface StreamOutputTabProps {
-    streamingResponse: { data: string };
+    streamingResponse: string;
     responseRef: React.RefObject<HTMLDivElement>;
 }
 
 const StreamTextTab = ({ streamingResponse, responseRef }: StreamOutputTabProps) => {
     const accumulatedText = useRef<string>('');
 
-    accumulatedText.current += streamingResponse.data;
+    accumulatedText.current += streamingResponse;
 
     return (
         <TabsContent value="streamText">
