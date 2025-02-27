@@ -30,6 +30,7 @@ import {
 import React from "react";
 import { IoLogoReact } from "react-icons/io5";
 import { TbBrandSocketIo } from "react-icons/tb";
+import { LuWebhook } from "react-icons/lu";
 
 //brokers/component-editor
 
@@ -136,19 +137,19 @@ export const primaryLinks = [
     // },
 
     {
-        label: 'Stock Image Gallery',
+        label: 'Image Gallery',
         href: '/demo/images', // https://lucide.dev/icons/
         icon: (
             <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
-    // {
-    //     label: 'JSON Components Demo',
-    //     href: '/tests/json-components-demo', // https://lucide.dev/icons/ json-components-demo
-    //     icon: (
-    //         <FileJson className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
-    //     ),
-    // },
+    {
+        label: 'Scrape & Analyze',
+        href: '/demo/component-demo/socket-form-builder/scraper-ui/scraper-one',
+        icon: (
+            <LuWebhook className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
     {
         label: 'Entities',
         href: '/entity-crud', // https://lucide.dev/icons/
