@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import EntityFormMinimalAnyRecord from './EntityFormMinimalAnyRecord';
 import { ScrollArea } from '@/components/ui';
-
+import { useDispatch } from 'react-redux';
 type FormMode = 'create' | 'edit' | 'view';
 
 interface EntitySheetFormProps {
@@ -38,8 +38,8 @@ const EntitySheetForm = ({
   onOpenChange,
 }: EntitySheetFormProps) => {
   const [tempRecordId, setTempRecordId] = useState<MatrxRecordId | undefined>(undefined);
-  
-  const { actions, dispatch, store } = useEntityTools(entityName);
+  const dispatch = useDispatch();
+  const { actions, store } = useEntityTools(entityName);
   const entityState = store.getState()[entityName];
   const entityPrettyName = useAppSelector((state: RootState) => selectEntityPrettyName(state, entityName));
 
@@ -52,7 +52,7 @@ const EntitySheetForm = ({
   }) as UnifiedLayoutProps;
 
   const { createRecord } = useCreateRecord(entityName);
-  const { updateRecord } = useUpdateRecord(entityName, () => onOpenChange(false));
+  const { updateRecord } = useUpdateRecord(entityName, { onComplete: () => onOpenChange(false) });
 
   useEffect(() => {
     if (open) {
