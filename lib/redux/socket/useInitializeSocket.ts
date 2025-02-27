@@ -38,3 +38,5 @@ export const useInitializeSocket = () => {
         };
     }, [dispatch]);
 };
+
+export type InitializeSocketHook = ReturnType<typeof useInitializeSocket>;

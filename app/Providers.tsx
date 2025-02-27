@@ -27,7 +27,8 @@ import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
 import { EditorProvider } from "@/providers/rich-text-editor/Provider";
 import { SearchTabProvider } from "@/context/SearchTabContext";
 import { useIsMobile } from "@/hooks/use-mobile";
-
+import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
+import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
 let globalUserId: string | null = null;
@@ -51,43 +52,47 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
             <RecoilRoot>
                 <StoreProvider initialState={initialReduxState}>
-                    <EntityProvider>
-                        <SocketProvider>
-                            <DialogProvider>
-                                <ContextMenuProvider>
-                                    <ChipMenuProvider>
-                                        <ToastProvider>
-                                            <ThemeProvider defaultTheme="dark" enableSystem={false}>
-                                                <PreferenceSyncProvider>
-                                                    <RefProvider>
-                                                        <EditorProvider>
-                                                            <FileSystemProvider initialBucket="Audio" allowedBuckets={allowedBuckets}>
-                                                                <OldFileSystemProvider>
-                                                                    <FileSystemDialogs />
-                                                                    <NextUIProvider>
-                                                                        <TooltipProvider delayDuration={200}>
-                                                                            <AudioModalProvider>
-                                                                                <ModuleHeaderProvider>
-                                                                                    <SearchTabProvider isMobile={isMobile}>
-                                                                                        {children}
+                    <PersistentComponentProvider>
+
+                        <EntityProvider>
+                            <SocketProvider>
+                                <DialogProvider>
+                                    <ContextMenuProvider>
+                                        <ChipMenuProvider>
+                                            <ToastProvider>
+                                                <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                                                    <PreferenceSyncProvider>
+                                                        <RefProvider>
+                                                            <EditorProvider>
+                                                                <FileSystemProvider initialBucket="Audio" allowedBuckets={allowedBuckets}>
+                                                                    <OldFileSystemProvider>
+                                                                        <FileSystemDialogs />
+                                                                        <NextUIProvider>
+                                                                            <TooltipProvider delayDuration={200}>
+                                                                                <AudioModalProvider>
+                                                                                    <ModuleHeaderProvider>
+                                                                                        <SearchTabProvider isMobile={isMobile}>
+                                                                                        <PersistentDOMConnector />
+                                                                                            {children}
                                                                                         </SearchTabProvider>
-                                                                                </ModuleHeaderProvider>
-                                                                                <Toaster />
-                                                                            </AudioModalProvider>
-                                                                        </TooltipProvider>
-                                                                    </NextUIProvider>
-                                                                </OldFileSystemProvider>
-                                                            </FileSystemProvider>
-                                                        </EditorProvider>
-                                                    </RefProvider>
-                                                </PreferenceSyncProvider>
-                                            </ThemeProvider>
-                                        </ToastProvider>
-                                    </ChipMenuProvider>
-                                </ContextMenuProvider>
-                            </DialogProvider>
-                        </SocketProvider>
-                    </EntityProvider>
+                                                                                    </ModuleHeaderProvider>
+                                                                                    <Toaster />
+                                                                                </AudioModalProvider>
+                                                                            </TooltipProvider>
+                                                                        </NextUIProvider>
+                                                                    </OldFileSystemProvider>
+                                                                </FileSystemProvider>
+                                                            </EditorProvider>
+                                                        </RefProvider>
+                                                    </PreferenceSyncProvider>
+                                                </ThemeProvider>
+                                            </ToastProvider>
+                                        </ChipMenuProvider>
+                                    </ContextMenuProvider>
+                                </DialogProvider>
+                            </SocketProvider>
+                        </EntityProvider>
+                    </PersistentComponentProvider>
                 </StoreProvider>
             </RecoilRoot>
         </SchemaProvider>

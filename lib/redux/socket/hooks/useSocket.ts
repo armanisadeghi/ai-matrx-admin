@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { useInitializeSocket } from "@/lib/redux/socket/useInitializeSocket";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { useSocketConnection } from "../useSocketConnection";
 
 export interface TaskData {
     [key: string]: any;
@@ -15,18 +14,17 @@ export interface SocketTask {
 }
 
 export const useSocket = () => {
-    useInitializeSocket();
-    const socketManager = SocketManager.getInstance();
+    // Use the consolidated socket connection hook
+    const { socketManager, isConnected, isAuthenticated } = useSocketConnection();
+    
     const [namespace, setNamespace] = useState("UserSession");
     const [service, setService] = useState("");
     const [taskType, setTaskType] = useState("");
-
-    // Stream and connection state
+    
+    // Stream and response state
     const [streamEnabled, setStreamEnabled] = useState(true);
     const [isResponseActive, setIsResponseActive] = useState(false);
-    const [isConnected, setIsConnected] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+    
     // Task data state
     const [tasks, setTasks] = useState<SocketTask[]>([
         {
@@ -36,52 +34,16 @@ export const useSocket = () => {
             taskData: {},
         },
     ]);
-
+    
     // Response state
     const [streamingResponse, setStreamingResponse] = useState("");
     const [responses, setResponses] = useState<any[]>([]);
     const responseRef = useRef<HTMLDivElement | null>(null);
-
-    // Connection checker
-    useEffect(() => {
-        let mounted = true;
-        let checkInterval: NodeJS.Timeout;
-
-        const checkConnection = () => {
-            try {
-                const socket = socketManager.getSocket();
-                if (mounted && socket) {
-                    setIsConnected(socket.connected);
-                    setIsAuthenticated(socket.connected);
-                }
-            } catch (error) {
-                if (mounted) {
-                    setIsConnected(false);
-                    setIsAuthenticated(false);
-                }
-            }
-        };
-
-        checkConnection();
-        checkInterval = setInterval(checkConnection, 1000);
-
-        return () => {
-            mounted = false;
-            if (checkInterval) {
-                clearInterval(checkInterval);
-            }
-        };
-    }, []);
-
-    // Auto-scroll effect for streaming responses
-    useEffect(() => {
-        if (responseRef.current) {
-            responseRef.current.scrollTop = responseRef.current.scrollHeight;
-        }
-    }, [streamingResponse]);
+    const lastResponseTypeRef = useRef<string | null>(null);
 
     // Update tasks when streamEnabled changes
     useEffect(() => {
+        console.log("--> DEBUG: streamEnabled", streamEnabled);
         setTasks((tasks) =>
             tasks.map((task) => ({
                 ...task,
@@ -90,10 +52,9 @@ export const useSocket = () => {
         );
     }, [streamEnabled]);
 
-
     const setTaskData = (taskData: TaskData | TaskData[]) => {
+        console.log("--> DEBUG: setTaskData", taskData);
         const taskArray = Array.isArray(taskData) ? taskData : [taskData];
-
         setTasks(
             taskArray.map((data, index) => ({
                 task: taskType,
@@ -104,6 +65,7 @@ export const useSocket = () => {
         );
     };
 
+    
     const handleSend = () => {
         if (!service || !taskType) {
             console.log("current service", service);
@@ -111,36 +73,59 @@ export const useSocket = () => {
             console.error("Service and task type must be selected");
             return;
         }
-
+        
         setStreamingResponse("");
         setResponses([]);
         setIsResponseActive(true);
-
+        lastResponseTypeRef.current = null;
+        
         const payload = tasks.map((task) => ({
             task: task.task,
             index: task.index,
             stream: task.stream,
             taskData: task.taskData,
         }));
-
+        
         socketManager.startTask(service, payload, (response) => {
-            if (response && typeof response === "object" && "data" in response) {
-                if (response.data && typeof response.data === "object") {
-                    setResponses((prev) => [...prev, response.data]);
+            try {
+                const currentType = typeof response;
+                
+                // Only log when the response type changes
+                if (lastResponseTypeRef.current !== currentType) {
+                    console.log(`--> Received response of type: ${currentType}`);
+                    lastResponseTypeRef.current = currentType;
+                }
+                
+                // Case 1: String chunks (typically from LLM streams)
+                if (currentType === "string") {
+                    setStreamingResponse(prev => prev + response);
+                } 
+                // Case 2: Object (e.g., results from scrape)
+                else if (currentType === "object") {
+                    setResponses(prev => [...prev, response]);
 
                     try {
-                        const jsonString = JSON.stringify(response.data, null, 2);
-                        setStreamingResponse((prev) => prev + (prev ? "\n\n" : "") + jsonString);
+                        const jsonString = JSON.stringify(response, null, 2);
+                        setStreamingResponse(prev => prev + (prev ? "\n\n" : "") + jsonString);
                     } catch (err) {
-                        setStreamingResponse((prev) => prev + "\n[Complex object received - see console for details]");
+                        console.error("Failed to stringify object response:", err);
+                        setStreamingResponse(prev => 
+                            prev + "\n[Complex object received - see console for details]"
+                        );
                     }
-                } else {
-                    setStreamingResponse((prev) => prev + response.data);
                 }
-            } else if (typeof response === "string") {
-                setStreamingResponse((prev) => prev + response);
-            } else {
-                setResponses((prev) => [...prev, response]);
+                else {
+                    console.warn(`Unexpected response type: ${currentType}`);
+                    setResponses(prev => [...prev, response]);
+                    setStreamingResponse(prev => 
+                        prev + `\n[Received data of type: ${currentType}]`
+                    );
+                }
+            } catch (err) {
+                console.error("Error handling socket response:", err);
+                setStreamingResponse(prev => 
+                    prev + "\n[Error processing response - see console for details]"
+                );
             }
         });
     };
@@ -149,6 +134,7 @@ export const useSocket = () => {
         setStreamingResponse("");
         setResponses([]);
         setIsResponseActive(false);
+        lastResponseTypeRef.current = null;
     };
 
     return {
@@ -159,23 +145,19 @@ export const useSocket = () => {
         setService,
         taskType,
         setTaskType,
-
         // Stream and connection state
         streamEnabled,
         setStreamEnabled,
         isResponseActive,
         isConnected,
         isAuthenticated,
-
         // Task state and handlers
         tasks,
         setTaskData,
-
         // Response state
         streamingResponse,
         responses,
         responseRef,
-
         // Action handlers
         handleSend,
         handleClear,

@@ -35,19 +35,20 @@ const ContentTabs = ({ activeTab, setActiveTab }) => {
         className="flex border-b border-gray-200 dark:border-gray-700 gap-1 overflow-x-auto scrollbar-hide py-1 px-6 md:px-0"
       >
         <TabsTrigger value="reader">Reader</TabsTrigger>
-        <TabsTrigger value="organized">Organized Content</TabsTrigger>
-        <TabsTrigger value="structured">Structured Data</TabsTrigger>
-        <TabsTrigger value="text">Text Content</TabsTrigger>
+        <TabsTrigger value="organized">Content</TabsTrigger>
+        <TabsTrigger value="structured">Structured</TabsTrigger>
+        <TabsTrigger value="text">Text</TabsTrigger>
         <TabsTrigger value="metadata">Metadata</TabsTrigger>
-        <TabsTrigger value="removals">Filter Details</TabsTrigger>
-        <TabsTrigger value="header-analysis">Header Analysis</TabsTrigger>
-        <TabsTrigger value="seo-analysis">SEO Analysis</TabsTrigger>
-        <TabsTrigger value="recipe-content">Fact-Checker</TabsTrigger>
+        <TabsTrigger value="removals">Removals</TabsTrigger>
+        <TabsTrigger value="header-analysis">Header</TabsTrigger>
+        <TabsTrigger value="seo-analysis">SEO</TabsTrigger>
+        <TabsTrigger value="fact-checker">Fact-Check</TabsTrigger>
+        <TabsTrigger value="keyword-analysis">Keywords</TabsTrigger>
         <TabsTrigger value="hashes">Hashes</TabsTrigger>
         <TabsTrigger value="raw">Raw</TabsTrigger>
         <TabsTrigger value="raw-explorer">Explorer</TabsTrigger>
+        <TabsTrigger value="bookmark-viewer">Bookmarks</TabsTrigger>
         <TabsTrigger value="fancy-json-explorer">Fancy Explorer</TabsTrigger>
-        <TabsTrigger value="bookmark-viewer">Bookmark Viewer</TabsTrigger>
       </TabsList>
       
       <button 
@@ -62,12 +63,3 @@ const ContentTabs = ({ activeTab, setActiveTab }) => {
 };
 
 export default ContentTabs;
-
-// Optional: Add this to your global CSS to hide scrollbars but maintain functionality
-// .scrollbar-hide::-webkit-scrollbar {
-//   display: none;
-// }
-// .scrollbar-hide {
-//   -ms-overflow-style: none;
-//   scrollbar-width: none;
-// }

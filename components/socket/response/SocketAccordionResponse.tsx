@@ -20,7 +20,7 @@ import PropertiesBrowserTab from "./tabs/PropertiesBrowserTab";
 import StructuredDataTab from "./tabs/StructuredDataTab";
 import RecursivePropertiesBrowser from "./tabs/RecursivePropertiesBrowser";
 import JsonToCollapsible from "@/components/matrx/matrx-collapsible/json-to-collapsible";
-
+import StreamTextTab from "./tabs/StreamTextTab";
 
 interface SocketResponseProps {
     socketHook: SocketHook;
@@ -98,6 +98,7 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
                             <Tabs defaultValue="stream">
                                 <TabsList className="mb-2">
                                     <TabsTrigger value="stream">Stream Output</TabsTrigger>
+                                    <TabsTrigger value="streamText">Stream Output Text</TabsTrigger>
                                     <TabsTrigger value="structured">Structured Data ({responses.length})</TabsTrigger>
                                     <TabsTrigger value="propertiesBrowser" disabled={responses.length === 0}>
                                         Properties Browser
@@ -109,6 +110,7 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
 
                                 {/* Stream Output Tab */}
                                 <StreamOutputTab cleanStreamingResponse={cleanStreamingResponse} responseRef={responseRef} />
+                                <StreamTextTab streamingResponse={streamingResponse} responseRef={responseRef} />
 
                                 {/* Structured Data Tab */}
                                 <StructuredDataTab responses={responses} safeStringify={safeStringify} />

@@ -53,6 +53,8 @@ export const extractScraperData = (pageData) => {
   let hashes = [];
   let contentOutline = [];
 
+  console.log("[SCRAPER UTILS: extractScraperData] pageData", pageData);
+
   try {
     // Handle string response
     if (typeof pageData === 'string') {
