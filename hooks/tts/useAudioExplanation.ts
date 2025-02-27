@@ -1,4 +1,6 @@
 // hooks/tts/useAudioExplanation.ts
+'use client';
+
 import { useCallback } from 'react';
 import { useAudioModal } from '@/providers/AudioModalProvider';
 import type { AudioModalOptions } from '@/types/audio';

@@ -1,4 +1,6 @@
 // hooks/useWakeWord.ts
+'use client';
+
 import {useEffect, useState, useCallback, useRef} from 'react';
 
 export type WakeWord = {

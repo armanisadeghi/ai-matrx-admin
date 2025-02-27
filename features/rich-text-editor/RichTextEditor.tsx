@@ -108,7 +108,12 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, 
         e.preventDefault();
         const text = e.clipboardData.getData('text/plain');
         if (text) {
-            document.execCommand('insertText', false, text);
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(document.createTextNode(text));
+            }
             updateContentAndMetadata();
         }
     };

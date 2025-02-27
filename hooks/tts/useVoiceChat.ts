@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { usePlayer } from "@/hooks/tts/usePlayer";

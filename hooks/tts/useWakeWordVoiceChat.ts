@@ -1,3 +1,5 @@
+'use client';
+
 import {useState, useEffect, useCallback, useRef} from "react";
 import {useVoiceChatWithAutoSleep} from "./useVoiceChatWithAutoSleep";
 import {useWakeWord, WakeWord, WAKE_WORDS} from "./useWakeWord";
