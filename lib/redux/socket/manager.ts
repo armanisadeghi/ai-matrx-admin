@@ -12,7 +12,7 @@ export class SocketManager {
     private readonly PRODUCTION_URL = "https://server.app.matrxserver.com";
     private readonly LOCAL_URL = "http://localhost:8000";
 
-    protected constructor() {}
+    private constructor() {}
 
     static getInstance(): SocketManager {
         if (!SocketManager.instance) {
@@ -21,55 +21,89 @@ export class SocketManager {
         return SocketManager.instance;
     }
 
-    private async getSocketAddress(): Promise<string> {
-        if (process.env.NEXT_PUBLIC_SOCKET_OVERRIDE) {
-            return process.env.NEXT_PUBLIC_SOCKET_OVERRIDE;
+    private async testLocalConnection(): Promise<boolean> {
+        try {
+            const { io } = await import("socket.io-client");
+            return new Promise((resolve) => {
+                const testSocket = io(this.LOCAL_URL, {
+                    transports: ["polling", "websocket"],
+                    timeout: 2000,
+                    autoConnect: false,
+                });
+
+                testSocket.on("connect", () => {
+                    testSocket.disconnect();
+                    resolve(true);
+                });
+
+                testSocket.on("connect_error", () => {
+                    testSocket.disconnect();
+                    resolve(false);
+                });
+
+                testSocket.connect();
+            });
+        } catch (error) {
+            console.log("[SOCKET MANAGER] Local connection test failed:", error);
+            return false;
         }
+    }
+
+    private async getSocketAddress(): Promise<string> {
+        // 1. Check for override first
+        const overrideUrl = process.env.NEXT_PUBLIC_SOCKET_OVERRIDE;
+        if (overrideUrl) {
+            console.log("[SOCKET MANAGER] Using override URL:", overrideUrl);
+            return overrideUrl;
+        }
+
+        // 2. Production environment always uses production URL
         if (process.env.NODE_ENV === "production") {
             return this.PRODUCTION_URL;
         }
-        try {
-            const testSocket = await fetch(this.LOCAL_URL, {
-                method: "HEAD",
-                signal: AbortSignal.timeout(2000),
-            });
-            if (testSocket.ok) {
-                return this.LOCAL_URL;
-            }
-        } catch (error) {
-            console.log("[SOCKET MANAGER] Local server not available, falling back to production URL");
+
+        // 3. Development environment: test local connection
+        const isLocalAvailable = await this.testLocalConnection();
+        if (isLocalAvailable) {
+            console.log("[SOCKET MANAGER] Local server detected, using:", this.LOCAL_URL);
+            return this.LOCAL_URL;
         }
+
+        // 4. Fallback to production if local fails
+        console.log("[SOCKET MANAGER] Falling back to production URL:", this.PRODUCTION_URL);
         return this.PRODUCTION_URL;
     }
 
     async connect() {
-        if (!this.socket) {
-            if (typeof window !== "undefined") {
-                try {
-                    const { io } = await import("socket.io-client");
-                    const socketAddress = await this.getSocketAddress();
-                    const session = await supabase.auth.getSession();
-                    this.socket = io(`${socketAddress}/UserSession`, {
-                        transports: ["polling", "websocket"],
-                        withCredentials: true,
-                        auth: {
-                            token: session.data.session.access_token,
-                        },
-                    });
-                    this.socket.on("connect_error", (error: Error) => {
-                        console.log("[SOCKET MANAGER] Socket connection error:", error.message);
-                    });
-                    this.registerEventHandlers();
-                    console.log(`[SOCKET MANAGER] Connected to ${socketAddress}/UserSession`);
-                } catch (error) {
-                    console.error("[SOCKET MANAGER] Error connecting socket", error);
-                }
-            } else {
-                console.log("[SOCKET MANAGER] window is undefined, skipping socket connection");
-            }
+        if (this.socket || typeof window === "undefined") {
+            console.log("[SOCKET MANAGER] Socket already connected or window undefined");
+            return;
+        }
+
+        try {
+            const { io } = await import("socket.io-client");
+            const socketAddress = await this.getSocketAddress();
+            const session = await supabase.auth.getSession();
+
+            this.socket = io(`${socketAddress}/UserSession`, {
+                transports: ["polling", "websocket"],
+                withCredentials: true,
+                auth: {
+                    token: session.data.session.access_token,
+                },
+            });
+
+            this.socket.on("connect_error", (error: Error) => {
+                console.log("[SOCKET MANAGER] Socket connection error:", error.message);
+            });
+
+            this.registerEventHandlers();
+            console.log(`[SOCKET MANAGER] Connected to ${socketAddress}/UserSession`);
+        } catch (error) {
+            console.error("[SOCKET MANAGER] Error connecting socket:", error);
         }
     }
-
+    
     disconnect() {
         if (this.socket) {
             this.cleanupDynamicListeners();

@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { extractScraperData } from "../utils/scraper-utils";
@@ -23,6 +23,7 @@ import { convertOrganizedDataToString } from "../utils/scraper-utils";
 import HeaderAnalysis from "./HeaderAnalysis";
 import FactChecker from "./recipes/FactChecker";
 import KeywordAnalysis from "./recipes/KeywordAnalysis";
+import FeatureDisabledPlaceholder from "./reusable/FeatureDisabledPlaceholder";
 
 interface PageContentProps {
     pageData: any;
@@ -30,8 +31,12 @@ interface PageContentProps {
     setActiveTab: (tab: string) => void;
 }
 
-
 const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiveTab }) => {
+    // State for feature toggles
+    const [featureToggles, setFeatureToggles] = useState({
+        keywordAnalysis: false,
+        factChecker: false,
+    });
 
     if (!pageData) {
         return <div className="p-4 text-gray-500 dark:text-gray-400">No data available for this page</div>;
@@ -52,10 +57,23 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
 
     const value = useMemo(() => convertOrganizedDataToString(organizedData), [organizedData]);
 
+    // Function to enable a specific feature when requested from the placeholder
+    const enableFeature = (feature) => {
+        setFeatureToggles((prev) => ({
+            ...prev,
+            [feature]: true,
+        }));
+    };
 
     return (
         <div className="h-full flex flex-col">
-            <PageHeader title={overview?.page_title} url={overview?.url} status={statusValue} />
+            <PageHeader 
+                title={overview?.page_title} 
+                url={overview?.url} 
+                status={statusValue} 
+                featureToggles={featureToggles}
+                setFeatureToggles={setFeatureToggles}
+            />
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
                 <ContentTabs activeTab={activeTab} setActiveTab={setActiveTab} />
                 <div className="flex-1 overflow-auto">
@@ -84,11 +102,26 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
                         <SEOAnalysisPage overview={overview} structuredData={structuredData} />
                     </TabsContent>
                     <TabsContent value="keyword-analysis" className="m-0 h-full overflow-auto">
-                        <KeywordAnalysis value={value} overview={overview} />
+                        {featureToggles.keywordAnalysis ? (
+                            <KeywordAnalysis value={value} overview={overview} />
+                        ) : (
+                            <FeatureDisabledPlaceholder 
+                                featureName="Keyword Analysis"
+                                description="This feature makes API calls that may incur costs. Enable it to analyze keywords in your content."
+                                onEnable={() => enableFeature('keywordAnalysis')}
+                            />
+                        )}
                     </TabsContent>
-
                     <TabsContent value="fact-checker" className="m-0 h-full overflow-auto">
-                        <FactChecker value={value} />
+                        {featureToggles.factChecker ? (
+                            <FactChecker value={value} />
+                        ) : (
+                            <FeatureDisabledPlaceholder 
+                                featureName="Fact Checker"
+                                description="This feature makes API calls that may incur costs. Enable it to check facts in your content."
+                                onEnable={() => enableFeature('factChecker')}
+                            />
+                        )}
                     </TabsContent>
                     <TabsContent value="hashes" className="m-0 h-full overflow-auto">
                         <HashesContent hashes={hashes} />

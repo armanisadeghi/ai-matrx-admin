@@ -129,7 +129,6 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
         const recipeOverrides = createRecipeOverrides(settingsList);
         const recipeTaskDataList = createRecipeTaskDataList(compiledRecipe);
 
-        console.log("--- recipeTaskDataList", recipeTaskDataList);
 
         return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
     }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);
