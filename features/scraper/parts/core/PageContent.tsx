@@ -2,28 +2,28 @@
 import React, { useMemo, useState } from "react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { extractScraperData } from "../utils/scraper-utils";
+import { extractScraperData } from "../../utils/scraper-utils";
 import PageHeader from "./PageHeader";
 import ContentTabs from "./ContentTabs";
-import OrganizedContent from "./OrganizedContent";
-import SimplifiedView from "./SimplifiedView";
-import StructuredData from "./StructuredData";
-import TextContent from "./TextContent";
-import MetadataContent from "./MetadataContent";
-import RemovalDetails from "./RemovalDetails";
-import HashesContent from "./HashesContent";
-import RawJSON from "./RawJSON";
-import RawJsonExplorer from "./RawJsonExplorer";
-import ActionButtons from "./ActionButtons";
-import FancyJsonExplorer from "./FancyJsonExplorer";
-import BookmarkViewer from "./BookmarkViewer";
+import OrganizedContent from "../OrganizedContent";
+import SimplifiedView from "../SimplifiedView";
+import StructuredData from "../StructuredData";
+import TextContent from "../TextContent";
+import MetadataContent from "../MetadataContent";
+import RemovalDetails from "../RemovalDetails";
+import HashesContent from "../HashesContent";
+import RawJSON from "../RawJSON";
+import RawJsonExplorer from "../RawJsonExplorer";
+import ActionButtons from "../ActionButtons";
+import FancyJsonExplorer from "../FancyJsonExplorer";
+import BookmarkViewer from "../BookmarkViewer";
 import { formatJson } from "@/utils/json-cleaner-utility";
 import SEOAnalysisPage from "@/features/scraper/parts/SEOAnalysisPage";
-import { convertOrganizedDataToString } from "../utils/scraper-utils";
-import HeaderAnalysis from "./HeaderAnalysis";
-import FactChecker from "./recipes/FactChecker";
-import KeywordAnalysis from "./recipes/KeywordAnalysis";
-import FeatureDisabledPlaceholder from "./reusable/FeatureDisabledPlaceholder";
+import { convertOrganizedDataToString } from "../../utils/scraper-utils";
+import HeaderAnalysis from "../HeaderAnalysis";
+import FactChecker from "../recipes/FactChecker";
+import KeywordAnalysis from "../recipes/KeywordAnalysis";
+import FeatureDisabledPlaceholder from "../reusable/FeatureDisabledPlaceholder";
 
 interface PageContentProps {
     pageData: any;
@@ -66,17 +66,18 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
     };
 
     return (
-        <div className="h-full flex flex-col">
-            <PageHeader 
-                title={overview?.page_title} 
-                url={overview?.url} 
-                status={statusValue} 
-                featureToggles={featureToggles}
-                setFeatureToggles={setFeatureToggles}
-            />
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                <ContentTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-                <div className="flex-1 overflow-auto">
+        <div className="h-full flex flex-col w-full bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
+            <div className="max-w-full px-2 sm:px-4 lg:px-6 py-4">
+                <PageHeader 
+                    title={overview?.page_title} 
+                    url={overview?.url} 
+                    status={statusValue} 
+                    featureToggles={featureToggles}
+                    setFeatureToggles={setFeatureToggles}
+                />
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+                    <ContentTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+                    <div className="flex-1 overflow-auto bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
                     <TabsContent value="organized" className="m-0 h-full overflow-auto">
                         <OrganizedContent organizedData={organizedData} />
                     </TabsContent>
@@ -140,8 +141,11 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
                     </TabsContent>
                 </div>
             </Tabs>
-            <ActionButtons url={overview?.url} />
+            <div className="mt-4">
+                <ActionButtons url={overview?.url} />
+            </div>
         </div>
+    </div>
     );
 };
 

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { truncateText, extractPageTitle } from "../utils/scraper-utils";
+import { truncateText, extractPageTitle } from "../../utils/scraper-utils";
 
 /**
  * Component for displaying page tabs when multiple pages are available

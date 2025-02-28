@@ -2,8 +2,8 @@
 import React, { useState, useMemo } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { filterContentResponses, isScraperLoading } from "./utils/scraper-utils";
-import PageTabs from "./parts/PageTabs";
-import PageContent from "./parts/PageContent";
+import PageTabs from "./parts/core/PageTabs";
+import PageContent from "./parts/core/PageContent";
 
 /**
  * Main component for displaying scraper results using utility functions
