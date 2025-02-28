@@ -32,7 +32,7 @@ const ScraperResultsComponent = ({ socketHook }) => {
   }
   
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full h-full flex flex-col p-0">
       {/* Page tabs - Only show if multiple pages */}
       <PageTabs 
         responses={contentResponses} 

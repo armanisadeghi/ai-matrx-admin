@@ -12,7 +12,7 @@ const PageTabs = ({ responses, activePageIndex, setActivePageIndex }) => {
   }
 
   return (
-    <div className="border-b border-gray-200 dark:border-gray-700 p-2">
+    <div className=" bg-slate-200 dark:bg-slate-800 border-b border-slate-200 dark:border-gray-700 p-0">
       <Tabs 
         value={String(activePageIndex)} 
         onValueChange={(value) => setActivePageIndex(parseInt(value))}

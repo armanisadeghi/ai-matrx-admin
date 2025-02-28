@@ -20,7 +20,7 @@ const ContentTabs = ({ activeTab, setActiveTab }) => {
   };
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full rounded-t-none">
       {/* Scroll buttons visible on smaller screens */}
       <button 
         onClick={() => scrollTabs("left")}
@@ -32,7 +32,7 @@ const ContentTabs = ({ activeTab, setActiveTab }) => {
       
       <TabsList 
         ref={tabsRef}
-        className="flex border-b border-gray-200 dark:border-gray-700 gap-1 overflow-x-auto scrollbar-hide py-1 px-6 md:px-0"
+        className="flex gap-1 overflow-x-auto scrollbar-hide py-1 px-6 md:px-0 rounded-t-none bg-slate-800 rounded-b-lg shadow-md border-b border-slate-700"
       >
         <TabsTrigger value="reader">Reader</TabsTrigger>
         <TabsTrigger value="organized">Content</TabsTrigger>

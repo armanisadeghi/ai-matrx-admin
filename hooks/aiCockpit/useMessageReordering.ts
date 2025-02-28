@@ -13,17 +13,17 @@ export const useUpdateOrder = () => {
     return useCallback(
         (message: MessageTemplateProcessed, newOrder: number) => {
             const state = store.getState();
-            const recipeMessageKey = selectors.selectRecordKeyByFieldValue(state, 'messageId', message.id);
+            const recipeMessageKeys = selectors.selectRecordKeysByFieldValue(state, 'messageId', message.id);
 
-            if (recipeMessageKey) {
+            if (recipeMessageKeys.length > 0) {
                 dispatch(
                     actions.updateUnsavedField({
-                        recordId: recipeMessageKey,
+                        recordId: recipeMessageKeys[0],
                         field: 'order',
                         value: newOrder,
                     })
                 );
-                updateRecord(recipeMessageKey);
+                updateRecord(recipeMessageKeys[0]);
             }
         },
         [dispatch, actions, selectors, store, updateRecord]
@@ -38,10 +38,10 @@ export const useMoveUp = () => {
     return useCallback(
         (message: MessageTemplateProcessed) => {
             const state = store.getState();
-            const recipeMessageKey = selectors.selectRecordKeyByFieldValue(state, 'messageId', message.id);
+            const recipeMessageKeys = selectors.selectRecordKeysByFieldValue(state, 'messageId', message.id);
 
             const payload = {
-                matrxRecordId: recipeMessageKey,
+                matrxRecordId: recipeMessageKeys[0],
                 data: { order: message.order - 1 },
             };
 
@@ -59,10 +59,10 @@ export const useMoveDown = () => {
     return useCallback(
         (message: MessageTemplateProcessed) => {
             const state = store.getState();
-            const recipeMessageKey = selectors.selectRecordKeyByFieldValue(state, 'messageId', message.id);
+            const recipeMessageKeys = selectors.selectRecordKeysByFieldValue(state, 'messageId', message.id);
 
             const payload = {
-                matrxRecordId: recipeMessageKey,
+                matrxRecordId: recipeMessageKeys[0],
                 data: { order: message.order + 1 },
             };
 
