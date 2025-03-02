@@ -9,7 +9,7 @@ exports.getHeaders = () => [
             },
             {
                 key: "Cross-Origin-Embedder-Policy",
-                value: "require-corp",
+                value: "credentialless",
             },
         ],
     },

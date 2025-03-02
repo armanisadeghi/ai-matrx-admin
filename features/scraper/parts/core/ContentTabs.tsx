@@ -37,6 +37,7 @@ const ContentTabs = ({ activeTab, setActiveTab }) => {
         <TabsTrigger value="reader">Reader</TabsTrigger>
         <TabsTrigger value="organized">Content</TabsTrigger>
         <TabsTrigger value="structured">Structured</TabsTrigger>
+        <TabsTrigger value="images">Images</TabsTrigger>
         <TabsTrigger value="text">Text</TabsTrigger>
         <TabsTrigger value="metadata">Metadata</TabsTrigger>
         <TabsTrigger value="removals">Removals</TabsTrigger>

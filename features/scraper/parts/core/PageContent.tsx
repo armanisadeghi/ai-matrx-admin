@@ -24,7 +24,7 @@ import HeaderAnalysis from "../HeaderAnalysis";
 import FactChecker from "../recipes/FactChecker";
 import KeywordAnalysis from "../recipes/KeywordAnalysis";
 import FeatureDisabledPlaceholder from "../reusable/FeatureDisabledPlaceholder";
-
+import ImageGallery from "../tabs/ImageGallery";
 interface PageContentProps {
     pageData: any;
     activeTab: string;
@@ -86,6 +86,9 @@ const PageContent: React.FC<PageContentProps> = ({ pageData, activeTab, setActiv
                     </TabsContent>
                     <TabsContent value="structured" className="m-0 h-full overflow-auto">
                         <StructuredData structuredData={structuredData} />
+                    </TabsContent>
+                    <TabsContent value="images" className="m-0 h-full overflow-auto">
+                        <ImageGallery imageUrls={data?.images} />
                     </TabsContent>
                     <TabsContent value="text" className="m-0 h-full overflow-auto">
                         <TextContent textData={textData} />

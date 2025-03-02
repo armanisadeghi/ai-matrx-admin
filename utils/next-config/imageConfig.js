@@ -2,44 +2,111 @@
 exports.remotePatterns = [
     {
         protocol: 'https',
-        hostname: '**',
+        hostname: '**', // Allows all HTTPS images from any domain
+    },
+    
+    // Social Media Platforms
+    {
+        protocol: 'https',
+        hostname: '**.fbcdn.net',
     },
     {
         protocol: 'https',
+        hostname: '**.instagram.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.tiktokcdn.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.youtube.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.ytimg.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.twimg.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.linkedin.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.pinterest.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.snapchat.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.cdninstagram.com',
+    },
+    
+    // Maps & Business Listings
+    {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.googleusercontent.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.yelp.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.tripadvisor.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.bing.com',
+    },
+    
+    // Image hosting services
+    {
+        protocol: 'https',
         hostname: 'unsplash.com',
-        port: '',
         pathname: '/**',
     },
     {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
         pathname: '/**',
     },
     {
         protocol: 'https',
         hostname: '**.imagedelivery.net',
-        port: '',
-        pathname: '/**',
     },
     {
         protocol: 'https',
         hostname: '**.aceternity.com',
-        port: '',
-        pathname: '/**',
-    },
-    {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        port: '',
-        pathname: '/**',
     },
     {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
-        port: '',
-        pathname: '/**',
     },
+    {
+        protocol: 'https',
+        hostname: '**.s3.amazonaws.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.nitrocdn.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.cdn.pixabay.com',
+    },
+    
+    // News & Media
     {
         protocol: 'https',
         hostname: '**.bbc.co.uk',
@@ -104,9 +171,64 @@ exports.remotePatterns = [
         protocol: 'https',
         hostname: 'static.toiimg.com',
     },
-    // Catch-all pattern for s3 and similar domains
     {
         protocol: 'https',
-        hostname: '**.s3.amazonaws.com',
+        hostname: '**.reuters.com',
     },
+    {
+        protocol: 'https',
+        hostname: '**.bloomberg.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.aljazeera.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.npr.org',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.theguardian.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.usatoday.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.newsweek.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.time.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.politico.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.huffpost.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.cbsnews.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.nbcnews.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.abcnews.go.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.latimes.com',
+    },
+    {
+        protocol: 'https',
+        hostname: '**.telegraph.co.uk',
+    }
 ];

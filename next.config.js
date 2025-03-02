@@ -1,5 +1,5 @@
 const { getHeaders } = require("./utils/next-config/headers");
-const { remotePatterns } = require("./utils/next-config/imageConfig");
+// const { remotePatterns } = require("./utils/next-config/imageConfig");
 const { configureWebpack } = require("./utils/next-config/webpackConfig");
 const copyFiles = require("./utils/next-config/copyFiles");
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
@@ -33,7 +33,12 @@ const nextConfig = {
     reactStrictMode: false,
     headers: getHeaders,
     images: {
-        remotePatterns,
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "**",
+            },
+        ],
     },
     webpack: (config, { isServer }) => {
         // First apply your existing webpack config

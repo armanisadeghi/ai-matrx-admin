@@ -118,16 +118,17 @@ export function* withFullConversion<TEntity extends EntityKeys>(
     action: PayloadAction<any>,
     successAction?: (payload: any) => PayloadAction<any>
 ) {
+    const DEBUG_LEVEL = 'info';
     const entityLogger = EntityLogger.createLoggerWithDefaults('WITH FULL CONVERSION', entityKey);
     const payload = action.payload;
-    entityLogger.log('debug', 'Starting with: ', payload);
+    entityLogger.log(DEBUG_LEVEL, 'Starting with: ', payload);
 
     try {
         const flexibleQueryOptions: FlexibleQueryOptions = {
             entityNameAnyFormat: entityKey,
         };
 
-        entityLogger.log('debug', 'Flexible Query Options', flexibleQueryOptions);
+        entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options', flexibleQueryOptions);
 
         optionalActionKeys.forEach((key) => {
             if (key in payload && payload[key] !== undefined) {
@@ -136,20 +137,20 @@ export function* withFullConversion<TEntity extends EntityKeys>(
             }
         });
 
-        entityLogger.log('debug', 'Flexible Query Options with optional keys', flexibleQueryOptions);
+        entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options with optional keys', flexibleQueryOptions);
 
         if (payload.columns || payload.fields) {
             flexibleQueryOptions.columns = payload.columns || payload.fields;
         }
 
-        entityLogger.log('debug', 'Flexible Query Options with columns', flexibleQueryOptions);
+        entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options with columns', flexibleQueryOptions);
 
         const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(selectUnifiedDatabaseObjectConversion, flexibleQueryOptions);
 
-        entityLogger.log('debug', 'Updated unifiedDatabaseObject: ', unifiedDatabaseObject);
+        entityLogger.log(DEBUG_LEVEL, 'Updated unifiedDatabaseObject: ', unifiedDatabaseObject);
 
         const api = yield call(initializeDatabaseApi, unifiedDatabaseObject.tableName);
-        entityLogger.log('debug', 'Database API initialized', entityKey);
+        entityLogger.log(DEBUG_LEVEL, 'Database API initialized', entityKey);
 
         const context: WithFullConversionSagaContext<TEntity> = {
             entityKey,
@@ -163,10 +164,10 @@ export function* withFullConversion<TEntity extends EntityKeys>(
 
         const result = yield call(sagaHandler, context);
 
-        entityLogger.log('debug', 'withFullConversion result', entityKey, result);
+        entityLogger.log(DEBUG_LEVEL, 'withFullConversion result', entityKey, result);
 
         const frontendResponse = yield select(selectFrontendConversion, { entityName: entityKey, data: result });
-        entityLogger.log('debug', 'Frontend Conversion', entityKey, frontendResponse);
+        entityLogger.log(DEBUG_LEVEL, 'Frontend Conversion', entityKey, frontendResponse);
 
         if (successAction) {
             yield put(successAction(frontendResponse));

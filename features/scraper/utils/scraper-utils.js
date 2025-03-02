@@ -52,6 +52,22 @@ export const extractScraperData = (pageData) => {
   let noiseRemoverDetails = [];
   let hashes = [];
   let contentOutline = [];
+  let allRemovals = [];
+  let links = {};
+  let internalLinks = [];
+  let externalLinks = [];
+  let images = [];
+  let documents = [];
+  let videos = [];
+  let audio = [];
+  let other = [];
+  let archives = [];
+  let metadata = {};
+  let jsonId = [];
+  let opengraph = {};
+  let metatags = [];
+  let structuredMetadata = [];
+  let organizedContentNew = [];
 
   console.log("[SCRAPER UTILS: extractScraperData] pageData", pageData);
 
@@ -102,11 +118,26 @@ export const extractScraperData = (pageData) => {
     noiseRemoverDetails = parsedContent.noise_remover_removal_details || [];
     hashes = parsedContent.hashes || [];
     contentOutline = parsedContent.overview.outline || [];
-
-    const allRemovals = [
+    allRemovals = [
       ...(contentFilterDetails || []).map(item => ({ ...item, remover: "Content Filter" })),
       ...(noiseRemoverDetails || []).map(item => ({ ...item, remover: "Noise Remover" })),
     ];
+
+    links = parsedContent.links || {};
+    internalLinks = links.internal || [];
+    externalLinks = links.external || [];
+    images = links.images || [];
+    documents = links.documents || [];
+    videos = links.videos || [];
+    audio = links.audio || [];
+    other = links.other || [];
+    archives = links.archives || [];
+    metadata = parsedContent.overview.metadata || {};
+    jsonId = parsedContent.overview.metadata.json_id || [];
+    opengraph = parsedContent.overview.metadata.opengraph || {};
+    metatags = parsedContent.overview.metadata.metatags || [];
+    structuredMetadata = parsedContent.overview.metadata.structured_metadata || [];
+    organizedContentNew = parsedContent.organized_data_new.content || [];
     
     return {
       isError: false,
@@ -120,7 +151,22 @@ export const extractScraperData = (pageData) => {
       hashes,
       parsedContent,
       allRemovals,
-      contentOutline
+      contentOutline,
+      links,
+      internalLinks,
+      externalLinks,
+      images,
+      documents,
+      videos,
+      audio,
+      other,
+      archives,
+      metadata,
+      jsonId,
+      opengraph,
+      metatags,
+      structuredMetadata,
+      organizedContentNew,
     };
   } catch (error) {
     console.error("Error extracting data:", error);

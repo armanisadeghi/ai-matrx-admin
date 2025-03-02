@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { wrap } from "popmotion";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { X, Download, Heart, Share2, Info, ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
+import { X, Download, Heart, Share2, ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
 
 const variants = {
     enter: (direction: number) => ({
@@ -25,44 +25,47 @@ const variants = {
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => Math.abs(offset) * velocity;
 
-interface ImageViewerProps {
-    photos: any[];
+interface SimplePhoto {
+    id: string;
+    url: string;
+    description: string;
+}
+
+interface SimpleImageViewerProps {
+    photos: SimplePhoto[];
     initialIndex: number;
     onClose: () => void;
-    onDownload: (photo: any) => void;
-    onFavorite: (photo: any) => void;
-    onShare: (photo: any) => void;
-    onInfo: (photo: any) => void;
-    isFavorite: (photo: any) => boolean;
-    onRelatedPhotoClick: (photo: any) => void;
+    onDownload: (photo: SimplePhoto) => void;
+    onFavorite: (photo: SimplePhoto) => void;
+    onShare: (photo: SimplePhoto) => void;
+    isFavorite: (photo: SimplePhoto) => boolean;
+    onRelatedPhotoClick: (photo: SimplePhoto) => void;
     loadMorePhotos: () => void;
 }
 
-export function ImageViewer({
+export function SimpleImageViewer({
     photos,
     initialIndex,
     onClose,
     onDownload,
     onFavorite,
     onShare,
-    onInfo,
     isFavorite,
     onRelatedPhotoClick,
     loadMorePhotos,
-}: ImageViewerProps) {
+}: SimpleImageViewerProps) {
     const [[page, direction], setPage] = useState([initialIndex, 0]);
     const [buffer, setBuffer] = useState<string[]>([]);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [scale, setScale] = useState(1);
-
     const imageIndex = wrap(0, photos.length, page);
 
     const preloadImages = useCallback(
         async (currentPage: number) => {
             const imagesToLoad = [-2, -1, 0, 1, 2]
-                .map((offset) => photos[wrap(0, photos.length, currentPage + offset)]?.urls.regular)
+                .map((offset) => photos[wrap(0, photos.length, currentPage + offset)]?.url)
                 .filter(Boolean);
-
+            
             const loadedImages = await Promise.all(
                 imagesToLoad.map(
                     (src) =>
@@ -74,7 +77,6 @@ export function ImageViewer({
                         })
                 )
             );
-
             setBuffer(loadedImages);
         },
         [photos]
@@ -103,10 +105,6 @@ export function ImageViewer({
         });
     };
 
-    const getShareableImageUrl = (photo: any) => {
-        return photo.urls.full || photo.urls.raw || photo.urls.regular;
-    };
-
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -129,8 +127,8 @@ export function ImageViewer({
                     <AnimatePresence initial={false} custom={direction}>
                         <motion.img
                             key={page}
-                            src={buffer[2] || photos[imageIndex]?.urls.regular}
-                            alt={photos[imageIndex]?.alt_description}
+                            src={buffer[2] || photos[imageIndex]?.url}
+                            alt={photos[imageIndex]?.description}
                             className="w-full h-full object-contain"
                             style={{ scale }}
                             custom={direction}
@@ -147,7 +145,6 @@ export function ImageViewer({
                             dragElastic={1}
                             onDragEnd={(e, { offset, velocity }) => {
                                 const swipe = swipePower(offset.x, velocity.x);
-
                                 if (swipe < -swipeConfidenceThreshold) {
                                     paginate(1);
                                 } else if (swipe > swipeConfidenceThreshold) {
@@ -183,7 +180,6 @@ export function ImageViewer({
                         </>
                     )}
                 </div>
-
                 <Button
                     className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 opacity-75 hover:opacity-100 transition-opacity"
                     variant="secondary"
@@ -206,13 +202,12 @@ export function ImageViewer({
                 >
                     <ChevronRight className="h-6 w-6" />
                 </Button>
-
                 {!isFullScreen && (
                     <>
                         <div className="p-4 bg-card/80 backdrop-blur-sm text-card-foreground">
-                            <h3 className="text-lg font-semibold">{photos[imageIndex]?.user.name}</h3>
+                            <h3 className="text-lg font-semibold">Image {imageIndex + 1}</h3>
                             <p className="text-sm text-muted-foreground mb-2">
-                                {photos[imageIndex]?.description || photos[imageIndex]?.alt_description}
+                                {photos[imageIndex]?.description}
                             </p>
                             <div className="flex space-x-2">
                                 <Tooltip>
@@ -223,7 +218,6 @@ export function ImageViewer({
                                     </TooltipTrigger>
                                     <TooltipContent>Download</TooltipContent>
                                 </Tooltip>
-
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button variant="outline" size="icon" onClick={() => onFavorite(photos[imageIndex])}>
@@ -234,39 +228,28 @@ export function ImageViewer({
                                     </TooltipTrigger>
                                     <TooltipContent>Favorite</TooltipContent>
                                 </Tooltip>
-
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            onClick={() => onShare(getShareableImageUrl(photos[imageIndex]))}
+                                            onClick={() => onShare(photos[imageIndex])}
                                         >
                                             <Share2 className="h-4 w-4" />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>Share</TooltipContent>
                                 </Tooltip>
-
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="outline" size="icon" onClick={() => onInfo(photos[imageIndex])}>
-                                            <Info className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Image Info</TooltipContent>
-                                </Tooltip>
                             </div>
                         </div>
-
                         <div className="p-4 bg-card/80 backdrop-blur-sm">
-                            <h4 className="text-md font-semibold mb-2">Related Images</h4>
-                            <div className="flex space-x-2 overflow-x-auto">
+                            <h4 className="text-md font-semibold mb-2">All Images</h4>
+                            <div className="flex space-x-2 overflow-x-auto pb-2">
                                 {photos.map((photo, index) => (
                                     <img
                                         key={photo.id}
-                                        src={photo.urls.thumb}
-                                        alt={photo.alt_description}
+                                        src={photo.url}
+                                        alt={photo.description}
                                         className={`w-20 h-20 object-cover rounded cursor-pointer ${
                                             index === imageIndex ? "ring-2 ring-primary" : ""
                                         }`}
