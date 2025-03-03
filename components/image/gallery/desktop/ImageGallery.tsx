@@ -3,9 +3,11 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ImageCard } from './ImageCard';
 import { SimpleImageViewer } from './SimpleImageViewer';
-import SearchBar from './SearchBar';
+import { SearchBar } from '../SearchBar';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Grid, Grid3X3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export interface SimplePhoto {
     id: string;
@@ -20,6 +22,7 @@ export function ImageGallery({ imageUrls = [] }) {
     const [selectedPhoto, setSelectedPhoto] = useState<SimplePhoto | null>(null);
     const [favorites, setFavorites] = useState<SimplePhoto[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [viewMode, setViewMode] = useState<'grid' | 'natural'>('grid'); // Added viewMode state
     const { toast } = useToast();
     
     const observer = useRef<IntersectionObserver | null>(null);
@@ -132,8 +135,8 @@ export function ImageGallery({ imageUrls = [] }) {
                     text: `Check out this image!`,
                     url: photo.url,
                 });
-            } else if ('clipboard' in (navigator as Navigator)) {
-                await (navigator as Navigator).clipboard.writeText(photo.url);
+            } else if ('clipboard' in (navigator as { clipboard: { writeText: (text: string) => Promise<void> } })) {
+                await (navigator as { clipboard: { writeText: (text: string) => Promise<void> } }).clipboard.writeText(photo.url);
                 toast({
                     title: 'Link copied',
                     description: 'The image link has been copied to your clipboard.',
@@ -178,17 +181,31 @@ export function ImageGallery({ imageUrls = [] }) {
     return (
         <div className="container mx-auto p-4 space-y-8">
             <h1 className="text-4xl font-bold text-foreground mb-6">Image Gallery</h1>
-            <SearchBar
-                onSearch={handleSearchChange}
-                loading={loading}
-                placeholder="Search images..."
-                defaultValue={searchQuery}
-                className="max-w-3xl mx-auto mb-8"
-                debounceTime={300}
-                showClearButton={true}
-                autoFocus={false}
-            />
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                <SearchBar
+                    onSearch={handleSearchChange}
+                    loading={loading}
+                    placeholder="Search images..."
+                    defaultValue={searchQuery}
+                    className="max-w-3xl w-full"
+                    debounceTime={300}
+                    showClearButton={true}
+                    autoFocus={false}
+                />
+                
+                <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'grid' | 'natural')}>
+                    <ToggleGroupItem value="grid" aria-label="Grid view">
+                        <Grid3X3 className="h-4 w-4 mr-1" />
+                        <span className="hidden sm:inline">Grid</span>
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="natural" aria-label="Natural view">
+                        <Grid className="h-4 w-4 mr-1" />
+                        <span className="hidden sm:inline">Natural</span>
+                    </ToggleGroupItem>
+                </ToggleGroup>
+            </div>
+            
+            <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ${viewMode === 'natural' ? 'items-start' : ''}`}>
                 {visiblePhotos.map((photo, index) => (
                     <div
                         key={photo.id}
@@ -202,6 +219,7 @@ export function ImageGallery({ imageUrls = [] }) {
                                 user: { name: 'Gallery' }
                             }} 
                             onClick={() => handlePhotoClick(photo)}
+                            viewMode={viewMode}
                         />
                     </div>
                 ))}

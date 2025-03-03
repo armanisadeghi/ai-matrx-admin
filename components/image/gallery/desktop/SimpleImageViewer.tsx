@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { wrap } from "popmotion";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { X, Download, Heart, Share2, ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react";
+import { X, Download, Heart, Share2, ChevronLeft, ChevronRight, Maximize2, Minimize2, ZoomIn, ZoomOut, Check } from "lucide-react";
 
 const variants = {
     enter: (direction: number) => ({
@@ -58,12 +58,25 @@ export function SimpleImageViewer({
     const [buffer, setBuffer] = useState<string[]>([]);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [scale, setScale] = useState(1);
+    const [imageDimensions, setImageDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
+    const [isSharing, setIsSharing] = useState(false);
+    const preloadCount = 5; // Number of images to preload in each direction
     const imageIndex = wrap(0, photos.length, page);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const preloadImages = useCallback(
         async (currentPage: number) => {
-            const imagesToLoad = [-2, -1, 0, 1, 2]
-                .map((offset) => photos[wrap(0, photos.length, currentPage + offset)]?.url)
+            // Create an array of indices to preload centered around current image
+            const offsets = [];
+            for (let i = -preloadCount; i <= preloadCount; i++) {
+                offsets.push(i);
+            }
+            
+            const imagesToLoad = offsets
+                .map((offset) => {
+                    const idx = wrap(0, photos.length, currentPage + offset);
+                    return photos[idx]?.url;
+                })
                 .filter(Boolean);
             
             const loadedImages = await Promise.all(
@@ -72,7 +85,14 @@ export function SimpleImageViewer({
                         new Promise<string>((resolve) => {
                             const img = new Image();
                             img.src = src;
-                            img.onload = () => resolve(src);
+                            img.onload = () => {
+                                // Store image dimensions
+                                setImageDimensions(prev => ({
+                                    ...prev,
+                                    [src]: { width: img.width, height: img.height }
+                                }));
+                                resolve(src);
+                            };
                             img.onerror = () => resolve(src); // Resolve even on error to prevent blocking
                         })
                 )
@@ -88,8 +108,18 @@ export function SimpleImageViewer({
 
     const paginate = (newDirection: number) => {
         setPage([page + newDirection, newDirection]);
-        if (page + newDirection >= photos.length - 5) {
+        if (page + newDirection >= photos.length - preloadCount) {
             loadMorePhotos();
+        }
+    };
+    
+    const handleShare = async (photo: SimplePhoto) => {
+        try {
+            await navigator.clipboard.writeText(photo.url);
+            setIsSharing(true);
+            setTimeout(() => setIsSharing(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy: ', err);
         }
     };
 
@@ -105,6 +135,35 @@ export function SimpleImageViewer({
         });
     };
 
+    // Calculate the optimal dimensions for displaying the image
+    const calculateImageDimensions = (imageUrl: string) => {
+        const dims = imageDimensions[imageUrl];
+        
+        if (!dims || !containerRef.current) return {};
+        
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
+        const containerRatio = containerWidth / containerHeight;
+        const imageRatio = dims.width / dims.height;
+        
+        // Determine if image should be constrained by width or height
+        if (imageRatio > containerRatio) {
+            // Image is wider relative to container
+            return {
+                width: containerWidth,
+                height: containerWidth / imageRatio,
+                objectFit: 'contain' as const
+            };
+        } else {
+            // Image is taller relative to container
+            return {
+                width: containerHeight * imageRatio,
+                height: containerHeight,
+                objectFit: 'contain' as const
+            };
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -115,6 +174,7 @@ export function SimpleImageViewer({
             onClick={onClose}
         >
             <motion.div
+                ref={containerRef}
                 className={`relative bg-transparent rounded-lg overflow-hidden shadow-xl ${
                     isFullScreen ? "w-full h-full" : "max-w-4xl w-full max-h-[90vh]"
                 } flex flex-col`}
@@ -123,36 +183,50 @@ export function SimpleImageViewer({
                 animate={{ scale: 1 }}
                 exit={{ scale: 0.9 }}
             >
-                <div className="relative flex-grow overflow-hidden">
-                    <AnimatePresence initial={false} custom={direction}>
-                        <motion.img
-                            key={page}
-                            src={buffer[2] || photos[imageIndex]?.url}
-                            alt={photos[imageIndex]?.description}
-                            className="w-full h-full object-contain"
-                            style={{ scale }}
-                            custom={direction}
-                            variants={variants}
-                            initial="enter"
-                            animate="center"
-                            exit="exit"
-                            transition={{
-                                x: { type: "spring", stiffness: 300, damping: 30 },
-                                opacity: { duration: 0.2 },
-                            }}
-                            drag={isFullScreen ? "x" : false}
-                            dragConstraints={{ left: 0, right: 0 }}
-                            dragElastic={1}
-                            onDragEnd={(e, { offset, velocity }) => {
-                                const swipe = swipePower(offset.x, velocity.x);
-                                if (swipe < -swipeConfidenceThreshold) {
-                                    paginate(1);
-                                } else if (swipe > swipeConfidenceThreshold) {
-                                    paginate(-1);
-                                }
-                            }}
-                        />
-                    </AnimatePresence>
+                <div className="relative flex-grow overflow-hidden bg-black/20">
+                    {/* Fixed height container to prevent layout shifts */}
+                    <div className={`${isFullScreen ? "h-screen" : "h-[60vh]"} w-full relative`}>
+                        <AnimatePresence initial={false} custom={direction}>
+                            <motion.div
+                                key={page}
+                                className="absolute inset-0 flex items-center justify-center"
+                                custom={direction}
+                                variants={variants}
+                                initial="enter"
+                                animate="center"
+                                exit="exit"
+                                transition={{
+                                    x: { type: "spring", stiffness: 300, damping: 30 },
+                                    opacity: { duration: 0.2 },
+                                }}
+                                drag={isFullScreen ? "x" : false}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={1}
+                                onDragEnd={(e, { offset, velocity }) => {
+                                    const swipe = swipePower(offset.x, velocity.x);
+                                    if (swipe < -swipeConfidenceThreshold) {
+                                        paginate(1);
+                                    } else if (swipe > swipeConfidenceThreshold) {
+                                        paginate(-1);
+                                    }
+                                }}
+                            >
+                                {/* Image container with fixed position */}
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <img
+                                        src={buffer[Math.floor(preloadCount/2)] || photos[imageIndex]?.url}
+                                        alt={photos[imageIndex]?.description}
+                                        className="max-w-full max-h-full object-contain"
+                                        style={{ 
+                                            scale,
+                                            ...calculateImageDimensions(photos[imageIndex]?.url)
+                                        }}
+                                    />
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+                    
                     <Button className="absolute top-2 right-2 z-10" variant="ghost" size="icon" onClick={onClose}>
                         <X className="h-4 w-4" />
                     </Button>
@@ -233,21 +307,42 @@ export function SimpleImageViewer({
                                         <Button
                                             variant="outline"
                                             size="icon"
-                                            onClick={() => onShare(photos[imageIndex])}
+                                            onClick={() => handleShare(photos[imageIndex])}
                                         >
-                                            <Share2 className="h-4 w-4" />
+                                            {isSharing ? (
+                                                <Check className="h-4 w-4 text-green-500" />
+                                            ) : (
+                                                <Share2 className="h-4 w-4" />
+                                            )}
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Share</TooltipContent>
+                                    <TooltipContent>{isSharing ? "Copied!" : "Copy Link"}</TooltipContent>
                                 </Tooltip>
                             </div>
                         </div>
                         <div className="p-4 bg-card/80 backdrop-blur-sm">
                             <h4 className="text-md font-semibold mb-2">All Images</h4>
-                            <div className="flex space-x-2 overflow-x-auto pb-2">
+                            <div className="flex space-x-2 overflow-x-auto pb-2 relative" id="thumbnailContainer">
                                 {photos.map((photo, index) => (
                                     <img
                                         key={photo.id}
+                                        id={`thumbnail-${index}`}
+                                        ref={index === imageIndex ? (el) => {
+                                            // Auto-scroll to keep current thumbnail centered/visible
+                                            if (el) {
+                                                setTimeout(() => {
+                                                    const container = document.getElementById('thumbnailContainer');
+                                                    if (container) {
+                                                        const containerWidth = container.offsetWidth;
+                                                        const thumbPosition = el.offsetLeft;
+                                                        const thumbWidth = el.offsetWidth;
+                                                        
+                                                        // Center the thumbnail
+                                                        container.scrollLeft = thumbPosition - (containerWidth / 2) + (thumbWidth / 2);
+                                                    }
+                                                }, 10);
+                                            }
+                                        } : null}
                                         src={photo.url}
                                         alt={photo.description}
                                         className={`w-20 h-20 object-cover rounded cursor-pointer ${

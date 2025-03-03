@@ -138,7 +138,7 @@ export const primaryLinks = [
 
     {
         label: 'Image Gallery',
-        href: '/demo/images', // https://lucide.dev/icons/
+        href: '/image-editing/unsplash', // https://lucide.dev/icons/
         icon: (
             <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),

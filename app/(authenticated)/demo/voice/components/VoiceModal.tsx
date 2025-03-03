@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import ImageLoader from './ImageLoader';
-import { useUnsplashGallery } from '../../images/hooks/useUnsplashGallery';
+import { useUnsplashGallery } from '../../../../../hooks/images/useUnsplashGallery';
 import { voiceImages, defaultVoiceImage } from '../data/voiceImages';
 
 interface VoiceModalProps {

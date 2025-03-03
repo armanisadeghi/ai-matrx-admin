@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { ImageGallery } from '@/components/image/gallery/ImageGallery';
+import { ResponsiveGallery } from '@/components/image/ResponsiveGallery';
 
 
 interface ImageGalleryProps {
@@ -12,7 +12,7 @@ export default function GalleryPage({ imageUrls }: ImageGalleryProps) {
 
   return (
     <div>
-      <ImageGallery imageUrls={imageUrls} />
+      <ResponsiveGallery imageUrls={imageUrls} type="direct" />
     </div>
   );
 }
