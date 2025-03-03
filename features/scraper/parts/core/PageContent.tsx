@@ -24,7 +24,7 @@ import HeaderAnalysis from "../HeaderAnalysis";
 import FactChecker from "../recipes/FactChecker";
 import KeywordAnalysis from "../recipes/KeywordAnalysis";
 import FeatureDisabledPlaceholder from "../reusable/FeatureDisabledPlaceholder";
-import ImageGallery from "../tabs/ImageGallery";
+import ImageGallery from "../tabs/images/ImageGallery";
 interface PageContentProps {
     pageData: any;
     activeTab: string;
