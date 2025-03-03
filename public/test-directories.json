@@ -1,82 +1,146 @@
 [
-    {
-        "path": "/tests/app-shell-test",
-        "name": "app-shell-test"
-    },
-    {
-        "path": "/tests/audio-recorder-test",
-        "name": "audio-recorder-test"
-    },
-    {
-        "path": "/tests/broker-value-test",
-        "name": "broker-value-test"
-    },
-    {
-        "path": "/tests/crud-operations",
-        "name": "crud-operations"
-    },
-    {
-        "path": "/tests/dynamic-entity-test",
-        "name": "dynamic-entity-test"
-    },
-    {
-        "path": "/tests/dynamic-layouts",
-        "name": "dynamic-layouts"
-    },
-    {
-        "path": "/tests/flashcard-app-tests",
-        "name": "flashcard-app-tests"
-    },
-    {
-        "path": "/tests/forms",
-        "name": "forms"
-    },
-    {
-        "path": "/tests/links",
-        "name": "links"
-    },
-    {
-        "path": "/tests/math",
-        "name": "math"
-    },
-    {
-        "path": "/tests/matrx-table",
-        "name": "matrx-table"
-    },
-    {
-        "path": "/tests/monoco-editor",
-        "name": "monoco-editor"
-    },
-    {
-        "path": "/tests/notes-app",
-        "name": "notes-app"
-    },
-    {
-        "path": "/tests/openai-chat",
-        "name": "openai-chat"
-    },
-    {
-        "path": "/tests/photo-video",
-        "name": "photo-video"
-    },
-    {
-        "path": "/tests/relationship-management",
-        "name": "relationship-management"
-    },
-    {
-        "path": "/tests/socket-tests",
-        "name": "socket-tests"
-    },
-    {
-        "path": "/tests/ssr-test",
-        "name": "ssr-test"
-    },
-    {
-        "path": "/tests/storage-tests",
-        "name": "storage-tests"
-    },
-    {
-        "path": "/tests/table-test",
-        "name": "table-test"
-    }
+  {
+    "path": "/tests/animation-tests",
+    "name": "animation-tests"
+  },
+  {
+    "path": "/tests/app-shell-test",
+    "name": "app-shell-test"
+  },
+  {
+    "path": "/tests/applet-tests",
+    "name": "applet-tests"
+  },
+  {
+    "path": "/tests/audio-recorder-test",
+    "name": "audio-recorder-test"
+  },
+  {
+    "path": "/tests/backup",
+    "name": "backup"
+  },
+  {
+    "path": "/tests/broker-value-test",
+    "name": "broker-value-test"
+  },
+  {
+    "path": "/tests/chat-tests",
+    "name": "chat-tests"
+  },
+  {
+    "path": "/tests/context-menu",
+    "name": "context-menu"
+  },
+  {
+    "path": "/tests/crud-operations",
+    "name": "crud-operations"
+  },
+  {
+    "path": "/tests/dynamic-entity-test",
+    "name": "dynamic-entity-test"
+  },
+  {
+    "path": "/tests/dynamic-gateway-concept",
+    "name": "dynamic-gateway-concept"
+  },
+  {
+    "path": "/tests/dynamic-layouts",
+    "name": "dynamic-layouts"
+  },
+  {
+    "path": "/tests/flashcard-app-tests",
+    "name": "flashcard-app-tests"
+  },
+  {
+    "path": "/tests/forms",
+    "name": "forms"
+  },
+  {
+    "path": "/tests/full-screen-demo",
+    "name": "full-screen-demo"
+  },
+  {
+    "path": "/tests/links",
+    "name": "links"
+  },
+  {
+    "path": "/tests/math",
+    "name": "math"
+  },
+  {
+    "path": "/tests/matrx-local",
+    "name": "matrx-local"
+  },
+  {
+    "path": "/tests/matrx-table",
+    "name": "matrx-table"
+  },
+  {
+    "path": "/tests/modals",
+    "name": "modals"
+  },
+  {
+    "path": "/tests/monoco-editor",
+    "name": "monoco-editor"
+  },
+  {
+    "path": "/tests/notes-app",
+    "name": "notes-app"
+  },
+  {
+    "path": "/tests/openai-chat",
+    "name": "openai-chat"
+  },
+  {
+    "path": "/tests/photo-video",
+    "name": "photo-video"
+  },
+  {
+    "path": "/tests/qr-labels",
+    "name": "qr-labels"
+  },
+  {
+    "path": "/tests/reaact-patterns",
+    "name": "reaact-patterns"
+  },
+  {
+    "path": "/tests/recipe-creation",
+    "name": "recipe-creation"
+  },
+  {
+    "path": "/tests/relationship-management",
+    "name": "relationship-management"
+  },
+  {
+    "path": "/tests/selector-test",
+    "name": "selector-test"
+  },
+  {
+    "path": "/tests/socket-tests",
+    "name": "socket-tests"
+  },
+  {
+    "path": "/tests/ssr-test",
+    "name": "ssr-test"
+  },
+  {
+    "path": "/tests/storage-tests",
+    "name": "storage-tests"
+  },
+  {
+    "path": "/tests/table-test",
+    "name": "table-test"
+  },
+  {
+    "path": "/tests/tailwind-test",
+    "name": "tailwind-test"
+  },
+  {
+    "path": "/tests/use-hooks-tests",
+    "name": "use-hooks-tests"
+  },
+  {
+    "path": "/tests/windows",
+    "name": "windows"
+  }
 ]
