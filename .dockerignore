@@ -1,0 +1,7 @@
+node_modules
+.next
+pnpm-store
+.env.local
+.env.development
+.DS_Store
+.git
