@@ -5,6 +5,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EntityDataWithKey, EntityKeys, ProcessedEntityData } from '@/types';
 
+type LoadingState = {
+    isLoading: boolean;
+    isJoinLoading: boolean;
+    isDeleting: boolean;
+    isChildLoading: boolean;
+}
+
 export const ChildRecordsCard = memo(
     ({
         childRecords,
@@ -13,7 +20,7 @@ export const ChildRecordsCard = memo(
     }: {
         childRecords: ProcessedEntityData<EntityKeys>[];
         isLoading: boolean;
-        loadingState: { parent: boolean; join: boolean; child: boolean };
+        loadingState: LoadingState;
     }) => {
         const [showContent, setShowContent] = useState(false);
 
@@ -35,9 +42,9 @@ export const ChildRecordsCard = memo(
                         <div className='space-y-2'>
                             <Alert>
                                 <AlertDescription className='space-y-1'>
-                                    {loadingState.parent && <div>Loading parent record...</div>}
-                                    {loadingState.join && <div>Loading join records...</div>}
-                                    {loadingState.child && <div>Loading child records...</div>}
+                                    {loadingState.isLoading && <div>Loading parent record...</div>}
+                                    {loadingState.isJoinLoading && <div>Loading join records...</div>}
+                                    {loadingState.isChildLoading && <div>Loading child records...</div>}
                                 </AlertDescription>
                             </Alert>
                         </div>

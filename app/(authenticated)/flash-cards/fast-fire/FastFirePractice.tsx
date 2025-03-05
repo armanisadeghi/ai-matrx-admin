@@ -68,11 +68,7 @@ const FastFirePractice = (
         playCorrectAnswersOnly,
         playHighScoresOnly,
         totalCards,
-    } = useFastFireSession({
-        voiceConfig,
-        assistant: selectedAssistant,
-        defaultTimer: 10
-    });
+    } = useFastFireSession();
 
     const [isExpanded, setIsExpanded] = useState(false);
 

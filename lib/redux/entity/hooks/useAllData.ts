@@ -11,6 +11,11 @@ import {
     AllEntityFieldKeys,
     FetchStrategy,
     AppletData,
+    AiAgentData,
+    AiSettingsData,
+    AiModelEndpointData,
+    AiEndpointData,
+    AiModelData,
 } from "@/types";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { RootState } from "@/lib/redux/store";
@@ -32,7 +37,7 @@ import { FetchMode } from "../actions";
 import { getEntityMetadata } from "../utils/direct-schema";
 import { parseRecordKey } from "../utils/stateHelpUtils";
 import { createRecordKey } from "../utils/stateHelpUtils";
-
+import { useEntityFetch } from "./useEntityFetch";
 interface EntityState<TEntity extends EntityKeys> {
     entityMetadata: EntityMetadata;
     records: EntityRecordMap<EntityKeys>;
@@ -171,6 +176,14 @@ export const useEntityWithFetch = <TEntity extends EntityKeys>(entityName: TEnti
     const [fetchMode, setFetchMode] = useState<FetchMode>('fkIfk');
     const [shouldFetch, setShouldFetch] = useState(false);
 
+    const {
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+    } = useEntityFetch(entityName);
+
     const isMissingRecords = useMemo(() => {
         const allFetchedIds = Object.keys(allRecords);
         return Array.from(matrxIdSet).some(id => !allFetchedIds.includes(id));
@@ -281,6 +294,12 @@ export const useEntityWithFetch = <TEntity extends EntityKeys>(entityName: TEnti
         isMissingRecords,
         setShouldFetch,
         setFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+
     };
 };
 
@@ -847,3 +866,437 @@ export const useCompiledRecipesWithFetch = (): UseCompiledRecipesWithFetchReturn
         setCompiledRecipeFetchMode,
     };
 };
+
+type UseAiModelWithFetchReturn = {
+    aiModelSelectors: EntitySelectors<"aiModel">;
+    aiModelActions: EntityActions<"aiModel">;
+    aiModelRecords: Record<MatrxRecordId, AiModelData>;
+    aiModelUnsavedRecords: Record<MatrxRecordId, Partial<AiModelData>>;
+    aiModelSelectedRecordIds: MatrxRecordId[];
+    aiModelIsLoading: boolean;
+    aiModelIsError: boolean;
+    aiModelQuickRefRecords: QuickReferenceRecord[];
+    addaiModelMatrxId: (recordId: MatrxRecordId) => void;
+    addaiModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeaiModelMatrxId: (recordId: MatrxRecordId) => void;
+    removeaiModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addaiModelPkValue: (pkValue: string) => void;
+    addaiModelPkValues: (pkValues: Record<string, unknown>) => void;
+    removeaiModelPkValue: (pkValue: string) => void;
+    removeaiModelPkValues: (pkValues: Record<string, unknown>) => void;
+    isaiModelMissingRecords: boolean;
+    setaiModelShouldFetch: (shouldFetch: boolean) => void;
+    setaiModelFetchMode: (fetchMode: FetchMode) => void;
+    fetchQuickRefs: () => void;
+    fetchOne: (recordId: MatrxRecordId) => void;
+    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAll: () => void;
+    fetchPaginated: (page: number, pageSize: number) => void;
+
+};
+
+export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
+    const {
+        selectors: aiModelSelectors,
+        actions: aiModelActions,
+        allRecords: aiModelRecords,
+        unsavedRecords: aiModelUnsavedRecords,
+        selectedRecordIds: aiModelSelectedRecordIds,
+        isLoading: aiModelIsLoading,
+        isError: aiModelIsError,
+        quickRefRecords: aiModelQuickRefRecords,
+        addMatrxId: addaiModelMatrxId,
+        addMatrxIds: addaiModelMatrxIds,
+        removeMatrxId: removeaiModelMatrxId,
+        removeMatrxIds: removeaiModelMatrxIds,
+        addPkValue: addaiModelPkValue,
+        addPkValues: addaiModelPkValues,
+        removePkValue: removeaiModelPkValue,
+        removePkValues: removeaiModelPkValues,
+        isMissingRecords: isaiModelMissingRecords,
+        setShouldFetch: setaiModelShouldFetch,
+        setFetchMode: setaiModelFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+
+    } = useEntityWithFetch("aiModel");
+
+    return {
+        aiModelSelectors,
+        aiModelActions,
+        aiModelRecords,
+        aiModelUnsavedRecords,
+        aiModelSelectedRecordIds,
+        aiModelIsLoading,
+        aiModelIsError,
+        aiModelQuickRefRecords,
+        addaiModelMatrxId,
+        addaiModelMatrxIds,
+        removeaiModelMatrxId,
+        removeaiModelMatrxIds,
+        addaiModelPkValue,
+        addaiModelPkValues,
+        removeaiModelPkValue,
+        removeaiModelPkValues,
+        isaiModelMissingRecords,
+        setaiModelShouldFetch,
+        setaiModelFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+    };
+};
+
+
+
+type UseAiEndpointWithFetchReturn = {
+    aiEndpointSelectors: EntitySelectors<"aiEndpoint">;
+    aiEndpointActions: EntityActions<"aiEndpoint">;
+    aiEndpointRecords: Record<MatrxRecordId, AiEndpointData>;
+    aiEndpointUnsavedRecords: Record<MatrxRecordId, Partial<AiEndpointData>>;
+    aiEndpointSelectedRecordIds: MatrxRecordId[];
+    aiEndpointIsLoading: boolean;
+    aiEndpointIsError: boolean;
+    aiEndpointQuickRefRecords: QuickReferenceRecord[];
+    addaiEndpointMatrxId: (recordId: MatrxRecordId) => void;
+    addaiEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeaiEndpointMatrxId: (recordId: MatrxRecordId) => void;
+    removeaiEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addaiEndpointPkValue: (pkValue: string) => void;
+    addaiEndpointPkValues: (pkValues: Record<string, unknown>) => void;
+    removeaiEndpointPkValue: (pkValue: string) => void;
+    removeaiEndpointPkValues: (pkValues: Record<string, unknown>) => void;
+    isaiEndpointMissingRecords: boolean;
+    setaiEndpointShouldFetch: (shouldFetch: boolean) => void;
+    setaiEndpointFetchMode: (fetchMode: FetchMode) => void;
+    fetchQuickRefs: () => void;
+    fetchOne: (recordId: MatrxRecordId) => void;
+    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAll: () => void;
+    fetchPaginated: (page: number, pageSize: number) => void;
+
+};
+
+export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
+    const {
+        selectors: aiEndpointSelectors,
+        actions: aiEndpointActions,
+        allRecords: aiEndpointRecords,
+        unsavedRecords: aiEndpointUnsavedRecords,
+        selectedRecordIds: aiEndpointSelectedRecordIds,
+        isLoading: aiEndpointIsLoading,
+        isError: aiEndpointIsError,
+        quickRefRecords: aiEndpointQuickRefRecords,
+        addMatrxId: addaiEndpointMatrxId,
+        addMatrxIds: addaiEndpointMatrxIds,
+        removeMatrxId: removeaiEndpointMatrxId,
+        removeMatrxIds: removeaiEndpointMatrxIds,
+        addPkValue: addaiEndpointPkValue,
+        addPkValues: addaiEndpointPkValues,
+        removePkValue: removeaiEndpointPkValue,
+        removePkValues: removeaiEndpointPkValues,
+        isMissingRecords: isaiEndpointMissingRecords,
+        setShouldFetch: setaiEndpointShouldFetch,
+        setFetchMode: setaiEndpointFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+
+    } = useEntityWithFetch("aiEndpoint");
+
+    return {
+        aiEndpointSelectors,
+        aiEndpointActions,
+        aiEndpointRecords,
+        aiEndpointUnsavedRecords,
+        aiEndpointSelectedRecordIds,
+        aiEndpointIsLoading,
+        aiEndpointIsError,
+        aiEndpointQuickRefRecords,
+        addaiEndpointMatrxId,
+        addaiEndpointMatrxIds,
+        removeaiEndpointMatrxId,
+        removeaiEndpointMatrxIds,
+        addaiEndpointPkValue,
+        addaiEndpointPkValues,
+        removeaiEndpointPkValue,
+        removeaiEndpointPkValues,
+        isaiEndpointMissingRecords,
+        setaiEndpointShouldFetch,
+        setaiEndpointFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+    };
+};
+
+
+
+type UseAiModelEndpointWithFetchReturn = {
+    aiModelEndpointSelectors: EntitySelectors<"aiModelEndpoint">;
+    aiModelEndpointActions: EntityActions<"aiModelEndpoint">;
+    aiModelEndpointRecords: Record<MatrxRecordId, AiModelEndpointData>;
+    aiModelEndpointUnsavedRecords: Record<MatrxRecordId, Partial<AiModelEndpointData>>;
+    aiModelEndpointSelectedRecordIds: MatrxRecordId[];
+    aiModelEndpointIsLoading: boolean;
+    aiModelEndpointIsError: boolean;
+    aiModelEndpointQuickRefRecords: QuickReferenceRecord[];
+    addaiModelEndpointMatrxId: (recordId: MatrxRecordId) => void;
+    addaiModelEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeaiModelEndpointMatrxId: (recordId: MatrxRecordId) => void;
+    removeaiModelEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addaiModelEndpointPkValue: (pkValue: string) => void;
+    addaiModelEndpointPkValues: (pkValues: Record<string, unknown>) => void;
+    removeaiModelEndpointPkValue: (pkValue: string) => void;
+    removeaiModelEndpointPkValues: (pkValues: Record<string, unknown>) => void;
+    isaiModelEndpointMissingRecords: boolean;
+    setaiModelEndpointShouldFetch: (shouldFetch: boolean) => void;
+    setaiModelEndpointFetchMode: (fetchMode: FetchMode) => void;
+    fetchQuickRefs: () => void;
+    fetchOne: (recordId: MatrxRecordId) => void;
+    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAll: () => void;
+    fetchPaginated: (page: number, pageSize: number) => void;
+
+};
+
+export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn => {
+    const {
+        selectors: aiModelEndpointSelectors,
+        actions: aiModelEndpointActions,
+        allRecords: aiModelEndpointRecords,
+        unsavedRecords: aiModelEndpointUnsavedRecords,
+        selectedRecordIds: aiModelEndpointSelectedRecordIds,
+        isLoading: aiModelEndpointIsLoading,
+        isError: aiModelEndpointIsError,
+        quickRefRecords: aiModelEndpointQuickRefRecords,
+        addMatrxId: addaiModelEndpointMatrxId,
+        addMatrxIds: addaiModelEndpointMatrxIds,
+        removeMatrxId: removeaiModelEndpointMatrxId,
+        removeMatrxIds: removeaiModelEndpointMatrxIds,
+        addPkValue: addaiModelEndpointPkValue,
+        addPkValues: addaiModelEndpointPkValues,
+        removePkValue: removeaiModelEndpointPkValue,
+        removePkValues: removeaiModelEndpointPkValues,
+        isMissingRecords: isaiModelEndpointMissingRecords,
+        setShouldFetch: setaiModelEndpointShouldFetch,
+        setFetchMode: setaiModelEndpointFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+
+    } = useEntityWithFetch("aiModelEndpoint");
+
+    return {
+        aiModelEndpointSelectors,
+        aiModelEndpointActions,
+        aiModelEndpointRecords,
+        aiModelEndpointUnsavedRecords,
+        aiModelEndpointSelectedRecordIds,
+        aiModelEndpointIsLoading,
+        aiModelEndpointIsError,
+        aiModelEndpointQuickRefRecords,
+        addaiModelEndpointMatrxId,
+        addaiModelEndpointMatrxIds,
+        removeaiModelEndpointMatrxId,
+        removeaiModelEndpointMatrxIds,
+        addaiModelEndpointPkValue,
+        addaiModelEndpointPkValues,
+        removeaiModelEndpointPkValue,
+        removeaiModelEndpointPkValues,
+        isaiModelEndpointMissingRecords,
+        setaiModelEndpointShouldFetch,
+        setaiModelEndpointFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+    };
+};
+
+
+
+type UseAiSettingsWithFetchReturn = {
+    aiSettingsSelectors: EntitySelectors<"aiSettings">;
+    aiSettingsActions: EntityActions<"aiSettings">;
+    aiSettingsRecords: Record<MatrxRecordId, AiSettingsData>;
+    aiSettingsUnsavedRecords: Record<MatrxRecordId, Partial<AiSettingsData>>;
+    aiSettingsSelectedRecordIds: MatrxRecordId[];
+    aiSettingsIsLoading: boolean;
+    aiSettingsIsError: boolean;
+    aiSettingsQuickRefRecords: QuickReferenceRecord[];
+    addaiSettingsMatrxId: (recordId: MatrxRecordId) => void;
+    addaiSettingsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeaiSettingsMatrxId: (recordId: MatrxRecordId) => void;
+    removeaiSettingsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addaiSettingsPkValue: (pkValue: string) => void;
+    addaiSettingsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeaiSettingsPkValue: (pkValue: string) => void;
+    removeaiSettingsPkValues: (pkValues: Record<string, unknown>) => void;
+    isaiSettingsMissingRecords: boolean;
+    setaiSettingsShouldFetch: (shouldFetch: boolean) => void;
+    setaiSettingsFetchMode: (fetchMode: FetchMode) => void;
+    fetchQuickRefs: () => void;
+    fetchOne: (recordId: MatrxRecordId) => void;
+    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAll: () => void;
+    fetchPaginated: (page: number, pageSize: number) => void;
+
+};
+
+export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
+    const {
+        selectors: aiSettingsSelectors,
+        actions: aiSettingsActions,
+        allRecords: aiSettingsRecords,
+        unsavedRecords: aiSettingsUnsavedRecords,
+        selectedRecordIds: aiSettingsSelectedRecordIds,
+        isLoading: aiSettingsIsLoading,
+        isError: aiSettingsIsError,
+        quickRefRecords: aiSettingsQuickRefRecords,
+        addMatrxId: addaiSettingsMatrxId,
+        addMatrxIds: addaiSettingsMatrxIds,
+        removeMatrxId: removeaiSettingsMatrxId,
+        removeMatrxIds: removeaiSettingsMatrxIds,
+        addPkValue: addaiSettingsPkValue,
+        addPkValues: addaiSettingsPkValues,
+        removePkValue: removeaiSettingsPkValue,
+        removePkValues: removeaiSettingsPkValues,
+        isMissingRecords: isaiSettingsMissingRecords,
+        setShouldFetch: setaiSettingsShouldFetch,
+        setFetchMode: setaiSettingsFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+
+    } = useEntityWithFetch("aiSettings");
+
+    return {
+        aiSettingsSelectors,
+        aiSettingsActions,
+        aiSettingsRecords,
+        aiSettingsUnsavedRecords,
+        aiSettingsSelectedRecordIds,
+        aiSettingsIsLoading,
+        aiSettingsIsError,
+        aiSettingsQuickRefRecords,
+        addaiSettingsMatrxId,
+        addaiSettingsMatrxIds,
+        removeaiSettingsMatrxId,
+        removeaiSettingsMatrxIds,
+        addaiSettingsPkValue,
+        addaiSettingsPkValues,
+        removeaiSettingsPkValue,
+        removeaiSettingsPkValues,
+        isaiSettingsMissingRecords,
+        setaiSettingsShouldFetch,
+        setaiSettingsFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+    };
+};
+
+
+
+type UseAiAgentWithFetchReturn = {
+    aiAgentSelectors: EntitySelectors<"aiAgent">;
+    aiAgentActions: EntityActions<"aiAgent">;
+    aiAgentRecords: Record<MatrxRecordId, AiAgentData>;
+    aiAgentUnsavedRecords: Record<MatrxRecordId, Partial<AiAgentData>>;
+    aiAgentSelectedRecordIds: MatrxRecordId[];
+    aiAgentIsLoading: boolean;
+    aiAgentIsError: boolean;
+    aiAgentQuickRefRecords: QuickReferenceRecord[];
+    addaiAgentMatrxId: (recordId: MatrxRecordId) => void;
+    addaiAgentMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeaiAgentMatrxId: (recordId: MatrxRecordId) => void;
+    removeaiAgentMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addaiAgentPkValue: (pkValue: string) => void;
+    addaiAgentPkValues: (pkValues: Record<string, unknown>) => void;
+    removeaiAgentPkValue: (pkValue: string) => void;
+    removeaiAgentPkValues: (pkValues: Record<string, unknown>) => void;
+    isaiAgentMissingRecords: boolean;
+    setaiAgentShouldFetch: (shouldFetch: boolean) => void;
+    setaiAgentFetchMode: (fetchMode: FetchMode) => void;
+    fetchQuickRefs: () => void;
+    fetchOne: (recordId: MatrxRecordId) => void;
+    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAll: () => void;
+    fetchPaginated: (page: number, pageSize: number) => void;
+
+};
+
+export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
+    const {
+        selectors: aiAgentSelectors,
+        actions: aiAgentActions,
+        allRecords: aiAgentRecords,
+        unsavedRecords: aiAgentUnsavedRecords,
+        selectedRecordIds: aiAgentSelectedRecordIds,
+        isLoading: aiAgentIsLoading,
+        isError: aiAgentIsError,
+        quickRefRecords: aiAgentQuickRefRecords,
+        addMatrxId: addaiAgentMatrxId,
+        addMatrxIds: addaiAgentMatrxIds,
+        removeMatrxId: removeaiAgentMatrxId,
+        removeMatrxIds: removeaiAgentMatrxIds,
+        addPkValue: addaiAgentPkValue,
+        addPkValues: addaiAgentPkValues,
+        removePkValue: removeaiAgentPkValue,
+        removePkValues: removeaiAgentPkValues,
+        isMissingRecords: isaiAgentMissingRecords,
+        setShouldFetch: setaiAgentShouldFetch,
+        setFetchMode: setaiAgentFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+
+    } = useEntityWithFetch("aiAgent");
+
+    return {
+        aiAgentSelectors,
+        aiAgentActions,
+        aiAgentRecords,
+        aiAgentUnsavedRecords,
+        aiAgentSelectedRecordIds,
+        aiAgentIsLoading,
+        aiAgentIsError,
+        aiAgentQuickRefRecords,
+        addaiAgentMatrxId,
+        addaiAgentMatrxIds,
+        removeaiAgentMatrxId,
+        removeaiAgentMatrxIds,
+        addaiAgentPkValue,
+        addaiAgentPkValues,
+        removeaiAgentPkValue,
+        removeaiAgentPkValues,
+        isaiAgentMissingRecords,
+        setaiAgentShouldFetch,
+        setaiAgentFetchMode,
+        fetchQuickRefs,
+        fetchOne,
+        fetchOneWithFkIfk,
+        fetchAll,
+        fetchPaginated,
+    };
+};
+

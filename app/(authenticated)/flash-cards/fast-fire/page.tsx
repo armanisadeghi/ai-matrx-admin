@@ -12,6 +12,9 @@ const FastFirePractice = (
     {
     }) => {
 
+    
+    const fastFireHook = useFastFireSession();
+    
     const {
         isActive,
         isPaused,
@@ -35,7 +38,7 @@ const FastFirePractice = (
         playCorrectAnswersOnly,
         playHighScoresOnly,
         totalCards,
-    } = useFastFireSession({});
+    } = fastFireHook;
 
     const [isExpanded, setIsExpanded] = useState(false);
 

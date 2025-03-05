@@ -83,12 +83,12 @@ export const useFastFireSession = (): UseFastFireSessionReturn => {
 
     const mediaRecorder = useRef<MediaRecorder | null>(null);
     const audioChunks = useRef<Blob[]>([]);
-    const startSound = useRef<HTMLAudioElement>();
-    const endSound = useRef<HTMLAudioElement>();
+    const startSound = useRef<HTMLAudioElement | undefined>(undefined);
+    const endSound = useRef<HTMLAudioElement | undefined>(undefined);
     const audioContext = useRef<AudioContext | null>(null);
     const analyser = useRef<AnalyserNode | null>(null);
-    const animationFrame = useRef<number>();
-    const timerRef = useRef<NodeJS.Timeout>();
+    const animationFrame = useRef<number | undefined>(undefined);
+    const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
     const {
         submit,

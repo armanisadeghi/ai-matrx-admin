@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useAppSelector, useEntityTools } from '@/lib/redux';
-import { MatrxRecordId, RecipeMessageDataRequired } from '@/types';
+import { MatrxRecordId, RecipeMessageRecordWithKey } from '@/types';
 import { useDeleteRecord } from '@/app/entities/hooks/crud/useDeleteRecord';
 import { useAppDispatch } from '@/lib/redux';
 
@@ -31,7 +31,7 @@ export function useMessageDeletion({ activeRecipeFieldId }: UseMessageDeletionOp
             if (!activeRecipeFieldId) return;
 
             // 1. Get the recipe message to be deleted to know its order
-            const recipeMessages = useAppSelector((state) => recipeMessageSelectors.selectRecordsByFieldValueHelper(state,'messageId', messageId)) as RecipeMessageDataRequired[];
+            const recipeMessages = useAppSelector((state) => recipeMessageSelectors.selectRecordsByFieldValue(state,'messageId', messageId)) as RecipeMessageRecordWithKey[];
 
             const recipeMessage = recipeMessages[0];
             if (!recipeMessage) return;
@@ -39,7 +39,7 @@ export function useMessageDeletion({ activeRecipeFieldId }: UseMessageDeletionOp
             const deletedOrder = recipeMessage.order;
 
             // 2. Get all recipe messages for this recipe to reorder them
-            const allRecipeMessages = useAppSelector((state) => recipeMessageSelectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeFieldId)) as RecipeMessageDataRequired[];
+            const allRecipeMessages = useAppSelector((state) => recipeMessageSelectors.selectRecordsByFieldValue(state,'recipeId', activeRecipeFieldId)) as RecipeMessageRecordWithKey[];
 
             // 3. Delete the recipe message relationship first
             deleteRecipeMessage(recipeMessage.id as MatrxRecordId);

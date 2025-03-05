@@ -515,7 +515,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return Object.values(records).slice(startIndex, startIndex + pageSize);
     });
 
-    const selectCurrentPageWithRecordId = createSelector([selectEntity, selectAllRecords], (entity, records): EntityDataWithId<TEntity>[] => {
+    const selectCurrentPageWithRecordId = createSelector([selectEntity, selectAllRecords], (entity, records): EntityDataWithKey<TEntity>[] => {
         const { page, pageSize } = entity.pagination;
         const startIndex = (page - 1) * pageSize;
 

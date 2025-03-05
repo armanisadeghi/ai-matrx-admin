@@ -1,5 +1,5 @@
 import { createRecordKey, GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { RecipeMessageDataRequired, AiAgentDataRequired, MessageTemplateDataRequired, AiSettingsDataRequired, RecipeDataRequired } from '@/types';
+import { RecipeMessageRecordWithKey, AiAgentRecordWithKey, MessageTemplateDataRequired, AiSettingsDataRequired, RecipeDataRequired } from '@/types';
 import React, { useEffect, useCallback } from 'react';
 
 export function useRecipe() {
@@ -15,8 +15,8 @@ export function useRecipe() {
     const activeRecipeFieldId = activeRecipeRecord?.id;
 
     // Messages
-    const recipeMessageRecords = useAppSelector((state) => recipeMessageEntity.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeFieldId)
-    ) as RecipeMessageDataRequired[];
+    const recipeMessageRecords = useAppSelector((state) => recipeMessageEntity.selectors.selectRecordsByFieldValue(state,'recipeId', activeRecipeFieldId)
+    ) as RecipeMessageRecordWithKey[];
 
     const matchingMessageIds = React.useMemo(
         () => recipeMessageRecords.filter((message) => message?.messageId != null).map((message) => message.messageId),
@@ -28,7 +28,7 @@ export function useRecipe() {
     ) as MessageTemplateDataRequired[];
 
     // AI Agents & Settings
-    const aiAgentRecords = useAppSelector((state) => aiAgentEntity.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeFieldId)) as AiAgentDataRequired[];
+    const aiAgentRecords = useAppSelector((state) => aiAgentEntity.selectors.selectRecordsByFieldValue(state,'recipeId', activeRecipeFieldId)) as AiAgentRecordWithKey[];
 
     const aiAgentMetadata = useAppSelector(aiAgentEntity.selectors.selectEntityMetadata);
 

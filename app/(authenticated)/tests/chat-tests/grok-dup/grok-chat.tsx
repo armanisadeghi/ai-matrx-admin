@@ -17,6 +17,10 @@ import {
   Maximize2,
   X,
 } from "lucide-react";
+import useChatBasics from "../../../../../hooks/ai/chat/useChatBasics";
+
+
+const DEFAULT_MODEL_ID = "id:49848d52-9cc8-4ce4-bacb-32aa2201cd10";
 
 const ChatUI = () => {
   const [message, setMessage] = useState("");
@@ -28,15 +32,16 @@ const ChatUI = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showModelDropdown, setShowModelDropdown] = useState(false);
 
-  // Available models
-  const models = [
-    "Claude Sonnet 3.5",
-    "Claude Opus 3",
-    "Claude Haiku 3",
-    "Claude Sonnet 3",
-    "Claude Instant 3",
-  ];
-  const [selectedModel, setSelectedModel] = useState(models[0]);
+  const {
+    models,
+  } = useChatBasics();
+
+  const defaultModelName = Array.isArray(models) 
+    ? models.map((model) => model.name).find((name) => name === DEFAULT_MODEL_ID)
+    : undefined;
+
+
+  const [selectedModel, setSelectedModel] = useState(defaultModelName);
 
   // Adjust textarea height as content changes
   useEffect(() => {
@@ -188,17 +193,17 @@ const ChatUI = () => {
                       </button>
                     </div>
                     <div className="py-1">
-                      {models.map((model) => (
+                      {Object.values(models).map((model) => (
                         <button
-                          key={model}
-                          onClick={() => selectModel(model)}
+                          key={model.id}
+                          onClick={() => selectModel(model.name)}
                           className={`block w-full text-left px-4 py-2 text-sm ${
-                            selectedModel === model
+                            selectedModel === model.name
                               ? "bg-zinc-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
                               : "text-gray-700 dark:text-gray-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                           }`}
                         >
-                          {model}
+                          {model.name}
                         </button>
                       ))}
                     </div>

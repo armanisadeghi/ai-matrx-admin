@@ -193,7 +193,7 @@ export interface HistoryState<TEntity extends EntityKeys> {
 }
 
 // --- Query and Filter Types ---
-type ComparisonOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'in' | 'between';
+export type ComparisonOperator = 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'in' | 'between';
 
 export interface FilterCondition {
     field: string;

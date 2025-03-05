@@ -2,10 +2,10 @@ import * as React from 'react';
 import {EntityKeys, EntityData, PrettyEntityName} from '@/types/entityTypes';
 import {useAppSelector, useAppDispatch} from '@/lib/redux/hooks';
 import {createEntitySelectors} from '@/lib/redux/entity/selectors';
-import {EntityState, EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
+import {EntityState, EntityStateField, FlexibleQueryOptions, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
 import {selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {Callback, callbackManager} from "@/utils/callbackManager";
-import {FlexibleQueryOptions} from "@/lib/redux/entity/sagas/sagaHelpers";
+
 
 interface FetchRecordsOptions {
     entityKey: EntityKeys;

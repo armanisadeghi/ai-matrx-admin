@@ -70,7 +70,7 @@ export default function RelationshipTester() {
 
         // Parent data
         parentId,
-        parentRecords,
+        parentRecord,
         parentMatrxid,
 
         // Join/Relationship data

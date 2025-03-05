@@ -25,7 +25,7 @@ export function useActiveJoinedRecords(relationshipDefinition) {
     const activeParentRefererenceField = parentReferencedField;
     const activeParentFieldId = activeParentRecord?.[activeParentRefererenceField];
 
-    const JoiningEntityRecords = useAppSelector((state) => joiningSelectors.selectRecordsByFieldValueHelper(state, joiningParentField, activeParentFieldId)) as EntityData<EntityKeys>[];
+    const JoiningEntityRecords = useAppSelector((state) => joiningSelectors.selectRecordsByFieldValue(state, joiningParentField, activeParentFieldId)) as EntityData<EntityKeys>[];
 
 
     const matchingChildIds = React.useMemo(

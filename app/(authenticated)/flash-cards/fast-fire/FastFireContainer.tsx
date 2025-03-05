@@ -1,23 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import {motion, AnimatePresence} from "framer-motion";
-import {Card} from "@/components/ui/card";
-import {Button} from "@/components/ui/button";
-import {Play} from "lucide-react";
-import {
-    Assistant,
-    ApiName,
-    AiCallParams,
-    ResponseType,
-    AvailableAssistants
-} from "@/types/voice/voiceAssistantTypes";
-import {getAssistant} from "@/constants/voice-assistants";
-import FastFireFlashcard from './FastFireFlashcard';
-import FastFireAnalysis from './FastFireAnalysis';
-import {FlashcardData} from '@/types/flashcards.types';
-import {useFastFireSession} from "@/hooks/flashcard-app/useFastFireFlashcards";
-
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Play } from "lucide-react";
+import { Assistant, ApiName, AiCallParams, ResponseType, AvailableAssistants } from "@/types/voice/voiceAssistantTypes";
+import { getAssistant } from "@/constants/voice-assistants";
+import FastFireFlashcard from "./FastFireFlashcard";
+import FastFireAnalysis from "./FastFireAnalysis";
+import { FlashcardData } from "@/types/flashcards.types";
+import { useFastFireSessionNew } from "@/hooks/flashcard-app/useFastFireSessionNew";
+    
 export interface VoiceConfig {
     apiName: ApiName;
     voiceId: string;
@@ -34,15 +28,13 @@ interface FastFireContainerProps {
     aiCallParams?: Partial<AiCallParams>;
 }
 
-const FastFireContainer = (
-    {
-        initialFlashcards,
-        setId,
-        voiceConfig,
-        assistantId = "flashcardGrader",
-        aiCallParams = {}
-    }: FastFireContainerProps
-) => {
+const FastFireContainer = ({
+    initialFlashcards,
+    setId,
+    voiceConfig,
+    assistantId = "flashcardGrader",
+    aiCallParams = {},
+}: FastFireContainerProps) => {
     const selectedAssistant = getAssistant(assistantId);
     if (!selectedAssistant) {
         return (
@@ -75,39 +67,22 @@ const FastFireContainer = (
         playAllAudioFeedback,
         playCorrectAnswersOnly,
         playHighScoresOnly,
-        processState
-    } = useFastFireSession({
-        flashcards: initialFlashcards,
-        voiceConfig,
-        assistant: selectedAssistant,
-        defaultTimer: 10
-    });
+        processState,
+    } = useFastFireSessionNew();
 
     return (
         <div className="container mx-auto py-8 pb-[160px] space-y-8">
             <header className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Fast Fire Practice</h1>
                 <div className="space-x-4">
-                    <Button
-                        variant="outline"
-                        onClick={playAllAudioFeedback}
-                        disabled={results.length === 0 || isProcessing}
-                    >
-                        <Play className="mr-2 h-4 w-4"/>
+                    <Button variant="outline" onClick={playAllAudioFeedback} disabled={results.length === 0 || isProcessing}>
+                        <Play className="mr-2 h-4 w-4" />
                         Review All
                     </Button>
-                    <Button
-                        variant="outline"
-                        onClick={playCorrectAnswersOnly}
-                        disabled={results.length === 0 || isProcessing}
-                    >
+                    <Button variant="outline" onClick={playCorrectAnswersOnly} disabled={results.length === 0 || isProcessing}>
                         Review Correct
                     </Button>
-                    <Button
-                        variant="outline"
-                        onClick={() => playHighScoresOnly(4)}
-                        disabled={results.length === 0 || isProcessing}
-                    >
+                    <Button variant="outline" onClick={() => playHighScoresOnly(4)} disabled={results.length === 0 || isProcessing}>
                         Review Best
                     </Button>
                 </div>
@@ -130,9 +105,9 @@ const FastFireContainer = (
             <AnimatePresence mode="wait">
                 {audioPlayer && (
                     <motion.div
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        exit={{opacity: 0, y: -20}}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
                         className="fixed bottom-4 right-4"
                     >
                         <Card className="p-4">

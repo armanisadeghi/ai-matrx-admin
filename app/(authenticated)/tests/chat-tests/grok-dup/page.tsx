@@ -1,8 +1,7 @@
 "use client";
 
-import MatrixChatDemo from "./parts/MatrixChatDemo";
-import ChatUI from "./parts/ChatUI";
+import ChatUI from "../../../../../features/chat/ui-parts/ChatUI";
+
 export default function GrokDupPage() {
-    // return <MatrixChatDemo />;
     return <ChatUI />;
 }

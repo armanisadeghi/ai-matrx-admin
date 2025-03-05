@@ -40,9 +40,9 @@ export function useFastFireSessionNew(): UseFastFireSessionReturn {
     const [timeLeft, setTimeLeft] = useState(defaultTimer);
     const [bufferTimeLeft, setBufferTimeLeft] = useState(3);
     const [isInBufferPhase, setIsInBufferPhase] = useState(true);
-    const timerRef = useRef<NodeJS.Timeout>();
-    const startSound = useRef<HTMLAudioElement>();
-    const endSound = useRef<HTMLAudioElement>();
+    const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+    const startSound = useRef<HTMLAudioElement | undefined>(undefined);
+    const endSound = useRef<HTMLAudioElement | undefined>(undefined);
 
     const {
         submit,

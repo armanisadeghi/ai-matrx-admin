@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { DataBrokerDataRequired, MessageBrokerDataRequired, MessageTemplateDataOptional } from '@/types';
+import { MessageBrokerRecordWithKey, DataBrokerRecordWithKey, MessageTemplateDataOptional } from '@/types';
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
 import { useRecipe } from './useRecipe';
 
@@ -35,14 +35,14 @@ export function useMessageTemplates() {
     }, [recipeMessageRecords, matchingMessages]);
 
     // Message Brokers and Data Brokers
-    const messageBrokers = useAppSelector((state) => messageBrokerEntity.selectors.selectRecordsByFieldValueHelper(state,'messageId', matchingMessageIds)) as MessageBrokerDataRequired[];
+    const messageBrokers = useAppSelector((state) => messageBrokerEntity.selectors.selectRecordsByFieldValue(state,'messageId', matchingMessageIds)) as MessageBrokerRecordWithKey[];
 
     const matchingBrokerIds = React.useMemo(
         () => messageBrokers.filter((broker) => broker?.brokerId != null).map((broker) => broker.brokerId),
         [messageBrokers]
     );
     const brokerMatrxIds = useAppSelector((state) => dataBrokerEntity.selectors.selectMatrxRecordIdsBySimpleKeys(state, matchingBrokerIds));
-    const matchingBrokers = useAppSelector((state) => dataBrokerEntity.selectors.selectRecordsByKeys(state, brokerMatrxIds)) as DataBrokerDataRequired[];
+    const matchingBrokers = useAppSelector((state) => dataBrokerEntity.selectors.selectRecordsByKeys(state, brokerMatrxIds)) as DataBrokerRecordWithKey[];
 
     const fetchBrokersPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(
         () => ({

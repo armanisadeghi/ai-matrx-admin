@@ -1,9 +1,13 @@
 // ChatUI.tsx
 import React, { useState } from "react";
 import { MessageSquare, Bell, User } from "lucide-react";
-import PromptInput from "./PromptInput";
+
 import ResponseColumn from "./ResponseColumn";
 import { Message } from "./types";
+import PromptInput from "./PromptInput";
+
+const DEFAULT_MODEL_ID = "id:49848d52-9cc8-4ce4-bacb-32aa2201cd10";
+
 
 const ChatUI: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -85,7 +89,7 @@ const ChatUI: React.FC = () => {
 
                         {/* Initial Chat input */}
                         <div className="w-full max-w-3xl">
-                            <PromptInput onSendMessage={handleSendMessage} />
+                            <PromptInput onSendMessage={handleSendMessage} defaultModelKey={DEFAULT_MODEL_ID} />
 
                             {/* Action buttons */}
                             <div className="mt-4 flex justify-center flex-wrap gap-3">

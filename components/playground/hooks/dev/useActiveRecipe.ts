@@ -7,6 +7,11 @@ import {
     AiSettingsDataRequired,
     DataBrokerDataRequired,
     RecipeDataRequired,
+    RecipeMessageRecordWithKey,
+    AiAgentRecordWithKey,
+    AiSettingsRecordWithKey,
+    MessageBrokerRecordWithKey,
+    DataBrokerRecordWithKey,
 } from '@/types';
 import React, { useEffect, useCallback } from 'react';
 
@@ -26,7 +31,7 @@ export function useActiveRecipe() {
 
 
     // Messages
-    const recipeMessages = useAppSelector((state) => recipeMessage.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeId)) as RecipeMessageDataRequired[];
+    const recipeMessages = useAppSelector((state) => recipeMessage.selectors.selectRecordsByFieldValue(state,'recipeId', activeRecipeId)) as RecipeMessageRecordWithKey[];
 
     const matchingMessageIds = React.useMemo(
         () => recipeMessages.filter((message) => message?.messageId != null).map((message) => message.messageId),
@@ -37,7 +42,7 @@ export function useActiveRecipe() {
 
 
     // AI Agents & Settings
-    const aiAgents = useAppSelector((state) => aiAgent.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeId)) as AiAgentDataRequired[];
+    const aiAgents = useAppSelector((state) => aiAgent.selectors.selectRecordsByFieldValue(state,'recipeId', activeRecipeId)) as AiAgentRecordWithKey[];
 
     const matchingAiSettingsIds = React.useMemo(
         () => aiAgents.filter((agent) => agent?.aiSettingsId != null).map((agent) => agent.aiSettingsId),
@@ -47,17 +52,17 @@ export function useActiveRecipe() {
     const matchingAiSettings = useAppSelector((state) => aiSettings.selectors.selectRecordsByKeys(state, settingsMatrxIds)) as AiSettingsDataRequired[];
 
 
-    const aiAgentRecords = useAppSelector((state) => aiAgent.selectors.selectRecordsByFieldValueHelper(state,'recipeId', activeRecipeId)) as AiAgentDataRequired[];
+    const aiAgentRecords = useAppSelector((state) => aiAgent.selectors.selectRecordsByFieldValue(state,'recipeId', activeRecipeId)) as AiAgentRecordWithKey[];
 
     // Message Brokers and Data Brokers
-    const messageBrokers = useAppSelector((state) => messageBroker.selectors.selectRecordsByFieldValueHelper(state,'messageId', matchingMessageIds)) as MessageBrokerDataRequired[];
+    const messageBrokers = useAppSelector((state) => messageBroker.selectors.selectRecordsByFieldValue(state,'messageId', matchingMessageIds)) as MessageBrokerRecordWithKey[];
     
     const matchingBrokerIds = React.useMemo(
         () => messageBrokers.filter((broker) => broker?.brokerId != null).map((broker) => broker.brokerId),
         [messageBrokers]
     );
     const brokerMatrxIds = useAppSelector((state) => dataBroker.selectors.selectMatrxRecordIdsBySimpleKeys(state, matchingBrokerIds));
-    const matchingBrokers = useAppSelector((state) => dataBroker.selectors.selectRecordsByKeys(state, brokerMatrxIds)) as DataBrokerDataRequired[];
+    const matchingBrokers = useAppSelector((state) => dataBroker.selectors.selectRecordsByKeys(state, brokerMatrxIds)) as DataBrokerRecordWithKey[];
 
     const fetchMessagesPayload = React.useMemo<GetOrFetchSelectedRecordsPayload>(
         () => ({

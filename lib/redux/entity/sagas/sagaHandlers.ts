@@ -360,8 +360,8 @@ function* handleFetchAll<TEntity extends EntityKeys>({ entityKey, actions, api, 
 
         let query = api.select('*');
 
-        if (unifiedDatabaseObject.filters) {
-            Object.entries(unifiedDatabaseObject.filters).forEach(([key, value]) => {
+        if (unifiedDatabaseObject?.filters) {
+            Object.entries(unifiedDatabaseObject?.filters).forEach(([key, value]) => {
                 query = query.eq(key, value);
             });
         }
