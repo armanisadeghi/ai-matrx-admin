@@ -33,7 +33,7 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import {Separator} from "@/components/ui/separator";
-import {cn} from '@nextui-org/react';
+import {cn} from "@heroui/react";
 import {
     AnimationPreset,
     ComponentDensity,

@@ -3,7 +3,7 @@
 "use client";
 
 import React, {useState} from "react";
-import {Modal, ModalContent, ModalBody, Button, ScrollShadow} from "@nextui-org/react";
+import {Modal, ModalContent, ModalBody, Button, ScrollShadow} from "@heroui/react";
 import {Icon} from "@iconify/react";
 import Conversation from "../../next-components/conversation";
 import PromptInputWithBottomActions from "../../next-components/prompt-input-with-bottom-actions";

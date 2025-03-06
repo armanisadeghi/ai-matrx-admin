@@ -1,6 +1,6 @@
 // utils/tailwind-config/plugins.ts
 
-import { nextui } from "@nextui-org/react";
+import { heroui } from "@heroui/react";
 import animations from '@midudev/tailwind-animations';
 import { createUtilities } from './utilities';
 const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
@@ -24,7 +24,7 @@ export const plugins = [
     require('tailwind-scrollbar-hide'),
     require('tailwindcss-3d'),
     require('@tailwindcss/container-queries'),
-    nextui({
+    heroui({
         prefix: "next-",
         addCommonColors: false,
         defaultTheme: "dark",

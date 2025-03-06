@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRegisteredFunction } from '@/features/registered-function/hooks/useRegisteredFunction';
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Pagination } from "@nextui-org/react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Pagination } from "@heroui/react";
 import { RegisteredFunctionBase } from '@/types/registeredFunctionTypes';
 
 const RegisteredFunctionsList: React.FC = () => {

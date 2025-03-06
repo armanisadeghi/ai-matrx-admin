@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/table"
 import {Input} from "@/components/ui/input"
 import {EntityKeys} from "@/types/entityTypes"
-import {Spinner} from "@nextui-org/spinner"
+import {Spinner} from "@heroui/spinner"
 import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
 import {EntityTabModal} from "@/components/matrx/Entity"
 import {generateStandardTabData} from "@/components/matrx/Entity/utils/tableHelpers"

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import {Input, Textarea } from '@nextui-org/react';
+import {Input, Textarea } from "@heroui/react";
 import {
     BaseHelpPanel,
     BaseHelpPanelSimple

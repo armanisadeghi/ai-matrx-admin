@@ -302,6 +302,21 @@ const compiledRecipeEntityOverrides: EntityOverrides<"compiledRecipe"> = {
     entityFields: null,
 };
 
+const conversationEntityOverrides: EntityOverrides<"conversation"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
 const dataBrokerEntityOverrides: EntityOverrides<"dataBroker"> = {
     schemaType: null,
     entityName: null,
@@ -482,6 +497,21 @@ const flashcardSetsEntityOverrides: EntityOverrides<"flashcardSets"> = {
     entityFields: null,
 };
 
+const messageEntityOverrides: EntityOverrides<"message"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
 const messageBrokerEntityOverrides: EntityOverrides<"messageBroker"> = {
     schemaType: null,
     entityName: null,
@@ -618,6 +648,21 @@ const recipeFunctionEntityOverrides: EntityOverrides<"recipeFunction"> = {
 };
 
 const recipeMessageEntityOverrides: EntityOverrides<"recipeMessage"> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null,
+};
+
+const recipeMessageReorderQueueEntityOverrides: EntityOverrides<"recipeMessageReorderQueue"> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -908,6 +953,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     bucketTreeStructures: bucketTreeStructuresEntityOverrides,
     category: categoryEntityOverrides,
     compiledRecipe: compiledRecipeEntityOverrides,
+    conversation: conversationEntityOverrides,
     dataBroker: dataBrokerEntityOverrides,
     dataInputComponent: dataInputComponentEntityOverrides,
     dataOutputComponent: dataOutputComponentEntityOverrides,
@@ -920,6 +966,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     flashcardImages: flashcardImagesEntityOverrides,
     flashcardSetRelations: flashcardSetRelationsEntityOverrides,
     flashcardSets: flashcardSetsEntityOverrides,
+    message: messageEntityOverrides,
     messageBroker: messageBrokerEntityOverrides,
     messageTemplate: messageTemplateEntityOverrides,
     processor: processorEntityOverrides,
@@ -930,6 +977,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     recipeDisplay: recipeDisplayEntityOverrides,
     recipeFunction: recipeFunctionEntityOverrides,
     recipeMessage: recipeMessageEntityOverrides,
+    recipeMessageReorderQueue: recipeMessageReorderQueueEntityOverrides,
     recipeModel: recipeModelEntityOverrides,
     recipeProcessor: recipeProcessorEntityOverrides,
     recipeTool: recipeToolEntityOverrides,

@@ -1,6 +1,6 @@
 "use client";
 
-import type {Selection} from "@nextui-org/react";
+import type {Selection} from "@heroui/react";
 
 import React from "react";
 import {
@@ -13,7 +13,7 @@ import {
     Popover,
     PopoverTrigger,
     PopoverContent,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import {Icon} from "@iconify/react";
 
 import PromptContainerWithConversation from "./prompt-container-with-conversation";

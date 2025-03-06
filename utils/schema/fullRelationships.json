@@ -1993,5 +1993,71 @@
             },
             "referencedBy": {}
         }
+    },
+    "message": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": ["conversation"],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "message",
+            "table_name": "message",
+            "foreignKeys": {
+                "conversation": {
+                    "foreign_table": "conversation",
+                    "foreign_entity": "conversation",
+                    "column": "conversation_id",
+                    "fieldName": "conversationId",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "relationship_type": "many-to-one",
+                    "constraint_name": "message_conversation_id_fkey"
+                }
+            },
+            "referencedBy": {}
+        }
+    },
+    "recipeMessageReorderQueue": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": [],
+        "relationshipDetails": {
+            "entityName": "recipeMessageReorderQueue",
+            "table_name": "recipe_message_reorder_queue",
+            "foreignKeys": {},
+            "referencedBy": {}
+        }
+    },
+    "conversation": {
+        "selfReferential": [],
+        "manyToMany": [],
+        "oneToOne": [],
+        "manyToOne": [],
+        "oneToMany": [],
+        "undefined": [],
+        "inverseReferences": ["message"],
+        "relationshipDetails": {
+            "entityName": "conversation",
+            "table_name": "conversation",
+            "foreignKeys": {},
+            "referencedBy": {
+                "message": {
+                    "foreign_table": "message",
+                    "foreign_entity": "message",
+                    "field": "conversationId",
+                    "column": "conversation_id",
+                    "foreign_field": "id",
+                    "foreign_column": "id",
+                    "constraint_name": "message_conversation_id_fkey"
+                }
+            }
+        }
     }
 }

@@ -2,10 +2,11 @@
 import type { Config } from "tailwindcss";
 import { animations } from './utils/tailwind-config/animations';
 import { colors } from './utils/tailwind-config/colors';
-const {fontFamily} = require("tailwindcss/defaultTheme");
+const { fontFamily } = require("tailwindcss/defaultTheme");
 import { textureUtilities } from './utils/tailwind-config/textures';
 import { createUtilities } from './utils/tailwind-config/utilities';
 import { plugins } from './utils/tailwind-config/plugins';
+import { heroui } from "@heroui/react";
 
 const config: Config = {
     darkMode: ["class"],
@@ -15,7 +16,7 @@ const config: Config = {
         "./constants/**/*.{js,ts,jsx,tsx}",
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
         "./features/**/*.{js,ts,jsx,tsx,mdx}",
-        "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx,mdx}",
+        "./node_modules/@heroui/react/dist/**/*.{js,ts,jsx,tsx,mdx}",
         "./src/**/*.{ts,tsx}",
     ],
     theme: {
@@ -28,12 +29,12 @@ const config: Config = {
         },
         extend: {
             gridTemplateColumns: {
-                '12': 'repeat(12, minmax(0, 1fr))',  // Keeps the default 12-column grid
-                '24': 'repeat(24, minmax(0, 1fr))',  // Adds the 24-column grid option
+                '12': 'repeat(12, minmax(0, 1fr))',
+                '24': 'repeat(24, minmax(0, 1fr))',
             },
             gridTemplateRows: {
-                '12': 'repeat(12, minmax(0, 1fr))',  // Optional: Keeps default 12-row grid
-                '24': 'repeat(24, minmax(0, 1fr))',  // Optional: Adds 24-row grid
+                '12': 'repeat(12, minmax(0, 1fr))',
+                '24': 'repeat(24, minmax(0, 1fr))',
             },        
             colors,
             ...animations,
@@ -116,7 +117,8 @@ const config: Config = {
         function({ addUtilities, theme }) {
             addUtilities({ ...textureUtilities });
             createUtilities({ addUtilities, theme });
-        }
+        },
+        heroui() // Added HeroUI plugin
     ]
 };
 export default config;

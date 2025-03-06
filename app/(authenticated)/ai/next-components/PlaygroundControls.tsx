@@ -1,7 +1,7 @@
 // File: components/PlaygroundControls.tsx
 
 import React from "react";
-import {Selection, Select, SelectItem, SelectSection, Slider, Textarea} from "@nextui-org/react";
+import {Selection, Select, SelectItem, SelectSection, Slider, Textarea} from "@heroui/react";
 import {DEFAULT_MODELS, FINE_TUNE_MODELS} from "./constants/playground-constants";
 
 interface PlaygroundControlsProps {

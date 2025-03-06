@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/lib/redux/store';
 import { setUser } from '@/lib/redux/slices/userSlice';
-import { Card, CardHeader, CardBody, CardFooter, Divider, Avatar, Button, Input } from "@nextui-org/react";
+import { Card, CardHeader, CardBody, CardFooter, Divider, Avatar, Button, Input } from "@heroui/react";
 import { FaGoogle, FaGithub, FaPhone } from 'react-icons/fa';
 import { MdEmail, MdEdit } from 'react-icons/md';
 

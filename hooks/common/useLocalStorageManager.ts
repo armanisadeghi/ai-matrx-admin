@@ -37,7 +37,7 @@ export type UseLocalStorageManager = {
     removeCookie: (name: string) => Promise<StorageVerification>;
 };
 
-function useLocalStorageManager(): UseLocalStorageManager {
+export function useLocalStorageManager(): UseLocalStorageManager {
     const constructKey = useCallback((module: string, feature: string, key: string): string => {
         return `${module}/${feature}/${key}`;
     }, []);

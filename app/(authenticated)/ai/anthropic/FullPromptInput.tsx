@@ -1,11 +1,11 @@
 "use client";
 
-import type {TextAreaProps} from "@nextui-org/react";
+import type {TextAreaProps} from "@heroui/react";
 
 import React from "react";
-import {Textarea} from "@nextui-org/react";
-import {cn} from "@nextui-org/react";
-import {Button, Tooltip, Image, Badge, ScrollShadow} from "@nextui-org/react";
+import {Textarea} from "@heroui/react";
+import {cn} from "@heroui/react";
+import {Button, Tooltip, Image, Badge, ScrollShadow} from "@heroui/react";
 import {Icon} from "@iconify/react";
 
 export default function FullPromptInput() {

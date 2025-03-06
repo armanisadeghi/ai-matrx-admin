@@ -21,7 +21,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 
 import {Badge} from '@/components/ui/badge';
 import {RelatedInput, RelatedTextarea} from '@/lib/redux/form/advanced-fields/RelationshipComponents';
-import {cn} from '@nextui-org/react';
+import {cn} from "@heroui/react";
 import { Edit, Copy, Link, Globe, Calendar, Clock, Plus } from "lucide-react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog";
 
@@ -644,9 +644,9 @@ const renderField = (field: EntityStateField) => {
                     showEditDialog={['json', 'object', 'datetime'].includes(field.dataType)}
                     renderEditContent={() => (
                         // Render modal content based on field type
-                        <div className="space-y-4">
+                        (<div className="space-y-4">
                             {/* Custom edit content */}
-                        </div>
+                        </div>)
                     )}
                 >
                     {/* Your existing field rendering logic here */}

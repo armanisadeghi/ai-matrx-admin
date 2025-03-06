@@ -9,7 +9,7 @@ import {
 import {useAppSelector} from '@/lib/redux/hooks';
 import {selectEntityPrettyName, selectFormattedEntityOptions} from '@/lib/redux/schema/globalCacheSelectors';
 import {EntityKeys} from '@/types/entityTypes';
-import {cn} from '@nextui-org/react';
+import {cn} from "@heroui/react";
 import {AnimationPreset, ComponentDensity} from "@/types/componentConfigTypes";
 
 type LayoutType = 'stacked' | 'sideBySide';

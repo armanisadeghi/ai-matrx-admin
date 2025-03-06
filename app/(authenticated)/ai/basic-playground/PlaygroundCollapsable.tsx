@@ -11,7 +11,7 @@ import {
     PopoverTrigger,
     PopoverContent,
     Selection,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Icon } from "@iconify/react";
 import { presets, Preset } from "../next-components/constants/playground-constants";
 import PlaygroundControls from "../next-components/PlaygroundControls";

@@ -1,6 +1,6 @@
 'use client';
 
-import {Select, SelectItem} from "@nextui-org/react";
+import {Select, SelectItem} from "@heroui/react";
 
 export const animals = [
   {key: "cat", label: "Cat"},

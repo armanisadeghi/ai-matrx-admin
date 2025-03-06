@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import {Avatar, Badge, Button, Link, Tooltip} from "@nextui-org/react";
-import {useClipboard} from "@nextui-org/use-clipboard";
+import {Avatar, Badge, Button, Link, Tooltip} from "@heroui/react";
+import {useClipboard} from "@heroui/use-clipboard";
 import {Icon} from "@iconify/react";
 
 import {cn} from "./cn";

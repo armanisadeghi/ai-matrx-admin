@@ -1,153 +1,134 @@
 // File: types/AutomationSchemaTypes.ts
-import {AutomationEntity, EntityData, EntityKeys, EntityDataMixed, EntityDataOptional, EntityDataWithKey, ProcessedEntityData} from '@/types/entityTypes';
-import { EntityState } from '@/lib/redux/entity/types/stateTypes';
+import {
+    AutomationEntity,
+    EntityData,
+    EntityKeys,
+    EntityDataMixed,
+    EntityDataOptional,
+    EntityDataWithKey,
+    ProcessedEntityData,
+} from "@/types/entityTypes";
+import { EntityState } from "@/lib/redux/entity/types/stateTypes";
 
 export type TypeBrand<T> = { _typeBrand: T };
 
 export type FieldDataOptionsType =
-    | 'string'
-    | 'number'
-    | 'boolean'
-    | 'array'
-    | 'object'
-    | 'json'
-    | 'null'
-    | 'undefined'
-    | 'any'
-    | 'function'
-    | 'symbol'
-    | 'union'
-    | 'bigint'
-    | 'date'
-    | 'map'
-    | 'set'
-    | 'tuple'
-    | 'enum'
-    | 'intersection'
-    | 'literal'
-    | 'void'
-    | 'never'
-    | 'uuid'
-    | 'email'
-    | 'url'
-    | 'phone'
-    | 'datetime';
+    | "string"
+    | "number"
+    | "boolean"
+    | "array"
+    | "object"
+    | "json"
+    | "null"
+    | "undefined"
+    | "any"
+    | "function"
+    | "symbol"
+    | "union"
+    | "bigint"
+    | "date"
+    | "map"
+    | "set"
+    | "tuple"
+    | "enum"
+    | "intersection"
+    | "literal"
+    | "void"
+    | "never"
+    | "uuid"
+    | "email"
+    | "url"
+    | "phone"
+    | "datetime";
 
-export type DataStructure =
-    | 'single'
-    | 'array'
-    | 'object'
-    | 'foreignKey'
-    | 'inverseForeignKey'
-    | 'manyToMany';
+export type DataStructure = "single" | "array" | "object" | "foreignKey" | "inverseForeignKey" | "manyToMany";
 
-export type FetchStrategy =
-    | 'simple'
-    | 'fk'
-    | 'ifk'
-    | 'm2m'
-    | 'fkAndIfk'
-    | 'm2mAndFk'
-    | 'm2mAndIfk'
-    | 'fkIfkAndM2M'
-    | 'none';
+export type FetchStrategy = "simple" | "fk" | "ifk" | "m2m" | "fkAndIfk" | "m2mAndFk" | "m2mAndIfk" | "fkIfkAndM2M" | "none";
 
-export type RequiredNameFormats =
-    'frontend' |
-    'backend' |
-    'database' |
-    'pretty' |
-    'component'|
-    'kebab' |
-    'sqlFunctionRef';
+export type RequiredNameFormats = "frontend" | "backend" | "database" | "pretty" | "component" | "kebab" | "sqlFunctionRef";
 
-export type OptionalNameFormats =
-    'RestAPI' |
-    'GraphQL' |
-    'custom';
+export type OptionalNameFormats = "RestAPI" | "GraphQL" | "custom";
 
 export type NameFormat = RequiredNameFormats | OptionalNameFormats;
 
 export type AutomationDynamicName =
-    | 'dynamicAudio'
-    | 'dynamicImage'
-    | 'dynamicText'
-    | 'dynamicVideo'
-    | 'dynamicSocket'
-    | 'anthropic'
-    | 'openai'
-    | 'llama'
-    | 'googleAi';
+    | "dynamicAudio"
+    | "dynamicImage"
+    | "dynamicText"
+    | "dynamicVideo"
+    | "dynamicSocket"
+    | "anthropic"
+    | "openai"
+    | "llama"
+    | "googleAi";
 
-export type AutomationCustomName =
-    | 'flashcard'
-    | 'mathTutor'
-    | 'scraper';
+export type AutomationCustomName = "flashcard" | "mathTutor" | "scraper";
 
 export type AutomationTableName =
-    'action'
-    | 'aiAgent'
-    | 'aiEndpoint'
-    | 'aiModel'
-    | 'aiModelEndpoint'
-    | 'aiProvider'
-    | 'aiSettings'
-    | 'applet'
-    | 'arg'
-    | 'audioLabel'
-    | 'audioRecording'
-    | 'audioRecordingUsers'
-    | 'automationBoundaryBroker'
-    | 'automationMatrix'
-    | 'broker'
-    | 'brokerValue'
-    | 'bucketStructures'
-    | 'bucketTreeStructures'
-    | 'category'
-    | 'compiledRecipe'
-    | 'dataBroker'
-    | 'dataInputComponent'
-    | 'dataOutputComponent'
-    | 'displayOption'
-    | 'emails'
-    | 'extractor'
-    | 'fileStructure'
-    | 'flashcardData'
-    | 'flashcardHistory'
-    | 'flashcardImages'
-    | 'flashcardSetRelations'
-    | 'flashcardSets'
-    | 'messageBroker'
-    | 'messageTemplate'
-    | 'processor'
-    | 'projectMembers'
-    | 'projects'
-    | 'recipe'
-    | 'recipeBroker'
-    | 'recipeDisplay'
-    | 'recipeFunction'
-    | 'recipeMessage'
-    | 'recipeModel'
-    | 'recipeProcessor'
-    | 'recipeTool'
-    | 'registeredFunction'
-    | 'subcategory'
-    | 'systemFunction'
-    | 'taskAssignments'
-    | 'taskAttachments'
-    | 'taskComments'
-    | 'tasks'
-    | 'tool'
-    | 'transformer'
-    | 'userPreferences'
-    | 'wcClaim'
-    | 'wcImpairmentDefinition'
-    | 'wcInjury'
-    | 'wcReport';
+    | "action"
+    | "aiAgent"
+    | "aiEndpoint"
+    | "aiModel"
+    | "aiModelEndpoint"
+    | "aiProvider"
+    | "aiSettings"
+    | "applet"
+    | "arg"
+    | "audioLabel"
+    | "audioRecording"
+    | "audioRecordingUsers"
+    | "automationBoundaryBroker"
+    | "automationMatrix"
+    | "broker"
+    | "brokerValue"
+    | "bucketStructures"
+    | "bucketTreeStructures"
+    | "category"
+    | "compiledRecipe"
+    | "conversation"
+    | "dataBroker"
+    | "dataInputComponent"
+    | "dataOutputComponent"
+    | "displayOption"
+    | "emails"
+    | "extractor"
+    | "fileStructure"
+    | "flashcardData"
+    | "flashcardHistory"
+    | "flashcardImages"
+    | "flashcardSetRelations"
+    | "flashcardSets"
+    | "message"
+    | "messageBroker"
+    | "messageTemplate"
+    | "processor"
+    | "projectMembers"
+    | "projects"
+    | "recipe"
+    | "recipeBroker"
+    | "recipeDisplay"
+    | "recipeFunction"
+    | "recipeMessage"
+    | "recipeMessageReorderQueue"
+    | "recipeModel"
+    | "recipeProcessor"
+    | "recipeTool"
+    | "registeredFunction"
+    | "subcategory"
+    | "systemFunction"
+    | "taskAssignments"
+    | "taskAttachments"
+    | "taskComments"
+    | "tasks"
+    | "tool"
+    | "transformer"
+    | "userPreferences"
+    | "wcClaim"
+    | "wcImpairmentDefinition"
+    | "wcInjury"
+    | "wcReport";
 
-export type AutomationViewName =
-    'viewRegisteredFunction'
-    | 'viewRegisteredFunctionAllRels';
+export type AutomationViewName = "viewRegisteredFunction" | "viewRegisteredFunctionAllRels";
 
 export type AutomationEntityName = AutomationTableName | AutomationViewName;
 
@@ -159,12 +140,17 @@ export type AutomationEntityName = AutomationTableName | AutomationViewName;
 
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
-export type ExpandRecursively<T> = T extends object ? (T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never) : T;export type ExpandExcept<T, KeysToExclude extends string[] = []> = T extends object
+export type ExpandRecursively<T> = T extends object ? (T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never) : T;
+export type ExpandExcept<T, KeysToExclude extends string[] = []> = T extends object
     ? {
-   [K in keyof T]: K extends KeysToExclude[number] ? T[K] : ExpandExcept<T[K], KeysToExclude>;
-} : T;
+          [K in keyof T]: K extends KeysToExclude[number] ? T[K] : ExpandExcept<T[K], KeysToExclude>;
+      }
+    : T;
 
-export type EntityStateType<TEntity extends EntityKeys> = ExpandExcept<EntityState<TEntity>, ["entityFields", 'createdAt', 'updatedAt', "timestamp","relationships", "unsavedRecords", "primaryKeyMetadata", "primaryKeyValues", "metadata"]>;
+export type EntityStateType<TEntity extends EntityKeys> = ExpandExcept<
+    EntityState<TEntity>,
+    ["entityFields", "relationships", "unsavedRecords", "primaryKeyMetadata", "primaryKeyValues", "metadata"]
+>;
 
 export type ActionType = AutomationEntity<"action">;
 export type ActionDataRequired = Expand<EntityData<"action">>;
@@ -326,6 +312,14 @@ export type CompiledRecipeProcessed = Expand<ProcessedEntityData<"compiledRecipe
 export type CompiledRecipeData = Expand<EntityDataMixed<"compiledRecipe">>;
 export type CompiledRecipeState = EntityStateType<"compiledRecipe">;
 
+export type ConversationType = AutomationEntity<"conversation">;
+export type ConversationDataRequired = Expand<EntityData<"conversation">>;
+export type ConversationDataOptional = Expand<EntityDataOptional<"conversation">>;
+export type ConversationRecordWithKey = Expand<EntityDataWithKey<"conversation">>;
+export type ConversationProcessed = Expand<ProcessedEntityData<"conversation">>;
+export type ConversationData = Expand<EntityDataMixed<"conversation">>;
+export type ConversationState = EntityStateType<"conversation">;
+
 export type DataBrokerType = AutomationEntity<"dataBroker">;
 export type DataBrokerDataRequired = Expand<EntityData<"dataBroker">>;
 export type DataBrokerDataOptional = Expand<EntityDataOptional<"dataBroker">>;
@@ -422,6 +416,14 @@ export type FlashcardSetsProcessed = Expand<ProcessedEntityData<"flashcardSets">
 export type FlashcardSetsData = Expand<EntityDataMixed<"flashcardSets">>;
 export type FlashcardSetsState = EntityStateType<"flashcardSets">;
 
+export type MessageType = AutomationEntity<"message">;
+export type MessageDataRequired = Expand<EntityData<"message">>;
+export type MessageDataOptional = Expand<EntityDataOptional<"message">>;
+export type MessageRecordWithKey = Expand<EntityDataWithKey<"message">>;
+export type MessageProcessed = Expand<ProcessedEntityData<"message">>;
+export type MessageData = Expand<EntityDataMixed<"message">>;
+export type MessageState = EntityStateType<"message">;
+
 export type MessageBrokerType = AutomationEntity<"messageBroker">;
 export type MessageBrokerDataRequired = Expand<EntityData<"messageBroker">>;
 export type MessageBrokerDataOptional = Expand<EntityDataOptional<"messageBroker">>;
@@ -501,6 +503,14 @@ export type RecipeMessageRecordWithKey = Expand<EntityDataWithKey<"recipeMessage
 export type RecipeMessageProcessed = Expand<ProcessedEntityData<"recipeMessage">>;
 export type RecipeMessageData = Expand<EntityDataMixed<"recipeMessage">>;
 export type RecipeMessageState = EntityStateType<"recipeMessage">;
+
+export type RecipeMessageReorderQueueType = AutomationEntity<"recipeMessageReorderQueue">;
+export type RecipeMessageReorderQueueDataRequired = Expand<EntityData<"recipeMessageReorderQueue">>;
+export type RecipeMessageReorderQueueDataOptional = Expand<EntityDataOptional<"recipeMessageReorderQueue">>;
+export type RecipeMessageReorderQueueRecordWithKey = Expand<EntityDataWithKey<"recipeMessageReorderQueue">>;
+export type RecipeMessageReorderQueueProcessed = Expand<ProcessedEntityData<"recipeMessageReorderQueue">>;
+export type RecipeMessageReorderQueueData = Expand<EntityDataMixed<"recipeMessageReorderQueue">>;
+export type RecipeMessageReorderQueueState = EntityStateType<"recipeMessageReorderQueue">;
 
 export type RecipeModelType = AutomationEntity<"recipeModel">;
 export type RecipeModelDataRequired = Expand<EntityData<"recipeModel">>;

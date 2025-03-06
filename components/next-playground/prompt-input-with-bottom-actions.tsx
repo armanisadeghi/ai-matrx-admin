@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import {Button, Tooltip, ScrollShadow} from "@nextui-org/react";
+import {Button, Tooltip, ScrollShadow} from "@heroui/react";
 import {Icon} from "@iconify/react";
 
 import {cn} from "./cn";

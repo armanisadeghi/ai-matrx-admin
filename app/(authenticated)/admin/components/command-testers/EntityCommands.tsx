@@ -31,7 +31,7 @@ import { Button } from '@/components/ui';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import {cn} from "@nextui-org/react";
+import {cn} from "@heroui/react";
 
 // For testing, change this const to test different entities
 const entityKey = 'userPreferences' as EntityKeys;

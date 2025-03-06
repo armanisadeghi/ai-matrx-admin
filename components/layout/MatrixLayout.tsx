@@ -6,7 +6,7 @@ import Link, {LinkProps} from "next/link";
 import {usePathname} from 'next/navigation';
 import React, {useState, createContext, useContext, useEffect} from "react";
 import {AnimatePresence, motion} from "framer-motion";
-import {IconMenu2, IconX, IconArrowNarrowLeft, IconArrowNarrowRight} from "@tabler/icons-react";
+import {IconMenu2, IconX} from "@tabler/icons-react";
 import {Logo} from "@/components/layout/MatrixLogo";
 import {appSidebarLinks} from "@/constants";
 import {Settings, User} from "lucide-react";

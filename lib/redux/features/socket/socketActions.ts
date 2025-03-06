@@ -2,15 +2,16 @@
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { SocketManager } from '@/lib/socketio/SocketManager';
+import { SocketManager } from '@/lib/redux/socket/manager';
 import { setSocketStatus, setIsAuthenticated, setSocketSid, setSocketError } from './socketSlice';
-import { SocketTask } from '@/lib/socketio/types';
+import { SocketTask } from '../../socket/types';
+
 
 export const initializeSocket = createAsyncThunk(
     'socket/initialize',
     async (_, { dispatch, getState }) => {
             const state = getState() as RootState;
-            const { matrixId } = state.user.currentUser!;
+            const user = state.user;
             const { sessionUrl, socketNamespace } = state.config;
 
             const socketManager = SocketManager.getInstance(matrixId, sessionUrl, socketNamespace);

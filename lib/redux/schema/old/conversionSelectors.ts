@@ -4,7 +4,7 @@ import { RootState } from "@/lib/redux/store";
 import { createSelector } from "@reduxjs/toolkit";
 import { EntityKeys, EntityRecord, EntityFieldKeys } from "@/types/entityTypes";
 import { QueryOptions } from "@/utils/supabase/api-wrapper";
-import { select } from "@nextui-org/theme";
+import { select } from "@heroui/theme";
 import { useAppSelector } from "../hooks";
 
 // Type for the conversion maps

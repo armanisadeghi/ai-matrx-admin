@@ -1,7 +1,7 @@
 'use client';
 
 import {getCurrentParsedPathName} from "@/utils/client-nav-utils";
-import {Breadcrumbs, BreadcrumbItem} from "@nextui-org/react";
+import {Breadcrumbs, BreadcrumbItem} from "@heroui/react";
 import {Component, ChevronRight, LucideIcon} from "lucide-react";
 import Link from "next/link";
 import React from "react";

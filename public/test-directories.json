@@ -142,5 +142,9 @@
   {
     "path": "/tests/windows",
     "name": "windows"
+  },
+  {
+    "path": "/tests/workflows",
+    "name": "workflows"
   }
 ]

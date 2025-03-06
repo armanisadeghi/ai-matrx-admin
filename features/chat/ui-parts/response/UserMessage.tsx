@@ -1,7 +1,7 @@
 // UserMessage.tsx
 import React, { useState } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
-import { Message } from './types';
+import { Message } from '@/features/chat/types';
 
 interface UserMessageProps {
   message: Message;

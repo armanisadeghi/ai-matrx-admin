@@ -11,7 +11,7 @@ import {
     EntityQuickReferenceList,
     EntityQuickReferenceSelect
 } from '../quick-reference';
-import {cn} from '@nextui-org/react';
+import {cn} from "@heroui/react";
 import EntitySelection from '../entity-management/EntitySelection';
 
 type QuickReferenceComponentType =

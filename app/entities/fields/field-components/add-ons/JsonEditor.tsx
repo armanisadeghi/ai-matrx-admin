@@ -1,7 +1,7 @@
 'use client';
 
 import { Textarea } from "@/components/ui";
-import { cn } from "@nextui-org/react";
+import { cn } from "@heroui/react";
 import React, { useState } from "react";
 import JSON5 from 'json5';
 

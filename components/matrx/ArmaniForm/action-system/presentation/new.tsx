@@ -3,7 +3,7 @@ import {
     PRESENTATION_COMPONENTS,
     PresentationTypes
 } from "@/components/matrx/ArmaniForm/action-system/presentation/presentationRegistry";
-import {Button} from "@nextui-org/react";
+import {Button} from "@heroui/react";
 
 
 type PresentationType = 'sheet' | 'dialog' | 'drawer' | 'popover';

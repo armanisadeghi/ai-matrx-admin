@@ -2,10 +2,6 @@
 
 import {useState, useEffect} from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
-import {
-    Card,
-    CardContent,
-} from '@/components/ui/card';
 import {Button} from '@/components/ui/button';
 import {
     Dialog,
@@ -38,7 +34,7 @@ import {
     Check, AlertTriangle, MoreVertical
 } from 'lucide-react';
 import {EnhancedJsonViewer} from '@/components/ui/JsonComponents';
-import useLocalStorageManager, {StorageVerification, UseLocalStorageManager, CookieOptions} from '@/hooks/useLocalStorageManager';
+import useLocalStorageManager, {StorageVerification, UseLocalStorageManager, CookieOptions} from '@/hooks/common/useLocalStorageManager';
 import {EnhancedEditableJsonViewer} from "@/components/ui/JsonComponents/JsonEditor";
 
 // Types

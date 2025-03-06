@@ -1,7 +1,7 @@
 // AssistantMessage.tsx
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal } from 'lucide-react';
-import { Message } from './types';
+import { Message } from '@/features/chat/types';
 
 interface AssistantMessageProps {
   message: Message;

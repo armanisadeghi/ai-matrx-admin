@@ -1,4 +1,4 @@
-import { StorageVerification } from '@/hooks/useLocalStorageManager';
+import { StorageVerification } from '@/hooks/common/useLocalStorageManager';
 
 class StorageManager {
     private isClient: boolean;

@@ -3,7 +3,7 @@ import {motion, AnimatePresence} from 'framer-motion';
 import {cn} from '@/utils/cn';
 
 import {useDispatch, useSelector} from 'react-redux';
-import {Button, Popover, PopoverContent, PopoverTrigger} from "@nextui-org/react";
+import {Button, Popover, PopoverContent, PopoverTrigger} from "@heroui/react";
 import {
     DynamicFieldWrapper,
     DynamicFieldWrapperProps

@@ -79,6 +79,10 @@ export const primaryKeys = {
         frontendFields: ["id"],
         databaseColumns: ["id"],
     },
+    conversation: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
     dataBroker: {
         frontendFields: ["id"],
         databaseColumns: ["id"],
@@ -127,6 +131,10 @@ export const primaryKeys = {
         frontendFields: ["set_id"],
         databaseColumns: ["setId"],
     },
+    message: {
+        frontendFields: ["id"],
+        databaseColumns: ["id"],
+    },
     messageBroker: {
         frontendFields: ["id"],
         databaseColumns: ["id"],
@@ -166,6 +174,10 @@ export const primaryKeys = {
     recipeMessage: {
         frontendFields: ["id"],
         databaseColumns: ["id"],
+    },
+    recipeMessageReorderQueue: {
+        frontendFields: ["recipe_id"],
+        databaseColumns: ["recipeId"],
     },
     recipeModel: {
         frontendFields: ["id"],

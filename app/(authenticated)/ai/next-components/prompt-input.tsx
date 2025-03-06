@@ -1,9 +1,9 @@
 "use client";
 
-import type {TextAreaProps} from "@nextui-org/react";
+import type {TextAreaProps} from "@heroui/react";
 
 import React from "react";
-import {Textarea} from "@nextui-org/react";
+import {Textarea} from "@heroui/react";
 import {cn} from "@/utils/cn";
 
 

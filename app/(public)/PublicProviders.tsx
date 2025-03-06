@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { ThemeProvider } from "@/styles/themes";
-import { NextUIProvider } from "@nextui-org/react";
+import { HeroUIProvider } from "@heroui/react";
 import { Toaster } from "@/components/ui/toaster";
 
 export function PublicProviders({ children }: { children: React.ReactNode }) {
     return (
-            <NextUIProvider>
+            <HeroUIProvider>
                 {children}
                 <Toaster />
-            </NextUIProvider>
+            </HeroUIProvider>
     );
 }

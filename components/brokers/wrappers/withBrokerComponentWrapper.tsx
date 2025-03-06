@@ -1,5 +1,5 @@
 import { BrokerInputProps, DataBrokerDataWithKey, DataInputComponent } from "@/components/brokers/types";
-import { cn } from "@nextui-org/react";
+import { cn } from "@heroui/react";
 import { useBrokerValue } from "../hooks/useBrokerValue";
 import { withComponentWrapperForCreation } from "./withComponentWrapperForCreation";
 import { withStandardBrokerComponentWrapper } from "./withStandardBrokerComponentWrapper";

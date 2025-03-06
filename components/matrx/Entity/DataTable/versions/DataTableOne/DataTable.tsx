@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table"
 import {Input} from "@/components/ui/input"
 import {EntityKeys, EntityData} from "@/types/entityTypes"
-import {Spinner} from "@nextui-org/spinner";
+import {Spinner} from "@heroui/spinner";
 import {Alert, AlertTitle, AlertDescription} from "@/components/ui/alert"
 import {buildColumnsFromTableColumns} from "@/components/matrx/Entity/addOns/tableBuilder";
 import {EntityTabModal} from "@/components/matrx/Entity";

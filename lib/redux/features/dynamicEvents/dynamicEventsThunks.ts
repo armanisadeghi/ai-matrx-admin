@@ -2,15 +2,14 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, AppDispatch } from '../../store';
 import { setDynamicEvent, updateDynamicEventStatus, updateDynamicEventStream, removeDynamicEvent } from './dynamicEventsSlice';
 import { DynamicEvent, EventDetails, TaskDetails } from './types';
-import { SocketManager } from '@/lib/socketio/SocketManager';
+import { SocketManager } from '@/lib/redux/socket/manager';
 
 export const setupDynamicEventListener = createAsyncThunk<void, string, { state: RootState, dispatch: AppDispatch }>(
     'dynamicEvents/setupListener',
     async (eventName, { dispatch, getState }) => {
         const state = getState();
-        const { matrixId } = state.user.currentUser!;
-        const { sessionUrl, socketNamespace } = state.config;
-        const socketManager = SocketManager.getInstance(matrixId, sessionUrl, socketNamespace);
+
+        const socketManager = SocketManager.getInstance();
 
         const listener = (data: any) => {
             console.log(`dynamic Event Thunks - Listener received data for ${eventName}:`, data);
@@ -28,7 +27,7 @@ export const setupDynamicEventListener = createAsyncThunk<void, string, { state:
 
         const dynamicEvent: DynamicEvent = {
             eventName,
-            namespace: socketNamespace,
+            namespace: "UserSession",
             sid: socketManager.getSocketSid() || '',
             status: 'assigned',
             textStream: '',
@@ -42,9 +41,7 @@ export const removeDynamicEventListener = createAsyncThunk<void, string, { state
     'dynamicEvents/removeListener',
     async (eventName, { dispatch, getState }) => {
         const state = getState();
-        const { matrixId } = state.user.currentUser!;
-        const { sessionUrl, socketNamespace } = state.config;
-        const socketManager = SocketManager.getInstance(matrixId, sessionUrl, socketNamespace);
+        const socketManager = SocketManager.getInstance();
 
         socketManager.removeDynamicEventListener(eventName);
         dispatch(removeDynamicEvent(eventName));
@@ -55,8 +52,6 @@ export const submitEvent = createAsyncThunk<void, EventDetails, { state: RootSta
     'dynamicEvents/submitEvent',
     async (eventDetails, { dispatch, getState }) => {
         const state = getState();
-        const { matrixId } = state.user.currentUser!;
-        const { sessionUrl, socketNamespace } = state.config;
         const socketManager = SocketManager.getInstance(matrixId, sessionUrl, socketNamespace);
 
         // Setup listeners for each task

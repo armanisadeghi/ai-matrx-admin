@@ -224,6 +224,8 @@ const categoryFieldOverrides: AllFieldOverrides = {};
 
 const compiledRecipeFieldOverrides: AllFieldOverrides = {};
 
+const conversationFieldOverrides: AllFieldOverrides = {};
+
 const dataBrokerFieldOverrides: AllFieldOverrides = {};
 
 const dataInputComponentFieldOverrides: AllFieldOverrides = {
@@ -275,6 +277,8 @@ const flashcardImagesFieldOverrides: AllFieldOverrides = {};
 const flashcardSetRelationsFieldOverrides: AllFieldOverrides = {};
 
 const flashcardSetsFieldOverrides: AllFieldOverrides = {};
+
+const messageFieldOverrides: AllFieldOverrides = {};
 
 const messageBrokerFieldOverrides: AllFieldOverrides = {};
 
@@ -331,6 +335,8 @@ const recipeFunctionFieldOverrides: AllFieldOverrides = {};
 
 const recipeMessageFieldOverrides: AllFieldOverrides = {};
 
+const recipeMessageReorderQueueFieldOverrides: AllFieldOverrides = {};
+
 const recipeModelFieldOverrides: AllFieldOverrides = {};
 
 const recipeProcessorFieldOverrides: AllFieldOverrides = {};
@@ -386,6 +392,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     bucketTreeStructures: bucketTreeStructuresFieldOverrides,
     category: categoryFieldOverrides,
     compiledRecipe: compiledRecipeFieldOverrides,
+    conversation: conversationFieldOverrides,
     dataBroker: dataBrokerFieldOverrides,
     dataInputComponent: dataInputComponentFieldOverrides,
     dataOutputComponent: dataOutputComponentFieldOverrides,
@@ -398,6 +405,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     flashcardImages: flashcardImagesFieldOverrides,
     flashcardSetRelations: flashcardSetRelationsFieldOverrides,
     flashcardSets: flashcardSetsFieldOverrides,
+    message: messageFieldOverrides,
     messageBroker: messageBrokerFieldOverrides,
     messageTemplate: messageTemplateFieldOverrides,
     processor: processorFieldOverrides,
@@ -408,6 +416,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     recipeDisplay: recipeDisplayFieldOverrides,
     recipeFunction: recipeFunctionFieldOverrides,
     recipeMessage: recipeMessageFieldOverrides,
+    recipeMessageReorderQueue: recipeMessageReorderQueueFieldOverrides,
     recipeModel: recipeModelFieldOverrides,
     recipeProcessor: recipeProcessorFieldOverrides,
     recipeTool: recipeToolFieldOverrides,
