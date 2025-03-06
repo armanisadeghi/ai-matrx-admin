@@ -4,6 +4,12 @@ import WelcomeScreen from "@/features/chat/ui-parts/layout/WelcomeScreen";
 
 const DEFAULT_MODEL_ID = "id:49848d52-9cc8-4ce4-bacb-32aa2201cd10";
 
+export const metadata = {
+  title: 'Matrx AI. Chat Reimagined.',
+  description: 'The most powerful AI Models, in one place, empowered with Matrx Superpowers!',
+};
+
+
 export default function ChatPage() {
   // This is a server component, so we only pass the default model ID
   // All client-side logic will be in the WelcomeScreen component

@@ -1996,9 +1996,9 @@
     },
     "message": {
         "selfReferential": [],
-        "manyToMany": [],
+        "manyToMany": ["conversation"],
         "oneToOne": [],
-        "manyToOne": ["conversation"],
+        "manyToOne": [],
         "oneToMany": [],
         "undefined": [],
         "inverseReferences": [],
@@ -2013,7 +2013,7 @@
                     "fieldName": "conversationId",
                     "foreign_field": "id",
                     "foreign_column": "id",
-                    "relationship_type": "many-to-one",
+                    "relationship_type": "many-to-many",
                     "constraint_name": "message_conversation_id_fkey"
                 }
             },

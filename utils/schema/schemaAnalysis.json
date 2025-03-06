@@ -1,33 +1,33 @@
 {
-    "last_updated": "2025-03-05 17:14:59",
+    "last_updated": "2025-03-05 20:42:46",
     "table_count": 62,
     "view_count": 2,
     "tables_with_primary_key": 62,
     "tables_without_primary_key": 0,
     "no_primary_key_tables": [],
-    "total_columns": 461,
+    "total_columns": 463,
     "unique_column_types": [
-        "_varchar",
-        "text",
-        "_uuid",
-        "date",
-        "int8",
-        "numeric",
-        "jsonb",
-        "float4",
-        "timestamptz",
         "timestamp",
-        "json",
-        "int4",
         "uuid",
+        "json",
+        "timestamptz",
         "bool",
         "varchar",
-        "int2"
+        "int8",
+        "numeric",
+        "int2",
+        "_varchar",
+        "_uuid",
+        "jsonb",
+        "int4",
+        "date",
+        "text",
+        "float4"
     ],
     "most_common_column_types": {
-        "uuid": 132,
+        "uuid": 133,
         "text": 68,
-        "varchar": 63,
+        "varchar": 64,
         "jsonb": 48,
         "timestamptz": 39,
         "int2": 34,
@@ -37,36 +37,27 @@
         "int4": 5
     },
     "all_enum_base_types": [
-        "size",
-        "recipe_status",
-        "message_type",
-        "color",
-        "destination_component",
-        "data_source",
-        "data_type",
-        "broker_role",
-        "model_role",
-        "message_role",
-        "wc_finger_type",
-        "orientation",
         "function_role",
+        "size",
+        "data_source",
+        "cognition_matrices",
+        "destination_component",
+        "message_type",
+        "broker_role",
+        "data_type",
+        "default_component",
+        "recipe_status",
+        "orientation",
+        "wc_finger_type",
+        "app_type",
+        "message_role",
+        "model_role",
         "wc_side",
         "data_destination",
-        "default_component",
-        "app_type",
-        "cognition_matrices"
+        "color"
     ],
-    "tables_by_size": [
-        "compiled_recipe",
-        "message_template",
-        "broker_value",
-        "data_broker",
-        "message_broker"
-    ],
-    "views_by_size": [
-        "<View name=view_registered_function>",
-        "<View name=view_registered_function_all_rels>"
-    ],
+    "tables_by_size": ["compiled_recipe", "message_template", "broker_value", "data_broker", "message_broker"],
+    "views_by_size": ["<View name=view_registered_function>", "<View name=view_registered_function_all_rels>"],
     "fetch_strategies": {
         "simple": 62
     },
@@ -74,8 +65,8 @@
     "tables_with_inverse_foreign_keys": 29,
     "tables_with_many_to_many": 32,
     "default_component_count": {
-        "UUID_FIELD": 72,
-        "INPUT": 63,
+        "UUID_FIELD": 73,
+        "INPUT": 64,
         "FK_SELECT": 60,
         "TEXTAREA": 68,
         "SWITCH": 19,
@@ -88,10 +79,10 @@
         "UUID_ARRAY": 2
     },
     "calc_validation_functions_count": {
-        "[]": 461
+        "[]": 463
     },
     "calc_exclusion_rules_count": {
-        "[]": 461
+        "[]": 463
     },
     "sub_component_props_count": {},
     "estimated_row_counts": {
@@ -225,10 +216,7 @@
         "wc_injury",
         "wc_report"
     ],
-    "database_view_names": [
-        "view_registered_function",
-        "view_registered_function_all_rels"
-    ],
+    "database_view_names": ["view_registered_function", "view_registered_function_all_rels"],
     "allEntities": [
         "action",
         "aiAgent",

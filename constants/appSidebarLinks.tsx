@@ -31,6 +31,7 @@ import React from "react";
 import { IoLogoReact } from "react-icons/io5";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
+import { BsFillChatRightFill } from "react-icons/bs";
 
 //brokers/component-editor
 
@@ -47,6 +48,13 @@ export const primaryLinks = [
         href: '/applets',
         icon: (
             <LayoutGrid className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
+        ),
+    },
+    {
+        label: 'Chat',
+        href: '/chat',
+        icon: (
+            <BsFillChatRightFill className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
         ),
     },
     {

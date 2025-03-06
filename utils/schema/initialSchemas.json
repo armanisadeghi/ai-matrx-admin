@@ -13459,8 +13459,8 @@
             }
         },
         "displayFieldMetadata": {
-            "fieldName": "id",
-            "databaseFieldName": "id"
+            "fieldName": "label",
+            "databaseFieldName": "label"
         },
         "defaultFetchStrategy": "ifk",
         "componentProps": {
@@ -13508,7 +13508,7 @@
                 "isArray": false,
                 "defaultValue": "",
                 "isPrimaryKey": true,
-                "isDisplayField": true,
+                "isDisplayField": false,
                 "defaultGeneratorFunction": null,
                 "validationFunctions": [],
                 "exclusionRules": [],
@@ -13813,6 +13813,71 @@
                 "description": {
                     "frontend": "\"Metadata\" field for conversation. This is an optional field. Your entry must be an object data type.",
                     "backend": "\"Metadata\" field for the conversation table. This is an optional field. Your entry must be an object data type."
+                }
+            },
+            "label": {
+                "fieldNameFormats": {
+                    "frontend": "label",
+                    "backend": "label",
+                    "database": "label",
+                    "pretty": "Label",
+                    "component": "Label",
+                    "kebab": "label",
+                    "sqlFunctionRef": "p_label",
+                    "RestAPI": "label",
+                    "GraphQL": "label",
+                    "custom": "label"
+                },
+                "name": "label",
+                "displayName": "Label",
+                "uniqueColumnId": "supabase_automation_matrix:public:conversation:label",
+                "uniqueFieldId": "supabase_automation_matrix:conversation:label",
+                "dataType": "string",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": true,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "INPUT",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": 5,
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "conversation",
+                "databaseTable": "conversation",
+                "foreignKeyReference": null,
+                "description": {
+                    "frontend": "\"Label\" field for conversation. This is an optional field. Your entry must be an string data type.",
+                    "backend": "\"Label\" field for the conversation table. This is an optional field. Your entry must be an string data type."
                 }
             },
             "messageInverse": {
@@ -24268,6 +24333,76 @@
                 "description": {
                     "frontend": "\"Metadata\" field for message. This is an optional field. Your entry must be an object data type.",
                     "backend": "\"Metadata\" field for the message table. This is an optional field. Your entry must be an object data type."
+                }
+            },
+            "userId": {
+                "fieldNameFormats": {
+                    "frontend": "userId",
+                    "backend": "user_id",
+                    "database": "user_id",
+                    "pretty": "User Id",
+                    "component": "UserId",
+                    "kebab": "user-id",
+                    "sqlFunctionRef": "p_user_id",
+                    "RestAPI": "userId",
+                    "GraphQL": "userId",
+                    "custom": "userId"
+                },
+                "name": "userId",
+                "displayName": "User Id",
+                "uniqueColumnId": "supabase_automation_matrix:public:message:user_id",
+                "uniqueFieldId": "supabase_automation_matrix:message:userId",
+                "dataType": "uuid",
+                "isRequired": false,
+                "maxLength": "null",
+                "isArray": false,
+                "defaultValue": "null",
+                "isPrimaryKey": false,
+                "isDisplayField": false,
+                "defaultGeneratorFunction": null,
+                "validationFunctions": [],
+                "exclusionRules": [],
+                "defaultComponent": "UUID_FIELD",
+                "componentProps": {
+                    "subComponent": "default",
+                    "variant": "default",
+                    "section": "default",
+                    "placeholder": "default",
+                    "size": "default",
+                    "textSize": "default",
+                    "textColor": "default",
+                    "rows": "default",
+                    "animation": "default",
+                    "fullWidthValue": "default",
+                    "fullWidth": "default",
+                    "disabled": "default",
+                    "className": "default",
+                    "type": "default",
+                    "onChange": "default",
+                    "onBlur": "default",
+                    "formatString": "default",
+                    "min": "default",
+                    "max": "default",
+                    "step": "default",
+                    "numberType": "default",
+                    "options": "default",
+                    "required": false
+                },
+                "structure": "single",
+                "isNative": true,
+                "typeReference": "string",
+                "enumValues": null,
+                "entityName": "message",
+                "databaseTable": "message",
+                "foreignKeyReference": {
+                    "table": "users",
+                    "column": "id",
+                    "entity": "users",
+                    "field": "id"
+                },
+                "description": {
+                    "frontend": "\"User Id\" field for message. This is an optional field. Your entry must be an uuid data type. This field is a reference to a users.",
+                    "backend": "\"User Id\" field for the message table. This is an optional field. Your entry must be an uuid data type. This field is a foreign key reference to the users table."
                 }
             },
             "conversationReference": {

@@ -58,11 +58,11 @@ import {
     UserPreferencesData,
     WcClaimData,
     WcImpairmentDefinitionData,
-    WcInjuryData,
-    WcReportData,
     RecipeMessageReorderQueueData,
     MessageData,
     ConversationData,
+    WcInjuryData,
+    WcReportData,
 } from "@/types";
 import { MatrxRecordId, QuickReferenceRecord } from "../types/stateTypes";
 import { EntitySelectors } from "../selectors";
@@ -79,22 +79,22 @@ type UseActionWithFetchReturn = {
     actionIsLoading: boolean;
     actionIsError: boolean;
     actionQuickRefRecords: QuickReferenceRecord[];
-    addactionMatrxId: (recordId: MatrxRecordId) => void;
-    addactionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeactionMatrxId: (recordId: MatrxRecordId) => void;
-    removeactionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addactionPkValue: (pkValue: string) => void;
-    addactionPkValues: (pkValues: Record<string, unknown>) => void;
-    removeactionPkValue: (pkValue: string) => void;
-    removeactionPkValues: (pkValues: Record<string, unknown>) => void;
-    isactionMissingRecords: boolean;
-    setactionShouldFetch: (shouldFetch: boolean) => void;
-    setactionFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addActionMatrxId: (recordId: MatrxRecordId) => void;
+    addActionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeActionMatrxId: (recordId: MatrxRecordId) => void;
+    removeActionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addActionPkValue: (pkValue: string) => void;
+    addActionPkValues: (pkValues: Record<string, unknown>) => void;
+    removeActionPkValue: (pkValue: string) => void;
+    removeActionPkValues: (pkValues: Record<string, unknown>) => void;
+    isActionMissingRecords: boolean;
+    setActionShouldFetch: (shouldFetch: boolean) => void;
+    setActionFetchMode: (fetchMode: FetchMode) => void;
+    fetchActionQuickRefs: () => void;
+    fetchActionOne: (recordId: MatrxRecordId) => void;
+    fetchActionOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchActionAll: () => void;
+    fetchActionPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useActionWithFetch = (): UseActionWithFetchReturn => {
@@ -107,22 +107,22 @@ export const useActionWithFetch = (): UseActionWithFetchReturn => {
         isLoading: actionIsLoading,
         isError: actionIsError,
         quickRefRecords: actionQuickRefRecords,
-        addMatrxId: addactionMatrxId,
-        addMatrxIds: addactionMatrxIds,
-        removeMatrxId: removeactionMatrxId,
-        removeMatrxIds: removeactionMatrxIds,
-        addPkValue: addactionPkValue,
-        addPkValues: addactionPkValues,
-        removePkValue: removeactionPkValue,
-        removePkValues: removeactionPkValues,
-        isMissingRecords: isactionMissingRecords,
-        setShouldFetch: setactionShouldFetch,
-        setFetchMode: setactionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addActionMatrxId,
+        addMatrxIds: addActionMatrxIds,
+        removeMatrxId: removeActionMatrxId,
+        removeMatrxIds: removeActionMatrxIds,
+        addPkValue: addActionPkValue,
+        addPkValues: addActionPkValues,
+        removePkValue: removeActionPkValue,
+        removePkValues: removeActionPkValues,
+        isMissingRecords: isActionMissingRecords,
+        setShouldFetch: setActionShouldFetch,
+        setFetchMode: setActionFetchMode,
+        fetchQuickRefs: fetchActionQuickRefs,
+        fetchOne: fetchActionOne,
+        fetchOneWithFkIfk: fetchActionOneWithFkIfk,
+        fetchAll: fetchActionAll,
+        fetchPaginated: fetchActionPaginated,
     } = useEntityWithFetch("action");
 
     return {
@@ -134,22 +134,22 @@ export const useActionWithFetch = (): UseActionWithFetchReturn => {
         actionIsLoading,
         actionIsError,
         actionQuickRefRecords,
-        addactionMatrxId,
-        addactionMatrxIds,
-        removeactionMatrxId,
-        removeactionMatrxIds,
-        addactionPkValue,
-        addactionPkValues,
-        removeactionPkValue,
-        removeactionPkValues,
-        isactionMissingRecords,
-        setactionShouldFetch,
-        setactionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addActionMatrxId,
+        addActionMatrxIds,
+        removeActionMatrxId,
+        removeActionMatrxIds,
+        addActionPkValue,
+        addActionPkValues,
+        removeActionPkValue,
+        removeActionPkValues,
+        isActionMissingRecords,
+        setActionShouldFetch,
+        setActionFetchMode,
+        fetchActionQuickRefs,
+        fetchActionOne,
+        fetchActionOneWithFkIfk,
+        fetchActionAll,
+        fetchActionPaginated,
     };
 };
 
@@ -162,22 +162,22 @@ type UseAiAgentWithFetchReturn = {
     aiAgentIsLoading: boolean;
     aiAgentIsError: boolean;
     aiAgentQuickRefRecords: QuickReferenceRecord[];
-    addaiAgentMatrxId: (recordId: MatrxRecordId) => void;
-    addaiAgentMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaiAgentMatrxId: (recordId: MatrxRecordId) => void;
-    removeaiAgentMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaiAgentPkValue: (pkValue: string) => void;
-    addaiAgentPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaiAgentPkValue: (pkValue: string) => void;
-    removeaiAgentPkValues: (pkValues: Record<string, unknown>) => void;
-    isaiAgentMissingRecords: boolean;
-    setaiAgentShouldFetch: (shouldFetch: boolean) => void;
-    setaiAgentFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAiAgentMatrxId: (recordId: MatrxRecordId) => void;
+    addAiAgentMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAiAgentMatrxId: (recordId: MatrxRecordId) => void;
+    removeAiAgentMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAiAgentPkValue: (pkValue: string) => void;
+    addAiAgentPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAiAgentPkValue: (pkValue: string) => void;
+    removeAiAgentPkValues: (pkValues: Record<string, unknown>) => void;
+    isAiAgentMissingRecords: boolean;
+    setAiAgentShouldFetch: (shouldFetch: boolean) => void;
+    setAiAgentFetchMode: (fetchMode: FetchMode) => void;
+    fetchAiAgentQuickRefs: () => void;
+    fetchAiAgentOne: (recordId: MatrxRecordId) => void;
+    fetchAiAgentOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAiAgentAll: () => void;
+    fetchAiAgentPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
@@ -190,22 +190,22 @@ export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
         isLoading: aiAgentIsLoading,
         isError: aiAgentIsError,
         quickRefRecords: aiAgentQuickRefRecords,
-        addMatrxId: addaiAgentMatrxId,
-        addMatrxIds: addaiAgentMatrxIds,
-        removeMatrxId: removeaiAgentMatrxId,
-        removeMatrxIds: removeaiAgentMatrxIds,
-        addPkValue: addaiAgentPkValue,
-        addPkValues: addaiAgentPkValues,
-        removePkValue: removeaiAgentPkValue,
-        removePkValues: removeaiAgentPkValues,
-        isMissingRecords: isaiAgentMissingRecords,
-        setShouldFetch: setaiAgentShouldFetch,
-        setFetchMode: setaiAgentFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAiAgentMatrxId,
+        addMatrxIds: addAiAgentMatrxIds,
+        removeMatrxId: removeAiAgentMatrxId,
+        removeMatrxIds: removeAiAgentMatrxIds,
+        addPkValue: addAiAgentPkValue,
+        addPkValues: addAiAgentPkValues,
+        removePkValue: removeAiAgentPkValue,
+        removePkValues: removeAiAgentPkValues,
+        isMissingRecords: isAiAgentMissingRecords,
+        setShouldFetch: setAiAgentShouldFetch,
+        setFetchMode: setAiAgentFetchMode,
+        fetchQuickRefs: fetchAiAgentQuickRefs,
+        fetchOne: fetchAiAgentOne,
+        fetchOneWithFkIfk: fetchAiAgentOneWithFkIfk,
+        fetchAll: fetchAiAgentAll,
+        fetchPaginated: fetchAiAgentPaginated,
     } = useEntityWithFetch("aiAgent");
 
     return {
@@ -217,22 +217,22 @@ export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
         aiAgentIsLoading,
         aiAgentIsError,
         aiAgentQuickRefRecords,
-        addaiAgentMatrxId,
-        addaiAgentMatrxIds,
-        removeaiAgentMatrxId,
-        removeaiAgentMatrxIds,
-        addaiAgentPkValue,
-        addaiAgentPkValues,
-        removeaiAgentPkValue,
-        removeaiAgentPkValues,
-        isaiAgentMissingRecords,
-        setaiAgentShouldFetch,
-        setaiAgentFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAiAgentMatrxId,
+        addAiAgentMatrxIds,
+        removeAiAgentMatrxId,
+        removeAiAgentMatrxIds,
+        addAiAgentPkValue,
+        addAiAgentPkValues,
+        removeAiAgentPkValue,
+        removeAiAgentPkValues,
+        isAiAgentMissingRecords,
+        setAiAgentShouldFetch,
+        setAiAgentFetchMode,
+        fetchAiAgentQuickRefs,
+        fetchAiAgentOne,
+        fetchAiAgentOneWithFkIfk,
+        fetchAiAgentAll,
+        fetchAiAgentPaginated,
     };
 };
 
@@ -245,22 +245,22 @@ type UseAiEndpointWithFetchReturn = {
     aiEndpointIsLoading: boolean;
     aiEndpointIsError: boolean;
     aiEndpointQuickRefRecords: QuickReferenceRecord[];
-    addaiEndpointMatrxId: (recordId: MatrxRecordId) => void;
-    addaiEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaiEndpointMatrxId: (recordId: MatrxRecordId) => void;
-    removeaiEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaiEndpointPkValue: (pkValue: string) => void;
-    addaiEndpointPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaiEndpointPkValue: (pkValue: string) => void;
-    removeaiEndpointPkValues: (pkValues: Record<string, unknown>) => void;
-    isaiEndpointMissingRecords: boolean;
-    setaiEndpointShouldFetch: (shouldFetch: boolean) => void;
-    setaiEndpointFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAiEndpointMatrxId: (recordId: MatrxRecordId) => void;
+    addAiEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAiEndpointMatrxId: (recordId: MatrxRecordId) => void;
+    removeAiEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAiEndpointPkValue: (pkValue: string) => void;
+    addAiEndpointPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAiEndpointPkValue: (pkValue: string) => void;
+    removeAiEndpointPkValues: (pkValues: Record<string, unknown>) => void;
+    isAiEndpointMissingRecords: boolean;
+    setAiEndpointShouldFetch: (shouldFetch: boolean) => void;
+    setAiEndpointFetchMode: (fetchMode: FetchMode) => void;
+    fetchAiEndpointQuickRefs: () => void;
+    fetchAiEndpointOne: (recordId: MatrxRecordId) => void;
+    fetchAiEndpointOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAiEndpointAll: () => void;
+    fetchAiEndpointPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
@@ -273,22 +273,22 @@ export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
         isLoading: aiEndpointIsLoading,
         isError: aiEndpointIsError,
         quickRefRecords: aiEndpointQuickRefRecords,
-        addMatrxId: addaiEndpointMatrxId,
-        addMatrxIds: addaiEndpointMatrxIds,
-        removeMatrxId: removeaiEndpointMatrxId,
-        removeMatrxIds: removeaiEndpointMatrxIds,
-        addPkValue: addaiEndpointPkValue,
-        addPkValues: addaiEndpointPkValues,
-        removePkValue: removeaiEndpointPkValue,
-        removePkValues: removeaiEndpointPkValues,
-        isMissingRecords: isaiEndpointMissingRecords,
-        setShouldFetch: setaiEndpointShouldFetch,
-        setFetchMode: setaiEndpointFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAiEndpointMatrxId,
+        addMatrxIds: addAiEndpointMatrxIds,
+        removeMatrxId: removeAiEndpointMatrxId,
+        removeMatrxIds: removeAiEndpointMatrxIds,
+        addPkValue: addAiEndpointPkValue,
+        addPkValues: addAiEndpointPkValues,
+        removePkValue: removeAiEndpointPkValue,
+        removePkValues: removeAiEndpointPkValues,
+        isMissingRecords: isAiEndpointMissingRecords,
+        setShouldFetch: setAiEndpointShouldFetch,
+        setFetchMode: setAiEndpointFetchMode,
+        fetchQuickRefs: fetchAiEndpointQuickRefs,
+        fetchOne: fetchAiEndpointOne,
+        fetchOneWithFkIfk: fetchAiEndpointOneWithFkIfk,
+        fetchAll: fetchAiEndpointAll,
+        fetchPaginated: fetchAiEndpointPaginated,
     } = useEntityWithFetch("aiEndpoint");
 
     return {
@@ -300,22 +300,22 @@ export const useAiEndpointWithFetch = (): UseAiEndpointWithFetchReturn => {
         aiEndpointIsLoading,
         aiEndpointIsError,
         aiEndpointQuickRefRecords,
-        addaiEndpointMatrxId,
-        addaiEndpointMatrxIds,
-        removeaiEndpointMatrxId,
-        removeaiEndpointMatrxIds,
-        addaiEndpointPkValue,
-        addaiEndpointPkValues,
-        removeaiEndpointPkValue,
-        removeaiEndpointPkValues,
-        isaiEndpointMissingRecords,
-        setaiEndpointShouldFetch,
-        setaiEndpointFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAiEndpointMatrxId,
+        addAiEndpointMatrxIds,
+        removeAiEndpointMatrxId,
+        removeAiEndpointMatrxIds,
+        addAiEndpointPkValue,
+        addAiEndpointPkValues,
+        removeAiEndpointPkValue,
+        removeAiEndpointPkValues,
+        isAiEndpointMissingRecords,
+        setAiEndpointShouldFetch,
+        setAiEndpointFetchMode,
+        fetchAiEndpointQuickRefs,
+        fetchAiEndpointOne,
+        fetchAiEndpointOneWithFkIfk,
+        fetchAiEndpointAll,
+        fetchAiEndpointPaginated,
     };
 };
 
@@ -328,22 +328,22 @@ type UseAiModelWithFetchReturn = {
     aiModelIsLoading: boolean;
     aiModelIsError: boolean;
     aiModelQuickRefRecords: QuickReferenceRecord[];
-    addaiModelMatrxId: (recordId: MatrxRecordId) => void;
-    addaiModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaiModelMatrxId: (recordId: MatrxRecordId) => void;
-    removeaiModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaiModelPkValue: (pkValue: string) => void;
-    addaiModelPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaiModelPkValue: (pkValue: string) => void;
-    removeaiModelPkValues: (pkValues: Record<string, unknown>) => void;
-    isaiModelMissingRecords: boolean;
-    setaiModelShouldFetch: (shouldFetch: boolean) => void;
-    setaiModelFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAiModelMatrxId: (recordId: MatrxRecordId) => void;
+    addAiModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAiModelMatrxId: (recordId: MatrxRecordId) => void;
+    removeAiModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAiModelPkValue: (pkValue: string) => void;
+    addAiModelPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAiModelPkValue: (pkValue: string) => void;
+    removeAiModelPkValues: (pkValues: Record<string, unknown>) => void;
+    isAiModelMissingRecords: boolean;
+    setAiModelShouldFetch: (shouldFetch: boolean) => void;
+    setAiModelFetchMode: (fetchMode: FetchMode) => void;
+    fetchAiModelQuickRefs: () => void;
+    fetchAiModelOne: (recordId: MatrxRecordId) => void;
+    fetchAiModelOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAiModelAll: () => void;
+    fetchAiModelPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
@@ -356,22 +356,22 @@ export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
         isLoading: aiModelIsLoading,
         isError: aiModelIsError,
         quickRefRecords: aiModelQuickRefRecords,
-        addMatrxId: addaiModelMatrxId,
-        addMatrxIds: addaiModelMatrxIds,
-        removeMatrxId: removeaiModelMatrxId,
-        removeMatrxIds: removeaiModelMatrxIds,
-        addPkValue: addaiModelPkValue,
-        addPkValues: addaiModelPkValues,
-        removePkValue: removeaiModelPkValue,
-        removePkValues: removeaiModelPkValues,
-        isMissingRecords: isaiModelMissingRecords,
-        setShouldFetch: setaiModelShouldFetch,
-        setFetchMode: setaiModelFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAiModelMatrxId,
+        addMatrxIds: addAiModelMatrxIds,
+        removeMatrxId: removeAiModelMatrxId,
+        removeMatrxIds: removeAiModelMatrxIds,
+        addPkValue: addAiModelPkValue,
+        addPkValues: addAiModelPkValues,
+        removePkValue: removeAiModelPkValue,
+        removePkValues: removeAiModelPkValues,
+        isMissingRecords: isAiModelMissingRecords,
+        setShouldFetch: setAiModelShouldFetch,
+        setFetchMode: setAiModelFetchMode,
+        fetchQuickRefs: fetchAiModelQuickRefs,
+        fetchOne: fetchAiModelOne,
+        fetchOneWithFkIfk: fetchAiModelOneWithFkIfk,
+        fetchAll: fetchAiModelAll,
+        fetchPaginated: fetchAiModelPaginated,
     } = useEntityWithFetch("aiModel");
 
     return {
@@ -383,22 +383,22 @@ export const useAiModelWithFetch = (): UseAiModelWithFetchReturn => {
         aiModelIsLoading,
         aiModelIsError,
         aiModelQuickRefRecords,
-        addaiModelMatrxId,
-        addaiModelMatrxIds,
-        removeaiModelMatrxId,
-        removeaiModelMatrxIds,
-        addaiModelPkValue,
-        addaiModelPkValues,
-        removeaiModelPkValue,
-        removeaiModelPkValues,
-        isaiModelMissingRecords,
-        setaiModelShouldFetch,
-        setaiModelFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAiModelMatrxId,
+        addAiModelMatrxIds,
+        removeAiModelMatrxId,
+        removeAiModelMatrxIds,
+        addAiModelPkValue,
+        addAiModelPkValues,
+        removeAiModelPkValue,
+        removeAiModelPkValues,
+        isAiModelMissingRecords,
+        setAiModelShouldFetch,
+        setAiModelFetchMode,
+        fetchAiModelQuickRefs,
+        fetchAiModelOne,
+        fetchAiModelOneWithFkIfk,
+        fetchAiModelAll,
+        fetchAiModelPaginated,
     };
 };
 
@@ -411,22 +411,22 @@ type UseAiModelEndpointWithFetchReturn = {
     aiModelEndpointIsLoading: boolean;
     aiModelEndpointIsError: boolean;
     aiModelEndpointQuickRefRecords: QuickReferenceRecord[];
-    addaiModelEndpointMatrxId: (recordId: MatrxRecordId) => void;
-    addaiModelEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaiModelEndpointMatrxId: (recordId: MatrxRecordId) => void;
-    removeaiModelEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaiModelEndpointPkValue: (pkValue: string) => void;
-    addaiModelEndpointPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaiModelEndpointPkValue: (pkValue: string) => void;
-    removeaiModelEndpointPkValues: (pkValues: Record<string, unknown>) => void;
-    isaiModelEndpointMissingRecords: boolean;
-    setaiModelEndpointShouldFetch: (shouldFetch: boolean) => void;
-    setaiModelEndpointFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAiModelEndpointMatrxId: (recordId: MatrxRecordId) => void;
+    addAiModelEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAiModelEndpointMatrxId: (recordId: MatrxRecordId) => void;
+    removeAiModelEndpointMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAiModelEndpointPkValue: (pkValue: string) => void;
+    addAiModelEndpointPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAiModelEndpointPkValue: (pkValue: string) => void;
+    removeAiModelEndpointPkValues: (pkValues: Record<string, unknown>) => void;
+    isAiModelEndpointMissingRecords: boolean;
+    setAiModelEndpointShouldFetch: (shouldFetch: boolean) => void;
+    setAiModelEndpointFetchMode: (fetchMode: FetchMode) => void;
+    fetchAiModelEndpointQuickRefs: () => void;
+    fetchAiModelEndpointOne: (recordId: MatrxRecordId) => void;
+    fetchAiModelEndpointOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAiModelEndpointAll: () => void;
+    fetchAiModelEndpointPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn => {
@@ -439,22 +439,22 @@ export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn
         isLoading: aiModelEndpointIsLoading,
         isError: aiModelEndpointIsError,
         quickRefRecords: aiModelEndpointQuickRefRecords,
-        addMatrxId: addaiModelEndpointMatrxId,
-        addMatrxIds: addaiModelEndpointMatrxIds,
-        removeMatrxId: removeaiModelEndpointMatrxId,
-        removeMatrxIds: removeaiModelEndpointMatrxIds,
-        addPkValue: addaiModelEndpointPkValue,
-        addPkValues: addaiModelEndpointPkValues,
-        removePkValue: removeaiModelEndpointPkValue,
-        removePkValues: removeaiModelEndpointPkValues,
-        isMissingRecords: isaiModelEndpointMissingRecords,
-        setShouldFetch: setaiModelEndpointShouldFetch,
-        setFetchMode: setaiModelEndpointFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAiModelEndpointMatrxId,
+        addMatrxIds: addAiModelEndpointMatrxIds,
+        removeMatrxId: removeAiModelEndpointMatrxId,
+        removeMatrxIds: removeAiModelEndpointMatrxIds,
+        addPkValue: addAiModelEndpointPkValue,
+        addPkValues: addAiModelEndpointPkValues,
+        removePkValue: removeAiModelEndpointPkValue,
+        removePkValues: removeAiModelEndpointPkValues,
+        isMissingRecords: isAiModelEndpointMissingRecords,
+        setShouldFetch: setAiModelEndpointShouldFetch,
+        setFetchMode: setAiModelEndpointFetchMode,
+        fetchQuickRefs: fetchAiModelEndpointQuickRefs,
+        fetchOne: fetchAiModelEndpointOne,
+        fetchOneWithFkIfk: fetchAiModelEndpointOneWithFkIfk,
+        fetchAll: fetchAiModelEndpointAll,
+        fetchPaginated: fetchAiModelEndpointPaginated,
     } = useEntityWithFetch("aiModelEndpoint");
 
     return {
@@ -466,22 +466,22 @@ export const useAiModelEndpointWithFetch = (): UseAiModelEndpointWithFetchReturn
         aiModelEndpointIsLoading,
         aiModelEndpointIsError,
         aiModelEndpointQuickRefRecords,
-        addaiModelEndpointMatrxId,
-        addaiModelEndpointMatrxIds,
-        removeaiModelEndpointMatrxId,
-        removeaiModelEndpointMatrxIds,
-        addaiModelEndpointPkValue,
-        addaiModelEndpointPkValues,
-        removeaiModelEndpointPkValue,
-        removeaiModelEndpointPkValues,
-        isaiModelEndpointMissingRecords,
-        setaiModelEndpointShouldFetch,
-        setaiModelEndpointFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAiModelEndpointMatrxId,
+        addAiModelEndpointMatrxIds,
+        removeAiModelEndpointMatrxId,
+        removeAiModelEndpointMatrxIds,
+        addAiModelEndpointPkValue,
+        addAiModelEndpointPkValues,
+        removeAiModelEndpointPkValue,
+        removeAiModelEndpointPkValues,
+        isAiModelEndpointMissingRecords,
+        setAiModelEndpointShouldFetch,
+        setAiModelEndpointFetchMode,
+        fetchAiModelEndpointQuickRefs,
+        fetchAiModelEndpointOne,
+        fetchAiModelEndpointOneWithFkIfk,
+        fetchAiModelEndpointAll,
+        fetchAiModelEndpointPaginated,
     };
 };
 
@@ -494,22 +494,22 @@ type UseAiProviderWithFetchReturn = {
     aiProviderIsLoading: boolean;
     aiProviderIsError: boolean;
     aiProviderQuickRefRecords: QuickReferenceRecord[];
-    addaiProviderMatrxId: (recordId: MatrxRecordId) => void;
-    addaiProviderMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaiProviderMatrxId: (recordId: MatrxRecordId) => void;
-    removeaiProviderMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaiProviderPkValue: (pkValue: string) => void;
-    addaiProviderPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaiProviderPkValue: (pkValue: string) => void;
-    removeaiProviderPkValues: (pkValues: Record<string, unknown>) => void;
-    isaiProviderMissingRecords: boolean;
-    setaiProviderShouldFetch: (shouldFetch: boolean) => void;
-    setaiProviderFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAiProviderMatrxId: (recordId: MatrxRecordId) => void;
+    addAiProviderMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAiProviderMatrxId: (recordId: MatrxRecordId) => void;
+    removeAiProviderMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAiProviderPkValue: (pkValue: string) => void;
+    addAiProviderPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAiProviderPkValue: (pkValue: string) => void;
+    removeAiProviderPkValues: (pkValues: Record<string, unknown>) => void;
+    isAiProviderMissingRecords: boolean;
+    setAiProviderShouldFetch: (shouldFetch: boolean) => void;
+    setAiProviderFetchMode: (fetchMode: FetchMode) => void;
+    fetchAiProviderQuickRefs: () => void;
+    fetchAiProviderOne: (recordId: MatrxRecordId) => void;
+    fetchAiProviderOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAiProviderAll: () => void;
+    fetchAiProviderPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAiProviderWithFetch = (): UseAiProviderWithFetchReturn => {
@@ -522,22 +522,22 @@ export const useAiProviderWithFetch = (): UseAiProviderWithFetchReturn => {
         isLoading: aiProviderIsLoading,
         isError: aiProviderIsError,
         quickRefRecords: aiProviderQuickRefRecords,
-        addMatrxId: addaiProviderMatrxId,
-        addMatrxIds: addaiProviderMatrxIds,
-        removeMatrxId: removeaiProviderMatrxId,
-        removeMatrxIds: removeaiProviderMatrxIds,
-        addPkValue: addaiProviderPkValue,
-        addPkValues: addaiProviderPkValues,
-        removePkValue: removeaiProviderPkValue,
-        removePkValues: removeaiProviderPkValues,
-        isMissingRecords: isaiProviderMissingRecords,
-        setShouldFetch: setaiProviderShouldFetch,
-        setFetchMode: setaiProviderFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAiProviderMatrxId,
+        addMatrxIds: addAiProviderMatrxIds,
+        removeMatrxId: removeAiProviderMatrxId,
+        removeMatrxIds: removeAiProviderMatrxIds,
+        addPkValue: addAiProviderPkValue,
+        addPkValues: addAiProviderPkValues,
+        removePkValue: removeAiProviderPkValue,
+        removePkValues: removeAiProviderPkValues,
+        isMissingRecords: isAiProviderMissingRecords,
+        setShouldFetch: setAiProviderShouldFetch,
+        setFetchMode: setAiProviderFetchMode,
+        fetchQuickRefs: fetchAiProviderQuickRefs,
+        fetchOne: fetchAiProviderOne,
+        fetchOneWithFkIfk: fetchAiProviderOneWithFkIfk,
+        fetchAll: fetchAiProviderAll,
+        fetchPaginated: fetchAiProviderPaginated,
     } = useEntityWithFetch("aiProvider");
 
     return {
@@ -549,22 +549,22 @@ export const useAiProviderWithFetch = (): UseAiProviderWithFetchReturn => {
         aiProviderIsLoading,
         aiProviderIsError,
         aiProviderQuickRefRecords,
-        addaiProviderMatrxId,
-        addaiProviderMatrxIds,
-        removeaiProviderMatrxId,
-        removeaiProviderMatrxIds,
-        addaiProviderPkValue,
-        addaiProviderPkValues,
-        removeaiProviderPkValue,
-        removeaiProviderPkValues,
-        isaiProviderMissingRecords,
-        setaiProviderShouldFetch,
-        setaiProviderFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAiProviderMatrxId,
+        addAiProviderMatrxIds,
+        removeAiProviderMatrxId,
+        removeAiProviderMatrxIds,
+        addAiProviderPkValue,
+        addAiProviderPkValues,
+        removeAiProviderPkValue,
+        removeAiProviderPkValues,
+        isAiProviderMissingRecords,
+        setAiProviderShouldFetch,
+        setAiProviderFetchMode,
+        fetchAiProviderQuickRefs,
+        fetchAiProviderOne,
+        fetchAiProviderOneWithFkIfk,
+        fetchAiProviderAll,
+        fetchAiProviderPaginated,
     };
 };
 
@@ -577,22 +577,22 @@ type UseAiSettingsWithFetchReturn = {
     aiSettingsIsLoading: boolean;
     aiSettingsIsError: boolean;
     aiSettingsQuickRefRecords: QuickReferenceRecord[];
-    addaiSettingsMatrxId: (recordId: MatrxRecordId) => void;
-    addaiSettingsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaiSettingsMatrxId: (recordId: MatrxRecordId) => void;
-    removeaiSettingsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaiSettingsPkValue: (pkValue: string) => void;
-    addaiSettingsPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaiSettingsPkValue: (pkValue: string) => void;
-    removeaiSettingsPkValues: (pkValues: Record<string, unknown>) => void;
-    isaiSettingsMissingRecords: boolean;
-    setaiSettingsShouldFetch: (shouldFetch: boolean) => void;
-    setaiSettingsFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAiSettingsMatrxId: (recordId: MatrxRecordId) => void;
+    addAiSettingsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAiSettingsMatrxId: (recordId: MatrxRecordId) => void;
+    removeAiSettingsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAiSettingsPkValue: (pkValue: string) => void;
+    addAiSettingsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAiSettingsPkValue: (pkValue: string) => void;
+    removeAiSettingsPkValues: (pkValues: Record<string, unknown>) => void;
+    isAiSettingsMissingRecords: boolean;
+    setAiSettingsShouldFetch: (shouldFetch: boolean) => void;
+    setAiSettingsFetchMode: (fetchMode: FetchMode) => void;
+    fetchAiSettingsQuickRefs: () => void;
+    fetchAiSettingsOne: (recordId: MatrxRecordId) => void;
+    fetchAiSettingsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAiSettingsAll: () => void;
+    fetchAiSettingsPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
@@ -605,22 +605,22 @@ export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
         isLoading: aiSettingsIsLoading,
         isError: aiSettingsIsError,
         quickRefRecords: aiSettingsQuickRefRecords,
-        addMatrxId: addaiSettingsMatrxId,
-        addMatrxIds: addaiSettingsMatrxIds,
-        removeMatrxId: removeaiSettingsMatrxId,
-        removeMatrxIds: removeaiSettingsMatrxIds,
-        addPkValue: addaiSettingsPkValue,
-        addPkValues: addaiSettingsPkValues,
-        removePkValue: removeaiSettingsPkValue,
-        removePkValues: removeaiSettingsPkValues,
-        isMissingRecords: isaiSettingsMissingRecords,
-        setShouldFetch: setaiSettingsShouldFetch,
-        setFetchMode: setaiSettingsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAiSettingsMatrxId,
+        addMatrxIds: addAiSettingsMatrxIds,
+        removeMatrxId: removeAiSettingsMatrxId,
+        removeMatrxIds: removeAiSettingsMatrxIds,
+        addPkValue: addAiSettingsPkValue,
+        addPkValues: addAiSettingsPkValues,
+        removePkValue: removeAiSettingsPkValue,
+        removePkValues: removeAiSettingsPkValues,
+        isMissingRecords: isAiSettingsMissingRecords,
+        setShouldFetch: setAiSettingsShouldFetch,
+        setFetchMode: setAiSettingsFetchMode,
+        fetchQuickRefs: fetchAiSettingsQuickRefs,
+        fetchOne: fetchAiSettingsOne,
+        fetchOneWithFkIfk: fetchAiSettingsOneWithFkIfk,
+        fetchAll: fetchAiSettingsAll,
+        fetchPaginated: fetchAiSettingsPaginated,
     } = useEntityWithFetch("aiSettings");
 
     return {
@@ -632,22 +632,22 @@ export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
         aiSettingsIsLoading,
         aiSettingsIsError,
         aiSettingsQuickRefRecords,
-        addaiSettingsMatrxId,
-        addaiSettingsMatrxIds,
-        removeaiSettingsMatrxId,
-        removeaiSettingsMatrxIds,
-        addaiSettingsPkValue,
-        addaiSettingsPkValues,
-        removeaiSettingsPkValue,
-        removeaiSettingsPkValues,
-        isaiSettingsMissingRecords,
-        setaiSettingsShouldFetch,
-        setaiSettingsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAiSettingsMatrxId,
+        addAiSettingsMatrxIds,
+        removeAiSettingsMatrxId,
+        removeAiSettingsMatrxIds,
+        addAiSettingsPkValue,
+        addAiSettingsPkValues,
+        removeAiSettingsPkValue,
+        removeAiSettingsPkValues,
+        isAiSettingsMissingRecords,
+        setAiSettingsShouldFetch,
+        setAiSettingsFetchMode,
+        fetchAiSettingsQuickRefs,
+        fetchAiSettingsOne,
+        fetchAiSettingsOneWithFkIfk,
+        fetchAiSettingsAll,
+        fetchAiSettingsPaginated,
     };
 };
 
@@ -660,22 +660,22 @@ type UseAppletWithFetchReturn = {
     appletIsLoading: boolean;
     appletIsError: boolean;
     appletQuickRefRecords: QuickReferenceRecord[];
-    addappletMatrxId: (recordId: MatrxRecordId) => void;
-    addappletMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeappletMatrxId: (recordId: MatrxRecordId) => void;
-    removeappletMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addappletPkValue: (pkValue: string) => void;
-    addappletPkValues: (pkValues: Record<string, unknown>) => void;
-    removeappletPkValue: (pkValue: string) => void;
-    removeappletPkValues: (pkValues: Record<string, unknown>) => void;
-    isappletMissingRecords: boolean;
-    setappletShouldFetch: (shouldFetch: boolean) => void;
-    setappletFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAppletMatrxId: (recordId: MatrxRecordId) => void;
+    addAppletMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAppletMatrxId: (recordId: MatrxRecordId) => void;
+    removeAppletMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAppletPkValue: (pkValue: string) => void;
+    addAppletPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAppletPkValue: (pkValue: string) => void;
+    removeAppletPkValues: (pkValues: Record<string, unknown>) => void;
+    isAppletMissingRecords: boolean;
+    setAppletShouldFetch: (shouldFetch: boolean) => void;
+    setAppletFetchMode: (fetchMode: FetchMode) => void;
+    fetchAppletQuickRefs: () => void;
+    fetchAppletOne: (recordId: MatrxRecordId) => void;
+    fetchAppletOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAppletAll: () => void;
+    fetchAppletPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAppletWithFetch = (): UseAppletWithFetchReturn => {
@@ -688,22 +688,22 @@ export const useAppletWithFetch = (): UseAppletWithFetchReturn => {
         isLoading: appletIsLoading,
         isError: appletIsError,
         quickRefRecords: appletQuickRefRecords,
-        addMatrxId: addappletMatrxId,
-        addMatrxIds: addappletMatrxIds,
-        removeMatrxId: removeappletMatrxId,
-        removeMatrxIds: removeappletMatrxIds,
-        addPkValue: addappletPkValue,
-        addPkValues: addappletPkValues,
-        removePkValue: removeappletPkValue,
-        removePkValues: removeappletPkValues,
-        isMissingRecords: isappletMissingRecords,
-        setShouldFetch: setappletShouldFetch,
-        setFetchMode: setappletFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAppletMatrxId,
+        addMatrxIds: addAppletMatrxIds,
+        removeMatrxId: removeAppletMatrxId,
+        removeMatrxIds: removeAppletMatrxIds,
+        addPkValue: addAppletPkValue,
+        addPkValues: addAppletPkValues,
+        removePkValue: removeAppletPkValue,
+        removePkValues: removeAppletPkValues,
+        isMissingRecords: isAppletMissingRecords,
+        setShouldFetch: setAppletShouldFetch,
+        setFetchMode: setAppletFetchMode,
+        fetchQuickRefs: fetchAppletQuickRefs,
+        fetchOne: fetchAppletOne,
+        fetchOneWithFkIfk: fetchAppletOneWithFkIfk,
+        fetchAll: fetchAppletAll,
+        fetchPaginated: fetchAppletPaginated,
     } = useEntityWithFetch("applet");
 
     return {
@@ -715,22 +715,22 @@ export const useAppletWithFetch = (): UseAppletWithFetchReturn => {
         appletIsLoading,
         appletIsError,
         appletQuickRefRecords,
-        addappletMatrxId,
-        addappletMatrxIds,
-        removeappletMatrxId,
-        removeappletMatrxIds,
-        addappletPkValue,
-        addappletPkValues,
-        removeappletPkValue,
-        removeappletPkValues,
-        isappletMissingRecords,
-        setappletShouldFetch,
-        setappletFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAppletMatrxId,
+        addAppletMatrxIds,
+        removeAppletMatrxId,
+        removeAppletMatrxIds,
+        addAppletPkValue,
+        addAppletPkValues,
+        removeAppletPkValue,
+        removeAppletPkValues,
+        isAppletMissingRecords,
+        setAppletShouldFetch,
+        setAppletFetchMode,
+        fetchAppletQuickRefs,
+        fetchAppletOne,
+        fetchAppletOneWithFkIfk,
+        fetchAppletAll,
+        fetchAppletPaginated,
     };
 };
 
@@ -743,22 +743,22 @@ type UseArgWithFetchReturn = {
     argIsLoading: boolean;
     argIsError: boolean;
     argQuickRefRecords: QuickReferenceRecord[];
-    addargMatrxId: (recordId: MatrxRecordId) => void;
-    addargMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeargMatrxId: (recordId: MatrxRecordId) => void;
-    removeargMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addargPkValue: (pkValue: string) => void;
-    addargPkValues: (pkValues: Record<string, unknown>) => void;
-    removeargPkValue: (pkValue: string) => void;
-    removeargPkValues: (pkValues: Record<string, unknown>) => void;
-    isargMissingRecords: boolean;
-    setargShouldFetch: (shouldFetch: boolean) => void;
-    setargFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addArgMatrxId: (recordId: MatrxRecordId) => void;
+    addArgMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeArgMatrxId: (recordId: MatrxRecordId) => void;
+    removeArgMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addArgPkValue: (pkValue: string) => void;
+    addArgPkValues: (pkValues: Record<string, unknown>) => void;
+    removeArgPkValue: (pkValue: string) => void;
+    removeArgPkValues: (pkValues: Record<string, unknown>) => void;
+    isArgMissingRecords: boolean;
+    setArgShouldFetch: (shouldFetch: boolean) => void;
+    setArgFetchMode: (fetchMode: FetchMode) => void;
+    fetchArgQuickRefs: () => void;
+    fetchArgOne: (recordId: MatrxRecordId) => void;
+    fetchArgOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchArgAll: () => void;
+    fetchArgPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useArgWithFetch = (): UseArgWithFetchReturn => {
@@ -771,22 +771,22 @@ export const useArgWithFetch = (): UseArgWithFetchReturn => {
         isLoading: argIsLoading,
         isError: argIsError,
         quickRefRecords: argQuickRefRecords,
-        addMatrxId: addargMatrxId,
-        addMatrxIds: addargMatrxIds,
-        removeMatrxId: removeargMatrxId,
-        removeMatrxIds: removeargMatrxIds,
-        addPkValue: addargPkValue,
-        addPkValues: addargPkValues,
-        removePkValue: removeargPkValue,
-        removePkValues: removeargPkValues,
-        isMissingRecords: isargMissingRecords,
-        setShouldFetch: setargShouldFetch,
-        setFetchMode: setargFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addArgMatrxId,
+        addMatrxIds: addArgMatrxIds,
+        removeMatrxId: removeArgMatrxId,
+        removeMatrxIds: removeArgMatrxIds,
+        addPkValue: addArgPkValue,
+        addPkValues: addArgPkValues,
+        removePkValue: removeArgPkValue,
+        removePkValues: removeArgPkValues,
+        isMissingRecords: isArgMissingRecords,
+        setShouldFetch: setArgShouldFetch,
+        setFetchMode: setArgFetchMode,
+        fetchQuickRefs: fetchArgQuickRefs,
+        fetchOne: fetchArgOne,
+        fetchOneWithFkIfk: fetchArgOneWithFkIfk,
+        fetchAll: fetchArgAll,
+        fetchPaginated: fetchArgPaginated,
     } = useEntityWithFetch("arg");
 
     return {
@@ -798,22 +798,22 @@ export const useArgWithFetch = (): UseArgWithFetchReturn => {
         argIsLoading,
         argIsError,
         argQuickRefRecords,
-        addargMatrxId,
-        addargMatrxIds,
-        removeargMatrxId,
-        removeargMatrxIds,
-        addargPkValue,
-        addargPkValues,
-        removeargPkValue,
-        removeargPkValues,
-        isargMissingRecords,
-        setargShouldFetch,
-        setargFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addArgMatrxId,
+        addArgMatrxIds,
+        removeArgMatrxId,
+        removeArgMatrxIds,
+        addArgPkValue,
+        addArgPkValues,
+        removeArgPkValue,
+        removeArgPkValues,
+        isArgMissingRecords,
+        setArgShouldFetch,
+        setArgFetchMode,
+        fetchArgQuickRefs,
+        fetchArgOne,
+        fetchArgOneWithFkIfk,
+        fetchArgAll,
+        fetchArgPaginated,
     };
 };
 
@@ -826,22 +826,22 @@ type UseAudioLabelWithFetchReturn = {
     audioLabelIsLoading: boolean;
     audioLabelIsError: boolean;
     audioLabelQuickRefRecords: QuickReferenceRecord[];
-    addaudioLabelMatrxId: (recordId: MatrxRecordId) => void;
-    addaudioLabelMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaudioLabelMatrxId: (recordId: MatrxRecordId) => void;
-    removeaudioLabelMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaudioLabelPkValue: (pkValue: string) => void;
-    addaudioLabelPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaudioLabelPkValue: (pkValue: string) => void;
-    removeaudioLabelPkValues: (pkValues: Record<string, unknown>) => void;
-    isaudioLabelMissingRecords: boolean;
-    setaudioLabelShouldFetch: (shouldFetch: boolean) => void;
-    setaudioLabelFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAudioLabelMatrxId: (recordId: MatrxRecordId) => void;
+    addAudioLabelMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAudioLabelMatrxId: (recordId: MatrxRecordId) => void;
+    removeAudioLabelMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAudioLabelPkValue: (pkValue: string) => void;
+    addAudioLabelPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAudioLabelPkValue: (pkValue: string) => void;
+    removeAudioLabelPkValues: (pkValues: Record<string, unknown>) => void;
+    isAudioLabelMissingRecords: boolean;
+    setAudioLabelShouldFetch: (shouldFetch: boolean) => void;
+    setAudioLabelFetchMode: (fetchMode: FetchMode) => void;
+    fetchAudioLabelQuickRefs: () => void;
+    fetchAudioLabelOne: (recordId: MatrxRecordId) => void;
+    fetchAudioLabelOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAudioLabelAll: () => void;
+    fetchAudioLabelPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAudioLabelWithFetch = (): UseAudioLabelWithFetchReturn => {
@@ -854,22 +854,22 @@ export const useAudioLabelWithFetch = (): UseAudioLabelWithFetchReturn => {
         isLoading: audioLabelIsLoading,
         isError: audioLabelIsError,
         quickRefRecords: audioLabelQuickRefRecords,
-        addMatrxId: addaudioLabelMatrxId,
-        addMatrxIds: addaudioLabelMatrxIds,
-        removeMatrxId: removeaudioLabelMatrxId,
-        removeMatrxIds: removeaudioLabelMatrxIds,
-        addPkValue: addaudioLabelPkValue,
-        addPkValues: addaudioLabelPkValues,
-        removePkValue: removeaudioLabelPkValue,
-        removePkValues: removeaudioLabelPkValues,
-        isMissingRecords: isaudioLabelMissingRecords,
-        setShouldFetch: setaudioLabelShouldFetch,
-        setFetchMode: setaudioLabelFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAudioLabelMatrxId,
+        addMatrxIds: addAudioLabelMatrxIds,
+        removeMatrxId: removeAudioLabelMatrxId,
+        removeMatrxIds: removeAudioLabelMatrxIds,
+        addPkValue: addAudioLabelPkValue,
+        addPkValues: addAudioLabelPkValues,
+        removePkValue: removeAudioLabelPkValue,
+        removePkValues: removeAudioLabelPkValues,
+        isMissingRecords: isAudioLabelMissingRecords,
+        setShouldFetch: setAudioLabelShouldFetch,
+        setFetchMode: setAudioLabelFetchMode,
+        fetchQuickRefs: fetchAudioLabelQuickRefs,
+        fetchOne: fetchAudioLabelOne,
+        fetchOneWithFkIfk: fetchAudioLabelOneWithFkIfk,
+        fetchAll: fetchAudioLabelAll,
+        fetchPaginated: fetchAudioLabelPaginated,
     } = useEntityWithFetch("audioLabel");
 
     return {
@@ -881,22 +881,22 @@ export const useAudioLabelWithFetch = (): UseAudioLabelWithFetchReturn => {
         audioLabelIsLoading,
         audioLabelIsError,
         audioLabelQuickRefRecords,
-        addaudioLabelMatrxId,
-        addaudioLabelMatrxIds,
-        removeaudioLabelMatrxId,
-        removeaudioLabelMatrxIds,
-        addaudioLabelPkValue,
-        addaudioLabelPkValues,
-        removeaudioLabelPkValue,
-        removeaudioLabelPkValues,
-        isaudioLabelMissingRecords,
-        setaudioLabelShouldFetch,
-        setaudioLabelFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAudioLabelMatrxId,
+        addAudioLabelMatrxIds,
+        removeAudioLabelMatrxId,
+        removeAudioLabelMatrxIds,
+        addAudioLabelPkValue,
+        addAudioLabelPkValues,
+        removeAudioLabelPkValue,
+        removeAudioLabelPkValues,
+        isAudioLabelMissingRecords,
+        setAudioLabelShouldFetch,
+        setAudioLabelFetchMode,
+        fetchAudioLabelQuickRefs,
+        fetchAudioLabelOne,
+        fetchAudioLabelOneWithFkIfk,
+        fetchAudioLabelAll,
+        fetchAudioLabelPaginated,
     };
 };
 
@@ -909,22 +909,22 @@ type UseAudioRecordingWithFetchReturn = {
     audioRecordingIsLoading: boolean;
     audioRecordingIsError: boolean;
     audioRecordingQuickRefRecords: QuickReferenceRecord[];
-    addaudioRecordingMatrxId: (recordId: MatrxRecordId) => void;
-    addaudioRecordingMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaudioRecordingMatrxId: (recordId: MatrxRecordId) => void;
-    removeaudioRecordingMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaudioRecordingPkValue: (pkValue: string) => void;
-    addaudioRecordingPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaudioRecordingPkValue: (pkValue: string) => void;
-    removeaudioRecordingPkValues: (pkValues: Record<string, unknown>) => void;
-    isaudioRecordingMissingRecords: boolean;
-    setaudioRecordingShouldFetch: (shouldFetch: boolean) => void;
-    setaudioRecordingFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAudioRecordingMatrxId: (recordId: MatrxRecordId) => void;
+    addAudioRecordingMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAudioRecordingMatrxId: (recordId: MatrxRecordId) => void;
+    removeAudioRecordingMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAudioRecordingPkValue: (pkValue: string) => void;
+    addAudioRecordingPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAudioRecordingPkValue: (pkValue: string) => void;
+    removeAudioRecordingPkValues: (pkValues: Record<string, unknown>) => void;
+    isAudioRecordingMissingRecords: boolean;
+    setAudioRecordingShouldFetch: (shouldFetch: boolean) => void;
+    setAudioRecordingFetchMode: (fetchMode: FetchMode) => void;
+    fetchAudioRecordingQuickRefs: () => void;
+    fetchAudioRecordingOne: (recordId: MatrxRecordId) => void;
+    fetchAudioRecordingOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAudioRecordingAll: () => void;
+    fetchAudioRecordingPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAudioRecordingWithFetch = (): UseAudioRecordingWithFetchReturn => {
@@ -937,22 +937,22 @@ export const useAudioRecordingWithFetch = (): UseAudioRecordingWithFetchReturn =
         isLoading: audioRecordingIsLoading,
         isError: audioRecordingIsError,
         quickRefRecords: audioRecordingQuickRefRecords,
-        addMatrxId: addaudioRecordingMatrxId,
-        addMatrxIds: addaudioRecordingMatrxIds,
-        removeMatrxId: removeaudioRecordingMatrxId,
-        removeMatrxIds: removeaudioRecordingMatrxIds,
-        addPkValue: addaudioRecordingPkValue,
-        addPkValues: addaudioRecordingPkValues,
-        removePkValue: removeaudioRecordingPkValue,
-        removePkValues: removeaudioRecordingPkValues,
-        isMissingRecords: isaudioRecordingMissingRecords,
-        setShouldFetch: setaudioRecordingShouldFetch,
-        setFetchMode: setaudioRecordingFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAudioRecordingMatrxId,
+        addMatrxIds: addAudioRecordingMatrxIds,
+        removeMatrxId: removeAudioRecordingMatrxId,
+        removeMatrxIds: removeAudioRecordingMatrxIds,
+        addPkValue: addAudioRecordingPkValue,
+        addPkValues: addAudioRecordingPkValues,
+        removePkValue: removeAudioRecordingPkValue,
+        removePkValues: removeAudioRecordingPkValues,
+        isMissingRecords: isAudioRecordingMissingRecords,
+        setShouldFetch: setAudioRecordingShouldFetch,
+        setFetchMode: setAudioRecordingFetchMode,
+        fetchQuickRefs: fetchAudioRecordingQuickRefs,
+        fetchOne: fetchAudioRecordingOne,
+        fetchOneWithFkIfk: fetchAudioRecordingOneWithFkIfk,
+        fetchAll: fetchAudioRecordingAll,
+        fetchPaginated: fetchAudioRecordingPaginated,
     } = useEntityWithFetch("audioRecording");
 
     return {
@@ -964,22 +964,22 @@ export const useAudioRecordingWithFetch = (): UseAudioRecordingWithFetchReturn =
         audioRecordingIsLoading,
         audioRecordingIsError,
         audioRecordingQuickRefRecords,
-        addaudioRecordingMatrxId,
-        addaudioRecordingMatrxIds,
-        removeaudioRecordingMatrxId,
-        removeaudioRecordingMatrxIds,
-        addaudioRecordingPkValue,
-        addaudioRecordingPkValues,
-        removeaudioRecordingPkValue,
-        removeaudioRecordingPkValues,
-        isaudioRecordingMissingRecords,
-        setaudioRecordingShouldFetch,
-        setaudioRecordingFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAudioRecordingMatrxId,
+        addAudioRecordingMatrxIds,
+        removeAudioRecordingMatrxId,
+        removeAudioRecordingMatrxIds,
+        addAudioRecordingPkValue,
+        addAudioRecordingPkValues,
+        removeAudioRecordingPkValue,
+        removeAudioRecordingPkValues,
+        isAudioRecordingMissingRecords,
+        setAudioRecordingShouldFetch,
+        setAudioRecordingFetchMode,
+        fetchAudioRecordingQuickRefs,
+        fetchAudioRecordingOne,
+        fetchAudioRecordingOneWithFkIfk,
+        fetchAudioRecordingAll,
+        fetchAudioRecordingPaginated,
     };
 };
 
@@ -992,22 +992,22 @@ type UseAudioRecordingUsersWithFetchReturn = {
     audioRecordingUsersIsLoading: boolean;
     audioRecordingUsersIsError: boolean;
     audioRecordingUsersQuickRefRecords: QuickReferenceRecord[];
-    addaudioRecordingUsersMatrxId: (recordId: MatrxRecordId) => void;
-    addaudioRecordingUsersMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeaudioRecordingUsersMatrxId: (recordId: MatrxRecordId) => void;
-    removeaudioRecordingUsersMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addaudioRecordingUsersPkValue: (pkValue: string) => void;
-    addaudioRecordingUsersPkValues: (pkValues: Record<string, unknown>) => void;
-    removeaudioRecordingUsersPkValue: (pkValue: string) => void;
-    removeaudioRecordingUsersPkValues: (pkValues: Record<string, unknown>) => void;
-    isaudioRecordingUsersMissingRecords: boolean;
-    setaudioRecordingUsersShouldFetch: (shouldFetch: boolean) => void;
-    setaudioRecordingUsersFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAudioRecordingUsersMatrxId: (recordId: MatrxRecordId) => void;
+    addAudioRecordingUsersMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAudioRecordingUsersMatrxId: (recordId: MatrxRecordId) => void;
+    removeAudioRecordingUsersMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAudioRecordingUsersPkValue: (pkValue: string) => void;
+    addAudioRecordingUsersPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAudioRecordingUsersPkValue: (pkValue: string) => void;
+    removeAudioRecordingUsersPkValues: (pkValues: Record<string, unknown>) => void;
+    isAudioRecordingUsersMissingRecords: boolean;
+    setAudioRecordingUsersShouldFetch: (shouldFetch: boolean) => void;
+    setAudioRecordingUsersFetchMode: (fetchMode: FetchMode) => void;
+    fetchAudioRecordingUsersQuickRefs: () => void;
+    fetchAudioRecordingUsersOne: (recordId: MatrxRecordId) => void;
+    fetchAudioRecordingUsersOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAudioRecordingUsersAll: () => void;
+    fetchAudioRecordingUsersPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAudioRecordingUsersWithFetch = (): UseAudioRecordingUsersWithFetchReturn => {
@@ -1020,22 +1020,22 @@ export const useAudioRecordingUsersWithFetch = (): UseAudioRecordingUsersWithFet
         isLoading: audioRecordingUsersIsLoading,
         isError: audioRecordingUsersIsError,
         quickRefRecords: audioRecordingUsersQuickRefRecords,
-        addMatrxId: addaudioRecordingUsersMatrxId,
-        addMatrxIds: addaudioRecordingUsersMatrxIds,
-        removeMatrxId: removeaudioRecordingUsersMatrxId,
-        removeMatrxIds: removeaudioRecordingUsersMatrxIds,
-        addPkValue: addaudioRecordingUsersPkValue,
-        addPkValues: addaudioRecordingUsersPkValues,
-        removePkValue: removeaudioRecordingUsersPkValue,
-        removePkValues: removeaudioRecordingUsersPkValues,
-        isMissingRecords: isaudioRecordingUsersMissingRecords,
-        setShouldFetch: setaudioRecordingUsersShouldFetch,
-        setFetchMode: setaudioRecordingUsersFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAudioRecordingUsersMatrxId,
+        addMatrxIds: addAudioRecordingUsersMatrxIds,
+        removeMatrxId: removeAudioRecordingUsersMatrxId,
+        removeMatrxIds: removeAudioRecordingUsersMatrxIds,
+        addPkValue: addAudioRecordingUsersPkValue,
+        addPkValues: addAudioRecordingUsersPkValues,
+        removePkValue: removeAudioRecordingUsersPkValue,
+        removePkValues: removeAudioRecordingUsersPkValues,
+        isMissingRecords: isAudioRecordingUsersMissingRecords,
+        setShouldFetch: setAudioRecordingUsersShouldFetch,
+        setFetchMode: setAudioRecordingUsersFetchMode,
+        fetchQuickRefs: fetchAudioRecordingUsersQuickRefs,
+        fetchOne: fetchAudioRecordingUsersOne,
+        fetchOneWithFkIfk: fetchAudioRecordingUsersOneWithFkIfk,
+        fetchAll: fetchAudioRecordingUsersAll,
+        fetchPaginated: fetchAudioRecordingUsersPaginated,
     } = useEntityWithFetch("audioRecordingUsers");
 
     return {
@@ -1047,22 +1047,22 @@ export const useAudioRecordingUsersWithFetch = (): UseAudioRecordingUsersWithFet
         audioRecordingUsersIsLoading,
         audioRecordingUsersIsError,
         audioRecordingUsersQuickRefRecords,
-        addaudioRecordingUsersMatrxId,
-        addaudioRecordingUsersMatrxIds,
-        removeaudioRecordingUsersMatrxId,
-        removeaudioRecordingUsersMatrxIds,
-        addaudioRecordingUsersPkValue,
-        addaudioRecordingUsersPkValues,
-        removeaudioRecordingUsersPkValue,
-        removeaudioRecordingUsersPkValues,
-        isaudioRecordingUsersMissingRecords,
-        setaudioRecordingUsersShouldFetch,
-        setaudioRecordingUsersFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAudioRecordingUsersMatrxId,
+        addAudioRecordingUsersMatrxIds,
+        removeAudioRecordingUsersMatrxId,
+        removeAudioRecordingUsersMatrxIds,
+        addAudioRecordingUsersPkValue,
+        addAudioRecordingUsersPkValues,
+        removeAudioRecordingUsersPkValue,
+        removeAudioRecordingUsersPkValues,
+        isAudioRecordingUsersMissingRecords,
+        setAudioRecordingUsersShouldFetch,
+        setAudioRecordingUsersFetchMode,
+        fetchAudioRecordingUsersQuickRefs,
+        fetchAudioRecordingUsersOne,
+        fetchAudioRecordingUsersOneWithFkIfk,
+        fetchAudioRecordingUsersAll,
+        fetchAudioRecordingUsersPaginated,
     };
 };
 
@@ -1075,22 +1075,22 @@ type UseAutomationBoundaryBrokerWithFetchReturn = {
     automationBoundaryBrokerIsLoading: boolean;
     automationBoundaryBrokerIsError: boolean;
     automationBoundaryBrokerQuickRefRecords: QuickReferenceRecord[];
-    addautomationBoundaryBrokerMatrxId: (recordId: MatrxRecordId) => void;
-    addautomationBoundaryBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeautomationBoundaryBrokerMatrxId: (recordId: MatrxRecordId) => void;
-    removeautomationBoundaryBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addautomationBoundaryBrokerPkValue: (pkValue: string) => void;
-    addautomationBoundaryBrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    removeautomationBoundaryBrokerPkValue: (pkValue: string) => void;
-    removeautomationBoundaryBrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    isautomationBoundaryBrokerMissingRecords: boolean;
-    setautomationBoundaryBrokerShouldFetch: (shouldFetch: boolean) => void;
-    setautomationBoundaryBrokerFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAutomationBoundaryBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    addAutomationBoundaryBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAutomationBoundaryBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    removeAutomationBoundaryBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAutomationBoundaryBrokerPkValue: (pkValue: string) => void;
+    addAutomationBoundaryBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAutomationBoundaryBrokerPkValue: (pkValue: string) => void;
+    removeAutomationBoundaryBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    isAutomationBoundaryBrokerMissingRecords: boolean;
+    setAutomationBoundaryBrokerShouldFetch: (shouldFetch: boolean) => void;
+    setAutomationBoundaryBrokerFetchMode: (fetchMode: FetchMode) => void;
+    fetchAutomationBoundaryBrokerQuickRefs: () => void;
+    fetchAutomationBoundaryBrokerOne: (recordId: MatrxRecordId) => void;
+    fetchAutomationBoundaryBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAutomationBoundaryBrokerAll: () => void;
+    fetchAutomationBoundaryBrokerPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAutomationBoundaryBrokerWithFetch = (): UseAutomationBoundaryBrokerWithFetchReturn => {
@@ -1103,22 +1103,22 @@ export const useAutomationBoundaryBrokerWithFetch = (): UseAutomationBoundaryBro
         isLoading: automationBoundaryBrokerIsLoading,
         isError: automationBoundaryBrokerIsError,
         quickRefRecords: automationBoundaryBrokerQuickRefRecords,
-        addMatrxId: addautomationBoundaryBrokerMatrxId,
-        addMatrxIds: addautomationBoundaryBrokerMatrxIds,
-        removeMatrxId: removeautomationBoundaryBrokerMatrxId,
-        removeMatrxIds: removeautomationBoundaryBrokerMatrxIds,
-        addPkValue: addautomationBoundaryBrokerPkValue,
-        addPkValues: addautomationBoundaryBrokerPkValues,
-        removePkValue: removeautomationBoundaryBrokerPkValue,
-        removePkValues: removeautomationBoundaryBrokerPkValues,
-        isMissingRecords: isautomationBoundaryBrokerMissingRecords,
-        setShouldFetch: setautomationBoundaryBrokerShouldFetch,
-        setFetchMode: setautomationBoundaryBrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAutomationBoundaryBrokerMatrxId,
+        addMatrxIds: addAutomationBoundaryBrokerMatrxIds,
+        removeMatrxId: removeAutomationBoundaryBrokerMatrxId,
+        removeMatrxIds: removeAutomationBoundaryBrokerMatrxIds,
+        addPkValue: addAutomationBoundaryBrokerPkValue,
+        addPkValues: addAutomationBoundaryBrokerPkValues,
+        removePkValue: removeAutomationBoundaryBrokerPkValue,
+        removePkValues: removeAutomationBoundaryBrokerPkValues,
+        isMissingRecords: isAutomationBoundaryBrokerMissingRecords,
+        setShouldFetch: setAutomationBoundaryBrokerShouldFetch,
+        setFetchMode: setAutomationBoundaryBrokerFetchMode,
+        fetchQuickRefs: fetchAutomationBoundaryBrokerQuickRefs,
+        fetchOne: fetchAutomationBoundaryBrokerOne,
+        fetchOneWithFkIfk: fetchAutomationBoundaryBrokerOneWithFkIfk,
+        fetchAll: fetchAutomationBoundaryBrokerAll,
+        fetchPaginated: fetchAutomationBoundaryBrokerPaginated,
     } = useEntityWithFetch("automationBoundaryBroker");
 
     return {
@@ -1130,22 +1130,22 @@ export const useAutomationBoundaryBrokerWithFetch = (): UseAutomationBoundaryBro
         automationBoundaryBrokerIsLoading,
         automationBoundaryBrokerIsError,
         automationBoundaryBrokerQuickRefRecords,
-        addautomationBoundaryBrokerMatrxId,
-        addautomationBoundaryBrokerMatrxIds,
-        removeautomationBoundaryBrokerMatrxId,
-        removeautomationBoundaryBrokerMatrxIds,
-        addautomationBoundaryBrokerPkValue,
-        addautomationBoundaryBrokerPkValues,
-        removeautomationBoundaryBrokerPkValue,
-        removeautomationBoundaryBrokerPkValues,
-        isautomationBoundaryBrokerMissingRecords,
-        setautomationBoundaryBrokerShouldFetch,
-        setautomationBoundaryBrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAutomationBoundaryBrokerMatrxId,
+        addAutomationBoundaryBrokerMatrxIds,
+        removeAutomationBoundaryBrokerMatrxId,
+        removeAutomationBoundaryBrokerMatrxIds,
+        addAutomationBoundaryBrokerPkValue,
+        addAutomationBoundaryBrokerPkValues,
+        removeAutomationBoundaryBrokerPkValue,
+        removeAutomationBoundaryBrokerPkValues,
+        isAutomationBoundaryBrokerMissingRecords,
+        setAutomationBoundaryBrokerShouldFetch,
+        setAutomationBoundaryBrokerFetchMode,
+        fetchAutomationBoundaryBrokerQuickRefs,
+        fetchAutomationBoundaryBrokerOne,
+        fetchAutomationBoundaryBrokerOneWithFkIfk,
+        fetchAutomationBoundaryBrokerAll,
+        fetchAutomationBoundaryBrokerPaginated,
     };
 };
 
@@ -1158,22 +1158,22 @@ type UseAutomationMatrixWithFetchReturn = {
     automationMatrixIsLoading: boolean;
     automationMatrixIsError: boolean;
     automationMatrixQuickRefRecords: QuickReferenceRecord[];
-    addautomationMatrixMatrxId: (recordId: MatrxRecordId) => void;
-    addautomationMatrixMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeautomationMatrixMatrxId: (recordId: MatrxRecordId) => void;
-    removeautomationMatrixMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addautomationMatrixPkValue: (pkValue: string) => void;
-    addautomationMatrixPkValues: (pkValues: Record<string, unknown>) => void;
-    removeautomationMatrixPkValue: (pkValue: string) => void;
-    removeautomationMatrixPkValues: (pkValues: Record<string, unknown>) => void;
-    isautomationMatrixMissingRecords: boolean;
-    setautomationMatrixShouldFetch: (shouldFetch: boolean) => void;
-    setautomationMatrixFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addAutomationMatrixMatrxId: (recordId: MatrxRecordId) => void;
+    addAutomationMatrixMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAutomationMatrixMatrxId: (recordId: MatrxRecordId) => void;
+    removeAutomationMatrixMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAutomationMatrixPkValue: (pkValue: string) => void;
+    addAutomationMatrixPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAutomationMatrixPkValue: (pkValue: string) => void;
+    removeAutomationMatrixPkValues: (pkValues: Record<string, unknown>) => void;
+    isAutomationMatrixMissingRecords: boolean;
+    setAutomationMatrixShouldFetch: (shouldFetch: boolean) => void;
+    setAutomationMatrixFetchMode: (fetchMode: FetchMode) => void;
+    fetchAutomationMatrixQuickRefs: () => void;
+    fetchAutomationMatrixOne: (recordId: MatrxRecordId) => void;
+    fetchAutomationMatrixOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAutomationMatrixAll: () => void;
+    fetchAutomationMatrixPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useAutomationMatrixWithFetch = (): UseAutomationMatrixWithFetchReturn => {
@@ -1186,22 +1186,22 @@ export const useAutomationMatrixWithFetch = (): UseAutomationMatrixWithFetchRetu
         isLoading: automationMatrixIsLoading,
         isError: automationMatrixIsError,
         quickRefRecords: automationMatrixQuickRefRecords,
-        addMatrxId: addautomationMatrixMatrxId,
-        addMatrxIds: addautomationMatrixMatrxIds,
-        removeMatrxId: removeautomationMatrixMatrxId,
-        removeMatrxIds: removeautomationMatrixMatrxIds,
-        addPkValue: addautomationMatrixPkValue,
-        addPkValues: addautomationMatrixPkValues,
-        removePkValue: removeautomationMatrixPkValue,
-        removePkValues: removeautomationMatrixPkValues,
-        isMissingRecords: isautomationMatrixMissingRecords,
-        setShouldFetch: setautomationMatrixShouldFetch,
-        setFetchMode: setautomationMatrixFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addAutomationMatrixMatrxId,
+        addMatrxIds: addAutomationMatrixMatrxIds,
+        removeMatrxId: removeAutomationMatrixMatrxId,
+        removeMatrxIds: removeAutomationMatrixMatrxIds,
+        addPkValue: addAutomationMatrixPkValue,
+        addPkValues: addAutomationMatrixPkValues,
+        removePkValue: removeAutomationMatrixPkValue,
+        removePkValues: removeAutomationMatrixPkValues,
+        isMissingRecords: isAutomationMatrixMissingRecords,
+        setShouldFetch: setAutomationMatrixShouldFetch,
+        setFetchMode: setAutomationMatrixFetchMode,
+        fetchQuickRefs: fetchAutomationMatrixQuickRefs,
+        fetchOne: fetchAutomationMatrixOne,
+        fetchOneWithFkIfk: fetchAutomationMatrixOneWithFkIfk,
+        fetchAll: fetchAutomationMatrixAll,
+        fetchPaginated: fetchAutomationMatrixPaginated,
     } = useEntityWithFetch("automationMatrix");
 
     return {
@@ -1213,22 +1213,22 @@ export const useAutomationMatrixWithFetch = (): UseAutomationMatrixWithFetchRetu
         automationMatrixIsLoading,
         automationMatrixIsError,
         automationMatrixQuickRefRecords,
-        addautomationMatrixMatrxId,
-        addautomationMatrixMatrxIds,
-        removeautomationMatrixMatrxId,
-        removeautomationMatrixMatrxIds,
-        addautomationMatrixPkValue,
-        addautomationMatrixPkValues,
-        removeautomationMatrixPkValue,
-        removeautomationMatrixPkValues,
-        isautomationMatrixMissingRecords,
-        setautomationMatrixShouldFetch,
-        setautomationMatrixFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addAutomationMatrixMatrxId,
+        addAutomationMatrixMatrxIds,
+        removeAutomationMatrixMatrxId,
+        removeAutomationMatrixMatrxIds,
+        addAutomationMatrixPkValue,
+        addAutomationMatrixPkValues,
+        removeAutomationMatrixPkValue,
+        removeAutomationMatrixPkValues,
+        isAutomationMatrixMissingRecords,
+        setAutomationMatrixShouldFetch,
+        setAutomationMatrixFetchMode,
+        fetchAutomationMatrixQuickRefs,
+        fetchAutomationMatrixOne,
+        fetchAutomationMatrixOneWithFkIfk,
+        fetchAutomationMatrixAll,
+        fetchAutomationMatrixPaginated,
     };
 };
 
@@ -1241,22 +1241,22 @@ type UseBrokerWithFetchReturn = {
     brokerIsLoading: boolean;
     brokerIsError: boolean;
     brokerQuickRefRecords: QuickReferenceRecord[];
-    addbrokerMatrxId: (recordId: MatrxRecordId) => void;
-    addbrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removebrokerMatrxId: (recordId: MatrxRecordId) => void;
-    removebrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addbrokerPkValue: (pkValue: string) => void;
-    addbrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    removebrokerPkValue: (pkValue: string) => void;
-    removebrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    isbrokerMissingRecords: boolean;
-    setbrokerShouldFetch: (shouldFetch: boolean) => void;
-    setbrokerFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    addBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    removeBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addBrokerPkValue: (pkValue: string) => void;
+    addBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    removeBrokerPkValue: (pkValue: string) => void;
+    removeBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    isBrokerMissingRecords: boolean;
+    setBrokerShouldFetch: (shouldFetch: boolean) => void;
+    setBrokerFetchMode: (fetchMode: FetchMode) => void;
+    fetchBrokerQuickRefs: () => void;
+    fetchBrokerOne: (recordId: MatrxRecordId) => void;
+    fetchBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchBrokerAll: () => void;
+    fetchBrokerPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useBrokerWithFetch = (): UseBrokerWithFetchReturn => {
@@ -1269,22 +1269,22 @@ export const useBrokerWithFetch = (): UseBrokerWithFetchReturn => {
         isLoading: brokerIsLoading,
         isError: brokerIsError,
         quickRefRecords: brokerQuickRefRecords,
-        addMatrxId: addbrokerMatrxId,
-        addMatrxIds: addbrokerMatrxIds,
-        removeMatrxId: removebrokerMatrxId,
-        removeMatrxIds: removebrokerMatrxIds,
-        addPkValue: addbrokerPkValue,
-        addPkValues: addbrokerPkValues,
-        removePkValue: removebrokerPkValue,
-        removePkValues: removebrokerPkValues,
-        isMissingRecords: isbrokerMissingRecords,
-        setShouldFetch: setbrokerShouldFetch,
-        setFetchMode: setbrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addBrokerMatrxId,
+        addMatrxIds: addBrokerMatrxIds,
+        removeMatrxId: removeBrokerMatrxId,
+        removeMatrxIds: removeBrokerMatrxIds,
+        addPkValue: addBrokerPkValue,
+        addPkValues: addBrokerPkValues,
+        removePkValue: removeBrokerPkValue,
+        removePkValues: removeBrokerPkValues,
+        isMissingRecords: isBrokerMissingRecords,
+        setShouldFetch: setBrokerShouldFetch,
+        setFetchMode: setBrokerFetchMode,
+        fetchQuickRefs: fetchBrokerQuickRefs,
+        fetchOne: fetchBrokerOne,
+        fetchOneWithFkIfk: fetchBrokerOneWithFkIfk,
+        fetchAll: fetchBrokerAll,
+        fetchPaginated: fetchBrokerPaginated,
     } = useEntityWithFetch("broker");
 
     return {
@@ -1296,22 +1296,22 @@ export const useBrokerWithFetch = (): UseBrokerWithFetchReturn => {
         brokerIsLoading,
         brokerIsError,
         brokerQuickRefRecords,
-        addbrokerMatrxId,
-        addbrokerMatrxIds,
-        removebrokerMatrxId,
-        removebrokerMatrxIds,
-        addbrokerPkValue,
-        addbrokerPkValues,
-        removebrokerPkValue,
-        removebrokerPkValues,
-        isbrokerMissingRecords,
-        setbrokerShouldFetch,
-        setbrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addBrokerMatrxId,
+        addBrokerMatrxIds,
+        removeBrokerMatrxId,
+        removeBrokerMatrxIds,
+        addBrokerPkValue,
+        addBrokerPkValues,
+        removeBrokerPkValue,
+        removeBrokerPkValues,
+        isBrokerMissingRecords,
+        setBrokerShouldFetch,
+        setBrokerFetchMode,
+        fetchBrokerQuickRefs,
+        fetchBrokerOne,
+        fetchBrokerOneWithFkIfk,
+        fetchBrokerAll,
+        fetchBrokerPaginated,
     };
 };
 
@@ -1324,22 +1324,22 @@ type UseBrokerValueWithFetchReturn = {
     brokerValueIsLoading: boolean;
     brokerValueIsError: boolean;
     brokerValueQuickRefRecords: QuickReferenceRecord[];
-    addbrokerValueMatrxId: (recordId: MatrxRecordId) => void;
-    addbrokerValueMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removebrokerValueMatrxId: (recordId: MatrxRecordId) => void;
-    removebrokerValueMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addbrokerValuePkValue: (pkValue: string) => void;
-    addbrokerValuePkValues: (pkValues: Record<string, unknown>) => void;
-    removebrokerValuePkValue: (pkValue: string) => void;
-    removebrokerValuePkValues: (pkValues: Record<string, unknown>) => void;
-    isbrokerValueMissingRecords: boolean;
-    setbrokerValueShouldFetch: (shouldFetch: boolean) => void;
-    setbrokerValueFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addBrokerValueMatrxId: (recordId: MatrxRecordId) => void;
+    addBrokerValueMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeBrokerValueMatrxId: (recordId: MatrxRecordId) => void;
+    removeBrokerValueMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addBrokerValuePkValue: (pkValue: string) => void;
+    addBrokerValuePkValues: (pkValues: Record<string, unknown>) => void;
+    removeBrokerValuePkValue: (pkValue: string) => void;
+    removeBrokerValuePkValues: (pkValues: Record<string, unknown>) => void;
+    isBrokerValueMissingRecords: boolean;
+    setBrokerValueShouldFetch: (shouldFetch: boolean) => void;
+    setBrokerValueFetchMode: (fetchMode: FetchMode) => void;
+    fetchBrokerValueQuickRefs: () => void;
+    fetchBrokerValueOne: (recordId: MatrxRecordId) => void;
+    fetchBrokerValueOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchBrokerValueAll: () => void;
+    fetchBrokerValuePaginated: (page: number, pageSize: number) => void;
 };
 
 export const useBrokerValueWithFetch = (): UseBrokerValueWithFetchReturn => {
@@ -1352,22 +1352,22 @@ export const useBrokerValueWithFetch = (): UseBrokerValueWithFetchReturn => {
         isLoading: brokerValueIsLoading,
         isError: brokerValueIsError,
         quickRefRecords: brokerValueQuickRefRecords,
-        addMatrxId: addbrokerValueMatrxId,
-        addMatrxIds: addbrokerValueMatrxIds,
-        removeMatrxId: removebrokerValueMatrxId,
-        removeMatrxIds: removebrokerValueMatrxIds,
-        addPkValue: addbrokerValuePkValue,
-        addPkValues: addbrokerValuePkValues,
-        removePkValue: removebrokerValuePkValue,
-        removePkValues: removebrokerValuePkValues,
-        isMissingRecords: isbrokerValueMissingRecords,
-        setShouldFetch: setbrokerValueShouldFetch,
-        setFetchMode: setbrokerValueFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addBrokerValueMatrxId,
+        addMatrxIds: addBrokerValueMatrxIds,
+        removeMatrxId: removeBrokerValueMatrxId,
+        removeMatrxIds: removeBrokerValueMatrxIds,
+        addPkValue: addBrokerValuePkValue,
+        addPkValues: addBrokerValuePkValues,
+        removePkValue: removeBrokerValuePkValue,
+        removePkValues: removeBrokerValuePkValues,
+        isMissingRecords: isBrokerValueMissingRecords,
+        setShouldFetch: setBrokerValueShouldFetch,
+        setFetchMode: setBrokerValueFetchMode,
+        fetchQuickRefs: fetchBrokerValueQuickRefs,
+        fetchOne: fetchBrokerValueOne,
+        fetchOneWithFkIfk: fetchBrokerValueOneWithFkIfk,
+        fetchAll: fetchBrokerValueAll,
+        fetchPaginated: fetchBrokerValuePaginated,
     } = useEntityWithFetch("brokerValue");
 
     return {
@@ -1379,22 +1379,22 @@ export const useBrokerValueWithFetch = (): UseBrokerValueWithFetchReturn => {
         brokerValueIsLoading,
         brokerValueIsError,
         brokerValueQuickRefRecords,
-        addbrokerValueMatrxId,
-        addbrokerValueMatrxIds,
-        removebrokerValueMatrxId,
-        removebrokerValueMatrxIds,
-        addbrokerValuePkValue,
-        addbrokerValuePkValues,
-        removebrokerValuePkValue,
-        removebrokerValuePkValues,
-        isbrokerValueMissingRecords,
-        setbrokerValueShouldFetch,
-        setbrokerValueFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addBrokerValueMatrxId,
+        addBrokerValueMatrxIds,
+        removeBrokerValueMatrxId,
+        removeBrokerValueMatrxIds,
+        addBrokerValuePkValue,
+        addBrokerValuePkValues,
+        removeBrokerValuePkValue,
+        removeBrokerValuePkValues,
+        isBrokerValueMissingRecords,
+        setBrokerValueShouldFetch,
+        setBrokerValueFetchMode,
+        fetchBrokerValueQuickRefs,
+        fetchBrokerValueOne,
+        fetchBrokerValueOneWithFkIfk,
+        fetchBrokerValueAll,
+        fetchBrokerValuePaginated,
     };
 };
 
@@ -1407,22 +1407,22 @@ type UseBucketStructuresWithFetchReturn = {
     bucketStructuresIsLoading: boolean;
     bucketStructuresIsError: boolean;
     bucketStructuresQuickRefRecords: QuickReferenceRecord[];
-    addbucketStructuresMatrxId: (recordId: MatrxRecordId) => void;
-    addbucketStructuresMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removebucketStructuresMatrxId: (recordId: MatrxRecordId) => void;
-    removebucketStructuresMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addbucketStructuresPkValue: (pkValue: string) => void;
-    addbucketStructuresPkValues: (pkValues: Record<string, unknown>) => void;
-    removebucketStructuresPkValue: (pkValue: string) => void;
-    removebucketStructuresPkValues: (pkValues: Record<string, unknown>) => void;
-    isbucketStructuresMissingRecords: boolean;
-    setbucketStructuresShouldFetch: (shouldFetch: boolean) => void;
-    setbucketStructuresFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addBucketStructuresMatrxId: (recordId: MatrxRecordId) => void;
+    addBucketStructuresMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeBucketStructuresMatrxId: (recordId: MatrxRecordId) => void;
+    removeBucketStructuresMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addBucketStructuresPkValue: (pkValue: string) => void;
+    addBucketStructuresPkValues: (pkValues: Record<string, unknown>) => void;
+    removeBucketStructuresPkValue: (pkValue: string) => void;
+    removeBucketStructuresPkValues: (pkValues: Record<string, unknown>) => void;
+    isBucketStructuresMissingRecords: boolean;
+    setBucketStructuresShouldFetch: (shouldFetch: boolean) => void;
+    setBucketStructuresFetchMode: (fetchMode: FetchMode) => void;
+    fetchBucketStructuresQuickRefs: () => void;
+    fetchBucketStructuresOne: (recordId: MatrxRecordId) => void;
+    fetchBucketStructuresOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchBucketStructuresAll: () => void;
+    fetchBucketStructuresPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useBucketStructuresWithFetch = (): UseBucketStructuresWithFetchReturn => {
@@ -1435,22 +1435,22 @@ export const useBucketStructuresWithFetch = (): UseBucketStructuresWithFetchRetu
         isLoading: bucketStructuresIsLoading,
         isError: bucketStructuresIsError,
         quickRefRecords: bucketStructuresQuickRefRecords,
-        addMatrxId: addbucketStructuresMatrxId,
-        addMatrxIds: addbucketStructuresMatrxIds,
-        removeMatrxId: removebucketStructuresMatrxId,
-        removeMatrxIds: removebucketStructuresMatrxIds,
-        addPkValue: addbucketStructuresPkValue,
-        addPkValues: addbucketStructuresPkValues,
-        removePkValue: removebucketStructuresPkValue,
-        removePkValues: removebucketStructuresPkValues,
-        isMissingRecords: isbucketStructuresMissingRecords,
-        setShouldFetch: setbucketStructuresShouldFetch,
-        setFetchMode: setbucketStructuresFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addBucketStructuresMatrxId,
+        addMatrxIds: addBucketStructuresMatrxIds,
+        removeMatrxId: removeBucketStructuresMatrxId,
+        removeMatrxIds: removeBucketStructuresMatrxIds,
+        addPkValue: addBucketStructuresPkValue,
+        addPkValues: addBucketStructuresPkValues,
+        removePkValue: removeBucketStructuresPkValue,
+        removePkValues: removeBucketStructuresPkValues,
+        isMissingRecords: isBucketStructuresMissingRecords,
+        setShouldFetch: setBucketStructuresShouldFetch,
+        setFetchMode: setBucketStructuresFetchMode,
+        fetchQuickRefs: fetchBucketStructuresQuickRefs,
+        fetchOne: fetchBucketStructuresOne,
+        fetchOneWithFkIfk: fetchBucketStructuresOneWithFkIfk,
+        fetchAll: fetchBucketStructuresAll,
+        fetchPaginated: fetchBucketStructuresPaginated,
     } = useEntityWithFetch("bucketStructures");
 
     return {
@@ -1462,22 +1462,22 @@ export const useBucketStructuresWithFetch = (): UseBucketStructuresWithFetchRetu
         bucketStructuresIsLoading,
         bucketStructuresIsError,
         bucketStructuresQuickRefRecords,
-        addbucketStructuresMatrxId,
-        addbucketStructuresMatrxIds,
-        removebucketStructuresMatrxId,
-        removebucketStructuresMatrxIds,
-        addbucketStructuresPkValue,
-        addbucketStructuresPkValues,
-        removebucketStructuresPkValue,
-        removebucketStructuresPkValues,
-        isbucketStructuresMissingRecords,
-        setbucketStructuresShouldFetch,
-        setbucketStructuresFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addBucketStructuresMatrxId,
+        addBucketStructuresMatrxIds,
+        removeBucketStructuresMatrxId,
+        removeBucketStructuresMatrxIds,
+        addBucketStructuresPkValue,
+        addBucketStructuresPkValues,
+        removeBucketStructuresPkValue,
+        removeBucketStructuresPkValues,
+        isBucketStructuresMissingRecords,
+        setBucketStructuresShouldFetch,
+        setBucketStructuresFetchMode,
+        fetchBucketStructuresQuickRefs,
+        fetchBucketStructuresOne,
+        fetchBucketStructuresOneWithFkIfk,
+        fetchBucketStructuresAll,
+        fetchBucketStructuresPaginated,
     };
 };
 
@@ -1490,22 +1490,22 @@ type UseBucketTreeStructuresWithFetchReturn = {
     bucketTreeStructuresIsLoading: boolean;
     bucketTreeStructuresIsError: boolean;
     bucketTreeStructuresQuickRefRecords: QuickReferenceRecord[];
-    addbucketTreeStructuresMatrxId: (recordId: MatrxRecordId) => void;
-    addbucketTreeStructuresMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removebucketTreeStructuresMatrxId: (recordId: MatrxRecordId) => void;
-    removebucketTreeStructuresMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addbucketTreeStructuresPkValue: (pkValue: string) => void;
-    addbucketTreeStructuresPkValues: (pkValues: Record<string, unknown>) => void;
-    removebucketTreeStructuresPkValue: (pkValue: string) => void;
-    removebucketTreeStructuresPkValues: (pkValues: Record<string, unknown>) => void;
-    isbucketTreeStructuresMissingRecords: boolean;
-    setbucketTreeStructuresShouldFetch: (shouldFetch: boolean) => void;
-    setbucketTreeStructuresFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addBucketTreeStructuresMatrxId: (recordId: MatrxRecordId) => void;
+    addBucketTreeStructuresMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeBucketTreeStructuresMatrxId: (recordId: MatrxRecordId) => void;
+    removeBucketTreeStructuresMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addBucketTreeStructuresPkValue: (pkValue: string) => void;
+    addBucketTreeStructuresPkValues: (pkValues: Record<string, unknown>) => void;
+    removeBucketTreeStructuresPkValue: (pkValue: string) => void;
+    removeBucketTreeStructuresPkValues: (pkValues: Record<string, unknown>) => void;
+    isBucketTreeStructuresMissingRecords: boolean;
+    setBucketTreeStructuresShouldFetch: (shouldFetch: boolean) => void;
+    setBucketTreeStructuresFetchMode: (fetchMode: FetchMode) => void;
+    fetchBucketTreeStructuresQuickRefs: () => void;
+    fetchBucketTreeStructuresOne: (recordId: MatrxRecordId) => void;
+    fetchBucketTreeStructuresOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchBucketTreeStructuresAll: () => void;
+    fetchBucketTreeStructuresPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useBucketTreeStructuresWithFetch = (): UseBucketTreeStructuresWithFetchReturn => {
@@ -1518,22 +1518,22 @@ export const useBucketTreeStructuresWithFetch = (): UseBucketTreeStructuresWithF
         isLoading: bucketTreeStructuresIsLoading,
         isError: bucketTreeStructuresIsError,
         quickRefRecords: bucketTreeStructuresQuickRefRecords,
-        addMatrxId: addbucketTreeStructuresMatrxId,
-        addMatrxIds: addbucketTreeStructuresMatrxIds,
-        removeMatrxId: removebucketTreeStructuresMatrxId,
-        removeMatrxIds: removebucketTreeStructuresMatrxIds,
-        addPkValue: addbucketTreeStructuresPkValue,
-        addPkValues: addbucketTreeStructuresPkValues,
-        removePkValue: removebucketTreeStructuresPkValue,
-        removePkValues: removebucketTreeStructuresPkValues,
-        isMissingRecords: isbucketTreeStructuresMissingRecords,
-        setShouldFetch: setbucketTreeStructuresShouldFetch,
-        setFetchMode: setbucketTreeStructuresFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addBucketTreeStructuresMatrxId,
+        addMatrxIds: addBucketTreeStructuresMatrxIds,
+        removeMatrxId: removeBucketTreeStructuresMatrxId,
+        removeMatrxIds: removeBucketTreeStructuresMatrxIds,
+        addPkValue: addBucketTreeStructuresPkValue,
+        addPkValues: addBucketTreeStructuresPkValues,
+        removePkValue: removeBucketTreeStructuresPkValue,
+        removePkValues: removeBucketTreeStructuresPkValues,
+        isMissingRecords: isBucketTreeStructuresMissingRecords,
+        setShouldFetch: setBucketTreeStructuresShouldFetch,
+        setFetchMode: setBucketTreeStructuresFetchMode,
+        fetchQuickRefs: fetchBucketTreeStructuresQuickRefs,
+        fetchOne: fetchBucketTreeStructuresOne,
+        fetchOneWithFkIfk: fetchBucketTreeStructuresOneWithFkIfk,
+        fetchAll: fetchBucketTreeStructuresAll,
+        fetchPaginated: fetchBucketTreeStructuresPaginated,
     } = useEntityWithFetch("bucketTreeStructures");
 
     return {
@@ -1545,22 +1545,22 @@ export const useBucketTreeStructuresWithFetch = (): UseBucketTreeStructuresWithF
         bucketTreeStructuresIsLoading,
         bucketTreeStructuresIsError,
         bucketTreeStructuresQuickRefRecords,
-        addbucketTreeStructuresMatrxId,
-        addbucketTreeStructuresMatrxIds,
-        removebucketTreeStructuresMatrxId,
-        removebucketTreeStructuresMatrxIds,
-        addbucketTreeStructuresPkValue,
-        addbucketTreeStructuresPkValues,
-        removebucketTreeStructuresPkValue,
-        removebucketTreeStructuresPkValues,
-        isbucketTreeStructuresMissingRecords,
-        setbucketTreeStructuresShouldFetch,
-        setbucketTreeStructuresFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addBucketTreeStructuresMatrxId,
+        addBucketTreeStructuresMatrxIds,
+        removeBucketTreeStructuresMatrxId,
+        removeBucketTreeStructuresMatrxIds,
+        addBucketTreeStructuresPkValue,
+        addBucketTreeStructuresPkValues,
+        removeBucketTreeStructuresPkValue,
+        removeBucketTreeStructuresPkValues,
+        isBucketTreeStructuresMissingRecords,
+        setBucketTreeStructuresShouldFetch,
+        setBucketTreeStructuresFetchMode,
+        fetchBucketTreeStructuresQuickRefs,
+        fetchBucketTreeStructuresOne,
+        fetchBucketTreeStructuresOneWithFkIfk,
+        fetchBucketTreeStructuresAll,
+        fetchBucketTreeStructuresPaginated,
     };
 };
 
@@ -1573,22 +1573,22 @@ type UseCategoryWithFetchReturn = {
     categoryIsLoading: boolean;
     categoryIsError: boolean;
     categoryQuickRefRecords: QuickReferenceRecord[];
-    addcategoryMatrxId: (recordId: MatrxRecordId) => void;
-    addcategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removecategoryMatrxId: (recordId: MatrxRecordId) => void;
-    removecategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addcategoryPkValue: (pkValue: string) => void;
-    addcategoryPkValues: (pkValues: Record<string, unknown>) => void;
-    removecategoryPkValue: (pkValue: string) => void;
-    removecategoryPkValues: (pkValues: Record<string, unknown>) => void;
-    iscategoryMissingRecords: boolean;
-    setcategoryShouldFetch: (shouldFetch: boolean) => void;
-    setcategoryFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addCategoryMatrxId: (recordId: MatrxRecordId) => void;
+    addCategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCategoryMatrxId: (recordId: MatrxRecordId) => void;
+    removeCategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCategoryPkValue: (pkValue: string) => void;
+    addCategoryPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCategoryPkValue: (pkValue: string) => void;
+    removeCategoryPkValues: (pkValues: Record<string, unknown>) => void;
+    isCategoryMissingRecords: boolean;
+    setCategoryShouldFetch: (shouldFetch: boolean) => void;
+    setCategoryFetchMode: (fetchMode: FetchMode) => void;
+    fetchCategoryQuickRefs: () => void;
+    fetchCategoryOne: (recordId: MatrxRecordId) => void;
+    fetchCategoryOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCategoryAll: () => void;
+    fetchCategoryPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useCategoryWithFetch = (): UseCategoryWithFetchReturn => {
@@ -1601,22 +1601,22 @@ export const useCategoryWithFetch = (): UseCategoryWithFetchReturn => {
         isLoading: categoryIsLoading,
         isError: categoryIsError,
         quickRefRecords: categoryQuickRefRecords,
-        addMatrxId: addcategoryMatrxId,
-        addMatrxIds: addcategoryMatrxIds,
-        removeMatrxId: removecategoryMatrxId,
-        removeMatrxIds: removecategoryMatrxIds,
-        addPkValue: addcategoryPkValue,
-        addPkValues: addcategoryPkValues,
-        removePkValue: removecategoryPkValue,
-        removePkValues: removecategoryPkValues,
-        isMissingRecords: iscategoryMissingRecords,
-        setShouldFetch: setcategoryShouldFetch,
-        setFetchMode: setcategoryFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addCategoryMatrxId,
+        addMatrxIds: addCategoryMatrxIds,
+        removeMatrxId: removeCategoryMatrxId,
+        removeMatrxIds: removeCategoryMatrxIds,
+        addPkValue: addCategoryPkValue,
+        addPkValues: addCategoryPkValues,
+        removePkValue: removeCategoryPkValue,
+        removePkValues: removeCategoryPkValues,
+        isMissingRecords: isCategoryMissingRecords,
+        setShouldFetch: setCategoryShouldFetch,
+        setFetchMode: setCategoryFetchMode,
+        fetchQuickRefs: fetchCategoryQuickRefs,
+        fetchOne: fetchCategoryOne,
+        fetchOneWithFkIfk: fetchCategoryOneWithFkIfk,
+        fetchAll: fetchCategoryAll,
+        fetchPaginated: fetchCategoryPaginated,
     } = useEntityWithFetch("category");
 
     return {
@@ -1628,22 +1628,22 @@ export const useCategoryWithFetch = (): UseCategoryWithFetchReturn => {
         categoryIsLoading,
         categoryIsError,
         categoryQuickRefRecords,
-        addcategoryMatrxId,
-        addcategoryMatrxIds,
-        removecategoryMatrxId,
-        removecategoryMatrxIds,
-        addcategoryPkValue,
-        addcategoryPkValues,
-        removecategoryPkValue,
-        removecategoryPkValues,
-        iscategoryMissingRecords,
-        setcategoryShouldFetch,
-        setcategoryFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addCategoryMatrxId,
+        addCategoryMatrxIds,
+        removeCategoryMatrxId,
+        removeCategoryMatrxIds,
+        addCategoryPkValue,
+        addCategoryPkValues,
+        removeCategoryPkValue,
+        removeCategoryPkValues,
+        isCategoryMissingRecords,
+        setCategoryShouldFetch,
+        setCategoryFetchMode,
+        fetchCategoryQuickRefs,
+        fetchCategoryOne,
+        fetchCategoryOneWithFkIfk,
+        fetchCategoryAll,
+        fetchCategoryPaginated,
     };
 };
 
@@ -1656,22 +1656,22 @@ type UseCompiledRecipeWithFetchReturn = {
     compiledRecipeIsLoading: boolean;
     compiledRecipeIsError: boolean;
     compiledRecipeQuickRefRecords: QuickReferenceRecord[];
-    addcompiledRecipeMatrxId: (recordId: MatrxRecordId) => void;
-    addcompiledRecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removecompiledRecipeMatrxId: (recordId: MatrxRecordId) => void;
-    removecompiledRecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addcompiledRecipePkValue: (pkValue: string) => void;
-    addcompiledRecipePkValues: (pkValues: Record<string, unknown>) => void;
-    removecompiledRecipePkValue: (pkValue: string) => void;
-    removecompiledRecipePkValues: (pkValues: Record<string, unknown>) => void;
-    iscompiledRecipeMissingRecords: boolean;
-    setcompiledRecipeShouldFetch: (shouldFetch: boolean) => void;
-    setcompiledRecipeFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addCompiledRecipeMatrxId: (recordId: MatrxRecordId) => void;
+    addCompiledRecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCompiledRecipeMatrxId: (recordId: MatrxRecordId) => void;
+    removeCompiledRecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCompiledRecipePkValue: (pkValue: string) => void;
+    addCompiledRecipePkValues: (pkValues: Record<string, unknown>) => void;
+    removeCompiledRecipePkValue: (pkValue: string) => void;
+    removeCompiledRecipePkValues: (pkValues: Record<string, unknown>) => void;
+    isCompiledRecipeMissingRecords: boolean;
+    setCompiledRecipeShouldFetch: (shouldFetch: boolean) => void;
+    setCompiledRecipeFetchMode: (fetchMode: FetchMode) => void;
+    fetchCompiledRecipeQuickRefs: () => void;
+    fetchCompiledRecipeOne: (recordId: MatrxRecordId) => void;
+    fetchCompiledRecipeOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCompiledRecipeAll: () => void;
+    fetchCompiledRecipePaginated: (page: number, pageSize: number) => void;
 };
 
 export const useCompiledRecipeWithFetch = (): UseCompiledRecipeWithFetchReturn => {
@@ -1684,22 +1684,22 @@ export const useCompiledRecipeWithFetch = (): UseCompiledRecipeWithFetchReturn =
         isLoading: compiledRecipeIsLoading,
         isError: compiledRecipeIsError,
         quickRefRecords: compiledRecipeQuickRefRecords,
-        addMatrxId: addcompiledRecipeMatrxId,
-        addMatrxIds: addcompiledRecipeMatrxIds,
-        removeMatrxId: removecompiledRecipeMatrxId,
-        removeMatrxIds: removecompiledRecipeMatrxIds,
-        addPkValue: addcompiledRecipePkValue,
-        addPkValues: addcompiledRecipePkValues,
-        removePkValue: removecompiledRecipePkValue,
-        removePkValues: removecompiledRecipePkValues,
-        isMissingRecords: iscompiledRecipeMissingRecords,
-        setShouldFetch: setcompiledRecipeShouldFetch,
-        setFetchMode: setcompiledRecipeFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addCompiledRecipeMatrxId,
+        addMatrxIds: addCompiledRecipeMatrxIds,
+        removeMatrxId: removeCompiledRecipeMatrxId,
+        removeMatrxIds: removeCompiledRecipeMatrxIds,
+        addPkValue: addCompiledRecipePkValue,
+        addPkValues: addCompiledRecipePkValues,
+        removePkValue: removeCompiledRecipePkValue,
+        removePkValues: removeCompiledRecipePkValues,
+        isMissingRecords: isCompiledRecipeMissingRecords,
+        setShouldFetch: setCompiledRecipeShouldFetch,
+        setFetchMode: setCompiledRecipeFetchMode,
+        fetchQuickRefs: fetchCompiledRecipeQuickRefs,
+        fetchOne: fetchCompiledRecipeOne,
+        fetchOneWithFkIfk: fetchCompiledRecipeOneWithFkIfk,
+        fetchAll: fetchCompiledRecipeAll,
+        fetchPaginated: fetchCompiledRecipePaginated,
     } = useEntityWithFetch("compiledRecipe");
 
     return {
@@ -1711,22 +1711,22 @@ export const useCompiledRecipeWithFetch = (): UseCompiledRecipeWithFetchReturn =
         compiledRecipeIsLoading,
         compiledRecipeIsError,
         compiledRecipeQuickRefRecords,
-        addcompiledRecipeMatrxId,
-        addcompiledRecipeMatrxIds,
-        removecompiledRecipeMatrxId,
-        removecompiledRecipeMatrxIds,
-        addcompiledRecipePkValue,
-        addcompiledRecipePkValues,
-        removecompiledRecipePkValue,
-        removecompiledRecipePkValues,
-        iscompiledRecipeMissingRecords,
-        setcompiledRecipeShouldFetch,
-        setcompiledRecipeFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addCompiledRecipeMatrxId,
+        addCompiledRecipeMatrxIds,
+        removeCompiledRecipeMatrxId,
+        removeCompiledRecipeMatrxIds,
+        addCompiledRecipePkValue,
+        addCompiledRecipePkValues,
+        removeCompiledRecipePkValue,
+        removeCompiledRecipePkValues,
+        isCompiledRecipeMissingRecords,
+        setCompiledRecipeShouldFetch,
+        setCompiledRecipeFetchMode,
+        fetchCompiledRecipeQuickRefs,
+        fetchCompiledRecipeOne,
+        fetchCompiledRecipeOneWithFkIfk,
+        fetchCompiledRecipeAll,
+        fetchCompiledRecipePaginated,
     };
 };
 
@@ -1739,22 +1739,22 @@ type UseConversationWithFetchReturn = {
     conversationIsLoading: boolean;
     conversationIsError: boolean;
     conversationQuickRefRecords: QuickReferenceRecord[];
-    addconversationMatrxId: (recordId: MatrxRecordId) => void;
-    addconversationMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeconversationMatrxId: (recordId: MatrxRecordId) => void;
-    removeconversationMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addconversationPkValue: (pkValue: string) => void;
-    addconversationPkValues: (pkValues: Record<string, unknown>) => void;
-    removeconversationPkValue: (pkValue: string) => void;
-    removeconversationPkValues: (pkValues: Record<string, unknown>) => void;
-    isconversationMissingRecords: boolean;
-    setconversationShouldFetch: (shouldFetch: boolean) => void;
-    setconversationFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addConversationMatrxId: (recordId: MatrxRecordId) => void;
+    addConversationMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeConversationMatrxId: (recordId: MatrxRecordId) => void;
+    removeConversationMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addConversationPkValue: (pkValue: string) => void;
+    addConversationPkValues: (pkValues: Record<string, unknown>) => void;
+    removeConversationPkValue: (pkValue: string) => void;
+    removeConversationPkValues: (pkValues: Record<string, unknown>) => void;
+    isConversationMissingRecords: boolean;
+    setConversationShouldFetch: (shouldFetch: boolean) => void;
+    setConversationFetchMode: (fetchMode: FetchMode) => void;
+    fetchConversationQuickRefs: () => void;
+    fetchConversationOne: (recordId: MatrxRecordId) => void;
+    fetchConversationOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchConversationAll: () => void;
+    fetchConversationPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useConversationWithFetch = (): UseConversationWithFetchReturn => {
@@ -1767,22 +1767,22 @@ export const useConversationWithFetch = (): UseConversationWithFetchReturn => {
         isLoading: conversationIsLoading,
         isError: conversationIsError,
         quickRefRecords: conversationQuickRefRecords,
-        addMatrxId: addconversationMatrxId,
-        addMatrxIds: addconversationMatrxIds,
-        removeMatrxId: removeconversationMatrxId,
-        removeMatrxIds: removeconversationMatrxIds,
-        addPkValue: addconversationPkValue,
-        addPkValues: addconversationPkValues,
-        removePkValue: removeconversationPkValue,
-        removePkValues: removeconversationPkValues,
-        isMissingRecords: isconversationMissingRecords,
-        setShouldFetch: setconversationShouldFetch,
-        setFetchMode: setconversationFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addConversationMatrxId,
+        addMatrxIds: addConversationMatrxIds,
+        removeMatrxId: removeConversationMatrxId,
+        removeMatrxIds: removeConversationMatrxIds,
+        addPkValue: addConversationPkValue,
+        addPkValues: addConversationPkValues,
+        removePkValue: removeConversationPkValue,
+        removePkValues: removeConversationPkValues,
+        isMissingRecords: isConversationMissingRecords,
+        setShouldFetch: setConversationShouldFetch,
+        setFetchMode: setConversationFetchMode,
+        fetchQuickRefs: fetchConversationQuickRefs,
+        fetchOne: fetchConversationOne,
+        fetchOneWithFkIfk: fetchConversationOneWithFkIfk,
+        fetchAll: fetchConversationAll,
+        fetchPaginated: fetchConversationPaginated,
     } = useEntityWithFetch("conversation");
 
     return {
@@ -1794,22 +1794,22 @@ export const useConversationWithFetch = (): UseConversationWithFetchReturn => {
         conversationIsLoading,
         conversationIsError,
         conversationQuickRefRecords,
-        addconversationMatrxId,
-        addconversationMatrxIds,
-        removeconversationMatrxId,
-        removeconversationMatrxIds,
-        addconversationPkValue,
-        addconversationPkValues,
-        removeconversationPkValue,
-        removeconversationPkValues,
-        isconversationMissingRecords,
-        setconversationShouldFetch,
-        setconversationFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addConversationMatrxId,
+        addConversationMatrxIds,
+        removeConversationMatrxId,
+        removeConversationMatrxIds,
+        addConversationPkValue,
+        addConversationPkValues,
+        removeConversationPkValue,
+        removeConversationPkValues,
+        isConversationMissingRecords,
+        setConversationShouldFetch,
+        setConversationFetchMode,
+        fetchConversationQuickRefs,
+        fetchConversationOne,
+        fetchConversationOneWithFkIfk,
+        fetchConversationAll,
+        fetchConversationPaginated,
     };
 };
 
@@ -1822,22 +1822,22 @@ type UseDataBrokerWithFetchReturn = {
     dataBrokerIsLoading: boolean;
     dataBrokerIsError: boolean;
     dataBrokerQuickRefRecords: QuickReferenceRecord[];
-    adddataBrokerMatrxId: (recordId: MatrxRecordId) => void;
-    adddataBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removedataBrokerMatrxId: (recordId: MatrxRecordId) => void;
-    removedataBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    adddataBrokerPkValue: (pkValue: string) => void;
-    adddataBrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    removedataBrokerPkValue: (pkValue: string) => void;
-    removedataBrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    isdataBrokerMissingRecords: boolean;
-    setdataBrokerShouldFetch: (shouldFetch: boolean) => void;
-    setdataBrokerFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addDataBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    addDataBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeDataBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    removeDataBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addDataBrokerPkValue: (pkValue: string) => void;
+    addDataBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    removeDataBrokerPkValue: (pkValue: string) => void;
+    removeDataBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    isDataBrokerMissingRecords: boolean;
+    setDataBrokerShouldFetch: (shouldFetch: boolean) => void;
+    setDataBrokerFetchMode: (fetchMode: FetchMode) => void;
+    fetchDataBrokerQuickRefs: () => void;
+    fetchDataBrokerOne: (recordId: MatrxRecordId) => void;
+    fetchDataBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchDataBrokerAll: () => void;
+    fetchDataBrokerPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useDataBrokerWithFetch = (): UseDataBrokerWithFetchReturn => {
@@ -1850,22 +1850,22 @@ export const useDataBrokerWithFetch = (): UseDataBrokerWithFetchReturn => {
         isLoading: dataBrokerIsLoading,
         isError: dataBrokerIsError,
         quickRefRecords: dataBrokerQuickRefRecords,
-        addMatrxId: adddataBrokerMatrxId,
-        addMatrxIds: adddataBrokerMatrxIds,
-        removeMatrxId: removedataBrokerMatrxId,
-        removeMatrxIds: removedataBrokerMatrxIds,
-        addPkValue: adddataBrokerPkValue,
-        addPkValues: adddataBrokerPkValues,
-        removePkValue: removedataBrokerPkValue,
-        removePkValues: removedataBrokerPkValues,
-        isMissingRecords: isdataBrokerMissingRecords,
-        setShouldFetch: setdataBrokerShouldFetch,
-        setFetchMode: setdataBrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addDataBrokerMatrxId,
+        addMatrxIds: addDataBrokerMatrxIds,
+        removeMatrxId: removeDataBrokerMatrxId,
+        removeMatrxIds: removeDataBrokerMatrxIds,
+        addPkValue: addDataBrokerPkValue,
+        addPkValues: addDataBrokerPkValues,
+        removePkValue: removeDataBrokerPkValue,
+        removePkValues: removeDataBrokerPkValues,
+        isMissingRecords: isDataBrokerMissingRecords,
+        setShouldFetch: setDataBrokerShouldFetch,
+        setFetchMode: setDataBrokerFetchMode,
+        fetchQuickRefs: fetchDataBrokerQuickRefs,
+        fetchOne: fetchDataBrokerOne,
+        fetchOneWithFkIfk: fetchDataBrokerOneWithFkIfk,
+        fetchAll: fetchDataBrokerAll,
+        fetchPaginated: fetchDataBrokerPaginated,
     } = useEntityWithFetch("dataBroker");
 
     return {
@@ -1877,22 +1877,22 @@ export const useDataBrokerWithFetch = (): UseDataBrokerWithFetchReturn => {
         dataBrokerIsLoading,
         dataBrokerIsError,
         dataBrokerQuickRefRecords,
-        adddataBrokerMatrxId,
-        adddataBrokerMatrxIds,
-        removedataBrokerMatrxId,
-        removedataBrokerMatrxIds,
-        adddataBrokerPkValue,
-        adddataBrokerPkValues,
-        removedataBrokerPkValue,
-        removedataBrokerPkValues,
-        isdataBrokerMissingRecords,
-        setdataBrokerShouldFetch,
-        setdataBrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addDataBrokerMatrxId,
+        addDataBrokerMatrxIds,
+        removeDataBrokerMatrxId,
+        removeDataBrokerMatrxIds,
+        addDataBrokerPkValue,
+        addDataBrokerPkValues,
+        removeDataBrokerPkValue,
+        removeDataBrokerPkValues,
+        isDataBrokerMissingRecords,
+        setDataBrokerShouldFetch,
+        setDataBrokerFetchMode,
+        fetchDataBrokerQuickRefs,
+        fetchDataBrokerOne,
+        fetchDataBrokerOneWithFkIfk,
+        fetchDataBrokerAll,
+        fetchDataBrokerPaginated,
     };
 };
 
@@ -1905,22 +1905,22 @@ type UseDataInputComponentWithFetchReturn = {
     dataInputComponentIsLoading: boolean;
     dataInputComponentIsError: boolean;
     dataInputComponentQuickRefRecords: QuickReferenceRecord[];
-    adddataInputComponentMatrxId: (recordId: MatrxRecordId) => void;
-    adddataInputComponentMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removedataInputComponentMatrxId: (recordId: MatrxRecordId) => void;
-    removedataInputComponentMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    adddataInputComponentPkValue: (pkValue: string) => void;
-    adddataInputComponentPkValues: (pkValues: Record<string, unknown>) => void;
-    removedataInputComponentPkValue: (pkValue: string) => void;
-    removedataInputComponentPkValues: (pkValues: Record<string, unknown>) => void;
-    isdataInputComponentMissingRecords: boolean;
-    setdataInputComponentShouldFetch: (shouldFetch: boolean) => void;
-    setdataInputComponentFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addDataInputComponentMatrxId: (recordId: MatrxRecordId) => void;
+    addDataInputComponentMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeDataInputComponentMatrxId: (recordId: MatrxRecordId) => void;
+    removeDataInputComponentMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addDataInputComponentPkValue: (pkValue: string) => void;
+    addDataInputComponentPkValues: (pkValues: Record<string, unknown>) => void;
+    removeDataInputComponentPkValue: (pkValue: string) => void;
+    removeDataInputComponentPkValues: (pkValues: Record<string, unknown>) => void;
+    isDataInputComponentMissingRecords: boolean;
+    setDataInputComponentShouldFetch: (shouldFetch: boolean) => void;
+    setDataInputComponentFetchMode: (fetchMode: FetchMode) => void;
+    fetchDataInputComponentQuickRefs: () => void;
+    fetchDataInputComponentOne: (recordId: MatrxRecordId) => void;
+    fetchDataInputComponentOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchDataInputComponentAll: () => void;
+    fetchDataInputComponentPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useDataInputComponentWithFetch = (): UseDataInputComponentWithFetchReturn => {
@@ -1933,22 +1933,22 @@ export const useDataInputComponentWithFetch = (): UseDataInputComponentWithFetch
         isLoading: dataInputComponentIsLoading,
         isError: dataInputComponentIsError,
         quickRefRecords: dataInputComponentQuickRefRecords,
-        addMatrxId: adddataInputComponentMatrxId,
-        addMatrxIds: adddataInputComponentMatrxIds,
-        removeMatrxId: removedataInputComponentMatrxId,
-        removeMatrxIds: removedataInputComponentMatrxIds,
-        addPkValue: adddataInputComponentPkValue,
-        addPkValues: adddataInputComponentPkValues,
-        removePkValue: removedataInputComponentPkValue,
-        removePkValues: removedataInputComponentPkValues,
-        isMissingRecords: isdataInputComponentMissingRecords,
-        setShouldFetch: setdataInputComponentShouldFetch,
-        setFetchMode: setdataInputComponentFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addDataInputComponentMatrxId,
+        addMatrxIds: addDataInputComponentMatrxIds,
+        removeMatrxId: removeDataInputComponentMatrxId,
+        removeMatrxIds: removeDataInputComponentMatrxIds,
+        addPkValue: addDataInputComponentPkValue,
+        addPkValues: addDataInputComponentPkValues,
+        removePkValue: removeDataInputComponentPkValue,
+        removePkValues: removeDataInputComponentPkValues,
+        isMissingRecords: isDataInputComponentMissingRecords,
+        setShouldFetch: setDataInputComponentShouldFetch,
+        setFetchMode: setDataInputComponentFetchMode,
+        fetchQuickRefs: fetchDataInputComponentQuickRefs,
+        fetchOne: fetchDataInputComponentOne,
+        fetchOneWithFkIfk: fetchDataInputComponentOneWithFkIfk,
+        fetchAll: fetchDataInputComponentAll,
+        fetchPaginated: fetchDataInputComponentPaginated,
     } = useEntityWithFetch("dataInputComponent");
 
     return {
@@ -1960,22 +1960,22 @@ export const useDataInputComponentWithFetch = (): UseDataInputComponentWithFetch
         dataInputComponentIsLoading,
         dataInputComponentIsError,
         dataInputComponentQuickRefRecords,
-        adddataInputComponentMatrxId,
-        adddataInputComponentMatrxIds,
-        removedataInputComponentMatrxId,
-        removedataInputComponentMatrxIds,
-        adddataInputComponentPkValue,
-        adddataInputComponentPkValues,
-        removedataInputComponentPkValue,
-        removedataInputComponentPkValues,
-        isdataInputComponentMissingRecords,
-        setdataInputComponentShouldFetch,
-        setdataInputComponentFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addDataInputComponentMatrxId,
+        addDataInputComponentMatrxIds,
+        removeDataInputComponentMatrxId,
+        removeDataInputComponentMatrxIds,
+        addDataInputComponentPkValue,
+        addDataInputComponentPkValues,
+        removeDataInputComponentPkValue,
+        removeDataInputComponentPkValues,
+        isDataInputComponentMissingRecords,
+        setDataInputComponentShouldFetch,
+        setDataInputComponentFetchMode,
+        fetchDataInputComponentQuickRefs,
+        fetchDataInputComponentOne,
+        fetchDataInputComponentOneWithFkIfk,
+        fetchDataInputComponentAll,
+        fetchDataInputComponentPaginated,
     };
 };
 
@@ -1988,22 +1988,22 @@ type UseDataOutputComponentWithFetchReturn = {
     dataOutputComponentIsLoading: boolean;
     dataOutputComponentIsError: boolean;
     dataOutputComponentQuickRefRecords: QuickReferenceRecord[];
-    adddataOutputComponentMatrxId: (recordId: MatrxRecordId) => void;
-    adddataOutputComponentMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removedataOutputComponentMatrxId: (recordId: MatrxRecordId) => void;
-    removedataOutputComponentMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    adddataOutputComponentPkValue: (pkValue: string) => void;
-    adddataOutputComponentPkValues: (pkValues: Record<string, unknown>) => void;
-    removedataOutputComponentPkValue: (pkValue: string) => void;
-    removedataOutputComponentPkValues: (pkValues: Record<string, unknown>) => void;
-    isdataOutputComponentMissingRecords: boolean;
-    setdataOutputComponentShouldFetch: (shouldFetch: boolean) => void;
-    setdataOutputComponentFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addDataOutputComponentMatrxId: (recordId: MatrxRecordId) => void;
+    addDataOutputComponentMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeDataOutputComponentMatrxId: (recordId: MatrxRecordId) => void;
+    removeDataOutputComponentMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addDataOutputComponentPkValue: (pkValue: string) => void;
+    addDataOutputComponentPkValues: (pkValues: Record<string, unknown>) => void;
+    removeDataOutputComponentPkValue: (pkValue: string) => void;
+    removeDataOutputComponentPkValues: (pkValues: Record<string, unknown>) => void;
+    isDataOutputComponentMissingRecords: boolean;
+    setDataOutputComponentShouldFetch: (shouldFetch: boolean) => void;
+    setDataOutputComponentFetchMode: (fetchMode: FetchMode) => void;
+    fetchDataOutputComponentQuickRefs: () => void;
+    fetchDataOutputComponentOne: (recordId: MatrxRecordId) => void;
+    fetchDataOutputComponentOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchDataOutputComponentAll: () => void;
+    fetchDataOutputComponentPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useDataOutputComponentWithFetch = (): UseDataOutputComponentWithFetchReturn => {
@@ -2016,22 +2016,22 @@ export const useDataOutputComponentWithFetch = (): UseDataOutputComponentWithFet
         isLoading: dataOutputComponentIsLoading,
         isError: dataOutputComponentIsError,
         quickRefRecords: dataOutputComponentQuickRefRecords,
-        addMatrxId: adddataOutputComponentMatrxId,
-        addMatrxIds: adddataOutputComponentMatrxIds,
-        removeMatrxId: removedataOutputComponentMatrxId,
-        removeMatrxIds: removedataOutputComponentMatrxIds,
-        addPkValue: adddataOutputComponentPkValue,
-        addPkValues: adddataOutputComponentPkValues,
-        removePkValue: removedataOutputComponentPkValue,
-        removePkValues: removedataOutputComponentPkValues,
-        isMissingRecords: isdataOutputComponentMissingRecords,
-        setShouldFetch: setdataOutputComponentShouldFetch,
-        setFetchMode: setdataOutputComponentFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addDataOutputComponentMatrxId,
+        addMatrxIds: addDataOutputComponentMatrxIds,
+        removeMatrxId: removeDataOutputComponentMatrxId,
+        removeMatrxIds: removeDataOutputComponentMatrxIds,
+        addPkValue: addDataOutputComponentPkValue,
+        addPkValues: addDataOutputComponentPkValues,
+        removePkValue: removeDataOutputComponentPkValue,
+        removePkValues: removeDataOutputComponentPkValues,
+        isMissingRecords: isDataOutputComponentMissingRecords,
+        setShouldFetch: setDataOutputComponentShouldFetch,
+        setFetchMode: setDataOutputComponentFetchMode,
+        fetchQuickRefs: fetchDataOutputComponentQuickRefs,
+        fetchOne: fetchDataOutputComponentOne,
+        fetchOneWithFkIfk: fetchDataOutputComponentOneWithFkIfk,
+        fetchAll: fetchDataOutputComponentAll,
+        fetchPaginated: fetchDataOutputComponentPaginated,
     } = useEntityWithFetch("dataOutputComponent");
 
     return {
@@ -2043,22 +2043,22 @@ export const useDataOutputComponentWithFetch = (): UseDataOutputComponentWithFet
         dataOutputComponentIsLoading,
         dataOutputComponentIsError,
         dataOutputComponentQuickRefRecords,
-        adddataOutputComponentMatrxId,
-        adddataOutputComponentMatrxIds,
-        removedataOutputComponentMatrxId,
-        removedataOutputComponentMatrxIds,
-        adddataOutputComponentPkValue,
-        adddataOutputComponentPkValues,
-        removedataOutputComponentPkValue,
-        removedataOutputComponentPkValues,
-        isdataOutputComponentMissingRecords,
-        setdataOutputComponentShouldFetch,
-        setdataOutputComponentFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addDataOutputComponentMatrxId,
+        addDataOutputComponentMatrxIds,
+        removeDataOutputComponentMatrxId,
+        removeDataOutputComponentMatrxIds,
+        addDataOutputComponentPkValue,
+        addDataOutputComponentPkValues,
+        removeDataOutputComponentPkValue,
+        removeDataOutputComponentPkValues,
+        isDataOutputComponentMissingRecords,
+        setDataOutputComponentShouldFetch,
+        setDataOutputComponentFetchMode,
+        fetchDataOutputComponentQuickRefs,
+        fetchDataOutputComponentOne,
+        fetchDataOutputComponentOneWithFkIfk,
+        fetchDataOutputComponentAll,
+        fetchDataOutputComponentPaginated,
     };
 };
 
@@ -2071,22 +2071,22 @@ type UseDisplayOptionWithFetchReturn = {
     displayOptionIsLoading: boolean;
     displayOptionIsError: boolean;
     displayOptionQuickRefRecords: QuickReferenceRecord[];
-    adddisplayOptionMatrxId: (recordId: MatrxRecordId) => void;
-    adddisplayOptionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removedisplayOptionMatrxId: (recordId: MatrxRecordId) => void;
-    removedisplayOptionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    adddisplayOptionPkValue: (pkValue: string) => void;
-    adddisplayOptionPkValues: (pkValues: Record<string, unknown>) => void;
-    removedisplayOptionPkValue: (pkValue: string) => void;
-    removedisplayOptionPkValues: (pkValues: Record<string, unknown>) => void;
-    isdisplayOptionMissingRecords: boolean;
-    setdisplayOptionShouldFetch: (shouldFetch: boolean) => void;
-    setdisplayOptionFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addDisplayOptionMatrxId: (recordId: MatrxRecordId) => void;
+    addDisplayOptionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeDisplayOptionMatrxId: (recordId: MatrxRecordId) => void;
+    removeDisplayOptionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addDisplayOptionPkValue: (pkValue: string) => void;
+    addDisplayOptionPkValues: (pkValues: Record<string, unknown>) => void;
+    removeDisplayOptionPkValue: (pkValue: string) => void;
+    removeDisplayOptionPkValues: (pkValues: Record<string, unknown>) => void;
+    isDisplayOptionMissingRecords: boolean;
+    setDisplayOptionShouldFetch: (shouldFetch: boolean) => void;
+    setDisplayOptionFetchMode: (fetchMode: FetchMode) => void;
+    fetchDisplayOptionQuickRefs: () => void;
+    fetchDisplayOptionOne: (recordId: MatrxRecordId) => void;
+    fetchDisplayOptionOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchDisplayOptionAll: () => void;
+    fetchDisplayOptionPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useDisplayOptionWithFetch = (): UseDisplayOptionWithFetchReturn => {
@@ -2099,22 +2099,22 @@ export const useDisplayOptionWithFetch = (): UseDisplayOptionWithFetchReturn => 
         isLoading: displayOptionIsLoading,
         isError: displayOptionIsError,
         quickRefRecords: displayOptionQuickRefRecords,
-        addMatrxId: adddisplayOptionMatrxId,
-        addMatrxIds: adddisplayOptionMatrxIds,
-        removeMatrxId: removedisplayOptionMatrxId,
-        removeMatrxIds: removedisplayOptionMatrxIds,
-        addPkValue: adddisplayOptionPkValue,
-        addPkValues: adddisplayOptionPkValues,
-        removePkValue: removedisplayOptionPkValue,
-        removePkValues: removedisplayOptionPkValues,
-        isMissingRecords: isdisplayOptionMissingRecords,
-        setShouldFetch: setdisplayOptionShouldFetch,
-        setFetchMode: setdisplayOptionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addDisplayOptionMatrxId,
+        addMatrxIds: addDisplayOptionMatrxIds,
+        removeMatrxId: removeDisplayOptionMatrxId,
+        removeMatrxIds: removeDisplayOptionMatrxIds,
+        addPkValue: addDisplayOptionPkValue,
+        addPkValues: addDisplayOptionPkValues,
+        removePkValue: removeDisplayOptionPkValue,
+        removePkValues: removeDisplayOptionPkValues,
+        isMissingRecords: isDisplayOptionMissingRecords,
+        setShouldFetch: setDisplayOptionShouldFetch,
+        setFetchMode: setDisplayOptionFetchMode,
+        fetchQuickRefs: fetchDisplayOptionQuickRefs,
+        fetchOne: fetchDisplayOptionOne,
+        fetchOneWithFkIfk: fetchDisplayOptionOneWithFkIfk,
+        fetchAll: fetchDisplayOptionAll,
+        fetchPaginated: fetchDisplayOptionPaginated,
     } = useEntityWithFetch("displayOption");
 
     return {
@@ -2126,22 +2126,22 @@ export const useDisplayOptionWithFetch = (): UseDisplayOptionWithFetchReturn => 
         displayOptionIsLoading,
         displayOptionIsError,
         displayOptionQuickRefRecords,
-        adddisplayOptionMatrxId,
-        adddisplayOptionMatrxIds,
-        removedisplayOptionMatrxId,
-        removedisplayOptionMatrxIds,
-        adddisplayOptionPkValue,
-        adddisplayOptionPkValues,
-        removedisplayOptionPkValue,
-        removedisplayOptionPkValues,
-        isdisplayOptionMissingRecords,
-        setdisplayOptionShouldFetch,
-        setdisplayOptionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addDisplayOptionMatrxId,
+        addDisplayOptionMatrxIds,
+        removeDisplayOptionMatrxId,
+        removeDisplayOptionMatrxIds,
+        addDisplayOptionPkValue,
+        addDisplayOptionPkValues,
+        removeDisplayOptionPkValue,
+        removeDisplayOptionPkValues,
+        isDisplayOptionMissingRecords,
+        setDisplayOptionShouldFetch,
+        setDisplayOptionFetchMode,
+        fetchDisplayOptionQuickRefs,
+        fetchDisplayOptionOne,
+        fetchDisplayOptionOneWithFkIfk,
+        fetchDisplayOptionAll,
+        fetchDisplayOptionPaginated,
     };
 };
 
@@ -2154,22 +2154,22 @@ type UseEmailsWithFetchReturn = {
     emailsIsLoading: boolean;
     emailsIsError: boolean;
     emailsQuickRefRecords: QuickReferenceRecord[];
-    addemailsMatrxId: (recordId: MatrxRecordId) => void;
-    addemailsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeemailsMatrxId: (recordId: MatrxRecordId) => void;
-    removeemailsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addemailsPkValue: (pkValue: string) => void;
-    addemailsPkValues: (pkValues: Record<string, unknown>) => void;
-    removeemailsPkValue: (pkValue: string) => void;
-    removeemailsPkValues: (pkValues: Record<string, unknown>) => void;
-    isemailsMissingRecords: boolean;
-    setemailsShouldFetch: (shouldFetch: boolean) => void;
-    setemailsFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addEmailsMatrxId: (recordId: MatrxRecordId) => void;
+    addEmailsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeEmailsMatrxId: (recordId: MatrxRecordId) => void;
+    removeEmailsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addEmailsPkValue: (pkValue: string) => void;
+    addEmailsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeEmailsPkValue: (pkValue: string) => void;
+    removeEmailsPkValues: (pkValues: Record<string, unknown>) => void;
+    isEmailsMissingRecords: boolean;
+    setEmailsShouldFetch: (shouldFetch: boolean) => void;
+    setEmailsFetchMode: (fetchMode: FetchMode) => void;
+    fetchEmailsQuickRefs: () => void;
+    fetchEmailsOne: (recordId: MatrxRecordId) => void;
+    fetchEmailsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchEmailsAll: () => void;
+    fetchEmailsPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useEmailsWithFetch = (): UseEmailsWithFetchReturn => {
@@ -2182,22 +2182,22 @@ export const useEmailsWithFetch = (): UseEmailsWithFetchReturn => {
         isLoading: emailsIsLoading,
         isError: emailsIsError,
         quickRefRecords: emailsQuickRefRecords,
-        addMatrxId: addemailsMatrxId,
-        addMatrxIds: addemailsMatrxIds,
-        removeMatrxId: removeemailsMatrxId,
-        removeMatrxIds: removeemailsMatrxIds,
-        addPkValue: addemailsPkValue,
-        addPkValues: addemailsPkValues,
-        removePkValue: removeemailsPkValue,
-        removePkValues: removeemailsPkValues,
-        isMissingRecords: isemailsMissingRecords,
-        setShouldFetch: setemailsShouldFetch,
-        setFetchMode: setemailsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addEmailsMatrxId,
+        addMatrxIds: addEmailsMatrxIds,
+        removeMatrxId: removeEmailsMatrxId,
+        removeMatrxIds: removeEmailsMatrxIds,
+        addPkValue: addEmailsPkValue,
+        addPkValues: addEmailsPkValues,
+        removePkValue: removeEmailsPkValue,
+        removePkValues: removeEmailsPkValues,
+        isMissingRecords: isEmailsMissingRecords,
+        setShouldFetch: setEmailsShouldFetch,
+        setFetchMode: setEmailsFetchMode,
+        fetchQuickRefs: fetchEmailsQuickRefs,
+        fetchOne: fetchEmailsOne,
+        fetchOneWithFkIfk: fetchEmailsOneWithFkIfk,
+        fetchAll: fetchEmailsAll,
+        fetchPaginated: fetchEmailsPaginated,
     } = useEntityWithFetch("emails");
 
     return {
@@ -2209,22 +2209,22 @@ export const useEmailsWithFetch = (): UseEmailsWithFetchReturn => {
         emailsIsLoading,
         emailsIsError,
         emailsQuickRefRecords,
-        addemailsMatrxId,
-        addemailsMatrxIds,
-        removeemailsMatrxId,
-        removeemailsMatrxIds,
-        addemailsPkValue,
-        addemailsPkValues,
-        removeemailsPkValue,
-        removeemailsPkValues,
-        isemailsMissingRecords,
-        setemailsShouldFetch,
-        setemailsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addEmailsMatrxId,
+        addEmailsMatrxIds,
+        removeEmailsMatrxId,
+        removeEmailsMatrxIds,
+        addEmailsPkValue,
+        addEmailsPkValues,
+        removeEmailsPkValue,
+        removeEmailsPkValues,
+        isEmailsMissingRecords,
+        setEmailsShouldFetch,
+        setEmailsFetchMode,
+        fetchEmailsQuickRefs,
+        fetchEmailsOne,
+        fetchEmailsOneWithFkIfk,
+        fetchEmailsAll,
+        fetchEmailsPaginated,
     };
 };
 
@@ -2237,22 +2237,22 @@ type UseExtractorWithFetchReturn = {
     extractorIsLoading: boolean;
     extractorIsError: boolean;
     extractorQuickRefRecords: QuickReferenceRecord[];
-    addextractorMatrxId: (recordId: MatrxRecordId) => void;
-    addextractorMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeextractorMatrxId: (recordId: MatrxRecordId) => void;
-    removeextractorMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addextractorPkValue: (pkValue: string) => void;
-    addextractorPkValues: (pkValues: Record<string, unknown>) => void;
-    removeextractorPkValue: (pkValue: string) => void;
-    removeextractorPkValues: (pkValues: Record<string, unknown>) => void;
-    isextractorMissingRecords: boolean;
-    setextractorShouldFetch: (shouldFetch: boolean) => void;
-    setextractorFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addExtractorMatrxId: (recordId: MatrxRecordId) => void;
+    addExtractorMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeExtractorMatrxId: (recordId: MatrxRecordId) => void;
+    removeExtractorMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addExtractorPkValue: (pkValue: string) => void;
+    addExtractorPkValues: (pkValues: Record<string, unknown>) => void;
+    removeExtractorPkValue: (pkValue: string) => void;
+    removeExtractorPkValues: (pkValues: Record<string, unknown>) => void;
+    isExtractorMissingRecords: boolean;
+    setExtractorShouldFetch: (shouldFetch: boolean) => void;
+    setExtractorFetchMode: (fetchMode: FetchMode) => void;
+    fetchExtractorQuickRefs: () => void;
+    fetchExtractorOne: (recordId: MatrxRecordId) => void;
+    fetchExtractorOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchExtractorAll: () => void;
+    fetchExtractorPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useExtractorWithFetch = (): UseExtractorWithFetchReturn => {
@@ -2265,22 +2265,22 @@ export const useExtractorWithFetch = (): UseExtractorWithFetchReturn => {
         isLoading: extractorIsLoading,
         isError: extractorIsError,
         quickRefRecords: extractorQuickRefRecords,
-        addMatrxId: addextractorMatrxId,
-        addMatrxIds: addextractorMatrxIds,
-        removeMatrxId: removeextractorMatrxId,
-        removeMatrxIds: removeextractorMatrxIds,
-        addPkValue: addextractorPkValue,
-        addPkValues: addextractorPkValues,
-        removePkValue: removeextractorPkValue,
-        removePkValues: removeextractorPkValues,
-        isMissingRecords: isextractorMissingRecords,
-        setShouldFetch: setextractorShouldFetch,
-        setFetchMode: setextractorFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addExtractorMatrxId,
+        addMatrxIds: addExtractorMatrxIds,
+        removeMatrxId: removeExtractorMatrxId,
+        removeMatrxIds: removeExtractorMatrxIds,
+        addPkValue: addExtractorPkValue,
+        addPkValues: addExtractorPkValues,
+        removePkValue: removeExtractorPkValue,
+        removePkValues: removeExtractorPkValues,
+        isMissingRecords: isExtractorMissingRecords,
+        setShouldFetch: setExtractorShouldFetch,
+        setFetchMode: setExtractorFetchMode,
+        fetchQuickRefs: fetchExtractorQuickRefs,
+        fetchOne: fetchExtractorOne,
+        fetchOneWithFkIfk: fetchExtractorOneWithFkIfk,
+        fetchAll: fetchExtractorAll,
+        fetchPaginated: fetchExtractorPaginated,
     } = useEntityWithFetch("extractor");
 
     return {
@@ -2292,22 +2292,22 @@ export const useExtractorWithFetch = (): UseExtractorWithFetchReturn => {
         extractorIsLoading,
         extractorIsError,
         extractorQuickRefRecords,
-        addextractorMatrxId,
-        addextractorMatrxIds,
-        removeextractorMatrxId,
-        removeextractorMatrxIds,
-        addextractorPkValue,
-        addextractorPkValues,
-        removeextractorPkValue,
-        removeextractorPkValues,
-        isextractorMissingRecords,
-        setextractorShouldFetch,
-        setextractorFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addExtractorMatrxId,
+        addExtractorMatrxIds,
+        removeExtractorMatrxId,
+        removeExtractorMatrxIds,
+        addExtractorPkValue,
+        addExtractorPkValues,
+        removeExtractorPkValue,
+        removeExtractorPkValues,
+        isExtractorMissingRecords,
+        setExtractorShouldFetch,
+        setExtractorFetchMode,
+        fetchExtractorQuickRefs,
+        fetchExtractorOne,
+        fetchExtractorOneWithFkIfk,
+        fetchExtractorAll,
+        fetchExtractorPaginated,
     };
 };
 
@@ -2320,22 +2320,22 @@ type UseFileStructureWithFetchReturn = {
     fileStructureIsLoading: boolean;
     fileStructureIsError: boolean;
     fileStructureQuickRefRecords: QuickReferenceRecord[];
-    addfileStructureMatrxId: (recordId: MatrxRecordId) => void;
-    addfileStructureMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removefileStructureMatrxId: (recordId: MatrxRecordId) => void;
-    removefileStructureMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addfileStructurePkValue: (pkValue: string) => void;
-    addfileStructurePkValues: (pkValues: Record<string, unknown>) => void;
-    removefileStructurePkValue: (pkValue: string) => void;
-    removefileStructurePkValues: (pkValues: Record<string, unknown>) => void;
-    isfileStructureMissingRecords: boolean;
-    setfileStructureShouldFetch: (shouldFetch: boolean) => void;
-    setfileStructureFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addFileStructureMatrxId: (recordId: MatrxRecordId) => void;
+    addFileStructureMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeFileStructureMatrxId: (recordId: MatrxRecordId) => void;
+    removeFileStructureMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addFileStructurePkValue: (pkValue: string) => void;
+    addFileStructurePkValues: (pkValues: Record<string, unknown>) => void;
+    removeFileStructurePkValue: (pkValue: string) => void;
+    removeFileStructurePkValues: (pkValues: Record<string, unknown>) => void;
+    isFileStructureMissingRecords: boolean;
+    setFileStructureShouldFetch: (shouldFetch: boolean) => void;
+    setFileStructureFetchMode: (fetchMode: FetchMode) => void;
+    fetchFileStructureQuickRefs: () => void;
+    fetchFileStructureOne: (recordId: MatrxRecordId) => void;
+    fetchFileStructureOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchFileStructureAll: () => void;
+    fetchFileStructurePaginated: (page: number, pageSize: number) => void;
 };
 
 export const useFileStructureWithFetch = (): UseFileStructureWithFetchReturn => {
@@ -2348,22 +2348,22 @@ export const useFileStructureWithFetch = (): UseFileStructureWithFetchReturn => 
         isLoading: fileStructureIsLoading,
         isError: fileStructureIsError,
         quickRefRecords: fileStructureQuickRefRecords,
-        addMatrxId: addfileStructureMatrxId,
-        addMatrxIds: addfileStructureMatrxIds,
-        removeMatrxId: removefileStructureMatrxId,
-        removeMatrxIds: removefileStructureMatrxIds,
-        addPkValue: addfileStructurePkValue,
-        addPkValues: addfileStructurePkValues,
-        removePkValue: removefileStructurePkValue,
-        removePkValues: removefileStructurePkValues,
-        isMissingRecords: isfileStructureMissingRecords,
-        setShouldFetch: setfileStructureShouldFetch,
-        setFetchMode: setfileStructureFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addFileStructureMatrxId,
+        addMatrxIds: addFileStructureMatrxIds,
+        removeMatrxId: removeFileStructureMatrxId,
+        removeMatrxIds: removeFileStructureMatrxIds,
+        addPkValue: addFileStructurePkValue,
+        addPkValues: addFileStructurePkValues,
+        removePkValue: removeFileStructurePkValue,
+        removePkValues: removeFileStructurePkValues,
+        isMissingRecords: isFileStructureMissingRecords,
+        setShouldFetch: setFileStructureShouldFetch,
+        setFetchMode: setFileStructureFetchMode,
+        fetchQuickRefs: fetchFileStructureQuickRefs,
+        fetchOne: fetchFileStructureOne,
+        fetchOneWithFkIfk: fetchFileStructureOneWithFkIfk,
+        fetchAll: fetchFileStructureAll,
+        fetchPaginated: fetchFileStructurePaginated,
     } = useEntityWithFetch("fileStructure");
 
     return {
@@ -2375,22 +2375,22 @@ export const useFileStructureWithFetch = (): UseFileStructureWithFetchReturn => 
         fileStructureIsLoading,
         fileStructureIsError,
         fileStructureQuickRefRecords,
-        addfileStructureMatrxId,
-        addfileStructureMatrxIds,
-        removefileStructureMatrxId,
-        removefileStructureMatrxIds,
-        addfileStructurePkValue,
-        addfileStructurePkValues,
-        removefileStructurePkValue,
-        removefileStructurePkValues,
-        isfileStructureMissingRecords,
-        setfileStructureShouldFetch,
-        setfileStructureFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addFileStructureMatrxId,
+        addFileStructureMatrxIds,
+        removeFileStructureMatrxId,
+        removeFileStructureMatrxIds,
+        addFileStructurePkValue,
+        addFileStructurePkValues,
+        removeFileStructurePkValue,
+        removeFileStructurePkValues,
+        isFileStructureMissingRecords,
+        setFileStructureShouldFetch,
+        setFileStructureFetchMode,
+        fetchFileStructureQuickRefs,
+        fetchFileStructureOne,
+        fetchFileStructureOneWithFkIfk,
+        fetchFileStructureAll,
+        fetchFileStructurePaginated,
     };
 };
 
@@ -2403,22 +2403,22 @@ type UseFlashcardDataWithFetchReturn = {
     flashcardDataIsLoading: boolean;
     flashcardDataIsError: boolean;
     flashcardDataQuickRefRecords: QuickReferenceRecord[];
-    addflashcardDataMatrxId: (recordId: MatrxRecordId) => void;
-    addflashcardDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeflashcardDataMatrxId: (recordId: MatrxRecordId) => void;
-    removeflashcardDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addflashcardDataPkValue: (pkValue: string) => void;
-    addflashcardDataPkValues: (pkValues: Record<string, unknown>) => void;
-    removeflashcardDataPkValue: (pkValue: string) => void;
-    removeflashcardDataPkValues: (pkValues: Record<string, unknown>) => void;
-    isflashcardDataMissingRecords: boolean;
-    setflashcardDataShouldFetch: (shouldFetch: boolean) => void;
-    setflashcardDataFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addFlashcardDataMatrxId: (recordId: MatrxRecordId) => void;
+    addFlashcardDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeFlashcardDataMatrxId: (recordId: MatrxRecordId) => void;
+    removeFlashcardDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addFlashcardDataPkValue: (pkValue: string) => void;
+    addFlashcardDataPkValues: (pkValues: Record<string, unknown>) => void;
+    removeFlashcardDataPkValue: (pkValue: string) => void;
+    removeFlashcardDataPkValues: (pkValues: Record<string, unknown>) => void;
+    isFlashcardDataMissingRecords: boolean;
+    setFlashcardDataShouldFetch: (shouldFetch: boolean) => void;
+    setFlashcardDataFetchMode: (fetchMode: FetchMode) => void;
+    fetchFlashcardDataQuickRefs: () => void;
+    fetchFlashcardDataOne: (recordId: MatrxRecordId) => void;
+    fetchFlashcardDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchFlashcardDataAll: () => void;
+    fetchFlashcardDataPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useFlashcardDataWithFetch = (): UseFlashcardDataWithFetchReturn => {
@@ -2431,22 +2431,22 @@ export const useFlashcardDataWithFetch = (): UseFlashcardDataWithFetchReturn => 
         isLoading: flashcardDataIsLoading,
         isError: flashcardDataIsError,
         quickRefRecords: flashcardDataQuickRefRecords,
-        addMatrxId: addflashcardDataMatrxId,
-        addMatrxIds: addflashcardDataMatrxIds,
-        removeMatrxId: removeflashcardDataMatrxId,
-        removeMatrxIds: removeflashcardDataMatrxIds,
-        addPkValue: addflashcardDataPkValue,
-        addPkValues: addflashcardDataPkValues,
-        removePkValue: removeflashcardDataPkValue,
-        removePkValues: removeflashcardDataPkValues,
-        isMissingRecords: isflashcardDataMissingRecords,
-        setShouldFetch: setflashcardDataShouldFetch,
-        setFetchMode: setflashcardDataFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addFlashcardDataMatrxId,
+        addMatrxIds: addFlashcardDataMatrxIds,
+        removeMatrxId: removeFlashcardDataMatrxId,
+        removeMatrxIds: removeFlashcardDataMatrxIds,
+        addPkValue: addFlashcardDataPkValue,
+        addPkValues: addFlashcardDataPkValues,
+        removePkValue: removeFlashcardDataPkValue,
+        removePkValues: removeFlashcardDataPkValues,
+        isMissingRecords: isFlashcardDataMissingRecords,
+        setShouldFetch: setFlashcardDataShouldFetch,
+        setFetchMode: setFlashcardDataFetchMode,
+        fetchQuickRefs: fetchFlashcardDataQuickRefs,
+        fetchOne: fetchFlashcardDataOne,
+        fetchOneWithFkIfk: fetchFlashcardDataOneWithFkIfk,
+        fetchAll: fetchFlashcardDataAll,
+        fetchPaginated: fetchFlashcardDataPaginated,
     } = useEntityWithFetch("flashcardData");
 
     return {
@@ -2458,22 +2458,22 @@ export const useFlashcardDataWithFetch = (): UseFlashcardDataWithFetchReturn => 
         flashcardDataIsLoading,
         flashcardDataIsError,
         flashcardDataQuickRefRecords,
-        addflashcardDataMatrxId,
-        addflashcardDataMatrxIds,
-        removeflashcardDataMatrxId,
-        removeflashcardDataMatrxIds,
-        addflashcardDataPkValue,
-        addflashcardDataPkValues,
-        removeflashcardDataPkValue,
-        removeflashcardDataPkValues,
-        isflashcardDataMissingRecords,
-        setflashcardDataShouldFetch,
-        setflashcardDataFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addFlashcardDataMatrxId,
+        addFlashcardDataMatrxIds,
+        removeFlashcardDataMatrxId,
+        removeFlashcardDataMatrxIds,
+        addFlashcardDataPkValue,
+        addFlashcardDataPkValues,
+        removeFlashcardDataPkValue,
+        removeFlashcardDataPkValues,
+        isFlashcardDataMissingRecords,
+        setFlashcardDataShouldFetch,
+        setFlashcardDataFetchMode,
+        fetchFlashcardDataQuickRefs,
+        fetchFlashcardDataOne,
+        fetchFlashcardDataOneWithFkIfk,
+        fetchFlashcardDataAll,
+        fetchFlashcardDataPaginated,
     };
 };
 
@@ -2486,22 +2486,22 @@ type UseFlashcardHistoryWithFetchReturn = {
     flashcardHistoryIsLoading: boolean;
     flashcardHistoryIsError: boolean;
     flashcardHistoryQuickRefRecords: QuickReferenceRecord[];
-    addflashcardHistoryMatrxId: (recordId: MatrxRecordId) => void;
-    addflashcardHistoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeflashcardHistoryMatrxId: (recordId: MatrxRecordId) => void;
-    removeflashcardHistoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addflashcardHistoryPkValue: (pkValue: string) => void;
-    addflashcardHistoryPkValues: (pkValues: Record<string, unknown>) => void;
-    removeflashcardHistoryPkValue: (pkValue: string) => void;
-    removeflashcardHistoryPkValues: (pkValues: Record<string, unknown>) => void;
-    isflashcardHistoryMissingRecords: boolean;
-    setflashcardHistoryShouldFetch: (shouldFetch: boolean) => void;
-    setflashcardHistoryFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addFlashcardHistoryMatrxId: (recordId: MatrxRecordId) => void;
+    addFlashcardHistoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeFlashcardHistoryMatrxId: (recordId: MatrxRecordId) => void;
+    removeFlashcardHistoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addFlashcardHistoryPkValue: (pkValue: string) => void;
+    addFlashcardHistoryPkValues: (pkValues: Record<string, unknown>) => void;
+    removeFlashcardHistoryPkValue: (pkValue: string) => void;
+    removeFlashcardHistoryPkValues: (pkValues: Record<string, unknown>) => void;
+    isFlashcardHistoryMissingRecords: boolean;
+    setFlashcardHistoryShouldFetch: (shouldFetch: boolean) => void;
+    setFlashcardHistoryFetchMode: (fetchMode: FetchMode) => void;
+    fetchFlashcardHistoryQuickRefs: () => void;
+    fetchFlashcardHistoryOne: (recordId: MatrxRecordId) => void;
+    fetchFlashcardHistoryOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchFlashcardHistoryAll: () => void;
+    fetchFlashcardHistoryPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useFlashcardHistoryWithFetch = (): UseFlashcardHistoryWithFetchReturn => {
@@ -2514,22 +2514,22 @@ export const useFlashcardHistoryWithFetch = (): UseFlashcardHistoryWithFetchRetu
         isLoading: flashcardHistoryIsLoading,
         isError: flashcardHistoryIsError,
         quickRefRecords: flashcardHistoryQuickRefRecords,
-        addMatrxId: addflashcardHistoryMatrxId,
-        addMatrxIds: addflashcardHistoryMatrxIds,
-        removeMatrxId: removeflashcardHistoryMatrxId,
-        removeMatrxIds: removeflashcardHistoryMatrxIds,
-        addPkValue: addflashcardHistoryPkValue,
-        addPkValues: addflashcardHistoryPkValues,
-        removePkValue: removeflashcardHistoryPkValue,
-        removePkValues: removeflashcardHistoryPkValues,
-        isMissingRecords: isflashcardHistoryMissingRecords,
-        setShouldFetch: setflashcardHistoryShouldFetch,
-        setFetchMode: setflashcardHistoryFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addFlashcardHistoryMatrxId,
+        addMatrxIds: addFlashcardHistoryMatrxIds,
+        removeMatrxId: removeFlashcardHistoryMatrxId,
+        removeMatrxIds: removeFlashcardHistoryMatrxIds,
+        addPkValue: addFlashcardHistoryPkValue,
+        addPkValues: addFlashcardHistoryPkValues,
+        removePkValue: removeFlashcardHistoryPkValue,
+        removePkValues: removeFlashcardHistoryPkValues,
+        isMissingRecords: isFlashcardHistoryMissingRecords,
+        setShouldFetch: setFlashcardHistoryShouldFetch,
+        setFetchMode: setFlashcardHistoryFetchMode,
+        fetchQuickRefs: fetchFlashcardHistoryQuickRefs,
+        fetchOne: fetchFlashcardHistoryOne,
+        fetchOneWithFkIfk: fetchFlashcardHistoryOneWithFkIfk,
+        fetchAll: fetchFlashcardHistoryAll,
+        fetchPaginated: fetchFlashcardHistoryPaginated,
     } = useEntityWithFetch("flashcardHistory");
 
     return {
@@ -2541,22 +2541,22 @@ export const useFlashcardHistoryWithFetch = (): UseFlashcardHistoryWithFetchRetu
         flashcardHistoryIsLoading,
         flashcardHistoryIsError,
         flashcardHistoryQuickRefRecords,
-        addflashcardHistoryMatrxId,
-        addflashcardHistoryMatrxIds,
-        removeflashcardHistoryMatrxId,
-        removeflashcardHistoryMatrxIds,
-        addflashcardHistoryPkValue,
-        addflashcardHistoryPkValues,
-        removeflashcardHistoryPkValue,
-        removeflashcardHistoryPkValues,
-        isflashcardHistoryMissingRecords,
-        setflashcardHistoryShouldFetch,
-        setflashcardHistoryFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addFlashcardHistoryMatrxId,
+        addFlashcardHistoryMatrxIds,
+        removeFlashcardHistoryMatrxId,
+        removeFlashcardHistoryMatrxIds,
+        addFlashcardHistoryPkValue,
+        addFlashcardHistoryPkValues,
+        removeFlashcardHistoryPkValue,
+        removeFlashcardHistoryPkValues,
+        isFlashcardHistoryMissingRecords,
+        setFlashcardHistoryShouldFetch,
+        setFlashcardHistoryFetchMode,
+        fetchFlashcardHistoryQuickRefs,
+        fetchFlashcardHistoryOne,
+        fetchFlashcardHistoryOneWithFkIfk,
+        fetchFlashcardHistoryAll,
+        fetchFlashcardHistoryPaginated,
     };
 };
 
@@ -2569,22 +2569,22 @@ type UseFlashcardImagesWithFetchReturn = {
     flashcardImagesIsLoading: boolean;
     flashcardImagesIsError: boolean;
     flashcardImagesQuickRefRecords: QuickReferenceRecord[];
-    addflashcardImagesMatrxId: (recordId: MatrxRecordId) => void;
-    addflashcardImagesMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeflashcardImagesMatrxId: (recordId: MatrxRecordId) => void;
-    removeflashcardImagesMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addflashcardImagesPkValue: (pkValue: string) => void;
-    addflashcardImagesPkValues: (pkValues: Record<string, unknown>) => void;
-    removeflashcardImagesPkValue: (pkValue: string) => void;
-    removeflashcardImagesPkValues: (pkValues: Record<string, unknown>) => void;
-    isflashcardImagesMissingRecords: boolean;
-    setflashcardImagesShouldFetch: (shouldFetch: boolean) => void;
-    setflashcardImagesFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addFlashcardImagesMatrxId: (recordId: MatrxRecordId) => void;
+    addFlashcardImagesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeFlashcardImagesMatrxId: (recordId: MatrxRecordId) => void;
+    removeFlashcardImagesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addFlashcardImagesPkValue: (pkValue: string) => void;
+    addFlashcardImagesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeFlashcardImagesPkValue: (pkValue: string) => void;
+    removeFlashcardImagesPkValues: (pkValues: Record<string, unknown>) => void;
+    isFlashcardImagesMissingRecords: boolean;
+    setFlashcardImagesShouldFetch: (shouldFetch: boolean) => void;
+    setFlashcardImagesFetchMode: (fetchMode: FetchMode) => void;
+    fetchFlashcardImagesQuickRefs: () => void;
+    fetchFlashcardImagesOne: (recordId: MatrxRecordId) => void;
+    fetchFlashcardImagesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchFlashcardImagesAll: () => void;
+    fetchFlashcardImagesPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useFlashcardImagesWithFetch = (): UseFlashcardImagesWithFetchReturn => {
@@ -2597,22 +2597,22 @@ export const useFlashcardImagesWithFetch = (): UseFlashcardImagesWithFetchReturn
         isLoading: flashcardImagesIsLoading,
         isError: flashcardImagesIsError,
         quickRefRecords: flashcardImagesQuickRefRecords,
-        addMatrxId: addflashcardImagesMatrxId,
-        addMatrxIds: addflashcardImagesMatrxIds,
-        removeMatrxId: removeflashcardImagesMatrxId,
-        removeMatrxIds: removeflashcardImagesMatrxIds,
-        addPkValue: addflashcardImagesPkValue,
-        addPkValues: addflashcardImagesPkValues,
-        removePkValue: removeflashcardImagesPkValue,
-        removePkValues: removeflashcardImagesPkValues,
-        isMissingRecords: isflashcardImagesMissingRecords,
-        setShouldFetch: setflashcardImagesShouldFetch,
-        setFetchMode: setflashcardImagesFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addFlashcardImagesMatrxId,
+        addMatrxIds: addFlashcardImagesMatrxIds,
+        removeMatrxId: removeFlashcardImagesMatrxId,
+        removeMatrxIds: removeFlashcardImagesMatrxIds,
+        addPkValue: addFlashcardImagesPkValue,
+        addPkValues: addFlashcardImagesPkValues,
+        removePkValue: removeFlashcardImagesPkValue,
+        removePkValues: removeFlashcardImagesPkValues,
+        isMissingRecords: isFlashcardImagesMissingRecords,
+        setShouldFetch: setFlashcardImagesShouldFetch,
+        setFetchMode: setFlashcardImagesFetchMode,
+        fetchQuickRefs: fetchFlashcardImagesQuickRefs,
+        fetchOne: fetchFlashcardImagesOne,
+        fetchOneWithFkIfk: fetchFlashcardImagesOneWithFkIfk,
+        fetchAll: fetchFlashcardImagesAll,
+        fetchPaginated: fetchFlashcardImagesPaginated,
     } = useEntityWithFetch("flashcardImages");
 
     return {
@@ -2624,22 +2624,22 @@ export const useFlashcardImagesWithFetch = (): UseFlashcardImagesWithFetchReturn
         flashcardImagesIsLoading,
         flashcardImagesIsError,
         flashcardImagesQuickRefRecords,
-        addflashcardImagesMatrxId,
-        addflashcardImagesMatrxIds,
-        removeflashcardImagesMatrxId,
-        removeflashcardImagesMatrxIds,
-        addflashcardImagesPkValue,
-        addflashcardImagesPkValues,
-        removeflashcardImagesPkValue,
-        removeflashcardImagesPkValues,
-        isflashcardImagesMissingRecords,
-        setflashcardImagesShouldFetch,
-        setflashcardImagesFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addFlashcardImagesMatrxId,
+        addFlashcardImagesMatrxIds,
+        removeFlashcardImagesMatrxId,
+        removeFlashcardImagesMatrxIds,
+        addFlashcardImagesPkValue,
+        addFlashcardImagesPkValues,
+        removeFlashcardImagesPkValue,
+        removeFlashcardImagesPkValues,
+        isFlashcardImagesMissingRecords,
+        setFlashcardImagesShouldFetch,
+        setFlashcardImagesFetchMode,
+        fetchFlashcardImagesQuickRefs,
+        fetchFlashcardImagesOne,
+        fetchFlashcardImagesOneWithFkIfk,
+        fetchFlashcardImagesAll,
+        fetchFlashcardImagesPaginated,
     };
 };
 
@@ -2652,22 +2652,22 @@ type UseFlashcardSetRelationsWithFetchReturn = {
     flashcardSetRelationsIsLoading: boolean;
     flashcardSetRelationsIsError: boolean;
     flashcardSetRelationsQuickRefRecords: QuickReferenceRecord[];
-    addflashcardSetRelationsMatrxId: (recordId: MatrxRecordId) => void;
-    addflashcardSetRelationsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeflashcardSetRelationsMatrxId: (recordId: MatrxRecordId) => void;
-    removeflashcardSetRelationsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addflashcardSetRelationsPkValue: (pkValue: string) => void;
-    addflashcardSetRelationsPkValues: (pkValues: Record<string, unknown>) => void;
-    removeflashcardSetRelationsPkValue: (pkValue: string) => void;
-    removeflashcardSetRelationsPkValues: (pkValues: Record<string, unknown>) => void;
-    isflashcardSetRelationsMissingRecords: boolean;
-    setflashcardSetRelationsShouldFetch: (shouldFetch: boolean) => void;
-    setflashcardSetRelationsFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addFlashcardSetRelationsMatrxId: (recordId: MatrxRecordId) => void;
+    addFlashcardSetRelationsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeFlashcardSetRelationsMatrxId: (recordId: MatrxRecordId) => void;
+    removeFlashcardSetRelationsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addFlashcardSetRelationsPkValue: (pkValue: string) => void;
+    addFlashcardSetRelationsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeFlashcardSetRelationsPkValue: (pkValue: string) => void;
+    removeFlashcardSetRelationsPkValues: (pkValues: Record<string, unknown>) => void;
+    isFlashcardSetRelationsMissingRecords: boolean;
+    setFlashcardSetRelationsShouldFetch: (shouldFetch: boolean) => void;
+    setFlashcardSetRelationsFetchMode: (fetchMode: FetchMode) => void;
+    fetchFlashcardSetRelationsQuickRefs: () => void;
+    fetchFlashcardSetRelationsOne: (recordId: MatrxRecordId) => void;
+    fetchFlashcardSetRelationsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchFlashcardSetRelationsAll: () => void;
+    fetchFlashcardSetRelationsPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useFlashcardSetRelationsWithFetch = (): UseFlashcardSetRelationsWithFetchReturn => {
@@ -2680,22 +2680,22 @@ export const useFlashcardSetRelationsWithFetch = (): UseFlashcardSetRelationsWit
         isLoading: flashcardSetRelationsIsLoading,
         isError: flashcardSetRelationsIsError,
         quickRefRecords: flashcardSetRelationsQuickRefRecords,
-        addMatrxId: addflashcardSetRelationsMatrxId,
-        addMatrxIds: addflashcardSetRelationsMatrxIds,
-        removeMatrxId: removeflashcardSetRelationsMatrxId,
-        removeMatrxIds: removeflashcardSetRelationsMatrxIds,
-        addPkValue: addflashcardSetRelationsPkValue,
-        addPkValues: addflashcardSetRelationsPkValues,
-        removePkValue: removeflashcardSetRelationsPkValue,
-        removePkValues: removeflashcardSetRelationsPkValues,
-        isMissingRecords: isflashcardSetRelationsMissingRecords,
-        setShouldFetch: setflashcardSetRelationsShouldFetch,
-        setFetchMode: setflashcardSetRelationsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addFlashcardSetRelationsMatrxId,
+        addMatrxIds: addFlashcardSetRelationsMatrxIds,
+        removeMatrxId: removeFlashcardSetRelationsMatrxId,
+        removeMatrxIds: removeFlashcardSetRelationsMatrxIds,
+        addPkValue: addFlashcardSetRelationsPkValue,
+        addPkValues: addFlashcardSetRelationsPkValues,
+        removePkValue: removeFlashcardSetRelationsPkValue,
+        removePkValues: removeFlashcardSetRelationsPkValues,
+        isMissingRecords: isFlashcardSetRelationsMissingRecords,
+        setShouldFetch: setFlashcardSetRelationsShouldFetch,
+        setFetchMode: setFlashcardSetRelationsFetchMode,
+        fetchQuickRefs: fetchFlashcardSetRelationsQuickRefs,
+        fetchOne: fetchFlashcardSetRelationsOne,
+        fetchOneWithFkIfk: fetchFlashcardSetRelationsOneWithFkIfk,
+        fetchAll: fetchFlashcardSetRelationsAll,
+        fetchPaginated: fetchFlashcardSetRelationsPaginated,
     } = useEntityWithFetch("flashcardSetRelations");
 
     return {
@@ -2707,22 +2707,22 @@ export const useFlashcardSetRelationsWithFetch = (): UseFlashcardSetRelationsWit
         flashcardSetRelationsIsLoading,
         flashcardSetRelationsIsError,
         flashcardSetRelationsQuickRefRecords,
-        addflashcardSetRelationsMatrxId,
-        addflashcardSetRelationsMatrxIds,
-        removeflashcardSetRelationsMatrxId,
-        removeflashcardSetRelationsMatrxIds,
-        addflashcardSetRelationsPkValue,
-        addflashcardSetRelationsPkValues,
-        removeflashcardSetRelationsPkValue,
-        removeflashcardSetRelationsPkValues,
-        isflashcardSetRelationsMissingRecords,
-        setflashcardSetRelationsShouldFetch,
-        setflashcardSetRelationsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addFlashcardSetRelationsMatrxId,
+        addFlashcardSetRelationsMatrxIds,
+        removeFlashcardSetRelationsMatrxId,
+        removeFlashcardSetRelationsMatrxIds,
+        addFlashcardSetRelationsPkValue,
+        addFlashcardSetRelationsPkValues,
+        removeFlashcardSetRelationsPkValue,
+        removeFlashcardSetRelationsPkValues,
+        isFlashcardSetRelationsMissingRecords,
+        setFlashcardSetRelationsShouldFetch,
+        setFlashcardSetRelationsFetchMode,
+        fetchFlashcardSetRelationsQuickRefs,
+        fetchFlashcardSetRelationsOne,
+        fetchFlashcardSetRelationsOneWithFkIfk,
+        fetchFlashcardSetRelationsAll,
+        fetchFlashcardSetRelationsPaginated,
     };
 };
 
@@ -2735,22 +2735,22 @@ type UseFlashcardSetsWithFetchReturn = {
     flashcardSetsIsLoading: boolean;
     flashcardSetsIsError: boolean;
     flashcardSetsQuickRefRecords: QuickReferenceRecord[];
-    addflashcardSetsMatrxId: (recordId: MatrxRecordId) => void;
-    addflashcardSetsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeflashcardSetsMatrxId: (recordId: MatrxRecordId) => void;
-    removeflashcardSetsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addflashcardSetsPkValue: (pkValue: string) => void;
-    addflashcardSetsPkValues: (pkValues: Record<string, unknown>) => void;
-    removeflashcardSetsPkValue: (pkValue: string) => void;
-    removeflashcardSetsPkValues: (pkValues: Record<string, unknown>) => void;
-    isflashcardSetsMissingRecords: boolean;
-    setflashcardSetsShouldFetch: (shouldFetch: boolean) => void;
-    setflashcardSetsFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addFlashcardSetsMatrxId: (recordId: MatrxRecordId) => void;
+    addFlashcardSetsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeFlashcardSetsMatrxId: (recordId: MatrxRecordId) => void;
+    removeFlashcardSetsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addFlashcardSetsPkValue: (pkValue: string) => void;
+    addFlashcardSetsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeFlashcardSetsPkValue: (pkValue: string) => void;
+    removeFlashcardSetsPkValues: (pkValues: Record<string, unknown>) => void;
+    isFlashcardSetsMissingRecords: boolean;
+    setFlashcardSetsShouldFetch: (shouldFetch: boolean) => void;
+    setFlashcardSetsFetchMode: (fetchMode: FetchMode) => void;
+    fetchFlashcardSetsQuickRefs: () => void;
+    fetchFlashcardSetsOne: (recordId: MatrxRecordId) => void;
+    fetchFlashcardSetsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchFlashcardSetsAll: () => void;
+    fetchFlashcardSetsPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useFlashcardSetsWithFetch = (): UseFlashcardSetsWithFetchReturn => {
@@ -2763,22 +2763,22 @@ export const useFlashcardSetsWithFetch = (): UseFlashcardSetsWithFetchReturn => 
         isLoading: flashcardSetsIsLoading,
         isError: flashcardSetsIsError,
         quickRefRecords: flashcardSetsQuickRefRecords,
-        addMatrxId: addflashcardSetsMatrxId,
-        addMatrxIds: addflashcardSetsMatrxIds,
-        removeMatrxId: removeflashcardSetsMatrxId,
-        removeMatrxIds: removeflashcardSetsMatrxIds,
-        addPkValue: addflashcardSetsPkValue,
-        addPkValues: addflashcardSetsPkValues,
-        removePkValue: removeflashcardSetsPkValue,
-        removePkValues: removeflashcardSetsPkValues,
-        isMissingRecords: isflashcardSetsMissingRecords,
-        setShouldFetch: setflashcardSetsShouldFetch,
-        setFetchMode: setflashcardSetsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addFlashcardSetsMatrxId,
+        addMatrxIds: addFlashcardSetsMatrxIds,
+        removeMatrxId: removeFlashcardSetsMatrxId,
+        removeMatrxIds: removeFlashcardSetsMatrxIds,
+        addPkValue: addFlashcardSetsPkValue,
+        addPkValues: addFlashcardSetsPkValues,
+        removePkValue: removeFlashcardSetsPkValue,
+        removePkValues: removeFlashcardSetsPkValues,
+        isMissingRecords: isFlashcardSetsMissingRecords,
+        setShouldFetch: setFlashcardSetsShouldFetch,
+        setFetchMode: setFlashcardSetsFetchMode,
+        fetchQuickRefs: fetchFlashcardSetsQuickRefs,
+        fetchOne: fetchFlashcardSetsOne,
+        fetchOneWithFkIfk: fetchFlashcardSetsOneWithFkIfk,
+        fetchAll: fetchFlashcardSetsAll,
+        fetchPaginated: fetchFlashcardSetsPaginated,
     } = useEntityWithFetch("flashcardSets");
 
     return {
@@ -2790,22 +2790,22 @@ export const useFlashcardSetsWithFetch = (): UseFlashcardSetsWithFetchReturn => 
         flashcardSetsIsLoading,
         flashcardSetsIsError,
         flashcardSetsQuickRefRecords,
-        addflashcardSetsMatrxId,
-        addflashcardSetsMatrxIds,
-        removeflashcardSetsMatrxId,
-        removeflashcardSetsMatrxIds,
-        addflashcardSetsPkValue,
-        addflashcardSetsPkValues,
-        removeflashcardSetsPkValue,
-        removeflashcardSetsPkValues,
-        isflashcardSetsMissingRecords,
-        setflashcardSetsShouldFetch,
-        setflashcardSetsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addFlashcardSetsMatrxId,
+        addFlashcardSetsMatrxIds,
+        removeFlashcardSetsMatrxId,
+        removeFlashcardSetsMatrxIds,
+        addFlashcardSetsPkValue,
+        addFlashcardSetsPkValues,
+        removeFlashcardSetsPkValue,
+        removeFlashcardSetsPkValues,
+        isFlashcardSetsMissingRecords,
+        setFlashcardSetsShouldFetch,
+        setFlashcardSetsFetchMode,
+        fetchFlashcardSetsQuickRefs,
+        fetchFlashcardSetsOne,
+        fetchFlashcardSetsOneWithFkIfk,
+        fetchFlashcardSetsAll,
+        fetchFlashcardSetsPaginated,
     };
 };
 
@@ -2818,22 +2818,22 @@ type UseMessageWithFetchReturn = {
     messageIsLoading: boolean;
     messageIsError: boolean;
     messageQuickRefRecords: QuickReferenceRecord[];
-    addmessageMatrxId: (recordId: MatrxRecordId) => void;
-    addmessageMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removemessageMatrxId: (recordId: MatrxRecordId) => void;
-    removemessageMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addmessagePkValue: (pkValue: string) => void;
-    addmessagePkValues: (pkValues: Record<string, unknown>) => void;
-    removemessagePkValue: (pkValue: string) => void;
-    removemessagePkValues: (pkValues: Record<string, unknown>) => void;
-    ismessageMissingRecords: boolean;
-    setmessageShouldFetch: (shouldFetch: boolean) => void;
-    setmessageFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addMessageMatrxId: (recordId: MatrxRecordId) => void;
+    addMessageMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeMessageMatrxId: (recordId: MatrxRecordId) => void;
+    removeMessageMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addMessagePkValue: (pkValue: string) => void;
+    addMessagePkValues: (pkValues: Record<string, unknown>) => void;
+    removeMessagePkValue: (pkValue: string) => void;
+    removeMessagePkValues: (pkValues: Record<string, unknown>) => void;
+    isMessageMissingRecords: boolean;
+    setMessageShouldFetch: (shouldFetch: boolean) => void;
+    setMessageFetchMode: (fetchMode: FetchMode) => void;
+    fetchMessageQuickRefs: () => void;
+    fetchMessageOne: (recordId: MatrxRecordId) => void;
+    fetchMessageOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchMessageAll: () => void;
+    fetchMessagePaginated: (page: number, pageSize: number) => void;
 };
 
 export const useMessageWithFetch = (): UseMessageWithFetchReturn => {
@@ -2846,22 +2846,22 @@ export const useMessageWithFetch = (): UseMessageWithFetchReturn => {
         isLoading: messageIsLoading,
         isError: messageIsError,
         quickRefRecords: messageQuickRefRecords,
-        addMatrxId: addmessageMatrxId,
-        addMatrxIds: addmessageMatrxIds,
-        removeMatrxId: removemessageMatrxId,
-        removeMatrxIds: removemessageMatrxIds,
-        addPkValue: addmessagePkValue,
-        addPkValues: addmessagePkValues,
-        removePkValue: removemessagePkValue,
-        removePkValues: removemessagePkValues,
-        isMissingRecords: ismessageMissingRecords,
-        setShouldFetch: setmessageShouldFetch,
-        setFetchMode: setmessageFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addMessageMatrxId,
+        addMatrxIds: addMessageMatrxIds,
+        removeMatrxId: removeMessageMatrxId,
+        removeMatrxIds: removeMessageMatrxIds,
+        addPkValue: addMessagePkValue,
+        addPkValues: addMessagePkValues,
+        removePkValue: removeMessagePkValue,
+        removePkValues: removeMessagePkValues,
+        isMissingRecords: isMessageMissingRecords,
+        setShouldFetch: setMessageShouldFetch,
+        setFetchMode: setMessageFetchMode,
+        fetchQuickRefs: fetchMessageQuickRefs,
+        fetchOne: fetchMessageOne,
+        fetchOneWithFkIfk: fetchMessageOneWithFkIfk,
+        fetchAll: fetchMessageAll,
+        fetchPaginated: fetchMessagePaginated,
     } = useEntityWithFetch("message");
 
     return {
@@ -2873,22 +2873,22 @@ export const useMessageWithFetch = (): UseMessageWithFetchReturn => {
         messageIsLoading,
         messageIsError,
         messageQuickRefRecords,
-        addmessageMatrxId,
-        addmessageMatrxIds,
-        removemessageMatrxId,
-        removemessageMatrxIds,
-        addmessagePkValue,
-        addmessagePkValues,
-        removemessagePkValue,
-        removemessagePkValues,
-        ismessageMissingRecords,
-        setmessageShouldFetch,
-        setmessageFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMessageMatrxId,
+        addMessageMatrxIds,
+        removeMessageMatrxId,
+        removeMessageMatrxIds,
+        addMessagePkValue,
+        addMessagePkValues,
+        removeMessagePkValue,
+        removeMessagePkValues,
+        isMessageMissingRecords,
+        setMessageShouldFetch,
+        setMessageFetchMode,
+        fetchMessageQuickRefs,
+        fetchMessageOne,
+        fetchMessageOneWithFkIfk,
+        fetchMessageAll,
+        fetchMessagePaginated,
     };
 };
 
@@ -2901,22 +2901,22 @@ type UseMessageBrokerWithFetchReturn = {
     messageBrokerIsLoading: boolean;
     messageBrokerIsError: boolean;
     messageBrokerQuickRefRecords: QuickReferenceRecord[];
-    addmessageBrokerMatrxId: (recordId: MatrxRecordId) => void;
-    addmessageBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removemessageBrokerMatrxId: (recordId: MatrxRecordId) => void;
-    removemessageBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addmessageBrokerPkValue: (pkValue: string) => void;
-    addmessageBrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    removemessageBrokerPkValue: (pkValue: string) => void;
-    removemessageBrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    ismessageBrokerMissingRecords: boolean;
-    setmessageBrokerShouldFetch: (shouldFetch: boolean) => void;
-    setmessageBrokerFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addMessageBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    addMessageBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeMessageBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    removeMessageBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addMessageBrokerPkValue: (pkValue: string) => void;
+    addMessageBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    removeMessageBrokerPkValue: (pkValue: string) => void;
+    removeMessageBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    isMessageBrokerMissingRecords: boolean;
+    setMessageBrokerShouldFetch: (shouldFetch: boolean) => void;
+    setMessageBrokerFetchMode: (fetchMode: FetchMode) => void;
+    fetchMessageBrokerQuickRefs: () => void;
+    fetchMessageBrokerOne: (recordId: MatrxRecordId) => void;
+    fetchMessageBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchMessageBrokerAll: () => void;
+    fetchMessageBrokerPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useMessageBrokerWithFetch = (): UseMessageBrokerWithFetchReturn => {
@@ -2929,22 +2929,22 @@ export const useMessageBrokerWithFetch = (): UseMessageBrokerWithFetchReturn => 
         isLoading: messageBrokerIsLoading,
         isError: messageBrokerIsError,
         quickRefRecords: messageBrokerQuickRefRecords,
-        addMatrxId: addmessageBrokerMatrxId,
-        addMatrxIds: addmessageBrokerMatrxIds,
-        removeMatrxId: removemessageBrokerMatrxId,
-        removeMatrxIds: removemessageBrokerMatrxIds,
-        addPkValue: addmessageBrokerPkValue,
-        addPkValues: addmessageBrokerPkValues,
-        removePkValue: removemessageBrokerPkValue,
-        removePkValues: removemessageBrokerPkValues,
-        isMissingRecords: ismessageBrokerMissingRecords,
-        setShouldFetch: setmessageBrokerShouldFetch,
-        setFetchMode: setmessageBrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addMessageBrokerMatrxId,
+        addMatrxIds: addMessageBrokerMatrxIds,
+        removeMatrxId: removeMessageBrokerMatrxId,
+        removeMatrxIds: removeMessageBrokerMatrxIds,
+        addPkValue: addMessageBrokerPkValue,
+        addPkValues: addMessageBrokerPkValues,
+        removePkValue: removeMessageBrokerPkValue,
+        removePkValues: removeMessageBrokerPkValues,
+        isMissingRecords: isMessageBrokerMissingRecords,
+        setShouldFetch: setMessageBrokerShouldFetch,
+        setFetchMode: setMessageBrokerFetchMode,
+        fetchQuickRefs: fetchMessageBrokerQuickRefs,
+        fetchOne: fetchMessageBrokerOne,
+        fetchOneWithFkIfk: fetchMessageBrokerOneWithFkIfk,
+        fetchAll: fetchMessageBrokerAll,
+        fetchPaginated: fetchMessageBrokerPaginated,
     } = useEntityWithFetch("messageBroker");
 
     return {
@@ -2956,22 +2956,22 @@ export const useMessageBrokerWithFetch = (): UseMessageBrokerWithFetchReturn => 
         messageBrokerIsLoading,
         messageBrokerIsError,
         messageBrokerQuickRefRecords,
-        addmessageBrokerMatrxId,
-        addmessageBrokerMatrxIds,
-        removemessageBrokerMatrxId,
-        removemessageBrokerMatrxIds,
-        addmessageBrokerPkValue,
-        addmessageBrokerPkValues,
-        removemessageBrokerPkValue,
-        removemessageBrokerPkValues,
-        ismessageBrokerMissingRecords,
-        setmessageBrokerShouldFetch,
-        setmessageBrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMessageBrokerMatrxId,
+        addMessageBrokerMatrxIds,
+        removeMessageBrokerMatrxId,
+        removeMessageBrokerMatrxIds,
+        addMessageBrokerPkValue,
+        addMessageBrokerPkValues,
+        removeMessageBrokerPkValue,
+        removeMessageBrokerPkValues,
+        isMessageBrokerMissingRecords,
+        setMessageBrokerShouldFetch,
+        setMessageBrokerFetchMode,
+        fetchMessageBrokerQuickRefs,
+        fetchMessageBrokerOne,
+        fetchMessageBrokerOneWithFkIfk,
+        fetchMessageBrokerAll,
+        fetchMessageBrokerPaginated,
     };
 };
 
@@ -2984,22 +2984,22 @@ type UseMessageTemplateWithFetchReturn = {
     messageTemplateIsLoading: boolean;
     messageTemplateIsError: boolean;
     messageTemplateQuickRefRecords: QuickReferenceRecord[];
-    addmessageTemplateMatrxId: (recordId: MatrxRecordId) => void;
-    addmessageTemplateMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removemessageTemplateMatrxId: (recordId: MatrxRecordId) => void;
-    removemessageTemplateMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addmessageTemplatePkValue: (pkValue: string) => void;
-    addmessageTemplatePkValues: (pkValues: Record<string, unknown>) => void;
-    removemessageTemplatePkValue: (pkValue: string) => void;
-    removemessageTemplatePkValues: (pkValues: Record<string, unknown>) => void;
-    ismessageTemplateMissingRecords: boolean;
-    setmessageTemplateShouldFetch: (shouldFetch: boolean) => void;
-    setmessageTemplateFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addMessageTemplateMatrxId: (recordId: MatrxRecordId) => void;
+    addMessageTemplateMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeMessageTemplateMatrxId: (recordId: MatrxRecordId) => void;
+    removeMessageTemplateMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addMessageTemplatePkValue: (pkValue: string) => void;
+    addMessageTemplatePkValues: (pkValues: Record<string, unknown>) => void;
+    removeMessageTemplatePkValue: (pkValue: string) => void;
+    removeMessageTemplatePkValues: (pkValues: Record<string, unknown>) => void;
+    isMessageTemplateMissingRecords: boolean;
+    setMessageTemplateShouldFetch: (shouldFetch: boolean) => void;
+    setMessageTemplateFetchMode: (fetchMode: FetchMode) => void;
+    fetchMessageTemplateQuickRefs: () => void;
+    fetchMessageTemplateOne: (recordId: MatrxRecordId) => void;
+    fetchMessageTemplateOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchMessageTemplateAll: () => void;
+    fetchMessageTemplatePaginated: (page: number, pageSize: number) => void;
 };
 
 export const useMessageTemplateWithFetch = (): UseMessageTemplateWithFetchReturn => {
@@ -3012,22 +3012,22 @@ export const useMessageTemplateWithFetch = (): UseMessageTemplateWithFetchReturn
         isLoading: messageTemplateIsLoading,
         isError: messageTemplateIsError,
         quickRefRecords: messageTemplateQuickRefRecords,
-        addMatrxId: addmessageTemplateMatrxId,
-        addMatrxIds: addmessageTemplateMatrxIds,
-        removeMatrxId: removemessageTemplateMatrxId,
-        removeMatrxIds: removemessageTemplateMatrxIds,
-        addPkValue: addmessageTemplatePkValue,
-        addPkValues: addmessageTemplatePkValues,
-        removePkValue: removemessageTemplatePkValue,
-        removePkValues: removemessageTemplatePkValues,
-        isMissingRecords: ismessageTemplateMissingRecords,
-        setShouldFetch: setmessageTemplateShouldFetch,
-        setFetchMode: setmessageTemplateFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addMessageTemplateMatrxId,
+        addMatrxIds: addMessageTemplateMatrxIds,
+        removeMatrxId: removeMessageTemplateMatrxId,
+        removeMatrxIds: removeMessageTemplateMatrxIds,
+        addPkValue: addMessageTemplatePkValue,
+        addPkValues: addMessageTemplatePkValues,
+        removePkValue: removeMessageTemplatePkValue,
+        removePkValues: removeMessageTemplatePkValues,
+        isMissingRecords: isMessageTemplateMissingRecords,
+        setShouldFetch: setMessageTemplateShouldFetch,
+        setFetchMode: setMessageTemplateFetchMode,
+        fetchQuickRefs: fetchMessageTemplateQuickRefs,
+        fetchOne: fetchMessageTemplateOne,
+        fetchOneWithFkIfk: fetchMessageTemplateOneWithFkIfk,
+        fetchAll: fetchMessageTemplateAll,
+        fetchPaginated: fetchMessageTemplatePaginated,
     } = useEntityWithFetch("messageTemplate");
 
     return {
@@ -3039,22 +3039,22 @@ export const useMessageTemplateWithFetch = (): UseMessageTemplateWithFetchReturn
         messageTemplateIsLoading,
         messageTemplateIsError,
         messageTemplateQuickRefRecords,
-        addmessageTemplateMatrxId,
-        addmessageTemplateMatrxIds,
-        removemessageTemplateMatrxId,
-        removemessageTemplateMatrxIds,
-        addmessageTemplatePkValue,
-        addmessageTemplatePkValues,
-        removemessageTemplatePkValue,
-        removemessageTemplatePkValues,
-        ismessageTemplateMissingRecords,
-        setmessageTemplateShouldFetch,
-        setmessageTemplateFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMessageTemplateMatrxId,
+        addMessageTemplateMatrxIds,
+        removeMessageTemplateMatrxId,
+        removeMessageTemplateMatrxIds,
+        addMessageTemplatePkValue,
+        addMessageTemplatePkValues,
+        removeMessageTemplatePkValue,
+        removeMessageTemplatePkValues,
+        isMessageTemplateMissingRecords,
+        setMessageTemplateShouldFetch,
+        setMessageTemplateFetchMode,
+        fetchMessageTemplateQuickRefs,
+        fetchMessageTemplateOne,
+        fetchMessageTemplateOneWithFkIfk,
+        fetchMessageTemplateAll,
+        fetchMessageTemplatePaginated,
     };
 };
 
@@ -3067,22 +3067,22 @@ type UseProcessorWithFetchReturn = {
     processorIsLoading: boolean;
     processorIsError: boolean;
     processorQuickRefRecords: QuickReferenceRecord[];
-    addprocessorMatrxId: (recordId: MatrxRecordId) => void;
-    addprocessorMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeprocessorMatrxId: (recordId: MatrxRecordId) => void;
-    removeprocessorMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addprocessorPkValue: (pkValue: string) => void;
-    addprocessorPkValues: (pkValues: Record<string, unknown>) => void;
-    removeprocessorPkValue: (pkValue: string) => void;
-    removeprocessorPkValues: (pkValues: Record<string, unknown>) => void;
-    isprocessorMissingRecords: boolean;
-    setprocessorShouldFetch: (shouldFetch: boolean) => void;
-    setprocessorFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addProcessorMatrxId: (recordId: MatrxRecordId) => void;
+    addProcessorMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeProcessorMatrxId: (recordId: MatrxRecordId) => void;
+    removeProcessorMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addProcessorPkValue: (pkValue: string) => void;
+    addProcessorPkValues: (pkValues: Record<string, unknown>) => void;
+    removeProcessorPkValue: (pkValue: string) => void;
+    removeProcessorPkValues: (pkValues: Record<string, unknown>) => void;
+    isProcessorMissingRecords: boolean;
+    setProcessorShouldFetch: (shouldFetch: boolean) => void;
+    setProcessorFetchMode: (fetchMode: FetchMode) => void;
+    fetchProcessorQuickRefs: () => void;
+    fetchProcessorOne: (recordId: MatrxRecordId) => void;
+    fetchProcessorOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchProcessorAll: () => void;
+    fetchProcessorPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useProcessorWithFetch = (): UseProcessorWithFetchReturn => {
@@ -3095,22 +3095,22 @@ export const useProcessorWithFetch = (): UseProcessorWithFetchReturn => {
         isLoading: processorIsLoading,
         isError: processorIsError,
         quickRefRecords: processorQuickRefRecords,
-        addMatrxId: addprocessorMatrxId,
-        addMatrxIds: addprocessorMatrxIds,
-        removeMatrxId: removeprocessorMatrxId,
-        removeMatrxIds: removeprocessorMatrxIds,
-        addPkValue: addprocessorPkValue,
-        addPkValues: addprocessorPkValues,
-        removePkValue: removeprocessorPkValue,
-        removePkValues: removeprocessorPkValues,
-        isMissingRecords: isprocessorMissingRecords,
-        setShouldFetch: setprocessorShouldFetch,
-        setFetchMode: setprocessorFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addProcessorMatrxId,
+        addMatrxIds: addProcessorMatrxIds,
+        removeMatrxId: removeProcessorMatrxId,
+        removeMatrxIds: removeProcessorMatrxIds,
+        addPkValue: addProcessorPkValue,
+        addPkValues: addProcessorPkValues,
+        removePkValue: removeProcessorPkValue,
+        removePkValues: removeProcessorPkValues,
+        isMissingRecords: isProcessorMissingRecords,
+        setShouldFetch: setProcessorShouldFetch,
+        setFetchMode: setProcessorFetchMode,
+        fetchQuickRefs: fetchProcessorQuickRefs,
+        fetchOne: fetchProcessorOne,
+        fetchOneWithFkIfk: fetchProcessorOneWithFkIfk,
+        fetchAll: fetchProcessorAll,
+        fetchPaginated: fetchProcessorPaginated,
     } = useEntityWithFetch("processor");
 
     return {
@@ -3122,22 +3122,22 @@ export const useProcessorWithFetch = (): UseProcessorWithFetchReturn => {
         processorIsLoading,
         processorIsError,
         processorQuickRefRecords,
-        addprocessorMatrxId,
-        addprocessorMatrxIds,
-        removeprocessorMatrxId,
-        removeprocessorMatrxIds,
-        addprocessorPkValue,
-        addprocessorPkValues,
-        removeprocessorPkValue,
-        removeprocessorPkValues,
-        isprocessorMissingRecords,
-        setprocessorShouldFetch,
-        setprocessorFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addProcessorMatrxId,
+        addProcessorMatrxIds,
+        removeProcessorMatrxId,
+        removeProcessorMatrxIds,
+        addProcessorPkValue,
+        addProcessorPkValues,
+        removeProcessorPkValue,
+        removeProcessorPkValues,
+        isProcessorMissingRecords,
+        setProcessorShouldFetch,
+        setProcessorFetchMode,
+        fetchProcessorQuickRefs,
+        fetchProcessorOne,
+        fetchProcessorOneWithFkIfk,
+        fetchProcessorAll,
+        fetchProcessorPaginated,
     };
 };
 
@@ -3150,22 +3150,22 @@ type UseProjectMembersWithFetchReturn = {
     projectMembersIsLoading: boolean;
     projectMembersIsError: boolean;
     projectMembersQuickRefRecords: QuickReferenceRecord[];
-    addprojectMembersMatrxId: (recordId: MatrxRecordId) => void;
-    addprojectMembersMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeprojectMembersMatrxId: (recordId: MatrxRecordId) => void;
-    removeprojectMembersMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addprojectMembersPkValue: (pkValue: string) => void;
-    addprojectMembersPkValues: (pkValues: Record<string, unknown>) => void;
-    removeprojectMembersPkValue: (pkValue: string) => void;
-    removeprojectMembersPkValues: (pkValues: Record<string, unknown>) => void;
-    isprojectMembersMissingRecords: boolean;
-    setprojectMembersShouldFetch: (shouldFetch: boolean) => void;
-    setprojectMembersFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addProjectMembersMatrxId: (recordId: MatrxRecordId) => void;
+    addProjectMembersMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeProjectMembersMatrxId: (recordId: MatrxRecordId) => void;
+    removeProjectMembersMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addProjectMembersPkValue: (pkValue: string) => void;
+    addProjectMembersPkValues: (pkValues: Record<string, unknown>) => void;
+    removeProjectMembersPkValue: (pkValue: string) => void;
+    removeProjectMembersPkValues: (pkValues: Record<string, unknown>) => void;
+    isProjectMembersMissingRecords: boolean;
+    setProjectMembersShouldFetch: (shouldFetch: boolean) => void;
+    setProjectMembersFetchMode: (fetchMode: FetchMode) => void;
+    fetchProjectMembersQuickRefs: () => void;
+    fetchProjectMembersOne: (recordId: MatrxRecordId) => void;
+    fetchProjectMembersOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchProjectMembersAll: () => void;
+    fetchProjectMembersPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useProjectMembersWithFetch = (): UseProjectMembersWithFetchReturn => {
@@ -3178,22 +3178,22 @@ export const useProjectMembersWithFetch = (): UseProjectMembersWithFetchReturn =
         isLoading: projectMembersIsLoading,
         isError: projectMembersIsError,
         quickRefRecords: projectMembersQuickRefRecords,
-        addMatrxId: addprojectMembersMatrxId,
-        addMatrxIds: addprojectMembersMatrxIds,
-        removeMatrxId: removeprojectMembersMatrxId,
-        removeMatrxIds: removeprojectMembersMatrxIds,
-        addPkValue: addprojectMembersPkValue,
-        addPkValues: addprojectMembersPkValues,
-        removePkValue: removeprojectMembersPkValue,
-        removePkValues: removeprojectMembersPkValues,
-        isMissingRecords: isprojectMembersMissingRecords,
-        setShouldFetch: setprojectMembersShouldFetch,
-        setFetchMode: setprojectMembersFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addProjectMembersMatrxId,
+        addMatrxIds: addProjectMembersMatrxIds,
+        removeMatrxId: removeProjectMembersMatrxId,
+        removeMatrxIds: removeProjectMembersMatrxIds,
+        addPkValue: addProjectMembersPkValue,
+        addPkValues: addProjectMembersPkValues,
+        removePkValue: removeProjectMembersPkValue,
+        removePkValues: removeProjectMembersPkValues,
+        isMissingRecords: isProjectMembersMissingRecords,
+        setShouldFetch: setProjectMembersShouldFetch,
+        setFetchMode: setProjectMembersFetchMode,
+        fetchQuickRefs: fetchProjectMembersQuickRefs,
+        fetchOne: fetchProjectMembersOne,
+        fetchOneWithFkIfk: fetchProjectMembersOneWithFkIfk,
+        fetchAll: fetchProjectMembersAll,
+        fetchPaginated: fetchProjectMembersPaginated,
     } = useEntityWithFetch("projectMembers");
 
     return {
@@ -3205,22 +3205,22 @@ export const useProjectMembersWithFetch = (): UseProjectMembersWithFetchReturn =
         projectMembersIsLoading,
         projectMembersIsError,
         projectMembersQuickRefRecords,
-        addprojectMembersMatrxId,
-        addprojectMembersMatrxIds,
-        removeprojectMembersMatrxId,
-        removeprojectMembersMatrxIds,
-        addprojectMembersPkValue,
-        addprojectMembersPkValues,
-        removeprojectMembersPkValue,
-        removeprojectMembersPkValues,
-        isprojectMembersMissingRecords,
-        setprojectMembersShouldFetch,
-        setprojectMembersFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addProjectMembersMatrxId,
+        addProjectMembersMatrxIds,
+        removeProjectMembersMatrxId,
+        removeProjectMembersMatrxIds,
+        addProjectMembersPkValue,
+        addProjectMembersPkValues,
+        removeProjectMembersPkValue,
+        removeProjectMembersPkValues,
+        isProjectMembersMissingRecords,
+        setProjectMembersShouldFetch,
+        setProjectMembersFetchMode,
+        fetchProjectMembersQuickRefs,
+        fetchProjectMembersOne,
+        fetchProjectMembersOneWithFkIfk,
+        fetchProjectMembersAll,
+        fetchProjectMembersPaginated,
     };
 };
 
@@ -3233,22 +3233,22 @@ type UseProjectsWithFetchReturn = {
     projectsIsLoading: boolean;
     projectsIsError: boolean;
     projectsQuickRefRecords: QuickReferenceRecord[];
-    addprojectsMatrxId: (recordId: MatrxRecordId) => void;
-    addprojectsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeprojectsMatrxId: (recordId: MatrxRecordId) => void;
-    removeprojectsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addprojectsPkValue: (pkValue: string) => void;
-    addprojectsPkValues: (pkValues: Record<string, unknown>) => void;
-    removeprojectsPkValue: (pkValue: string) => void;
-    removeprojectsPkValues: (pkValues: Record<string, unknown>) => void;
-    isprojectsMissingRecords: boolean;
-    setprojectsShouldFetch: (shouldFetch: boolean) => void;
-    setprojectsFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addProjectsMatrxId: (recordId: MatrxRecordId) => void;
+    addProjectsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeProjectsMatrxId: (recordId: MatrxRecordId) => void;
+    removeProjectsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addProjectsPkValue: (pkValue: string) => void;
+    addProjectsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeProjectsPkValue: (pkValue: string) => void;
+    removeProjectsPkValues: (pkValues: Record<string, unknown>) => void;
+    isProjectsMissingRecords: boolean;
+    setProjectsShouldFetch: (shouldFetch: boolean) => void;
+    setProjectsFetchMode: (fetchMode: FetchMode) => void;
+    fetchProjectsQuickRefs: () => void;
+    fetchProjectsOne: (recordId: MatrxRecordId) => void;
+    fetchProjectsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchProjectsAll: () => void;
+    fetchProjectsPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useProjectsWithFetch = (): UseProjectsWithFetchReturn => {
@@ -3261,22 +3261,22 @@ export const useProjectsWithFetch = (): UseProjectsWithFetchReturn => {
         isLoading: projectsIsLoading,
         isError: projectsIsError,
         quickRefRecords: projectsQuickRefRecords,
-        addMatrxId: addprojectsMatrxId,
-        addMatrxIds: addprojectsMatrxIds,
-        removeMatrxId: removeprojectsMatrxId,
-        removeMatrxIds: removeprojectsMatrxIds,
-        addPkValue: addprojectsPkValue,
-        addPkValues: addprojectsPkValues,
-        removePkValue: removeprojectsPkValue,
-        removePkValues: removeprojectsPkValues,
-        isMissingRecords: isprojectsMissingRecords,
-        setShouldFetch: setprojectsShouldFetch,
-        setFetchMode: setprojectsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addProjectsMatrxId,
+        addMatrxIds: addProjectsMatrxIds,
+        removeMatrxId: removeProjectsMatrxId,
+        removeMatrxIds: removeProjectsMatrxIds,
+        addPkValue: addProjectsPkValue,
+        addPkValues: addProjectsPkValues,
+        removePkValue: removeProjectsPkValue,
+        removePkValues: removeProjectsPkValues,
+        isMissingRecords: isProjectsMissingRecords,
+        setShouldFetch: setProjectsShouldFetch,
+        setFetchMode: setProjectsFetchMode,
+        fetchQuickRefs: fetchProjectsQuickRefs,
+        fetchOne: fetchProjectsOne,
+        fetchOneWithFkIfk: fetchProjectsOneWithFkIfk,
+        fetchAll: fetchProjectsAll,
+        fetchPaginated: fetchProjectsPaginated,
     } = useEntityWithFetch("projects");
 
     return {
@@ -3288,22 +3288,22 @@ export const useProjectsWithFetch = (): UseProjectsWithFetchReturn => {
         projectsIsLoading,
         projectsIsError,
         projectsQuickRefRecords,
-        addprojectsMatrxId,
-        addprojectsMatrxIds,
-        removeprojectsMatrxId,
-        removeprojectsMatrxIds,
-        addprojectsPkValue,
-        addprojectsPkValues,
-        removeprojectsPkValue,
-        removeprojectsPkValues,
-        isprojectsMissingRecords,
-        setprojectsShouldFetch,
-        setprojectsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addProjectsMatrxId,
+        addProjectsMatrxIds,
+        removeProjectsMatrxId,
+        removeProjectsMatrxIds,
+        addProjectsPkValue,
+        addProjectsPkValues,
+        removeProjectsPkValue,
+        removeProjectsPkValues,
+        isProjectsMissingRecords,
+        setProjectsShouldFetch,
+        setProjectsFetchMode,
+        fetchProjectsQuickRefs,
+        fetchProjectsOne,
+        fetchProjectsOneWithFkIfk,
+        fetchProjectsAll,
+        fetchProjectsPaginated,
     };
 };
 
@@ -3316,22 +3316,22 @@ type UseRecipeWithFetchReturn = {
     recipeIsLoading: boolean;
     recipeIsError: boolean;
     recipeQuickRefRecords: QuickReferenceRecord[];
-    addrecipeMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipePkValue: (pkValue: string) => void;
-    addrecipePkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipePkValue: (pkValue: string) => void;
-    removerecipePkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeMissingRecords: boolean;
-    setrecipeShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipePkValue: (pkValue: string) => void;
+    addRecipePkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipePkValue: (pkValue: string) => void;
+    removeRecipePkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeMissingRecords: boolean;
+    setRecipeShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeQuickRefs: () => void;
+    fetchRecipeOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeAll: () => void;
+    fetchRecipePaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeWithFetch = (): UseRecipeWithFetchReturn => {
@@ -3344,22 +3344,22 @@ export const useRecipeWithFetch = (): UseRecipeWithFetchReturn => {
         isLoading: recipeIsLoading,
         isError: recipeIsError,
         quickRefRecords: recipeQuickRefRecords,
-        addMatrxId: addrecipeMatrxId,
-        addMatrxIds: addrecipeMatrxIds,
-        removeMatrxId: removerecipeMatrxId,
-        removeMatrxIds: removerecipeMatrxIds,
-        addPkValue: addrecipePkValue,
-        addPkValues: addrecipePkValues,
-        removePkValue: removerecipePkValue,
-        removePkValues: removerecipePkValues,
-        isMissingRecords: isrecipeMissingRecords,
-        setShouldFetch: setrecipeShouldFetch,
-        setFetchMode: setrecipeFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeMatrxId,
+        addMatrxIds: addRecipeMatrxIds,
+        removeMatrxId: removeRecipeMatrxId,
+        removeMatrxIds: removeRecipeMatrxIds,
+        addPkValue: addRecipePkValue,
+        addPkValues: addRecipePkValues,
+        removePkValue: removeRecipePkValue,
+        removePkValues: removeRecipePkValues,
+        isMissingRecords: isRecipeMissingRecords,
+        setShouldFetch: setRecipeShouldFetch,
+        setFetchMode: setRecipeFetchMode,
+        fetchQuickRefs: fetchRecipeQuickRefs,
+        fetchOne: fetchRecipeOne,
+        fetchOneWithFkIfk: fetchRecipeOneWithFkIfk,
+        fetchAll: fetchRecipeAll,
+        fetchPaginated: fetchRecipePaginated,
     } = useEntityWithFetch("recipe");
 
     return {
@@ -3371,22 +3371,22 @@ export const useRecipeWithFetch = (): UseRecipeWithFetchReturn => {
         recipeIsLoading,
         recipeIsError,
         recipeQuickRefRecords,
-        addrecipeMatrxId,
-        addrecipeMatrxIds,
-        removerecipeMatrxId,
-        removerecipeMatrxIds,
-        addrecipePkValue,
-        addrecipePkValues,
-        removerecipePkValue,
-        removerecipePkValues,
-        isrecipeMissingRecords,
-        setrecipeShouldFetch,
-        setrecipeFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeMatrxId,
+        addRecipeMatrxIds,
+        removeRecipeMatrxId,
+        removeRecipeMatrxIds,
+        addRecipePkValue,
+        addRecipePkValues,
+        removeRecipePkValue,
+        removeRecipePkValues,
+        isRecipeMissingRecords,
+        setRecipeShouldFetch,
+        setRecipeFetchMode,
+        fetchRecipeQuickRefs,
+        fetchRecipeOne,
+        fetchRecipeOneWithFkIfk,
+        fetchRecipeAll,
+        fetchRecipePaginated,
     };
 };
 
@@ -3399,22 +3399,22 @@ type UseRecipeBrokerWithFetchReturn = {
     recipeBrokerIsLoading: boolean;
     recipeBrokerIsError: boolean;
     recipeBrokerQuickRefRecords: QuickReferenceRecord[];
-    addrecipeBrokerMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeBrokerMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipeBrokerPkValue: (pkValue: string) => void;
-    addrecipeBrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipeBrokerPkValue: (pkValue: string) => void;
-    removerecipeBrokerPkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeBrokerMissingRecords: boolean;
-    setrecipeBrokerShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeBrokerFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeBrokerMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeBrokerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipeBrokerPkValue: (pkValue: string) => void;
+    addRecipeBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipeBrokerPkValue: (pkValue: string) => void;
+    removeRecipeBrokerPkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeBrokerMissingRecords: boolean;
+    setRecipeBrokerShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeBrokerFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeBrokerQuickRefs: () => void;
+    fetchRecipeBrokerOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeBrokerOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeBrokerAll: () => void;
+    fetchRecipeBrokerPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeBrokerWithFetch = (): UseRecipeBrokerWithFetchReturn => {
@@ -3427,22 +3427,22 @@ export const useRecipeBrokerWithFetch = (): UseRecipeBrokerWithFetchReturn => {
         isLoading: recipeBrokerIsLoading,
         isError: recipeBrokerIsError,
         quickRefRecords: recipeBrokerQuickRefRecords,
-        addMatrxId: addrecipeBrokerMatrxId,
-        addMatrxIds: addrecipeBrokerMatrxIds,
-        removeMatrxId: removerecipeBrokerMatrxId,
-        removeMatrxIds: removerecipeBrokerMatrxIds,
-        addPkValue: addrecipeBrokerPkValue,
-        addPkValues: addrecipeBrokerPkValues,
-        removePkValue: removerecipeBrokerPkValue,
-        removePkValues: removerecipeBrokerPkValues,
-        isMissingRecords: isrecipeBrokerMissingRecords,
-        setShouldFetch: setrecipeBrokerShouldFetch,
-        setFetchMode: setrecipeBrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeBrokerMatrxId,
+        addMatrxIds: addRecipeBrokerMatrxIds,
+        removeMatrxId: removeRecipeBrokerMatrxId,
+        removeMatrxIds: removeRecipeBrokerMatrxIds,
+        addPkValue: addRecipeBrokerPkValue,
+        addPkValues: addRecipeBrokerPkValues,
+        removePkValue: removeRecipeBrokerPkValue,
+        removePkValues: removeRecipeBrokerPkValues,
+        isMissingRecords: isRecipeBrokerMissingRecords,
+        setShouldFetch: setRecipeBrokerShouldFetch,
+        setFetchMode: setRecipeBrokerFetchMode,
+        fetchQuickRefs: fetchRecipeBrokerQuickRefs,
+        fetchOne: fetchRecipeBrokerOne,
+        fetchOneWithFkIfk: fetchRecipeBrokerOneWithFkIfk,
+        fetchAll: fetchRecipeBrokerAll,
+        fetchPaginated: fetchRecipeBrokerPaginated,
     } = useEntityWithFetch("recipeBroker");
 
     return {
@@ -3454,22 +3454,22 @@ export const useRecipeBrokerWithFetch = (): UseRecipeBrokerWithFetchReturn => {
         recipeBrokerIsLoading,
         recipeBrokerIsError,
         recipeBrokerQuickRefRecords,
-        addrecipeBrokerMatrxId,
-        addrecipeBrokerMatrxIds,
-        removerecipeBrokerMatrxId,
-        removerecipeBrokerMatrxIds,
-        addrecipeBrokerPkValue,
-        addrecipeBrokerPkValues,
-        removerecipeBrokerPkValue,
-        removerecipeBrokerPkValues,
-        isrecipeBrokerMissingRecords,
-        setrecipeBrokerShouldFetch,
-        setrecipeBrokerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeBrokerMatrxId,
+        addRecipeBrokerMatrxIds,
+        removeRecipeBrokerMatrxId,
+        removeRecipeBrokerMatrxIds,
+        addRecipeBrokerPkValue,
+        addRecipeBrokerPkValues,
+        removeRecipeBrokerPkValue,
+        removeRecipeBrokerPkValues,
+        isRecipeBrokerMissingRecords,
+        setRecipeBrokerShouldFetch,
+        setRecipeBrokerFetchMode,
+        fetchRecipeBrokerQuickRefs,
+        fetchRecipeBrokerOne,
+        fetchRecipeBrokerOneWithFkIfk,
+        fetchRecipeBrokerAll,
+        fetchRecipeBrokerPaginated,
     };
 };
 
@@ -3482,22 +3482,22 @@ type UseRecipeDisplayWithFetchReturn = {
     recipeDisplayIsLoading: boolean;
     recipeDisplayIsError: boolean;
     recipeDisplayQuickRefRecords: QuickReferenceRecord[];
-    addrecipeDisplayMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeDisplayMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeDisplayMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeDisplayMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipeDisplayPkValue: (pkValue: string) => void;
-    addrecipeDisplayPkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipeDisplayPkValue: (pkValue: string) => void;
-    removerecipeDisplayPkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeDisplayMissingRecords: boolean;
-    setrecipeDisplayShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeDisplayFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeDisplayMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeDisplayMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeDisplayMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeDisplayMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipeDisplayPkValue: (pkValue: string) => void;
+    addRecipeDisplayPkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipeDisplayPkValue: (pkValue: string) => void;
+    removeRecipeDisplayPkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeDisplayMissingRecords: boolean;
+    setRecipeDisplayShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeDisplayFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeDisplayQuickRefs: () => void;
+    fetchRecipeDisplayOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeDisplayOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeDisplayAll: () => void;
+    fetchRecipeDisplayPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeDisplayWithFetch = (): UseRecipeDisplayWithFetchReturn => {
@@ -3510,22 +3510,22 @@ export const useRecipeDisplayWithFetch = (): UseRecipeDisplayWithFetchReturn => 
         isLoading: recipeDisplayIsLoading,
         isError: recipeDisplayIsError,
         quickRefRecords: recipeDisplayQuickRefRecords,
-        addMatrxId: addrecipeDisplayMatrxId,
-        addMatrxIds: addrecipeDisplayMatrxIds,
-        removeMatrxId: removerecipeDisplayMatrxId,
-        removeMatrxIds: removerecipeDisplayMatrxIds,
-        addPkValue: addrecipeDisplayPkValue,
-        addPkValues: addrecipeDisplayPkValues,
-        removePkValue: removerecipeDisplayPkValue,
-        removePkValues: removerecipeDisplayPkValues,
-        isMissingRecords: isrecipeDisplayMissingRecords,
-        setShouldFetch: setrecipeDisplayShouldFetch,
-        setFetchMode: setrecipeDisplayFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeDisplayMatrxId,
+        addMatrxIds: addRecipeDisplayMatrxIds,
+        removeMatrxId: removeRecipeDisplayMatrxId,
+        removeMatrxIds: removeRecipeDisplayMatrxIds,
+        addPkValue: addRecipeDisplayPkValue,
+        addPkValues: addRecipeDisplayPkValues,
+        removePkValue: removeRecipeDisplayPkValue,
+        removePkValues: removeRecipeDisplayPkValues,
+        isMissingRecords: isRecipeDisplayMissingRecords,
+        setShouldFetch: setRecipeDisplayShouldFetch,
+        setFetchMode: setRecipeDisplayFetchMode,
+        fetchQuickRefs: fetchRecipeDisplayQuickRefs,
+        fetchOne: fetchRecipeDisplayOne,
+        fetchOneWithFkIfk: fetchRecipeDisplayOneWithFkIfk,
+        fetchAll: fetchRecipeDisplayAll,
+        fetchPaginated: fetchRecipeDisplayPaginated,
     } = useEntityWithFetch("recipeDisplay");
 
     return {
@@ -3537,22 +3537,22 @@ export const useRecipeDisplayWithFetch = (): UseRecipeDisplayWithFetchReturn => 
         recipeDisplayIsLoading,
         recipeDisplayIsError,
         recipeDisplayQuickRefRecords,
-        addrecipeDisplayMatrxId,
-        addrecipeDisplayMatrxIds,
-        removerecipeDisplayMatrxId,
-        removerecipeDisplayMatrxIds,
-        addrecipeDisplayPkValue,
-        addrecipeDisplayPkValues,
-        removerecipeDisplayPkValue,
-        removerecipeDisplayPkValues,
-        isrecipeDisplayMissingRecords,
-        setrecipeDisplayShouldFetch,
-        setrecipeDisplayFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeDisplayMatrxId,
+        addRecipeDisplayMatrxIds,
+        removeRecipeDisplayMatrxId,
+        removeRecipeDisplayMatrxIds,
+        addRecipeDisplayPkValue,
+        addRecipeDisplayPkValues,
+        removeRecipeDisplayPkValue,
+        removeRecipeDisplayPkValues,
+        isRecipeDisplayMissingRecords,
+        setRecipeDisplayShouldFetch,
+        setRecipeDisplayFetchMode,
+        fetchRecipeDisplayQuickRefs,
+        fetchRecipeDisplayOne,
+        fetchRecipeDisplayOneWithFkIfk,
+        fetchRecipeDisplayAll,
+        fetchRecipeDisplayPaginated,
     };
 };
 
@@ -3565,22 +3565,22 @@ type UseRecipeFunctionWithFetchReturn = {
     recipeFunctionIsLoading: boolean;
     recipeFunctionIsError: boolean;
     recipeFunctionQuickRefRecords: QuickReferenceRecord[];
-    addrecipeFunctionMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeFunctionMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipeFunctionPkValue: (pkValue: string) => void;
-    addrecipeFunctionPkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipeFunctionPkValue: (pkValue: string) => void;
-    removerecipeFunctionPkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeFunctionMissingRecords: boolean;
-    setrecipeFunctionShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeFunctionFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeFunctionMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeFunctionMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipeFunctionPkValue: (pkValue: string) => void;
+    addRecipeFunctionPkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipeFunctionPkValue: (pkValue: string) => void;
+    removeRecipeFunctionPkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeFunctionMissingRecords: boolean;
+    setRecipeFunctionShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeFunctionFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeFunctionQuickRefs: () => void;
+    fetchRecipeFunctionOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeFunctionAll: () => void;
+    fetchRecipeFunctionPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeFunctionWithFetch = (): UseRecipeFunctionWithFetchReturn => {
@@ -3593,22 +3593,22 @@ export const useRecipeFunctionWithFetch = (): UseRecipeFunctionWithFetchReturn =
         isLoading: recipeFunctionIsLoading,
         isError: recipeFunctionIsError,
         quickRefRecords: recipeFunctionQuickRefRecords,
-        addMatrxId: addrecipeFunctionMatrxId,
-        addMatrxIds: addrecipeFunctionMatrxIds,
-        removeMatrxId: removerecipeFunctionMatrxId,
-        removeMatrxIds: removerecipeFunctionMatrxIds,
-        addPkValue: addrecipeFunctionPkValue,
-        addPkValues: addrecipeFunctionPkValues,
-        removePkValue: removerecipeFunctionPkValue,
-        removePkValues: removerecipeFunctionPkValues,
-        isMissingRecords: isrecipeFunctionMissingRecords,
-        setShouldFetch: setrecipeFunctionShouldFetch,
-        setFetchMode: setrecipeFunctionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeFunctionMatrxId,
+        addMatrxIds: addRecipeFunctionMatrxIds,
+        removeMatrxId: removeRecipeFunctionMatrxId,
+        removeMatrxIds: removeRecipeFunctionMatrxIds,
+        addPkValue: addRecipeFunctionPkValue,
+        addPkValues: addRecipeFunctionPkValues,
+        removePkValue: removeRecipeFunctionPkValue,
+        removePkValues: removeRecipeFunctionPkValues,
+        isMissingRecords: isRecipeFunctionMissingRecords,
+        setShouldFetch: setRecipeFunctionShouldFetch,
+        setFetchMode: setRecipeFunctionFetchMode,
+        fetchQuickRefs: fetchRecipeFunctionQuickRefs,
+        fetchOne: fetchRecipeFunctionOne,
+        fetchOneWithFkIfk: fetchRecipeFunctionOneWithFkIfk,
+        fetchAll: fetchRecipeFunctionAll,
+        fetchPaginated: fetchRecipeFunctionPaginated,
     } = useEntityWithFetch("recipeFunction");
 
     return {
@@ -3620,22 +3620,22 @@ export const useRecipeFunctionWithFetch = (): UseRecipeFunctionWithFetchReturn =
         recipeFunctionIsLoading,
         recipeFunctionIsError,
         recipeFunctionQuickRefRecords,
-        addrecipeFunctionMatrxId,
-        addrecipeFunctionMatrxIds,
-        removerecipeFunctionMatrxId,
-        removerecipeFunctionMatrxIds,
-        addrecipeFunctionPkValue,
-        addrecipeFunctionPkValues,
-        removerecipeFunctionPkValue,
-        removerecipeFunctionPkValues,
-        isrecipeFunctionMissingRecords,
-        setrecipeFunctionShouldFetch,
-        setrecipeFunctionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeFunctionMatrxId,
+        addRecipeFunctionMatrxIds,
+        removeRecipeFunctionMatrxId,
+        removeRecipeFunctionMatrxIds,
+        addRecipeFunctionPkValue,
+        addRecipeFunctionPkValues,
+        removeRecipeFunctionPkValue,
+        removeRecipeFunctionPkValues,
+        isRecipeFunctionMissingRecords,
+        setRecipeFunctionShouldFetch,
+        setRecipeFunctionFetchMode,
+        fetchRecipeFunctionQuickRefs,
+        fetchRecipeFunctionOne,
+        fetchRecipeFunctionOneWithFkIfk,
+        fetchRecipeFunctionAll,
+        fetchRecipeFunctionPaginated,
     };
 };
 
@@ -3648,22 +3648,22 @@ type UseRecipeMessageWithFetchReturn = {
     recipeMessageIsLoading: boolean;
     recipeMessageIsError: boolean;
     recipeMessageQuickRefRecords: QuickReferenceRecord[];
-    addrecipeMessageMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeMessageMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeMessageMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeMessageMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipeMessagePkValue: (pkValue: string) => void;
-    addrecipeMessagePkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipeMessagePkValue: (pkValue: string) => void;
-    removerecipeMessagePkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeMessageMissingRecords: boolean;
-    setrecipeMessageShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeMessageFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeMessageMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeMessageMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeMessageMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeMessageMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipeMessagePkValue: (pkValue: string) => void;
+    addRecipeMessagePkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipeMessagePkValue: (pkValue: string) => void;
+    removeRecipeMessagePkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeMessageMissingRecords: boolean;
+    setRecipeMessageShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeMessageFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeMessageQuickRefs: () => void;
+    fetchRecipeMessageOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeMessageOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeMessageAll: () => void;
+    fetchRecipeMessagePaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeMessageWithFetch = (): UseRecipeMessageWithFetchReturn => {
@@ -3676,22 +3676,22 @@ export const useRecipeMessageWithFetch = (): UseRecipeMessageWithFetchReturn => 
         isLoading: recipeMessageIsLoading,
         isError: recipeMessageIsError,
         quickRefRecords: recipeMessageQuickRefRecords,
-        addMatrxId: addrecipeMessageMatrxId,
-        addMatrxIds: addrecipeMessageMatrxIds,
-        removeMatrxId: removerecipeMessageMatrxId,
-        removeMatrxIds: removerecipeMessageMatrxIds,
-        addPkValue: addrecipeMessagePkValue,
-        addPkValues: addrecipeMessagePkValues,
-        removePkValue: removerecipeMessagePkValue,
-        removePkValues: removerecipeMessagePkValues,
-        isMissingRecords: isrecipeMessageMissingRecords,
-        setShouldFetch: setrecipeMessageShouldFetch,
-        setFetchMode: setrecipeMessageFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeMessageMatrxId,
+        addMatrxIds: addRecipeMessageMatrxIds,
+        removeMatrxId: removeRecipeMessageMatrxId,
+        removeMatrxIds: removeRecipeMessageMatrxIds,
+        addPkValue: addRecipeMessagePkValue,
+        addPkValues: addRecipeMessagePkValues,
+        removePkValue: removeRecipeMessagePkValue,
+        removePkValues: removeRecipeMessagePkValues,
+        isMissingRecords: isRecipeMessageMissingRecords,
+        setShouldFetch: setRecipeMessageShouldFetch,
+        setFetchMode: setRecipeMessageFetchMode,
+        fetchQuickRefs: fetchRecipeMessageQuickRefs,
+        fetchOne: fetchRecipeMessageOne,
+        fetchOneWithFkIfk: fetchRecipeMessageOneWithFkIfk,
+        fetchAll: fetchRecipeMessageAll,
+        fetchPaginated: fetchRecipeMessagePaginated,
     } = useEntityWithFetch("recipeMessage");
 
     return {
@@ -3703,22 +3703,22 @@ export const useRecipeMessageWithFetch = (): UseRecipeMessageWithFetchReturn => 
         recipeMessageIsLoading,
         recipeMessageIsError,
         recipeMessageQuickRefRecords,
-        addrecipeMessageMatrxId,
-        addrecipeMessageMatrxIds,
-        removerecipeMessageMatrxId,
-        removerecipeMessageMatrxIds,
-        addrecipeMessagePkValue,
-        addrecipeMessagePkValues,
-        removerecipeMessagePkValue,
-        removerecipeMessagePkValues,
-        isrecipeMessageMissingRecords,
-        setrecipeMessageShouldFetch,
-        setrecipeMessageFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeMessageMatrxId,
+        addRecipeMessageMatrxIds,
+        removeRecipeMessageMatrxId,
+        removeRecipeMessageMatrxIds,
+        addRecipeMessagePkValue,
+        addRecipeMessagePkValues,
+        removeRecipeMessagePkValue,
+        removeRecipeMessagePkValues,
+        isRecipeMessageMissingRecords,
+        setRecipeMessageShouldFetch,
+        setRecipeMessageFetchMode,
+        fetchRecipeMessageQuickRefs,
+        fetchRecipeMessageOne,
+        fetchRecipeMessageOneWithFkIfk,
+        fetchRecipeMessageAll,
+        fetchRecipeMessagePaginated,
     };
 };
 
@@ -3731,22 +3731,22 @@ type UseRecipeMessageReorderQueueWithFetchReturn = {
     recipeMessageReorderQueueIsLoading: boolean;
     recipeMessageReorderQueueIsError: boolean;
     recipeMessageReorderQueueQuickRefRecords: QuickReferenceRecord[];
-    addrecipeMessageReorderQueueMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeMessageReorderQueueMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeMessageReorderQueueMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeMessageReorderQueueMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipeMessageReorderQueuePkValue: (pkValue: string) => void;
-    addrecipeMessageReorderQueuePkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipeMessageReorderQueuePkValue: (pkValue: string) => void;
-    removerecipeMessageReorderQueuePkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeMessageReorderQueueMissingRecords: boolean;
-    setrecipeMessageReorderQueueShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeMessageReorderQueueFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeMessageReorderQueueMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeMessageReorderQueueMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeMessageReorderQueueMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeMessageReorderQueueMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipeMessageReorderQueuePkValue: (pkValue: string) => void;
+    addRecipeMessageReorderQueuePkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipeMessageReorderQueuePkValue: (pkValue: string) => void;
+    removeRecipeMessageReorderQueuePkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeMessageReorderQueueMissingRecords: boolean;
+    setRecipeMessageReorderQueueShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeMessageReorderQueueFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeMessageReorderQueueQuickRefs: () => void;
+    fetchRecipeMessageReorderQueueOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeMessageReorderQueueOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeMessageReorderQueueAll: () => void;
+    fetchRecipeMessageReorderQueuePaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeMessageReorderQueueWithFetch = (): UseRecipeMessageReorderQueueWithFetchReturn => {
@@ -3759,22 +3759,22 @@ export const useRecipeMessageReorderQueueWithFetch = (): UseRecipeMessageReorder
         isLoading: recipeMessageReorderQueueIsLoading,
         isError: recipeMessageReorderQueueIsError,
         quickRefRecords: recipeMessageReorderQueueQuickRefRecords,
-        addMatrxId: addrecipeMessageReorderQueueMatrxId,
-        addMatrxIds: addrecipeMessageReorderQueueMatrxIds,
-        removeMatrxId: removerecipeMessageReorderQueueMatrxId,
-        removeMatrxIds: removerecipeMessageReorderQueueMatrxIds,
-        addPkValue: addrecipeMessageReorderQueuePkValue,
-        addPkValues: addrecipeMessageReorderQueuePkValues,
-        removePkValue: removerecipeMessageReorderQueuePkValue,
-        removePkValues: removerecipeMessageReorderQueuePkValues,
-        isMissingRecords: isrecipeMessageReorderQueueMissingRecords,
-        setShouldFetch: setrecipeMessageReorderQueueShouldFetch,
-        setFetchMode: setrecipeMessageReorderQueueFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeMessageReorderQueueMatrxId,
+        addMatrxIds: addRecipeMessageReorderQueueMatrxIds,
+        removeMatrxId: removeRecipeMessageReorderQueueMatrxId,
+        removeMatrxIds: removeRecipeMessageReorderQueueMatrxIds,
+        addPkValue: addRecipeMessageReorderQueuePkValue,
+        addPkValues: addRecipeMessageReorderQueuePkValues,
+        removePkValue: removeRecipeMessageReorderQueuePkValue,
+        removePkValues: removeRecipeMessageReorderQueuePkValues,
+        isMissingRecords: isRecipeMessageReorderQueueMissingRecords,
+        setShouldFetch: setRecipeMessageReorderQueueShouldFetch,
+        setFetchMode: setRecipeMessageReorderQueueFetchMode,
+        fetchQuickRefs: fetchRecipeMessageReorderQueueQuickRefs,
+        fetchOne: fetchRecipeMessageReorderQueueOne,
+        fetchOneWithFkIfk: fetchRecipeMessageReorderQueueOneWithFkIfk,
+        fetchAll: fetchRecipeMessageReorderQueueAll,
+        fetchPaginated: fetchRecipeMessageReorderQueuePaginated,
     } = useEntityWithFetch("recipeMessageReorderQueue");
 
     return {
@@ -3786,22 +3786,22 @@ export const useRecipeMessageReorderQueueWithFetch = (): UseRecipeMessageReorder
         recipeMessageReorderQueueIsLoading,
         recipeMessageReorderQueueIsError,
         recipeMessageReorderQueueQuickRefRecords,
-        addrecipeMessageReorderQueueMatrxId,
-        addrecipeMessageReorderQueueMatrxIds,
-        removerecipeMessageReorderQueueMatrxId,
-        removerecipeMessageReorderQueueMatrxIds,
-        addrecipeMessageReorderQueuePkValue,
-        addrecipeMessageReorderQueuePkValues,
-        removerecipeMessageReorderQueuePkValue,
-        removerecipeMessageReorderQueuePkValues,
-        isrecipeMessageReorderQueueMissingRecords,
-        setrecipeMessageReorderQueueShouldFetch,
-        setrecipeMessageReorderQueueFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeMessageReorderQueueMatrxId,
+        addRecipeMessageReorderQueueMatrxIds,
+        removeRecipeMessageReorderQueueMatrxId,
+        removeRecipeMessageReorderQueueMatrxIds,
+        addRecipeMessageReorderQueuePkValue,
+        addRecipeMessageReorderQueuePkValues,
+        removeRecipeMessageReorderQueuePkValue,
+        removeRecipeMessageReorderQueuePkValues,
+        isRecipeMessageReorderQueueMissingRecords,
+        setRecipeMessageReorderQueueShouldFetch,
+        setRecipeMessageReorderQueueFetchMode,
+        fetchRecipeMessageReorderQueueQuickRefs,
+        fetchRecipeMessageReorderQueueOne,
+        fetchRecipeMessageReorderQueueOneWithFkIfk,
+        fetchRecipeMessageReorderQueueAll,
+        fetchRecipeMessageReorderQueuePaginated,
     };
 };
 
@@ -3814,22 +3814,22 @@ type UseRecipeModelWithFetchReturn = {
     recipeModelIsLoading: boolean;
     recipeModelIsError: boolean;
     recipeModelQuickRefRecords: QuickReferenceRecord[];
-    addrecipeModelMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeModelMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipeModelPkValue: (pkValue: string) => void;
-    addrecipeModelPkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipeModelPkValue: (pkValue: string) => void;
-    removerecipeModelPkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeModelMissingRecords: boolean;
-    setrecipeModelShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeModelFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeModelMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeModelMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeModelMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipeModelPkValue: (pkValue: string) => void;
+    addRecipeModelPkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipeModelPkValue: (pkValue: string) => void;
+    removeRecipeModelPkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeModelMissingRecords: boolean;
+    setRecipeModelShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeModelFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeModelQuickRefs: () => void;
+    fetchRecipeModelOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeModelOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeModelAll: () => void;
+    fetchRecipeModelPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeModelWithFetch = (): UseRecipeModelWithFetchReturn => {
@@ -3842,22 +3842,22 @@ export const useRecipeModelWithFetch = (): UseRecipeModelWithFetchReturn => {
         isLoading: recipeModelIsLoading,
         isError: recipeModelIsError,
         quickRefRecords: recipeModelQuickRefRecords,
-        addMatrxId: addrecipeModelMatrxId,
-        addMatrxIds: addrecipeModelMatrxIds,
-        removeMatrxId: removerecipeModelMatrxId,
-        removeMatrxIds: removerecipeModelMatrxIds,
-        addPkValue: addrecipeModelPkValue,
-        addPkValues: addrecipeModelPkValues,
-        removePkValue: removerecipeModelPkValue,
-        removePkValues: removerecipeModelPkValues,
-        isMissingRecords: isrecipeModelMissingRecords,
-        setShouldFetch: setrecipeModelShouldFetch,
-        setFetchMode: setrecipeModelFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeModelMatrxId,
+        addMatrxIds: addRecipeModelMatrxIds,
+        removeMatrxId: removeRecipeModelMatrxId,
+        removeMatrxIds: removeRecipeModelMatrxIds,
+        addPkValue: addRecipeModelPkValue,
+        addPkValues: addRecipeModelPkValues,
+        removePkValue: removeRecipeModelPkValue,
+        removePkValues: removeRecipeModelPkValues,
+        isMissingRecords: isRecipeModelMissingRecords,
+        setShouldFetch: setRecipeModelShouldFetch,
+        setFetchMode: setRecipeModelFetchMode,
+        fetchQuickRefs: fetchRecipeModelQuickRefs,
+        fetchOne: fetchRecipeModelOne,
+        fetchOneWithFkIfk: fetchRecipeModelOneWithFkIfk,
+        fetchAll: fetchRecipeModelAll,
+        fetchPaginated: fetchRecipeModelPaginated,
     } = useEntityWithFetch("recipeModel");
 
     return {
@@ -3869,22 +3869,22 @@ export const useRecipeModelWithFetch = (): UseRecipeModelWithFetchReturn => {
         recipeModelIsLoading,
         recipeModelIsError,
         recipeModelQuickRefRecords,
-        addrecipeModelMatrxId,
-        addrecipeModelMatrxIds,
-        removerecipeModelMatrxId,
-        removerecipeModelMatrxIds,
-        addrecipeModelPkValue,
-        addrecipeModelPkValues,
-        removerecipeModelPkValue,
-        removerecipeModelPkValues,
-        isrecipeModelMissingRecords,
-        setrecipeModelShouldFetch,
-        setrecipeModelFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeModelMatrxId,
+        addRecipeModelMatrxIds,
+        removeRecipeModelMatrxId,
+        removeRecipeModelMatrxIds,
+        addRecipeModelPkValue,
+        addRecipeModelPkValues,
+        removeRecipeModelPkValue,
+        removeRecipeModelPkValues,
+        isRecipeModelMissingRecords,
+        setRecipeModelShouldFetch,
+        setRecipeModelFetchMode,
+        fetchRecipeModelQuickRefs,
+        fetchRecipeModelOne,
+        fetchRecipeModelOneWithFkIfk,
+        fetchRecipeModelAll,
+        fetchRecipeModelPaginated,
     };
 };
 
@@ -3897,22 +3897,22 @@ type UseRecipeProcessorWithFetchReturn = {
     recipeProcessorIsLoading: boolean;
     recipeProcessorIsError: boolean;
     recipeProcessorQuickRefRecords: QuickReferenceRecord[];
-    addrecipeProcessorMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeProcessorMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeProcessorMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeProcessorMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipeProcessorPkValue: (pkValue: string) => void;
-    addrecipeProcessorPkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipeProcessorPkValue: (pkValue: string) => void;
-    removerecipeProcessorPkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeProcessorMissingRecords: boolean;
-    setrecipeProcessorShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeProcessorFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeProcessorMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeProcessorMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeProcessorMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeProcessorMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipeProcessorPkValue: (pkValue: string) => void;
+    addRecipeProcessorPkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipeProcessorPkValue: (pkValue: string) => void;
+    removeRecipeProcessorPkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeProcessorMissingRecords: boolean;
+    setRecipeProcessorShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeProcessorFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeProcessorQuickRefs: () => void;
+    fetchRecipeProcessorOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeProcessorOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeProcessorAll: () => void;
+    fetchRecipeProcessorPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeProcessorWithFetch = (): UseRecipeProcessorWithFetchReturn => {
@@ -3925,22 +3925,22 @@ export const useRecipeProcessorWithFetch = (): UseRecipeProcessorWithFetchReturn
         isLoading: recipeProcessorIsLoading,
         isError: recipeProcessorIsError,
         quickRefRecords: recipeProcessorQuickRefRecords,
-        addMatrxId: addrecipeProcessorMatrxId,
-        addMatrxIds: addrecipeProcessorMatrxIds,
-        removeMatrxId: removerecipeProcessorMatrxId,
-        removeMatrxIds: removerecipeProcessorMatrxIds,
-        addPkValue: addrecipeProcessorPkValue,
-        addPkValues: addrecipeProcessorPkValues,
-        removePkValue: removerecipeProcessorPkValue,
-        removePkValues: removerecipeProcessorPkValues,
-        isMissingRecords: isrecipeProcessorMissingRecords,
-        setShouldFetch: setrecipeProcessorShouldFetch,
-        setFetchMode: setrecipeProcessorFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeProcessorMatrxId,
+        addMatrxIds: addRecipeProcessorMatrxIds,
+        removeMatrxId: removeRecipeProcessorMatrxId,
+        removeMatrxIds: removeRecipeProcessorMatrxIds,
+        addPkValue: addRecipeProcessorPkValue,
+        addPkValues: addRecipeProcessorPkValues,
+        removePkValue: removeRecipeProcessorPkValue,
+        removePkValues: removeRecipeProcessorPkValues,
+        isMissingRecords: isRecipeProcessorMissingRecords,
+        setShouldFetch: setRecipeProcessorShouldFetch,
+        setFetchMode: setRecipeProcessorFetchMode,
+        fetchQuickRefs: fetchRecipeProcessorQuickRefs,
+        fetchOne: fetchRecipeProcessorOne,
+        fetchOneWithFkIfk: fetchRecipeProcessorOneWithFkIfk,
+        fetchAll: fetchRecipeProcessorAll,
+        fetchPaginated: fetchRecipeProcessorPaginated,
     } = useEntityWithFetch("recipeProcessor");
 
     return {
@@ -3952,22 +3952,22 @@ export const useRecipeProcessorWithFetch = (): UseRecipeProcessorWithFetchReturn
         recipeProcessorIsLoading,
         recipeProcessorIsError,
         recipeProcessorQuickRefRecords,
-        addrecipeProcessorMatrxId,
-        addrecipeProcessorMatrxIds,
-        removerecipeProcessorMatrxId,
-        removerecipeProcessorMatrxIds,
-        addrecipeProcessorPkValue,
-        addrecipeProcessorPkValues,
-        removerecipeProcessorPkValue,
-        removerecipeProcessorPkValues,
-        isrecipeProcessorMissingRecords,
-        setrecipeProcessorShouldFetch,
-        setrecipeProcessorFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeProcessorMatrxId,
+        addRecipeProcessorMatrxIds,
+        removeRecipeProcessorMatrxId,
+        removeRecipeProcessorMatrxIds,
+        addRecipeProcessorPkValue,
+        addRecipeProcessorPkValues,
+        removeRecipeProcessorPkValue,
+        removeRecipeProcessorPkValues,
+        isRecipeProcessorMissingRecords,
+        setRecipeProcessorShouldFetch,
+        setRecipeProcessorFetchMode,
+        fetchRecipeProcessorQuickRefs,
+        fetchRecipeProcessorOne,
+        fetchRecipeProcessorOneWithFkIfk,
+        fetchRecipeProcessorAll,
+        fetchRecipeProcessorPaginated,
     };
 };
 
@@ -3980,22 +3980,22 @@ type UseRecipeToolWithFetchReturn = {
     recipeToolIsLoading: boolean;
     recipeToolIsError: boolean;
     recipeToolQuickRefRecords: QuickReferenceRecord[];
-    addrecipeToolMatrxId: (recordId: MatrxRecordId) => void;
-    addrecipeToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removerecipeToolMatrxId: (recordId: MatrxRecordId) => void;
-    removerecipeToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addrecipeToolPkValue: (pkValue: string) => void;
-    addrecipeToolPkValues: (pkValues: Record<string, unknown>) => void;
-    removerecipeToolPkValue: (pkValue: string) => void;
-    removerecipeToolPkValues: (pkValues: Record<string, unknown>) => void;
-    isrecipeToolMissingRecords: boolean;
-    setrecipeToolShouldFetch: (shouldFetch: boolean) => void;
-    setrecipeToolFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRecipeToolMatrxId: (recordId: MatrxRecordId) => void;
+    addRecipeToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRecipeToolMatrxId: (recordId: MatrxRecordId) => void;
+    removeRecipeToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRecipeToolPkValue: (pkValue: string) => void;
+    addRecipeToolPkValues: (pkValues: Record<string, unknown>) => void;
+    removeRecipeToolPkValue: (pkValue: string) => void;
+    removeRecipeToolPkValues: (pkValues: Record<string, unknown>) => void;
+    isRecipeToolMissingRecords: boolean;
+    setRecipeToolShouldFetch: (shouldFetch: boolean) => void;
+    setRecipeToolFetchMode: (fetchMode: FetchMode) => void;
+    fetchRecipeToolQuickRefs: () => void;
+    fetchRecipeToolOne: (recordId: MatrxRecordId) => void;
+    fetchRecipeToolOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRecipeToolAll: () => void;
+    fetchRecipeToolPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRecipeToolWithFetch = (): UseRecipeToolWithFetchReturn => {
@@ -4008,22 +4008,22 @@ export const useRecipeToolWithFetch = (): UseRecipeToolWithFetchReturn => {
         isLoading: recipeToolIsLoading,
         isError: recipeToolIsError,
         quickRefRecords: recipeToolQuickRefRecords,
-        addMatrxId: addrecipeToolMatrxId,
-        addMatrxIds: addrecipeToolMatrxIds,
-        removeMatrxId: removerecipeToolMatrxId,
-        removeMatrxIds: removerecipeToolMatrxIds,
-        addPkValue: addrecipeToolPkValue,
-        addPkValues: addrecipeToolPkValues,
-        removePkValue: removerecipeToolPkValue,
-        removePkValues: removerecipeToolPkValues,
-        isMissingRecords: isrecipeToolMissingRecords,
-        setShouldFetch: setrecipeToolShouldFetch,
-        setFetchMode: setrecipeToolFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRecipeToolMatrxId,
+        addMatrxIds: addRecipeToolMatrxIds,
+        removeMatrxId: removeRecipeToolMatrxId,
+        removeMatrxIds: removeRecipeToolMatrxIds,
+        addPkValue: addRecipeToolPkValue,
+        addPkValues: addRecipeToolPkValues,
+        removePkValue: removeRecipeToolPkValue,
+        removePkValues: removeRecipeToolPkValues,
+        isMissingRecords: isRecipeToolMissingRecords,
+        setShouldFetch: setRecipeToolShouldFetch,
+        setFetchMode: setRecipeToolFetchMode,
+        fetchQuickRefs: fetchRecipeToolQuickRefs,
+        fetchOne: fetchRecipeToolOne,
+        fetchOneWithFkIfk: fetchRecipeToolOneWithFkIfk,
+        fetchAll: fetchRecipeToolAll,
+        fetchPaginated: fetchRecipeToolPaginated,
     } = useEntityWithFetch("recipeTool");
 
     return {
@@ -4035,22 +4035,22 @@ export const useRecipeToolWithFetch = (): UseRecipeToolWithFetchReturn => {
         recipeToolIsLoading,
         recipeToolIsError,
         recipeToolQuickRefRecords,
-        addrecipeToolMatrxId,
-        addrecipeToolMatrxIds,
-        removerecipeToolMatrxId,
-        removerecipeToolMatrxIds,
-        addrecipeToolPkValue,
-        addrecipeToolPkValues,
-        removerecipeToolPkValue,
-        removerecipeToolPkValues,
-        isrecipeToolMissingRecords,
-        setrecipeToolShouldFetch,
-        setrecipeToolFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRecipeToolMatrxId,
+        addRecipeToolMatrxIds,
+        removeRecipeToolMatrxId,
+        removeRecipeToolMatrxIds,
+        addRecipeToolPkValue,
+        addRecipeToolPkValues,
+        removeRecipeToolPkValue,
+        removeRecipeToolPkValues,
+        isRecipeToolMissingRecords,
+        setRecipeToolShouldFetch,
+        setRecipeToolFetchMode,
+        fetchRecipeToolQuickRefs,
+        fetchRecipeToolOne,
+        fetchRecipeToolOneWithFkIfk,
+        fetchRecipeToolAll,
+        fetchRecipeToolPaginated,
     };
 };
 
@@ -4063,22 +4063,22 @@ type UseRegisteredFunctionWithFetchReturn = {
     registeredFunctionIsLoading: boolean;
     registeredFunctionIsError: boolean;
     registeredFunctionQuickRefRecords: QuickReferenceRecord[];
-    addregisteredFunctionMatrxId: (recordId: MatrxRecordId) => void;
-    addregisteredFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeregisteredFunctionMatrxId: (recordId: MatrxRecordId) => void;
-    removeregisteredFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addregisteredFunctionPkValue: (pkValue: string) => void;
-    addregisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;
-    removeregisteredFunctionPkValue: (pkValue: string) => void;
-    removeregisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;
-    isregisteredFunctionMissingRecords: boolean;
-    setregisteredFunctionShouldFetch: (shouldFetch: boolean) => void;
-    setregisteredFunctionFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addRegisteredFunctionMatrxId: (recordId: MatrxRecordId) => void;
+    addRegisteredFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRegisteredFunctionMatrxId: (recordId: MatrxRecordId) => void;
+    removeRegisteredFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRegisteredFunctionPkValue: (pkValue: string) => void;
+    addRegisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;
+    removeRegisteredFunctionPkValue: (pkValue: string) => void;
+    removeRegisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;
+    isRegisteredFunctionMissingRecords: boolean;
+    setRegisteredFunctionShouldFetch: (shouldFetch: boolean) => void;
+    setRegisteredFunctionFetchMode: (fetchMode: FetchMode) => void;
+    fetchRegisteredFunctionQuickRefs: () => void;
+    fetchRegisteredFunctionOne: (recordId: MatrxRecordId) => void;
+    fetchRegisteredFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRegisteredFunctionAll: () => void;
+    fetchRegisteredFunctionPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetchReturn => {
@@ -4091,22 +4091,22 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
         isLoading: registeredFunctionIsLoading,
         isError: registeredFunctionIsError,
         quickRefRecords: registeredFunctionQuickRefRecords,
-        addMatrxId: addregisteredFunctionMatrxId,
-        addMatrxIds: addregisteredFunctionMatrxIds,
-        removeMatrxId: removeregisteredFunctionMatrxId,
-        removeMatrxIds: removeregisteredFunctionMatrxIds,
-        addPkValue: addregisteredFunctionPkValue,
-        addPkValues: addregisteredFunctionPkValues,
-        removePkValue: removeregisteredFunctionPkValue,
-        removePkValues: removeregisteredFunctionPkValues,
-        isMissingRecords: isregisteredFunctionMissingRecords,
-        setShouldFetch: setregisteredFunctionShouldFetch,
-        setFetchMode: setregisteredFunctionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addRegisteredFunctionMatrxId,
+        addMatrxIds: addRegisteredFunctionMatrxIds,
+        removeMatrxId: removeRegisteredFunctionMatrxId,
+        removeMatrxIds: removeRegisteredFunctionMatrxIds,
+        addPkValue: addRegisteredFunctionPkValue,
+        addPkValues: addRegisteredFunctionPkValues,
+        removePkValue: removeRegisteredFunctionPkValue,
+        removePkValues: removeRegisteredFunctionPkValues,
+        isMissingRecords: isRegisteredFunctionMissingRecords,
+        setShouldFetch: setRegisteredFunctionShouldFetch,
+        setFetchMode: setRegisteredFunctionFetchMode,
+        fetchQuickRefs: fetchRegisteredFunctionQuickRefs,
+        fetchOne: fetchRegisteredFunctionOne,
+        fetchOneWithFkIfk: fetchRegisteredFunctionOneWithFkIfk,
+        fetchAll: fetchRegisteredFunctionAll,
+        fetchPaginated: fetchRegisteredFunctionPaginated,
     } = useEntityWithFetch("registeredFunction");
 
     return {
@@ -4118,22 +4118,22 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
         registeredFunctionIsLoading,
         registeredFunctionIsError,
         registeredFunctionQuickRefRecords,
-        addregisteredFunctionMatrxId,
-        addregisteredFunctionMatrxIds,
-        removeregisteredFunctionMatrxId,
-        removeregisteredFunctionMatrxIds,
-        addregisteredFunctionPkValue,
-        addregisteredFunctionPkValues,
-        removeregisteredFunctionPkValue,
-        removeregisteredFunctionPkValues,
-        isregisteredFunctionMissingRecords,
-        setregisteredFunctionShouldFetch,
-        setregisteredFunctionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addRegisteredFunctionMatrxId,
+        addRegisteredFunctionMatrxIds,
+        removeRegisteredFunctionMatrxId,
+        removeRegisteredFunctionMatrxIds,
+        addRegisteredFunctionPkValue,
+        addRegisteredFunctionPkValues,
+        removeRegisteredFunctionPkValue,
+        removeRegisteredFunctionPkValues,
+        isRegisteredFunctionMissingRecords,
+        setRegisteredFunctionShouldFetch,
+        setRegisteredFunctionFetchMode,
+        fetchRegisteredFunctionQuickRefs,
+        fetchRegisteredFunctionOne,
+        fetchRegisteredFunctionOneWithFkIfk,
+        fetchRegisteredFunctionAll,
+        fetchRegisteredFunctionPaginated,
     };
 };
 
@@ -4146,22 +4146,22 @@ type UseSubcategoryWithFetchReturn = {
     subcategoryIsLoading: boolean;
     subcategoryIsError: boolean;
     subcategoryQuickRefRecords: QuickReferenceRecord[];
-    addsubcategoryMatrxId: (recordId: MatrxRecordId) => void;
-    addsubcategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removesubcategoryMatrxId: (recordId: MatrxRecordId) => void;
-    removesubcategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addsubcategoryPkValue: (pkValue: string) => void;
-    addsubcategoryPkValues: (pkValues: Record<string, unknown>) => void;
-    removesubcategoryPkValue: (pkValue: string) => void;
-    removesubcategoryPkValues: (pkValues: Record<string, unknown>) => void;
-    issubcategoryMissingRecords: boolean;
-    setsubcategoryShouldFetch: (shouldFetch: boolean) => void;
-    setsubcategoryFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addSubcategoryMatrxId: (recordId: MatrxRecordId) => void;
+    addSubcategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeSubcategoryMatrxId: (recordId: MatrxRecordId) => void;
+    removeSubcategoryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addSubcategoryPkValue: (pkValue: string) => void;
+    addSubcategoryPkValues: (pkValues: Record<string, unknown>) => void;
+    removeSubcategoryPkValue: (pkValue: string) => void;
+    removeSubcategoryPkValues: (pkValues: Record<string, unknown>) => void;
+    isSubcategoryMissingRecords: boolean;
+    setSubcategoryShouldFetch: (shouldFetch: boolean) => void;
+    setSubcategoryFetchMode: (fetchMode: FetchMode) => void;
+    fetchSubcategoryQuickRefs: () => void;
+    fetchSubcategoryOne: (recordId: MatrxRecordId) => void;
+    fetchSubcategoryOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchSubcategoryAll: () => void;
+    fetchSubcategoryPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useSubcategoryWithFetch = (): UseSubcategoryWithFetchReturn => {
@@ -4174,22 +4174,22 @@ export const useSubcategoryWithFetch = (): UseSubcategoryWithFetchReturn => {
         isLoading: subcategoryIsLoading,
         isError: subcategoryIsError,
         quickRefRecords: subcategoryQuickRefRecords,
-        addMatrxId: addsubcategoryMatrxId,
-        addMatrxIds: addsubcategoryMatrxIds,
-        removeMatrxId: removesubcategoryMatrxId,
-        removeMatrxIds: removesubcategoryMatrxIds,
-        addPkValue: addsubcategoryPkValue,
-        addPkValues: addsubcategoryPkValues,
-        removePkValue: removesubcategoryPkValue,
-        removePkValues: removesubcategoryPkValues,
-        isMissingRecords: issubcategoryMissingRecords,
-        setShouldFetch: setsubcategoryShouldFetch,
-        setFetchMode: setsubcategoryFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addSubcategoryMatrxId,
+        addMatrxIds: addSubcategoryMatrxIds,
+        removeMatrxId: removeSubcategoryMatrxId,
+        removeMatrxIds: removeSubcategoryMatrxIds,
+        addPkValue: addSubcategoryPkValue,
+        addPkValues: addSubcategoryPkValues,
+        removePkValue: removeSubcategoryPkValue,
+        removePkValues: removeSubcategoryPkValues,
+        isMissingRecords: isSubcategoryMissingRecords,
+        setShouldFetch: setSubcategoryShouldFetch,
+        setFetchMode: setSubcategoryFetchMode,
+        fetchQuickRefs: fetchSubcategoryQuickRefs,
+        fetchOne: fetchSubcategoryOne,
+        fetchOneWithFkIfk: fetchSubcategoryOneWithFkIfk,
+        fetchAll: fetchSubcategoryAll,
+        fetchPaginated: fetchSubcategoryPaginated,
     } = useEntityWithFetch("subcategory");
 
     return {
@@ -4201,22 +4201,22 @@ export const useSubcategoryWithFetch = (): UseSubcategoryWithFetchReturn => {
         subcategoryIsLoading,
         subcategoryIsError,
         subcategoryQuickRefRecords,
-        addsubcategoryMatrxId,
-        addsubcategoryMatrxIds,
-        removesubcategoryMatrxId,
-        removesubcategoryMatrxIds,
-        addsubcategoryPkValue,
-        addsubcategoryPkValues,
-        removesubcategoryPkValue,
-        removesubcategoryPkValues,
-        issubcategoryMissingRecords,
-        setsubcategoryShouldFetch,
-        setsubcategoryFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addSubcategoryMatrxId,
+        addSubcategoryMatrxIds,
+        removeSubcategoryMatrxId,
+        removeSubcategoryMatrxIds,
+        addSubcategoryPkValue,
+        addSubcategoryPkValues,
+        removeSubcategoryPkValue,
+        removeSubcategoryPkValues,
+        isSubcategoryMissingRecords,
+        setSubcategoryShouldFetch,
+        setSubcategoryFetchMode,
+        fetchSubcategoryQuickRefs,
+        fetchSubcategoryOne,
+        fetchSubcategoryOneWithFkIfk,
+        fetchSubcategoryAll,
+        fetchSubcategoryPaginated,
     };
 };
 
@@ -4229,22 +4229,22 @@ type UseSystemFunctionWithFetchReturn = {
     systemFunctionIsLoading: boolean;
     systemFunctionIsError: boolean;
     systemFunctionQuickRefRecords: QuickReferenceRecord[];
-    addsystemFunctionMatrxId: (recordId: MatrxRecordId) => void;
-    addsystemFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removesystemFunctionMatrxId: (recordId: MatrxRecordId) => void;
-    removesystemFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addsystemFunctionPkValue: (pkValue: string) => void;
-    addsystemFunctionPkValues: (pkValues: Record<string, unknown>) => void;
-    removesystemFunctionPkValue: (pkValue: string) => void;
-    removesystemFunctionPkValues: (pkValues: Record<string, unknown>) => void;
-    issystemFunctionMissingRecords: boolean;
-    setsystemFunctionShouldFetch: (shouldFetch: boolean) => void;
-    setsystemFunctionFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addSystemFunctionMatrxId: (recordId: MatrxRecordId) => void;
+    addSystemFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeSystemFunctionMatrxId: (recordId: MatrxRecordId) => void;
+    removeSystemFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addSystemFunctionPkValue: (pkValue: string) => void;
+    addSystemFunctionPkValues: (pkValues: Record<string, unknown>) => void;
+    removeSystemFunctionPkValue: (pkValue: string) => void;
+    removeSystemFunctionPkValues: (pkValues: Record<string, unknown>) => void;
+    isSystemFunctionMissingRecords: boolean;
+    setSystemFunctionShouldFetch: (shouldFetch: boolean) => void;
+    setSystemFunctionFetchMode: (fetchMode: FetchMode) => void;
+    fetchSystemFunctionQuickRefs: () => void;
+    fetchSystemFunctionOne: (recordId: MatrxRecordId) => void;
+    fetchSystemFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchSystemFunctionAll: () => void;
+    fetchSystemFunctionPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useSystemFunctionWithFetch = (): UseSystemFunctionWithFetchReturn => {
@@ -4257,22 +4257,22 @@ export const useSystemFunctionWithFetch = (): UseSystemFunctionWithFetchReturn =
         isLoading: systemFunctionIsLoading,
         isError: systemFunctionIsError,
         quickRefRecords: systemFunctionQuickRefRecords,
-        addMatrxId: addsystemFunctionMatrxId,
-        addMatrxIds: addsystemFunctionMatrxIds,
-        removeMatrxId: removesystemFunctionMatrxId,
-        removeMatrxIds: removesystemFunctionMatrxIds,
-        addPkValue: addsystemFunctionPkValue,
-        addPkValues: addsystemFunctionPkValues,
-        removePkValue: removesystemFunctionPkValue,
-        removePkValues: removesystemFunctionPkValues,
-        isMissingRecords: issystemFunctionMissingRecords,
-        setShouldFetch: setsystemFunctionShouldFetch,
-        setFetchMode: setsystemFunctionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addSystemFunctionMatrxId,
+        addMatrxIds: addSystemFunctionMatrxIds,
+        removeMatrxId: removeSystemFunctionMatrxId,
+        removeMatrxIds: removeSystemFunctionMatrxIds,
+        addPkValue: addSystemFunctionPkValue,
+        addPkValues: addSystemFunctionPkValues,
+        removePkValue: removeSystemFunctionPkValue,
+        removePkValues: removeSystemFunctionPkValues,
+        isMissingRecords: isSystemFunctionMissingRecords,
+        setShouldFetch: setSystemFunctionShouldFetch,
+        setFetchMode: setSystemFunctionFetchMode,
+        fetchQuickRefs: fetchSystemFunctionQuickRefs,
+        fetchOne: fetchSystemFunctionOne,
+        fetchOneWithFkIfk: fetchSystemFunctionOneWithFkIfk,
+        fetchAll: fetchSystemFunctionAll,
+        fetchPaginated: fetchSystemFunctionPaginated,
     } = useEntityWithFetch("systemFunction");
 
     return {
@@ -4284,22 +4284,22 @@ export const useSystemFunctionWithFetch = (): UseSystemFunctionWithFetchReturn =
         systemFunctionIsLoading,
         systemFunctionIsError,
         systemFunctionQuickRefRecords,
-        addsystemFunctionMatrxId,
-        addsystemFunctionMatrxIds,
-        removesystemFunctionMatrxId,
-        removesystemFunctionMatrxIds,
-        addsystemFunctionPkValue,
-        addsystemFunctionPkValues,
-        removesystemFunctionPkValue,
-        removesystemFunctionPkValues,
-        issystemFunctionMissingRecords,
-        setsystemFunctionShouldFetch,
-        setsystemFunctionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addSystemFunctionMatrxId,
+        addSystemFunctionMatrxIds,
+        removeSystemFunctionMatrxId,
+        removeSystemFunctionMatrxIds,
+        addSystemFunctionPkValue,
+        addSystemFunctionPkValues,
+        removeSystemFunctionPkValue,
+        removeSystemFunctionPkValues,
+        isSystemFunctionMissingRecords,
+        setSystemFunctionShouldFetch,
+        setSystemFunctionFetchMode,
+        fetchSystemFunctionQuickRefs,
+        fetchSystemFunctionOne,
+        fetchSystemFunctionOneWithFkIfk,
+        fetchSystemFunctionAll,
+        fetchSystemFunctionPaginated,
     };
 };
 
@@ -4312,22 +4312,22 @@ type UseTaskAssignmentsWithFetchReturn = {
     taskAssignmentsIsLoading: boolean;
     taskAssignmentsIsError: boolean;
     taskAssignmentsQuickRefRecords: QuickReferenceRecord[];
-    addtaskAssignmentsMatrxId: (recordId: MatrxRecordId) => void;
-    addtaskAssignmentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removetaskAssignmentsMatrxId: (recordId: MatrxRecordId) => void;
-    removetaskAssignmentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addtaskAssignmentsPkValue: (pkValue: string) => void;
-    addtaskAssignmentsPkValues: (pkValues: Record<string, unknown>) => void;
-    removetaskAssignmentsPkValue: (pkValue: string) => void;
-    removetaskAssignmentsPkValues: (pkValues: Record<string, unknown>) => void;
-    istaskAssignmentsMissingRecords: boolean;
-    settaskAssignmentsShouldFetch: (shouldFetch: boolean) => void;
-    settaskAssignmentsFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addTaskAssignmentsMatrxId: (recordId: MatrxRecordId) => void;
+    addTaskAssignmentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeTaskAssignmentsMatrxId: (recordId: MatrxRecordId) => void;
+    removeTaskAssignmentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addTaskAssignmentsPkValue: (pkValue: string) => void;
+    addTaskAssignmentsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeTaskAssignmentsPkValue: (pkValue: string) => void;
+    removeTaskAssignmentsPkValues: (pkValues: Record<string, unknown>) => void;
+    isTaskAssignmentsMissingRecords: boolean;
+    setTaskAssignmentsShouldFetch: (shouldFetch: boolean) => void;
+    setTaskAssignmentsFetchMode: (fetchMode: FetchMode) => void;
+    fetchTaskAssignmentsQuickRefs: () => void;
+    fetchTaskAssignmentsOne: (recordId: MatrxRecordId) => void;
+    fetchTaskAssignmentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchTaskAssignmentsAll: () => void;
+    fetchTaskAssignmentsPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useTaskAssignmentsWithFetch = (): UseTaskAssignmentsWithFetchReturn => {
@@ -4340,22 +4340,22 @@ export const useTaskAssignmentsWithFetch = (): UseTaskAssignmentsWithFetchReturn
         isLoading: taskAssignmentsIsLoading,
         isError: taskAssignmentsIsError,
         quickRefRecords: taskAssignmentsQuickRefRecords,
-        addMatrxId: addtaskAssignmentsMatrxId,
-        addMatrxIds: addtaskAssignmentsMatrxIds,
-        removeMatrxId: removetaskAssignmentsMatrxId,
-        removeMatrxIds: removetaskAssignmentsMatrxIds,
-        addPkValue: addtaskAssignmentsPkValue,
-        addPkValues: addtaskAssignmentsPkValues,
-        removePkValue: removetaskAssignmentsPkValue,
-        removePkValues: removetaskAssignmentsPkValues,
-        isMissingRecords: istaskAssignmentsMissingRecords,
-        setShouldFetch: settaskAssignmentsShouldFetch,
-        setFetchMode: settaskAssignmentsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addTaskAssignmentsMatrxId,
+        addMatrxIds: addTaskAssignmentsMatrxIds,
+        removeMatrxId: removeTaskAssignmentsMatrxId,
+        removeMatrxIds: removeTaskAssignmentsMatrxIds,
+        addPkValue: addTaskAssignmentsPkValue,
+        addPkValues: addTaskAssignmentsPkValues,
+        removePkValue: removeTaskAssignmentsPkValue,
+        removePkValues: removeTaskAssignmentsPkValues,
+        isMissingRecords: isTaskAssignmentsMissingRecords,
+        setShouldFetch: setTaskAssignmentsShouldFetch,
+        setFetchMode: setTaskAssignmentsFetchMode,
+        fetchQuickRefs: fetchTaskAssignmentsQuickRefs,
+        fetchOne: fetchTaskAssignmentsOne,
+        fetchOneWithFkIfk: fetchTaskAssignmentsOneWithFkIfk,
+        fetchAll: fetchTaskAssignmentsAll,
+        fetchPaginated: fetchTaskAssignmentsPaginated,
     } = useEntityWithFetch("taskAssignments");
 
     return {
@@ -4367,22 +4367,22 @@ export const useTaskAssignmentsWithFetch = (): UseTaskAssignmentsWithFetchReturn
         taskAssignmentsIsLoading,
         taskAssignmentsIsError,
         taskAssignmentsQuickRefRecords,
-        addtaskAssignmentsMatrxId,
-        addtaskAssignmentsMatrxIds,
-        removetaskAssignmentsMatrxId,
-        removetaskAssignmentsMatrxIds,
-        addtaskAssignmentsPkValue,
-        addtaskAssignmentsPkValues,
-        removetaskAssignmentsPkValue,
-        removetaskAssignmentsPkValues,
-        istaskAssignmentsMissingRecords,
-        settaskAssignmentsShouldFetch,
-        settaskAssignmentsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addTaskAssignmentsMatrxId,
+        addTaskAssignmentsMatrxIds,
+        removeTaskAssignmentsMatrxId,
+        removeTaskAssignmentsMatrxIds,
+        addTaskAssignmentsPkValue,
+        addTaskAssignmentsPkValues,
+        removeTaskAssignmentsPkValue,
+        removeTaskAssignmentsPkValues,
+        isTaskAssignmentsMissingRecords,
+        setTaskAssignmentsShouldFetch,
+        setTaskAssignmentsFetchMode,
+        fetchTaskAssignmentsQuickRefs,
+        fetchTaskAssignmentsOne,
+        fetchTaskAssignmentsOneWithFkIfk,
+        fetchTaskAssignmentsAll,
+        fetchTaskAssignmentsPaginated,
     };
 };
 
@@ -4395,22 +4395,22 @@ type UseTaskAttachmentsWithFetchReturn = {
     taskAttachmentsIsLoading: boolean;
     taskAttachmentsIsError: boolean;
     taskAttachmentsQuickRefRecords: QuickReferenceRecord[];
-    addtaskAttachmentsMatrxId: (recordId: MatrxRecordId) => void;
-    addtaskAttachmentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removetaskAttachmentsMatrxId: (recordId: MatrxRecordId) => void;
-    removetaskAttachmentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addtaskAttachmentsPkValue: (pkValue: string) => void;
-    addtaskAttachmentsPkValues: (pkValues: Record<string, unknown>) => void;
-    removetaskAttachmentsPkValue: (pkValue: string) => void;
-    removetaskAttachmentsPkValues: (pkValues: Record<string, unknown>) => void;
-    istaskAttachmentsMissingRecords: boolean;
-    settaskAttachmentsShouldFetch: (shouldFetch: boolean) => void;
-    settaskAttachmentsFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addTaskAttachmentsMatrxId: (recordId: MatrxRecordId) => void;
+    addTaskAttachmentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeTaskAttachmentsMatrxId: (recordId: MatrxRecordId) => void;
+    removeTaskAttachmentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addTaskAttachmentsPkValue: (pkValue: string) => void;
+    addTaskAttachmentsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeTaskAttachmentsPkValue: (pkValue: string) => void;
+    removeTaskAttachmentsPkValues: (pkValues: Record<string, unknown>) => void;
+    isTaskAttachmentsMissingRecords: boolean;
+    setTaskAttachmentsShouldFetch: (shouldFetch: boolean) => void;
+    setTaskAttachmentsFetchMode: (fetchMode: FetchMode) => void;
+    fetchTaskAttachmentsQuickRefs: () => void;
+    fetchTaskAttachmentsOne: (recordId: MatrxRecordId) => void;
+    fetchTaskAttachmentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchTaskAttachmentsAll: () => void;
+    fetchTaskAttachmentsPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useTaskAttachmentsWithFetch = (): UseTaskAttachmentsWithFetchReturn => {
@@ -4423,22 +4423,22 @@ export const useTaskAttachmentsWithFetch = (): UseTaskAttachmentsWithFetchReturn
         isLoading: taskAttachmentsIsLoading,
         isError: taskAttachmentsIsError,
         quickRefRecords: taskAttachmentsQuickRefRecords,
-        addMatrxId: addtaskAttachmentsMatrxId,
-        addMatrxIds: addtaskAttachmentsMatrxIds,
-        removeMatrxId: removetaskAttachmentsMatrxId,
-        removeMatrxIds: removetaskAttachmentsMatrxIds,
-        addPkValue: addtaskAttachmentsPkValue,
-        addPkValues: addtaskAttachmentsPkValues,
-        removePkValue: removetaskAttachmentsPkValue,
-        removePkValues: removetaskAttachmentsPkValues,
-        isMissingRecords: istaskAttachmentsMissingRecords,
-        setShouldFetch: settaskAttachmentsShouldFetch,
-        setFetchMode: settaskAttachmentsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addTaskAttachmentsMatrxId,
+        addMatrxIds: addTaskAttachmentsMatrxIds,
+        removeMatrxId: removeTaskAttachmentsMatrxId,
+        removeMatrxIds: removeTaskAttachmentsMatrxIds,
+        addPkValue: addTaskAttachmentsPkValue,
+        addPkValues: addTaskAttachmentsPkValues,
+        removePkValue: removeTaskAttachmentsPkValue,
+        removePkValues: removeTaskAttachmentsPkValues,
+        isMissingRecords: isTaskAttachmentsMissingRecords,
+        setShouldFetch: setTaskAttachmentsShouldFetch,
+        setFetchMode: setTaskAttachmentsFetchMode,
+        fetchQuickRefs: fetchTaskAttachmentsQuickRefs,
+        fetchOne: fetchTaskAttachmentsOne,
+        fetchOneWithFkIfk: fetchTaskAttachmentsOneWithFkIfk,
+        fetchAll: fetchTaskAttachmentsAll,
+        fetchPaginated: fetchTaskAttachmentsPaginated,
     } = useEntityWithFetch("taskAttachments");
 
     return {
@@ -4450,22 +4450,22 @@ export const useTaskAttachmentsWithFetch = (): UseTaskAttachmentsWithFetchReturn
         taskAttachmentsIsLoading,
         taskAttachmentsIsError,
         taskAttachmentsQuickRefRecords,
-        addtaskAttachmentsMatrxId,
-        addtaskAttachmentsMatrxIds,
-        removetaskAttachmentsMatrxId,
-        removetaskAttachmentsMatrxIds,
-        addtaskAttachmentsPkValue,
-        addtaskAttachmentsPkValues,
-        removetaskAttachmentsPkValue,
-        removetaskAttachmentsPkValues,
-        istaskAttachmentsMissingRecords,
-        settaskAttachmentsShouldFetch,
-        settaskAttachmentsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addTaskAttachmentsMatrxId,
+        addTaskAttachmentsMatrxIds,
+        removeTaskAttachmentsMatrxId,
+        removeTaskAttachmentsMatrxIds,
+        addTaskAttachmentsPkValue,
+        addTaskAttachmentsPkValues,
+        removeTaskAttachmentsPkValue,
+        removeTaskAttachmentsPkValues,
+        isTaskAttachmentsMissingRecords,
+        setTaskAttachmentsShouldFetch,
+        setTaskAttachmentsFetchMode,
+        fetchTaskAttachmentsQuickRefs,
+        fetchTaskAttachmentsOne,
+        fetchTaskAttachmentsOneWithFkIfk,
+        fetchTaskAttachmentsAll,
+        fetchTaskAttachmentsPaginated,
     };
 };
 
@@ -4478,22 +4478,22 @@ type UseTaskCommentsWithFetchReturn = {
     taskCommentsIsLoading: boolean;
     taskCommentsIsError: boolean;
     taskCommentsQuickRefRecords: QuickReferenceRecord[];
-    addtaskCommentsMatrxId: (recordId: MatrxRecordId) => void;
-    addtaskCommentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removetaskCommentsMatrxId: (recordId: MatrxRecordId) => void;
-    removetaskCommentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addtaskCommentsPkValue: (pkValue: string) => void;
-    addtaskCommentsPkValues: (pkValues: Record<string, unknown>) => void;
-    removetaskCommentsPkValue: (pkValue: string) => void;
-    removetaskCommentsPkValues: (pkValues: Record<string, unknown>) => void;
-    istaskCommentsMissingRecords: boolean;
-    settaskCommentsShouldFetch: (shouldFetch: boolean) => void;
-    settaskCommentsFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addTaskCommentsMatrxId: (recordId: MatrxRecordId) => void;
+    addTaskCommentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeTaskCommentsMatrxId: (recordId: MatrxRecordId) => void;
+    removeTaskCommentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addTaskCommentsPkValue: (pkValue: string) => void;
+    addTaskCommentsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeTaskCommentsPkValue: (pkValue: string) => void;
+    removeTaskCommentsPkValues: (pkValues: Record<string, unknown>) => void;
+    isTaskCommentsMissingRecords: boolean;
+    setTaskCommentsShouldFetch: (shouldFetch: boolean) => void;
+    setTaskCommentsFetchMode: (fetchMode: FetchMode) => void;
+    fetchTaskCommentsQuickRefs: () => void;
+    fetchTaskCommentsOne: (recordId: MatrxRecordId) => void;
+    fetchTaskCommentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchTaskCommentsAll: () => void;
+    fetchTaskCommentsPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useTaskCommentsWithFetch = (): UseTaskCommentsWithFetchReturn => {
@@ -4506,22 +4506,22 @@ export const useTaskCommentsWithFetch = (): UseTaskCommentsWithFetchReturn => {
         isLoading: taskCommentsIsLoading,
         isError: taskCommentsIsError,
         quickRefRecords: taskCommentsQuickRefRecords,
-        addMatrxId: addtaskCommentsMatrxId,
-        addMatrxIds: addtaskCommentsMatrxIds,
-        removeMatrxId: removetaskCommentsMatrxId,
-        removeMatrxIds: removetaskCommentsMatrxIds,
-        addPkValue: addtaskCommentsPkValue,
-        addPkValues: addtaskCommentsPkValues,
-        removePkValue: removetaskCommentsPkValue,
-        removePkValues: removetaskCommentsPkValues,
-        isMissingRecords: istaskCommentsMissingRecords,
-        setShouldFetch: settaskCommentsShouldFetch,
-        setFetchMode: settaskCommentsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addTaskCommentsMatrxId,
+        addMatrxIds: addTaskCommentsMatrxIds,
+        removeMatrxId: removeTaskCommentsMatrxId,
+        removeMatrxIds: removeTaskCommentsMatrxIds,
+        addPkValue: addTaskCommentsPkValue,
+        addPkValues: addTaskCommentsPkValues,
+        removePkValue: removeTaskCommentsPkValue,
+        removePkValues: removeTaskCommentsPkValues,
+        isMissingRecords: isTaskCommentsMissingRecords,
+        setShouldFetch: setTaskCommentsShouldFetch,
+        setFetchMode: setTaskCommentsFetchMode,
+        fetchQuickRefs: fetchTaskCommentsQuickRefs,
+        fetchOne: fetchTaskCommentsOne,
+        fetchOneWithFkIfk: fetchTaskCommentsOneWithFkIfk,
+        fetchAll: fetchTaskCommentsAll,
+        fetchPaginated: fetchTaskCommentsPaginated,
     } = useEntityWithFetch("taskComments");
 
     return {
@@ -4533,22 +4533,22 @@ export const useTaskCommentsWithFetch = (): UseTaskCommentsWithFetchReturn => {
         taskCommentsIsLoading,
         taskCommentsIsError,
         taskCommentsQuickRefRecords,
-        addtaskCommentsMatrxId,
-        addtaskCommentsMatrxIds,
-        removetaskCommentsMatrxId,
-        removetaskCommentsMatrxIds,
-        addtaskCommentsPkValue,
-        addtaskCommentsPkValues,
-        removetaskCommentsPkValue,
-        removetaskCommentsPkValues,
-        istaskCommentsMissingRecords,
-        settaskCommentsShouldFetch,
-        settaskCommentsFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addTaskCommentsMatrxId,
+        addTaskCommentsMatrxIds,
+        removeTaskCommentsMatrxId,
+        removeTaskCommentsMatrxIds,
+        addTaskCommentsPkValue,
+        addTaskCommentsPkValues,
+        removeTaskCommentsPkValue,
+        removeTaskCommentsPkValues,
+        isTaskCommentsMissingRecords,
+        setTaskCommentsShouldFetch,
+        setTaskCommentsFetchMode,
+        fetchTaskCommentsQuickRefs,
+        fetchTaskCommentsOne,
+        fetchTaskCommentsOneWithFkIfk,
+        fetchTaskCommentsAll,
+        fetchTaskCommentsPaginated,
     };
 };
 
@@ -4561,22 +4561,22 @@ type UseTasksWithFetchReturn = {
     tasksIsLoading: boolean;
     tasksIsError: boolean;
     tasksQuickRefRecords: QuickReferenceRecord[];
-    addtasksMatrxId: (recordId: MatrxRecordId) => void;
-    addtasksMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removetasksMatrxId: (recordId: MatrxRecordId) => void;
-    removetasksMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addtasksPkValue: (pkValue: string) => void;
-    addtasksPkValues: (pkValues: Record<string, unknown>) => void;
-    removetasksPkValue: (pkValue: string) => void;
-    removetasksPkValues: (pkValues: Record<string, unknown>) => void;
-    istasksMissingRecords: boolean;
-    settasksShouldFetch: (shouldFetch: boolean) => void;
-    settasksFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addTasksMatrxId: (recordId: MatrxRecordId) => void;
+    addTasksMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeTasksMatrxId: (recordId: MatrxRecordId) => void;
+    removeTasksMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addTasksPkValue: (pkValue: string) => void;
+    addTasksPkValues: (pkValues: Record<string, unknown>) => void;
+    removeTasksPkValue: (pkValue: string) => void;
+    removeTasksPkValues: (pkValues: Record<string, unknown>) => void;
+    isTasksMissingRecords: boolean;
+    setTasksShouldFetch: (shouldFetch: boolean) => void;
+    setTasksFetchMode: (fetchMode: FetchMode) => void;
+    fetchTasksQuickRefs: () => void;
+    fetchTasksOne: (recordId: MatrxRecordId) => void;
+    fetchTasksOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchTasksAll: () => void;
+    fetchTasksPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useTasksWithFetch = (): UseTasksWithFetchReturn => {
@@ -4589,22 +4589,22 @@ export const useTasksWithFetch = (): UseTasksWithFetchReturn => {
         isLoading: tasksIsLoading,
         isError: tasksIsError,
         quickRefRecords: tasksQuickRefRecords,
-        addMatrxId: addtasksMatrxId,
-        addMatrxIds: addtasksMatrxIds,
-        removeMatrxId: removetasksMatrxId,
-        removeMatrxIds: removetasksMatrxIds,
-        addPkValue: addtasksPkValue,
-        addPkValues: addtasksPkValues,
-        removePkValue: removetasksPkValue,
-        removePkValues: removetasksPkValues,
-        isMissingRecords: istasksMissingRecords,
-        setShouldFetch: settasksShouldFetch,
-        setFetchMode: settasksFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addTasksMatrxId,
+        addMatrxIds: addTasksMatrxIds,
+        removeMatrxId: removeTasksMatrxId,
+        removeMatrxIds: removeTasksMatrxIds,
+        addPkValue: addTasksPkValue,
+        addPkValues: addTasksPkValues,
+        removePkValue: removeTasksPkValue,
+        removePkValues: removeTasksPkValues,
+        isMissingRecords: isTasksMissingRecords,
+        setShouldFetch: setTasksShouldFetch,
+        setFetchMode: setTasksFetchMode,
+        fetchQuickRefs: fetchTasksQuickRefs,
+        fetchOne: fetchTasksOne,
+        fetchOneWithFkIfk: fetchTasksOneWithFkIfk,
+        fetchAll: fetchTasksAll,
+        fetchPaginated: fetchTasksPaginated,
     } = useEntityWithFetch("tasks");
 
     return {
@@ -4616,22 +4616,22 @@ export const useTasksWithFetch = (): UseTasksWithFetchReturn => {
         tasksIsLoading,
         tasksIsError,
         tasksQuickRefRecords,
-        addtasksMatrxId,
-        addtasksMatrxIds,
-        removetasksMatrxId,
-        removetasksMatrxIds,
-        addtasksPkValue,
-        addtasksPkValues,
-        removetasksPkValue,
-        removetasksPkValues,
-        istasksMissingRecords,
-        settasksShouldFetch,
-        settasksFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addTasksMatrxId,
+        addTasksMatrxIds,
+        removeTasksMatrxId,
+        removeTasksMatrxIds,
+        addTasksPkValue,
+        addTasksPkValues,
+        removeTasksPkValue,
+        removeTasksPkValues,
+        isTasksMissingRecords,
+        setTasksShouldFetch,
+        setTasksFetchMode,
+        fetchTasksQuickRefs,
+        fetchTasksOne,
+        fetchTasksOneWithFkIfk,
+        fetchTasksAll,
+        fetchTasksPaginated,
     };
 };
 
@@ -4644,22 +4644,22 @@ type UseToolWithFetchReturn = {
     toolIsLoading: boolean;
     toolIsError: boolean;
     toolQuickRefRecords: QuickReferenceRecord[];
-    addtoolMatrxId: (recordId: MatrxRecordId) => void;
-    addtoolMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removetoolMatrxId: (recordId: MatrxRecordId) => void;
-    removetoolMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addtoolPkValue: (pkValue: string) => void;
-    addtoolPkValues: (pkValues: Record<string, unknown>) => void;
-    removetoolPkValue: (pkValue: string) => void;
-    removetoolPkValues: (pkValues: Record<string, unknown>) => void;
-    istoolMissingRecords: boolean;
-    settoolShouldFetch: (shouldFetch: boolean) => void;
-    settoolFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addToolMatrxId: (recordId: MatrxRecordId) => void;
+    addToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeToolMatrxId: (recordId: MatrxRecordId) => void;
+    removeToolMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addToolPkValue: (pkValue: string) => void;
+    addToolPkValues: (pkValues: Record<string, unknown>) => void;
+    removeToolPkValue: (pkValue: string) => void;
+    removeToolPkValues: (pkValues: Record<string, unknown>) => void;
+    isToolMissingRecords: boolean;
+    setToolShouldFetch: (shouldFetch: boolean) => void;
+    setToolFetchMode: (fetchMode: FetchMode) => void;
+    fetchToolQuickRefs: () => void;
+    fetchToolOne: (recordId: MatrxRecordId) => void;
+    fetchToolOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchToolAll: () => void;
+    fetchToolPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useToolWithFetch = (): UseToolWithFetchReturn => {
@@ -4672,22 +4672,22 @@ export const useToolWithFetch = (): UseToolWithFetchReturn => {
         isLoading: toolIsLoading,
         isError: toolIsError,
         quickRefRecords: toolQuickRefRecords,
-        addMatrxId: addtoolMatrxId,
-        addMatrxIds: addtoolMatrxIds,
-        removeMatrxId: removetoolMatrxId,
-        removeMatrxIds: removetoolMatrxIds,
-        addPkValue: addtoolPkValue,
-        addPkValues: addtoolPkValues,
-        removePkValue: removetoolPkValue,
-        removePkValues: removetoolPkValues,
-        isMissingRecords: istoolMissingRecords,
-        setShouldFetch: settoolShouldFetch,
-        setFetchMode: settoolFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addToolMatrxId,
+        addMatrxIds: addToolMatrxIds,
+        removeMatrxId: removeToolMatrxId,
+        removeMatrxIds: removeToolMatrxIds,
+        addPkValue: addToolPkValue,
+        addPkValues: addToolPkValues,
+        removePkValue: removeToolPkValue,
+        removePkValues: removeToolPkValues,
+        isMissingRecords: isToolMissingRecords,
+        setShouldFetch: setToolShouldFetch,
+        setFetchMode: setToolFetchMode,
+        fetchQuickRefs: fetchToolQuickRefs,
+        fetchOne: fetchToolOne,
+        fetchOneWithFkIfk: fetchToolOneWithFkIfk,
+        fetchAll: fetchToolAll,
+        fetchPaginated: fetchToolPaginated,
     } = useEntityWithFetch("tool");
 
     return {
@@ -4699,22 +4699,22 @@ export const useToolWithFetch = (): UseToolWithFetchReturn => {
         toolIsLoading,
         toolIsError,
         toolQuickRefRecords,
-        addtoolMatrxId,
-        addtoolMatrxIds,
-        removetoolMatrxId,
-        removetoolMatrxIds,
-        addtoolPkValue,
-        addtoolPkValues,
-        removetoolPkValue,
-        removetoolPkValues,
-        istoolMissingRecords,
-        settoolShouldFetch,
-        settoolFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addToolMatrxId,
+        addToolMatrxIds,
+        removeToolMatrxId,
+        removeToolMatrxIds,
+        addToolPkValue,
+        addToolPkValues,
+        removeToolPkValue,
+        removeToolPkValues,
+        isToolMissingRecords,
+        setToolShouldFetch,
+        setToolFetchMode,
+        fetchToolQuickRefs,
+        fetchToolOne,
+        fetchToolOneWithFkIfk,
+        fetchToolAll,
+        fetchToolPaginated,
     };
 };
 
@@ -4727,22 +4727,22 @@ type UseTransformerWithFetchReturn = {
     transformerIsLoading: boolean;
     transformerIsError: boolean;
     transformerQuickRefRecords: QuickReferenceRecord[];
-    addtransformerMatrxId: (recordId: MatrxRecordId) => void;
-    addtransformerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removetransformerMatrxId: (recordId: MatrxRecordId) => void;
-    removetransformerMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addtransformerPkValue: (pkValue: string) => void;
-    addtransformerPkValues: (pkValues: Record<string, unknown>) => void;
-    removetransformerPkValue: (pkValue: string) => void;
-    removetransformerPkValues: (pkValues: Record<string, unknown>) => void;
-    istransformerMissingRecords: boolean;
-    settransformerShouldFetch: (shouldFetch: boolean) => void;
-    settransformerFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addTransformerMatrxId: (recordId: MatrxRecordId) => void;
+    addTransformerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeTransformerMatrxId: (recordId: MatrxRecordId) => void;
+    removeTransformerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addTransformerPkValue: (pkValue: string) => void;
+    addTransformerPkValues: (pkValues: Record<string, unknown>) => void;
+    removeTransformerPkValue: (pkValue: string) => void;
+    removeTransformerPkValues: (pkValues: Record<string, unknown>) => void;
+    isTransformerMissingRecords: boolean;
+    setTransformerShouldFetch: (shouldFetch: boolean) => void;
+    setTransformerFetchMode: (fetchMode: FetchMode) => void;
+    fetchTransformerQuickRefs: () => void;
+    fetchTransformerOne: (recordId: MatrxRecordId) => void;
+    fetchTransformerOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchTransformerAll: () => void;
+    fetchTransformerPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useTransformerWithFetch = (): UseTransformerWithFetchReturn => {
@@ -4755,22 +4755,22 @@ export const useTransformerWithFetch = (): UseTransformerWithFetchReturn => {
         isLoading: transformerIsLoading,
         isError: transformerIsError,
         quickRefRecords: transformerQuickRefRecords,
-        addMatrxId: addtransformerMatrxId,
-        addMatrxIds: addtransformerMatrxIds,
-        removeMatrxId: removetransformerMatrxId,
-        removeMatrxIds: removetransformerMatrxIds,
-        addPkValue: addtransformerPkValue,
-        addPkValues: addtransformerPkValues,
-        removePkValue: removetransformerPkValue,
-        removePkValues: removetransformerPkValues,
-        isMissingRecords: istransformerMissingRecords,
-        setShouldFetch: settransformerShouldFetch,
-        setFetchMode: settransformerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addTransformerMatrxId,
+        addMatrxIds: addTransformerMatrxIds,
+        removeMatrxId: removeTransformerMatrxId,
+        removeMatrxIds: removeTransformerMatrxIds,
+        addPkValue: addTransformerPkValue,
+        addPkValues: addTransformerPkValues,
+        removePkValue: removeTransformerPkValue,
+        removePkValues: removeTransformerPkValues,
+        isMissingRecords: isTransformerMissingRecords,
+        setShouldFetch: setTransformerShouldFetch,
+        setFetchMode: setTransformerFetchMode,
+        fetchQuickRefs: fetchTransformerQuickRefs,
+        fetchOne: fetchTransformerOne,
+        fetchOneWithFkIfk: fetchTransformerOneWithFkIfk,
+        fetchAll: fetchTransformerAll,
+        fetchPaginated: fetchTransformerPaginated,
     } = useEntityWithFetch("transformer");
 
     return {
@@ -4782,22 +4782,22 @@ export const useTransformerWithFetch = (): UseTransformerWithFetchReturn => {
         transformerIsLoading,
         transformerIsError,
         transformerQuickRefRecords,
-        addtransformerMatrxId,
-        addtransformerMatrxIds,
-        removetransformerMatrxId,
-        removetransformerMatrxIds,
-        addtransformerPkValue,
-        addtransformerPkValues,
-        removetransformerPkValue,
-        removetransformerPkValues,
-        istransformerMissingRecords,
-        settransformerShouldFetch,
-        settransformerFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addTransformerMatrxId,
+        addTransformerMatrxIds,
+        removeTransformerMatrxId,
+        removeTransformerMatrxIds,
+        addTransformerPkValue,
+        addTransformerPkValues,
+        removeTransformerPkValue,
+        removeTransformerPkValues,
+        isTransformerMissingRecords,
+        setTransformerShouldFetch,
+        setTransformerFetchMode,
+        fetchTransformerQuickRefs,
+        fetchTransformerOne,
+        fetchTransformerOneWithFkIfk,
+        fetchTransformerAll,
+        fetchTransformerPaginated,
     };
 };
 
@@ -4810,22 +4810,22 @@ type UseUserPreferencesWithFetchReturn = {
     userPreferencesIsLoading: boolean;
     userPreferencesIsError: boolean;
     userPreferencesQuickRefRecords: QuickReferenceRecord[];
-    adduserPreferencesMatrxId: (recordId: MatrxRecordId) => void;
-    adduserPreferencesMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removeuserPreferencesMatrxId: (recordId: MatrxRecordId) => void;
-    removeuserPreferencesMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    adduserPreferencesPkValue: (pkValue: string) => void;
-    adduserPreferencesPkValues: (pkValues: Record<string, unknown>) => void;
-    removeuserPreferencesPkValue: (pkValue: string) => void;
-    removeuserPreferencesPkValues: (pkValues: Record<string, unknown>) => void;
-    isuserPreferencesMissingRecords: boolean;
-    setuserPreferencesShouldFetch: (shouldFetch: boolean) => void;
-    setuserPreferencesFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addUserPreferencesMatrxId: (recordId: MatrxRecordId) => void;
+    addUserPreferencesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserPreferencesMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserPreferencesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserPreferencesPkValue: (pkValue: string) => void;
+    addUserPreferencesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserPreferencesPkValue: (pkValue: string) => void;
+    removeUserPreferencesPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserPreferencesMissingRecords: boolean;
+    setUserPreferencesShouldFetch: (shouldFetch: boolean) => void;
+    setUserPreferencesFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserPreferencesQuickRefs: () => void;
+    fetchUserPreferencesOne: (recordId: MatrxRecordId) => void;
+    fetchUserPreferencesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserPreferencesAll: () => void;
+    fetchUserPreferencesPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useUserPreferencesWithFetch = (): UseUserPreferencesWithFetchReturn => {
@@ -4838,22 +4838,22 @@ export const useUserPreferencesWithFetch = (): UseUserPreferencesWithFetchReturn
         isLoading: userPreferencesIsLoading,
         isError: userPreferencesIsError,
         quickRefRecords: userPreferencesQuickRefRecords,
-        addMatrxId: adduserPreferencesMatrxId,
-        addMatrxIds: adduserPreferencesMatrxIds,
-        removeMatrxId: removeuserPreferencesMatrxId,
-        removeMatrxIds: removeuserPreferencesMatrxIds,
-        addPkValue: adduserPreferencesPkValue,
-        addPkValues: adduserPreferencesPkValues,
-        removePkValue: removeuserPreferencesPkValue,
-        removePkValues: removeuserPreferencesPkValues,
-        isMissingRecords: isuserPreferencesMissingRecords,
-        setShouldFetch: setuserPreferencesShouldFetch,
-        setFetchMode: setuserPreferencesFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addUserPreferencesMatrxId,
+        addMatrxIds: addUserPreferencesMatrxIds,
+        removeMatrxId: removeUserPreferencesMatrxId,
+        removeMatrxIds: removeUserPreferencesMatrxIds,
+        addPkValue: addUserPreferencesPkValue,
+        addPkValues: addUserPreferencesPkValues,
+        removePkValue: removeUserPreferencesPkValue,
+        removePkValues: removeUserPreferencesPkValues,
+        isMissingRecords: isUserPreferencesMissingRecords,
+        setShouldFetch: setUserPreferencesShouldFetch,
+        setFetchMode: setUserPreferencesFetchMode,
+        fetchQuickRefs: fetchUserPreferencesQuickRefs,
+        fetchOne: fetchUserPreferencesOne,
+        fetchOneWithFkIfk: fetchUserPreferencesOneWithFkIfk,
+        fetchAll: fetchUserPreferencesAll,
+        fetchPaginated: fetchUserPreferencesPaginated,
     } = useEntityWithFetch("userPreferences");
 
     return {
@@ -4865,22 +4865,22 @@ export const useUserPreferencesWithFetch = (): UseUserPreferencesWithFetchReturn
         userPreferencesIsLoading,
         userPreferencesIsError,
         userPreferencesQuickRefRecords,
-        adduserPreferencesMatrxId,
-        adduserPreferencesMatrxIds,
-        removeuserPreferencesMatrxId,
-        removeuserPreferencesMatrxIds,
-        adduserPreferencesPkValue,
-        adduserPreferencesPkValues,
-        removeuserPreferencesPkValue,
-        removeuserPreferencesPkValues,
-        isuserPreferencesMissingRecords,
-        setuserPreferencesShouldFetch,
-        setuserPreferencesFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addUserPreferencesMatrxId,
+        addUserPreferencesMatrxIds,
+        removeUserPreferencesMatrxId,
+        removeUserPreferencesMatrxIds,
+        addUserPreferencesPkValue,
+        addUserPreferencesPkValues,
+        removeUserPreferencesPkValue,
+        removeUserPreferencesPkValues,
+        isUserPreferencesMissingRecords,
+        setUserPreferencesShouldFetch,
+        setUserPreferencesFetchMode,
+        fetchUserPreferencesQuickRefs,
+        fetchUserPreferencesOne,
+        fetchUserPreferencesOneWithFkIfk,
+        fetchUserPreferencesAll,
+        fetchUserPreferencesPaginated,
     };
 };
 
@@ -4893,22 +4893,22 @@ type UseWcClaimWithFetchReturn = {
     wcClaimIsLoading: boolean;
     wcClaimIsError: boolean;
     wcClaimQuickRefRecords: QuickReferenceRecord[];
-    addwcClaimMatrxId: (recordId: MatrxRecordId) => void;
-    addwcClaimMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removewcClaimMatrxId: (recordId: MatrxRecordId) => void;
-    removewcClaimMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addwcClaimPkValue: (pkValue: string) => void;
-    addwcClaimPkValues: (pkValues: Record<string, unknown>) => void;
-    removewcClaimPkValue: (pkValue: string) => void;
-    removewcClaimPkValues: (pkValues: Record<string, unknown>) => void;
-    iswcClaimMissingRecords: boolean;
-    setwcClaimShouldFetch: (shouldFetch: boolean) => void;
-    setwcClaimFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addWcClaimMatrxId: (recordId: MatrxRecordId) => void;
+    addWcClaimMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeWcClaimMatrxId: (recordId: MatrxRecordId) => void;
+    removeWcClaimMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addWcClaimPkValue: (pkValue: string) => void;
+    addWcClaimPkValues: (pkValues: Record<string, unknown>) => void;
+    removeWcClaimPkValue: (pkValue: string) => void;
+    removeWcClaimPkValues: (pkValues: Record<string, unknown>) => void;
+    isWcClaimMissingRecords: boolean;
+    setWcClaimShouldFetch: (shouldFetch: boolean) => void;
+    setWcClaimFetchMode: (fetchMode: FetchMode) => void;
+    fetchWcClaimQuickRefs: () => void;
+    fetchWcClaimOne: (recordId: MatrxRecordId) => void;
+    fetchWcClaimOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchWcClaimAll: () => void;
+    fetchWcClaimPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useWcClaimWithFetch = (): UseWcClaimWithFetchReturn => {
@@ -4921,22 +4921,22 @@ export const useWcClaimWithFetch = (): UseWcClaimWithFetchReturn => {
         isLoading: wcClaimIsLoading,
         isError: wcClaimIsError,
         quickRefRecords: wcClaimQuickRefRecords,
-        addMatrxId: addwcClaimMatrxId,
-        addMatrxIds: addwcClaimMatrxIds,
-        removeMatrxId: removewcClaimMatrxId,
-        removeMatrxIds: removewcClaimMatrxIds,
-        addPkValue: addwcClaimPkValue,
-        addPkValues: addwcClaimPkValues,
-        removePkValue: removewcClaimPkValue,
-        removePkValues: removewcClaimPkValues,
-        isMissingRecords: iswcClaimMissingRecords,
-        setShouldFetch: setwcClaimShouldFetch,
-        setFetchMode: setwcClaimFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addWcClaimMatrxId,
+        addMatrxIds: addWcClaimMatrxIds,
+        removeMatrxId: removeWcClaimMatrxId,
+        removeMatrxIds: removeWcClaimMatrxIds,
+        addPkValue: addWcClaimPkValue,
+        addPkValues: addWcClaimPkValues,
+        removePkValue: removeWcClaimPkValue,
+        removePkValues: removeWcClaimPkValues,
+        isMissingRecords: isWcClaimMissingRecords,
+        setShouldFetch: setWcClaimShouldFetch,
+        setFetchMode: setWcClaimFetchMode,
+        fetchQuickRefs: fetchWcClaimQuickRefs,
+        fetchOne: fetchWcClaimOne,
+        fetchOneWithFkIfk: fetchWcClaimOneWithFkIfk,
+        fetchAll: fetchWcClaimAll,
+        fetchPaginated: fetchWcClaimPaginated,
     } = useEntityWithFetch("wcClaim");
 
     return {
@@ -4948,22 +4948,22 @@ export const useWcClaimWithFetch = (): UseWcClaimWithFetchReturn => {
         wcClaimIsLoading,
         wcClaimIsError,
         wcClaimQuickRefRecords,
-        addwcClaimMatrxId,
-        addwcClaimMatrxIds,
-        removewcClaimMatrxId,
-        removewcClaimMatrxIds,
-        addwcClaimPkValue,
-        addwcClaimPkValues,
-        removewcClaimPkValue,
-        removewcClaimPkValues,
-        iswcClaimMissingRecords,
-        setwcClaimShouldFetch,
-        setwcClaimFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addWcClaimMatrxId,
+        addWcClaimMatrxIds,
+        removeWcClaimMatrxId,
+        removeWcClaimMatrxIds,
+        addWcClaimPkValue,
+        addWcClaimPkValues,
+        removeWcClaimPkValue,
+        removeWcClaimPkValues,
+        isWcClaimMissingRecords,
+        setWcClaimShouldFetch,
+        setWcClaimFetchMode,
+        fetchWcClaimQuickRefs,
+        fetchWcClaimOne,
+        fetchWcClaimOneWithFkIfk,
+        fetchWcClaimAll,
+        fetchWcClaimPaginated,
     };
 };
 
@@ -4976,22 +4976,22 @@ type UseWcImpairmentDefinitionWithFetchReturn = {
     wcImpairmentDefinitionIsLoading: boolean;
     wcImpairmentDefinitionIsError: boolean;
     wcImpairmentDefinitionQuickRefRecords: QuickReferenceRecord[];
-    addwcImpairmentDefinitionMatrxId: (recordId: MatrxRecordId) => void;
-    addwcImpairmentDefinitionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removewcImpairmentDefinitionMatrxId: (recordId: MatrxRecordId) => void;
-    removewcImpairmentDefinitionMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addwcImpairmentDefinitionPkValue: (pkValue: string) => void;
-    addwcImpairmentDefinitionPkValues: (pkValues: Record<string, unknown>) => void;
-    removewcImpairmentDefinitionPkValue: (pkValue: string) => void;
-    removewcImpairmentDefinitionPkValues: (pkValues: Record<string, unknown>) => void;
-    iswcImpairmentDefinitionMissingRecords: boolean;
-    setwcImpairmentDefinitionShouldFetch: (shouldFetch: boolean) => void;
-    setwcImpairmentDefinitionFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addWcImpairmentDefinitionMatrxId: (recordId: MatrxRecordId) => void;
+    addWcImpairmentDefinitionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeWcImpairmentDefinitionMatrxId: (recordId: MatrxRecordId) => void;
+    removeWcImpairmentDefinitionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addWcImpairmentDefinitionPkValue: (pkValue: string) => void;
+    addWcImpairmentDefinitionPkValues: (pkValues: Record<string, unknown>) => void;
+    removeWcImpairmentDefinitionPkValue: (pkValue: string) => void;
+    removeWcImpairmentDefinitionPkValues: (pkValues: Record<string, unknown>) => void;
+    isWcImpairmentDefinitionMissingRecords: boolean;
+    setWcImpairmentDefinitionShouldFetch: (shouldFetch: boolean) => void;
+    setWcImpairmentDefinitionFetchMode: (fetchMode: FetchMode) => void;
+    fetchWcImpairmentDefinitionQuickRefs: () => void;
+    fetchWcImpairmentDefinitionOne: (recordId: MatrxRecordId) => void;
+    fetchWcImpairmentDefinitionOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchWcImpairmentDefinitionAll: () => void;
+    fetchWcImpairmentDefinitionPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useWcImpairmentDefinitionWithFetch = (): UseWcImpairmentDefinitionWithFetchReturn => {
@@ -5004,22 +5004,22 @@ export const useWcImpairmentDefinitionWithFetch = (): UseWcImpairmentDefinitionW
         isLoading: wcImpairmentDefinitionIsLoading,
         isError: wcImpairmentDefinitionIsError,
         quickRefRecords: wcImpairmentDefinitionQuickRefRecords,
-        addMatrxId: addwcImpairmentDefinitionMatrxId,
-        addMatrxIds: addwcImpairmentDefinitionMatrxIds,
-        removeMatrxId: removewcImpairmentDefinitionMatrxId,
-        removeMatrxIds: removewcImpairmentDefinitionMatrxIds,
-        addPkValue: addwcImpairmentDefinitionPkValue,
-        addPkValues: addwcImpairmentDefinitionPkValues,
-        removePkValue: removewcImpairmentDefinitionPkValue,
-        removePkValues: removewcImpairmentDefinitionPkValues,
-        isMissingRecords: iswcImpairmentDefinitionMissingRecords,
-        setShouldFetch: setwcImpairmentDefinitionShouldFetch,
-        setFetchMode: setwcImpairmentDefinitionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addWcImpairmentDefinitionMatrxId,
+        addMatrxIds: addWcImpairmentDefinitionMatrxIds,
+        removeMatrxId: removeWcImpairmentDefinitionMatrxId,
+        removeMatrxIds: removeWcImpairmentDefinitionMatrxIds,
+        addPkValue: addWcImpairmentDefinitionPkValue,
+        addPkValues: addWcImpairmentDefinitionPkValues,
+        removePkValue: removeWcImpairmentDefinitionPkValue,
+        removePkValues: removeWcImpairmentDefinitionPkValues,
+        isMissingRecords: isWcImpairmentDefinitionMissingRecords,
+        setShouldFetch: setWcImpairmentDefinitionShouldFetch,
+        setFetchMode: setWcImpairmentDefinitionFetchMode,
+        fetchQuickRefs: fetchWcImpairmentDefinitionQuickRefs,
+        fetchOne: fetchWcImpairmentDefinitionOne,
+        fetchOneWithFkIfk: fetchWcImpairmentDefinitionOneWithFkIfk,
+        fetchAll: fetchWcImpairmentDefinitionAll,
+        fetchPaginated: fetchWcImpairmentDefinitionPaginated,
     } = useEntityWithFetch("wcImpairmentDefinition");
 
     return {
@@ -5031,22 +5031,22 @@ export const useWcImpairmentDefinitionWithFetch = (): UseWcImpairmentDefinitionW
         wcImpairmentDefinitionIsLoading,
         wcImpairmentDefinitionIsError,
         wcImpairmentDefinitionQuickRefRecords,
-        addwcImpairmentDefinitionMatrxId,
-        addwcImpairmentDefinitionMatrxIds,
-        removewcImpairmentDefinitionMatrxId,
-        removewcImpairmentDefinitionMatrxIds,
-        addwcImpairmentDefinitionPkValue,
-        addwcImpairmentDefinitionPkValues,
-        removewcImpairmentDefinitionPkValue,
-        removewcImpairmentDefinitionPkValues,
-        iswcImpairmentDefinitionMissingRecords,
-        setwcImpairmentDefinitionShouldFetch,
-        setwcImpairmentDefinitionFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addWcImpairmentDefinitionMatrxId,
+        addWcImpairmentDefinitionMatrxIds,
+        removeWcImpairmentDefinitionMatrxId,
+        removeWcImpairmentDefinitionMatrxIds,
+        addWcImpairmentDefinitionPkValue,
+        addWcImpairmentDefinitionPkValues,
+        removeWcImpairmentDefinitionPkValue,
+        removeWcImpairmentDefinitionPkValues,
+        isWcImpairmentDefinitionMissingRecords,
+        setWcImpairmentDefinitionShouldFetch,
+        setWcImpairmentDefinitionFetchMode,
+        fetchWcImpairmentDefinitionQuickRefs,
+        fetchWcImpairmentDefinitionOne,
+        fetchWcImpairmentDefinitionOneWithFkIfk,
+        fetchWcImpairmentDefinitionAll,
+        fetchWcImpairmentDefinitionPaginated,
     };
 };
 
@@ -5059,22 +5059,22 @@ type UseWcInjuryWithFetchReturn = {
     wcInjuryIsLoading: boolean;
     wcInjuryIsError: boolean;
     wcInjuryQuickRefRecords: QuickReferenceRecord[];
-    addwcInjuryMatrxId: (recordId: MatrxRecordId) => void;
-    addwcInjuryMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removewcInjuryMatrxId: (recordId: MatrxRecordId) => void;
-    removewcInjuryMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addwcInjuryPkValue: (pkValue: string) => void;
-    addwcInjuryPkValues: (pkValues: Record<string, unknown>) => void;
-    removewcInjuryPkValue: (pkValue: string) => void;
-    removewcInjuryPkValues: (pkValues: Record<string, unknown>) => void;
-    iswcInjuryMissingRecords: boolean;
-    setwcInjuryShouldFetch: (shouldFetch: boolean) => void;
-    setwcInjuryFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addWcInjuryMatrxId: (recordId: MatrxRecordId) => void;
+    addWcInjuryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeWcInjuryMatrxId: (recordId: MatrxRecordId) => void;
+    removeWcInjuryMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addWcInjuryPkValue: (pkValue: string) => void;
+    addWcInjuryPkValues: (pkValues: Record<string, unknown>) => void;
+    removeWcInjuryPkValue: (pkValue: string) => void;
+    removeWcInjuryPkValues: (pkValues: Record<string, unknown>) => void;
+    isWcInjuryMissingRecords: boolean;
+    setWcInjuryShouldFetch: (shouldFetch: boolean) => void;
+    setWcInjuryFetchMode: (fetchMode: FetchMode) => void;
+    fetchWcInjuryQuickRefs: () => void;
+    fetchWcInjuryOne: (recordId: MatrxRecordId) => void;
+    fetchWcInjuryOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchWcInjuryAll: () => void;
+    fetchWcInjuryPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useWcInjuryWithFetch = (): UseWcInjuryWithFetchReturn => {
@@ -5087,22 +5087,22 @@ export const useWcInjuryWithFetch = (): UseWcInjuryWithFetchReturn => {
         isLoading: wcInjuryIsLoading,
         isError: wcInjuryIsError,
         quickRefRecords: wcInjuryQuickRefRecords,
-        addMatrxId: addwcInjuryMatrxId,
-        addMatrxIds: addwcInjuryMatrxIds,
-        removeMatrxId: removewcInjuryMatrxId,
-        removeMatrxIds: removewcInjuryMatrxIds,
-        addPkValue: addwcInjuryPkValue,
-        addPkValues: addwcInjuryPkValues,
-        removePkValue: removewcInjuryPkValue,
-        removePkValues: removewcInjuryPkValues,
-        isMissingRecords: iswcInjuryMissingRecords,
-        setShouldFetch: setwcInjuryShouldFetch,
-        setFetchMode: setwcInjuryFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addWcInjuryMatrxId,
+        addMatrxIds: addWcInjuryMatrxIds,
+        removeMatrxId: removeWcInjuryMatrxId,
+        removeMatrxIds: removeWcInjuryMatrxIds,
+        addPkValue: addWcInjuryPkValue,
+        addPkValues: addWcInjuryPkValues,
+        removePkValue: removeWcInjuryPkValue,
+        removePkValues: removeWcInjuryPkValues,
+        isMissingRecords: isWcInjuryMissingRecords,
+        setShouldFetch: setWcInjuryShouldFetch,
+        setFetchMode: setWcInjuryFetchMode,
+        fetchQuickRefs: fetchWcInjuryQuickRefs,
+        fetchOne: fetchWcInjuryOne,
+        fetchOneWithFkIfk: fetchWcInjuryOneWithFkIfk,
+        fetchAll: fetchWcInjuryAll,
+        fetchPaginated: fetchWcInjuryPaginated,
     } = useEntityWithFetch("wcInjury");
 
     return {
@@ -5114,22 +5114,22 @@ export const useWcInjuryWithFetch = (): UseWcInjuryWithFetchReturn => {
         wcInjuryIsLoading,
         wcInjuryIsError,
         wcInjuryQuickRefRecords,
-        addwcInjuryMatrxId,
-        addwcInjuryMatrxIds,
-        removewcInjuryMatrxId,
-        removewcInjuryMatrxIds,
-        addwcInjuryPkValue,
-        addwcInjuryPkValues,
-        removewcInjuryPkValue,
-        removewcInjuryPkValues,
-        iswcInjuryMissingRecords,
-        setwcInjuryShouldFetch,
-        setwcInjuryFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addWcInjuryMatrxId,
+        addWcInjuryMatrxIds,
+        removeWcInjuryMatrxId,
+        removeWcInjuryMatrxIds,
+        addWcInjuryPkValue,
+        addWcInjuryPkValues,
+        removeWcInjuryPkValue,
+        removeWcInjuryPkValues,
+        isWcInjuryMissingRecords,
+        setWcInjuryShouldFetch,
+        setWcInjuryFetchMode,
+        fetchWcInjuryQuickRefs,
+        fetchWcInjuryOne,
+        fetchWcInjuryOneWithFkIfk,
+        fetchWcInjuryAll,
+        fetchWcInjuryPaginated,
     };
 };
 
@@ -5142,22 +5142,22 @@ type UseWcReportWithFetchReturn = {
     wcReportIsLoading: boolean;
     wcReportIsError: boolean;
     wcReportQuickRefRecords: QuickReferenceRecord[];
-    addwcReportMatrxId: (recordId: MatrxRecordId) => void;
-    addwcReportMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    removewcReportMatrxId: (recordId: MatrxRecordId) => void;
-    removewcReportMatrxIds: (recordIds: MatrxRecordId[]) => void;
-    addwcReportPkValue: (pkValue: string) => void;
-    addwcReportPkValues: (pkValues: Record<string, unknown>) => void;
-    removewcReportPkValue: (pkValue: string) => void;
-    removewcReportPkValues: (pkValues: Record<string, unknown>) => void;
-    iswcReportMissingRecords: boolean;
-    setwcReportShouldFetch: (shouldFetch: boolean) => void;
-    setwcReportFetchMode: (fetchMode: FetchMode) => void;
-    fetchQuickRefs: () => void;
-    fetchOne: (recordId: MatrxRecordId) => void;
-    fetchOneWithFkIfk: (recordId: MatrxRecordId) => void;
-    fetchAll: () => void;
-    fetchPaginated: (page: number, pageSize: number) => void;
+    addWcReportMatrxId: (recordId: MatrxRecordId) => void;
+    addWcReportMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeWcReportMatrxId: (recordId: MatrxRecordId) => void;
+    removeWcReportMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addWcReportPkValue: (pkValue: string) => void;
+    addWcReportPkValues: (pkValues: Record<string, unknown>) => void;
+    removeWcReportPkValue: (pkValue: string) => void;
+    removeWcReportPkValues: (pkValues: Record<string, unknown>) => void;
+    isWcReportMissingRecords: boolean;
+    setWcReportShouldFetch: (shouldFetch: boolean) => void;
+    setWcReportFetchMode: (fetchMode: FetchMode) => void;
+    fetchWcReportQuickRefs: () => void;
+    fetchWcReportOne: (recordId: MatrxRecordId) => void;
+    fetchWcReportOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchWcReportAll: () => void;
+    fetchWcReportPaginated: (page: number, pageSize: number) => void;
 };
 
 export const useWcReportWithFetch = (): UseWcReportWithFetchReturn => {
@@ -5170,22 +5170,22 @@ export const useWcReportWithFetch = (): UseWcReportWithFetchReturn => {
         isLoading: wcReportIsLoading,
         isError: wcReportIsError,
         quickRefRecords: wcReportQuickRefRecords,
-        addMatrxId: addwcReportMatrxId,
-        addMatrxIds: addwcReportMatrxIds,
-        removeMatrxId: removewcReportMatrxId,
-        removeMatrxIds: removewcReportMatrxIds,
-        addPkValue: addwcReportPkValue,
-        addPkValues: addwcReportPkValues,
-        removePkValue: removewcReportPkValue,
-        removePkValues: removewcReportPkValues,
-        isMissingRecords: iswcReportMissingRecords,
-        setShouldFetch: setwcReportShouldFetch,
-        setFetchMode: setwcReportFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addMatrxId: addWcReportMatrxId,
+        addMatrxIds: addWcReportMatrxIds,
+        removeMatrxId: removeWcReportMatrxId,
+        removeMatrxIds: removeWcReportMatrxIds,
+        addPkValue: addWcReportPkValue,
+        addPkValues: addWcReportPkValues,
+        removePkValue: removeWcReportPkValue,
+        removePkValues: removeWcReportPkValues,
+        isMissingRecords: isWcReportMissingRecords,
+        setShouldFetch: setWcReportShouldFetch,
+        setFetchMode: setWcReportFetchMode,
+        fetchQuickRefs: fetchWcReportQuickRefs,
+        fetchOne: fetchWcReportOne,
+        fetchOneWithFkIfk: fetchWcReportOneWithFkIfk,
+        fetchAll: fetchWcReportAll,
+        fetchPaginated: fetchWcReportPaginated,
     } = useEntityWithFetch("wcReport");
 
     return {
@@ -5197,21 +5197,21 @@ export const useWcReportWithFetch = (): UseWcReportWithFetchReturn => {
         wcReportIsLoading,
         wcReportIsError,
         wcReportQuickRefRecords,
-        addwcReportMatrxId,
-        addwcReportMatrxIds,
-        removewcReportMatrxId,
-        removewcReportMatrxIds,
-        addwcReportPkValue,
-        addwcReportPkValues,
-        removewcReportPkValue,
-        removewcReportPkValues,
-        iswcReportMissingRecords,
-        setwcReportShouldFetch,
-        setwcReportFetchMode,
-        fetchQuickRefs,
-        fetchOne,
-        fetchOneWithFkIfk,
-        fetchAll,
-        fetchPaginated,
+        addWcReportMatrxId,
+        addWcReportMatrxIds,
+        removeWcReportMatrxId,
+        removeWcReportMatrxIds,
+        addWcReportPkValue,
+        addWcReportPkValues,
+        removeWcReportPkValue,
+        removeWcReportPkValues,
+        isWcReportMissingRecords,
+        setWcReportShouldFetch,
+        setWcReportFetchMode,
+        fetchWcReportQuickRefs,
+        fetchWcReportOne,
+        fetchWcReportOneWithFkIfk,
+        fetchWcReportAll,
+        fetchWcReportPaginated,
     };
 };

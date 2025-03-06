@@ -1,5 +1,3 @@
-// File: features/chat/ui-parts/layout/ClientHeaderContent.tsx
-
 'use client';
 
 import React from "react";
@@ -9,6 +7,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { TbListSearch } from "react-icons/tb";
+import Link from "next/link";
 
 const ClientHeaderContent: React.FC = () => {
   // Get user data from Redux store
@@ -19,6 +18,13 @@ const ClientHeaderContent: React.FC = () => {
 
   return (
     <div className="flex items-center space-x-3">
+      {/* New Chat Button */}
+      <Link href="/chat">
+        <button className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800">
+          <MessageSquare size={18} />
+        </button>
+      </Link>
+      
       {/* Theme Switcher */}
       <ThemeSwitcherIcon className="p-0.5" />
       
