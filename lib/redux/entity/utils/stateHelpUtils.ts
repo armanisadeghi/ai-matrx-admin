@@ -237,6 +237,9 @@ export const generateTempRecordIdFromFutureId = (state: EntityState<EntityKeys>,
 };
 
 export const getPermanentId = (temporaryId: string) => {
+    if (!temporaryId) {
+        return null;
+    }
     const prefix = 'new-record-';
     if (!temporaryId.startsWith(prefix)) {
         return temporaryId; // If it's not a temp ID, return as is

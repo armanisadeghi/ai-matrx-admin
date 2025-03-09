@@ -50,6 +50,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     }
     const userData = mapUserData(user);
     setGlobalUserId(userData.id);
+    console.log("Active User Id:", userData.id);
 
     // Replace getTestDirectories with fetching from JSON
     // const testDirectories = await fetchTestDirectories();

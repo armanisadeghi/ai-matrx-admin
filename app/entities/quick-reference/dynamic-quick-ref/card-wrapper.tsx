@@ -69,6 +69,7 @@ function useQuickRefRenderer(
                     <QuickRefComponent
                         displayValue={record.displayValue}
                         isSelected={isSelected}
+                        entityKey={entityKey}
                     />
                 )}
             </SelectableWrapper>

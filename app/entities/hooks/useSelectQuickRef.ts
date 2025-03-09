@@ -46,7 +46,7 @@ export function useSelectQuickRef<TEntity extends EntityKeys>(entityKey: TEntity
 
     React.useEffect(() => {
         if (
-            !Array.isArray(selectedRecordIds) || // Add type check
+            !Array.isArray(selectedRecordIds) ||
             selectedRecordIds.length === 0 ||
             hasOnlyNewRecords ||
             isEqual

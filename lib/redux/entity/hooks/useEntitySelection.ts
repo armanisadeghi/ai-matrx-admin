@@ -111,7 +111,6 @@ export const useEntitySelection = <TEntity extends EntityKeys>(
     }, [dispatch, actions]);
 
     const handleSingleSelection = React.useCallback((recordKey: MatrxRecordId) => {
-        console.log('Single Selection Handler Triggered with: ', recordKey);
         dispatch(actions.setSwitchSelectedRecord(recordKey));
     }, [dispatch, actions]);
 

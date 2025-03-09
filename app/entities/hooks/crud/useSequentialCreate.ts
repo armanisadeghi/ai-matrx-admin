@@ -1,7 +1,6 @@
-import { useCallback, useMemo } from 'react';
-import { createRecordKey, useAppSelector, useEntityToasts, useEntityTools } from '@/lib/redux';
+import { useCallback } from 'react';
+import { useEntityToasts } from '@/lib/redux';
 import { EntityData, EntityKeys, MatrxRecordId } from '@/types';
-import { DefinedRelationship, RelatedDataManager } from '../relationships/relationshipDefinitions';
 import { useCreateWithId } from './useDirectCreateRecord';
 
 interface SequentialCreateOptions {
@@ -52,7 +51,7 @@ export const useSequentialCreate = ({
     onSecondSuccess,
     onError,
     showIndividualToasts = false,
-    showCombinedToast = true
+    showCombinedToast = false
 }: SequentialCreateOptions) => {
     const firstEntityToasts = useEntityToasts(firstEntity);
     const secondEntityToasts = useEntityToasts(secondEntity);

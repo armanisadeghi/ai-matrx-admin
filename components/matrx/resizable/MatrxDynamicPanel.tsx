@@ -219,7 +219,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             left: {
                 container: 'fixed inset-y-0 left-0',
                 dimensions: {width: '100vw'},
-                button: 'left-4 top-4',
+                button: 'left-4 top-10',
                 panel: 'left-0',
                 border: 'border-r',
                 chevron: {
@@ -230,7 +230,7 @@ const MatrxDynamicPanel: React.FC<MatrxDynamicPanelProps> = (
             right: {
                 container: 'fixed inset-y-0 right-0',
                 dimensions: {width: '100vw'},
-                button: 'right-4 top-4',
+                button: 'right-4 top-10',
                 panel: 'right-0',
                 border: 'border-l',
                 chevron: {

@@ -1,5 +1,4 @@
 'use client';
-
 import * as React from 'react';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
@@ -39,38 +38,33 @@ function DynamicQuickReference<TEntity extends EntityKeys>(
         className = '',
         smartCrudProps = SMART_CRUD_PROP_DEFAULTS,
     }: EntityQuickReferenceCardsProps<TEntity>) {
-
     useFetchQuickRef(entityKey);
-
     const {selectionMode, toggleSelectionMode} = useQuickRefModes(entityKey);
-
-    const {renderItems} = useQuickRefRenderer({entityKey, variant: 'dynamic', fetchMode: "fkIfk"});
-
+    const {renderItems} = useQuickRefRenderer({entityKey, variant: 'gradient', fetchMode: "fkIfk"});
     const fullSmartCrudProps = React.useMemo(() => ({
         entityKey,
         ...smartCrudProps,
     }), [entityKey, smartCrudProps]);
 
     return (
-        <div className={cn('flex flex-col w-full min-w-0 p-1', className)}>
-            <div className="p-2 flex items-center justify-center">
+        <div className={cn('flex flex-col w-full min-w-0 p-1 overflow-hidden max-w-full', className)}>
+            <div className="p-2 flex items-center justify-center w-full overflow-hidden">
                 <SmartCrudWrapper {...fullSmartCrudProps} />
             </div>
-
             {selectionMode !== 'none' && (
-                <div className="p-2 flex items-center justify-center">
+                <div className="p-2 flex items-center justify-center w-full overflow-hidden">
                     <Button
                         onClick={toggleSelectionMode}
                         size="sm"
                         variant={selectionMode === 'multiple' ? 'secondary' : 'outline'}
+                        className="truncate max-w-full"
                     >
-                        <CheckSquare className="h-4 w-4 mr-2"/>
-                        {selectionMode === 'multiple' ? 'Cancel Multi' : 'Multi'}
+                        <CheckSquare className="h-4 w-4 mr-2 flex-shrink-0"/>
+                        <span className="truncate">{selectionMode === 'multiple' ? 'Cancel Multi' : 'Multi'}</span>
                     </Button>
                 </div>
             )}
-
-            <div className="grid auto-rows-fr overflow-y-auto space-y-1">
+            <div className="grid auto-rows-fr overflow-y-auto space-y-1 w-full overflow-x-hidden max-w-full">
                 {renderItems()}
             </div>
         </div>

@@ -6,7 +6,12 @@ export type Action = {
     transformer?: string;
     nodeType: string;
     referenceId: string;
-};
+}
+
+export type Admins = {
+    userId: string;
+    createdAt?: Date;
+}
 
 export type AiAgent = {
     id: string;
@@ -14,7 +19,7 @@ export type AiAgent = {
     recipeId?: string;
     aiSettingsId?: string;
     systemMessageOverride?: string;
-};
+}
 
 export type AiEndpoint = {
     id: string;
@@ -24,7 +29,7 @@ export type AiEndpoint = {
     additionalCost?: boolean;
     costDetails?: Record<string, unknown>;
     params?: Record<string, unknown>;
-};
+}
 
 export type AiModel = {
     id: string;
@@ -38,7 +43,7 @@ export type AiModel = {
     capabilities?: Record<string, unknown>;
     controls?: Record<string, unknown>;
     modelProvider?: string;
-};
+}
 
 export type AiModelEndpoint = {
     id: string;
@@ -49,7 +54,7 @@ export type AiModelEndpoint = {
     configuration?: Record<string, unknown>;
     notes?: string;
     createdAt: Date;
-};
+}
 
 export type AiProvider = {
     id: string;
@@ -57,7 +62,7 @@ export type AiProvider = {
     companyDescription?: string;
     documentationLink?: string;
     modelsLink?: string;
-};
+}
 
 export type AiSettings = {
     id: string;
@@ -79,7 +84,7 @@ export type AiSettings = {
     modalities?: Record<string, unknown>;
     tools?: Record<string, unknown>;
     presetName?: string;
-};
+}
 
 export type Applet = {
     id: string;
@@ -98,7 +103,7 @@ export type Applet = {
     subcategoryId?: string;
     ctaText?: string;
     theme?: string;
-};
+}
 
 export type Arg = {
     id: string;
@@ -108,14 +113,14 @@ export type Arg = {
     dataType?: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
     ready?: boolean;
     registeredFunction?: string;
-};
+}
 
 export type AudioLabel = {
     id: string;
     createdAt: Date;
     name: string;
     description?: string;
-};
+}
 
 export type AudioRecording = {
     id: string;
@@ -128,7 +133,7 @@ export type AudioRecording = {
     localPath?: string;
     size?: number;
     isPublic: boolean;
-};
+}
 
 export type AudioRecordingUsers = {
     id: string;
@@ -136,25 +141,15 @@ export type AudioRecordingUsers = {
     firstName?: string;
     lastName?: string;
     email?: string;
-};
+}
 
 export type AutomationBoundaryBroker = {
     id: string;
     matrix?: string;
     broker?: string;
-    sparkSource?:
-        | "api"
-        | "chance"
-        | "database"
-        | "environment"
-        | "file"
-        | "function"
-        | "generated_data"
-        | "none"
-        | "user_input"
-        | undefined;
+    sparkSource?: "api" | "chance" | "database" | "environment" | "file" | "function" | "generated_data" | "none" | "user_input" | undefined;
     beaconDestination?: "api_response" | "database" | "file" | "function" | "user_output" | undefined;
-};
+}
 
 export type AutomationMatrix = {
     id: string;
@@ -162,17 +157,8 @@ export type AutomationMatrix = {
     description?: string;
     averageSeconds?: number;
     isAutomated?: boolean;
-    cognitionMatrices?:
-        | "agent_crew"
-        | "agent_mixture"
-        | "conductor"
-        | "hypercluster"
-        | "knowledge_matrix"
-        | "monte_carlo"
-        | "the_matrix"
-        | "workflow"
-        | undefined;
-};
+    cognitionMatrices?: "agent_crew" | "agent_mixture" | "conductor" | "hypercluster" | "knowledge_matrix" | "monte_carlo" | "the_matrix" | "workflow" | undefined;
+}
 
 export type Broker = {
     id: string;
@@ -180,17 +166,7 @@ export type Broker = {
     value?: Record<string, unknown>;
     dataType: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
     ready?: boolean;
-    defaultSource?:
-        | "api"
-        | "chance"
-        | "database"
-        | "environment"
-        | "file"
-        | "function"
-        | "generated_data"
-        | "none"
-        | "user_input"
-        | undefined;
+    defaultSource?: "api" | "chance" | "database" | "environment" | "file" | "function" | "generated_data" | "none" | "user_input" | undefined;
     displayName?: string;
     description?: string;
     tooltip?: string;
@@ -200,77 +176,10 @@ export type Broker = {
     additionalParams?: Record<string, unknown>;
     otherSourceParams?: Record<string, unknown>;
     defaultDestination?: "api_response" | "database" | "file" | "function" | "user_output" | undefined;
-    outputComponent?:
-        | "3DModelViewer"
-        | "AudioOutput"
-        | "BucketList"
-        | "BudgetVisualizer"
-        | "Calendar"
-        | "Carousel"
-        | "Checklist"
-        | "Clock"
-        | "CodeView"
-        | "ComplexMulti"
-        | "DataFlowDiagram"
-        | "DecisionTree"
-        | "DiffViewer"
-        | "FileOutput"
-        | "FitnessTracker"
-        | "Flowchart"
-        | "Form"
-        | "GanttChart"
-        | "GeographicMap"
-        | "GlossaryView"
-        | "Heatmap"
-        | "HorizontalList"
-        | "ImageView"
-        | "InteractiveChart"
-        | "JsonViewer"
-        | "KanbanBoard"
-        | "LaTeXRenderer"
-        | "LiveTraffic"
-        | "LocalEvents"
-        | "MarkdownViewer"
-        | "MealPlanner"
-        | "MindMap"
-        | "NeedNewOption"
-        | "NetworkGraph"
-        | "NewsAggregator"
-        | "PDFViewer"
-        | "PivotTable"
-        | "PlainText"
-        | "Presentation"
-        | "PublicLiveCam"
-        | "RichTextEditor"
-        | "RunCodeBack"
-        | "RunCodeFront"
-        | "SVGEditor"
-        | "SankeyDiagram"
-        | "SatelliteView"
-        | "SocialMediaInfo"
-        | "SpectrumAnalyzer"
-        | "Spreadsheet"
-        | "Table"
-        | "TaskPrioritization"
-        | "Textarea"
-        | "Thermometer"
-        | "Timeline"
-        | "TravelPlanner"
-        | "TreeView"
-        | "UMLDiagram"
-        | "VerticalList"
-        | "VoiceSentimentAnalysis"
-        | "WeatherDashboard"
-        | "WeatherMap"
-        | "WordHighlighter"
-        | "WordMap"
-        | "chatResponse"
-        | "none"
-        | "video"
-        | undefined;
+    outputComponent?: "3DModelViewer" | "AudioOutput" | "BucketList" | "BudgetVisualizer" | "Calendar" | "Carousel" | "Checklist" | "Clock" | "CodeView" | "ComplexMulti" | "DataFlowDiagram" | "DecisionTree" | "DiffViewer" | "FileOutput" | "FitnessTracker" | "Flowchart" | "Form" | "GanttChart" | "GeographicMap" | "GlossaryView" | "Heatmap" | "HorizontalList" | "ImageView" | "InteractiveChart" | "JsonViewer" | "KanbanBoard" | "LaTeXRenderer" | "LiveTraffic" | "LocalEvents" | "MarkdownViewer" | "MealPlanner" | "MindMap" | "NeedNewOption" | "NetworkGraph" | "NewsAggregator" | "PDFViewer" | "PivotTable" | "PlainText" | "Presentation" | "PublicLiveCam" | "RichTextEditor" | "RunCodeBack" | "RunCodeFront" | "SVGEditor" | "SankeyDiagram" | "SatelliteView" | "SocialMediaInfo" | "SpectrumAnalyzer" | "Spreadsheet" | "Table" | "TaskPrioritization" | "Textarea" | "Thermometer" | "Timeline" | "TravelPlanner" | "TreeView" | "UMLDiagram" | "VerticalList" | "VoiceSentimentAnalysis" | "WeatherDashboard" | "WeatherMap" | "WordHighlighter" | "WordMap" | "chatResponse" | "none" | "video" | undefined;
     tags?: Record<string, unknown>;
     stringValue?: string;
-};
+}
 
 export type BrokerValue = {
     id: string;
@@ -282,19 +191,19 @@ export type BrokerValue = {
     tags?: string[];
     comments?: string;
     createdAt: Date;
-};
+}
 
 export type BucketStructures = {
     bucketId: string;
     structure?: Record<string, unknown>;
     lastUpdated?: Date;
-};
+}
 
 export type BucketTreeStructures = {
     bucketId: string;
     treeStructure?: Record<string, unknown>;
     lastUpdated?: Date;
-};
+}
 
 export type Category = {
     id: string;
@@ -303,7 +212,7 @@ export type Category = {
     slug: string;
     icon?: string;
     createdAt: Date;
-};
+}
 
 export type CompiledRecipe = {
     id: string;
@@ -315,7 +224,7 @@ export type CompiledRecipe = {
     userId?: string;
     isPublic: boolean;
     authenticatedRead: boolean;
-};
+}
 
 export type Conversation = {
     id: string;
@@ -324,7 +233,8 @@ export type Conversation = {
     userId?: string;
     metadata?: Record<string, unknown>;
     label?: string;
-};
+    isPublic?: boolean;
+}
 
 export type DataBroker = {
     id: string;
@@ -332,32 +242,9 @@ export type DataBroker = {
     dataType?: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
     defaultValue?: string;
     inputComponent?: string;
-    color?:
-        | "amber"
-        | "blue"
-        | "cyan"
-        | "emerald"
-        | "fuchsia"
-        | "gray"
-        | "green"
-        | "indigo"
-        | "lime"
-        | "neutral"
-        | "orange"
-        | "pink"
-        | "purple"
-        | "red"
-        | "rose"
-        | "sky"
-        | "slate"
-        | "stone"
-        | "teal"
-        | "violet"
-        | "yellow"
-        | "zinc"
-        | undefined;
+    color?: "amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined;
     outputComponent?: string;
-};
+}
 
 export type DataInputComponent = {
     id: string;
@@ -371,53 +258,7 @@ export type DataInputComponent = {
     colorOverrides?: Record<string, unknown>;
     additionalParams?: Record<string, unknown>;
     subComponent?: string;
-    component:
-        | "Accordion_Selected"
-        | "Accordion_View"
-        | "Accordion_View_Add_Edit"
-        | "BrokerCheckbox"
-        | "BrokerColorPicker"
-        | "BrokerCustomInput"
-        | "BrokerCustomSelect"
-        | "BrokerInput"
-        | "BrokerNumberInput"
-        | "BrokerNumberPicker"
-        | "BrokerRadio"
-        | "BrokerRadioGroup"
-        | "BrokerSelect"
-        | "BrokerSlider"
-        | "BrokerSwitch"
-        | "BrokerTailwindColorPicker"
-        | "BrokerTextArrayInput"
-        | "BrokerTextarea"
-        | "BrokerTextareaGrow"
-        | "Button"
-        | "Checkbox"
-        | "Chip"
-        | "Color_Picker"
-        | "Date_Picker"
-        | "Drawer"
-        | "File_Upload"
-        | "Image_Display"
-        | "Input"
-        | "Json_Editor"
-        | "Menu"
-        | "Number_Input"
-        | "Phone_Input"
-        | "Radio_Group"
-        | "Relational_Button"
-        | "Relational_Input"
-        | "Search_Input"
-        | "Select"
-        | "Sheet"
-        | "Slider"
-        | "Star_Rating"
-        | "Switch"
-        | "Textarea"
-        | "Time_Picker"
-        | "UUID_Array"
-        | "UUID_Field"
-        | undefined;
+    component: "Accordion_Selected" | "Accordion_View" | "Accordion_View_Add_Edit" | "BrokerCheckbox" | "BrokerColorPicker" | "BrokerCustomInput" | "BrokerCustomSelect" | "BrokerInput" | "BrokerNumberInput" | "BrokerNumberPicker" | "BrokerRadio" | "BrokerRadioGroup" | "BrokerSelect" | "BrokerSlider" | "BrokerSwitch" | "BrokerTailwindColorPicker" | "BrokerTextArrayInput" | "BrokerTextarea" | "BrokerTextareaGrow" | "Button" | "Checkbox" | "Chip" | "Color_Picker" | "Date_Picker" | "Drawer" | "File_Upload" | "Image_Display" | "Input" | "Json_Editor" | "Menu" | "Number_Input" | "Phone_Input" | "Radio_Group" | "Relational_Button" | "Relational_Input" | "Search_Input" | "Select" | "Sheet" | "Slider" | "Star_Rating" | "Switch" | "Textarea" | "Time_Picker" | "UUID_Array" | "UUID_Field" | undefined;
     name?: string;
     description?: string;
     placeholder?: string;
@@ -434,82 +275,15 @@ export type DataInputComponent = {
     minWidth?: "2xl" | "2xs" | "3xl" | "3xs" | "4xl" | "5xl" | "default" | "l" | "m" | "s" | "xl" | "xs" | undefined;
     maxWidth?: "2xl" | "2xs" | "3xl" | "3xs" | "4xl" | "5xl" | "default" | "l" | "m" | "s" | "xl" | "xs" | undefined;
     orientation?: "default" | "horizontal" | "vertical" | undefined;
-};
+}
 
 export type DataOutputComponent = {
     id: string;
-    componentType?:
-        | "3DModelViewer"
-        | "AudioOutput"
-        | "BucketList"
-        | "BudgetVisualizer"
-        | "Calendar"
-        | "Carousel"
-        | "Checklist"
-        | "Clock"
-        | "CodeView"
-        | "ComplexMulti"
-        | "DataFlowDiagram"
-        | "DecisionTree"
-        | "DiffViewer"
-        | "FileOutput"
-        | "FitnessTracker"
-        | "Flowchart"
-        | "Form"
-        | "GanttChart"
-        | "GeographicMap"
-        | "GlossaryView"
-        | "Heatmap"
-        | "HorizontalList"
-        | "ImageView"
-        | "InteractiveChart"
-        | "JsonViewer"
-        | "KanbanBoard"
-        | "LaTeXRenderer"
-        | "LiveTraffic"
-        | "LocalEvents"
-        | "MarkdownViewer"
-        | "MealPlanner"
-        | "MindMap"
-        | "NeedNewOption"
-        | "NetworkGraph"
-        | "NewsAggregator"
-        | "PDFViewer"
-        | "PivotTable"
-        | "PlainText"
-        | "Presentation"
-        | "PublicLiveCam"
-        | "RichTextEditor"
-        | "RunCodeBack"
-        | "RunCodeFront"
-        | "SVGEditor"
-        | "SankeyDiagram"
-        | "SatelliteView"
-        | "SocialMediaInfo"
-        | "SpectrumAnalyzer"
-        | "Spreadsheet"
-        | "Table"
-        | "TaskPrioritization"
-        | "Textarea"
-        | "Thermometer"
-        | "Timeline"
-        | "TravelPlanner"
-        | "TreeView"
-        | "UMLDiagram"
-        | "VerticalList"
-        | "VoiceSentimentAnalysis"
-        | "WeatherDashboard"
-        | "WeatherMap"
-        | "WordHighlighter"
-        | "WordMap"
-        | "chatResponse"
-        | "none"
-        | "video"
-        | undefined;
+    componentType?: "3DModelViewer" | "AudioOutput" | "BucketList" | "BudgetVisualizer" | "Calendar" | "Carousel" | "Checklist" | "Clock" | "CodeView" | "ComplexMulti" | "DataFlowDiagram" | "DecisionTree" | "DiffViewer" | "FileOutput" | "FitnessTracker" | "Flowchart" | "Form" | "GanttChart" | "GeographicMap" | "GlossaryView" | "Heatmap" | "HorizontalList" | "ImageView" | "InteractiveChart" | "JsonViewer" | "KanbanBoard" | "LaTeXRenderer" | "LiveTraffic" | "LocalEvents" | "MarkdownViewer" | "MealPlanner" | "MindMap" | "NeedNewOption" | "NetworkGraph" | "NewsAggregator" | "PDFViewer" | "PivotTable" | "PlainText" | "Presentation" | "PublicLiveCam" | "RichTextEditor" | "RunCodeBack" | "RunCodeFront" | "SVGEditor" | "SankeyDiagram" | "SatelliteView" | "SocialMediaInfo" | "SpectrumAnalyzer" | "Spreadsheet" | "Table" | "TaskPrioritization" | "Textarea" | "Thermometer" | "Timeline" | "TravelPlanner" | "TreeView" | "UMLDiagram" | "VerticalList" | "VoiceSentimentAnalysis" | "WeatherDashboard" | "WeatherMap" | "WordHighlighter" | "WordMap" | "chatResponse" | "none" | "video" | undefined;
     uiComponent?: string;
     props?: Record<string, unknown>;
     additionalParams?: Record<string, unknown>;
-};
+}
 
 export type DisplayOption = {
     id: string;
@@ -517,7 +291,7 @@ export type DisplayOption = {
     defaultParams?: Record<string, unknown>;
     customizableParams?: Record<string, unknown>;
     additionalParams?: Record<string, unknown>;
-};
+}
 
 export type Emails = {
     id: string;
@@ -527,7 +301,7 @@ export type Emails = {
     body: string;
     timestamp?: Date;
     isRead?: boolean;
-};
+}
 
 export type Extractor = {
     id: string;
@@ -535,7 +309,7 @@ export type Extractor = {
     outputType?: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
     defaultIdentifier?: string;
     defaultIndex?: number;
-};
+}
 
 export type FileStructure = {
     id: number;
@@ -548,7 +322,7 @@ export type FileStructure = {
     metadata?: Record<string, unknown>;
     createdAt?: Date;
     updatedAt?: Date;
-};
+}
 
 export type FlashcardData = {
     id: string;
@@ -567,7 +341,7 @@ export type FlashcardData = {
     sharedWith?: string[];
     createdAt?: Date;
     updatedAt?: Date;
-};
+}
 
 export type FlashcardHistory = {
     id: string;
@@ -578,7 +352,7 @@ export type FlashcardHistory = {
     incorrectCount?: number;
     createdAt?: Date;
     updatedAt?: Date;
-};
+}
 
 export type FlashcardImages = {
     id: string;
@@ -588,13 +362,13 @@ export type FlashcardImages = {
     mimeType: string;
     size: number;
     createdAt?: Date;
-};
+}
 
 export type FlashcardSetRelations = {
     flashcardId: string;
     setId: string;
     order?: number;
-};
+}
 
 export type FlashcardSets = {
     setId: string;
@@ -608,12 +382,12 @@ export type FlashcardSets = {
     lesson?: string;
     difficulty?: string;
     audioOverview?: string;
-};
+}
 
 export type Message = {
     id: string;
     conversationId: string;
-    role: "assistant" | "system" | "user" | undefined;
+    role: "assistant" | "system" | "tool" | "user" | undefined;
     content?: string;
     type: "base64_image" | "blob" | "image_url" | "json_object" | "mixed" | "other" | "text" | "tool_result" | undefined;
     displayOrder?: number;
@@ -621,7 +395,8 @@ export type Message = {
     createdAt: Date;
     metadata?: Record<string, unknown>;
     userId?: string;
-};
+    isPublic?: boolean;
+}
 
 export type MessageBroker = {
     id: string;
@@ -629,15 +404,61 @@ export type MessageBroker = {
     brokerId: string;
     defaultValue?: string;
     defaultComponent?: string;
-};
+}
 
 export type MessageTemplate = {
     id: string;
-    role: "assistant" | "system" | "user" | undefined;
+    role: "assistant" | "system" | "tool" | "user" | undefined;
     type: "base64_image" | "blob" | "image_url" | "json_object" | "mixed" | "other" | "text" | "tool_result" | undefined;
     createdAt: Date;
     content?: string;
-};
+}
+
+export type OrganizationInvitations = {
+    id: string;
+    organizationId: string;
+    email: string;
+    token: string;
+    role: "admin" | "member" | "owner" | undefined;
+    invitedAt?: Date;
+    invitedBy?: string;
+    expiresAt: Date;
+}
+
+export type OrganizationMembers = {
+    id: string;
+    organizationId: string;
+    userId: string;
+    role: "admin" | "member" | "owner" | undefined;
+    joinedAt?: Date;
+    invitedBy?: string;
+}
+
+export type Organizations = {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+    logoUrl?: string;
+    website?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    createdBy?: string;
+    isPersonal?: boolean;
+    settings?: Record<string, unknown>;
+}
+
+export type Permissions = {
+    id: string;
+    resourceType: "applet" | "broker_value" | "conversation" | "document" | "message" | "organization" | "recipe" | "workflow" | undefined;
+    resourceId: string;
+    grantedToUserId?: string;
+    grantedToOrganizationId?: string;
+    isPublic?: boolean;
+    permissionLevel: "admin" | "editor" | "viewer" | "viwwer" | undefined;
+    createdAt?: Date;
+    createdBy?: string;
+}
 
 export type Processor = {
     id: string;
@@ -645,7 +466,7 @@ export type Processor = {
     dependsDefault?: string;
     defaultExtractors?: Record<string, unknown>;
     params?: Record<string, unknown>;
-};
+}
 
 export type ProjectMembers = {
     id: string;
@@ -653,7 +474,7 @@ export type ProjectMembers = {
     userId?: string;
     role: string;
     createdAt?: Date;
-};
+}
 
 export type Projects = {
     id: string;
@@ -662,7 +483,7 @@ export type Projects = {
     createdAt?: Date;
     updatedAt?: Date;
     createdBy?: string;
-};
+}
 
 export type Recipe = {
     id: string;
@@ -674,7 +495,8 @@ export type Recipe = {
     status: "active_testing" | "archived" | "draft" | "in_review" | "live" | "other" | undefined;
     version?: number;
     postResultOptions?: Record<string, unknown>;
-};
+    userId?: string;
+}
 
 export type RecipeBroker = {
     id: string;
@@ -682,7 +504,7 @@ export type RecipeBroker = {
     broker: string;
     brokerRole: "input_broker" | "output_broker" | undefined;
     required?: boolean;
-};
+}
 
 export type RecipeDisplay = {
     id: string;
@@ -690,7 +512,7 @@ export type RecipeDisplay = {
     display: string;
     priority?: number;
     displaySettings?: Record<string, unknown>;
-};
+}
 
 export type RecipeFunction = {
     id: string;
@@ -698,19 +520,19 @@ export type RecipeFunction = {
     function: string;
     role: "comparison" | "decision" | "other" | "post_processing" | "pre-Processing" | "rating" | "save_data" | "validation" | undefined;
     params?: Record<string, unknown>;
-};
+}
 
 export type RecipeMessage = {
     id: string;
     messageId: string;
     recipeId: string;
     order: number;
-};
+}
 
 export type RecipeMessageReorderQueue = {
     recipeId: string;
     lastModified?: Date;
-};
+}
 
 export type RecipeModel = {
     id: string;
@@ -718,21 +540,21 @@ export type RecipeModel = {
     aiModel: string;
     role: "primary_model" | "trial_model" | "verified_model" | undefined;
     priority?: number;
-};
+}
 
 export type RecipeProcessor = {
     id: string;
     recipe: string;
     processor: string;
     params?: Record<string, unknown>;
-};
+}
 
 export type RecipeTool = {
     id: string;
     recipe: string;
     tool: string;
     params?: Record<string, unknown>;
-};
+}
 
 export type RegisteredFunction = {
     id: string;
@@ -741,7 +563,7 @@ export type RegisteredFunction = {
     className?: string;
     description?: string;
     returnBroker?: string;
-};
+}
 
 export type Subcategory = {
     id: string;
@@ -752,7 +574,7 @@ export type Subcategory = {
     icon?: string;
     features: string[];
     createdAt: Date;
-};
+}
 
 export type SystemFunction = {
     id: string;
@@ -762,7 +584,7 @@ export type SystemFunction = {
     inputParams?: Record<string, unknown>;
     outputOptions?: Record<string, unknown>;
     rfId: string;
-};
+}
 
 export type TaskAssignments = {
     id: string;
@@ -770,7 +592,7 @@ export type TaskAssignments = {
     userId?: string;
     assignedBy?: string;
     assignedAt?: Date;
-};
+}
 
 export type TaskAttachments = {
     id: string;
@@ -781,7 +603,7 @@ export type TaskAttachments = {
     filePath: string;
     uploadedBy?: string;
     uploadedAt?: Date;
-};
+}
 
 export type TaskComments = {
     id: string;
@@ -790,7 +612,7 @@ export type TaskComments = {
     content: string;
     createdAt?: Date;
     updatedAt?: Date;
-};
+}
 
 export type Tasks = {
     id: string;
@@ -802,7 +624,7 @@ export type Tasks = {
     createdAt?: Date;
     updatedAt?: Date;
     createdBy?: string;
-};
+}
 
 export type Tool = {
     id: string;
@@ -813,21 +635,21 @@ export type Tool = {
     requiredArgs?: Record<string, unknown>;
     systemFunction?: string;
     additionalParams?: Record<string, unknown>;
-};
+}
 
 export type Transformer = {
     id: string;
     name?: string;
     inputParams?: Record<string, unknown>;
     outputParams?: Record<string, unknown>;
-};
+}
 
 export type UserPreferences = {
     userId: string;
     preferences: Record<string, unknown>;
     createdAt: Date;
     updatedAt: Date;
-};
+}
 
 export type WcClaim = {
     id: string;
@@ -839,7 +661,7 @@ export type WcClaim = {
     ageAtDoi?: number;
     occupationalCode?: number;
     weeklyEarnings?: number;
-};
+}
 
 export type WcImpairmentDefinition = {
     id: string;
@@ -848,7 +670,7 @@ export type WcImpairmentDefinition = {
     name?: string;
     attributes?: Record<string, unknown>;
     fingerType?: "index" | "little" | "middle" | "ring" | "thumb" | undefined;
-};
+}
 
 export type WcInjury = {
     id: string;
@@ -865,7 +687,7 @@ export type WcInjury = {
     rating?: number;
     formula?: string;
     updatedAt?: Date;
-};
+}
 
 export type WcReport = {
     id: string;
@@ -878,4 +700,4 @@ export type WcReport = {
     compensationAmount?: number;
     compensationWeeks?: number;
     compensationDays?: number;
-};
+}

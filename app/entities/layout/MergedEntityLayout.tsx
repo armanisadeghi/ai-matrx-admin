@@ -1,17 +1,12 @@
 'use client';
-
 import React, {useState, useEffect, useRef, useMemo} from 'react';
-import {useAppSelector} from "@/lib/redux/hooks";
-import {RootState} from "@/lib/redux/store";
 import {cn} from '@/lib/utils';
 import {ScrollArea} from '@/components/ui';
 import {EntitySelection, UnifiedLayoutProps} from "@/components/matrx/Entity";
-import {selectEntityPrettyName} from "@/lib/redux/schema/globalCacheSelectors";
 import {useWindowSize} from "@uidotdev/usehooks";
 import DynamicQuickReference from '@/app/entities/quick-reference/dynamic-quick-ref/DynamicQuickReference';
 import {EntityKeys} from '@/types/entityTypes';
 import { getEntityFormComponent } from '../forms';
-
 
 const LeftColumn: React.FC<{
     selectedEntity: EntityKeys | null;
@@ -20,17 +15,18 @@ const LeftColumn: React.FC<{
     availableHeight: number;
     unifiedLayoutProps: UnifiedLayoutProps;
 }> = ({selectedEntity, onEntityChange, updateKey, availableHeight, unifiedLayoutProps}) => (
-    <div className="w-[320px] border-r border-border" style={{height: availableHeight}}>
+    <div className="w-[340px] min-w-[340px] max-w-[340px] border-r border-border" style={{height: availableHeight}}>
         <ScrollArea className="h-full">
-            <div className="flex flex-col">
+            <div className="w-full overflow-hidden">
                 <EntitySelection
                     key={`selection-${updateKey}`}
                     selectedEntity={selectedEntity}
                     onEntityChange={onEntityChange}
                     layout="sideBySide"
+                    className="max-w-[320px]"
                 />
                 {selectedEntity && (
-                    <div className="flex-1">
+                    <div className="flex-1 max-w-[340px]">
                         <DynamicQuickReference
                             key={`quickref-${selectedEntity}-${updateKey}`}
                             entityKey={selectedEntity}
@@ -43,7 +39,6 @@ const LeftColumn: React.FC<{
     </div>
 );
 
-
 const RightColumn: React.FC<{
     selectedEntity: EntityKeys | null;
     unifiedLayoutProps: UnifiedLayoutProps;
@@ -54,10 +49,9 @@ const RightColumn: React.FC<{
         getEntityFormComponent(unifiedLayoutProps.formComponent), 
         [unifiedLayoutProps.formComponent]
     );
-
     return selectedEntity ? (
         <div
-            className="flex-1"
+            className="flex-1 overflow-hidden"
             style={{height: availableHeight}}
         >
             <ScrollArea
@@ -76,16 +70,11 @@ const RightColumn: React.FC<{
 
 const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
     const { layoutState } = props;
-
     const containerRef = useRef<HTMLDivElement>(null);
     const [availableHeight, setAvailableHeight] = useState(0);
     const [updateKey, setUpdateKey] = useState(0);
     const windowSize = useWindowSize();
-
     const selectedEntity = layoutState?.selectedEntity || null;
-    const entityPrettyName = useAppSelector((state: RootState) =>
-        selectEntityPrettyName(state, selectedEntity)
-    );
 
     useEffect(() => {
         const calculateHeight = () => {
@@ -97,10 +86,8 @@ const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
                 setAvailableHeight(newHeight);
             }
         };
-
         calculateHeight();
         window.addEventListener('resize', calculateHeight);
-
         return () => window.removeEventListener('resize', calculateHeight);
     }, [windowSize.height]);
 
@@ -125,7 +112,7 @@ const MergedEntityLayout: React.FC<UnifiedLayoutProps> = (props) => {
 
     return (
         <div ref={containerRef} className={cn('w-full')}>
-            <div className="flex" style={{ height: availableHeight }}>
+            <div className="flex overflow-hidden" style={{ height: availableHeight }}>
                 <LeftColumn
                     selectedEntity={selectedEntity}
                     onEntityChange={handleEntityChange}

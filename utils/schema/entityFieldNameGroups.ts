@@ -1,4 +1,4 @@
-// File: lib/entityFieldNameGroups.ts
+// File: utils/schema/entityFieldNameGroups.ts
 "use client";
 import { EntityAnyFieldKey, EntityKeys } from "@/types";
 
@@ -15,6 +15,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
         nativeFields: ["id", "name", "matrix", "transformer", "nodeType", "referenceId"],
         primaryKeyFields: ["id"],
         nativeFieldsNoPk: ["name", "matrix", "transformer", "nodeType", "referenceId"],
+    },
+    admins: {
+        nativeFields: ["userId", "createdAt"],
+        primaryKeyFields: ["userId"],
+        nativeFieldsNoPk: ["createdAt"],
     },
     aiAgent: {
         nativeFields: ["id", "name", "recipeId", "aiSettingsId", "systemMessageOverride"],
@@ -244,9 +249,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
         nativeFieldsNoPk: ["recipeId", "version", "compiledRecipe", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead"],
     },
     conversation: {
-        nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label"],
+        nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic"],
         primaryKeyFields: ["id"],
-        nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label"],
+        nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic"],
     },
     dataBroker: {
         nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent"],
@@ -422,9 +427,32 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
         ],
     },
     message: {
-        nativeFields: ["id", "conversationId", "role", "content", "type", "displayOrder", "systemOrder", "createdAt", "metadata", "userId"],
+        nativeFields: [
+            "id",
+            "conversationId",
+            "role",
+            "content",
+            "type",
+            "displayOrder",
+            "systemOrder",
+            "createdAt",
+            "metadata",
+            "userId",
+            "isPublic",
+        ],
         primaryKeyFields: ["id"],
-        nativeFieldsNoPk: ["conversationId", "role", "content", "type", "displayOrder", "systemOrder", "createdAt", "metadata", "userId"],
+        nativeFieldsNoPk: [
+            "conversationId",
+            "role",
+            "content",
+            "type",
+            "displayOrder",
+            "systemOrder",
+            "createdAt",
+            "metadata",
+            "userId",
+            "isPublic",
+        ],
     },
     messageBroker: {
         nativeFields: ["id", "messageId", "brokerId", "defaultValue", "defaultComponent"],
@@ -435,6 +463,68 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
         nativeFields: ["id", "role", "type", "createdAt", "content"],
         primaryKeyFields: ["id"],
         nativeFieldsNoPk: ["role", "type", "createdAt", "content"],
+    },
+    organizationInvitations: {
+        nativeFields: ["id", "organizationId", "email", "token", "role", "invitedAt", "invitedBy", "expiresAt"],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: ["organizationId", "email", "token", "role", "invitedAt", "invitedBy", "expiresAt"],
+    },
+    organizationMembers: {
+        nativeFields: ["id", "organizationId", "userId", "role", "joinedAt", "invitedBy"],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: ["organizationId", "userId", "role", "joinedAt", "invitedBy"],
+    },
+    organizations: {
+        nativeFields: [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "logoUrl",
+            "website",
+            "createdAt",
+            "updatedAt",
+            "createdBy",
+            "isPersonal",
+            "settings",
+        ],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: [
+            "name",
+            "slug",
+            "description",
+            "logoUrl",
+            "website",
+            "createdAt",
+            "updatedAt",
+            "createdBy",
+            "isPersonal",
+            "settings",
+        ],
+    },
+    permissions: {
+        nativeFields: [
+            "id",
+            "resourceType",
+            "resourceId",
+            "grantedToUserId",
+            "grantedToOrganizationId",
+            "isPublic",
+            "permissionLevel",
+            "createdAt",
+            "createdBy",
+        ],
+        primaryKeyFields: ["id"],
+        nativeFieldsNoPk: [
+            "resourceType",
+            "resourceId",
+            "grantedToUserId",
+            "grantedToOrganizationId",
+            "isPublic",
+            "permissionLevel",
+            "createdAt",
+            "createdBy",
+        ],
     },
     processor: {
         nativeFields: ["id", "name", "dependsDefault", "defaultExtractors", "params"],
@@ -452,9 +542,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType = {
         nativeFieldsNoPk: ["name", "description", "createdAt", "updatedAt", "createdBy"],
     },
     recipe: {
-        nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions"],
+        nativeFields: ["id", "name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId"],
         primaryKeyFields: ["id"],
-        nativeFieldsNoPk: ["name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions"],
+        nativeFieldsNoPk: ["name", "description", "tags", "sampleOutput", "isPublic", "status", "version", "postResultOptions", "userId"],
     },
     recipeBroker: {
         nativeFields: ["id", "recipe", "broker", "brokerRole", "required"],

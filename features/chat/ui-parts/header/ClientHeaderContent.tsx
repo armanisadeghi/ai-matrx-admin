@@ -8,6 +8,7 @@ import { RootState } from "@/lib/redux/store";
 import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { TbListSearch } from "react-icons/tb";
 import Link from "next/link";
+import { IoCreateOutline } from "react-icons/io5";
 
 const ClientHeaderContent: React.FC = () => {
   // Get user data from Redux store
@@ -21,7 +22,7 @@ const ClientHeaderContent: React.FC = () => {
       {/* New Chat Button */}
       <Link href="/chat">
         <button className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800">
-          <MessageSquare size={18} />
+          <IoCreateOutline size={18} />
         </button>
       </Link>
       

@@ -4,13 +4,15 @@ import {memo} from 'react';
 import {cn} from '@/lib/utils';
 import {Card, CardContent} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
-import {Grid2X2, ChevronRight, Star, Sparkles, BookOpen, Mail, User, StarIcon, FileText, Hash} from 'lucide-react';
+import {Grid2X2, ChevronRight, Star, Sparkles, BookOpen, Mail, User, StarIcon, FileText, Hash, Brain, MessageCircle, Boxes, Briefcase, VariableIcon} from 'lucide-react';
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TbBasketDiscount } from 'react-icons/tb';
+import { HashCircle } from '@mynaui/icons-react';
 
 interface QuickRefProps {
     displayValue: string;
@@ -110,14 +112,31 @@ const CompactBadgeRef = memo(function CompactBadgeRef(
     );
 });
 
-// Gradient card for important items
+
+const ENTITY_ICON_LOOKUP = {
+    'recipe': Brain,
+    'conversation': MessageCircle,
+    'message': MessageCircle,
+    'applet': Boxes,
+    'task': TbBasketDiscount,
+    'project': Briefcase,
+    'user': User,
+    'registeredFunction': Function,
+    'arg': HashCircle,
+    'dataBroker': VariableIcon
+};
+
 const GradientQuickRef = memo(function GradientQuickRef(
     {
         displayValue,
         isSelected,
         entityKey
     }: QuickRefProps) {
-    const StarComponent = isSelected ? StarIcon : Star;
+    const StarComponent = entityKey && ENTITY_ICON_LOOKUP[entityKey] 
+        ? ENTITY_ICON_LOOKUP[entityKey] 
+        : Star;
+    const IconComponent = isSelected ? ChevronRight : StarComponent;
+
     return (
         <div className={cn(
             "cursor-pointer rounded-lg p-3 transition-all",
@@ -128,8 +147,44 @@ const GradientQuickRef = memo(function GradientQuickRef(
                 "hover:shadow-sm hover:from-primary/10 hover:to-primary/20"
         )}>
             <div className="flex items-center gap-2">
-                <StarComponent className="h-4 w-4 text-primary"/>
-                <span className="text-sm font-medium truncate">{displayValue}</span>
+                <IconComponent className="h-4 w-4 text-primary"/>
+                <span className="text-sm truncate">{displayValue}</span>
+            </div>
+        </div>
+    );
+});
+
+const GradientQuickRefTwoLine = memo(function GradientQuickRefTwoLine(
+    {
+        displayValue,
+        secondaryText,
+        isSelected,
+        entityKey
+    }: QuickRefProps & { secondaryText?: string }) {
+    const StarComponent = entityKey && ENTITY_ICON_LOOKUP[entityKey] 
+        ? ENTITY_ICON_LOOKUP[entityKey] 
+        : Star;
+    const IconComponent = isSelected ? ChevronRight : StarComponent;
+    
+    return (
+        <div className={cn(
+            "cursor-pointer rounded-lg p-3 transition-all",
+            "bg-gradient-to-r from-primary/5 to-primary/10",
+            "border border-border",
+            isSelected ?
+                "from-primary/20 to-primary/30 shadow-md border-primary" :
+                "hover:shadow-sm hover:from-primary/10 hover:to-primary/20"
+        )}>
+            <div className="flex items-center gap-2">
+                <div className="flex-shrink-0">
+                    <IconComponent className="h-4 w-4 text-primary"/>
+                </div>
+                <div className="flex flex-col min-w-0">
+                    <span className="text-sm truncate">{displayValue}</span>
+                    {secondaryText && (
+                        <span className="text-xs text-muted-foreground truncate mt-0.5">{secondaryText}</span>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -369,6 +424,7 @@ export const QUICK_REF_VARIANTS = {
     icon: IconQuickRefCard,
     compact: CompactBadgeRef,
     gradient: GradientQuickRef,
+    twoLine: GradientQuickRefTwoLine,
     bubble: BubbleQuickRef,
     email: EmailPreviewRef,
     pill: PillBadgeRef,

@@ -334,6 +334,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
                 groupedEntities[frontendEntityName].push(frontendResponse);
             }
         }
+        entityLogger.log(DEBUG_LEVEL, 'Grouped Entity Data', groupedEntities);
 
         // Dispatch grouped records
         for (const [frontendEntityName, records] of Object.entries(groupedEntities)) {

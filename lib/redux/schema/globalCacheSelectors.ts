@@ -861,6 +861,7 @@ export type UnifiedQueryOptions<TEntity extends EntityKeys> = Partial<{
 
     // Upsert and conflict handling
     upsertConflictColumns: Array<string>; // Columns to identify conflicts during upserts
+    userId?: string;
 }>;
 
 export const selectUnifiedQueryDatabaseConversion = createSelector(

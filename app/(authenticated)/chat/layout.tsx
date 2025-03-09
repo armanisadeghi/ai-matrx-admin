@@ -1,5 +1,7 @@
 // File: app/(authenticated)/chat/layout.tsx
 
+import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
+import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
 import React from "react";
 
@@ -18,6 +20,16 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
       {/* Main content area */}
       <main className="flex-1 flex flex-col relative overflow-hidden">
         {children}
+        <MatrxDynamicPanel
+                initialPosition="left"
+                defaultExpanded={false}
+                expandButtonProps={{
+                    label: "",
+                }}
+            >
+                <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="message" />
+            </MatrxDynamicPanel>
+
       </main>
     </div>
   );

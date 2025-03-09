@@ -1,10 +1,9 @@
 import { useCallback } from 'react';
 import { createRecordKey, useAppDispatch, useAppSelector, useEntityData, useEntityToasts, useEntityTools } from '@/lib/redux';
-import { EntityData, EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
+import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 import { useCallbackManager } from '@/hooks/useCallbackManager';
 import { useDispatch } from 'react-redux';
-import { useUser } from '@/lib/hooks/useUser';
 
 interface UseDirectCreateRecordOptions {
     entityKey: EntityKeys;

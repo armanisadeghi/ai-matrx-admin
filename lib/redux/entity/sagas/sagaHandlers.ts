@@ -395,9 +395,10 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>({
     unifiedDatabaseObject,
 }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchQuickReference', entityKey);
+    const debugMode = "info"
 
     try {
-        entityLogger.log('debug', 'Starting', action.payload);
+        entityLogger.log(debugMode, 'Starting', action.payload);
 
         const { primaryKeyMetadata, displayFieldMetadata } = yield select(selectEntityMetadata, entityKey);
 
@@ -406,14 +407,19 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>({
         const limit = action.payload?.maxRecords ?? 1000;
 
         let query = api.select(`${dbPrimaryKeyFields.join(',')}${dbDisplayField ? `,${dbDisplayField}` : ''}`).limit(limit).order(dbDisplayField, { ascending: true });
+
+        entityLogger.log(debugMode, 'Query', query);
         
         const { data, error, count } = yield query; // TODO: NOT GETTING A TOTAL COUNT!
         if (error) throw error;
 
+        entityLogger.log(debugMode, 'Data', data);
+        entityLogger.log(debugMode, 'Count', count);
+
         const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
-        entityLogger.log('debug', 'Final result', frontendResponse);
+        entityLogger.log(debugMode, 'Final result', frontendResponse);
 
         const quickReferenceRecords = frontendResponse.map((record) => {
             const primaryKeyValues = primaryKeyMetadata.fields.reduce((acc, field) => {
@@ -1021,12 +1027,13 @@ export function* handleDirectCreate<TEntity extends EntityKeys>({
     action: PayloadAction<EntityData<TEntity>>;
 }) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleDirectCreate', entityKey);
+    const logLevel = 'info';
 
     const receivedData = unifiedDatabaseObject.data;
 
     const dataForInsert = addUserIdToData(entityKey, receivedData);
 
-    entityLogger.log('debug', 'Recieved Data for insert with potentially added user_id:', dataForInsert);
+    entityLogger.log(logLevel, 'Recieved Data for insert with potentially added user_id:', dataForInsert);
 
     try {
         const { data, error } = yield api.insert(dataForInsert).select().single();
@@ -1038,7 +1045,7 @@ export function* handleDirectCreate<TEntity extends EntityKeys>({
 
         yield put(actions.directCreateRecordSuccess(frontendResponse));
 
-        entityLogger.log('debug', 'frontend response data', frontendResponse);
+        entityLogger.log(logLevel, 'frontend response data', frontendResponse);
 
         yield* handleQuickReferenceUpdate(entityKey, actions, frontendResponse, unifiedDatabaseObject);
 

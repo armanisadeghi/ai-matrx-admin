@@ -5,7 +5,7 @@ import React from "react";
 import { getUnifiedLayoutProps } from "@/app/entities/layout/configs";
 
 export default function EntityManagementPage() {
-  const entityKey = "recipe";
+  const entityKey = "conversation";
   const layoutProps = getUnifiedLayoutProps({
     entityKey: entityKey,
     formComponent: "STANDARD", // "STANDARD" | "MINIMAL" | "MULTI_SELECT" | ARMANI
@@ -15,8 +15,11 @@ export default function EntityManagementPage() {
     handlers: {},
   });
 
+  console.log("Layout Props:", layoutProps);
+
   return (
     <div className="flex-1 p-0 gap-0 ">
+
       <MergedEntityLayout {...layoutProps} className="h-full" />
     </div>
   );
