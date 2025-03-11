@@ -46,22 +46,22 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Message and Conversation Demo',
+        path: 'create-update-record-test/message-convo-demo',
         relative: true,
-        description: ''
+        description: 'Test the combined hook for Conversation and Message: useConversationMessages hook'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Message Demo',
+        path: 'create-update-record-test/message-demo',
         relative: true,
-        description: ''
+        description: 'Test the useMessage hook'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Create Update Record Test',
+        path: 'create-update-record-test',
         relative: true,
-        description: ''
+        description: 'Test the createUpdateRecord hook'
     },
     {
         title: 'Basic CRUD',

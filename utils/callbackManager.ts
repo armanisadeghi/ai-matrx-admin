@@ -1,31 +1,25 @@
 import { v4 as uuidv4 } from 'uuid';
-
 export type CallbackContext = Record<string, any>;
-
 export interface ProgressInfo {
     progress?: number;
     status?: 'pending' | 'running' | 'completed' | 'error';
     error?: Error;
 }
-
 export type Callback<T = any, C extends CallbackContext = CallbackContext> = 
     (data: T, context?: C) => void;
-
 interface CallbackEntry<T = any, C extends CallbackContext = CallbackContext> {
     callback: Callback<T, C>;
     context?: C;
     groupId?: string;
+    listeners?: Array<Callback<T, C>>;
 }
-
 class CallbackManager {
     private callbacks: Map<string, CallbackEntry>;
     private groups: Map<string, Set<string>>;
-
     constructor() {
         this.callbacks = new Map();
         this.groups = new Map();
     }
-
     /**
      * Original method - maintains backwards compatibility
      */
@@ -34,7 +28,6 @@ class CallbackManager {
         this.callbacks.set(callbackId, { callback });
         return callbackId;
     }
-
     /**
      * Enhanced register with optional context and group support
      */
@@ -58,7 +51,40 @@ class CallbackManager {
         
         return callbackId;
     }
-
+    /**
+     * Subscribe to results for a specific callback ID
+     */
+    subscribe<T, C extends CallbackContext = CallbackContext>(
+        callbackId: string,
+        listener: Callback<T, C>
+    ): boolean {
+        const entry = this.callbacks.get(callbackId);
+        if (!entry) return false;
+        
+        // Create listeners array if it doesn't exist
+        if (!entry.listeners) {
+            entry.listeners = [];
+        }
+        
+        entry.listeners.push(listener);
+        return true;
+    }
+    /**
+     * Unsubscribe a listener from a callback ID
+     */
+    unsubscribe<T, C extends CallbackContext = CallbackContext>(
+        callbackId: string,
+        listener: Callback<T, C>
+    ): boolean {
+        const entry = this.callbacks.get(callbackId);
+        if (!entry || !entry.listeners) return false;
+        
+        const index = entry.listeners.indexOf(listener);
+        if (index === -1) return false;
+        
+        entry.listeners.splice(index, 1);
+        return true;
+    }
     /**
      * Original method - maintains backwards compatibility
      */
@@ -66,11 +92,16 @@ class CallbackManager {
         const entry = this.callbacks.get(callbackId);
         if (entry) {
             entry.callback(data);
+            
+            // Notify listeners before removing
+            if (entry.listeners && entry.listeners.length > 0) {
+                entry.listeners.forEach(listener => listener(data));
+            }
+            
             this.callbacks.delete(callbackId);
             this.removeFromGroups(callbackId);
         }
     }
-
     /**
      * Enhanced trigger with context and progress support
      */
@@ -90,16 +121,20 @@ class CallbackManager {
                 ...options?.context,
                 ...(options?.progress && { progress: options.progress })
             } as C;
-
+            
             entry.callback(data, mergedContext);
-
+            
+            // Notify listeners
+            if (entry.listeners && entry.listeners.length > 0) {
+                entry.listeners.forEach(listener => listener(data, mergedContext));
+            }
+            
             if (options?.removeAfterTrigger !== false) {
                 this.callbacks.delete(callbackId);
                 this.removeFromGroups(callbackId);
             }
         }
     }
-
     /**
      * Trigger all callbacks in a group
      */
@@ -123,7 +158,6 @@ class CallbackManager {
             }
         }
     }
-
     /**
      * Update progress for a callback or group
      */
@@ -141,7 +175,6 @@ class CallbackManager {
             status: options?.status || 'running',
             error: options?.error
         };
-
         if (options?.groupId) {
             this.triggerGroup(id, null, { 
                 progress: progressInfo,
@@ -154,7 +187,6 @@ class CallbackManager {
             });
         }
     }
-
     /**
      * Create a new group and return its ID
      */
@@ -163,7 +195,6 @@ class CallbackManager {
         this.groups.set(groupId, new Set());
         return groupId;
     }
-
     /**
      * Original method - maintains backwards compatibility
      */
@@ -171,7 +202,6 @@ class CallbackManager {
         this.callbacks.delete(callbackId);
         this.removeFromGroups(callbackId);
     }
-
     /**
      * Remove a group and all its callbacks
      */
@@ -184,7 +214,6 @@ class CallbackManager {
             this.groups.delete(groupId);
         }
     }
-
     private removeFromGroups(callbackId: string): void {
         const entry = this.callbacks.get(callbackId);
         if (entry?.groupId) {
@@ -196,5 +225,4 @@ class CallbackManager {
         }
     }
 }
-
 export const callbackManager = new CallbackManager();

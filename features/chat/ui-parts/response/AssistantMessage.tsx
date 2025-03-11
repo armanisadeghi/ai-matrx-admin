@@ -1,7 +1,7 @@
 // AssistantMessage.tsx
 import React, { useState } from 'react';
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal } from 'lucide-react';
-import { Message } from '@/features/chat/types';
+import { Message } from '@/types/chat/chat.types';
 
 interface AssistantMessageProps {
   message: Message;
@@ -19,7 +19,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message }) => {
       <div className="max-w-full w-full relative">
         <div className="rounded-2xl bg-transparent p-4 text-gray-800 dark:text-gray-100 break-words overflow-hidden">
           <div className="overflow-x-auto max-w-full">
-            {message.text}
+            {message.content}
           </div>
         </div>
         

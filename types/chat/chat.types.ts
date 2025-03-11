@@ -1,0 +1,69 @@
+import { MatrxRecordId } from "@/types";
+
+
+
+export type ChatMode = "general" | "research" | "brainstorm" | "analyze" | "images" | "code";
+
+
+export interface ChatInputSettings {
+    modelKey: MatrxRecordId | null;
+    searchEnabled: boolean;
+    toolsEnabled: boolean;
+    uploadedFiles: File[];
+    mode: ChatMode;
+    // Future settings will be added here
+}
+
+export type MessageRole = "assistant" | "system" | "tool" | "user" | string | undefined;
+
+export type MessageType = "base64_image" | "blob" | "image_url" | "json_object" | "mixed" | "other" | "text" | "tool_result" | string | undefined;
+
+export type MessageMetadata = {
+    image_url?: string;
+    blob_url?: string;
+    base64_image?: string;
+    blob?: string;
+    json_object?: Record<string, unknown>;
+    mixed?: Record<string, unknown>;
+    other?: Record<string, unknown>;
+    text?: string;
+    tool_result?: Record<string, unknown>;
+    [key: string]: unknown;
+};
+
+export type Message = {
+    id: string;
+    conversationId: string;
+    role: MessageRole;
+    content?: string;
+    type: MessageType;
+    displayOrder?: number;
+    systemOrder?: number;
+    createdAt?: Date;
+    metadata?: MessageMetadata;
+    userId?: string;
+    isPublic?: boolean;
+}
+
+
+export type ConversationMetadata = {
+    currentModel: MatrxRecordId | undefined;
+    currentEndpoint: MatrxRecordId | undefined;
+    currentMode: ChatMode;
+    concurrentRecipes: MatrxRecordId[] | null;
+    brokerValues: Record<MatrxRecordId, unknown> | null;
+    availableTools: string[] | null;
+    ModAssistantContext: string | null;
+    ModUserContext: string | null;
+    [key: string]: unknown;
+};
+
+export type Conversation = {
+    id: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    userId?: string;
+    metadata?: ConversationMetadata;
+    label?: string;
+    isPublic?: boolean;
+}

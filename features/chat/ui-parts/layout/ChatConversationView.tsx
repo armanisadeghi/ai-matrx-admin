@@ -1,106 +1,94 @@
 // File: features/chat/ui-parts/ChatConversationView.tsx
-'use client';
-import { useCallback, useState, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+"use client";
+import { useEffect, useState } from "react";
 import ResponseColumn from "@/features/chat/ui-parts/response/ResponseColumn";
 import PromptInput from "@/features/chat/ui-parts/prompt-input/PromptInput";
 import { MatrxRecordId } from "@/types";
-import { useChatResponse } from "@/hooks/ai/chat/useChatResponse";
-import { useChatInput, ChatInputSettings } from "@/hooks/ai/chat/useChatInput";
 import LoadingIndicator from "@/features/chat/ui-parts/common/LoadingIndicator";
-import { useMessageCreateUpdate } from "@/hooks/ai/chat/useMessageCreateUpdate";
+import { ChatMode, ConversationMetadata } from "@/types/chat/chat.types";
+import { useConversationMessages } from "@/hooks/ai/chat/useConversationMessages";
+import { useConversationRouting } from "@/hooks/ai/chat/useConversationRouting";
 
 const DEFAULT_MODEL_ID = "id:49848d52-9cc8-4ce4-bacb-32aa2201cd10";
 
 interface ChatConversationViewProps {
-  conversationId: string;
-  initialModelKey?: MatrxRecordId;
-  initialMode?: ChatInputSettings['mode'];
+    conversationId: string;
+    initialModelKey?: MatrxRecordId;
+    initialMode?: ChatMode;
 }
 
-const ChatConversationView: React.FC<ChatConversationViewProps> = ({ 
-  conversationId,
-  initialModelKey = DEFAULT_MODEL_ID,
-  initialMode
-}) => {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const messageHook = useMessageCreateUpdate({ conversationId, lastDisplayOrder: 0, lastSystemOrder: 1 });
-
-    // Initialize with props or search params
-    const [modelKey, setModelKey] = useState<MatrxRecordId>(initialModelKey);
-    const [currentMode, setCurrentMode] = useState<ChatInputSettings['mode'] | undefined>(initialMode);
+const ChatConversationView: React.FC<ChatConversationViewProps> = ({ conversationId, initialModelKey, initialMode }) => {
+    // Track if the conversation data is fully loaded and ready
+    const routingHook = useConversationRouting({
+      defaultMode: "general",
+      initialModelKey,
+      initialMode,
+    });
     
-    const {
-        messages,
-        isReceiving,
-        isChatStarted,
-        handleSubmission
-    } = useChatResponse({ conversationId });
+    // Initialize the conversation messages hook
+    const mainChatHook = useConversationMessages();
     
-    const { updateSettings } = useChatInput(modelKey);
+    // Track if conversation is loaded and ready
+    const [isConversationReady, setIsConversationReady] = useState(false);
     
-    // Function to update search params
-    const createQueryString = useCallback(
-      (updates: Record<string, string | undefined>) => {
-        const params = new URLSearchParams(searchParams.toString());
+    // Set the active conversation when the component mounts
+    useEffect(() => {
+      if (conversationId) {
+        // Set the active conversation using the ID from the route
+        mainChatHook.setActiveConversation(conversationId);
+        setIsConversationReady(true);
         
-        Object.entries(updates).forEach(([name, value]) => {
-          if (value) {
-            params.set(name, value);
-          } else {
-            params.delete(name);
-          }
-        });
-   
-        return params.toString();
-      },
-      [searchParams]
-    );
-    
-    // Update URL when model or mode changes
-    useEffect(() => {
-      const queryString = createQueryString({
-        model: modelKey,
-        mode: currentMode
-      });
-      
-      // Update the URL without causing a navigation
-      router.replace(`${pathname}?${queryString}`, { scroll: false });
-    }, [modelKey, currentMode, pathname, router, createQueryString]);
-    
-    // Initialize settings with the mode on component mount
-    useEffect(() => {
-      if (initialMode) {
-        updateSettings({ mode: initialMode });
+        const metadata = mainChatHook.currentConversation?.metadata as ConversationMetadata;
+        const currentModel = metadata?.currentModel || initialModelKey;
+        const currentMode = metadata?.currentMode || initialMode;
+        
+        // Update URL parameters if needed
+        if (currentModel && currentModel !== routingHook.modelKey) {
+          routingHook.setModelKey(currentModel);
+        }
+        
+        if (currentMode && currentMode !== routingHook.currentMode) {
+          routingHook.setCurrentMode(currentMode);
+        }
       }
-    }, [initialMode, updateSettings]);
+    }, [conversationId]);
     
-    // Handle model change
-    const handleModelChange = useCallback((newModelKey: MatrxRecordId) => {
-        updateSettings({ modelKey: newModelKey });
-        setModelKey(newModelKey);
-    }, [updateSettings]);
+    // When parameters change in the URL, update the conversation
+    useEffect(() => {
+      if (isConversationReady && mainChatHook.currentConversation) {
+        // Update model if it changed in the URL
+        if (routingHook.modelKey && 
+            mainChatHook.currentConversation.metadata?.currentModel !== routingHook.modelKey) {
+          mainChatHook.conversationCrud.updateCurrentModel(routingHook.modelKey);
+        }
+        
+        // Update mode if it changed in the URL
+        if (routingHook.currentMode && 
+            mainChatHook.currentConversation.metadata?.currentMode !== routingHook.currentMode) {
+          mainChatHook.conversationCrud.updateCurrentMode(routingHook.currentMode);
+        }
+      }
+    }, [routingHook.modelKey, routingHook.currentMode, isConversationReady]);
     
-    // Handle message submission
-    const handleSendMessage = useCallback((message: string) => {
-        handleSubmission(message, async (userMessage) => {
-            // This would be replaced with actual API call via Redux/socket.io
-            // Simulate a response after a delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return {
-                text: "This is a sample response from the assistant. The background of this message will blend with the main background, while user messages have a different background color."
-            };
-        });
-    }, [handleSubmission]);
+    // Auto-create a new message for input when there isn't one already being composed
+    useEffect(() => {
+      if (isConversationReady && 
+          !mainChatHook.isComposingNewMessage && 
+          !mainChatHook.currentMessage) {
+        // Create a new message for this conversation
+        mainChatHook.createNewMessage();
+      }
+    }, [isConversationReady, mainChatHook.isComposingNewMessage, mainChatHook.currentMessage]);
+    
+    if (!isConversationReady) {
+      return <div className="p-8 text-center">Loading conversation...</div>;
+    }
     
     return (
         <>
             {/* Scrollable message area */}
             <div className="flex-1 overflow-y-auto scrollbar-hide pb-32">
-                <ResponseColumn messages={messages} />
-                {isReceiving && <LoadingIndicator message="AI is responding..." />}
+                <ResponseColumn messages={mainChatHook.currentMessages} />
             </div>
             {/* Simple blocker div */}
             <div
@@ -114,11 +102,7 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
             <div className="absolute bottom-0 left-0 right-0 z-10">
                 <div className="p-4">
                     <div className="max-w-3xl mx-auto border border-zinc-100 dark:border-zinc-700 rounded-3xl">
-                        <PromptInput 
-                            onSendMessage={handleSendMessage} 
-                            initialModelKey={modelKey} 
-                            onModelChange={handleModelChange}
-                        />
+                        <PromptInput mainChatHook={mainChatHook} routingHook={routingHook} disabled={!isConversationReady} />
                     </div>
                 </div>
             </div>

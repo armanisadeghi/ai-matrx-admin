@@ -7,7 +7,7 @@ import { EntityNameOfficial, SchemaEntity } from '@/types/schema';
 import { DisplayFieldMetadata, PrimaryKeyMetadata } from '@/lib/redux/entity/types/stateTypes';
 import { FullEntityRelationships } from '@/utils/schema/fullRelationships';
 
-export type TypeBrand<T> = { _typeBrand: T };
+type TypeBrand<T> = { _typeBrand: T };
 export type ExtractType<T> = T extends TypeBrand<infer U> ? U : T;
 
 export type MatrxRecordId = string;

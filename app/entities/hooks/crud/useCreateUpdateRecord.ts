@@ -5,89 +5,168 @@ import { useCreateRecord } from "../unsaved-records/useCreateRecord";
 import useStartCreate from "./useStartCreate";
 import { createEntitySelectors, getPermanentId, useAppSelector } from "@/lib/redux";
 import { getEntityDefaultValues } from "@/lib/redux/entity/utils/direct-schema";
+import { callbackManager } from "@/utils/callbackManager";
 
 export type FieldValue = string | number | boolean | null | Record<string, unknown> | unknown;
 export type FieldUpdates = Record<string, FieldValue>;
 
-interface UseCreateUpdateRecordProps {
-    entityKey: EntityKeys;
+export interface SaveCallbackResult {
+    success: boolean;
+    entityName?: string;
+    result?: {
+        tempRecordId: string;
+        recordKey: string;
+        data: any;
+    };
+    requestData?: any;
+    originalPayload?: any;
+    error?: Error;
 }
 
-export const useCreateUpdateRecord = ({ entityKey }: UseCreateUpdateRecordProps) => {
+interface UseCreateUpdateRecordProps {
+    entityKey: EntityKeys;
+    returnCallbackId?: boolean;
+}
+
+export interface UseCreateUpdateRecordResult {
+    start: (initialData?: FieldUpdates, idField?: string) => MatrxRecordId | null;
+    updateField: (fieldName: string, value: FieldValue) => void;
+    updateFields: (updates: FieldUpdates) => void;
+    save: () => Promise<void>;
+    saveAsync: () => Promise<SaveCallbackResult>; // New async method with full result
+    saveWithConfirmation: () => Promise<boolean>; // New async method with boolean confirmation
+    currentRecordId: MatrxRecordId | null;
+    recordDataWithDefaults: EntityData<EntityKeys>;
+    recordDataWithoutDefaults: EntityData<EntityKeys>;
+    fieldDefaults: Record<string, unknown>;
+    callbackId?: string | null; // Optional property, only defined when returnCallbackId is true
+}
+
+export const useCreateUpdateRecord = ({ entityKey, returnCallbackId = false }: UseCreateUpdateRecordProps): UseCreateUpdateRecordResult => {
     const [currentRecordId, setCurrentRecordId] = useState<MatrxRecordId | null>(null);
     const [idField, setIdField] = useState<string | null>(null);
     const [idValue, setIdValue] = useState<string | null>(null);
-    const selectors = createEntitySelectors(entityKey);
 
+    const selectors = createEntitySelectors(entityKey);
     const { create: startCreate } = useStartCreate({ entityKey });
     const { updateField: originalUpdateField, updateFields: originalUpdateFields } = useUpdateRecordFields(entityKey, currentRecordId);
-    const { createRecord } = useCreateRecord(entityKey);
 
-    const recordDataWithDefaults = useAppSelector((state) => selectors.selectEffectiveRecordOrDefaults(state, currentRecordId)) as EntityData<EntityKeys>;
-    const recordDataWithoutDefaults = useAppSelector((state) => selectors.selectEffectiveRecordById(state, currentRecordId)) as EntityData<EntityKeys>;
+    // Pass the returnCallbackId option to useCreateRecord when requested
+    const createRecordResult = useCreateRecord(entityKey, { returnCallbackId });
+
+    // Extract methods and properties from createRecordResult
+    const createRecord = createRecordResult.createRecord;
+    const createRecordWithCallbackId = createRecordResult.createRecordWithCallbackId;
+    const callbackId = "callbackId" in createRecordResult ? createRecordResult.callbackId : null;
+
+    const recordDataWithDefaults = useAppSelector((state) =>
+        selectors.selectEffectiveRecordOrDefaults(state, currentRecordId)
+    ) as EntityData<EntityKeys>;
+
+    const recordDataWithoutDefaults = useAppSelector((state) =>
+        selectors.selectEffectiveRecordById(state, currentRecordId)
+    ) as EntityData<EntityKeys>;
+
     const fieldDefaults = useMemo(() => getEntityDefaultValues(entityKey), [entityKey]);
 
-    const updateField = useCallback((fieldName: string, value: FieldValue) => {
-        if (!currentRecordId) {
-            console.warn("Attempted to update field without a current record ID");
-            return;
-        }
+    const updateField = useCallback(
+        (fieldName: string, value: FieldValue) => {
+            if (!currentRecordId) {
+                console.warn("Attempted to update field without a current record ID");
+                return;
+            }
+            return originalUpdateField(fieldName, value);
+        },
+        [currentRecordId, originalUpdateField]
+    );
 
+    const updateFields = useCallback(
+        (updates: FieldUpdates) => {
+            if (!currentRecordId) {
+                console.warn("Attempted to update fields without a current record ID");
+                return;
+            }
+            return originalUpdateFields(updates);
+        },
+        [currentRecordId, originalUpdateFields]
+    );
 
-        return originalUpdateField(fieldName, value);
-    }, [currentRecordId, originalUpdateField]);
-
-    const updateFields = useCallback((updates: FieldUpdates) => {
-        if (!currentRecordId) {
-            console.warn("Attempted to update fields without a current record ID");
-            return;
-        }
-        return originalUpdateFields(updates);
-    }, [currentRecordId, originalUpdateFields]);
-
-    const start = useCallback((initialData?: FieldUpdates, idField?: string) => {
-        const newId = startCreate(initialData);
-        if (!newId) {
-            console.log("no newId");
-            return null;
-        }
-        setCurrentRecordId(newId);
-
-        if (idField) {
-            setIdField(idField);
-            const permanentId = getPermanentId(newId);
-            setIdValue(permanentId);
-        }
-        return newId;
-    }, [startCreate, updateField, useUpdateRecordFields]);
+    const start = useCallback(
+        (initialData?: FieldUpdates, idField?: string) => {
+            const newId = startCreate(initialData);
+            if (!newId) {
+                console.log("no newId");
+                return null;
+            }
+            setCurrentRecordId(newId);
+            if (idField) {
+                setIdField(idField);
+                const permanentId = getPermanentId(newId);
+                setIdValue(permanentId);
+            }
+            return newId;
+        },
+        [startCreate]
+    );
 
     useEffect(() => {
         if (idField && idValue && currentRecordId) {
-            console.log("updating idField", idField, idValue);
             updateField(idField, idValue);
         }
-    }, [idValue]);
-
-
+    }, [idField, idValue, currentRecordId, updateField]);
 
     const save = useCallback(() => {
         if (!currentRecordId) {
             console.warn("Attempted to save without a current record ID");
-            return;
+            return Promise.reject(new Error("No current record ID"));
         }
-        createRecord(currentRecordId);
+        return createRecord(currentRecordId);
     }, [currentRecordId, createRecord]);
 
-    return {
+    // New method: saveAsync - returns full callback result
+    const saveAsync = useCallback((): Promise<SaveCallbackResult> => {
+        if (!currentRecordId) {
+            console.warn("Attempted to saveAsync without a current record ID");
+            return Promise.reject(new Error("No current record ID"));
+        }
+
+        return new Promise<SaveCallbackResult>(async (resolve) => {
+            // Get the callback ID first
+            const newCallbackId = await createRecordWithCallbackId(currentRecordId);
+
+            // Subscribe to the callback to get the result
+            callbackManager.subscribe(newCallbackId, (result: SaveCallbackResult) => {
+                resolve(result);
+            });
+        });
+    }, [currentRecordId, createRecordWithCallbackId]);
+
+    // New method: saveWithConfirmation - returns only success boolean
+    const saveWithConfirmation = useCallback(async (): Promise<boolean> => {
+        const result = await saveAsync();
+        return result.success;
+    }, [saveAsync]);
+
+    // Return a single result object
+    const result: UseCreateUpdateRecordResult = {
         start,
         updateField,
         updateFields,
         save,
+        saveAsync,
+        saveWithConfirmation,
         currentRecordId,
         recordDataWithDefaults,
         recordDataWithoutDefaults,
         fieldDefaults,
     };
+
+    // Only add callbackId if returnCallbackId was requested
+    if (returnCallbackId) {
+        result.callbackId = callbackId;
+    }
+
+    return result;
 };
 
 export default useCreateUpdateRecord;

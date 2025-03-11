@@ -1,7 +1,7 @@
 // File: app/(authenticated)/chat/[id]/page.tsx
 import ChatConversationView from "@/features/chat/ui-parts/layout/ChatConversationView";
 import { Suspense } from 'react';
-import { ChatInputSettings } from "@/hooks/ai/chat/useChatInput";
+import { ChatInputSettings, ChatMode } from "@/types/chat/chat.types";
 
 // Creating a loading spinner for the conversation view
 function ConversationViewFallback() {
@@ -38,7 +38,7 @@ export default async function Page({
       <ChatConversationView 
         conversationId={conversationId}
         initialModelKey={typeof modelParam === 'string' ? modelParam : undefined}
-        initialMode={typeof modeParam === 'string' ? modeParam as ChatInputSettings['mode'] : undefined}
+        initialMode={typeof modeParam === 'string' ? modeParam as ChatMode : undefined}
       />
     </Suspense>
   );

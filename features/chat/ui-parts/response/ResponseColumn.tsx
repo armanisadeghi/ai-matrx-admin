@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import UserMessage from '@/features/chat/ui-parts/response/UserMessage';
 import AssistantMessage from '@/features/chat/ui-parts/response/AssistantMessage';
-import { Message } from '@/features/chat/types';
+import { Message } from '@/types/chat/chat.types';
 
 interface ResponseColumnProps {
   messages: Message[];

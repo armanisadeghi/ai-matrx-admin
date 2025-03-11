@@ -1,30 +1,8 @@
 import useCreateUpdateRecord  from "@/app/entities/hooks/crud/useCreateUpdateRecord";
 import { getPermanentId } from '@/lib/redux';
 import { useMemo, useCallback } from 'react';
-import { ChatInputSettings } from "./useChatInput";
 import { MatrxRecordId } from "@/types";
-
-type ConversationMetadata = {
-    currentModel: MatrxRecordId | undefined;
-    currentEndpoint: MatrxRecordId | undefined;
-    currentMode: ChatInputSettings['mode'];
-    concurrentRecipes: MatrxRecordId[] | null;
-    brokerValues: Record<MatrxRecordId, unknown> | null;
-    availableTools: string[] | null;
-    ModAssistantContext: string | null;
-    ModUserContext: string | null;
-    [key: string]: unknown;
-};
-
-export type Conversation = {
-    id: string;
-    createdAt?: Date; // db-generated
-    updatedAt?: Date; // db-generated
-    userId?: string; // automatically set in Redux
-    metadata?: ConversationMetadata;
-    label?: string;
-    isPublic?: boolean;
-};
+import { ChatMode, Conversation } from "@/types/chat/chat.types";
 
 const NEW_CONVERSATION_DATA: Partial<Conversation> = {
     label: "New Conversation",
@@ -135,7 +113,7 @@ export const useConversationCreateUpdate = () => {
         updateField('metadata.currentModel', model);
     }, [updateField]);
 
-    const updateMode = useCallback((mode: ChatInputSettings['mode']) => {
+    const updateMode = useCallback((mode: ChatMode) => {
       updateField('metadata.currentMode', mode);
   }, [updateField]);
 

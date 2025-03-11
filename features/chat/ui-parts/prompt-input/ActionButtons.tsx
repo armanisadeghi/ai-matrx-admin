@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { ChatInputSettings } from "@/hooks/ai/chat/useChatInput";
+import React from "react";
+import { ChatMode } from "@/types/chat/chat.types";
+import { useConversationRouting } from "@/hooks/ai/chat/useConversationRouting";
 
 interface ActionButtonsProps {
-  onModeSelect?: (mode: ChatInputSettings['mode']) => void;
+  onModeSelect?: (mode: ChatMode) => void;
   className?: string;
-  initialMode?: ChatInputSettings['mode'];
+  initialMode?: ChatMode;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ 
@@ -12,15 +13,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   className = "",
   initialMode
 }) => {
-  // Track the currently selected mode
-  const [selectedMode, setSelectedMode] = useState<ChatInputSettings['mode'] | undefined>(initialMode);
-
-  // Update selected mode if initialMode changes (from URL for example)
-  useEffect(() => {
-    if (initialMode) {
-      setSelectedMode(initialMode);
-    }
-  }, [initialMode]);
+  // Use the conversation routing hook to manage the mode state
+  const { currentMode, setCurrentMode } = useConversationRouting({
+    initialMode,
+    defaultMode: "general"
+  });
 
   // Action buttons with their corresponding modes
   const actionButtons = [
@@ -31,9 +28,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
     { label: "Code", mode: "code" as const }
   ];
 
-  const handleModeSelect = (mode: ChatInputSettings['mode']) => {
-    setSelectedMode(mode);
+  const handleModeSelect = (mode: ChatMode) => {
+    // Update the mode via the hook (this will update the URL)
+    setCurrentMode(mode);
     
+    // Still call the callback if provided (for backward compatibility)
     if (onModeSelect) {
       onModeSelect(mode);
     }
@@ -42,7 +41,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   return (
     <div className={`flex justify-center flex-wrap gap-3 ${className}`}>
       {actionButtons.map(({ label, mode }) => {
-        const isSelected = selectedMode === mode;
+        const isSelected = currentMode === mode;
         const buttonClasses = isSelected
           ? "px-4 py-2 rounded-full flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white border border-blue-700 transition-colors"
           : "px-4 py-2 rounded-full flex items-center space-x-2 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors border border-zinc-300 dark:border-zinc-700 text-gray-800 dark:text-gray-300";

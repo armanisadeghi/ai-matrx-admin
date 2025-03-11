@@ -395,10 +395,10 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>({
     unifiedDatabaseObject,
 }: BaseSagaContext<TEntity>) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchQuickReference', entityKey);
-    const debugMode = "info"
+    const DEBUG_LEVEL = 'debug';
 
     try {
-        entityLogger.log(debugMode, 'Starting', action.payload);
+        entityLogger.log(DEBUG_LEVEL, 'Starting', action.payload);
 
         const { primaryKeyMetadata, displayFieldMetadata } = yield select(selectEntityMetadata, entityKey);
 
@@ -408,18 +408,18 @@ function* handleFetchQuickReference<TEntity extends EntityKeys>({
 
         let query = api.select(`${dbPrimaryKeyFields.join(',')}${dbDisplayField ? `,${dbDisplayField}` : ''}`).limit(limit).order(dbDisplayField, { ascending: true });
 
-        entityLogger.log(debugMode, 'Query', query);
+        entityLogger.log(DEBUG_LEVEL, 'Query', query);
         
         const { data, error, count } = yield query; // TODO: NOT GETTING A TOTAL COUNT!
         if (error) throw error;
 
-        entityLogger.log(debugMode, 'Data', data);
-        entityLogger.log(debugMode, 'Count', count);
+        entityLogger.log(DEBUG_LEVEL, 'Data', data);
+        entityLogger.log(DEBUG_LEVEL, 'Count', count);
 
         const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
 
-        entityLogger.log(debugMode, 'Final result', frontendResponse);
+        entityLogger.log(DEBUG_LEVEL, 'Final result', frontendResponse);
 
         const quickReferenceRecords = frontendResponse.map((record) => {
             const primaryKeyValues = primaryKeyMetadata.fields.reduce((acc, field) => {
@@ -954,16 +954,20 @@ function* handleCreate<TEntity extends EntityKeys>({
     action: PayloadAction<EntityData<TEntity>>;
 }) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleCreate', entityKey);
+    const DEBUG_LEVEL = 'debug';
 
-    const dataForInsert = unifiedDatabaseObject.data;
-    entityLogger.log('debug', 'Data for insert:', dataForInsert);
+    const receivedData = unifiedDatabaseObject.data;
+
+    const dataForInsert = addUserIdToData(entityKey, receivedData);
+
+    entityLogger.log(DEBUG_LEVEL, 'Recieved Data for insert with potentially added user_id:', dataForInsert);
 
     try {
         const { data, error } = yield api.insert(dataForInsert).select().single();
 
         if (error) throw error;
 
-        entityLogger.log('debug', 'Database response', { data });
+        entityLogger.log(DEBUG_LEVEL, 'Database response', { data });
 
         const payload = { entityName: entityKey, data };
         const frontendResponse = yield select(selectFrontendConversion, payload);
@@ -973,11 +977,11 @@ function* handleCreate<TEntity extends EntityKeys>({
             data: frontendResponse,
         };
 
-        entityLogger.log('debug', '-- Dispatching createRecordSuccess', successPayload);
+        entityLogger.log(DEBUG_LEVEL, '-- Dispatching createRecordSuccess', successPayload);
 
         yield put(actions.createRecordSuccess(successPayload));
 
-        entityLogger.log('debug', 'Pushing to history', frontendResponse);
+        entityLogger.log(DEBUG_LEVEL, 'Pushing to history', frontendResponse);
 
         yield put(
             actions.pushToHistory({
@@ -987,15 +991,15 @@ function* handleCreate<TEntity extends EntityKeys>({
             })
         );
 
-        entityLogger.log('debug', 'Invalidating cache');
+        entityLogger.log(DEBUG_LEVEL, 'Invalidating cache');
 
         yield put(actions.invalidateCache());
 
-        entityLogger.log('debug', 'Handling quick reference update');
+        entityLogger.log(DEBUG_LEVEL, 'Handling quick reference update');
 
         yield* handleQuickReferenceUpdate(entityKey, actions, frontendResponse, unifiedDatabaseObject);
 
-        entityLogger.log('debug', 'Final result', frontendResponse);
+        entityLogger.log(DEBUG_LEVEL, 'Final result', frontendResponse);
 
         const primaryKeyMetadata = yield select(selectEntityPrimaryKeyMetadata, entityKey);
         const recordKey = createRecordKey(primaryKeyMetadata, data);
@@ -1027,7 +1031,7 @@ export function* handleDirectCreate<TEntity extends EntityKeys>({
     action: PayloadAction<EntityData<TEntity>>;
 }) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleDirectCreate', entityKey);
-    const logLevel = 'info';
+    const logLevel = 'debug';
 
     const receivedData = unifiedDatabaseObject.data;
 

@@ -1,9 +1,9 @@
 // lib/redux/entity/selectors.ts
-'use client';
+"use client";
 
-import { createSelector, Selector } from '@reduxjs/toolkit';
-import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey, AllEntityFieldKeys, EntityFieldKeys } from '@/types/entityTypes';
-import { RootState } from '@/lib/redux/store';
+import { createSelector, Selector } from "@reduxjs/toolkit";
+import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey, AllEntityFieldKeys, EntityFieldKeys } from "@/types/entityTypes";
+import { RootState } from "@/lib/redux/store";
 import {
     EnhancedRecord,
     EntityDataWithId,
@@ -15,13 +15,13 @@ import {
     EntityStatus,
     FlexibleQueryOptions,
     MatrxRecordId,
-} from '@/lib/redux/entity/types/stateTypes';
-import { createRecordKey, getRecordIdByRecord, parseRecordKeys } from '@/lib/redux/entity/utils/stateHelpUtils';
-import EntityLogger from '@/lib/redux/entity/utils/entityLogger';
-import { mapFieldDataToFormField } from '@/lib/redux/entity/utils/tempFormHelper';
-import { uniqBy } from 'lodash';
-import { ObjectSpaceNormalMap } from 'three';
-import { getEntitySlice } from './entitySlice';
+} from "@/lib/redux/entity/types/stateTypes";
+import { createRecordKey, getRecordIdByRecord, parseRecordKeys } from "@/lib/redux/entity/utils/stateHelpUtils";
+import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
+import { mapFieldDataToFormField } from "@/lib/redux/entity/utils/tempFormHelper";
+import { uniqBy } from "lodash";
+import { ObjectSpaceNormalMap } from "three";
+import { getEntitySlice } from "./entitySlice";
 
 interface FieldNameGroups<TEntity extends EntityKeys> {
     nativeFields: EntityAnyFieldKey<TEntity>[];
@@ -33,8 +33,7 @@ type EntityFieldFilter<TEntity extends EntityKeys> = {
     value: unknown;
 };
 
-
-const trace = 'ENTITY SELECTORS';
+const trace = "ENTITY SELECTORS";
 
 export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEntity) => {
     if (!entityKey) return null;
@@ -43,118 +42,106 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectEntity = (state: RootState): EntityState<TEntity> => {
         return state.entities[entityKey] || ({} as EntityState<TEntity>);
     };
-    
+
     const selectAllRecords = createSelector(
         [selectEntity],
         (entity): EntityRecordMap<TEntity> => entity?.records || ({} as EntityRecordMap<TEntity>)
     );
-    
-    const selectRecordsArray = createSelector(
-        [selectAllRecords],
-        (records): EntityDataWithKey<TEntity>[] => {
-            if (!records) return [];
-            
-            return Object.entries(records).map(([recordId, record]) => ({
-                ...record,
-                matrxRecordId: recordId
-            }));
-        }
-     );
-     
-     const selectRecordsByFieldValue = createSelector(
+
+    const selectRecordsArray = createSelector([selectAllRecords], (records): EntityDataWithKey<TEntity>[] => {
+        if (!records) return [];
+
+        return Object.entries(records).map(([recordId, record]) => ({
+            ...record,
+            matrxRecordId: recordId,
+        }));
+    });
+
+    const selectRecordsByFieldValue = createSelector(
         [
             selectRecordsArray,
             (_: RootState, field: EntityFieldKeys<TEntity>) => field,
-            (_: RootState, _field: EntityFieldKeys<TEntity>, value: unknown) => value
+            (_: RootState, _field: EntityFieldKeys<TEntity>, value: unknown) => value,
         ],
         (records, field, value): EntityDataWithKey<TEntity>[] => {
             if (!records || !field) return [];
-            
-            return records.filter(record => record[field] === value);
-        }
-     );
 
-     const selectRecordKeysByFieldValue = createSelector(
-        [selectRecordsByFieldValue],
-        (records): MatrxRecordId[] => {
-            if (!records) return [];
-            
-            return records.map(record => record.matrxRecordId);
+            return records.filter((record) => record[field] === value);
         }
     );
-    
-    const selectFirstRecordKeyByFieldValue = createSelector(
-        [selectRecordKeysByFieldValue],
-        (recordKeys): MatrxRecordId => {
-            if (!recordKeys || recordKeys.length === 0) return '' as MatrxRecordId;
-            
-            return recordKeys[0];
-        }
-    );
-    
+
+    const selectRecordKeysByFieldValue = createSelector([selectRecordsByFieldValue], (records): MatrxRecordId[] => {
+        if (!records) return [];
+
+        return records.map((record) => record.matrxRecordId);
+    });
+
+    const selectFirstRecordKeyByFieldValue = createSelector([selectRecordKeysByFieldValue], (recordKeys): MatrxRecordId => {
+        if (!recordKeys || recordKeys.length === 0) return "" as MatrxRecordId;
+
+        return recordKeys[0];
+    });
+
     const selectRecordsByFieldValues = createSelector(
-        [
-            selectRecordsArray,
-            (_: RootState, filters: EntityFieldFilter<TEntity>[]) => filters
-        ],
+        [selectRecordsArray, (_: RootState, filters: EntityFieldFilter<TEntity>[]) => filters],
         (records, filters): EntityDataWithKey<TEntity>[] => {
             if (!records || !filters.length) return [];
-            
-            return records.filter(record => 
-                filters.every(({ field, value }) => record[field] === value)
-            );
+
+            return records.filter((record) => filters.every(({ field, value }) => record[field] === value));
         }
     );
-    
+
     // Then we can create a selector for the keys
-    const selectRecordKeysByFieldValues = createSelector(
-        [selectRecordsByFieldValues],
-        (records): MatrxRecordId[] => {
-            if (!records) return [];
-            return records.map(record => record.matrxRecordId);
-        }
-    );
-    
+    const selectRecordKeysByFieldValues = createSelector([selectRecordsByFieldValues], (records): MatrxRecordId[] => {
+        if (!records) return [];
+        return records.map((record) => record.matrxRecordId);
+    });
+
     // And one for the first match
-    const selectFirstRecordKeyByFieldValues = createSelector(
-        [selectRecordKeysByFieldValues],
-        (recordKeys): MatrxRecordId => {
-            if (!recordKeys || recordKeys.length === 0) return '' as MatrxRecordId;
-            return recordKeys[0];
-        }
-    );
-    
+    const selectFirstRecordKeyByFieldValues = createSelector([selectRecordKeysByFieldValues], (recordKeys): MatrxRecordId => {
+        if (!recordKeys || recordKeys.length === 0) return "" as MatrxRecordId;
+        return recordKeys[0];
+    });
 
     const selectEntityDisplayName = createSelector([selectEntity], (entity) => {
         return entity.entityMetadata.displayName;
     });
 
-    const selectRecordByKey = createSelector([selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey], (records, recordKey) => {
-        return records[recordKey] || null;
-    });
+    const selectRecordByKey = createSelector(
+        [selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey],
+        (records, recordKey) => {
+            return records[recordKey] || null;
+        }
+    );
 
-    const selectRecordsByKeys = createSelector([selectAllRecords, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], (records, recordKeys) => {
-        if (!recordKeys?.length) return [];
-        if (!records) return [];
+    const selectRecordsByKeys = createSelector(
+        [selectAllRecords, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
+        (records, recordKeys) => {
+            if (!recordKeys?.length) return [];
+            if (!records) return [];
 
-        return recordKeys
-            .filter((key): key is MatrxRecordId => key != null)
-            .map((recordKey) => records[recordKey] || null)
-            .filter(Boolean);
-    });
+            return recordKeys
+                .filter((key): key is MatrxRecordId => key != null)
+                .map((recordKey) => records[recordKey] || null)
+                .filter(Boolean);
+        }
+    );
 
-    const selectRecordsKeyPairs = createSelector([selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys], (entity, recordKeys) => {
-        if (!recordKeys) return [];
-        if (!entity?.records) return [];
+    const selectRecordsKeyPairs = createSelector(
+        [selectEntity, (_: RootState, recordKeys: MatrxRecordId[]) => recordKeys],
+        (entity, recordKeys) => {
+            if (!recordKeys) return [];
+            if (!entity?.records) return [];
 
-        return recordKeys
-            .filter((key): key is MatrxRecordId => key != null)
-            .map((recordKey) => {
-                const record = entity.records[recordKey];
-                return record ? { key: recordKey, record } : null;
-            })
-            .filter(Boolean);
-    });
+            return recordKeys
+                .filter((key): key is MatrxRecordId => key != null)
+                .map((recordKey) => {
+                    const record = entity.records[recordKey];
+                    return record ? { key: recordKey, record } : null;
+                })
+                .filter(Boolean);
+        }
+    );
 
     const selectRecordWithKey = createSelector(
         [selectRecordByKey, (_: RootState, recordKey: MatrxRecordId) => recordKey],
@@ -180,7 +167,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                     ...record,
                     matrxRecordId: recordKeys[index],
                 })),
-                'matrxRecordId'
+                "matrxRecordId"
             );
         }
     );
@@ -290,7 +277,11 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectFieldByKey = createSelector(
-        [selectEntity, (_: RootState, recordKey: MatrxRecordId) => recordKey, (_: RootState, _recordKey: MatrxRecordId, field: string) => field],
+        [
+            selectEntity,
+            (_: RootState, recordKey: MatrxRecordId) => recordKey,
+            (_: RootState, _recordKey: MatrxRecordId, field: string) => field,
+        ],
         (entity, recordKey, field) => {
             const record = entity.records[recordKey];
             return record ? record[field] || null : null;
@@ -306,7 +297,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectRecordsForFetching = (matrxRecordIds: MatrxRecordId[]) =>
         createSelector([selectAllRecords], (existingRecords) => {
-            const filteredRecordIds = matrxRecordIds.filter((recordId) => !recordId.startsWith('new-record-'));
+            const filteredRecordIds = matrxRecordIds.filter((recordId) => !recordId.startsWith("new-record-"));
             const existingRecordIds = filteredRecordIds.filter((recordId) => !!existingRecords[recordId]);
             const recordIdsNotInState = filteredRecordIds.filter((recordId) => !existingRecords[recordId]);
             const primaryKeysToFetch = parseRecordKeys(recordIdsNotInState);
@@ -345,47 +336,59 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-    const selectMatrxRecordIdBySimpleKey = createSelector([selectEntity, (_: RootState, id: MatrxRecordId) => id], (entity, id): MatrxRecordId => {
-        // Return early if no id or if id is empty string
-        if (!id) return '';
+    const selectMatrxRecordIdBySimpleKey = createSelector(
+        [selectEntity, (_: RootState, id: MatrxRecordId) => id],
+        (entity, id): MatrxRecordId => {
+            // Return early if no id or if id is empty string
+            if (!id) return "";
 
-        return createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id });
-    });
-
-    const selectMatrxRecordIdsBySimpleKeys = createSelector([selectEntity, (_: RootState, ids: MatrxRecordId[]) => ids], (entity, ids): MatrxRecordId[] => {
-        // Filter out any falsy values before mapping
-        return ids.filter(Boolean).map((id) => createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id }));
-    });
-
-    const selectMatrxRecordIdFromValue = createSelector([selectEntity, (_: RootState, value: any) => value], (entity, value): MatrxRecordId | null => {
-        if (value === undefined || value === null) {
-            return null;
+            return createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id });
         }
-        const primaryKeyField = entity.entityMetadata.primaryKeyMetadata.fields[0];
-        if (!primaryKeyField) {
-            return null;
-        }
-        const record = { [primaryKeyField]: value };
-        try {
-            return createRecordKey(entity.entityMetadata.primaryKeyMetadata, record);
-        } catch (e) {
-            return null;
-        }
-    });
+    );
 
-    const selectMatrxRecordIdByValues = createSelector([selectEntity, (_: RootState, values: any[]) => values], (entity, values): MatrxRecordId => {
-        const primaryKeyFields = Object.keys(entity.entityMetadata.primaryKeyMetadata);
-        if (values.length !== primaryKeyFields.length) {
-            throw new Error(`Expected ${primaryKeyFields.length} values but received ${values.length}`);
+    const selectMatrxRecordIdsBySimpleKeys = createSelector(
+        [selectEntity, (_: RootState, ids: MatrxRecordId[]) => ids],
+        (entity, ids): MatrxRecordId[] => {
+            // Filter out any falsy values before mapping
+            return ids.filter(Boolean).map((id) => createRecordKey(entity.entityMetadata.primaryKeyMetadata, { id }));
         }
+    );
 
-        const primaryKeyValues = primaryKeyFields.reduce((acc, field, index) => {
-            acc[field] = values[index];
-            return acc;
-        }, {} as Record<string, any>);
+    const selectMatrxRecordIdFromValue = createSelector(
+        [selectEntity, (_: RootState, value: any) => value],
+        (entity, value): MatrxRecordId | null => {
+            if (value === undefined || value === null) {
+                return null;
+            }
+            const primaryKeyField = entity.entityMetadata.primaryKeyMetadata.fields[0];
+            if (!primaryKeyField) {
+                return null;
+            }
+            const record = { [primaryKeyField]: value };
+            try {
+                return createRecordKey(entity.entityMetadata.primaryKeyMetadata, record);
+            } catch (e) {
+                return null;
+            }
+        }
+    );
 
-        return createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
-    });
+    const selectMatrxRecordIdByValues = createSelector(
+        [selectEntity, (_: RootState, values: any[]) => values],
+        (entity, values): MatrxRecordId => {
+            const primaryKeyFields = Object.keys(entity.entityMetadata.primaryKeyMetadata);
+            if (values.length !== primaryKeyFields.length) {
+                throw new Error(`Expected ${primaryKeyFields.length} values but received ${values.length}`);
+            }
+
+            const primaryKeyValues = primaryKeyFields.reduce((acc, field, index) => {
+                acc[field] = values[index];
+                return acc;
+            }, {} as Record<string, any>);
+
+            return createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues);
+        }
+    );
 
     const selectMatrxRecordIdByKeyValuePairs = createSelector(
         [selectEntity, (_: RootState, keyValuePairs: Array<[string, any]>) => keyValuePairs],
@@ -394,7 +397,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             const providedFields = keyValuePairs.map(([field]) => field);
 
             if (!primaryKeyFields.every((field) => providedFields.includes(field))) {
-                throw new Error('Missing required primary key fields');
+                throw new Error("Missing required primary key fields");
             }
 
             const primaryKeyValues = Object.fromEntries(keyValuePairs);
@@ -405,7 +408,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectMatrxRecordIdsByPrimaryKeys = createSelector(
         [selectEntity, (_: RootState, primaryKeyValuesList: Record<string, MatrxRecordId>[]) => primaryKeyValuesList],
         (entity, primaryKeyValuesList) => {
-            return primaryKeyValuesList.map((primaryKeyValues) => createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues));
+            return primaryKeyValuesList.map((primaryKeyValues) =>
+                createRecordKey(entity.entityMetadata.primaryKeyMetadata, primaryKeyValues)
+            );
         }
     );
 
@@ -434,9 +439,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return state.entities[entityKey].selection.selectedRecords || [];
     };
 
-    const selectIsRecordSelected = createSelector([selectSelectedRecordIds, (_: RootState, recordId: MatrxRecordId) => recordId], (selectedIds, recordId) => {
-        return selectedIds.includes(recordId);
-    });
+    const selectIsRecordSelected = createSelector(
+        [selectSelectedRecordIds, (_: RootState, recordId: MatrxRecordId) => recordId],
+        (selectedIds, recordId) => {
+            return selectedIds.includes(recordId);
+        }
+    );
 
     const selectSelectedRecords = createSelector([selectEntity, selectSelectedRecordIds], (entity, selectedIds) => {
         if (!selectedIds.length) return [];
@@ -464,24 +472,27 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (activeRecord, recordId) => activeRecord === recordId
     );
 
-    const selectSelectionSummary = createSelector([selectSelectedRecords, selectActiveRecordId, selectSelectionMode], (selectedRecords, activeRecord, mode) => {
-        const count = selectedRecords.length;
-        return {
-            count,
-            hasSelection: count > 0,
-            hasSingleSelection: count === 1,
-            hasMultipleSelection: count > 1,
-            activeRecord,
-            mode,
-        };
-    });
+    const selectSelectionSummary = createSelector(
+        [selectSelectedRecords, selectActiveRecordId, selectSelectionMode],
+        (selectedRecords, activeRecord, mode) => {
+            const count = selectedRecords.length;
+            return {
+                count,
+                hasSelection: count > 0,
+                hasSingleSelection: count === 1,
+                hasMultipleSelection: count > 1,
+                activeRecord,
+                mode,
+            };
+        }
+    );
 
     const selectActiveRecord = createSelector([selectEntity, selectActiveRecordId], (entity, activeRecordId) => {
         return activeRecordId ? entity.records[activeRecordId] : null;
     });
 
     const selectActiveRecordWithId = createSelector([selectEntity, selectActiveRecordId], (entity, activeRecordId) => {
-        if (activeRecordId?.toString().startsWith('new-record-')) {
+        if (activeRecordId?.toString().startsWith("new-record-")) {
             return {
                 matrxRecordId: activeRecordId,
                 record: null,
@@ -498,12 +509,14 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     // === End Selection Selectors ==================================================
 
-    const selectRecordIdByRecord = createSelector([selectEntity, (_: RootState, record: EntityData<TEntity>) => record], (entityState, record) =>
-        getRecordIdByRecord(entityState, record)
+    const selectRecordIdByRecord = createSelector(
+        [selectEntity, (_: RootState, record: EntityData<TEntity>) => record],
+        (entityState, record) => getRecordIdByRecord(entityState, record)
     );
 
-    const selectRecordIdsByRecords = createSelector([selectEntity, (_: RootState, records: EntityData<TEntity>[]) => records], (entityState, records) =>
-        records.map((record) => getRecordIdByRecord(entityState, record))
+    const selectRecordIdsByRecords = createSelector(
+        [selectEntity, (_: RootState, records: EntityData<TEntity>[]) => records],
+        (entityState, records) => records.map((record) => getRecordIdByRecord(entityState, record))
     );
 
     // Pagination Selectors
@@ -515,17 +528,20 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return Object.values(records).slice(startIndex, startIndex + pageSize);
     });
 
-    const selectCurrentPageWithRecordId = createSelector([selectEntity, selectAllRecords], (entity, records): EntityDataWithKey<TEntity>[] => {
-        const { page, pageSize } = entity.pagination;
-        const startIndex = (page - 1) * pageSize;
+    const selectCurrentPageWithRecordId = createSelector(
+        [selectEntity, selectAllRecords],
+        (entity, records): EntityDataWithKey<TEntity>[] => {
+            const { page, pageSize } = entity.pagination;
+            const startIndex = (page - 1) * pageSize;
 
-        return Object.entries(records)
-            .slice(startIndex, startIndex + pageSize)
-            .map(([recordKey, record]) => ({
-                ...record,
-                matrxRecordId: recordKey,
-            }));
-    });
+            return Object.entries(records)
+                .slice(startIndex, startIndex + pageSize)
+                .map(([recordKey, record]) => ({
+                    ...record,
+                    matrxRecordId: recordKey,
+                }));
+        }
+    );
 
     // Filter Selectors
     const selectCurrentFilters = createSelector([selectEntity], (entity) => entity.filters);
@@ -539,25 +555,25 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                 filters.conditions.every((condition) => {
                     const value = record[condition.field];
                     switch (condition.operator) {
-                        case 'eq':
+                        case "eq":
                             return value === condition.value;
-                        case 'neq':
+                        case "neq":
                             return value !== condition.value;
-                        case 'gt':
+                        case "gt":
                             return value > condition.value;
-                        case 'gte':
+                        case "gte":
                             return value >= condition.value;
-                        case 'lt':
+                        case "lt":
                             return value < condition.value;
-                        case 'lte':
+                        case "lte":
                             return value <= condition.value;
-                        case 'like':
+                        case "like":
                             return String(value).includes(String(condition.value));
-                        case 'ilike':
+                        case "ilike":
                             return String(value).toLowerCase().includes(String(condition.value).toLowerCase());
-                        case 'in':
+                        case "in":
                             return Array.isArray(condition.value) && condition.value.includes(value);
-                        case 'between':
+                        case "between":
                             return Array.isArray(condition.value) && value >= condition.value[0] && value <= condition.value[1];
                         default:
                             return true;
@@ -573,7 +589,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                     const aValue = a[sort.field];
                     const bValue = b[sort.field];
                     if (aValue !== bValue) {
-                        return sort.direction === 'asc' ? (aValue > bValue ? 1 : -1) : aValue < bValue ? 1 : -1;
+                        return sort.direction === "asc" ? (aValue > bValue ? 1 : -1) : aValue < bValue ? 1 : -1;
                     }
                 }
                 return 0;
@@ -614,7 +630,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         return displayField || metadata.primaryKeyMetadata.fields[0];
     });
 
-    const selectFieldInfo = createSelector([selectEntityMetadata], (metadata): Record<string, EntityStateField> => metadata?.entityFields || {});
+    const selectFieldInfo = createSelector(
+        [selectEntityMetadata],
+        (metadata): Record<string, EntityStateField> => metadata?.entityFields || {}
+    );
 
     const selectFieldNames = createSelector([selectFieldInfo], (fields) => Object.keys(fields));
 
@@ -691,37 +710,46 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-    const selectChangedFieldsSet = createSelector([selectRecordPair, selectFieldInfo], ({ originalRecord, unsavedRecord, isNewRecord }, fieldInfo) => {
-        if (isNewRecord) {
-            // If it's a new record, return all field names as a Set
-            return new Set(Object.keys(fieldInfo));
-        }
-
-        // Otherwise, return a Set of field names where the original and unsaved values differ
-        return new Set(
-            Object.values(fieldInfo)
-                .filter((field: EntityStateField) => originalRecord && unsavedRecord && originalRecord[field.name] !== unsavedRecord[field.name])
-                .map((field: EntityStateField) => field.name)
-        );
-    });
-
-    const selectChangedFieldData = createSelector([selectRecordPair, selectChangedFieldsSet], ({ unsavedRecord, isNewRecord }, changedFields) => {
-        if (!unsavedRecord) {
-            return {};
-        }
-
-        if (isNewRecord) {
-            return { ...unsavedRecord };
-        }
-
-        const changedData: Partial<typeof unsavedRecord> = {};
-        for (const fieldName of changedFields) {
-            if (typeof fieldName === 'string' && fieldName in unsavedRecord) {
-                changedData[fieldName as keyof typeof unsavedRecord] = unsavedRecord[fieldName as keyof typeof unsavedRecord];
+    const selectChangedFieldsSet = createSelector(
+        [selectRecordPair, selectFieldInfo],
+        ({ originalRecord, unsavedRecord, isNewRecord }, fieldInfo) => {
+            if (isNewRecord) {
+                // If it's a new record, return all field names as a Set
+                return new Set(Object.keys(fieldInfo));
             }
+
+            // Otherwise, return a Set of field names where the original and unsaved values differ
+            return new Set(
+                Object.values(fieldInfo)
+                    .filter(
+                        (field: EntityStateField) =>
+                            originalRecord && unsavedRecord && originalRecord[field.name] !== unsavedRecord[field.name]
+                    )
+                    .map((field: EntityStateField) => field.name)
+            );
         }
-        return changedData;
-    });
+    );
+
+    const selectChangedFieldData = createSelector(
+        [selectRecordPair, selectChangedFieldsSet],
+        ({ unsavedRecord, isNewRecord }, changedFields) => {
+            if (!unsavedRecord) {
+                return {};
+            }
+
+            if (isNewRecord) {
+                return { ...unsavedRecord };
+            }
+
+            const changedData: Partial<typeof unsavedRecord> = {};
+            for (const fieldName of changedFields) {
+                if (typeof fieldName === "string" && fieldName in unsavedRecord) {
+                    changedData[fieldName as keyof typeof unsavedRecord] = unsavedRecord[fieldName as keyof typeof unsavedRecord];
+                }
+            }
+            return changedData;
+        }
+    );
 
     const selectFieldComparisons = createSelector(
         [selectRecordPair, selectChangedFieldsSet, selectFieldInfo],
@@ -761,7 +789,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectCreatePayload = createSelector(
-        [(state: RootState, recordId: MatrxRecordId) => selectChangeComparisonById(state, recordId), (_: RootState, recordId: MatrxRecordId) => recordId],
+        [
+            (state: RootState, recordId: MatrxRecordId) => selectChangeComparisonById(state, recordId),
+            (_: RootState, recordId: MatrxRecordId) => recordId,
+        ],
         (changeComparison, recordId) => {
             const { entityName, changedFieldData } = changeComparison;
 
@@ -786,10 +817,13 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     //         } as FlexibleQueryOptions;
     //     }
     // );
-    const selectChangeComparison = createSelector([selectActiveRecordWithId, selectFieldInfo, (state) => state], (activeRecordData, fieldInfo, state) => {
-        if (!activeRecordData.matrxRecordId) return null;
-        return selectChangeComparisonById(state, activeRecordData.matrxRecordId);
-    });
+    const selectChangeComparison = createSelector(
+        [selectActiveRecordWithId, selectFieldInfo, (state) => state],
+        (activeRecordData, fieldInfo, state) => {
+            if (!activeRecordData.matrxRecordId) return null;
+            return selectChangeComparisonById(state, activeRecordData.matrxRecordId);
+        }
+    );
 
     const selectActiveRecordCreatePayload = createSelector(
         [selectActiveRecordWithId, selectEntity, (state: RootState) => state],
@@ -884,7 +918,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         ...pagination,
         totalFilteredRecords: filteredRecords.length,
         currentPageRecords:
-            filteredRecords.length > 0 ? Math.min(pagination.pageSize, filteredRecords.length - (pagination.page - 1) * pagination.pageSize) : 0,
+            filteredRecords.length > 0
+                ? Math.min(pagination.pageSize, filteredRecords.length - (pagination.page - 1) * pagination.pageSize)
+                : 0,
         isFirstPage: pagination.page === 1,
         isLastPage: pagination.page === pagination.totalPages,
         pageOptions: Array.from({ length: pagination.totalPages }, (_, i) => ({
@@ -961,52 +997,47 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectAllEffectiveRecordsArray = createSelector(
         [selectAllRecords, selectUnsavedRecords],
         (records, unsavedRecords): EntityDataWithKey<EntityKeys>[] => {
-          const mergedRecords = {
-            ...(records ?? {}),
-            ...(unsavedRecords ?? {}),
-          };
-      
-          return Object.entries(mergedRecords).map(([recordKey, record]) => ({
-            ...record,
-            matrxRecordId: recordKey,
-          }));
+            const mergedRecords = {
+                ...(records ?? {}),
+                ...(unsavedRecords ?? {}),
+            };
+
+            return Object.entries(mergedRecords).map(([recordKey, record]) => ({
+                ...record,
+                matrxRecordId: recordKey,
+            }));
         }
-      );
+    );
 
     // Then this can be simplified to just convert the object to array
-    const selectAllEffectiveRecordsWithKeys = createSelector([selectAllEffectiveRecords], (effectiveRecords): EntityDataWithKey<EntityKeys>[] => {
-        if (!effectiveRecords) {
-            return [];
+    const selectAllEffectiveRecordsWithKeys = createSelector(
+        [selectAllEffectiveRecords],
+        (effectiveRecords): EntityDataWithKey<EntityKeys>[] => {
+            if (!effectiveRecords) {
+                return [];
+            }
+            return Object.values(effectiveRecords);
         }
-        return Object.values(effectiveRecords);
-    });
-
+    );
 
     const selectEffectiveRecordsByMultipleFieldsValue = createSelector(
         [selectAllEffectiveRecords, (_: RootState, filters: EntityFieldFilter<TEntity>[]) => filters],
         (records, filters): EntityDataWithKey<EntityKeys>[] => {
             if (!records) return [];
             if (!filters.length) return [];
-    
-            const filteredRecords = Object.values(records).filter(record => 
-                filters.every(({ field, value }) => record[field] === value)
-            );
+
+            const filteredRecords = Object.values(records).filter((record) => filters.every(({ field, value }) => record[field] === value));
             return filteredRecords;
         }
     );
 
     const selectEffectiveRecordsByFieldValues = createSelector(
-        [
-            selectAllEffectiveRecords,
-            (_: RootState, field: AllEntityFieldKeys, possibleValues: any[]) => ({ field, possibleValues })
-        ],
+        [selectAllEffectiveRecords, (_: RootState, field: AllEntityFieldKeys, possibleValues: any[]) => ({ field, possibleValues })],
         (records, { field, possibleValues }): EntityDataWithKey<EntityKeys>[] => {
             if (!records) return [];
             if (!possibleValues || possibleValues.length === 0) return [];
-            
-            const filteredRecords = Object.values(records).filter(record => 
-                possibleValues.includes(record[field])
-            );
+
+            const filteredRecords = Object.values(records).filter((record) => possibleValues.includes(record[field]));
             return filteredRecords;
         }
     );
@@ -1046,29 +1077,30 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-    const selectSelectedEnhancedRecords = createSelector([selectEnhancedRecords, selectSelectedRecordIds], (enhancedRecords, selectedIds): EnhancedRecord[] => {
-        if (!selectedIds?.length || !enhancedRecords?.length) return [];
+    const selectSelectedEnhancedRecords = createSelector(
+        [selectEnhancedRecords, selectSelectedRecordIds],
+        (enhancedRecords, selectedIds): EnhancedRecord[] => {
+            if (!selectedIds?.length || !enhancedRecords?.length) return [];
 
-        // Create a Set for O(1) lookup of selected IDs
-        const selectedIdsSet = new Set(selectedIds);
+            // Create a Set for O(1) lookup of selected IDs
+            const selectedIdsSet = new Set(selectedIds);
 
-        return enhancedRecords.filter((record) => selectedIdsSet.has(record.recordKey));
-    });
-
-    const selectEffectiveRecordById = createSelector(
-        [selectUnsavedRecords, selectRecordByKey, (_, recordId: MatrxRecordId) => recordId],
-        (unsavedRecords, records, recordId) => {
-            if (!unsavedRecords || !records) return null;
-            return unsavedRecords[recordId] || records[recordId] || null;
+            return enhancedRecords.filter((record) => selectedIdsSet.has(record.recordKey));
         }
     );
 
-    const selectIsTemporaryRecordId = createSelector([(_, recordId: MatrxRecordId) => recordId], (recordId) => recordId.startsWith('new-record-'));
+    const selectEffectiveRecordById = createSelector([selectEntity, (_, recordId: MatrxRecordId) => recordId], (entity, recordId) => {
+        return entity.unsavedRecords?.[recordId] || entity.records?.[recordId] || null;
+    });
+
+    const selectIsTemporaryRecordId = createSelector([(_, recordId: MatrxRecordId) => recordId], (recordId) =>
+        recordId.startsWith("new-record-")
+    );
 
     const selectEffectiveRecordOrDefaults = createSelector(
         [selectEntity, selectDefaultValues, (_, recordId: MatrxRecordId) => recordId],
         (entity, defaultValues, recordId) => {
-            const isTemporary = recordId?.startsWith('new-record-');
+            const isTemporary = recordId?.startsWith("new-record-");
             const record = entity.unsavedRecords?.[recordId] || entity.records?.[recordId];
 
             if (!record) {
@@ -1099,7 +1131,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (fields, fieldName) => fields[fieldName] || null
     );
 
-    const selectRecord = createSelector([selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey], (records, recordKey) => records[recordKey]);
+    const selectRecord = createSelector(
+        [selectAllRecords, (_: RootState, recordKey: MatrxRecordId) => recordKey],
+        (records, recordKey) => records[recordKey]
+    );
 
     const selectEntityFieldDetails = createSelector(
         [selectFieldMetadata, selectRecord, (_: RootState, recordKey: MatrxRecordId, fieldName: string) => ({ recordKey, fieldName })],
@@ -1125,32 +1160,33 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
     const selectFieldIdentifiers = createSelector([selectFieldInfo], (fields) =>
         Object.values(fields).map((field) => {
-            console.log('field: ', field);
-            console.log('uniqueFieldId: ', field.uniqueFieldId);
-            const parts = field.uniqueFieldId.split(':');
+            console.log("field: ", field);
+            console.log("uniqueFieldId: ", field.uniqueFieldId);
+            const parts = field.uniqueFieldId.split(":");
 
             return {
                 uniqueFieldId: field.uniqueFieldId,
-                entityName: parts[1] || '',
-                fieldName: parts[2] || '',
+                entityName: parts[1] || "",
+                fieldName: parts[2] || "",
             };
         })
     );
 
-    const selectFieldIdentifiersByName = createSelector([selectFieldIdentifiers, (_: RootState, fieldName: string) => fieldName], (identifiers, fieldName) =>
-        identifiers.find((id) => id.fieldName === fieldName)
+    const selectFieldIdentifiersByName = createSelector(
+        [selectFieldIdentifiers, (_: RootState, fieldName: string) => fieldName],
+        (identifiers, fieldName) => identifiers.find((id) => id.fieldName === fieldName)
     );
 
-    const selectEntityOperationMode = createSelector([selectEntityFlags], (flags): EntityOperationMode => flags?.operationMode ?? 'view') as Selector<
-        RootState,
-        EntityOperationMode
-    >;
+    const selectEntityOperationMode = createSelector(
+        [selectEntityFlags],
+        (flags): EntityOperationMode => flags?.operationMode ?? "view"
+    ) as Selector<RootState, EntityOperationMode>;
 
     const selectEntityStatus = createSelector([selectLoadingState], (loadingState): EntityStatus => {
-        if (!loadingState?.initialized) return 'initialized';
-        if (loadingState.error) return 'error';
-        if (loadingState.loading) return 'loading';
-        return 'other';
+        if (!loadingState?.initialized) return "initialized";
+        if (loadingState.error) return "error";
+        if (loadingState.loading) return "loading";
+        return "other";
     });
 
     const selectFieldGroups = createSelector([selectFieldInfo], (fields) => ({
@@ -1196,7 +1232,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectFieldNameGroupsWithHidden = createSelector(
         [selectFieldInfo, (_state, hiddenRelatedEntities: string[] = []) => hiddenRelatedEntities],
         (fields, hiddenRelatedEntities): FieldNameGroups<TEntity> => {
-            if (!fields || typeof fields !== 'object') {
+            if (!fields || typeof fields !== "object") {
                 return { nativeFields: [], relationshipFields: [] };
             }
 
@@ -1218,10 +1254,13 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-    const selectNativeFieldNamesNoPk = createSelector([selectNativeFieldNames, selectPrimaryKeyMetadata], (nativeFieldNames, primaryKeyMetadata) => {
-        const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
-        return nativeFieldNames.filter((fieldName) => !primaryKeySet.has(fieldName as AllEntityFieldKeys));
-    });
+    const selectNativeFieldNamesNoPk = createSelector(
+        [selectNativeFieldNames, selectPrimaryKeyMetadata],
+        (nativeFieldNames, primaryKeyMetadata) => {
+            const primaryKeySet = new Set<AllEntityFieldKeys>(primaryKeyMetadata.fields);
+            return nativeFieldNames.filter((fieldName) => !primaryKeySet.has(fieldName as AllEntityFieldKeys));
+        }
+    );
 
     const selectForeignKeyFieldNames = createSelector([selectFieldInfo], (fields) => {
         const foreignKeyFields: AllEntityFieldKeys[] = [];
@@ -1601,13 +1640,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectNonPkFkFieldNames,
         selectMatchDataToNonPkFkFields,
         selectMatchListDataToNonPkFkFields,
-    
     };
 };
 
 export type EntitySelectors<TEntity extends EntityKeys> = ReturnType<typeof createEntitySelectors<TEntity>>;
-
-
-
-
-

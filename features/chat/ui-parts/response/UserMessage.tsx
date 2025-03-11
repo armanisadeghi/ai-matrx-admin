@@ -1,7 +1,7 @@
 // UserMessage.tsx
 import React, { useState } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
-import { Message } from '@/features/chat/types';
+import { Message } from '@/types/chat/chat.types';
 
 interface UserMessageProps {
   message: Message;
@@ -29,7 +29,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message }) => {
         )}
         <div className="rounded-2xl bg-zinc-200 dark:bg-zinc-800 p-4 text-gray-900 dark:text-gray-100 whitespace-pre-wrap break-words overflow-hidden">
           <div className="overflow-x-auto max-w-full">
-            {message.text}
+            {message.content}
           </div>
         </div>
       </div>

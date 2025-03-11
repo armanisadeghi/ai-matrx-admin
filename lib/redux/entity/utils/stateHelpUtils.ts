@@ -478,14 +478,23 @@ export const createMultipleMatrxRecordIds = (metadata: PrimaryKeyMetadata, recor
 
 export const parseMatrxRecordId = (key: MatrxRecordId): Record<AllEntityFieldKeys, unknown> => {
     return key.split('::').reduce((acc, pair) => {
-        const [field, value] = pair.split(':');
-
-        if (field && value !== undefined) {
-            acc[field as AllEntityFieldKeys] = value;
+        const colonIndex = pair.indexOf(':');
+        
+        if (colonIndex === -1) {
+            // If there's no colon, log an error but continue with "id" as the default field
+            console.error(`parseMatrxRecordId Warning: No colon found in record key part: ${pair}. Using "id" as default field.`);
+            acc['id' as AllEntityFieldKeys] = pair;
         } else {
-            throw new Error(`parseMatrxRecordId Invalid format in record key part: ${pair}`);
+            const field = pair.substring(0, colonIndex);
+            const value = pair.substring(colonIndex + 1);
+            
+            if (field && value !== undefined) {
+                acc[field as AllEntityFieldKeys] = value;
+            } else {
+                throw new Error(`parseMatrxRecordId Invalid format in record key part: ${pair}`);
+            }
         }
-
+        
         return acc;
     }, {} as Record<AllEntityFieldKeys, unknown>);
 };

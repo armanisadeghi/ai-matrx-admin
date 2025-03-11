@@ -4,24 +4,7 @@ import { MatrxRecordId } from "@/types/entityTypes";
 import { getPermanentId, useEntityTools } from "@/lib/redux";
 import { useDispatch } from "react-redux";
 import { v4 as uuidv4 } from 'uuid';
-
-type MessageType = "text" | "mixed";
-
-
-export type Message = {
-    id: string;
-    conversationId: string;
-    role: "user";
-    content?: string;
-    type: MessageType;
-    displayOrder: number;
-    systemOrder: number;
-    createdAt: Date;
-    metadata?: Record<string, unknown>;
-    userId?: string;
-    isPublic?: boolean;
-    matrxRecordId: MatrxRecordId;
-};
+import { Message, MessageType } from "@/types/chat/chat.types";
 
 const NEW_MESSAGE_DATA: Partial<Message> = {
     role: "user",

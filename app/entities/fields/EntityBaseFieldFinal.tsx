@@ -2,7 +2,7 @@
 
 'use client';
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { EntityKeys } from '@/types/entityTypes';
 import { MatrxRecordId } from '@/lib/redux/entity/types/stateTypes';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity';
@@ -18,7 +18,7 @@ export interface EntityBaseFieldFinalProps {
     unifiedLayoutProps?: UnifiedLayoutProps;
     className?: string;
     onFieldChange?: (fieldName: string, value: unknown) => void;
-    forceEnable?: boolean; // New optional prop
+    forceEnable?: boolean;
 }
 
 const EntityBaseFieldFinal = ({ 
@@ -28,7 +28,7 @@ const EntityBaseFieldFinal = ({
     unifiedLayoutProps, 
     className, 
     onFieldChange,
-    forceEnable // New prop with implicit undefined default
+    forceEnable
 }: EntityBaseFieldFinalProps) => {
     const dispatch = useAppDispatch();
     const { store, actions, selectors } = useEntityTools(entityKey);

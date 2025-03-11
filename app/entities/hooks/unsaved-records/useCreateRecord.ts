@@ -1,4 +1,3 @@
-// useCreateRecord.ts
 import { useAppDispatch, useEntityToasts, useEntityTools } from '@/lib/redux';
 import { EntityKeys, MatrxRecordId } from '@/types';
 import { callbackManager } from '@/utils/callbackManager';
@@ -12,6 +11,7 @@ interface UseCreateRecordOptions {
 
 interface CreateRecordBaseResult {
     createRecord: (matrxRecordId: MatrxRecordId) => Promise<void>;
+    createRecordWithCallbackId: (matrxRecordId: MatrxRecordId) => Promise<string>;
 }
 
 interface CreateRecordWithCallbackResult extends CreateRecordBaseResult {
@@ -25,13 +25,12 @@ export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecord
     const { actions, selectors, store } = useEntityTools(entityKey);
     const entityToasts = useEntityToasts(entityKey);
     const [currentCallbackId, setCurrentCallbackId] = useState<string | null>(null);
-
+    
     const createRecord = useCallback(
         (matrxRecordId: MatrxRecordId): Promise<void> => {
             return new Promise<void>((resolve) => {
                 const createPayload = selectors.selectCreatePayload(store.getState(), matrxRecordId);
                 dispatch(actions.addPendingOperation(matrxRecordId));
-
                 const callbackId = callbackManager.register(({ success, error }) => {
                     dispatch(actions.removePendingOperation(matrxRecordId));
                     if (success) {
@@ -43,12 +42,10 @@ export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecord
                     }
                     resolve();
                 });
-
                 // Store callbackId if requested
                 if (options?.returnCallbackId) {
                     setCurrentCallbackId(callbackId);
                 }
-
                 dispatch(
                     actions.createRecord({
                         ...createPayload,
@@ -59,11 +56,46 @@ export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecord
         },
         [dispatch, actions, selectors, entityToasts, store, entityKey, options]
     );
-
+    
+    // New method that returns the callback ID directly
+    const createRecordWithCallbackId = useCallback(
+        (matrxRecordId: MatrxRecordId): Promise<string> => {
+            return new Promise<string>((resolve) => {
+                const createPayload = selectors.selectCreatePayload(store.getState(), matrxRecordId);
+                dispatch(actions.addPendingOperation(matrxRecordId));
+                const callbackId = callbackManager.register(({ success, error }) => {
+                    dispatch(actions.removePendingOperation(matrxRecordId));
+                    if (success) {
+                        entityToasts.handleCreateSuccess();
+                        options?.onSuccess?.();
+                    } else {
+                        entityToasts.handleError(error, 'create');
+                        options?.onError?.(error);
+                    }
+                });
+                
+                // Store callbackId if requested by the original options
+                if (options?.returnCallbackId) {
+                    setCurrentCallbackId(callbackId);
+                }
+                
+                dispatch(
+                    actions.createRecord({
+                        ...createPayload,
+                        callbackId,
+                    })
+                );
+                
+                // Return the callback ID immediately
+                resolve(callbackId);
+            });
+        },
+        [dispatch, actions, selectors, entityToasts, store, entityKey, options]
+    );
+    
     // Return different shapes based on options
     if (options?.returnCallbackId) {
-        return { createRecord, callbackId: currentCallbackId };
+        return { createRecord, createRecordWithCallbackId, callbackId: currentCallbackId };
     }
-
-    return { createRecord };
+    return { createRecord, createRecordWithCallbackId };
 };

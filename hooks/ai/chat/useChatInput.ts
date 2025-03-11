@@ -1,71 +1,52 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { MatrxRecordId } from "@/types";
 import { useChatStorage } from "@/hooks/ai/chat/useChatStorage";
+import { ChatInputSettings } from "@/types/chat/chat.types";
+import { useConversationMessages } from "./useConversationMessages";
 
-// Types for chat input settings
-export interface ChatInputSettings {
-    modelKey: MatrxRecordId | null;
-    searchEnabled: boolean;
-    toolsEnabled: boolean;
-    uploadedFiles: File[];
-    mode: "general" | "research" | "brainstorm" | "analyze" | "images" | "code";
-    // Future settings will be added here
+interface UseChatInputProps {
+    initialModelKey?: MatrxRecordId;
+    mainChatHook: ReturnType<typeof useConversationMessages>;
 }
 
-export function useChatInput(initialModelKey?: MatrxRecordId) {
+export function useChatInput({ initialModelKey, mainChatHook }: UseChatInputProps) {
     // Get storage functionality
     const { lastPrompt, selectedModelKey, isLoading, updatePrompt, clearPrompt, updateModelSelection } = useChatStorage();
+    const {conversationCrud, messageCrud} = mainChatHook;
+    const {updateCurrentModel, updateCurrentMode} = conversationCrud;
+    const {updateImageUrl, updateBlobUrl} = messageCrud;
 
     // Chat input state
     const [message, setMessage] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [conversationId, setConversationId] = useState<string | null>(null);
-
-    // Use ref to track whether we've initialized from storage
-    const initialized = useRef(false);
 
     // Input settings state
     const [settings, setSettings] = useState<ChatInputSettings>({
-        modelKey: null, // Start with null, we'll set this after initialization
+        modelKey: null,
         searchEnabled: false,
         toolsEnabled: false,
         uploadedFiles: [],
         mode: "general",
     });
 
-    // Initialize message from storage - only once
+    // Storage initialization
+    const initialized = useRef(false);
     useEffect(() => {
-        if (lastPrompt && !initialized.current) {
-            setMessage(lastPrompt);
-        }
-    }, [lastPrompt]);
-
-    // Initialize model from storage or props - only once when data is available
-    useEffect(() => {
-        // Only run this effect if we haven't initialized and we have the necessary data
         if (!initialized.current && !isLoading) {
-            let modelToUse: MatrxRecordId | null = null;
+            if (lastPrompt) setMessage(lastPrompt);
 
-            // First priority: use model from storage
-            if (selectedModelKey) {
-                modelToUse = selectedModelKey;
-            }
-            // Second priority: use initial model from props
-            else if (initialModelKey) {
-                modelToUse = initialModelKey;
-                // Also save this to storage
-                updateModelSelection(initialModelKey);
-            }
-
-            // Update settings with the selected model
+            // Set model from storage or props
+            let modelToUse = selectedModelKey || initialModelKey || null;
             if (modelToUse) {
                 setSettings((prev) => ({ ...prev, modelKey: modelToUse }));
+                if (initialModelKey && !selectedModelKey) {
+                    updateModelSelection(initialModelKey);
+                }
             }
 
-            // Mark as initialized to prevent further updates
             initialized.current = true;
         }
-    }, [selectedModelKey, initialModelKey, isLoading, updateModelSelection]);
+    }, [lastPrompt, selectedModelKey, initialModelKey, isLoading, updateModelSelection]);
 
     // Handle message changes
     const updateMessage = useCallback(
@@ -76,99 +57,75 @@ export function useChatInput(initialModelKey?: MatrxRecordId) {
         [updatePrompt]
     );
 
-    // Handle settings changes - avoiding dependency on updateModelSelection
-    const updateSettings = useCallback((updates: Partial<ChatInputSettings>) => {
-        setSettings((prev) => {
-            const newSettings = { ...prev, ...updates };
+    // Handle settings changes
+    const updateSettings = useCallback(
+        (updates: Partial<ChatInputSettings>) => {
+            setSettings((prev) => {
+                const newSettings = { ...prev, ...updates };
+                if (updates.modelKey && updates.modelKey !== prev.modelKey) {
+                    updateModelSelection(updates.modelKey);
+                }
+                return newSettings;
+            });
+        },
+        [updateModelSelection]
+    );
 
-            // If model has changed, update in storage
-            if (updates.modelKey && updates.modelKey !== prev.modelKey) {
-                // Call directly, don't add as dependency
-                updateModelSelection(updates.modelKey);
-            }
-
-            return newSettings;
-        });
-    }, []); // No dependencies to avoid cycles
-
-    // Create a new conversation
-    const createConversation = useCallback((id: string) => {
-        setConversationId(id);
-    }, []);
-
-    // Build the submission payload
-    const buildSubmissionPayload = useCallback(() => {
-        return {
-            conversationId: conversationId || "new",
-            message,
-            modelKey: settings.modelKey,
-            searchEnabled: settings.searchEnabled,
-            toolsEnabled: settings.toolsEnabled,
-            files: settings.uploadedFiles,
-            mode: settings.mode,
-        };
-    }, [conversationId, message, settings]);
-
-    // Handle message submission
+    // Create and submit message
     const submitMessage = useCallback(
-        async (onSubmit: (payload: any) => Promise<void>) => {
-            if (!message || message.trim() === "" || isSubmitting) {
-                return false;
-            }
+        async (displayOrder: number, systemOrder: number) => {
+            if (!message.trim() || isSubmitting) return false;
 
             setIsSubmitting(true);
-
             try {
-                // Build payload
-                const payload = buildSubmissionPayload();
+                // Determine message type based on attachments
+                const hasFiles = settings.uploadedFiles.length > 0;
+                const type = hasFiles ? "mixed" : "text";
 
-                // Submit via provided callback
-                await onSubmit(payload);
+                // Create metadata from files
+                const metadata = hasFiles
+                    ? {
+                          files: settings.uploadedFiles.map((file) => ({
+                              name: file.name,
+                              size: file.size,
+                              type: file.type,
+                          })),
+                      }
+                    : {};
 
-                // Clear message and storage after successful submission
+                // Create the message using the messageHook
+                const messageId = messageCrud.createMessage({
+                    content: message,
+                    displayOrder,
+                    systemOrder,
+                    type,
+                    metadata,
+                });
+
+                if (!messageId) return false;
+
+                // Clear input state after successful submission
                 setMessage("");
                 await clearPrompt();
+                setSettings((prev) => ({ ...prev, uploadedFiles: [] }));
 
                 return true;
             } catch (error) {
-                console.error("Error submitting message:", error);
+                console.error("Error creating message:", error);
                 return false;
             } finally {
                 setIsSubmitting(false);
             }
         },
-        [message, isSubmitting, buildSubmissionPayload, clearPrompt]
+        [message, isSubmitting, settings.uploadedFiles, messageCrud, clearPrompt]
     );
 
-    // Reset all input state
-    const resetInput = useCallback(async () => {
-        setMessage("");
-        await clearPrompt();
-        setSettings({
-            modelKey: initialModelKey || null,
-            searchEnabled: false,
-            toolsEnabled: false,
-            uploadedFiles: [],
-            mode: "general",
-        });
-    }, [clearPrompt, initialModelKey]);
-
     return {
-        // State
         message,
         settings,
         isSubmitting,
-        isLoading,
-        conversationId,
-
-        // Actions
         updateMessage,
         updateSettings,
         submitMessage,
-        resetInput,
-        createConversation,
-
-        // Helpers
-        buildSubmissionPayload,
     };
 }

@@ -244,7 +244,7 @@ export type AppletDataOptional = Expand<EntityDataOptional<"applet">>;
 export type AppletRecordWithKey = Expand<EntityDataWithKey<"applet">>;
 export type AppletProcessed = Expand<ProcessedEntityData<"applet">>;
 export type AppletData = Expand<EntityDataMixed<"applet">>;
-export type AppletState = EntityStateType<"applet">;
+type AppletState = EntityStateType<"applet">;
 
 export type ArgType = AutomationEntity<"arg">;
 export type ArgDataRequired = Expand<EntityData<"arg">>;

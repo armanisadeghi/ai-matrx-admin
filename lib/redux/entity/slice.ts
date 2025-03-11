@@ -411,7 +411,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                     initialData: Partial<EntityData<TEntity>>;
                 }>
             ) => {
-                entityLogger.log('info', 'startCreateWithInitialData Action Payload: ', action.payload);
+                entityLogger.log('debug', 'startCreateWithInitialData Action Payload: ', action.payload);
                 const { tempId, initialData } = action.payload;
                 setLoading(state, 'CREATE', true);
             
@@ -423,8 +423,8 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 
                 state.flags.hasUnsavedChanges = true;
                 state.flags.operationMode = 'create';
-                entityLogger.log('info', 'startCreateWithInitialData Unsaved Record: ', state.unsavedRecords[tempId]);
-                entityLogger.log('info', 'All Unsaved Records: ', state.unsavedRecords);
+                entityLogger.log('debug', 'startCreateWithInitialData Unsaved Record: ', state.unsavedRecords[tempId]);
+                entityLogger.log('debug', 'All Unsaved Records: ', state.unsavedRecords);
             },
 
             startBatchRecordCreation: (
@@ -609,11 +609,11 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                 }>
             ) => {
                 const { recordId, field, value } = action.payload;
-                entityLogger.log('info', 'updateUnsavedField', { recordId, field, value });
+                entityLogger.log('debug', 'updateUnsavedField', { recordId, field, value });
                 const existingRecord = state.unsavedRecords[recordId];
-                entityLogger.log('info', 'existingRecord', existingRecord);
+                entityLogger.log('debug', 'existingRecord', existingRecord);
                 if (existingRecord?.[field] !== value) {
-                    entityLogger.log('info', 'updating unsaved record');
+                    entityLogger.log('debug', 'updating unsaved record');
                     state.unsavedRecords[recordId] = {
                         ...existingRecord,
                         [field]: value,
@@ -625,7 +625,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
                         }
                     }
                 }
-                console.log("Record State After Update: ", state.unsavedRecords[recordId]);
+                entityLogger.log('debug',"Record State After Update: ", state.unsavedRecords[recordId]);
             },
             updateUnsavedFields: (
                 state: EntityState<TEntity>,

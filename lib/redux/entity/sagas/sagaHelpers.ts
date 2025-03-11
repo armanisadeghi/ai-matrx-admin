@@ -118,7 +118,7 @@ export function* withFullConversion<TEntity extends EntityKeys>(
     action: PayloadAction<any>,
     successAction?: (payload: any) => PayloadAction<any>
 ) {
-    const DEBUG_LEVEL = 'info';
+    const DEBUG_LEVEL = 'debug';
     const entityLogger = EntityLogger.createLoggerWithDefaults('WITH FULL CONVERSION', entityKey);
     const payload = action.payload;
     entityLogger.log(DEBUG_LEVEL, 'Starting with: ', payload);
@@ -257,7 +257,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('WITH FULL RELATION CONVERSION', entityKey);
     const payload = action.payload;
-    const DEBUG_LEVEL = 'info';
+    const DEBUG_LEVEL = 'debug';
 
     entityLogger.log(DEBUG_LEVEL, 'Starting with payload:', payload);
 
