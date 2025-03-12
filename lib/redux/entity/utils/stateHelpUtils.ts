@@ -197,6 +197,7 @@ export const removeFromUnsavedRecords = <TEntity extends EntityKeys>(state: Enti
     if (state.unsavedRecords[recordKey]) {
         delete state.unsavedRecords[recordKey];
         utilsLogger.log('debug', 'Removed record from unsaved', { recordKey });
+        utilsLogger.log('debug', '--- Unsaved Records After Removal: ', state.unsavedRecords);
         checkAndUpdateUnsavedChanges(state);
     }
 };

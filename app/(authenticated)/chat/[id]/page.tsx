@@ -15,6 +15,10 @@ function ConversationViewFallback() {
   );
 }
 
+const DEFAULT_MODEL_ID = "49848d52-9cc8-4ce4-bacb-32aa2201cd10";
+const DEFAULT_MODE = "general" as ChatMode;
+
+
 export default async function Page({ 
   params,
   searchParams 
@@ -30,15 +34,15 @@ export default async function Page({
   const conversationId = resolvedParams.id;
   
   // Extract model and mode from search params
-  const modelParam = resolvedSearchParams.model;
-  const modeParam = resolvedSearchParams.mode;
+  const modelId = resolvedSearchParams.model as string || DEFAULT_MODEL_ID as string;
+  const mode = resolvedSearchParams.mode as ChatMode || DEFAULT_MODE as ChatMode;
   
   return (
     <Suspense fallback={<ConversationViewFallback />}>
       <ChatConversationView 
         conversationId={conversationId}
-        initialModelKey={typeof modelParam === 'string' ? modelParam : undefined}
-        initialMode={typeof modeParam === 'string' ? modeParam as ChatMode : undefined}
+        initialModelId={modelId}
+        initialMode={mode}
       />
     </Suspense>
   );

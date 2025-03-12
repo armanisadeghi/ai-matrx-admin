@@ -2,8 +2,10 @@
 import WelcomeScreen from "@/features/chat/ui-parts/layout/WelcomeScreen";
 import { Suspense } from 'react';
 import { Metadata } from 'next';
+import { ChatMode } from "@/types/chat/chat.types";
 
-const DEFAULT_MODEL_ID = "id:49848d52-9cc8-4ce4-bacb-32aa2201cd10";
+const DEFAULT_MODEL_ID = "49848d52-9cc8-4ce4-bacb-32aa2201cd10" as string;
+const DEFAULT_MODE = "general" as ChatMode;
 
 export const metadata: Metadata = {
   title: 'Matrx AI. Chat Reimagined.',
@@ -36,17 +38,15 @@ export default async function ChatPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   // First await the searchParams
-  const resolvedParams = await searchParams;
+  const resolvedSearchParams = await searchParams;
   
   // Now we can safely access properties
-  const modelParam = resolvedParams.model;
-  const modelId = typeof modelParam === 'string' 
-    ? modelParam 
-    : DEFAULT_MODEL_ID;
+  const modelId = resolvedSearchParams.model as string || DEFAULT_MODEL_ID as string;
+  const mode = resolvedSearchParams.mode as ChatMode || DEFAULT_MODE as ChatMode;
 
   return (
     <Suspense fallback={<WelcomeScreenFallback />}>
-      <WelcomeScreen initialModelKey={modelId} />
+      <WelcomeScreen initialModelId={modelId} initialMode={mode} />
     </Suspense>
   );
 }

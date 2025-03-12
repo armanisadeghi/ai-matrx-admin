@@ -2,7 +2,7 @@ import { useOneRelationship } from "@/lib/redux/entity/hooks/useOneRelationship"
 import { ConversationData } from "@/types/AutomationSchemaTypes";
 import { MatrxRecordId } from "@/types/entityTypes";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Conversation, Message, MessageRole } from "@/types/chat/chat.types";
+import { ChatMode, Conversation, Message, MessageRole } from "@/types/chat/chat.types";
 import { useConversationMessageCrud } from "@/app/entities/hooks/crud/by-relationships/useConversationMessageCrud";
 
 // Special identifier for a new conversation being created
@@ -10,10 +10,12 @@ const NEW_CONVERSATION_ID = "new-conversation";
 
 type MessageWithKey = Message & { matrxRecordId: MatrxRecordId };
 
-interface CreateNewConversationParams {
+export interface CreateNewConversationParams {
   label?: string;
+  currentModel?: string;
+  currentMode?: ChatMode;
   initialMessage?: string;
-  conversationData?: Partial<Conversation>;
+  conversationData?: any;
   messageData?: Partial<Message>;
 }
 
@@ -124,20 +126,22 @@ export function useConversationMessages() {
     // Create a new conversation and its first message
     const createNewConversation = useCallback(({
         label = "New Conversation", 
-        initialMessage = "",
+        currentModel = undefined,
+        currentMode = "general",
         conversationData = {},
+        initialMessage = "",
         messageData = {}
     }: CreateNewConversationParams = {}) => {
         setIsCreatingNewConversation(true);
         setIsComposingNewMessage(true);
         
-        // Prepare conversation data with label
         const fullConversationData = {
             label,
+            currentModel,
+            currentMode,
             ...conversationData
         };
         
-        // Create both records
         const { conversationId, messageId } = createConversationAndMessage(
             fullConversationData,
             initialMessage,
@@ -146,7 +150,7 @@ export function useConversationMessages() {
         
         return { conversationId, messageId };
     }, [createConversationAndMessage]);
-    
+        
     // Save a newly created conversation and its message
     const saveNewConversation = useCallback(async (): Promise<SaveNewConversationResult> => {
         if (!isCreatingNewConversation) {

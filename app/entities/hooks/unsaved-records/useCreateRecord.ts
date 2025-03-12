@@ -7,6 +7,8 @@ interface UseCreateRecordOptions {
     onSuccess?: () => void;
     onError?: (error: Error) => void;
     returnCallbackId?: boolean;
+    showSuccessToast?: boolean;
+    showErrorToast?: boolean;
 }
 
 interface CreateRecordBaseResult {
@@ -26,6 +28,10 @@ export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecord
     const entityToasts = useEntityToasts(entityKey);
     const [currentCallbackId, setCurrentCallbackId] = useState<string | null>(null);
     
+    // Default values for new toast options
+    const showSuccessToast = options?.showSuccessToast !== false; // Default to true
+    const showErrorToast = options?.showErrorToast !== false; // Default to true
+    
     const createRecord = useCallback(
         (matrxRecordId: MatrxRecordId): Promise<void> => {
             return new Promise<void>((resolve) => {
@@ -34,10 +40,14 @@ export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecord
                 const callbackId = callbackManager.register(({ success, error }) => {
                     dispatch(actions.removePendingOperation(matrxRecordId));
                     if (success) {
-                        entityToasts.handleCreateSuccess();
+                        if (showSuccessToast) {
+                            entityToasts.handleCreateSuccess();
+                        }
                         options?.onSuccess?.();
                     } else {
-                        entityToasts.handleError(error, 'create');
+                        if (showErrorToast) {
+                            entityToasts.handleError(error, 'create');
+                        }
                         options?.onError?.(error);
                     }
                     resolve();
@@ -54,7 +64,7 @@ export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecord
                 );
             });
         },
-        [dispatch, actions, selectors, entityToasts, store, entityKey, options]
+        [dispatch, actions, selectors, entityToasts, store, entityKey, options, showSuccessToast, showErrorToast]
     );
     
     // New method that returns the callback ID directly
@@ -66,10 +76,14 @@ export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecord
                 const callbackId = callbackManager.register(({ success, error }) => {
                     dispatch(actions.removePendingOperation(matrxRecordId));
                     if (success) {
-                        entityToasts.handleCreateSuccess();
+                        if (showSuccessToast) {
+                            entityToasts.handleCreateSuccess();
+                        }
                         options?.onSuccess?.();
                     } else {
-                        entityToasts.handleError(error, 'create');
+                        if (showErrorToast) {
+                            entityToasts.handleError(error, 'create');
+                        }
                         options?.onError?.(error);
                     }
                 });
@@ -90,7 +104,7 @@ export const useCreateRecord = (entityKey: EntityKeys, options?: UseCreateRecord
                 resolve(callbackId);
             });
         },
-        [dispatch, actions, selectors, entityToasts, store, entityKey, options]
+        [dispatch, actions, selectors, entityToasts, store, entityKey, options, showSuccessToast, showErrorToast]
     );
     
     // Return different shapes based on options

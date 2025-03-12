@@ -1,9 +1,6 @@
 import { MatrxRecordId } from "@/types";
 
-
-
 export type ChatMode = "general" | "research" | "brainstorm" | "analyze" | "images" | "code";
-
 
 export interface ChatInputSettings {
     modelKey: MatrxRecordId | null;
@@ -16,7 +13,17 @@ export interface ChatInputSettings {
 
 export type MessageRole = "assistant" | "system" | "tool" | "user" | string | undefined;
 
-export type MessageType = "base64_image" | "blob" | "image_url" | "json_object" | "mixed" | "other" | "text" | "tool_result" | string | undefined;
+export type MessageType =
+    | "base64_image"
+    | "blob"
+    | "image_url"
+    | "json_object"
+    | "mixed"
+    | "other"
+    | "text"
+    | "tool_result"
+    | string
+    | undefined;
 
 export type MessageMetadata = {
     image_url?: string;
@@ -43,15 +50,14 @@ export type Message = {
     metadata?: MessageMetadata;
     userId?: string;
     isPublic?: boolean;
-}
-
+};
 
 export type ConversationMetadata = {
-    currentModel: MatrxRecordId | undefined;
-    currentEndpoint: MatrxRecordId | undefined;
+    currentModel: string | undefined;
+    currentEndpoint: string | undefined;
     currentMode: ChatMode;
-    concurrentRecipes: MatrxRecordId[] | null;
-    brokerValues: Record<MatrxRecordId, unknown> | null;
+    concurrentRecipes: string[] | null;
+    brokerValues: Record<string, unknown> | null;
     availableTools: string[] | null;
     ModAssistantContext: string | null;
     ModUserContext: string | null;
@@ -66,4 +72,4 @@ export type Conversation = {
     metadata?: ConversationMetadata;
     label?: string;
     isPublic?: boolean;
-}
+};

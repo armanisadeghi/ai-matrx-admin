@@ -1,6 +1,5 @@
 import { useMemo, useCallback } from "react";
 import useCreateUpdateRecord from "@/app/entities/hooks/crud/useCreateUpdateRecord";
-import { MatrxRecordId } from "@/types/entityTypes";
 import { getPermanentId, useEntityTools } from "@/lib/redux";
 import { useDispatch } from "react-redux";
 import { v4 as uuidv4 } from 'uuid';

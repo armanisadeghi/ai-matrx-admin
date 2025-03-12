@@ -26,6 +26,8 @@ export interface SaveCallbackResult {
 interface UseCreateUpdateRecordProps {
     entityKey: EntityKeys;
     returnCallbackId?: boolean;
+    showSuccessToast?: boolean;
+    showErrorToast?: boolean;
 }
 
 export interface UseCreateUpdateRecordResult {
@@ -42,7 +44,7 @@ export interface UseCreateUpdateRecordResult {
     callbackId?: string | null; // Optional property, only defined when returnCallbackId is true
 }
 
-export const useCreateUpdateRecord = ({ entityKey, returnCallbackId = false }: UseCreateUpdateRecordProps): UseCreateUpdateRecordResult => {
+export const useCreateUpdateRecord = ({ entityKey, returnCallbackId = false, showSuccessToast = true, showErrorToast = true }: UseCreateUpdateRecordProps): UseCreateUpdateRecordResult => {
     const [currentRecordId, setCurrentRecordId] = useState<MatrxRecordId | null>(null);
     const [idField, setIdField] = useState<string | null>(null);
     const [idValue, setIdValue] = useState<string | null>(null);
@@ -52,7 +54,7 @@ export const useCreateUpdateRecord = ({ entityKey, returnCallbackId = false }: U
     const { updateField: originalUpdateField, updateFields: originalUpdateFields } = useUpdateRecordFields(entityKey, currentRecordId);
 
     // Pass the returnCallbackId option to useCreateRecord when requested
-    const createRecordResult = useCreateRecord(entityKey, { returnCallbackId });
+    const createRecordResult = useCreateRecord(entityKey, { returnCallbackId, showSuccessToast, showErrorToast });
 
     // Extract methods and properties from createRecordResult
     const createRecord = createRecordResult.createRecord;

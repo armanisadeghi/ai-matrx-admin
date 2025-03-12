@@ -9,7 +9,6 @@ export default function FileManagerPage() {
         <div className="min-h-screen bg-background">
             <FileManager
                 defaultBucket="any-file"
-                showDebugger={true}
             />
         </div>
     );

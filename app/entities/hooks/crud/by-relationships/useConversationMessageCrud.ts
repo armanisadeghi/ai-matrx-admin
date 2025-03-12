@@ -43,9 +43,6 @@ export const useConversationMessageCrud = (): UseConversationMessageCrudReturn =
             additionalMessageData: Partial<Message> = {}
         ) => {
             const conversationId = conversationCrud.createConversation(conversationData);
-            
-            // Then create the message with standard values for first message
-            // and the conversationId from the newly created conversation
             const messageId = messageCrud.createMessage({
                 conversationId: conversationId || undefined,
                 content: messageContent,
@@ -63,10 +60,8 @@ export const useConversationMessageCrud = (): UseConversationMessageCrudReturn =
         [conversationCrud, messageCrud]
     );
     
-    // Save both entities in the correct sequence
     const saveConversationAndMessage = useCallback(async (): Promise<SaveConversationAndMessageResult> => {
         try {
-            // First save the conversation
             const conversationResult = await conversationCrud.saveConversation();
             
             if (!conversationResult.success || !conversationResult.id) {
@@ -77,15 +72,8 @@ export const useConversationMessageCrud = (): UseConversationMessageCrudReturn =
                 };
             }
             
-            // Get the saved conversation ID
             const savedConversationId = conversationResult.id;
-            
-            // We've already set the conversationId when creating the message,
-            // but to be absolutely safe, let's make sure it's set to the actual saved ID
-            // in case there was any change during the save process
             messageCrud.updateConversationId(savedConversationId);
-            
-            // Now save the message
             const messageResult = await messageCrud.saveMessage();
             
             return {

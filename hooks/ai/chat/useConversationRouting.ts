@@ -4,24 +4,22 @@ import { MatrxRecordId } from "@/types";
 import { ChatMode } from "@/types/chat/chat.types";
 
 interface UseConversationRoutingProps {
-    initialModelKey?: MatrxRecordId;
+    initialModelId?: string;
     initialMode?: ChatMode;
-    defaultMode?: ChatMode;
 }
 
 export const useConversationRouting = ({ 
-    initialModelKey, 
-    initialMode, 
-    defaultMode = "general",
+    initialModelId, 
+    initialMode = "general",
 }: UseConversationRoutingProps) => {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     
-    const paramsModelKey = (searchParams.get("model") as MatrxRecordId) || initialModelKey;
-    const paramsMode = (searchParams.get("mode") as ChatMode) || initialMode || defaultMode;
+    const paramsModelId = (searchParams.get("model") as string) || initialModelId;
+    const paramsMode = (searchParams.get("mode") as ChatMode) || initialMode;
     
-    const [modelKey, setModelKey] = useState<MatrxRecordId>(paramsModelKey);
+    const [currentModelId, setCurrentModelId] = useState<string>(paramsModelId);
     const [currentMode, setCurrentMode] = useState<ChatMode | undefined>(paramsMode);
     
     useEffect(() => {
@@ -31,10 +29,10 @@ export const useConversationRouting = ({
     }, [paramsMode]);
     
     useEffect(() => {
-        if (paramsModelKey) {
-            setModelKey(paramsModelKey);
+        if (paramsModelId) {
+            setCurrentModelId(paramsModelId);
         }
-    }, [paramsModelKey]);
+    }, [paramsModelId]);
     
     // Function to update search params
     const createQueryString = useCallback(
@@ -55,18 +53,18 @@ export const useConversationRouting = ({
     // Update URL when model or mode changes without navigation
     useEffect(() => {
         const queryString = createQueryString({
-            model: modelKey,
+            model: currentModelId,
             mode: currentMode,
         });
         // Update the URL without causing a navigation
         router.replace(`${pathname}?${queryString}`, { scroll: false });
-    }, [modelKey, currentMode, pathname, router, createQueryString]);
+    }, [currentModelId, currentMode, pathname, router, createQueryString]);
     
     // Navigate to a specific conversation while maintaining parameters
     const navigateToConversation = useCallback(
         (conversationId: string, overrides?: { model?: MatrxRecordId; mode?: ChatMode }) => {
             // Get current or overridden values
-            const nextModel = overrides?.model || modelKey;
+            const nextModel = overrides?.model || currentModelId;
             const nextMode = overrides?.mode || currentMode;
             
             // Create query string with current or overridden params
@@ -78,15 +76,14 @@ export const useConversationRouting = ({
             // Navigate to the new conversation
             router.push(`/chat/${conversationId}?${queryString}`);
         },
-        [router, createQueryString, modelKey, currentMode]
+        [router, createQueryString, currentModelId, currentMode]
     );
     
     return {
-        modelKey,
+        currentModelId,
         currentMode,
-        setModelKey,
+        setCurrentModelId,
         setCurrentMode,
-        createQueryString,
         navigateToConversation,
     };
 };

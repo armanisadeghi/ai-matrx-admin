@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect, useMemo } from "react";
 import useCreateUpdateRecord from "../useCreateUpdateRecord";
 import { Message, MessageRole, MessageType, MessageMetadata } from "@/types/chat/chat.types";
-
+import { getPermanentId } from "@/lib/redux";
 interface UseMessageProps {
     conversationId?: string;
 }
@@ -44,7 +44,7 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}): UseMes
         saveAsync,
         currentRecordId,
         recordDataWithDefaults,
-    } = useCreateUpdateRecord({ entityKey: "message" });
+    } = useCreateUpdateRecord({ entityKey: "message", showSuccessToast: false, showErrorToast: false });
 
     const messageWithDefaults = recordDataWithDefaults as Message | null;
 
@@ -71,7 +71,8 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}): UseMes
                 ...initialData,
             };
 
-            const messageId = start(baseData, "id");
+            const tempRecordKey = start(baseData, "id");
+            const messageId = getPermanentId(tempRecordKey);
             return messageId;
         },
         [start, conversationId]
