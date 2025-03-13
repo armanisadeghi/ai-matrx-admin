@@ -1,7 +1,7 @@
 // File: app/(authenticated)/chat/[id]/page.tsx
 import ChatConversationView from "@/features/chat/ui-parts/layout/ChatConversationView";
 import { Suspense } from 'react';
-import { ChatInputSettings, ChatMode } from "@/types/chat/chat.types";
+import { ChatMode } from "@/types/chat/chat.types";
 
 // Creating a loading spinner for the conversation view
 function ConversationViewFallback() {

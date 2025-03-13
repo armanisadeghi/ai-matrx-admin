@@ -12,7 +12,7 @@ import {Switch} from "@/components/ui/switch";
 import {DatePicker} from "@/components/ui/date-picker";
 import {TimePicker} from "@/components/ui/time-picker";
 import {FullEditableJsonViewer} from "@/components/ui/JsonComponents";
-import {FileUpload} from "@/components/ui/file-upload";
+import {FileUpload} from "@/components/ui/file-upload/file-upload";
 import ColorPicker from "@/components/ui/color-picker";
 import ImageDisplay from "@/components/ui/image-display";
 import StarRating from "@/components/ui/star-rating";

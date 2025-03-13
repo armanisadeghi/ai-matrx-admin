@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import ResponseColumn from "@/features/chat/ui-parts/response/ResponseColumn";
-import PromptInput from "@/features/chat/ui-parts/prompt-input/PromptInput";
 import { MatrxRecordId } from "@/types";
 import { ChatMode } from "@/types/chat/chat.types";
 import { useConversationWithRouting } from "@/hooks/ai/chat/useConversationWithRouting";
 import InputPlaceholder from "../prompt-input/InputPlaceholder";
+import PromptInputContainer from "../prompt-input/PromptInputContainer";
 
 const DEFAULT_MODEL_ID = "49848d52-9cc8-4ce4-bacb-32aa2201cd10";
 const DEFAULT_MODE = "general" as ChatMode;
@@ -66,10 +66,7 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
         <div className="p-4">
           <div className="max-w-3xl mx-auto border border-zinc-100 dark:border-zinc-700 rounded-3xl">
             {isConversationReady ? (
-              <PromptInput 
-                chatHook={chatHook} 
-                disabled={!isConversationReady} 
-              />
+              <PromptInputContainer disabled={!isConversationReady} chatHook={chatHook} />
             ) : (
               <InputPlaceholder />
             )}

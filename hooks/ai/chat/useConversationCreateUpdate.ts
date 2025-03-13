@@ -13,7 +13,7 @@ const NEW_CONVERSATION_DATA: Partial<Conversation> = {
         currentMode: "general",
         concurrentRecipes: [],
         brokerValues: {},
-        availableTools: [],
+        available_tools: [],
         ModAssistantContext: "",
         ModUserContext: "",
     },
@@ -128,28 +128,28 @@ export const useConversationCreateUpdate = () => {
      * Update the available tools for the conversation
      */
     const updateAvailableTools = useCallback((tools: string[]) => {
-        updateField('metadata.availableTools', tools);
+        updateField('metadata.available_tools', tools);
     }, [updateField]);
 
     /**
      * Add a tool to available tools
      */
     const addTool = useCallback((tool: string) => {
-        const currentTools = [...(conversation.metadata?.availableTools || [])];
+        const currentTools = [...(conversation.metadata?.available_tools || [])];
         if (!currentTools.includes(tool)) {
             currentTools.push(tool);
-            updateField('metadata.availableTools', currentTools);
+            updateField('metadata.available_tools', currentTools);
         }
-    }, [updateField, conversation.metadata?.availableTools]);
+    }, [updateField, conversation.metadata?.available_tools]);
 
     /**
      * Remove a tool from available tools
      */
     const removeTool = useCallback((tool: string) => {
-        const currentTools = [...(conversation.metadata?.availableTools || [])];
+        const currentTools = [...(conversation.metadata?.available_tools || [])];
         const newTools = currentTools.filter(t => t !== tool);
-        updateField('metadata.availableTools', newTools);
-    }, [updateField, conversation.metadata?.availableTools]);
+        updateField('metadata.available_tools', newTools);
+    }, [updateField, conversation.metadata?.available_tools]);
 
     /**
      * Update concurrent recipes
@@ -219,7 +219,7 @@ export const useConversationCreateUpdate = () => {
      */
     const updateMetadataField = useCallback((key: string, value: unknown) => {
         if (key === 'brokerValues' || key === 'concurrentRecipes' || 
-            key === 'availableTools' || key === 'currentModel' || 
+            key === 'available_tools' || key === 'currentModel' || 
             key === 'currentEndpoint' || key === 'ModAssistantContext' || 
             key === 'ModUserContext') {
             console.warn(`Use specific method to update ${key} rather than updateMetadataField`);

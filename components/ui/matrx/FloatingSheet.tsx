@@ -1,4 +1,3 @@
-// FloatingSheet.tsx
 'use client';
 import React, { useState, useEffect, ReactNode } from 'react';
 
@@ -38,6 +37,17 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
   className = "",
   contentClassName = "",
 }) => {
+  // Create a state to track if the component has been initially rendered
+  // This helps with proper DOM mounting even when isOpen starts as false
+  const [hasRendered, setHasRendered] = useState(false);
+
+  useEffect(() => {
+    // Mark as rendered after the first mount
+    if (!hasRendered) {
+      setHasRendered(true);
+    }
+  }, []);
+
   // Handle body scroll locking when sheet is open
   useEffect(() => {
     if (isOpen) {
@@ -95,7 +105,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
       "3xl": "max-h-3xl",
       "4xl": "max-h-4xl",
       full: "max-h-full",
-      auto: position === 'center' ? "max-h-[80vh]" : "max-h-[50vh]" // Default reasonable heights
+      auto: position === 'center' ? "max-h-[85vh]" : "max-h-[50vh]" // Default reasonable heights
     };
     
     return heightMap[height] || heightMap.auto;
@@ -132,7 +142,9 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
   const heightClass = getHeightClass();
   const transformClass = getTransformClass();
 
-  // Always render, but control visibility with CSS
+  // CRITICAL: We always render the sheet regardless of isOpen state
+  // This ensures state is preserved inside sheet contents
+  
   return (
     <>
       {/* Backdrop - Only shown when open */}
@@ -146,16 +158,16 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
 
       {/* Sheet - Always rendered but visibility and position controlled by CSS */}
       <div 
-        className={`fixed ${positionClasses} z-50 ${position === 'center' ? '' : 'w-full'} ${widthClass} ${heightClass} rounded-${rounded} bg-white dark:bg-slate-900 shadow-lg transform transition-all duration-300 ease-in-out ${transformClass} ${isOpen ? 'visible' : 'invisible'} ${className}`}
+        className={`fixed ${positionClasses} z-50 ${position === 'center' ? '' : 'w-full'} ${widthClass} ${heightClass} rounded-${rounded} bg-white dark:bg-slate-900 shadow-lg transform transition-all duration-300 ease-in-out ${transformClass} ${isOpen ? 'visible opacity-100' : 'invisible opacity-0'} h-full ${className}`}
         role="dialog"
-        aria-modal={isOpen ? true : false}
+        aria-modal={isOpen}
         aria-hidden={!isOpen}
         aria-labelledby="sheet-title"
       >
-        <div className={`flex ${position === 'top' || position === 'bottom' ? 'h-full' : ''} flex-col`}>
+        <div className="flex flex-col h-full">
           {/* Header - Only show if title exists or showCloseButton is true */}
           {(title || showCloseButton) && (
-            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3">
               <div>
                 {title && <h2 id="sheet-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>}
                 {description && <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>}
@@ -177,13 +189,13 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
           )}
           
           {/* Content area */}
-          <div className={`flex-1 overflow-y-auto p-6 ${contentClassName}`}>
+          <div className={`flex-1 overflow-y-auto ${contentClassName}`}>
             {children}
           </div>
           
           {/* Footer - Only render if provided */}
           {footer && (
-            <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3">
               {footer}
             </div>
           )}

@@ -15,7 +15,7 @@ import {Switch} from "@/components/ui/switch";
 import {DatePicker} from "@/components/ui/date-picker";
 import {TimePicker} from "@/components/ui/time-picker";
 import {FullEditableJsonViewer} from "@/components/ui/JsonComponents";
-import {FileUpload} from "@/components/ui/file-upload";
+import {FileUpload} from "@/components/ui/file-upload/file-upload";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ColorPicker from "@/components/ui/color-picker";

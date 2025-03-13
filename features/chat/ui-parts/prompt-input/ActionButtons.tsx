@@ -16,15 +16,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   // Use the conversation routing hook to manage the mode state
   const { currentMode, setCurrentMode } = useConversationRouting({
     initialMode,
-    defaultMode: "general"
   });
 
   // Action buttons with their corresponding modes
   const actionButtons = [
+    { label: "General", mode: "general" as const },
+    { label: "Generate Images", mode: "images" as const },
+    { label: "Generate Video", mode: "video" as const },
     { label: "Research", mode: "research" as const },
     { label: "Brainstorm", mode: "brainstorm" as const },
     { label: "Analyze Data", mode: "analyze" as const },
-    { label: "Create Images", mode: "images" as const },
     { label: "Code", mode: "code" as const }
   ];
 
@@ -53,7 +54,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
             className={buttonClasses}
             aria-pressed={isSelected}
           >
-            <span className="text-sm">{label}</span>
+            <span className="text-xs">{label}</span>
           </button>
         );
       })}

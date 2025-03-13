@@ -21,7 +21,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     });
 
     const conversationMessagesHook = useConversationMessages();
-    const { conversationCrud, createNewConversation, setActiveConversation } = conversationMessagesHook;
+    const { conversationCrud, messageCrud, createNewConversation, setActiveConversation } = conversationMessagesHook;
 
     useEffect(() => {
         if (currentConversationId) return;
@@ -94,6 +94,17 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         return result;
     }, [conversationMessagesHook, navigateToConversation]);
 
+
+    const updateChatMetadata = useCallback((metadata: any) => {
+      if (conversationMessagesHook.currentConversation) {
+        conversationCrud.updateMetadata(metadata);
+      }
+      if (conversationMessagesHook.currentMessage) {
+        messageCrud.updateMetadata(metadata);
+      }
+    }, [conversationMessagesHook.currentConversation, conversationMessagesHook.currentMessage, conversationCrud]);
+
+
     // useEffect(() => {
     //   console.log("--- DEBUG Use Conversation With Routing ---")
     //   console.log("isConversationReady", isConversationReady)
@@ -120,6 +131,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         updateModelWithKey,
         updateMode,
         updateEndpointId,
+        updateChatMetadata,
     };
 }
 

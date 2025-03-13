@@ -2,6 +2,7 @@ import { useCallback, useState, useEffect, useMemo } from "react";
 import useCreateUpdateRecord from "../useCreateUpdateRecord";
 import { Message, MessageRole, MessageType, MessageMetadata } from "@/types/chat/chat.types";
 import { getPermanentId } from "@/lib/redux";
+
 interface UseMessageProps {
     conversationId?: string;
 }
@@ -15,36 +16,12 @@ interface SaveMessageResult {
     error?: Error;
 }
 
-interface UseMessageCrudReturn {
-    message: Message | null;
-    messageId: string | null;
-    createMessage: (initialData?: Partial<Message>) => string | null;
-    updateContent: (content: string) => void;
-    updateRole: (role: MessageRole) => void;
-    updateType: (type: MessageType) => void;
-    updateMetadata: (metadata: Partial<MessageMetadata>) => void;
-    updateConversationId: (conversationId: string) => void;
-    updateImageUrl: (imageUrl: string) => void;
-    updateBlobUrl: (blobUrl: string) => void;
-    updateDisplayOrder: (order: number) => void;
-    updateSystemOrder: (order: number) => void;
-    updateIsPublic: (isPublic: boolean) => void;
-    batchUpdate: (updates: Partial<Message>) => void;
-    saveMessage: () => Promise<SaveMessageResult>;
-    resetMessage: () => void;
-    hasRequiredFields: boolean;
-    isValidMessage: boolean;
-}
-
-export const useMessageCrud = ({ conversationId }: UseMessageProps = {}): UseMessageCrudReturn => {
-    const {
-        start,
-        updateField,
-        updateFields,
-        saveAsync,
-        currentRecordId,
-        recordDataWithDefaults,
-    } = useCreateUpdateRecord({ entityKey: "message", showSuccessToast: false, showErrorToast: false });
+export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
+    const { start, updateField, updateFields, saveAsync, currentRecordId, recordDataWithDefaults } = useCreateUpdateRecord({
+        entityKey: "message",
+        showSuccessToast: false,
+        showErrorToast: false,
+    });
 
     const messageWithDefaults = recordDataWithDefaults as Message | null;
 
@@ -118,11 +95,12 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}): UseMes
         [updateField, messageWithDefaults]
     );
 
-    const updateImageUrl = useCallback(
-        (imageUrl: string) => {
+
+    const updateFiles = useCallback(
+        (files: { url: string; type: string }[]) => {
             const updatedMetadata = {
                 ...(messageWithDefaults?.metadata || {}),
-                image_url: imageUrl,
+                files: files,
             };
 
             updateFields({
@@ -133,20 +111,57 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}): UseMes
         [updateFields, messageWithDefaults]
     );
 
-    const updateBlobUrl = useCallback(
-        (blobUrl: string) => {
-            const updatedMetadata = {
-                ...(messageWithDefaults?.metadata || {}),
-                blob: blobUrl,
-            };
-
-            updateFields({
-                metadata: updatedMetadata,
-                type: "mixed" as MessageType,
-            });
+    const updateBrokerValues = useCallback(
+        (brokerValues: Record<string, unknown>) => {
+            updateField("metadata.brokerValues", brokerValues);
         },
-        [updateFields, messageWithDefaults]
+        [updateField]
     );
+
+    const updateAvailableTools = useCallback(
+        (available_tools: string[]) => {
+            const currentMetadata = messageWithDefaults?.metadata || {};
+            const updatedMetadata = {
+                ...currentMetadata,
+                available_tools: available_tools,
+            };
+            console.log("--updateAvailableTools", updatedMetadata);
+            updateField("metadata", updatedMetadata);
+        },
+        [updateField, messageWithDefaults]
+    );
+
+    const addTool = useCallback(
+        (tool: string) => {
+            updateField("metadata.available_tools", [...(messageWithDefaults?.metadata?.available_tools || []), tool]);
+        },
+        [updateField, messageWithDefaults]
+    );
+
+    const removeTool = useCallback(
+        (tool: string) => {
+            updateField(
+                "metadata.available_tools",
+                (messageWithDefaults?.metadata?.available_tools || []).filter((t) => t !== tool)
+            );
+        },
+        [updateField, messageWithDefaults]
+    );
+
+    const addBrokerValue = useCallback(
+        (key: string, value: unknown) => {
+            updateField(`metadata.brokerValues.${key}`, value);
+        },
+        [updateField]
+    );
+
+    const removeBrokerValue = useCallback(
+        (key: string) => {
+            updateField(`metadata.brokerValues.${key}`, undefined);
+        },
+        [updateField]
+    );
+
 
     const updateDisplayOrder = useCallback(
         (order: number) => {
@@ -254,8 +269,7 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}): UseMes
         updateType,
         updateMetadata,
         updateConversationId,
-        updateImageUrl,
-        updateBlobUrl,
+        updateFiles,
         updateDisplayOrder,
         updateSystemOrder,
         updateIsPublic,
@@ -264,7 +278,15 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}): UseMes
         resetMessage,
         hasRequiredFields,
         isValidMessage,
+        updateBrokerValues,
+        updateAvailableTools,
+        addTool,
+        removeTool,
+        addBrokerValue,
+        removeBrokerValue,
     };
 };
 
 export default useMessageCrud;
+
+export type UseMessageCrudReturn = ReturnType<typeof useMessageCrud>;

@@ -1,6 +1,6 @@
 import { MatrxRecordId } from "@/types";
 
-export type ChatMode = "general" | "research" | "brainstorm" | "analyze" | "images" | "code";
+export type ChatMode = "general" | "research" | "brainstorm" | "analyze" | "images" | "video" | "code";
 
 export interface ChatInputSettings {
     modelKey: MatrxRecordId | null;
@@ -28,6 +28,8 @@ export type MessageType =
 export type MessageMetadata = {
     image_url?: string;
     blob_url?: string;
+    brokerValues: Record<string, unknown> | null;
+    available_tools: string[] | null;
     base64_image?: string;
     blob?: string;
     json_object?: Record<string, unknown>;
@@ -58,7 +60,7 @@ export type ConversationMetadata = {
     currentMode: ChatMode;
     concurrentRecipes: string[] | null;
     brokerValues: Record<string, unknown> | null;
-    availableTools: string[] | null;
+    available_tools: string[] | null;
     ModAssistantContext: string | null;
     ModUserContext: string | null;
     [key: string]: unknown;

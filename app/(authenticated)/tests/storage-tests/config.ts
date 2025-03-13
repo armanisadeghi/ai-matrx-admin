@@ -6,10 +6,16 @@ import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'File Upload Wrapper',
+        path: 'file-upload-wrapper',
         relative: true,
-        description: ''
+        description: 'A wrapper for the file upload component'
+    },
+    {
+        title: 'New Basic File Upload Test',
+        path: 'new-basic-test',
+        relative: true,
+        description: 'Tryig to figure out how the system works for a basic file upload'
     },
     {
         title: 'Supabase Bucket Test 10',

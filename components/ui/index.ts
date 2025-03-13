@@ -134,7 +134,7 @@ export {TextGenerateEffect} from './text-generate-effect'
 export {WobbleCard} from './wobble-card'
 
 export {Credenza} from './added-ui/credenza-modal/credenza'
-export {FileUpload} from './file-upload'
+export {FileUpload} from './file-upload/file-upload'
 export {Spinner} from './spinner'
 export {DatePicker} from './date-picker'
 export {

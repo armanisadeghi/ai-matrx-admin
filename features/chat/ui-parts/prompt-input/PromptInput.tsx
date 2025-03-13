@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Paperclip, Search, ArrowUp, Minimize2, Maximize2, X, Mic, FileText } from "lucide-react";
-import { MultiFileUpload } from "@/components/ui/file-upload";
+import { MultiFileUpload } from "@/components/ui/file-upload/file-upload";
 import { motion } from "framer-motion";
 import { MatrxRecordId } from "@/types";
 import useChatBasics from "@/hooks/ai/chat/useChatBasics";
@@ -21,6 +21,10 @@ interface InputSettings {
     uploadedFiles: File[];
     searchEnabled: boolean;
     toolsEnabled: boolean;
+    thinkEnabled: boolean;
+    researchEnabled: boolean;
+    recipesEnabled: boolean;
+    audioEnabled: boolean;
 }
 
 interface PromptInputProps {
@@ -59,6 +63,10 @@ const PromptInput: React.FC<PromptInputProps> = ({ onMessageSent, disabled = fal
         uploadedFiles: [],
         searchEnabled: false,
         toolsEnabled: false,
+        thinkEnabled: false,
+        researchEnabled: false,
+        recipesEnabled: false,
+        audioEnabled: false,
     });
 
     // Get the current message and conversation from the hook

@@ -50,6 +50,10 @@ class FileSystemManager {
         return FileSystemManager.instance;
     }
 
+    getSupabase(): SupabaseClient {
+        return this.supabase;
+    }
+
     getLocalStorage(): LocalFileSystem {
         return this.localStorage;
     }

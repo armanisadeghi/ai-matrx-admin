@@ -57,7 +57,7 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
                 currentMode: "general",
                 concurrentRecipes: null,
                 brokerValues: null,
-                availableTools: null,
+                available_tools: null,
                 ModAssistantContext: null,
                 ModUserContext: null,
             };
@@ -69,7 +69,7 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
                 "currentMode",
                 "concurrentRecipes",
                 "brokerValues",
-                "availableTools",
+                "available_tools",
                 "ModAssistantContext",
                 "ModUserContext",
             ];
@@ -112,7 +112,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField]
     );
 
-    // Update the entire metadata object
     const updateMetadata = useCallback(
         (metadata: Partial<ConversationMetadata>) => {
             const updatedMetadata = {
@@ -184,12 +183,12 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the availableTools in metadata
+    // Update the available_tools in metadata
     const updateAvailableTools = useCallback(
         (tools: string[] | null) => {
             const updatedMetadata = {
                 ...(conversationWithDefaults?.metadata || {}),
-                availableTools: tools,
+                available_tools: tools,
             };
             updateField("metadata", updatedMetadata);
         },

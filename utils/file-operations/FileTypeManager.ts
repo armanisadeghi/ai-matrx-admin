@@ -1,5 +1,6 @@
 // utils/file-operations/file-type-manager.ts
 
+import { ENHANCED_FILE_ICONS, EnhancedDirectoryTreeConfig } from "@/components/DirectoryTree/config";
 import { StorageItem } from "./StorageBase";
 import { FileCategory, FileTypeInfo, FolderTypeInfo } from "./types";
 import {getFileDetailsByExtension} from "@/utils/file-operations/constants";

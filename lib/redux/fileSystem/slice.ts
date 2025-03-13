@@ -243,6 +243,10 @@ export const createFileSystemSlice = (
               handleGetPublicFile(state, status);
               break;
 
+            // case "createFolder":
+            //   handleCreateFolder(state, status);
+            //   break;
+
             default:
               console.warn(`Unhandled operation type: ${type}`);
           }
