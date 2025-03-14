@@ -43,6 +43,10 @@ interface GoogleAPIProviderProps {
     children: React.ReactNode;
 }
 
+// Storage keys for persisting auth state
+const TOKEN_STORAGE_KEY = "google_auth_token";
+const SCOPES_STORAGE_KEY = "google_auth_scopes";
+
 export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) {
     const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -73,18 +77,60 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
         "https://www.googleapis.com/auth/tasks",
     ];
 
-    // Debug information to help diagnose issues
+    // Attempt to restore authentication from localStorage on mount
     useEffect(() => {
-        console.log("Google Client ID available:", !!clientId);
-        if (!clientId) {
-            setError("Missing Google API Client ID. Check your environment variables.");
-            setIsInitializing(false);
+        try {
+            const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+            const savedScopes = localStorage.getItem(SCOPES_STORAGE_KEY);
+
+            if (savedToken) {
+                console.log("Restoring authentication from storage");
+                setToken(savedToken);
+                setIsAuthenticated(true);
+
+                if (savedScopes) {
+                    try {
+                        const parsedScopes = JSON.parse(savedScopes);
+                        if (Array.isArray(parsedScopes)) {
+                            setGrantedScopes(parsedScopes);
+                        }
+                    } catch (e) {
+                        console.error("Error parsing saved scopes:", e);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Error accessing localStorage:", e);
         }
-    }, [clientId]);
+    }, []);
+
+    // Helper function to save authentication state to localStorage
+    const saveAuthToStorage = useCallback((newToken: string, newScopes: string[]) => {
+        try {
+            localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
+            localStorage.setItem(SCOPES_STORAGE_KEY, JSON.stringify(newScopes));
+        } catch (e) {
+            console.error("Error saving to localStorage:", e);
+        }
+    }, []);
+
+    // Helper function to clear authentication state from localStorage
+    const clearAuthFromStorage = useCallback(() => {
+        try {
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+            localStorage.removeItem(SCOPES_STORAGE_KEY);
+        } catch (e) {
+            console.error("Error clearing localStorage:", e);
+        }
+    }, []);
 
     // Load Google Identity Services
     useEffect(() => {
-        if (!clientId) return;
+        if (!clientId) {
+            setError("Missing Google API Client ID. Check your environment variables.");
+            setIsInitializing(false);
+            return;
+        }
 
         const loadGoogleIdentityServices = () => {
             // Don't load it again if it's already in the document
@@ -141,9 +187,10 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
                         console.log("Token client error callback triggered:", err);
                         setAuthInProgress(false);
 
-                        // Only set an error if this wasn't user-initiated
-                        if (err.type !== "popup_closed_by_user") {
-                            setError(`Authentication error: ${err.type || "Unknown error"}`);
+                        // IMPORTANT: Do not set an error for popup_closed - this is normal user behavior
+                        // when closing the popup deliberately or when authentication is complete
+                        if (err.type !== "popup_closed" && err.type !== "popup_closed_by_user") {
+                            setError(`Authentication failed: ${err.type || "Unknown error"}`);
                         }
                     },
                 });
@@ -162,27 +209,32 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
 
             if (response && response.access_token) {
                 console.log("Access token received");
-                setToken(response.access_token);
+                const newToken = response.access_token;
+                setToken(newToken);
                 setIsAuthenticated(true);
 
                 // Handle scopes
+                let newScopes: string[] = [];
                 if (response.scope) {
-                    const scopeArray = response.scope.split(" ");
-                    setGrantedScopes(scopeArray);
-                    console.log("Granted scopes count:", scopeArray.length);
+                    newScopes = response.scope.split(" ");
+                    setGrantedScopes(newScopes);
+                    console.log("Granted scopes count:", newScopes.length);
                 }
+
+                // Save authentication to localStorage
+                saveAuthToStorage(newToken, newScopes);
 
                 resetError(); // Clear any previous errors
             } else if (response && response.error) {
                 console.error("Authentication response error:", response.error);
 
                 // Don't show errors for user-initiated cancellations
-                if (response.error !== "popup_closed_by_user") {
+                if (response.error !== "popup_closed_by_user" && response.error !== "popup_closed") {
                     setError(`Authentication error: ${response.error}`);
                 }
             }
         },
-        [resetError]
+        [resetError, saveAuthToStorage]
     );
 
     // Sign in function
@@ -214,9 +266,9 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
                         console.log("Token client error callback triggered:", err);
                         setAuthInProgress(false);
 
-                        // Only set an error if this wasn't user-initiated
-                        if (err.type !== "popup_closed_by_user") {
-                            setError(`Authentication error: ${err.type || "Unknown error"}`);
+                        // IMPORTANT: Do not set an error for popup_closed - this is normal user behavior
+                        if (err.type !== "popup_closed" && err.type !== "popup_closed_by_user") {
+                            setError(`Authentication failed: ${err.type || "Unknown error"}`);
                         }
                     },
                 });
@@ -258,12 +310,20 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
                     setToken(null);
                     setIsAuthenticated(false);
                     setGrantedScopes([]);
+
+                    // Clear authentication from localStorage
+                    clearAuthFromStorage();
+
                     resetError(); // Clear any errors
                 });
             } else {
                 // If we don't have a token, just reset the state
                 setIsAuthenticated(false);
                 setGrantedScopes([]);
+
+                // Clear authentication from localStorage
+                clearAuthFromStorage();
+
                 resetError();
             }
         } catch (err: any) {
@@ -302,18 +362,22 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
                         setAuthInProgress(false);
 
                         if (response && response.access_token) {
+                            // Update token
+                            setToken(response.access_token);
+
                             // Update the granted scopes
+                            let newScopes = [...grantedScopes];
                             if (response.scope) {
                                 const scopeArray = response.scope.split(" ");
-                                setGrantedScopes((prev) => {
-                                    const newScopes = [...prev];
-                                    scopeArray.forEach((scope) => {
-                                        if (!newScopes.includes(scope)) {
-                                            newScopes.push(scope);
-                                        }
-                                    });
-                                    return newScopes;
+                                scopeArray.forEach((scope) => {
+                                    if (!newScopes.includes(scope)) {
+                                        newScopes.push(scope);
+                                    }
                                 });
+                                setGrantedScopes(newScopes);
+
+                                // Save updated authentication to localStorage
+                                saveAuthToStorage(response.access_token, newScopes);
                             }
                             resolve(true);
                         } else {
@@ -324,8 +388,8 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
                         console.log("Scope client error callback triggered:", err);
                         setAuthInProgress(false);
 
-                        // Only set an error if this wasn't user-initiated
-                        if (err.type !== "popup_closed_by_user") {
+                        // IMPORTANT: Do not set an error for popup_closed - this is normal user behavior
+                        if (err.type !== "popup_closed" && err.type !== "popup_closed_by_user") {
                             setError(`Authorization error: ${err.type || "Unknown error"}`);
                         }
 
