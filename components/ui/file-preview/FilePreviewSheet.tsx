@@ -111,6 +111,8 @@ const FilePreviewSheet: React.FC<FilePreviewSheetProps> = ({ isOpen, onClose, fi
             case "DOCUMENT":
                 if (extension === "pdf") {
                     return <PDFPreview {...previewProps} />;
+                } else if (["xlsx", "xls"].includes(extension)) {
+                    return <DataPreview {...previewProps} />;
                 } else if (extension === "txt" || file.details?.subCategory === "TEXT") {
                     return <TextPreview {...previewProps} />;
                 }

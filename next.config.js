@@ -71,6 +71,7 @@ const nextConfig = {
         PICOVOICE_ACCESS_KEY: process.env.PICOVOICE_ACCESS_KEY,
         STREAM_SECRET_KEY: process.env.STREAM_SECRET_KEY,
         STREAM_API_KEY: process.env.STREAM_API_KEY,
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     },
 };
 

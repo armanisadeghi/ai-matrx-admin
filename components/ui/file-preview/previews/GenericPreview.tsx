@@ -1,7 +1,8 @@
 // GenericPreview.tsx
 import React from "react";
-import { Download } from "lucide-react";
+import { FileIcon } from "lucide-react";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
+import { formatBytes } from "../utils/formatting";
 
 interface GenericPreviewProps {
   file: {
@@ -13,32 +14,36 @@ interface GenericPreviewProps {
 
 const GenericPreview: React.FC<GenericPreviewProps> = ({ file }) => {
   const fileName = file.details?.filename || 'Unknown File';
-  const Icon = file.details?.icon;
+  const fileExtension = file.details?.extension || '';
+  const fileSize = file.details?.size ? formatBytes(file.details.size) : '';
+  const Icon = file.details?.icon || FileIcon;
+  const iconColor = file.details?.color || "text-gray-500 dark:text-gray-400";
   
-  const handleDownload = () => {
-    window.open(file.url, '_blank');
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center p-8 h-full">
-      <div className="flex flex-col items-center text-center">
-        {Icon && <Icon className="mb-4" />}
-        
-        <div className="text-lg font-medium mt-4 mb-2">{fileName}</div>
-        
-        <div className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-          {file.details?.subCategory || ''}
+    <div className="flex items-center justify-center h-full w-full bg-white dark:bg-gray-800">
+      <div className="text-center p-8">
+        {/* File icon with background */}
+        <div className="flex justify-center mb-6">
+          <div className="w-24 h-24 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            {Icon && <Icon className={`w-12 h-12 ${iconColor}`} />}
+          </div>
         </div>
         
-        <button
-          onClick={handleDownload}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          <Download size={16} />
-          <span>Download File</span>
-        </button>
+        {/* File information */}
+        <h3 className="text-xl font-medium mb-2 text-gray-800 dark:text-gray-100 break-all">{fileName}</h3>
         
-        <div className="mt-4 text-sm text-gray-500">
+        <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+          {file.details?.subCategory || file.details?.category || 'Unknown file type'}
+          {fileExtension && ` (.${fileExtension})`}
+        </div>
+        
+        {fileSize && (
+          <div className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            {fileSize}
+          </div>
+        )}
+        
+        <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
           This file type cannot be previewed directly.
         </div>
       </div>
