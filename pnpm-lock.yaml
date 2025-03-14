@@ -365,6 +365,9 @@ importers:
       papaparse:
         specifier: ^5.5.2
         version: 5.5.2
+      pdfjs-dist:
+        specifier: 4.8.69
+        version: 4.8.69
       popmotion:
         specifier: latest
         version: 11.0.5
@@ -631,7 +634,7 @@ importers:
         specifier: latest
         version: 1.0.0
       install:
-        specifier: latest
+        specifier: ^0.13.0
         version: 0.13.0
       jest:
         specifier: latest

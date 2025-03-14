@@ -125,7 +125,6 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
                 ...currentMetadata,
                 available_tools: available_tools,
             };
-            console.log("--updateAvailableTools", updatedMetadata);
             updateField("metadata", updatedMetadata);
         },
         [updateField, messageWithDefaults]

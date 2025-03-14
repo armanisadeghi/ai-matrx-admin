@@ -226,3 +226,10 @@ export interface BucketTreeStructure {
 }
 
 
+export interface TransformOptions {
+    width?: number;
+    height?: number;
+    resize?: 'contain' | 'cover' | 'fill';
+    format?: 'origin';
+    quality?: number;
+  }

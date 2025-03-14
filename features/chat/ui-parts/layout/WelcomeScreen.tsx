@@ -1,6 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import PromptInput from "@/features/chat/ui-parts/prompt-input/PromptInput";
+import React from "react";
 import ActionButtons from "@/features/chat/ui-parts/prompt-input/ActionButtons";
 import { useConversationWithRouting } from "@/hooks/ai/chat/useConversationWithRouting";
 import { ChatMode } from "@/types/chat/chat.types";

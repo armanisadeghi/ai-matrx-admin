@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import FileChips from "@/features/chat/ui-parts/prompt-input/FileChips"; // Adjust path
+import FileChips from "@/features/chat/ui-parts/prompt-input/_dev/FileChips"; // Adjust path
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 
 export default function FileUploadWrapper() {

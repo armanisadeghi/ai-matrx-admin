@@ -37,18 +37,14 @@ export function useConversationMessages() {
         saveConversationAndMessage,
     } = useConversationMessageCrud();
     
-    // Track if we're in "new conversation" mode
     const [isCreatingNewConversation, setIsCreatingNewConversation] = useState(false);
     
-    // Track if we're currently composing a new message
     const [isComposingNewMessage, setIsComposingNewMessage] = useState(false);
     
-    // Extract information from the relationship hook
     const activeConversationId = relationshipHook.activeParentId;
     const activeConversation = relationshipHook.activeParentRecord as ConversationData;
     const allConversationMessages = relationshipHook.matchingChildRecords as MessageWithKey[];
     
-    // Sort and filter messages
     const messages = useMemo(() => {
         const validMessages = allConversationMessages.filter(
             (message) => message.displayOrder !== null && message.displayOrder !== undefined && !isNaN(message.displayOrder)
@@ -56,10 +52,9 @@ export function useConversationMessages() {
         return validMessages.sort((a, b) => a.displayOrder - b.displayOrder);
     }, [allConversationMessages]);
     
-    // Calculate the next display and system order values
     const finalMessageDisplayOrder = useMemo(() => {
         if (messages.length === 0) {
-            return 0; // Start at 0 if no messages
+            return 0;
         }
         const displayOrders = messages.map((message) => message.displayOrder);
         return Math.max(...displayOrders);
@@ -67,13 +62,12 @@ export function useConversationMessages() {
     
     const finalMessageSystemOrder = useMemo(() => {
         if (messages.length === 0) {
-            return 1; // Start at 1 if no messages
+            return 1;
         }
         const systemOrders = messages.map((message) => message.systemOrder);
         return Math.max(...systemOrders);
     }, [messages]);
     
-    // Next message orders (for adding new messages to existing conversations)
     const nextMessageDisplayOrder = useMemo(() => finalMessageDisplayOrder + 1, [finalMessageDisplayOrder]);
     const nextMessageSystemOrder = useMemo(() => finalMessageSystemOrder + 1, [finalMessageSystemOrder]);
     
@@ -98,7 +92,6 @@ export function useConversationMessages() {
     
     // Enhanced setActiveConversation to handle the "new-conversation" special case
     const setActiveConversation = useCallback((conversationId: string) => {
-        console.log("Setting active conversation to", conversationId);
         const recordKey = `id:${conversationId}` as MatrxRecordId;
         
         if (conversationId === NEW_CONVERSATION_ID) {

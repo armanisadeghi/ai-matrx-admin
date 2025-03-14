@@ -3,8 +3,9 @@ import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWi
 import { useFileManagement } from "./useFileManagement";
 import TextInput from "./TextInput";
 import InputBottomControls from "./InputBottomControls";
-import FileChips from "./FileChips";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
+import FileChipsWithPreview from "./FileChipsWithPreview";
+import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 
 interface PromptInputContainerProps {
     onMessageSent?: () => void;
@@ -21,7 +22,6 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     localContent,
     onContentChange,
 }) => {
-
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const { currentMessage, currentConversation, isCreatingNewConversation, messageCrud, saveMessage, saveNewConversationAndNavigate } =
@@ -29,14 +29,11 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
     const fileManager = useFileManagement(chatHook);
 
-
     const messageContent = localContent !== undefined ? localContent : currentMessage?.content || "";
-
 
     const handleContentChange = useCallback(
         (content: string) => {
             if (onContentChange) {
-
                 const syntheticEvent = {
                     target: { value: content },
                     currentTarget: { value: content },
@@ -44,21 +41,20 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
                 onContentChange(syntheticEvent);
             } else {
-
                 messageCrud.updateContent(content);
             }
         },
         [messageCrud, onContentChange]
     );
 
-
-    const handleFileUpload = useCallback(async (results: { url: string; type: string }[]) => {
-        await fileManager.addFiles(results);
-    }, [fileManager]);
-
+    const handleFileUpload = useCallback(
+        async (results: { url: string; type: string; details?: EnhancedFileDetails }[]) => {
+            await fileManager.addFiles(results);
+        },
+        [fileManager]
+    );
 
     const handleSendMessage = useCallback(async () => {
-
         if (!messageContent.trim() && fileManager.files.length === 0) {
             return;
         }
@@ -66,11 +62,9 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
         try {
             setIsSubmitting(true);
 
-            // Save the message/conversation
             let result: any;
 
             if (isCreatingNewConversation) {
-                // The integrated hook handles saving and navigation in one step
                 result = await saveNewConversationAndNavigate();
             } else {
                 result = await saveMessage();
@@ -100,7 +94,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     return (
         <div className="relative">
             {/* File Chips Component */}
-            <FileChips files={fileManager.files} onRemoveFile={fileManager.removeFile} />
+            <FileChipsWithPreview files={fileManager.files} onRemoveFile={fileManager.removeFile} />
 
             {/* Text Input with Bottom Controls */}
             <div className="relative">
@@ -109,6 +103,11 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                     disabled={isDisabled}
                     onContentChange={handleContentChange}
                     onSubmit={handleSendMessage}
+                    onImagePasted={(result) => {
+                        fileManager.addFiles([result]);
+                    }}
+                    bucket="userContent"
+                    path={`chat-attachments/conversation-${currentConversation?.id}`}
                 />
 
                 {/* Bottom Controls Component */}

@@ -50,7 +50,7 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
   return (
     <>
       {/* Scrollable message area */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide pb-32">
+      <div className="flex-1 overflow-y-auto scrollbar-hide pb-48">
         <ResponseColumn messages={chatHook.currentMessages} />
       </div>
       {/* Simple blocker div */}
@@ -64,7 +64,7 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
       {/* Fixed input area at bottom */}
       <div className="absolute bottom-0 left-0 right-0 z-10">
         <div className="p-4">
-          <div className="max-w-3xl mx-auto border border-zinc-100 dark:border-zinc-700 rounded-3xl">
+          <div className="max-w-3xl mx-auto rounded-3xl">
             {isConversationReady ? (
               <PromptInputContainer disabled={!isConversationReady} chatHook={chatHook} />
             ) : (

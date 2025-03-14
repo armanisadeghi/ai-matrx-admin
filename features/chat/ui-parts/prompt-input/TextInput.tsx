@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { Minimize2, Maximize2 } from "lucide-react";
+import { Minimize2, Maximize2, Loader2, X } from "lucide-react";
 import { throttle } from "lodash";
+import { PasteImageHandler } from "@/components/ui/file-upload/PasteImageHandler";
 
 interface TextInputProps {
     content: string;
@@ -9,6 +10,9 @@ interface TextInputProps {
     onContentChange: (content: string) => void;
     onSubmit: () => void;
     className?: string;
+    onImagePasted?: (result: { url: string; type: string }) => void;
+    bucket?: string;
+    path?: string;
 }
 
 const TextInput: React.FC<TextInputProps> = ({
@@ -18,16 +22,21 @@ const TextInput: React.FC<TextInputProps> = ({
     onContentChange,
     onSubmit,
     className = "",
+    onImagePasted,
+    bucket = "userContent",
+    path,
 }) => {
     // Refs
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+    
     // Local UI state
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const [textareaHeight, setTextareaHeight] = useState<string>("110px");
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
     const [maxHeight] = useState<number>(800);
-
+    const [isPasteProcessing, setIsPasteProcessing] = useState<boolean>(false);
+    const [pasteProcessRef, setPasteProcessRef] = useState<any>(null);
+    
     // Throttled function to update content
     const updateContentThrottled = useCallback(
         throttle((newContent: string) => {
@@ -35,27 +44,56 @@ const TextInput: React.FC<TextInputProps> = ({
         }, 200),
         [onContentChange]
     );
-
+    
     // Update textarea height based on content
     const adjustTextareaHeight = useCallback(() => {
         if (textareaRef.current) {
             const minHeight = 110;
             const bottomPadding = 60;
-            textareaRef.current.style.height = `${minHeight}px`;
+            
+            // Reset the height first to get accurate scrollHeight
+            textareaRef.current.style.height = "auto";
+            
+            // Get the scroll height
             const scrollHeight = textareaRef.current.scrollHeight;
+            
+            // Set the new height with constraints
             const newHeight = Math.min(Math.max(minHeight, scrollHeight), maxHeight - bottomPadding);
+            
+            // Apply the height directly to the element first
+            textareaRef.current.style.height = `${newHeight}px`;
+            
+            // Then update state to match
             setTextareaHeight(`${newHeight}px`);
             setIsExpanded(newHeight > minHeight);
         }
     }, [maxHeight]);
-
+    
+    // Effect to handle resizing on mount and window resize
+    useEffect(() => {
+        // Initial adjustment
+        adjustTextareaHeight();
+        
+        // Add resize listener
+        window.addEventListener("resize", adjustTextareaHeight);
+        
+        // Cleanup
+        return () => {
+            window.removeEventListener("resize", adjustTextareaHeight);
+        };
+    }, [adjustTextareaHeight]);
+    
     // Keep textarea height in sync with content
     useEffect(() => {
         if (content) {
             adjustTextareaHeight();
+        } else {
+            // Reset height when content is empty
+            setTextareaHeight("110px");
+            setIsExpanded(false);
         }
     }, [content, adjustTextareaHeight]);
-
+    
     // Handle Enter key - with immediate access to the latest content
     const handleKeyDown = useCallback(
         (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -66,13 +104,13 @@ const TextInput: React.FC<TextInputProps> = ({
         },
         [onSubmit]
     );
-
+    
     // UI utilities
     const handleMinimize = useCallback(() => {
         setTextareaHeight("110px");
         setIsExpanded(false);
     }, []);
-
+    
     const handleMaximize = useCallback(() => {
         if (textareaRef.current) {
             const bottomPadding = 60;
@@ -80,14 +118,34 @@ const TextInput: React.FC<TextInputProps> = ({
             setIsExpanded(true);
         }
     }, [maxHeight]);
-
+    
+    // Processing state handler with reference storage
+    const handleProcessingChange = useCallback((isProcessing: boolean, processRef?: any) => {
+        setIsPasteProcessing(isProcessing);
+        if (processRef) {
+            setPasteProcessRef(processRef);
+        } else if (!isProcessing) {
+            setPasteProcessRef(null);
+        }
+    }, []);
+    
+    // Handle cancel upload
+    const handleCancelUpload = useCallback(() => {
+        if (pasteProcessRef && typeof pasteProcessRef.cancel === 'function') {
+            pasteProcessRef.cancel();
+        }
+        setIsPasteProcessing(false);
+        setPasteProcessRef(null);
+    }, [pasteProcessRef]);
+    
     return (
         <div
             className={`relative rounded-3xl bg-zinc-200 dark:bg-zinc-800 transition-all overflow-hidden ${
                 isFocused ? "ring-1 ring-zinc-400 dark:ring-zinc-700 ring-opacity-50" : ""
             } ${className}`}
         >
-            {isExpanded && (
+            {/* Minimize/Maximize buttons are only shown when not processing an image */}
+            {!isPasteProcessing && isExpanded && (
                 <button
                     onClick={handleMinimize}
                     className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"
@@ -95,7 +153,8 @@ const TextInput: React.FC<TextInputProps> = ({
                     <Minimize2 size={16} />
                 </button>
             )}
-            {!isExpanded && content.length > 0 && (
+            
+            {!isPasteProcessing && !isExpanded && content.length > 0 && (
                 <button
                     onClick={handleMaximize}
                     className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"
@@ -103,7 +162,36 @@ const TextInput: React.FC<TextInputProps> = ({
                     <Maximize2 size={16} />
                 </button>
             )}
-
+            
+            {/* Paste loading indicator */}
+            {isPasteProcessing && (
+                <div className="absolute top-2 right-2 z-20">
+                    <div className="flex items-center bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1.5 text-sm rounded-full shadow-md">
+                        <Loader2 size={16} className="animate-spin mr-2 text-white" />
+                        <span>Processing image</span>
+                        <button 
+                            onClick={handleCancelUpload}
+                            className="ml-2 p-1 rounded-full hover:bg-white/20 transition-colors"
+                            aria-label="Cancel upload"
+                        >
+                            <X size={14} className="text-white" />
+                        </button>
+                    </div>
+                </div>
+            )}
+            
+            {/* Add PasteImageHandler with the textarea as target */}
+            {onImagePasted && (
+                <PasteImageHandler
+                    bucket={bucket}
+                    path={path}
+                    targetElement={textareaRef.current}
+                    onImagePasted={onImagePasted}
+                    disabled={disabled}
+                    onProcessingChange={handleProcessingChange}
+                />
+            )}
+            
             <textarea
                 ref={textareaRef}
                 style={{

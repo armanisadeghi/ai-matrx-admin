@@ -46,6 +46,7 @@ import {
     PreviewConfig, sortConfig, VisualConfig, TreeConfig,
     FileTypeDetails,
     FileCategory, IconComponent, FolderTypeInfo, FolderTypeDetails,
+    StorageMetadata,
 } from "./types";
 
 export const FEATURE_DEFAULTS: FeatureConfig = {
@@ -555,3 +556,96 @@ export const getBucketDetails = (bucketName: string) => {
         icon: FaFolderTree
     };
 }
+
+
+// Updated type definition
+export type EnhancedFileDetails = Omit<FileTypeDetails, 'icon'> & {
+    icon?: IconComponent;    // Make icon optional
+    filename: string;
+    extension: string;
+    iconName: string;
+    bucket?: string;
+    path?: string;
+    quickPreview?: boolean;
+    mimetype?: string;
+    size?: number;
+    localId?: string;
+};
+
+
+
+export const getFileDetailsByUrl = (url: string, metadata?: StorageMetadata, localId?: string): EnhancedFileDetails => {
+    let cleanFileName = '';
+    let bucket = '';
+    let path = '';
+    
+    try {
+        const decodedUrl = decodeURIComponent(url);
+        const urlParts = decodedUrl.split('/');
+        const lastPart = urlParts[urlParts.length - 1];
+        cleanFileName = lastPart.split('?')[0];
+        
+        if (!cleanFileName) {
+            cleanFileName = url.split('/').pop() || '';
+        }
+
+        // Check for Supabase signed URL pattern
+        const signedUrlPattern = /storage\/v1\/object\/sign/;
+        if (signedUrlPattern.test(url)) {
+            const storageIndex = urlParts.indexOf('storage');
+            if (storageIndex !== -1 && storageIndex + 4 < urlParts.length) {
+                bucket = urlParts[storageIndex + 4];
+                const pathParts = urlParts.slice(storageIndex + 5, -1);
+                path = pathParts.join('/');
+            }
+        } else {
+            const storageIndex = urlParts.indexOf('storage');
+            if (storageIndex !== -1 && storageIndex + 2 < urlParts.length) {
+                bucket = urlParts[storageIndex + 2];
+                const pathParts = urlParts.slice(storageIndex + 3, -1);
+                path = pathParts.join('/');
+            } else {
+                const hostnameParts = new URL(url).hostname.split('.');
+                bucket = hostnameParts[0] || '';
+                const pathParts = urlParts.slice(3, -1);
+                path = pathParts.join('/');
+            }
+        }
+    } catch (error) {
+        cleanFileName = url.split('/').pop() || '';
+        cleanFileName = cleanFileName.split('?')[0];
+    }
+
+    const ext = cleanFileName.toLowerCase().split('.').pop() || '';
+    const extConfig = FILE_EXTENSIONS_LOOKUP[ext] || {category: "UNKNOWN", subCategory: "UNKNOWN"};
+
+    const result = { ...GLOBAL_FILE_DEFAULTS };
+
+    if (extConfig.category) {
+        const categoryDefaults = CATEGORY_FILE_DEFAULTS[extConfig.category] || {};
+        Object.assign(result, categoryDefaults);
+    }
+
+    if (extConfig.subCategory) {
+        const subCategoryDefaults = SUBCATEGORY_FILE_DEFAULTS[extConfig.subCategory] || {};
+        Object.assign(result, subCategoryDefaults);
+    }
+
+    Object.assign(result, extConfig);
+
+    // Extract iconName from the icon component
+    const iconName = (result.icon as any)?.displayName || 'UnknownIcon';
+
+    return {
+        ...result,
+        filename: cleanFileName,
+        extension: ext,
+        iconName,              // Add the extracted icon name
+        bucket: bucket || undefined,
+        path: path || undefined,
+        quickPreview: metadata?.mimetype?.startsWith('image') || false,
+        mimetype: metadata?.mimetype || undefined,
+        size: metadata?.size || undefined,
+        localId: localId || undefined
+    };
+};

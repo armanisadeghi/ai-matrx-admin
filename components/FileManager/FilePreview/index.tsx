@@ -12,15 +12,15 @@ import { DefaultPreview } from './DefaultPreview';
 import { Loader2, FolderIcon } from 'lucide-react';
 import { getFileDetails } from "@/utils/file-operations";
 
-type PreviewProps = {
-  file: {
+type FilePreviewProps = {
+  file?: {
     name: string;
     extension: string;
     contentType: string;
   };
 };
 
-export const FilePreview: React.FC = () => {
+export const FilePreview: React.FC<FilePreviewProps> = ({ file = {} }) => {
     const { activeNode } = useFileSystem();
 
     if (!activeNode) {

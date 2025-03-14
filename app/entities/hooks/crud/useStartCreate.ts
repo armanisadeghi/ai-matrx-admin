@@ -16,7 +16,6 @@ export const useStartCreate = <T extends Record<string, any>>({
 
   const create = useCallback((initialData?: Partial<T>) => {
     const tempId = generateTemporaryRecordId(entityState);
-    console.log("----------------> tempId", tempId)
     dispatch(actions.startRecordCreation({ count: 1, tempId }));
     
     if (initialData) {

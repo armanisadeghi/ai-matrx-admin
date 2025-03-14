@@ -1,7 +1,7 @@
 import {SupabaseClient} from "@supabase/supabase-js";
 import {supabase} from "@/utils/supabase/client";
 import StorageDebugger from "./StorageDebugger";
-import {BucketTreeStructure} from "./types";
+import {BucketTreeStructure, TransformOptions, StorageMetadata} from "./types";
 import LocalFileSystem from "./LocalFileSystem";
 import {getCreatePath} from "@/utils/file-operations/utils";
 
@@ -211,72 +211,129 @@ class FileSystemManager {
         );
     }
 
-    async uploadFile(bucketName: string, path: string, file: File): Promise<boolean> {
+    async uploadFile(bucketName: string, path: string, file: File): Promise<{
+        success: boolean;
+        signedUrl?: string;
+        metadata?: StorageMetadata;
+        localId?: string;
+    }> {
+        const localId = `${bucketName}:${path}`;
+
         try {
-            // First, store locally with pending status
+            const contentType = file.type || 'application/octet-stream';
+            const cacheControl = '3600';
+
+            // Store locally with pending status
             const fileType = path.split('.').pop() || 'file';
             await this.localStorage.storeFile({
-                id: `${bucketName}:${path}`,
+                id: localId,
                 bucketName,
                 path,
                 blob: file,
                 metadata: {
+                    eTag: '', // Placeholder until server data
                     size: file.size,
-                    type: file.type,
-                    lastModified: file.lastModified
+                    mimetype: contentType,
+                    cacheControl,
+                    lastModified: new Date(file.lastModified).toISOString(),
+                    contentLength: file.size,
+                    httpStatusCode: 200
                 },
                 version: Date.now(),
                 lastModified: Date.now(),
-                lastSynced: 0, // Not synced yet
+                lastSynced: 0,
                 status: 'pending_upload'
             });
 
-            // Attempt upload to Supabase
-            const result = await this.supabase.storage
+            // Upload to Supabase
+            const { data, error } = await this.supabase.storage
                 .from(bucketName)
-                .upload(path, file);
+                .upload(path, file, {
+                    upsert: true,
+                    contentType,
+                    cacheControl
+                });
+            if (error) throw error;
 
-            this.debugger.logOperation('uploadFile: result',
-                {bucketName, path, file},
-                {result}
-            );
-
-            if (result.error) throw result.error;
-
-            // Get additional metadata from Supabase
-            const {data: metadata} = this.supabase.storage
+            // Get signed URL
+            const isImage = contentType.startsWith('image/');
+            const { data: signedData, error: signedError } = await this.supabase.storage
                 .from(bucketName)
-                .getPublicUrl(path);
+                .createSignedUrl(path, 900, {
+                    transform: isImage ? { width: 800 } : undefined
+                });
+            if (signedError) throw signedError;
 
-            this.debugger.logOperation('uploadFile: Metadata',
-                {bucketName, path},
-                {metadata}
-            );
+            const signedUrl = signedData.signedUrl;
 
-            // Update local file status and metadata
+            // Fetch server-side metadata
+            const folderPath = path.split('/').slice(0, -1).join('/');
+            const fileName = path.split('/').pop() || '';
+            const { data: listData, error: listError } = await this.supabase.storage
+                .from(bucketName)
+                .list(folderPath, {
+                    limit: 1,
+                    search: fileName
+                });
+            if (listError) throw listError;
+
+            // Type listData as StorageItem[]
+            const serverMetadata: StorageMetadata = {
+                eTag: listData?.[0]?.metadata?.eTag ?? '',
+                size: listData?.[0]?.metadata?.size ?? file.size,
+                mimetype: listData?.[0]?.metadata?.mimetype ?? contentType,
+                cacheControl: listData?.[0]?.metadata?.cacheControl ?? cacheControl,
+                lastModified: listData?.[0]?.metadata?.lastModified ?? new Date(file.lastModified).toISOString(),
+                contentLength: listData?.[0]?.metadata?.contentLength ?? file.size,
+                httpStatusCode: listData?.[0]?.metadata?.httpStatusCode ?? 200
+            };
+
+            // Update local storage
             await this.localStorage.updateFile({
-                id: `${bucketName}:${path}`,
+                id: localId,
                 status: 'synced',
                 lastSynced: Date.now(),
-                metadata: {
-                    ...metadata,
-                    size: file.size,
-                    type: file.type,
-                    lastModified: file.lastModified
-                }
+                metadata: serverMetadata
             });
 
-            // Update structure
-            await this.updateStructureAfterFileOperation(bucketName, path, 'add', fileType, undefined, metadata);
+            await this.updateStructureAfterFileOperation(bucketName, path, 'add', fileType, undefined, serverMetadata);
 
-            return true;
+            this.debugger.logOperation('uploadFile', { bucketName, path }, { success: true, signedUrl, metadata: serverMetadata });
+
+            return { success: true, signedUrl, metadata: serverMetadata, localId };
         } catch (error) {
-            // Mark local file as modified if upload failed
-            await this.localStorage.updateFileStatus(`${bucketName}:${path}`, 'modified');
-
+            await this.localStorage.updateFileStatus(localId, 'modified');
             console.error('Error uploading file:', error);
-            this.debugger.logOperation('uploadFile', {bucketName, path}, {error});
-            return false;
+            this.debugger.logOperation('uploadFile', { bucketName, path }, { error });
+            return { success: false };
+        }
+    }
+
+    async getLocalFile(localId: string): Promise<{
+        blob: Blob;
+        metadata: any;
+        path: string;
+        bucketName: string;
+    } | null> {
+        try {
+            // Split the localId into bucketName and path
+            const [bucketName, ...pathParts] = localId.split(':');
+            const path = pathParts.join(':'); // Reconstruct path in case it contains colons
+
+            const fileData = await this.localStorage.getFile(bucketName, path);
+            if (!fileData) return null;
+
+            this.debugger.logOperation('getLocalFile', { localId }, { success: true });
+            return {
+                blob: fileData.blob,
+                metadata: fileData.metadata,
+                path: fileData.path,
+                bucketName: fileData.bucketName
+            };
+        } catch (error) {
+            console.error('Error retrieving local file:', error);
+            this.debugger.logOperation('getLocalFile', { localId }, { error });
+            return null;
         }
     }
 
@@ -391,7 +448,7 @@ class FileSystemManager {
             // If not in local storage or not synced, download from Supabase
             const {data: signedUrl, error: signedUrlError} = await this.supabase.storage
                 .from(bucketName)
-                .createSignedUrl(filePath, 60);
+                .createSignedUrl(filePath, 900);
 
             if (signedUrlError) throw signedUrlError;
 
@@ -692,7 +749,7 @@ class FileSystemManager {
         try {
             const {data} = await this.supabase.storage
                 .from(bucketName)
-                .createSignedUrl(filePath, 60);
+                .createSignedUrl(filePath, 900);
 
             this.debugger.logOperation('getSignedUrl',
                 {bucketName, filePath},
