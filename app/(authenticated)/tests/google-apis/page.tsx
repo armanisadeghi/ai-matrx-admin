@@ -3,9 +3,15 @@
 import GoogleAccessCard from "@/components/GoogleAccessCard";
 import { googleServices, googleBrandColors } from "@/lib/googleScopes";
 import { useGoogleAPI } from "@/providers/google-provider/GoogleApiProvider";
+import { useEffect } from "react";
 
 export default function GoogleAccessPage() {
-    const { isInitializing, isAuthenticated, isGapiLoaded, error, signIn, signOut } = useGoogleAPI();
+    const { isInitializing, isAuthenticated, isGoogleLoaded, error, signIn, signOut, resetError } = useGoogleAPI();
+
+    // Clear errors when navigating to this page
+    useEffect(() => {
+        resetError();
+    }, [resetError]);
 
     return (
         <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-950 flex flex-col">
@@ -46,24 +52,25 @@ export default function GoogleAccessPage() {
                         <div>
                             <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Google Account Status</h2>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {isInitializing ? "Checking authentication status..." : 
-                                 isAuthenticated ? "You are signed in with your Google account" : 
-                                 "Sign in to your Google account to authorize services"}
+                                {isInitializing
+                                    ? "Checking authentication status..."
+                                    : isAuthenticated
+                                    ? "You are signed in with your Google account"
+                                    : "Sign in to your Google account to authorize services"}
                             </p>
-                            {error && (
-                                <p className="text-sm text-red-500 mt-1">{error}</p>
-                            )}
+                            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
                         </div>
                         <div>
                             {!isInitializing && (
                                 <button
                                     onClick={isAuthenticated ? signOut : signIn}
-                                    disabled={!isGapiLoaded}
+                                    disabled={!isGoogleLoaded}
                                     className={`px-4 py-2 rounded-lg text-white font-medium ${
-                                        !isGapiLoaded ? "bg-gray-400 cursor-not-allowed" :
-                                        isAuthenticated ? 
-                                            "bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600" : 
-                                            "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                                        !isGoogleLoaded
+                                            ? "bg-gray-400 cursor-not-allowed"
+                                            : isAuthenticated
+                                            ? "bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                                            : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                                     }`}
                                 >
                                     {isAuthenticated ? "Sign Out" : "Sign In with Google"}
@@ -73,7 +80,7 @@ export default function GoogleAccessPage() {
                     </div>
                 </div>
 
-                {/* Info Card */}
+                {/* Info Card - Updated with popup instructions */}
                 <div className="w-full max-w-2xl mb-12 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-100 dark:border-gray-700">
                     <div className="flex items-start">
                         <div className="flex-shrink-0 p-1">
@@ -89,9 +96,14 @@ export default function GoogleAccessPage() {
                         <div className="ml-4">
                             <h2 className="text-lg font-medium text-gray-900 dark:text-white">How it works</h2>
                             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                For each Google service you wish to use, click the respective "Authorize" button. This will securely request
-                                access to only what's needed. You can revoke access at any time from your Google Account settings.
+                                First, click the "Sign In with Google" button above to connect your Google account. Then for each Google
+                                service you wish to use, click the respective "Authorize" button. This will securely request access to only
+                                what's needed.
                             </p>
+                            <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/30 rounded text-sm text-yellow-800 dark:text-yellow-300">
+                                <span className="font-medium">Important:</span> When signing in, make sure to keep the Google popup open
+                                until the authentication process completes. If you close it too early, you'll need to try again.
+                            </div>
                             <div className="mt-4 flex items-center">
                                 <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -108,7 +120,7 @@ export default function GoogleAccessPage() {
                         <GoogleAccessCard key={service} service={service as keyof typeof googleServices} />
                     ))}
                 </div>
-                
+
                 {/* Footer */}
                 <div className="mt-16 mb-8 text-center text-sm text-gray-500 dark:text-gray-400 max-w-xl ">
                     <p>

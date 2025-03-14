@@ -37,20 +37,20 @@ export default function GoogleAccessCard({ service }: GoogleAccessCardProps) {
     const serviceColor = color || "#4285F4";
 
     // Get Google API context
-    const { isGapiLoaded, isAuthenticated, isInitializing, signIn, getGrantedScopes } = useGoogleAPI();
+    const { isGoogleLoaded, isAuthenticated, isInitializing, token, signIn, getGrantedScopes, requestScopes } = useGoogleAPI();
 
     // Check if the specific service is authorized
     useEffect(() => {
-        if (isGapiLoaded && isAuthenticated) {
+        if (isGoogleLoaded && isAuthenticated) {
             const grantedScopes = getGrantedScopes();
             setIsAuthorized(grantedScopes.includes(scope));
         } else {
             setIsAuthorized(false);
         }
-    }, [isGapiLoaded, isAuthenticated, scope, getGrantedScopes]);
+    }, [isGoogleLoaded, isAuthenticated, scope, getGrantedScopes]);
 
     const handleAuthorize = async () => {
-        if (!isGapiLoaded) {
+        if (!isGoogleLoaded) {
             console.error("Google API not loaded yet");
             return;
         }
@@ -63,14 +63,12 @@ export default function GoogleAccessCard({ service }: GoogleAccessCardProps) {
                 await signIn();
             }
 
-            // Request additional scope if not already granted
-            if (!isAuthorized && window.gapi && window.gapi.auth2) {
-                const authInstance = window.gapi.auth2.getAuthInstance();
-                await authInstance.currentUser.get().grant({ scope });
-
-                // Update authorization status
-                const grantedScopes = getGrantedScopes();
-                setIsAuthorized(grantedScopes.includes(scope));
+            // Request specific scope if not already granted
+            if (!isAuthorized) {
+                const success = await requestScopes([scope]);
+                if (success) {
+                    setIsAuthorized(true);
+                }
             }
         } catch (error) {
             console.error(`Failed to authorize ${name}:`, error);
