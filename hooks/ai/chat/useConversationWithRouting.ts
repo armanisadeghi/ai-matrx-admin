@@ -3,7 +3,7 @@ import { MatrxRecordId } from "@/types";
 import { ChatMode } from "@/types/chat/chat.types";
 import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
 import useConversationRouting from "./useConversationRouting";
-import { useFileManagement } from "@/features/chat/ui-parts/prompt-input/useFileManagement";
+import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
 
 interface UseConversationWithRoutingProps {
     initialConversationId?: string;

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 
 interface FileManagementProps {

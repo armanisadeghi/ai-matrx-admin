@@ -3,7 +3,7 @@ import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWi
 import TextInput from "./TextInput";
 import InputBottomControls from "./InputBottomControls";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
-import FileChipsWithPreview from "../../../../components/ui/file-preview/FileChipsWithPreview";
+import FileChipsWithPreview from "@/components/ui/file-preview/FileChipsWithPreview";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 
 interface PromptInputContainerProps {
