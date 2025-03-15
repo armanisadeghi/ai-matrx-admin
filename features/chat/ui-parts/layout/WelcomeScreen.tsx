@@ -43,7 +43,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId = DEFAULT_
             </div>
             <div className="w-full max-w-3xl">
                 {isConversationReady && <PromptInputContainer disabled={!isConversationReady} chatHook={chatHook} />}
-                <ActionButtons className="mt-4" initialMode={chatHook.currentMode as ChatMode} />
+                <ActionButtons className="mt-4" chatHook={chatHook}/>
             </div>
         </div>
     );

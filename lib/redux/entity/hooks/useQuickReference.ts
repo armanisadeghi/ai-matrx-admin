@@ -17,7 +17,7 @@ import {entityDefaultSettings} from "@/lib/redux/entity/constants/defaults";
 import {Callback, callbackManager} from "@/utils/callbackManager";
 import {getEntitySlice} from '@/lib/redux';
 import {FetchMode} from '../actions';
-import {useCallback} from "react";
+import {useCallback, useMemo} from "react";
 
 export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
     // Metadata
@@ -155,7 +155,7 @@ export function useQuickReference<TEntity extends EntityKeys>(
     }, [selection]);
 
     const getDisplayValue = React.useCallback((record: EntityData<TEntity>) => {
-        const displayField = fieldInfo.find(field => field.isDisplayField);
+        const displayField = Object.values(fieldInfo).find(field => field.isDisplayField);
         if (!displayField) return 'Unnamed Record';
         return record[displayField.name] || 'Unnamed Record';
     }, [fieldInfo]);
@@ -199,7 +199,7 @@ export function useQuickReference<TEntity extends EntityKeys>(
     return {
         // Metadata
         entityDisplayName,
-        fieldInfo,
+        fieldInfo: useMemo(() => Object.values(fieldInfo), [fieldInfo]),
 
         // Quick Reference Data
         quickReferenceRecords,

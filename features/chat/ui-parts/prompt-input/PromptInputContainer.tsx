@@ -1,10 +1,9 @@
 import React, { useState, useCallback } from "react";
 import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWithRouting";
-import { useFileManagement } from "./useFileManagement";
 import TextInput from "./TextInput";
 import InputBottomControls from "./InputBottomControls";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
-import FileChipsWithPreview from "./FileChipsWithPreview";
+import FileChipsWithPreview from "../../../../components/ui/file-preview/FileChipsWithPreview";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 
 interface PromptInputContainerProps {
@@ -22,12 +21,9 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     localContent,
     onContentChange,
 }) => {
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [isLocalSubmitting, setIsLocalSubmitting] = useState<boolean>(false);
 
-    const { currentMessage, currentConversation, isCreatingNewConversation, messageCrud, saveMessage, saveNewConversationAndNavigate } =
-        chatHook;
-
-    const fileManager = useFileManagement(chatHook);
+    const { fileManager, currentMessage, currentConversation, messageCrud, submitChatMessage, isSubmitting: isHookSubmitting } = chatHook;
 
     const messageContent = localContent !== undefined ? localContent : currentMessage?.content || "";
 
@@ -38,7 +34,6 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                     target: { value: content },
                     currentTarget: { value: content },
                 } as unknown as React.ChangeEvent<HTMLTextAreaElement>;
-
                 onContentChange(syntheticEvent);
             } else {
                 messageCrud.updateContent(content);
@@ -55,41 +50,34 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     );
 
     const handleSendMessage = useCallback(async () => {
+        // Check if there's content to send
         if (!messageContent.trim() && fileManager.files.length === 0) {
             return;
         }
 
         try {
-            setIsSubmitting(true);
+            setIsLocalSubmitting(true);
 
-            let result: any;
+            const success = await submitChatMessage();
 
-            if (isCreatingNewConversation) {
-                result = await saveNewConversationAndNavigate();
-            } else {
-                result = await saveMessage();
-            }
-
-            if (result.success) {
-                // Call the parent callback if provided
+            if (success) {
                 if (onMessageSent) {
                     onMessageSent();
                 }
-
                 return true;
             } else {
-                console.error("Failed to send message:", result.error);
+                console.error("Failed to send message");
                 return false;
             }
         } catch (error) {
             console.error("Error sending message:", error);
             return false;
         } finally {
-            setIsSubmitting(false);
+            setIsLocalSubmitting(false);
         }
-    }, [messageContent, fileManager, messageCrud, isCreatingNewConversation, saveNewConversationAndNavigate, saveMessage, onMessageSent]);
+    }, [messageContent, fileManager.files.length, submitChatMessage, onMessageSent]);
 
-    const isDisabled = disabled || isSubmitting;
+    const isDisabled = disabled || isLocalSubmitting || isHookSubmitting;
 
     return (
         <div className="relative">
@@ -114,8 +102,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 <div className="absolute bottom-0 left-0 right-0">
                     <InputBottomControls
                         isDisabled={isDisabled}
-                        isSubmitting={isSubmitting}
-                        fileManager={fileManager}
+                        isSubmitting={isLocalSubmitting || isHookSubmitting}
                         onSendMessage={handleSendMessage}
                         chatHook={chatHook}
                     />
@@ -129,6 +116,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                         bucket="userContent"
                         path={`chat-attachments/conversation-${currentConversation?.id}`}
                         onUploadComplete={handleFileUpload}
+                        onUploadStatusChange={fileManager.handleUploadStatusChange}
                         multiple={true}
                     />
                 </div>

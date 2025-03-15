@@ -3,6 +3,7 @@ import { MatrxRecordId } from "@/types";
 import { ChatMode } from "@/types/chat/chat.types";
 import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
 import useConversationRouting from "./useConversationRouting";
+import { useFileManagement } from "@/features/chat/ui-parts/prompt-input/useFileManagement";
 
 interface UseConversationWithRoutingProps {
     initialConversationId?: string;
@@ -14,6 +15,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
     const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
     const [isConversationReady, setIsConversationReady] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const { currentModelId, currentMode, setCurrentModelId, setCurrentMode, navigateToConversation } = useConversationRouting({
         initialModelId,
@@ -21,7 +23,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     });
 
     const conversationMessagesHook = useConversationMessages();
-    const { conversationCrud, messageCrud, createNewConversation, setActiveConversation } = conversationMessagesHook;
+    const { conversationCrud, messageCrud, createNewConversation, setActiveConversation, isCreatingNewConversation, currentMessage, currentConversation, saveMessage} = conversationMessagesHook;
 
     useEffect(() => {
         if (currentConversationId) return;
@@ -80,7 +82,20 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         [conversationMessagesHook.currentConversation, conversationCrud]
     );
 
-    // Enhanced save function that navigates after saving
+    const fileManager = useFileManagement({
+        onFilesUpdate: messageCrud.updateFiles,
+    });
+
+    const updateChatMetadata = useCallback((metadata: any) => {
+        if (conversationMessagesHook.currentConversation) {
+          conversationCrud.updateMetadata(metadata);
+        }
+        if (conversationMessagesHook.currentMessage) {
+          messageCrud.updateMetadata(metadata);
+        }
+      }, [conversationMessagesHook.currentConversation, conversationMessagesHook.currentMessage, conversationCrud]);
+  
+  
     const saveNewConversationAndNavigate = useCallback(async () => {
         const result = await conversationMessagesHook.saveNewConversation();
 
@@ -94,24 +109,35 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         return result;
     }, [conversationMessagesHook, navigateToConversation]);
 
+    const submitChatMessage = useCallback(async () => {
 
-    const updateChatMetadata = useCallback((metadata: any) => {
-      if (conversationMessagesHook.currentConversation) {
-        conversationCrud.updateMetadata(metadata);
-      }
-      if (conversationMessagesHook.currentMessage) {
-        messageCrud.updateMetadata(metadata);
-      }
-    }, [conversationMessagesHook.currentConversation, conversationMessagesHook.currentMessage, conversationCrud]);
+        try {
+            setIsSubmitting(true);
+
+            let result: any;
+
+            if (isCreatingNewConversation) {
+                result = await saveNewConversationAndNavigate();
+            } else {
+                result = await saveMessage();
+            }
+
+            if (result.success) {
+
+                return true;
+            } else {
+                console.error("Failed to send message:", result.error);
+                return false;
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
+            return false;
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [fileManager, messageCrud, isCreatingNewConversation, saveNewConversationAndNavigate, saveMessage]);
 
 
-    // useEffect(() => {
-    //   console.log("--- DEBUG Use Conversation With Routing ---")
-    //   console.log("isConversationReady", isConversationReady)
-    //   console.log("currentConversationId", currentConversationId)
-    //   console.log("currentMessageId", currentMessageId)
-    //   console.log("--- END DEBUG Use Conversation With Routing ---")
-    // }, [isConversationReady, currentConversationId, currentMessageId])
 
     return {
         ...conversationMessagesHook,
@@ -132,6 +158,11 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         updateMode,
         updateEndpointId,
         updateChatMetadata,
+
+        fileManager,
+
+        submitChatMessage,
+        isSubmitting,
     };
 }
 

@@ -97,7 +97,7 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
 
 
     const updateFiles = useCallback(
-        (files: { url: string; type: string }[]) => {
+        (files: { url: string; type: string; details?: any }[]) => {
             const updatedMetadata = {
                 ...(messageWithDefaults?.metadata || {}),
                 files: files,

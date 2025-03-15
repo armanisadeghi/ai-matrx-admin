@@ -429,6 +429,13 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             })
     );
 
+    const selectQuickReferenceKeyDisplayPairs = createSelector(
+        [selectQuickReference],
+        (records) => records.map((record) => ({
+          recordKey: record.recordKey,
+          displayValue: record.displayValue
+        }))
+      );
     // Selection Selectors ==================================================
 
     const selectSelectionState = createSelector([selectEntity], (entity) => {
@@ -1470,6 +1477,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectRecordsByPrimaryKeys,
         selectQuickReference,
         selectQuickReferenceByPrimaryKey,
+        selectQuickReferenceKeyDisplayPairs,
         selectPaginationInfo,
         selectCurrentPage,
         selectCurrentFilters,

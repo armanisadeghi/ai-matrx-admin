@@ -24,8 +24,9 @@ export function useFetchQuickRef<TEntity extends EntityKeys>(entityKey: TEntity)
     }, [dispatch, actions, loadingState.loading, isQuickReferenceFetchComplete]);
 
     const quickReferenceRecords = useAppSelector(selectors.selectQuickReference);
+    const quickReferenceKeyDisplayPairs = useAppSelector(selectors.selectQuickReferenceKeyDisplayPairs);
 
-    return React.useMemo(() => ({ quickReferenceRecords, loadingState, getRecordIdByRecord }), [quickReferenceRecords, loadingState, getRecordIdByRecord]);
+    return React.useMemo(() => ({ quickReferenceRecords, quickReferenceKeyDisplayPairs, loadingState, getRecordIdByRecord }), [quickReferenceRecords, quickReferenceKeyDisplayPairs, loadingState, getRecordIdByRecord]);
 }
 
 export type useQuickRefReturn = ReturnType<typeof useFetchQuickRef>;

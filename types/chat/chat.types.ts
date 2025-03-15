@@ -1,6 +1,6 @@
 import { MatrxRecordId } from "@/types";
 
-export type ChatMode = "general" | "research" | "brainstorm" | "analyze" | "images" | "video" | "code";
+export type ChatMode = "general" | "research" | "brainstorm" | "analyze" | "images" | "video" | "code" | "recipe";
 
 export interface ChatInputSettings {
     modelKey: MatrxRecordId | null;
@@ -26,6 +26,7 @@ export type MessageType =
     | undefined;
 
 export type MessageMetadata = {
+    files?: any[] | null;
     image_url?: string;
     blob_url?: string;
     brokerValues: Record<string, unknown> | null;

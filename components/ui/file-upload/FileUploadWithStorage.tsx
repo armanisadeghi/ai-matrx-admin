@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MultiFileUpload } from "./file-upload";
 import { useFileUploadWithStorage } from "./useFileUploadWithStorage";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
@@ -8,6 +8,7 @@ type FileUploadWithStorageProps = {
     bucket?: string;
     path?: string;
     onUploadComplete?: (results: { url: string; type: string; details?: EnhancedFileDetails }[]) => void;
+    onUploadStatusChange?: (isUploading: boolean) => void;
     multiple?: boolean;
 };
 
@@ -15,42 +16,59 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
     bucket = "userContent",
     path,
     onUploadComplete,
+    onUploadStatusChange,
     multiple = false,
 }) => {
+
     const { uploadFiles, isLoading } = useFileUploadWithStorage(bucket, path);
     const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
 
+    useEffect(() => {
+        
+        if (onUploadStatusChange) {
+            const isActivelyUploading = isLoading && uploadingFiles.length > 0;
+            onUploadStatusChange(isActivelyUploading);
+        }
+    }, [isLoading, uploadingFiles.length, onUploadStatusChange]);
+
     const handleFilesChange = async (files: File[]) => {
         setUploadingFiles(files);
-        const results = await uploadFiles(files);
-        setUploadingFiles([]);
         
-        if (results.length > 0 && onUploadComplete) {
-            onUploadComplete(results);
+        try {
+            const results = await uploadFiles(files);
+            
+            if (results.length > 0 && onUploadComplete) {
+                onUploadComplete(results);
+            }
+        } catch (error) {
+            console.error("🔧 Error in handleFilesChange:", error);
+        } finally {
+            setUploadingFiles([]);
         }
     };
 
-    // Non-linear progress animation that starts fast then slows down
+    // Log the animation props for debugging
     const progressVariants = {
         progress: {
             width: ["3%", "29%", "60%", "75%", "85%", "92%"],
             transition: {
-                times: [0, 0.2, 0.3, 0.4, 0.7, 1], // Non-linear timing
-                duration: 8,                   // Slow overall duration
-                ease: "easeOut",               // Further slows down at the end
-                repeat: 0                      // No repeat, just one slow animation
+                times: [0, 0.2, 0.3, 0.4, 0.7, 1],
+                duration: 8,
+                ease: "easeOut",
+                repeat: 0
             }
         }
     };
-
-    // Return the original component wrapped with a container that adds the progress indicator
+    
+    const isActivelyUploading = isLoading && uploadingFiles.length > 0;
+    
     return (
         <div>
             {/* Original component with no changes */}
             <MultiFileUpload onChange={handleFilesChange} multiple={multiple} />
             
             {/* Progress indicator below, completely independent of the original component */}
-            {isLoading && uploadingFiles.length > 0 && (
+            {isActivelyUploading && (
                 <div className="mt-6">
                     <div className="mb-2 flex items-center gap-2">
                         <svg className="animate-spin h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -64,12 +82,22 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
                     
                     <div className="bg-white dark:bg-neutral-800 rounded-lg shadow-sm p-4">
                         <div className="w-full h-3 bg-gray-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-                            <motion.div 
-                                className="h-full bg-blue-500"
-                                initial={{ width: "0%" }}
-                                animate="progress"
-                                variants={progressVariants}
-                            />
+                            {/* Wrap this in a try-catch to debug the error */}
+                            {(() => {
+                                try {
+                                    return (
+                                        <motion.div 
+                                            className="h-full bg-blue-500"
+                                            initial={{ width: "0%" }}
+                                            animate="progress"
+                                            variants={progressVariants}
+                                        />
+                                    );
+                                } catch (error) {
+                                    console.error("🔧 Error rendering motion.div:", error);
+                                    return <div className="h-full bg-blue-500 w-1/2"></div>;
+                                }
+                            })()}
                         </div>
                     </div>
                 </div>

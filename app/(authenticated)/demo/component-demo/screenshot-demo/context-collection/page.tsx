@@ -9,6 +9,8 @@ import { useContextCollection } from '@/hooks/useContextCollection';
 import { Loader2 } from 'lucide-react';
 import type { AIHelpContext } from '@/types/contextCollection';
 
+// https://claude.ai/chat/327028d1-1df2-4272-816d-83c3e06f72a2
+
 export default function ContextCollectorDemo() {
   const [activeTab, setActiveTab] = useState('preview');
 

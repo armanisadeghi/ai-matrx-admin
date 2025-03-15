@@ -5,8 +5,9 @@ import {HelpCircle} from 'lucide-react';
 import {useToast} from '@/components/ui/use-toast';
 import {useContextCollection} from '@/hooks/useContextCollection';
 import {AIHelpDialog} from './AIHelpDialog';
-import type {ImageQuality} from '@/types/contextCollection';
+
 import {AIHelpResponse} from '@/types/audioHelp';
+import { ImageQuality } from '@/types/screenshot';
 
 interface AIHelpButtonProps {
     helpDocs?: Record<string, string>;
@@ -19,6 +20,7 @@ interface AIHelpButtonProps {
         action: string;
     }[];
 }
+// https://claude.ai/chat/327028d1-1df2-4272-816d-83c3e06f72a2
 
 
 export function AIHelpButton(

@@ -8,7 +8,7 @@ import ModelSelection from "@/features/chat/ui-parts/prompt-input/ModelSelection
 import { LiaLightbulbSolid } from "react-icons/lia";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import { LuSearchCheck } from "react-icons/lu";
-import ToggleButton from "./ToggleButton";
+import ToggleButton from "../../../../components/matrx/toggles/ToggleButton";
 import { BsCloudUpload } from "react-icons/bs";
 import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWithRouting";
 import { throttle } from "lodash";

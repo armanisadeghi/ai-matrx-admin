@@ -1,38 +1,37 @@
-import { useState, useCallback } from "react";
-import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWithRouting";
+import { useState, useCallback, useEffect } from "react";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 
-interface FileManagementResult {
-    files: { url: string; type: string; details?: EnhancedFileDetails }[];
-    showFileUpload: boolean;
-    isUploading: boolean;
-    toggleFileUpload: () => void;
-    addFiles: (newFiles: { url: string; type: string; details?: EnhancedFileDetails }[]) => Promise<void>;
-    removeFile: (index: number) => void;
-    clearFiles: () => void;
+interface FileManagementProps {
+    onFilesUpdate?: (files: { url: string; type: string; details?: any }[]) => void;
 }
 
-export function useFileManagement(chatHook: ConversationWithRoutingResult): FileManagementResult {
+export function useFileManagement({ onFilesUpdate }: FileManagementProps = {}) {
     const [files, setFiles] = useState<{ url: string; type: string; details?: EnhancedFileDetails }[]>([]);
     const [showFileUpload, setShowFileUpload] = useState<boolean>(false);
     const [isUploading, setIsUploading] = useState<boolean>(false);
+    const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-    const { updateFiles } = chatHook.messageCrud;
-
+    // Toggle upload component visibility
     const toggleFileUpload = useCallback(() => {
-        setShowFileUpload((prev) => !prev);
+        setShowFileUpload((prev) => {
+            return !prev;
+        });
+    }, [showFileUpload]);
+
+    // Method for FileUploadWithStorage to notify when it's uploading
+    const handleUploadStatusChange = useCallback((uploading: boolean) => {
+        setIsUploading(uploading);
     }, []);
 
+    // Add files to the manager and notify the handler
     const addFiles = useCallback(
         async (newFiles: { url: string; type: string; details?: EnhancedFileDetails }[]) => {
             try {
                 setIsUploading(true);
-
-                // Keep the full files with icons for local state
                 const allFiles = [...files, ...newFiles];
                 setFiles(allFiles);
 
-                // Sanitize files for Redux by removing non-serializable 'icon'
+                // Sanitize files for storage (remove icon which can't be serialized)
                 const sanitizedFiles = allFiles.map((file) => {
                     if (file.details) {
                         const { icon, ...serializableDetails } = file.details;
@@ -44,8 +43,13 @@ export function useFileManagement(chatHook: ConversationWithRoutingResult): File
                     return file;
                 });
 
-                // Update Redux with sanitized files
-                updateFiles(sanitizedFiles);
+                // Call the update handler if it exists
+                if (onFilesUpdate) {
+                    onFilesUpdate(sanitizedFiles);
+                } else {
+                    console.warn("⚠️ onFilesUpdate is not defined!");
+                }
+
                 setShowFileUpload(false);
             } catch (error) {
                 console.error("Error adding files:", error);
@@ -53,15 +57,17 @@ export function useFileManagement(chatHook: ConversationWithRoutingResult): File
                 setIsUploading(false);
             }
         },
-        [files, updateFiles]
+        [files, onFilesUpdate]
     );
 
+    // Remove a file at a specific index
     const removeFile = useCallback(
         (index: number) => {
             setFiles((currentFiles) => {
                 const newFiles = [...currentFiles];
                 newFiles.splice(index, 1);
-                // Update Redux with sanitized version
+
+                // Sanitize files for storage
                 const sanitizedFiles = newFiles.map((file) => {
                     if (file.details) {
                         const { icon, ...serializableDetails } = file.details;
@@ -72,25 +78,53 @@ export function useFileManagement(chatHook: ConversationWithRoutingResult): File
                     }
                     return file;
                 });
-                updateFiles(sanitizedFiles);
+
+                // Call the update handler if it exists
+                if (onFilesUpdate) {
+                    onFilesUpdate(sanitizedFiles);
+                } else {
+                    console.warn("⚠️ onFilesUpdate is not defined in removeFile!");
+                }
+
                 return newFiles;
             });
         },
-        [updateFiles]
+        [onFilesUpdate]
     );
 
+    // Clear all files
     const clearFiles = useCallback(() => {
         setFiles([]);
-        updateFiles([]);
-    }, [updateFiles]);
 
-    return {
+        // Call the update handler if it exists
+        if (onFilesUpdate) {
+            onFilesUpdate([]);
+        } else {
+            console.warn("⚠️ onFilesUpdate is not defined in clearFiles!");
+        }
+    }, [onFilesUpdate]);
+
+    const result = {
+        // File state
         files,
+
+        // UI state
         showFileUpload,
-        isUploading,
         toggleFileUpload,
+
+        // Upload status
+        isUploading,
+        handleUploadStatusChange,
+
+        // Processing status
+        isProcessing,
+        setIsProcessing,
+
+        // File operations
         addFiles,
         removeFile,
         clearFiles,
     };
+
+    return result;
 }

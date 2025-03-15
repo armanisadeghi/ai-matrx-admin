@@ -82,12 +82,12 @@ export function useQuickRef<TEntity extends EntityKeys>(entityKey: TEntity) {
 
     const getDisplayValue = React.useCallback(
         (record: EntityData<TEntity>) => {
-            const displayField = fieldInfo.find((field) => field.isDisplayField);
+            const displayField = Object.values(fieldInfo).find((field) => field.isDisplayField);
             return displayField ? record[displayField.name] || 'Unnamed Record' : 'Unnamed Record';
         },
         [fieldInfo]
     );
-
+    
     const handleSingleSelection = React.useCallback((recordKey: MatrxRecordId) => dispatch(actions.setSwitchSelectedRecord(recordKey)), [dispatch, actions]);
 
     const setSelectionMode = React.useCallback((mode: SelectionMode) => dispatch(actions.setSelectionMode(mode)), [dispatch, actions]);
