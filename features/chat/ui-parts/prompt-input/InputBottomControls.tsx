@@ -124,7 +124,7 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
 
     return (
         <>
-            <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-zinc-200 dark:bg-zinc-800 z-5">
+            <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-zinc-200 dark:bg-zinc-800 z-5 rounded-full">
                 {/* Left side controls */}
                 <div className="absolute bottom-2 left-4 flex items-center space-x-2">
                     <ToggleButton

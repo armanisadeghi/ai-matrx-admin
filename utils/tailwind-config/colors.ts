@@ -41,6 +41,9 @@ export const colors = {
         DEFAULT: "hsl(var(--warning))",
         foreground: "hsl(var(--warning-foreground))"
     },
+    zinc: {
+        '850': 'hsl(240, 4%, 13%)'  // The HSL value we calculated
+    },
     matrxback: 'hsl(var(--matrx-background))',
     chart1: 'hsl(var(--chart-1))',
     chart2: 'hsl(var(--chart-2))',

@@ -15,7 +15,6 @@ export default function EntityManagementPage() {
     handlers: {},
   });
 
-  console.log("Layout Props:", layoutProps);
 
   return (
     <div className="flex-1 p-0 gap-0 ">

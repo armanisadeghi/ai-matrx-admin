@@ -13,7 +13,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   title = "Matrx"
 }) => {
   return (
-    <header className="p-3 flex items-center justify-between bg-transparent z-10">
+    <header className="p-3 flex items-center justify-between bg-zinc-100 dark:bg-zinc-850 z-10">
       <div className="flex items-center space-x-2">
         <div className="p-1 rounded-md">
           <IconMenu2 size={20} className="text-gray-800 dark:text-gray-200" />

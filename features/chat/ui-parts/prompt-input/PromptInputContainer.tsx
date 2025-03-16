@@ -85,7 +85,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             <FileChipsWithPreview files={fileManager.files} onRemoveFile={fileManager.removeFile} />
 
             {/* Text Input with Bottom Controls */}
-            <div className="relative">
+            <div className="relative rounded-3xl">
                 <TextInput
                     content={messageContent}
                     disabled={isDisabled}
@@ -99,7 +99,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 />
 
                 {/* Bottom Controls Component */}
-                <div className="absolute bottom-0 left-0 right-0">
+                <div className="absolute bottom-0 left-0 right-0 rounded-3xl">
                     <InputBottomControls
                         isDisabled={isDisabled}
                         isSubmitting={isLocalSubmitting || isHookSubmitting}

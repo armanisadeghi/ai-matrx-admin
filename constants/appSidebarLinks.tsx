@@ -41,6 +41,7 @@ import { IoLogoReact } from "react-icons/io5";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
 import { BsFillChatRightFill, BsChatRight } from "react-icons/bs";
+import { TbRelationManyToMany } from "react-icons/tb";
 
 //brokers/component-editor
 
@@ -197,14 +198,14 @@ export const primaryLinks = [
 
 export const secondaryLinks = [
     {
-        label: "System Admin Dashboard",
+        label: "Admin Dashboard",
         href: "/admin",
         icon: <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
-        label: "Playground Test",
-        href: "/playground", // https://lucide.dev/icons/
-        icon: <Microscope className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        label: "Matrx Table",
+        href: "/tests/table-test/advanced-data-table",
+        icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Applet Components",
@@ -217,14 +218,19 @@ export const secondaryLinks = [
         icon: <LandPlot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
-        label: "AI Playground",
-        href: "/playground",
-        icon: <Repeat1 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
-    {
         label: "Socket Admin",
         href: "/admin/socketio",
         icon: <TbBrandSocketIo className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Broker Components",
+        href: "/brokers/component-editor",
+        icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Model Endpoints",
+        href: "/demo/many-to-many-ui/claude",
+        icon: <TbRelationManyToMany className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Tailwind Test",
@@ -235,11 +241,6 @@ export const secondaryLinks = [
         label: "Table Test",
         href: "/tests/table-test",
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-        label: "Form Tests",
-        href: "/tests/forms", // https://lucide.dev/icons/
-        icon: <ClipboardType className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Registered Functions",
