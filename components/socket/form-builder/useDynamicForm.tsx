@@ -1,21 +1,84 @@
 'use client';
-
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Schema, SchemaField } from "@/constants/socket-constants";
 import { formatJsonForClipboard } from "../utils/json-utils";
-
 export type FormErrors = Record<string, boolean>;
 export type FormNotices = Record<string, string>;
-
 export const useDynamicForm = (
     schema: Schema,
     onChange: (data: Record<string, any>) => void,
     initialData: Record<string, any> = {},
     onSubmit: (data: Record<string, any>) => void,
 ) => {
-    const [formData, setFormData] = useState<Record<string, any>>(initialData);
+    // Initialize formData with both initialData and defaults from schema, including nested fields
+    const getInitialFormData = useCallback(() => {
+        // Helper function to recursively apply defaults to nested objects and arrays
+        const applyDefaults = (field: SchemaField, value: any): any => {
+            // If value is already defined, use it
+            if (value !== undefined) {
+                return value;
+            }
+
+            // Handle array type with REFERENCE (nested objects within array)
+            if (field.DATA_TYPE === 'array' && field.REFERENCE) {
+                // Use field.DEFAULT if it exists and is an array, otherwise create array with one empty object
+                const arrayValue = field.DEFAULT && Array.isArray(field.DEFAULT) && field.DEFAULT.length > 0 
+                    ? [...field.DEFAULT] 
+                    : [{}];
+                
+                // Apply defaults to each item in the array
+                return arrayValue.map(item => {
+                    const newItem: Record<string, any> = {};
+                    if (field.REFERENCE) {
+                        Object.entries(field.REFERENCE).forEach(([nestedKey, nestedField]) => {
+                            newItem[nestedKey] = applyDefaults(nestedField as SchemaField, item[nestedKey]);
+                        });
+                    }
+                    return newItem;
+                });
+            } 
+            
+            // Handle array type without REFERENCE
+            else if (field.DATA_TYPE === 'array') {
+                return field.DEFAULT && Array.isArray(field.DEFAULT) ? [...field.DEFAULT] : [];
+            } 
+            
+            // Handle object with REFERENCE (nested object)
+            else if (field.REFERENCE) {
+                const objValue: Record<string, any> = {};
+                Object.entries(field.REFERENCE).forEach(([nestedKey, nestedField]) => {
+                    objValue[nestedKey] = applyDefaults(
+                        nestedField as SchemaField, 
+                        (value && typeof value === 'object') ? value[nestedKey] : undefined
+                    );
+                });
+                return objValue;
+            } 
+            
+            // Handle primitive values
+            else {
+                return field.DEFAULT;
+            }
+        };
+
+        // Apply defaults to all top-level fields
+        const defaultData = Object.fromEntries(
+            Object.entries(schema).map(([key, field]) => {
+                return [key, applyDefaults(field, initialData[key])];
+            })
+        );
+        
+        return defaultData;
+    }, [schema, initialData]);
+
+    const [formData, setFormData] = useState<Record<string, any>>(getInitialFormData);
     const [errors, setErrors] = useState<FormErrors>({});
     const [notices, setNotices] = useState<FormNotices>({});
+
+    // Notify parent of initial data with defaults
+    useEffect(() => {
+        onChange(formData);
+    }, []); // Only run once on mount
 
     const cleanObjectData = useCallback((value: any): any => {
         if (typeof value === "string") {
@@ -38,7 +101,6 @@ export const useDynamicForm = (
         }
         return value;
     }, []);
-
     const handleChange = useCallback((key: string, value: any) => {
         setFormData((prev) => {
             const newData = { ...prev };
@@ -61,7 +123,6 @@ export const useDynamicForm = (
         setErrors((prev) => ({ ...prev, [key]: false }));
         setNotices((prev) => ({ ...prev, [key]: "" }));
     }, [onChange]);
-
     const handleBlur = useCallback((key: string, field: SchemaField, value: any) => {
         if (field.DATA_TYPE === "object") {
             try {
@@ -83,7 +144,6 @@ export const useDynamicForm = (
             setErrors((prev) => ({ ...prev, [key]: false }));
         }
     }, [cleanObjectData, handleChange]);
-
     const handleSubmit = useCallback(() => {
         const validatedData = { ...formData };
         
@@ -100,7 +160,6 @@ export const useDynamicForm = (
         
         onSubmit(validatedData);
     }, [formData, schema, onSubmit, cleanObjectData]);
-
     const handleReset = useCallback(() => {
         const defaultData = Object.fromEntries(
             Object.entries(schema).map(([key, field]) => [key, field.DEFAULT])
@@ -111,7 +170,6 @@ export const useDynamicForm = (
         setNotices({});
         onChange(defaultData);
     }, [schema, onChange]);
-
     const handleCopyToClipboard = useCallback(() => {
         const textToCopy = formatJsonForClipboard(formData);
         navigator.clipboard
@@ -121,7 +179,6 @@ export const useDynamicForm = (
                 console.error("Failed to copy to clipboard:", err);
             });
     }, [formData]);
-
     const handleDeleteArrayItem = useCallback((key: string, index: number) => {
         setFormData((prev) => {
             const newData = { ...prev };
@@ -137,7 +194,6 @@ export const useDynamicForm = (
             return prev;
         });
     }, [onChange]);
-
     return {
         formData,
         errors,
@@ -150,5 +206,4 @@ export const useDynamicForm = (
         handleDeleteArrayItem,
     };
 };
-
 export type DynamicFormHook = ReturnType<typeof useDynamicForm>;

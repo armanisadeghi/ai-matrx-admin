@@ -135,7 +135,6 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
         const loadGoogleIdentityServices = () => {
             // Don't load it again if it's already in the document
             if (document.querySelector('script[src="https://accounts.google.com/gsi/client"]')) {
-                console.log("Google Identity Services script already loaded");
                 checkGoogleLoaded();
                 return;
             }
@@ -145,7 +144,6 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
             script.async = true;
             script.defer = true;
             script.onload = () => {
-                console.log("Google Identity Services script loaded");
                 checkGoogleLoaded();
             };
             script.onerror = (e) => {
@@ -158,7 +156,6 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
 
         const checkGoogleLoaded = () => {
             if (window.google && window.google.accounts) {
-                console.log("Google Identity Services detected");
                 setIsGoogleLoaded(true);
                 setIsInitializing(false);
                 initializeTokenClient();

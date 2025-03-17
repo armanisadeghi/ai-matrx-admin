@@ -1,14 +1,13 @@
 // AssistantMessage.tsx
 import React, { useState } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, RefreshCw, Edit, Share2 } from "lucide-react";
-import { Message } from "@/types/chat/chat.types";
 import ChatMarkdownDisplay from "@/components/mardown-display/ChatMarkdownDisplay";
 
 interface AssistantMessageProps {
-    message: Message;
+  content: string;
 }
 
-const AssistantMessage: React.FC<AssistantMessageProps> = ({ message }) => {
+const AssistantMessage: React.FC<AssistantMessageProps> = ({ content }) => {
     // Local state for button actions
     const [isCopied, setIsCopied] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
@@ -18,7 +17,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message }) => {
     // Handle copy to clipboard
     const handleCopy = async () => {
         try {
-            await navigator.clipboard.writeText(message.content);
+            await navigator.clipboard.writeText(content);
             setIsCopied(true);
             // Reset copy status after 2 seconds
             setTimeout(() => setIsCopied(false), 2000);
@@ -51,7 +50,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message }) => {
         <div className="flex">
             <div className="max-w-full w-full relative">
                 <ChatMarkdownDisplay
-                    content={message.content}
+                    content={content}
                     type="message"
                     role="assistant"
                     className="bg-transparent dark:bg-transparent"

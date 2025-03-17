@@ -4,7 +4,7 @@ import useMessageCrud from "../by-entity/useMessageCrud";
 import { Conversation, Message } from "@/types/chat/chat.types";
 import { MatrxRecordId } from "@/types/entityTypes";
 
-interface SaveConversationAndMessageResult {
+export interface SaveConversationAndMessageResult {
     conversationSuccess: boolean;
     messageSuccess: boolean;
     conversationId?: string;
@@ -84,7 +84,7 @@ export const useConversationMessageCrud = (): UseConversationMessageCrudReturn =
                 messageId: messageResult.id,
                 messageRecordKey: messageResult.recordKey, // Critical recordKey
                 conversation: conversationResult.fullRecord,
-                message: messageResult.fullRecord,
+                message: messageResult.message,
                 error: messageResult.success ? undefined : messageResult.error,
             };
         } catch (error) {

@@ -32,15 +32,17 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
         initialMode,
     });
 
-    const { isConversationReady } = chatHook;
+    const { isConversationReady, currentMessages, currentMessage } = chatHook;
 
     // Auto-create a new message for input when needed
     useEffect(() => {
-        if (isConversationReady && !chatHook.isComposingNewMessage && !chatHook.currentMessage) {
+        if (isConversationReady && !chatHook.isComposingNewMessage && !chatHook.currentMessage && currentMessage?.id) {
             // Create a new message for this conversation
             chatHook.createNewMessage();
         }
     }, [isConversationReady, chatHook.isComposingNewMessage, chatHook.currentMessage, chatHook]);
+
+    const isReady = isConversationReady && currentMessage?.id;
 
     return (
         <div className="relative flex flex-col h-full">
@@ -54,7 +56,7 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
 
             {/* Scrollable message area */}
             <div className="relative flex-1 overflow-y-auto scrollbar-hide pb-48 z-1">
-                <ResponseColumn messages={chatHook.currentMessages} />
+                <ResponseColumn chatHook={chatHook} />
             </div>
             
             {/* Simple blocker div with matching background */}
@@ -69,7 +71,7 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
             <div className="absolute bottom-0 left-0 right-0 z-10 bg-zinc-100 dark:bg-zinc-850">
                 <div className="p-4">
                     <div className="max-w-3xl mx-auto rounded-3xl">
-                        {isConversationReady ? (
+                        {isReady ? (
                             <PromptInputContainer disabled={!isConversationReady} chatHook={chatHook} />
                         ) : (
                             <InputPlaceholder />

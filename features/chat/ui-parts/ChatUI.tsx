@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import ResponseColumn from "@/features/chat/ui-parts/response/ResponseColumn";
-import PromptInput from "@/features/chat/ui-parts/prompt-input/PromptInput";
+import PromptInput from "@/features/chat/ui-parts/prompt-input/_dev/PromptInput";
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
 import WelcomeScreen from "@/features/chat/ui-parts/layout/WelcomeScreen";
 import { MatrxRecordId } from "@/types";

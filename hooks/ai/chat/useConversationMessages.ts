@@ -52,24 +52,6 @@ export function useConversationMessages() {
         return validMessages.sort((a, b) => a.displayOrder - b.displayOrder);
     }, [allConversationMessages]);
     
-    const finalMessageDisplayOrder = useMemo(() => {
-        if (messages.length === 0) {
-            return 0;
-        }
-        const displayOrders = messages.map((message) => message.displayOrder);
-        return Math.max(...displayOrders);
-    }, [messages]);
-    
-    const finalMessageSystemOrder = useMemo(() => {
-        if (messages.length === 0) {
-            return 1;
-        }
-        const systemOrders = messages.map((message) => message.systemOrder);
-        return Math.max(...systemOrders);
-    }, [messages]);
-    
-    const nextMessageDisplayOrder = useMemo(() => finalMessageDisplayOrder + 1, [finalMessageDisplayOrder]);
-    const nextMessageSystemOrder = useMemo(() => finalMessageSystemOrder + 1, [finalMessageSystemOrder]);
     
     // CONSISTENT DATA ACCESS - The three critical elements
     
@@ -195,12 +177,32 @@ export function useConversationMessages() {
     
     // Create a new message in the current active conversation
     const createNewMessage = useCallback((content: string = "", additionalData: Partial<Message> = {}) => {
+                
         if (!activeConversationId || isCreatingNewConversation) {
             console.error("Cannot create message: No active conversation");
             return null;
         }
         
         setIsComposingNewMessage(true);
+    
+        const nextMessageDisplayOrder = (() => {
+            
+            if (messages.length === 0) {
+                return 1;
+            }
+            const displayOrders = messages.map((message) => message.displayOrder);
+            const maxDisplayOrder = Math.max(...displayOrders);
+            return maxDisplayOrder + 1;
+        })();
+    
+        const nextMessageSystemOrder = (() => {
+            if (messages.length === 0) {
+                return 1;
+            }
+            const systemOrders = messages.map((message) => message.systemOrder);
+            const maxSystemOrder = Math.max(...systemOrders);
+            return maxSystemOrder + 1;
+        })();
         
         const messageId = messageCrud.createMessage({
             conversationId: activeConversationId,
@@ -216,10 +218,9 @@ export function useConversationMessages() {
         activeConversationId, 
         isCreatingNewConversation, 
         messageCrud, 
-        nextMessageDisplayOrder, 
-        nextMessageSystemOrder
+        messages, 
     ]);
-    
+
     // Save a message in the current active conversation
     const saveMessage = useCallback(async () => {
         if (isCreatingNewConversation) {
@@ -285,13 +286,17 @@ export function useConversationMessages() {
                 createConversationAndMessage({ label: "New Conversation" }, "");
             } else if (activeConversationId) {
                 // For existing conversations, create a new message to compose
+
+                if (messages.length === 0) return;
+
                 createNewMessage();
             }
         }
     }, [
         activeConversationId, 
         isCreatingNewConversation, 
-        isComposingNewMessage, 
+        isComposingNewMessage,
+        messages,
         messageCrud.messageId,
         createConversationAndMessage,
         createNewMessage
@@ -315,12 +320,7 @@ export function useConversationMessages() {
         // Message Management
         createNewMessage,          // Create a new message in the existing conversation
         saveMessage,               // Save the current message being composed
-        resetCurrentMessage,       // Reset/clear the current message
-        
-        // Next message ordering
-        nextMessageDisplayOrder,   // The next display order value to use
-        nextMessageSystemOrder,    // The next system order value to use
-        
+        resetCurrentMessage,       // Reset/clear the current message        
         // Conversation Management
         setActiveConversation,     // Set the active conversation
         createNewConversation,     // Create a new conversation and its first message

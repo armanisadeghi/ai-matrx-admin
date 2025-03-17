@@ -1,5 +1,20 @@
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 
+export interface MessageObject {
+    id?: string;
+    conversation_id?: string;
+    content?: string;
+    role?: string;
+    type?: string;
+    files?: any[];
+}
+
+export interface AiChat {
+    conversation_id: string;
+    message_object: MessageObject;
+    model_override?: string;
+}
+
 export interface SchemaField {
     REQUIRED: boolean;
     DEFAULT: any;
@@ -498,7 +513,6 @@ export const BROKER_DEFINITION_NEW: Schema = {
     },
 };
 
-
 export const ADD_BROKER: Schema = {
     id: {
         REQUIRED: true,
@@ -598,12 +612,109 @@ export const ADD_OTHER_OVERRIDE: Schema = {
     },
 };
 
+export const MESSAGE_OBJECT_DEFINITION: Schema = {
+    id: {
+        REQUIRED: false,
+        DEFAULT: "a9639103-f4b0-406c-a031-49d1c3a8a6a0", // change back to ""
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Tag", // Suitable icon for an ID
+    },
+    conversation_id: {
+        REQUIRED: false,
+        DEFAULT: "7ac4403c-020f-4a2e-b15d-9d07a211cbd2", // change back to ""
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Messages", // Represents conversation context
+    },
+    content: {
+        REQUIRED: false,
+        DEFAULT: "What more can you provide me?", // change back to ""
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Text", // Represents message content
+    },
+    role: {
+        REQUIRED: false,
+        DEFAULT: "user", // change back to ""
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "User", // Represents the sender's role
+    },
+    type: {
+        REQUIRED: false,
+        DEFAULT: "text", // change back to ""
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Type", // Represents message type
+    },
+    metadata: {
+        REQUIRED: false,
+        DEFAULT: {},
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Braces", // Represents file attachments
+    },
+};
+
+export const AI_CHAT: Schema = {
+    conversation_id: {
+        REQUIRED: true,
+        DEFAULT: "7ac4403c-020f-4a2e-b15d-9d07a211cbd2", // change back to null
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Messages", // Represents conversation context
+    },
+    message_object: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: MESSAGE_OBJECT_DEFINITION,
+        iconName: "MessageSquare", // Represents the chat message
+    },
+    model_override: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Brain",
+    },
+    mode_override: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Settings",
+    },
+};
+
 export const AVAILABLE_SERVICES = {
     simple_recipe: "Recipe Service",
     advanced_recipe: "Advanced Recipe Service",
     cockpit_service: "Cockpit Service",
     markdown_service: "Markdown Service",
     scrape_service: "Scrape Service",
+    chat_service: "AI Chat Service",
 } as const;
 
 export const SERVICE_TASKS = {
@@ -636,6 +747,9 @@ export const SERVICE_TASKS = {
     },
     scrape_service: {
         quick_scrape: QUICK_SCRAPE,
+    },
+    chat_service: {
+        ai_chat: AI_CHAT,
     },
 } as const;
 

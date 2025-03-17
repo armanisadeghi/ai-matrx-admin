@@ -1,9 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
-import { MatrxRecordId } from "@/types";
-import { ChatMode } from "@/types/chat/chat.types";
+import { Conversation, MatrxRecordId } from "@/types";
+import { ChatMode, Message } from "@/types/chat/chat.types";
 import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
 import useConversationRouting from "./useConversationRouting";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
+import { useChatSocket } from "@/lib/redux/socket/chat-class/useChatSocket";
+
+export interface ChatSubmitResult {
+    success: boolean;
+    conversationId?: string;
+    message?: Message;
+    error?: Error;
+    
+    // Additional useful fields that might be present
+    id?: string;
+    recordKey?: string;
+    tempRecordId?: string;
+    conversation?: Conversation;
+  }
 
 interface UseConversationWithRoutingProps {
     initialConversationId?: string;
@@ -23,7 +37,14 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     });
 
     const conversationMessagesHook = useConversationMessages();
-    const { conversationCrud, messageCrud, createNewConversation, setActiveConversation, isCreatingNewConversation, currentMessage, currentConversation, saveMessage} = conversationMessagesHook;
+    const { conversationCrud, messageCrud, createNewConversation, setActiveConversation, isCreatingNewConversation, currentMessage, currentConversation, saveMessage, createNewMessage } = conversationMessagesHook;
+
+    const chatSocketHook = useChatSocket({
+        conversationId: currentConversationId,
+    });
+
+    const {isStreaming, submitSocketMessage} = chatSocketHook;
+
 
     useEffect(() => {
         if (currentConversationId) return;
@@ -114,7 +135,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         try {
             setIsSubmitting(true);
 
-            let result: any;
+            let result: ChatSubmitResult;
 
             if (isCreatingNewConversation) {
                 result = await saveNewConversationAndNavigate();
@@ -123,6 +144,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
             }
 
             if (result.success) {
+                submitSocketMessage(currentMessage);
 
                 return true;
             } else {
@@ -161,8 +183,11 @@ export function useConversationWithRouting({ initialConversationId, initialModel
 
         fileManager,
 
+        chatSocketHook,
+
         submitChatMessage,
         isSubmitting,
+        isStreaming,
     };
 }
 

@@ -74,7 +74,7 @@ export const useCreateUpdateRecord = ({ entityKey, returnCallbackId = false, sho
     const updateField = useCallback(
         (fieldName: string, value: FieldValue) => {
             if (!currentRecordId) {
-                console.warn("Attempted to update field without a current record ID");
+                console.warn("Attempted to update field without a current record ID", fieldName, value);
                 return;
             }
             return originalUpdateField(fieldName, value);
@@ -85,7 +85,7 @@ export const useCreateUpdateRecord = ({ entityKey, returnCallbackId = false, sho
     const updateFields = useCallback(
         (updates: FieldUpdates) => {
             if (!currentRecordId) {
-                console.warn("Attempted to update fields without a current record ID");
+                console.warn("Attempted to update fields without a current record ID", updates);
                 return;
             }
             return originalUpdateFields(updates);

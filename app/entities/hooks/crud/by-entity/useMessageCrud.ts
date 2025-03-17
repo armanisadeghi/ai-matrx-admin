@@ -7,12 +7,13 @@ interface UseMessageProps {
     conversationId?: string;
 }
 
-interface SaveMessageResult {
+export interface SaveMessageResult {
     success: boolean;
     tempRecordId?: string;
     recordKey?: string;
     id?: string;
-    fullRecord?: Message;
+    message?: Message;
+    conversationId?: string;
     error?: Error;
 }
 
@@ -233,7 +234,8 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
                 tempRecordId: saveResult.result?.tempRecordId,
                 recordKey: saveResult.result?.recordKey,
                 id: saveResult.result?.data?.id,
-                fullRecord: saveResult.result?.data as Message,
+                message: saveResult.result?.data as Message,
+                conversationId: saveResult.result?.data?.conversationId,
                 error: saveResult.error,
             };
         } catch (error) {

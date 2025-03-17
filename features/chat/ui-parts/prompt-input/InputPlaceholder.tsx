@@ -1,29 +1,21 @@
 import React from 'react';
-import { FileText, X, Paperclip, Search, Mic, ArrowUp } from 'lucide-react';
-import { BsCloudUpload } from 'react-icons/bs';
-import { LuSearchCheck } from 'react-icons/lu';
+import { Paperclip, Search, Mic, ArrowUp } from 'lucide-react';
 import { LiaLightbulbSolid } from 'react-icons/lia';
-import { HiOutlineLightBulb } from 'react-icons/hi';
+import { FaMicrophoneLines } from "react-icons/fa6";
+import { LuBrainCircuit } from "react-icons/lu";
+import { LuBrain } from "react-icons/lu";
+import { CgAttachment } from "react-icons/cg";
+import { MdOutlineChecklist } from "react-icons/md";
+import { MdOutlineQuestionMark } from "react-icons/md";
+import { BsPatchQuestion } from "react-icons/bs";
 
 const InputPlaceholder = () => {
   // Static placeholder height
-  const placeholderHeight = "60px";
+  const placeholderHeight = "140px";
   
   return (
     <div className="relative">
-      {/* File Chips Area - Above the input (empty placeholder) */}
-      <div className="mb-2 flex flex-wrap gap-2 max-w-full overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-zinc-400 dark:scrollbar-thumb-zinc-600">
-        {/* Empty file chip placeholder */}
-        <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-zinc-300/80 dark:bg-zinc-700/80 text-sm text-gray-800 dark:text-gray-200 shadow-md opacity-30">
-          <FileText size={14} className="mr-1.5 text-gray-600 dark:text-gray-400" />
-          <span className="truncate max-w-[120px]">placeholder.txt</span>
-          <span className="mx-1.5 text-xs text-gray-600 dark:text-gray-400">10KB</span>
-          <button className="p-0.5 rounded-full">
-            <X size={14} className="text-gray-600 dark:text-gray-400" />
-          </button>
-        </div>
-      </div>
-      
+      {/* File Chips Area - Above the input (empty placeholder) */}      
       <div className="relative rounded-3xl bg-zinc-200 dark:bg-zinc-800 transition-all overflow-hidden">
         {/* Static textarea */}
         <div
@@ -40,33 +32,42 @@ const InputPlaceholder = () => {
         <div className="absolute bottom-0 left-0 right-0 h-[50px] bg-zinc-200 dark:bg-zinc-800 z-5">
           <div className="absolute bottom-2 left-4 flex items-center space-x-3">
             <button className="p-2 rounded-full text-gray-800 dark:text-gray-300 border border-zinc-300 dark:border-zinc-700">
-              <Paperclip size={18} />
+              <CgAttachment size={16} />
             </button>
             
             {/* Search Button Placeholder */}
             <button className="p-2 rounded-full text-gray-800 dark:text-gray-300 border border-zinc-300 dark:border-zinc-700">
-              <Search size={18} />
+              <Search size={16} />
             </button>
-            
+            <button className="p-2 rounded-full text-gray-800 dark:text-gray-300 border border-zinc-300 dark:border-zinc-700">
+              <LuBrain size={16} />
+            </button>
+            <button className="p-2 rounded-full text-gray-800 dark:text-gray-300 border border-zinc-300 dark:border-zinc-700">
+              <MdOutlineChecklist size={16} />
+            </button>
+            <button className="p-2 rounded-full text-gray-800 dark:text-gray-300 border border-zinc-300 dark:border-zinc-700">
+              <MdOutlineQuestionMark size={16} />
+            </button>
+
             {/* Tools Button Placeholder */}
             <button className="p-2 rounded-full text-gray-800 dark:text-gray-300 border border-zinc-300 dark:border-zinc-700">
-              <LiaLightbulbSolid size={18} />
+              <LiaLightbulbSolid size={16} />
             </button>
           </div>
           
           <div className="absolute bottom-2 right-4 flex items-center space-x-3">
             <button className="p-2 rounded-full border border-zinc-300 dark:border-zinc-700 text-gray-800 dark:text-gray-300">
-              <Mic size={18} />
+              <Mic size={16} />
             </button>
             
             <div className="flex items-center ml-1 relative">
               {/* Model selection component placeholder */}
-              <div className="p-2 rounded-lg bg-zinc-300 dark:bg-zinc-700 text-sm text-gray-800 dark:text-gray-300">
-                Model
+              <div className="p-2 rounded-lg text-sm text-gray-800 dark:text-gray-300">
+                Matrx AI
               </div>
               
               <button className="p-2 ml-3 rounded-full text-gray-800 dark:text-gray-300 bg-zinc-300 dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-700">
-                <ArrowUp size={18} />
+                <ArrowUp size={16} />
               </button>
             </div>
           </div>
