@@ -35,7 +35,7 @@ export class RecipeTaskData {
     private socketManager: SocketManager;
 
     constructor(recipeId: string, index: number = 0) {
-        this.socketManager = SocketManager.getInstance(); // Use singleton
+        this.socketManager = SocketManager.getInstance();
         this.recipeId = recipeId;
         this.brokerValues = [];
         this.overrides = {};

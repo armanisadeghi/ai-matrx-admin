@@ -4,15 +4,13 @@ import { ChatMode, Message } from "@/types/chat/chat.types";
 import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
 import useConversationRouting from "./useConversationRouting";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
-import { useChatSocket } from "@/lib/redux/socket/chat-class/useChatSocket";
+import { useChatSocket } from "@/lib/redux/socket/task-managers/hooks/useChatSocket";
 
 export interface ChatSubmitResult {
     success: boolean;
     conversationId?: string;
     message?: Message;
     error?: Error;
-    
-    // Additional useful fields that might be present
     id?: string;
     recordKey?: string;
     tempRecordId?: string;

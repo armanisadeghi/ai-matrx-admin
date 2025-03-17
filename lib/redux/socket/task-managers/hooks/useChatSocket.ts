@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ChatTaskManager } from "./ChatTaskManager";
+import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
 import { Message, ChatMode } from "@/types/chat/chat.types";
 
 interface UseChatSocketProps {
@@ -8,22 +8,18 @@ interface UseChatSocketProps {
     onError?: (error: string) => void;
 }
 
-export function useChatSocket({ 
-    conversationId, 
-    onResponse,
-    onError
-}: UseChatSocketProps) {
+export function useChatSocket({ conversationId, onResponse, onError }: UseChatSocketProps) {
     const [streamingResponse, setStreamingResponse] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isStreaming, setIsStreaming] = useState<boolean>(false);
-    
+
     // Create taskManager just once
     const taskManager = useRef(new ChatTaskManager()).current;
-    
+
     // Store cleanup function reference
     const cleanupRef = useRef<(() => void) | null>(null);
-    
+
     // Ensure cleanup on unmount
     useEffect(() => {
         return () => {
@@ -32,49 +28,46 @@ export function useChatSocket({
             }
         };
     }, []);
-    
+
     const submitSocketMessage = async (message: Message, modelOverride?: string, modeOverride?: ChatMode) => {
         if (message.content.trim().length === 0) {
             return;
         }
-        
+
         // Clean up any previous stream
         if (cleanupRef.current) {
             cleanupRef.current();
             cleanupRef.current = null;
         }
-        
+
         setIsLoading(true);
         setStreamingResponse("");
         setError(null);
         setIsStreaming(true);
-        
+
         try {
-            // Use the enhanced streamMessage method
-            const [cleanup, getCurrentResponse] = taskManager.streamMessage(
-                conversationId,
-                message,
-                {
+            // Use the streamMessage method from our manager
+            const [cleanup, getCurrentResponse] = taskManager.streamMessage(conversationId, message, {
+                overrides: {
                     modelOverride,
                     modeOverride,
-                    onUpdate: (_, fullText) => {
-                        setStreamingResponse(fullText);
-                        onResponse?.(fullText);
-                    },
-                    onError: (errorMsg) => {
-                        setError(errorMsg);
-                        onError?.(errorMsg);
-                        setIsStreaming(false);
-                    },
-                    onComplete: () => {
-                        setIsStreaming(false);
-                    }
-                }
-            );
-            
+                },
+                onUpdate: (_, fullText) => {
+                    setStreamingResponse(fullText);
+                    onResponse?.(fullText);
+                },
+                onError: (errorMsg) => {
+                    setError(errorMsg);
+                    onError?.(errorMsg);
+                    setIsStreaming(false);
+                },
+                onComplete: () => {
+                    setIsStreaming(false);
+                },
+            });
+
             // Store the cleanup function
             cleanupRef.current = cleanup;
-            
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An error occurred";
             setError(errorMessage);
@@ -83,7 +76,7 @@ export function useChatSocket({
         } finally {
             setIsLoading(false);
         }
-        
+
         // Return a cleanup function
         return () => {
             if (cleanupRef.current) {
@@ -93,14 +86,14 @@ export function useChatSocket({
             }
         };
     };
-    
+
     return {
         submitSocketMessage,
         streamingResponse,
         error,
         isLoading,
         isStreaming,
-        
+
         // Add a method to cancel the current stream
         cancelStream: () => {
             if (cleanupRef.current) {
@@ -108,7 +101,7 @@ export function useChatSocket({
                 cleanupRef.current = null;
                 setIsStreaming(false);
             }
-        }
+        },
     };
 }
 

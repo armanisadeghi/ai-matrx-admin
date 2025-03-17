@@ -28,8 +28,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Very Simple Chat Socket Test',
+        path: 'chat-socket-test',
         relative: true,
         description: ''
     },
