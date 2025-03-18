@@ -5,7 +5,7 @@ import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
 import useConversationRouting from "./useConversationRouting";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
 import { useChatSocket } from "@/lib/redux/socket/task-managers/hooks/useChatSocket";
-
+import { usePrepConversationSocket } from "@/lib/redux/socket/schema/hooks/usePrepConversationSocket";
 export interface ChatSubmitResult {
     success: boolean;
     conversationId?: string;
@@ -40,6 +40,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     const chatSocketHook = useChatSocket({
         conversationId: currentConversationId,
     });
+
 
     const {isStreaming, submitSocketMessage} = chatSocketHook;
 

@@ -23,7 +23,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 }) => {
     const [isLocalSubmitting, setIsLocalSubmitting] = useState<boolean>(false);
 
-    const { fileManager, currentMessage, currentConversation, messageCrud, submitChatMessage, isSubmitting: isHookSubmitting } = chatHook;
+    const { fileManager, currentMessage, currentConversation, messageCrud, createNewMessage, submitChatMessage, isSubmitting: isHookSubmitting } = chatHook;
 
     const messageContent = localContent !== undefined ? localContent : currentMessage?.content || "";
 
@@ -74,6 +74,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             return false;
         } finally {
             setIsLocalSubmitting(false);
+            createNewMessage("", {}, true);
         }
     }, [messageContent, fileManager.files.length, submitChatMessage, onMessageSent]);
 

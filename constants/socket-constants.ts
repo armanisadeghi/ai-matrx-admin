@@ -708,6 +708,21 @@ export const AI_CHAT: Schema = {
     },
 };
 
+export const PREP_CONVERSATION: Schema = {
+    conversation_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        iconName: "Messages",
+    },
+};
+
+
+
+
 export const AVAILABLE_SERVICES = {
     simple_recipe: "Recipe Service",
     advanced_recipe: "Advanced Recipe Service",
@@ -715,6 +730,7 @@ export const AVAILABLE_SERVICES = {
     markdown_service: "Markdown Service",
     scrape_service: "Scrape Service",
     chat_service: "AI Chat Service",
+    misc_service: "Misc Service",
 } as const;
 
 export const SERVICE_TASKS = {
@@ -750,8 +766,11 @@ export const SERVICE_TASKS = {
     },
     chat_service: {
         ai_chat: AI_CHAT,
+        prep_conversation: PREP_CONVERSATION,
     },
 } as const;
+
+export const SERVICE_NAMES = Object.keys(SERVICE_TASKS);
 
 export const SOCKET_TASKS: { [key: string]: Schema } = Object.entries(SERVICE_TASKS).reduce(
     (acc, [_, serviceTasks]) => ({

@@ -1,5 +1,5 @@
 import { Message, ChatMode } from "@/types/chat/chat.types";
-import { BaseTaskManager, StreamOptions } from "@/lib/redux/socket/BaseTaskManager";
+import { BaseTaskManager, StreamOptions } from "@/lib/redux/socket/task-managers/BaseTaskManager";
 import { AiChatTaskData } from "@/lib/redux/socket/chat-class/ChatTaskData";
 
 

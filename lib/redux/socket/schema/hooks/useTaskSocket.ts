@@ -1,19 +1,20 @@
+// hooks/useTaskSocket.ts - Base reusable hook
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
-import { Message, ChatMode } from "@/types/chat/chat.types";
+import { SchemaTaskManager, SchemaTaskBuilder } from "@/lib/redux/socket/schema/SchemaTaskManager";
 
-interface UseChatSocketProps {
-    conversationId: string;
+interface UseTaskSocketOptions<T, O = Record<string, any>> {
     onResponse?: (response: string) => void;
     onError?: (error: string) => void;
+    taskManager: SchemaTaskManager;
+    configureTask: (builder: SchemaTaskBuilder, payload: T, options?: O) => void;
 }
 
-export function useChatSocket({ conversationId, onResponse, onError }: UseChatSocketProps) {
+export function useTaskSocket<T, O = Record<string, any>>({ onResponse, onError, taskManager, configureTask }: UseTaskSocketOptions<T, O>) {
     const [streamingResponse, setStreamingResponse] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isStreaming, setIsStreaming] = useState<boolean>(false);
-    const taskManager = useRef(new ChatTaskManager()).current;
+
     const cleanupRef = useRef<(() => void) | null>(null);
     const onResponseRef = useRef(onResponse);
     const onErrorRef = useRef(onError);
@@ -46,12 +47,8 @@ export function useChatSocket({ conversationId, onResponse, onError }: UseChatSo
         setIsStreaming(false);
     }, []);
 
-    const submitSocketMessage = useCallback(
-        async (message: Message, modelOverride?: string, modeOverride?: ChatMode) => {
-            if (message.content.trim().length === 0) {
-                return;
-            }
-
+    const submitTask = useCallback(
+        async (payload: T, options?: O) => {
             if (cleanupRef.current) {
                 cleanupRef.current();
                 cleanupRef.current = null;
@@ -63,11 +60,10 @@ export function useChatSocket({ conversationId, onResponse, onError }: UseChatSo
             setIsStreaming(true);
 
             try {
-                const [cleanup, getCurrentResponse] = taskManager.streamMessage(conversationId, message, {
-                    overrides: {
-                        modelOverride,
-                        modeOverride,
-                    },
+                const taskBuilder = taskManager.createTask();
+                configureTask(taskBuilder, payload, options);
+
+                const [cleanup, getCurrentResponse] = taskBuilder.stream({
                     onUpdate: handleUpdate,
                     onError: handleError,
                     onComplete: handleComplete,
@@ -91,7 +87,7 @@ export function useChatSocket({ conversationId, onResponse, onError }: UseChatSo
                 }
             };
         },
-        [conversationId, handleUpdate, handleError, handleComplete, taskManager]
+        [taskManager, configureTask, handleUpdate, handleError, handleComplete]
     );
 
     const cancelStream = useCallback(() => {
@@ -103,7 +99,7 @@ export function useChatSocket({ conversationId, onResponse, onError }: UseChatSo
     }, []);
 
     return {
-        submitSocketMessage,
+        submitTask,
         streamingResponse,
         error,
         isLoading,
@@ -112,4 +108,4 @@ export function useChatSocket({ conversationId, onResponse, onError }: UseChatSo
     };
 }
 
-export type UseChatSocketResult = ReturnType<typeof useChatSocket>;
+export type UseTaskSocketResult<T, O = Record<string, any>> = ReturnType<typeof useTaskSocket<T, O>>;

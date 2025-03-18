@@ -1,4 +1,4 @@
-import { BaseTaskManager, StreamOptions } from "@/lib/redux/socket/BaseTaskManager";
+import { BaseTaskManager, StreamOptions } from "@/lib/redux/socket/task-managers/BaseTaskManager";
 import { RecipeTaskData } from "@/lib/redux/socket/recipe-class/RecipeTaskData";
 
 interface RecipeOverrides {
