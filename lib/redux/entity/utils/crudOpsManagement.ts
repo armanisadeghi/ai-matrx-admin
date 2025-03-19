@@ -63,7 +63,7 @@ export class EntityModeManager {
             // switchToSingleSelectionMode(state, lastActiveRecord);
         } else {
             // switchToNoSelectionMode(state);
-            console.log('eliminated selection mode change');
+            // console.log('eliminated selection mode change');
         }
 
         state.flags.operationMode = null;

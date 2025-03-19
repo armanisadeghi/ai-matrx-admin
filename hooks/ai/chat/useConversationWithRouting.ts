@@ -4,8 +4,7 @@ import { ChatMode, Message } from "@/types/chat/chat.types";
 import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
 import useConversationRouting from "./useConversationRouting";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
-import { useChatSocket } from "@/lib/redux/socket/task-managers/hooks/useChatSocket";
-
+import { useAiChat } from "@/providers/ai-chat/AiChatProvider";
 
 export interface ChatSubmitResult {
     success: boolean;
@@ -30,6 +29,10 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     const [isConversationReady, setIsConversationReady] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+    const { setConversationId, chatSocket } = useAiChat();
+
+    const { isStreaming, submitSocketMessage } = chatSocket
+
     const { currentModelId, currentMode, setCurrentModelId, setCurrentMode, navigateToConversation } = useConversationRouting({
         initialModelId,
         initialMode,
@@ -48,15 +51,13 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         createNewMessage,
     } = conversationMessagesHook;
 
-    const chatSocketHook = useChatSocket({
-        conversationId: currentConversationId,
-    });
-
-    const { isStreaming, submitSocketMessage } = chatSocketHook;
-
+    // Update the provider's conversation ID when our local ID changes
     useEffect(() => {
-        console.log("Is Streaming", isStreaming);
-    }, [isStreaming]);
+        if (currentConversationId) {
+            setConversationId(currentConversationId);
+        }
+    }, [currentConversationId, setConversationId]);
+
 
     useEffect(() => {
         if (currentConversationId) return;
@@ -171,7 +172,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         } finally {
             setIsSubmitting(false);
         }
-    }, [fileManager, messageCrud, isCreatingNewConversation, saveNewConversationAndNavigate, saveMessage]);
+    }, [isCreatingNewConversation, saveNewConversationAndNavigate, saveMessage, chatSocket, currentMessage]);
 
     return {
         ...conversationMessagesHook,
@@ -194,8 +195,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         updateChatMetadata,
 
         fileManager,
-
-        chatSocketHook,
+        chatSocket,
 
         submitChatMessage,
         isSubmitting,

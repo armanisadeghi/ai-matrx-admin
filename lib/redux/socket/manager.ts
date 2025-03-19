@@ -98,7 +98,6 @@ export class SocketManager {
             });
 
             this.registerEventHandlers();
-            console.log(`[SOCKET MANAGER] Connected to ${socketAddress}/UserSession`);
         } catch (error) {
             console.error("[SOCKET MANAGER] Error connecting socket:", error);
         }
@@ -261,7 +260,6 @@ export class SocketManager {
         };
         socket.on(eventName, wrappedListener);
         this.dynamicEventListeners.set(eventName, wrappedListener);
-        console.log(`[SOCKET MANAGER] Dynamic listener added for event: ${eventName}`);
     }
 
     removeDynamicEventListener(eventName: string) {

@@ -7,6 +7,7 @@ import { watchEntitySagas } from '@/lib/redux/entity/sagas/watcherSaga';
 import {SocketManager} from "@/lib/redux/socket/manager";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import { callbackManager, Callback } from '@/utils/callbackManager';
+
 const trace = "SagaCoordinator";
 const sagaLogger = EntityLogger.createLoggerWithDefaults(trace, 'NoEntity');
 

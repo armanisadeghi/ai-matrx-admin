@@ -15,3 +15,35 @@ export const aiCallSuccess = createAction<{ response: string; aiModel: string; r
     'AI/CALL_SUCCESS'
 );
 export const aiCallFailure = createAction<{ error: any; aiModel: string; requestId: string }>('AI/CALL_FAILURE');
+
+
+export const START_STREAM = "STREAM/START";
+export const STREAM_UPDATE = "STREAM/UPDATE";
+export const STREAM_ERROR = "STREAM/ERROR";
+export const STREAM_COMPLETE = "STREAM/COMPLETE";
+export const STREAM_INFO = "STREAM/INFO";
+
+export const startStream = (eventName: string) => ({
+    type: START_STREAM,
+    payload: { eventName },
+});
+
+export const streamUpdate = (eventName: string, chunk: string, fullText: string) => ({
+    type: STREAM_UPDATE,
+    payload: { eventName, chunk, fullText },
+});
+
+export const streamError = (eventName: string, error: string, isFatal: boolean) => ({
+    type: STREAM_ERROR,
+    payload: { eventName, error, isFatal },
+});
+
+export const streamComplete = (eventName: string, fullText: string) => ({
+    type: STREAM_COMPLETE,
+    payload: { eventName, fullText },
+});
+
+export const streamInfo = (eventName: string, status: string, message: string, data?: any) => ({
+    type: STREAM_INFO,
+    payload: { eventName, status, message, data },
+});

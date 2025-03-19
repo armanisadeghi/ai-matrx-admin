@@ -8,9 +8,12 @@ interface UseConversationRoutingProps {
     initialMode?: ChatMode;
 }
 
+const DEFAULT_MODEL_ID = "49848d52-9cc8-4ce4-bacb-32aa2201cd10";
+const DEFAULT_MODE = "general" as ChatMode;
+
 export const useConversationRouting = ({ 
-    initialModelId, 
-    initialMode = "general",
+    initialModelId = DEFAULT_MODEL_ID, 
+    initialMode = DEFAULT_MODE,
 }: UseConversationRoutingProps) => {
     const router = useRouter();
     const pathname = usePathname();

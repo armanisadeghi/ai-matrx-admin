@@ -64,9 +64,7 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
             const eventName = `${sid}_${this.TASK}_${taskObj.index}`;
 
             unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
-                console.log(response); // Debug log
 
-                // Handle info messages
                 if (response?.info) {
                     const { status, message, data } = response.info;
                     console.log(`[STREAM] Info: ${status} - ${message}`);

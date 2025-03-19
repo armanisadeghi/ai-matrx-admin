@@ -3,12 +3,13 @@ import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManage
 import { Message, ChatMode } from "@/types/chat/chat.types";
 
 interface UseChatSocketProps {
-    conversationId: string;
     onResponse?: (response: string) => void;
     onError?: (error: string) => void;
+    initialConversationId?: string;
 }
 
-export function useChatSocket({ conversationId, onResponse, onError }: UseChatSocketProps) {
+export function useChatSocket({ onResponse, onError, initialConversationId }: UseChatSocketProps) {
+    const [conversationId, setConversationId] = useState<string | null>(initialConversationId);
     const [streamingResponse, setStreamingResponse] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -17,6 +18,12 @@ export function useChatSocket({ conversationId, onResponse, onError }: UseChatSo
     const cleanupRef = useRef<(() => void) | null>(null);
     const onResponseRef = useRef(onResponse);
     const onErrorRef = useRef(onError);
+
+    useEffect(() => {
+        if (initialConversationId) {
+            setConversationId(initialConversationId);
+        }
+    }, [initialConversationId]);
 
     useEffect(() => {
         onResponseRef.current = onResponse;
@@ -109,6 +116,7 @@ export function useChatSocket({ conversationId, onResponse, onError }: UseChatSo
         isLoading,
         isStreaming,
         cancelStream,
+        setConversationId,
     };
 }
 

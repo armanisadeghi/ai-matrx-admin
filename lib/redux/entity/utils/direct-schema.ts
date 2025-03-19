@@ -305,7 +305,7 @@ export const addUserIdToData = (entityKey: EntityKeys, data: any) => {
     const userId = getGlobalUserId();
     
     if (hasUserId && userId && !data['user_id']) {
-        console.log('adding userId to data for Entity: ', entityKey, { ...data, user_id: userId });
+        // console.log('adding userId to data for Entity: ', entityKey, { ...data, user_id: userId });
         return { ...data, user_id: userId };
     }
     

@@ -1,7 +1,8 @@
 // redux/features/socket/socketSlice.ts
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { SocketStatus } from '@/lib/socketio/types';
+
+export type SocketStatus = 'pending' | 'running' | 'completed' | 'failed';
 
 interface SocketState {
     status: SocketStatus;
@@ -11,7 +12,7 @@ interface SocketState {
 }
 
 const initialState: SocketState = {
-    status: 'not-connected',
+    status: 'pending',
     isAuthenticated: false,
     sid: null,
     error: null,
