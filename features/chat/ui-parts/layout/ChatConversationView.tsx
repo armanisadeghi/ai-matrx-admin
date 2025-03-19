@@ -35,14 +35,14 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
     const { isConversationReady, currentMessages, currentMessage, activeConversationId } = chatHook;
 
     // Auto-create a new message for input when needed
-    useEffect(() => {
-        if (activeConversationId && isConversationReady && !chatHook.isComposingNewMessage && !chatHook.currentMessage && currentMessage?.id) {
-            // Create a new message for this conversation
-            chatHook.createNewMessage();
-        }
-    }, [activeConversationId, isConversationReady, chatHook.isComposingNewMessage, chatHook.currentMessage, chatHook]);
+    // useEffect(() => {
+    //     if (activeConversationId && isConversationReady && !chatHook.isComposingNewMessage && !chatHook.currentMessage && currentMessage?.id) {
+    //         // Create a new message for this conversation
+    //         // chatHook.createNewMessage();
+    //     }
+    // }, [activeConversationId, isConversationReady, chatHook.isComposingNewMessage, chatHook.currentMessage, chatHook]);
 
-    const isReady = isConversationReady && currentMessage?.id;
+    const isReady = isConversationReady // && currentMessage?.id;
 
     return (
         <div className="relative flex flex-col h-full">

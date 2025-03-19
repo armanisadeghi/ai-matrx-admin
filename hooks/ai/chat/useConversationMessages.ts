@@ -192,7 +192,7 @@ export function useConversationMessages() {
 
             setIsComposingNewMessage(true);
 
-            const countAdjustment = add_one_to_count ? 2 : 1;
+            const countAdjustment = add_one_to_count ? 3 : 1;
 
             const nextMessageDisplayOrder = (() => {
                 if (messages.length === 0) {

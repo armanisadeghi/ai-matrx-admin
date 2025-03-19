@@ -1,21 +1,17 @@
 import { SocketManager } from "@/lib/redux/socket/manager";
 
-// Generic type for task data classes
 export interface TaskData {
     getTask(): any;
 }
 
-// Generic options for streaming
 export interface StreamOptions<T = any> {
     onUpdate?: (chunk: string, fullText: string) => void;
-    onError?: (error: string) => void;
+    onError?: (error: string, isFatal: boolean) => void;
     onComplete?: (fullText: string) => void;
+    onInfo?: (status: string, message: string, data?: any) => void;
     overrides?: T;
 }
 
-/**
- * Base class for all socket-based task managers
- */
 export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
     protected socketManager: SocketManager;
 
@@ -29,9 +25,6 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
         this.TASK = taskName;
     }
 
-    /**
-     * Sends multiple tasks and returns the event names
-     */
     async sendTasks(tasks: TData[]): Promise<string[]> {
         try {
             const taskArray = tasks.map((task) => task.getTask());
@@ -56,54 +49,89 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
         }
     }
 
-    /**
-     * Sends a single task and returns the event name
-     */
     async sendTask(task: TData): Promise<string> {
         const eventNames = await this.sendTasks([task]);
         return eventNames[0];
     }
 
-    /**
-     * Streams a task with automatic event handling
-     * Returns a cleanup function and a function to get the current response
-     */
     streamTask(task: TData, options: StreamOptions<TOverrides> = {}): [() => void, () => string] {
         let fullText = "";
         let unsubscribe: (() => void) | null = null;
 
         try {
-            // Pre-calculate the event name before sending
             const sid = this.socketManager.getSocket().id;
             const taskObj = task.getTask();
             const eventName = `${sid}_${this.TASK}_${taskObj.index}`;
 
-            // Set up event subscription first
             unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
-                let chunk = "";
+                console.log(response); // Debug log
 
-                if (response?.data) {
-                    chunk = response.data;
-                } else if (typeof response === "string") {
-                    chunk = response;
-                } else {
-                    return; // No valid data to process
+                // Handle info messages
+                if (response?.info) {
+                    const { status, message, data } = response.info;
+                    console.log(`[STREAM] Info: ${status} - ${message}`);
+                    options.onInfo?.(status, message, data);
+                    return;
                 }
 
-                fullText += chunk;
-                options.onUpdate?.(chunk, fullText);
-
-                // Check if this is the end of the stream
-                if (response?.end || response?.done) {
+                // Check for the explicit end signal
+                if (response?.end === true || response?.end === "true" || response?.end === "True") {
+                    console.log(`[STREAM] Stream ended for ${eventName}`);
                     options.onComplete?.(fullText);
+                    if (unsubscribe) {
+                        unsubscribe(); // Clean up subscription
+                        unsubscribe = null;
+                    }
+                    return;
+                }
+
+                // Process data field (chunks, errors)
+                if (response?.data !== undefined) {
+                    const data = response.data;
+
+                    // Check for error statuses within data
+                    if (data && typeof data === "object" && data.status) {
+                        if (data.status === "fatal_error") {
+                            console.error(`[STREAM] Fatal error for ${eventName}: ${data.message}`);
+                            options.onError?.(data.message, true);
+                            if (unsubscribe) {
+                                unsubscribe();
+                                unsubscribe = null;
+                            }
+                        } else if (data.status === "non_fatal_error") {
+                            console.warn(`[STREAM] Non-fatal error for ${eventName}: ${data.message}`);
+                            options.onError?.(data.message, false);
+                        }
+                        return;
+                    }
+
+                    // Handle regular data chunks
+                    let chunk = data;
+                    if (typeof data === "string" || data === null) {
+                        chunk = data;
+                    } else {
+                        console.warn(`[STREAM] Unexpected data format for ${eventName}:`, data);
+                        return;
+                    }
+
+                    // Only append non-null data (skip null from end signal)
+                    if (chunk !== null) {
+                        fullText += chunk;
+                        options.onUpdate?.(chunk, fullText);
+                    }
+                } else if (typeof response === "string") {
+                    // Fallback for raw string responses (unlikely with your server setup)
+                    fullText += response;
+                    options.onUpdate?.(response, fullText);
+                } else {
+                    console.warn(`[STREAM] Unexpected response format for ${eventName}:`, response);
                 }
             });
 
-            // Send the task after subscription is ready
             this.sendTask(task).catch((err) => {
                 const errorMessage = err instanceof Error ? err.message : "An error occurred";
-                options.onError?.(errorMessage);
-
+                console.error(`[STREAM] Task submission failed for ${eventName}:`, errorMessage);
+                options.onError?.(errorMessage, true); // Treat submission errors as fatal
                 if (unsubscribe) {
                     unsubscribe();
                     unsubscribe = null;
@@ -111,10 +139,10 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
             });
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An error occurred";
-            options.onError?.(errorMessage);
+            console.error(`[STREAM] Initialization failed:`, errorMessage);
+            options.onError?.(errorMessage, true); // Treat initialization errors as fatal
         }
 
-        // Return cleanup function and a way to get the current response
         return [
             () => {
                 if (unsubscribe) {
@@ -126,9 +154,6 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
         ];
     }
 
-    /**
-     * Enhanced method that handles the entire process and returns a Promise
-     */
     streamTaskAsync(task: TData, options: Omit<StreamOptions<TOverrides>, "onComplete"> = {}): Promise<string> {
         return new Promise((resolve, reject) => {
             const [cleanup, _] = this.streamTask(task, {

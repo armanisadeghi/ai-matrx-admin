@@ -5,7 +5,6 @@ import { MatrxRecordId } from "@/types";
 import { getPermanentId } from "@/lib/redux";
 
 interface UseConversationProps {
-    // No required props
 }
 
 interface SaveConversationResult {
@@ -47,10 +46,8 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
 
     const conversationWithDefaults = recordDataWithDefaults as Conversation | null;
 
-    // Create a new conversation with default values
     const createConversation = useCallback(
         (initialData: any = {}) => {
-            // Default metadata with all fields properly initialized
             const defaultMetadata: ConversationMetadata = {
                 currentModel: undefined,
                 currentEndpoint: undefined,
@@ -62,7 +59,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
                 ModUserContext: null,
             };
 
-            // Extract any metadata fields from the flat structure
             const metadataFields = [
                 "currentModel",
                 "currentEndpoint",
@@ -96,7 +92,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [start]
     );
 
-    // Update the label field
     const updateLabel = useCallback(
         (label: string) => {
             updateField("label", label);
@@ -104,7 +99,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField]
     );
 
-    // Update the isPublic field
     const updateIsPublic = useCallback(
         (isPublic: boolean) => {
             updateField("isPublic", isPublic);
@@ -123,7 +117,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the currentModel in metadata
     const updateCurrentModel = useCallback(
         (modelId: string | undefined) => {
             const updatedMetadata = {
@@ -135,7 +128,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the currentEndpoint in metadata
     const updateCurrentEndpoint = useCallback(
         (endpointId: string | undefined) => {
             const updatedMetadata = {
@@ -147,7 +139,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the currentMode in metadata
     const updateCurrentMode = useCallback(
         (mode: ChatMode) => {
             const updatedMetadata = {
@@ -159,7 +150,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the concurrentRecipes in metadata
     const updateConcurrentRecipes = useCallback(
         (recipeIds: string[] | null) => {
             const updatedMetadata = {
@@ -171,7 +161,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the brokerValues in metadata
     const updateBrokerValues = useCallback(
         (values: Record<string, unknown> | null) => {
             const updatedMetadata = {
@@ -183,7 +172,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the available_tools in metadata
     const updateAvailableTools = useCallback(
         (tools: string[] | null) => {
             const updatedMetadata = {
@@ -195,7 +183,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the ModAssistantContext in metadata
     const updateModAssistantContext = useCallback(
         (context: string | null) => {
             const updatedMetadata = {
@@ -207,7 +194,6 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Update the ModUserContext in metadata
     const updateModUserContext = useCallback(
         (context: string | null) => {
             const updatedMetadata = {
@@ -219,13 +205,10 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateField, conversationWithDefaults]
     );
 
-    // Batch update multiple fields at once
     const batchUpdate = useCallback(
         (updates: Partial<Conversation>) => {
-            // Filter out date fields that we don't want to manually set
             const { createdAt, updatedAt, userId, ...safeUpdates } = updates;
 
-            // Special handling for metadata to ensure we merge correctly
             if (safeUpdates.metadata) {
                 safeUpdates.metadata = {
                     ...(conversationWithDefaults?.metadata || {}),
@@ -240,9 +223,7 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         [updateFields, conversationWithDefaults]
     );
 
-    // Save the conversation to the database
     const saveConversation = useCallback(async (): Promise<SaveConversationResult> => {
-        // For conversation, we don't have required fields like we do for messages
         try {
             const saveResult = await saveAsync();
             return {
@@ -262,16 +243,13 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         }
     }, [saveAsync]);
 
-    // Reset the conversation
     const resetConversation = useCallback(() => {
         if (currentRecordId) {
             createConversation({});
         }
     }, [currentRecordId, createConversation]);
 
-    // Determine if the conversation is valid
     const isValidConversation = useMemo((): boolean => {
-        // For conversations, we just need to make sure we have a record ID
         return !!currentRecordId;
     }, [currentRecordId]);
 

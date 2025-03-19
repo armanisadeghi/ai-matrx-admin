@@ -1,52 +1,85 @@
-import React, { useMemo } from 'react';
-import UserMessage from '@/features/chat/ui-parts/response/UserMessage';
-import AssistantMessage from '@/features/chat/ui-parts/response/AssistantMessage';
-import { Message } from '@/types/chat/chat.types';
-import { ConversationWithRoutingResult } from '@/hooks/ai/chat/useConversationWithRouting';
+import React, { useMemo, useState, useEffect, useCallback } from "react";
+import UserMessage from "@/features/chat/ui-parts/response/UserMessage";
+import AssistantMessage from "@/features/chat/ui-parts/response/AssistantMessage";
+import { Message } from "@/types/chat/chat.types";
+import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWithRouting";
 
 interface ResponseColumnProps {
   chatHook: ConversationWithRoutingResult;
 }
 
-const MessageItem = React.memo(({ message }: { message: Message }) => {
-  return message.role === 'user' ? (
+const MessageItem = React.memo(({ message }: { message: Message }) =>
+  message.role === "user" ? (
     <UserMessage key={message.id} message={message} />
   ) : (
     <AssistantMessage key={message.id} content={message.content} isStreamActive={false} />
-  );
-});
+  )
+);
 
-MessageItem.displayName = 'MessageItem';
+MessageItem.displayName = "MessageItem";
 
 const ResponseColumn: React.FC<ResponseColumnProps> = ({ chatHook }) => {
   const { currentMessages, chatSocketHook } = chatHook;
   const { isStreaming, streamingResponse } = chatSocketHook;
+  const [persistedMessages, setPersistedMessages] = useState<Message[]>([]);
 
-  const visibleMessages = useMemo(() => {
-    return currentMessages.filter(
-      message => message.role === 'user' || message.role === 'assistant'
+  const baseMessages = useMemo(() =>
+    currentMessages.filter(m => m.role === "user" || m.role === "assistant"),
+    [currentMessages]
+  );
+
+  const nextDisplayOrder = useMemo(() =>
+    Math.max(...baseMessages.map(m => m.displayOrder)) + 1,
+    [baseMessages]
+  );
+
+  const nextSystemOrder = useMemo(() =>
+    Math.max(...baseMessages.map(m => m.systemOrder)) + 1,
+    [baseMessages]
+  );
+
+  const streamingMessageKey = useMemo(() =>
+    isStreaming ? `streaming-${Date.now()}` : "",
+    [isStreaming]
+  );
+
+  const persistMessage = useCallback(() => {
+    if (!streamingResponse) return;
+
+    const streamedMessage: Message = {
+      id: streamingMessageKey,
+      role: "assistant",
+      content: streamingResponse,
+      conversationId: currentMessages[0]?.conversationId ?? "",
+      type: "text",
+      displayOrder: nextDisplayOrder,
+      systemOrder: nextSystemOrder,
+    };
+
+    setPersistedMessages(prev =>
+      baseMessages.some(m => m.content === streamedMessage.content && m.role === streamedMessage.role)
+        ? prev
+        : [...prev, streamedMessage]
     );
-  }, [currentMessages]);
+  }, [streamingResponse, streamingMessageKey, nextDisplayOrder, nextSystemOrder, baseMessages]);
 
-  // Generate a unique key for the streaming message - will stay the same during a single stream session
-  const streamingMessageKey = useMemo(() => {
-    return isStreaming ? `streaming-${Date.now()}` : null;
-  }, [isStreaming]); // Only regenerate when streaming starts/stops
+  useEffect(() => {
+    if (!isStreaming) persistMessage();
+  }, [isStreaming, persistMessage]);
+
+  const visibleMessages = useMemo(() => [...baseMessages, ...persistedMessages], [baseMessages, persistedMessages]);
 
   return (
     <div className="w-full px-4 py-6">
       <div className="max-w-3xl mx-auto space-y-6">
-        {/* Regular messages from the database */}
-        {visibleMessages.map((message) => (
+        {visibleMessages.map(message => (
           <MessageItem key={message.id} message={message} />
         ))}
-        
-        {/* Show the streaming message if we're currently streaming */}
         {isStreaming && streamingResponse && (
-          <AssistantMessage 
-            key={streamingMessageKey} 
-            content={streamingResponse} 
-            isStreamActive={isStreaming}
+          <AssistantMessage
+            key={streamingMessageKey}
+            content={streamingResponse}
+            isStreamActive={true}
           />
         )}
       </div>
