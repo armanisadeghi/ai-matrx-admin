@@ -44,7 +44,7 @@ export function useConversationMessages() {
     const allConversationMessages = relationshipHook.matchingChildRecords as MessageWithKey[];
 
     useEffect(() => {
-        if (!activeConversationId || activeConversationId === NEW_CONVERSATION_ID) {
+        if (!activeConversationId || isCreatingNewConversation || activeConversationId === NEW_CONVERSATION_ID) {
             return;
         }
 
@@ -186,7 +186,7 @@ export function useConversationMessages() {
     const createNewMessage = useCallback(
         (content: string = "", additionalData: Partial<Message> = {}, add_one_to_count = false) => {
             if (!activeConversationId || isCreatingNewConversation) {
-                console.error("Cannot create message: No active conversation");
+                console.log("Cannot create message: No active conversation", activeConversationId, isCreatingNewConversation);
                 return null;
             }
 
@@ -205,7 +205,7 @@ export function useConversationMessages() {
 
             const nextMessageSystemOrder = (() => {
                 if (messages.length === 0) {
-                    return 1;
+                    return 2;
                 }
                 const systemOrders = messages.map((message) => message.systemOrder);
                 const maxSystemOrder = Math.max(...systemOrders);
@@ -220,6 +220,7 @@ export function useConversationMessages() {
                 role: "user" as MessageRole,
                 ...additionalData,
             });
+
 
             return messageId;
         },

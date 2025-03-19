@@ -5,7 +5,8 @@ import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
 import useConversationRouting from "./useConversationRouting";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
 import { useChatSocket } from "@/lib/redux/socket/task-managers/hooks/useChatSocket";
-import { usePrepConversationSocket } from "@/lib/redux/socket/schema/hooks/usePrepConversationSocket";
+
+
 export interface ChatSubmitResult {
     success: boolean;
     conversationId?: string;
@@ -15,7 +16,7 @@ export interface ChatSubmitResult {
     recordKey?: string;
     tempRecordId?: string;
     conversation?: Conversation;
-  }
+}
 
 interface UseConversationWithRoutingProps {
     initialConversationId?: string;
@@ -35,15 +36,27 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     });
 
     const conversationMessagesHook = useConversationMessages();
-    const { conversationCrud, messageCrud, createNewConversation, setActiveConversation, isCreatingNewConversation, currentMessage, currentConversation, saveMessage, createNewMessage } = conversationMessagesHook;
+    const {
+        conversationCrud,
+        messageCrud,
+        createNewConversation,
+        setActiveConversation,
+        isCreatingNewConversation,
+        currentMessage,
+        currentConversation,
+        saveMessage,
+        createNewMessage,
+    } = conversationMessagesHook;
 
     const chatSocketHook = useChatSocket({
         conversationId: currentConversationId,
     });
 
+    const { isStreaming, submitSocketMessage } = chatSocketHook;
 
-    const {isStreaming, submitSocketMessage} = chatSocketHook;
-
+    useEffect(() => {
+        console.log("Is Streaming", isStreaming);
+    }, [isStreaming]);
 
     useEffect(() => {
         if (currentConversationId) return;
@@ -106,16 +119,18 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         onFilesUpdate: messageCrud.updateFiles,
     });
 
-    const updateChatMetadata = useCallback((metadata: any) => {
-        if (conversationMessagesHook.currentConversation) {
-          conversationCrud.updateMetadata(metadata);
-        }
-        if (conversationMessagesHook.currentMessage) {
-          messageCrud.updateMetadata(metadata);
-        }
-      }, [conversationMessagesHook.currentConversation, conversationMessagesHook.currentMessage, conversationCrud]);
-  
-  
+    const updateChatMetadata = useCallback(
+        (metadata: any) => {
+            if (conversationMessagesHook.currentConversation) {
+                conversationCrud.updateMetadata(metadata);
+            }
+            if (conversationMessagesHook.currentMessage) {
+                messageCrud.updateMetadata(metadata);
+            }
+        },
+        [conversationMessagesHook.currentConversation, conversationMessagesHook.currentMessage, conversationCrud]
+    );
+
     const saveNewConversationAndNavigate = useCallback(async () => {
         const result = await conversationMessagesHook.saveNewConversation();
 
@@ -130,10 +145,8 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     }, [conversationMessagesHook, navigateToConversation]);
 
     const submitChatMessage = useCallback(async () => {
-
         try {
             setIsSubmitting(true);
-
             let result: ChatSubmitResult;
 
             if (isCreatingNewConversation) {
@@ -143,8 +156,10 @@ export function useConversationWithRouting({ initialConversationId, initialModel
             }
 
             if (result.success) {
+                if (isCreatingNewConversation) {
+                    await new Promise((resolve) => setTimeout(resolve, 200));
+                }
                 submitSocketMessage(currentMessage);
-
                 return true;
             } else {
                 console.error("Failed to send message:", result.error);
@@ -157,8 +172,6 @@ export function useConversationWithRouting({ initialConversationId, initialModel
             setIsSubmitting(false);
         }
     }, [fileManager, messageCrud, isCreatingNewConversation, saveNewConversationAndNavigate, saveMessage]);
-
-
 
     return {
         ...conversationMessagesHook,

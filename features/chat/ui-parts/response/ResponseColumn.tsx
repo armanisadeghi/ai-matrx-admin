@@ -12,7 +12,7 @@ const MessageItem = React.memo(({ message }: { message: Message }) => {
   return message.role === 'user' ? (
     <UserMessage key={message.id} message={message} />
   ) : (
-    <AssistantMessage key={message.id} content={message.content} />
+    <AssistantMessage key={message.id} content={message.content} isStreamActive={false} />
   );
 });
 
@@ -46,6 +46,7 @@ const ResponseColumn: React.FC<ResponseColumnProps> = ({ chatHook }) => {
           <AssistantMessage 
             key={streamingMessageKey} 
             content={streamingResponse} 
+            isStreamActive={isStreaming}
           />
         )}
       </div>

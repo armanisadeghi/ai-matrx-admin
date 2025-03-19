@@ -32,15 +32,15 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
         initialMode,
     });
 
-    const { isConversationReady, currentMessages, currentMessage } = chatHook;
+    const { isConversationReady, currentMessages, currentMessage, activeConversationId } = chatHook;
 
     // Auto-create a new message for input when needed
     useEffect(() => {
-        if (isConversationReady && !chatHook.isComposingNewMessage && !chatHook.currentMessage && currentMessage?.id) {
+        if (activeConversationId && isConversationReady && !chatHook.isComposingNewMessage && !chatHook.currentMessage && currentMessage?.id) {
             // Create a new message for this conversation
             chatHook.createNewMessage();
         }
-    }, [isConversationReady, chatHook.isComposingNewMessage, chatHook.currentMessage, chatHook]);
+    }, [activeConversationId, isConversationReady, chatHook.isComposingNewMessage, chatHook.currentMessage, chatHook]);
 
     const isReady = isConversationReady && currentMessage?.id;
 

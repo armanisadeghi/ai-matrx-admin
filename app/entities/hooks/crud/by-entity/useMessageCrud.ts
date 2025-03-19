@@ -42,6 +42,7 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
 
     const createMessage = useCallback(
         (initialData: Partial<Message> = {}) => {
+            console.log("useMessageCrud.createMessage received initialData:", JSON.stringify(initialData, null, 2));
             const baseData: Partial<Message> = {
                 ...(conversationId ? { conversationId } : {}),
                 role: "user" as MessageRole,

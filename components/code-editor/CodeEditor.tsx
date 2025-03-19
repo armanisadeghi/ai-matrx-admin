@@ -7,7 +7,6 @@ import { useMeasure } from "@uidotdev/usehooks";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useMonacoTheme } from "./useMonacoTheme";
 
 interface CodeEditorProps {
