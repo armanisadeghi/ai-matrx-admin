@@ -3,12 +3,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Search, X, CheckSquare, Square, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
 import { allTools, Tool } from "./constants";
-import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWithRouting";
+import { ChatResult } from "@/hooks/ai/chat/new/useChat";
 
 interface ToolSelectionSheetProps {
     isOpen: boolean;
     onClose: () => void;
-    chatHook: ConversationWithRoutingResult;
+    chatHook: ChatResult;
     onToolSelectionChange?: (selectedToolIds: string[]) => void;
 }
 

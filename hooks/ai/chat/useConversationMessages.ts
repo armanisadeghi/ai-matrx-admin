@@ -4,10 +4,9 @@ import { MatrxRecordId } from "@/types/entityTypes";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChatMode, Conversation, Message, MessageRole } from "@/types/chat/chat.types";
 import { useConversationMessageCrud } from "@/app/entities/hooks/crud/by-relationships/useConversationMessageCrud";
-import { usePrepConversationSocket } from "@/lib/redux/socket/schema/hooks/usePrepConversationSocket";
+import { DEFAULT_MODEL_ID, DEFAULT_MODE, NEW_CONVERSATION_ID, NEW_CONVERSATION_LABEL } from "@/constants/chat";
 
-// Special identifier for a new conversation being created
-const NEW_CONVERSATION_ID = "new-conversation";
+const DEBUG = false;
 
 type MessageWithKey = Message & { matrxRecordId: MatrxRecordId };
 
@@ -31,25 +30,20 @@ interface SaveNewConversationResult {
 
 export function useConversationMessages() {
     const relationshipHook = useOneRelationship("conversation", "message", "id", "conversationId");
-    const { conversationCrud, messageCrud, createConversationAndMessage, saveConversationAndMessage } = useConversationMessageCrud();
 
-    const { prepConversation } = usePrepConversationSocket({});
+    const { conversationCrud, messageCrud, createConversationAndMessage, saveConversationAndMessage } = useConversationMessageCrud({
+        setActiveConversation: true,
+        setActiveMessage: true,
+        conversationSelectionMode: "single",
+        messageSelectionMode: "multiple",
+    });
 
     const [isCreatingNewConversation, setIsCreatingNewConversation] = useState(false);
-
     const [isComposingNewMessage, setIsComposingNewMessage] = useState(false);
 
     const activeConversationId = relationshipHook.activeParentId;
     const activeConversation = relationshipHook.activeParentRecord as ConversationData;
     const allConversationMessages = relationshipHook.matchingChildRecords as MessageWithKey[];
-
-    useEffect(() => {
-        if (!activeConversationId || isCreatingNewConversation || activeConversationId === NEW_CONVERSATION_ID) {
-            return;
-        }
-
-        prepConversation(activeConversationId);
-    }, [activeConversationId]);
 
     const messages = useMemo(() => {
         const validMessages = allConversationMessages.filter(
@@ -58,44 +52,40 @@ export function useConversationMessages() {
         return validMessages.sort((a, b) => a.displayOrder - b.displayOrder);
     }, [allConversationMessages]);
 
-    // CONSISTENT DATA ACCESS - The three critical elements
-
-    // 1. Current Conversation - consistently available regardless of creation mode
     const currentConversation = useMemo(() => {
         return isCreatingNewConversation ? conversationCrud.conversation : activeConversation;
-    }, [isCreatingNewConversation, conversationCrud.conversation, activeConversation]);
+    }, [isCreatingNewConversation]);
 
-    // 2. Current Messages - consistently available history messages
+    useEffect(() => {
+        if (DEBUG) {
+            console.log("--useConversationMessages-- currentConversation", JSON.stringify(conversationCrud.conversation, null, 2));
+            console.log("--useConversationMessages-- activeConversation", JSON.stringify(activeConversation, null, 2));
+        }
+    }, [conversationCrud.conversation, activeConversation]);
+
     const currentMessages = useMemo(() => {
-        // If creating new conversation, there are no history messages yet
         if (isCreatingNewConversation) return [];
         return messages;
     }, [isCreatingNewConversation, messages]);
 
-    // 3. Current Message - ALWAYS the message being composed/edited
     const currentMessage = useMemo(() => {
         return messageCrud.message;
     }, [messageCrud.message]);
 
-    // Enhanced setActiveConversation to handle the "new-conversation" special case
     const setActiveConversation = useCallback(
         (conversationId: string) => {
+            console.log("---- useConversationMessages-- setActiveConversation-- ❌⚠️🛑🚫⛔");
+
             const recordKey = `id:${conversationId}` as MatrxRecordId;
 
             if (conversationId === NEW_CONVERSATION_ID) {
-                // Initialize a new conversation creation mode
                 setIsCreatingNewConversation(true);
-                // Reset any currently composing message
                 if (isComposingNewMessage) {
                     messageCrud.resetMessage();
                     setIsComposingNewMessage(false);
                 }
-                // We don't set an active parent in the relationship hook yet
-                // since we don't have a real ID until we save
             } else {
-                // Normal case - activate an existing conversation
                 setIsCreatingNewConversation(false);
-                // Reset any currently composing message
                 if (isComposingNewMessage) {
                     messageCrud.resetMessage();
                     setIsComposingNewMessage(false);
@@ -109,9 +99,9 @@ export function useConversationMessages() {
     // Create a new conversation and its first message
     const createNewConversation = useCallback(
         ({
-            label = "New Conversation",
-            currentModel = undefined,
-            currentMode = "general",
+            label = NEW_CONVERSATION_LABEL,
+            currentModel = DEFAULT_MODEL_ID,
+            currentMode = DEFAULT_MODE,
             conversationData = {},
             initialMessage = "",
             messageData = {},
@@ -127,6 +117,7 @@ export function useConversationMessages() {
             };
 
             const { conversationId, messageId } = createConversationAndMessage(fullConversationData, initialMessage, messageData);
+            relationshipHook.setActiveParent(`new-record-${conversationId}`);
 
             return { conversationId, messageId };
         },
@@ -220,7 +211,6 @@ export function useConversationMessages() {
                 role: "user" as MessageRole,
                 ...additionalData,
             });
-
 
             return messageId;
         },

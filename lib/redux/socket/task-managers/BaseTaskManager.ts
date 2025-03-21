@@ -9,163 +9,116 @@ export interface StreamOptions<T = any> {
     onError?: (error: string, isFatal: boolean) => void;
     onComplete?: (fullText: string) => void;
     onInfo?: (status: string, message: string, data?: any) => void;
-    overrides?: T;
 }
 
 export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
     protected socketManager: SocketManager;
-
-    // These will be overridden by child classes
     protected readonly SERVICE: string;
     protected readonly TASK: string;
+    private listenerSet: boolean = false;
+    private isClientSide: boolean = typeof window !== "undefined";
 
     constructor(serviceName: string, taskName: string) {
         this.socketManager = SocketManager.getInstance();
         this.SERVICE = serviceName;
         this.TASK = taskName;
+        if (this.isClientSide) {
+            this.socketManager.connect().catch((err) => {
+                console.error(`[${this.constructor.name}] Failed to connect socket:`, err);
+            });
+        }
+    }
+
+    private async getEventName(task: any): Promise<string> {
+        if (!this.isClientSide) {
+            return `${this.TASK}_${task.index}`;
+        }
+        const socket = await this.socketManager.getSocket();
+        const sid = socket ? socket.id : "pending";
+        return `${sid}_${this.TASK}_${task.index}`;
     }
 
     async sendTasks(tasks: TData[]): Promise<string[]> {
+        if (!this.isClientSide) {
+            return tasks.map((task) => `${this.TASK}_${task.getTask().index || 0}`);
+        }
+        const taskArray = tasks.map((task) => task.getTask());
         try {
-            const taskArray = tasks.map((task) => task.getTask());
-
-            await new Promise<void>((resolve, reject) => {
-                this.socketManager.getSocket().emit(this.SERVICE, taskArray, (response: any) => {
-                    if (response?.error) {
-                        reject(new Error(response.error));
-                    } else {
-                        resolve();
-                    }
-                });
-            });
-
-            return taskArray.map((task) => {
-                const sid = this.socketManager.getSocket().id;
-                return `${sid}_${this.TASK}_${task.index}`;
-            });
+            return await this.socketManager.createTask(this.SERVICE, taskArray);
         } catch (error) {
-            console.error(`[${this.constructor.name}] Failed to run tasks:`, error);
-            throw error;
+            console.error(`[${this.constructor.name}] Failed to send tasks:`, error);
+            return [];
         }
     }
 
     async sendTask(task: TData): Promise<string> {
-        const eventNames = await this.sendTasks([task]);
-        return eventNames[0];
+        const [eventName] = await this.sendTasks([task]);
+        return eventName;
     }
 
-    streamTask(task: TData, options: StreamOptions<TOverrides> = {}): [() => void, () => string] {
-        let fullText = "";
-        let unsubscribe: (() => void) | null = null;
-
-        try {
-            const sid = this.socketManager.getSocket().id;
-            const taskObj = task.getTask();
-            const eventName = `${sid}_${this.TASK}_${taskObj.index}`;
-
-            unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
-
-                if (response?.info) {
-                    const { status, message, data } = response.info;
-                    console.log(`[STREAM] Info: ${status} - ${message}`);
-                    options.onInfo?.(status, message, data);
-                    return;
-                }
-
-                // Check for the explicit end signal
-                if (response?.end === true || response?.end === "true" || response?.end === "True") {
-                    console.log(`[STREAM] Stream ended for ${eventName}`);
-                    options.onComplete?.(fullText);
-                    if (unsubscribe) {
-                        unsubscribe(); // Clean up subscription
-                        unsubscribe = null;
-                    }
-                    return;
-                }
-
-                // Process data field (chunks, errors)
-                if (response?.data !== undefined) {
-                    const data = response.data;
-
-                    // Check for error statuses within data
-                    if (data && typeof data === "object" && data.status) {
-                        if (data.status === "fatal_error") {
-                            console.error(`[STREAM] Fatal error for ${eventName}: ${data.message}`);
-                            options.onError?.(data.message, true);
-                            if (unsubscribe) {
-                                unsubscribe();
-                                unsubscribe = null;
-                            }
-                        } else if (data.status === "non_fatal_error") {
-                            console.warn(`[STREAM] Non-fatal error for ${eventName}: ${data.message}`);
-                            options.onError?.(data.message, false);
-                        }
-                        return;
-                    }
-
-                    // Handle regular data chunks
-                    let chunk = data;
-                    if (typeof data === "string" || data === null) {
-                        chunk = data;
-                    } else {
-                        console.warn(`[STREAM] Unexpected data format for ${eventName}:`, data);
-                        return;
-                    }
-
-                    // Only append non-null data (skip null from end signal)
-                    if (chunk !== null) {
-                        fullText += chunk;
-                        options.onUpdate?.(chunk, fullText);
-                    }
-                } else if (typeof response === "string") {
-                    // Fallback for raw string responses (unlikely with your server setup)
-                    fullText += response;
-                    options.onUpdate?.(response, fullText);
-                } else {
-                    console.warn(`[STREAM] Unexpected response format for ${eventName}:`, response);
-                }
-            });
-
+    async streamTask(task: TData): Promise<string> {
+        const taskObj = task.getTask();
+        const eventName = await this.getEventName(taskObj);
+        if (this.isClientSide) {
             this.sendTask(task).catch((err) => {
-                const errorMessage = err instanceof Error ? err.message : "An error occurred";
-                console.error(`[STREAM] Task submission failed for ${eventName}:`, errorMessage);
-                options.onError?.(errorMessage, true); // Treat submission errors as fatal
-                if (unsubscribe) {
-                    unsubscribe();
-                    unsubscribe = null;
-                }
+                console.error(`[${this.constructor.name}] Failed to stream task:`, err);
             });
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "An error occurred";
-            console.error(`[STREAM] Initialization failed:`, errorMessage);
-            options.onError?.(errorMessage, true); // Treat initialization errors as fatal
+        }
+        return eventName;
+    }
+
+    async subscribeToResponses(taskIndex: number, options: StreamOptions<TOverrides> = {}): Promise<() => void> {
+        if (!this.isClientSide) {
+            return () => {};
+        }
+        if (this.listenerSet) {
+            throw new Error("Listener already set for this task manager instance");
         }
 
-        return [
-            () => {
-                if (unsubscribe) {
-                    unsubscribe();
-                    unsubscribe = null;
-                }
-            },
-            () => fullText,
-        ];
-    }
+        const socket = await this.socketManager.getSocket();
+        const sid = socket ? socket.id : "pending";
+        const eventName = `${sid}_${this.TASK}_${taskIndex}`;
+        let fullText = "";
 
-    streamTaskAsync(task: TData, options: Omit<StreamOptions<TOverrides>, "onComplete"> = {}): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const [cleanup, _] = this.streamTask(task, {
-                ...options,
-                onComplete: (fullText) => {
-                    cleanup();
-                    resolve(fullText);
-                },
-                onError: (error) => {
-                    cleanup();
-                    reject(new Error(error));
-                },
-            });
+        const unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
+            if (response?.info) {
+                options.onInfo?.(response.info.status, response.info.message, response.info.data);
+                return;
+            }
+
+            if (response?.end === true || response?.end === "true" || response?.end === "True") {
+                options.onComplete?.(fullText);
+                fullText = "";
+                return;
+            }
+
+            if (response?.data !== undefined) {
+                const data = response.data;
+                if (data?.status === "fatal_error") {
+                    options.onError?.(data.message, true);
+                    fullText = "";
+                    return;
+                } else if (data?.status === "non_fatal_error") {
+                    options.onError?.(data.message, false);
+                    return;
+                }
+
+                const chunk = typeof data === "string" || data === null ? data : null;
+                if (chunk !== null) {
+                    fullText += chunk;
+                    options.onUpdate?.(chunk, fullText);
+                }
+            } else if (typeof response === "string") {
+                fullText += response;
+                options.onUpdate?.(response, fullText);
+            }
         });
+
+        this.listenerSet = true;
+        return () => {
+            unsubscribe();
+            this.listenerSet = false;
+        };
     }
 
     getSocketManager(): SocketManager {

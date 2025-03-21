@@ -1,50 +1,90 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Edit2, Copy, ChevronUp, ChevronDown, Save } from 'lucide-react';
+import { Edit2, Copy, ChevronUp, ChevronDown, Save, Clock, Check, X, ArrowDown } from 'lucide-react';
 import { Message } from '@/types/chat/chat.types';
+import dynamic from 'next/dynamic';
+
+const ReactMarkdown = dynamic(() => import("react-markdown"), {
+  ssr: false,
+});
 
 interface UserMessageProps {
   message: Message;
   onMessageUpdate?: (id: string, content: string) => void;
   onSavePrompt?: (content: string) => void;
+  onScrollToBottom?: () => void;
 }
 
 const UserMessage: React.FC<UserMessageProps> = ({ 
   message, 
   onMessageUpdate,
-  onSavePrompt
+  onSavePrompt,
+  onScrollToBottom
 }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editContent, setEditContent] = useState<string>(message.content);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
-  const [isCopied, setIsCopied] = useState<boolean>(false);
-  const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [actionFeedback, setActionFeedback] = useState<{type: string, show: boolean}>({type: '', show: false});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+  
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  
+  const formattedDateTime = new Date(message.createdAt || Date.now()).toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
+  // Handle height adjustments
   useEffect(() => {
-    if (textareaRef.current) {
+    if (contentRef.current) {
+      // Only apply max-height when collapsed
+      contentRef.current.style.maxHeight = isCollapsed ? '80px' : 'none';
+      contentRef.current.style.height = 'auto'; // Allow natural height
+    }
+  }, [isCollapsed, message.content, isEditing]);
+
+  // Auto-resize textarea when editing
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
-  }, [message.content, isEditing, editContent, isCollapsed]);
+  }, [isEditing, editContent]);
 
+  // Reset edit content when message changes
   useEffect(() => {
     if (!isEditing) {
       setEditContent(message.content);
+      setHasUnsavedChanges(false);
     }
   }, [message.content, isEditing]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(message.content).then(() => {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    });
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isEditing) return;
+      if (e.key === 'Escape') handleCancel();
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') handleSave();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isEditing, editContent]);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(message.content).then(() => showFeedback('copied'));
   };
 
-  const handleEdit = () => {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setEditContent(message.content);
     setIsEditing(true);
-    
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
@@ -55,20 +95,23 @@ const UserMessage: React.FC<UserMessageProps> = ({
   };
 
   const handleSave = () => {
-    if (onMessageUpdate) {
-      onMessageUpdate(message.id, editContent);
-    }
+    if (onMessageUpdate) onMessageUpdate(message.id, editContent);
     setIsEditing(false);
+    setHasUnsavedChanges(false);
+    showFeedback('saved');
   };
 
   const handleCancel = () => {
+    if (hasUnsavedChanges && !window.confirm('Discard unsaved changes?')) return;
     setEditContent(message.content);
     setIsEditing(false);
+    setHasUnsavedChanges(false);
   };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setEditContent(e.target.value);
-    // Resize as typing
+    const newContent = e.target.value;
+    setEditContent(newContent);
+    setHasUnsavedChanges(newContent !== message.content);
     e.target.style.height = 'auto';
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
@@ -77,134 +120,216 @@ const UserMessage: React.FC<UserMessageProps> = ({
     setIsCollapsed(!isCollapsed);
   };
 
-  const handleSavePrompt = () => {
+  const handleSavePrompt = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (onSavePrompt) {
       onSavePrompt(isEditing ? editContent : message.content);
-      setIsSaved(true);
-      setTimeout(() => setIsSaved(false), 2000);
+      showFeedback('prompt-saved');
     }
+  };
+
+  const handleScrollToBottom = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onScrollToBottom) {
+      onScrollToBottom();
+      showFeedback('scrolled');
+    }
+  };
+
+  const showFeedback = (type: string) => {
+    setActionFeedback({type, show: true});
+    setTimeout(() => setActionFeedback({type: '', show: false}), 2000);
   };
 
   return (
     <div 
-      className="flex justify-end my-2"
+      className="flex justify-end my-3 transition-all duration-200"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="max-w-[70%] relative w-full">
-        {/* Header */}
-        <div className={`
-          flex items-center justify-between 
-          px-3 py-1 rounded-t-lg
-          bg-zinc-300 dark:bg-zinc-700
-          text-xs text-gray-700 dark:text-gray-300
-          opacity-100
-        `}>
-          <div className="flex items-center space-x-1">
-            <button 
-              onClick={toggleCollapse}
-              className="p-1 rounded hover:bg-zinc-400 dark:hover:bg-zinc-600"
-              aria-label={isCollapsed ? "Expand" : "Collapse"}
-            >
-              {isCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
-            </button>
+      <div className="max-w-[90%] relative w-full shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div 
+          ref={headerRef}
+          onClick={toggleCollapse}
+          className={`
+            flex items-center justify-between 
+            px-3 py-2 rounded-t-lg
+            bg-zinc-300 dark:bg-zinc-700
+            text-xs text-gray-700 dark:text-gray-300
+            transition-all duration-200
+            ${isHovered || isEditing ? 'opacity-100' : 'opacity-80'}
+            cursor-pointer
+          `}
+        >
+          <div className="flex items-center space-x-2">
+            <span className="flex items-center text-xs opacity-70">
+              <Clock size={12} className="mr-1" />
+              {formattedDateTime}
+            </span>
+            <span className="text-xs opacity-70">
+              {isCollapsed ? 
+                <ChevronDown size={14} className="ml-1 text-blue-500" /> : 
+                <ChevronUp size={14} className="ml-1 text-blue-500" />
+              }
+            </span>
           </div>
           
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={handleScrollToBottom}
+              className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
+              aria-label="Scroll to bottom"
+              disabled={isEditing}
+            >
+              <ArrowDown size={16} className={isEditing ? "opacity-40" : ""} />
+              <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                Scroll to bottom
+              </span>
+              {actionFeedback.show && actionFeedback.type === 'scrolled' && (
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-2 py-1 rounded text-xs">
+                  Scrolled!
+                </span>
+              )}
+            </button>
+            
             <button 
               onClick={handleSavePrompt}
-              className="p-1 rounded hover:bg-zinc-400 dark:hover:bg-zinc-600 relative"
-              aria-label="Save prompt"
+              className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
+              aria-label="Save as prompt"
+              disabled={isEditing}
             >
-              <Save size={14} />
-              {isSaved && (
-                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs">
+              <Save size={16} className={isEditing ? "opacity-40" : ""} />
+              <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                Save as prompt
+              </span>
+              {actionFeedback.show && actionFeedback.type === 'prompt-saved' && (
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-2 py-1 rounded text-xs">
                   Saved!
                 </span>
               )}
             </button>
+            
             <button 
               onClick={handleCopy}
-              className="p-1 rounded hover:bg-zinc-400 dark:hover:bg-zinc-600 relative"
+              className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
               aria-label="Copy to clipboard"
+              disabled={isEditing}
             >
-              <Copy size={14} />
-              {isCopied && (
-                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs">
+              <Copy size={16} className={isEditing ? "opacity-40" : ""} />
+              <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                Copy to clipboard
+              </span>
+              {actionFeedback.show && actionFeedback.type === 'copied' && (
+                <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-2 py-1 rounded text-xs">
                   Copied!
                 </span>
               )}
             </button>
+            
             <button 
               onClick={isEditing ? handleCancel : handleEdit}
-              className="p-1 rounded hover:bg-zinc-400 dark:hover:bg-zinc-600"
+              className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
               aria-label={isEditing ? "Cancel edit" : "Edit message"}
             >
-              {isEditing ? 
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg> : 
-                <Edit2 size={14} />
-              }
+              {isEditing ? <X size={16} /> : <Edit2 size={16} />}
+              <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                {isEditing ? "Cancel edit" : "Edit message"}
+              </span>
             </button>
           </div>
         </div>
         
-        {/* Single textarea component for both modes */}
         <div className={`
-          rounded-b-2xl rounded-t-none
+          rounded-b-2xl
           ${isHovered || isEditing ? 'rounded-t-none' : 'rounded-t-2xl'} 
           bg-zinc-200 dark:bg-zinc-800 
           p-4
           text-gray-900 dark:text-gray-100
           relative
-          ${isCollapsed && !isEditing ? 'max-h-12 overflow-hidden' : ''}
           w-full
+          transition-all duration-200
+          ${isCollapsed ? 'pb-8' : ''}
         `}>
-          <textarea
-            ref={textareaRef}
-            value={isEditing ? editContent : message.content}
-            onChange={handleTextareaChange}
-            disabled={!isEditing}
-            className={`
-              w-full
-              bg-zinc-200 dark:bg-zinc-800 
-              border-none
-              focus:outline-none focus:ring-0
-              resize-none
-              text-gray-900 dark:text-gray-100
-              p-0 m-0
-              whitespace-pre-wrap
-              break-words
-              ${!isEditing ? 'cursor-default' : ''}
-              overflow-hidden
-            `}
-            style={{ 
-              fontSize: 'inherit', 
-              lineHeight: 'inherit', 
-              fontFamily: 'inherit',
-            }}
-            readOnly={!isEditing}
-          />
-          
-          {isCollapsed && !isEditing && (
-            <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-zinc-200 dark:from-zinc-800 to-transparent"></div>
-          )}
-          
-          {isEditing && (
-            <div className="flex justify-end space-x-2 mt-2">
-              <button 
-                onClick={handleCancel}
-                className="px-3 py-2 text-sm rounded-2xl text-gray-900 dark:text-gray-100 bg-zinc-300 dark:bg-zinc-900 hover:bg-zinc-400 dark:hover:bg-zinc-800"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleSave}
-                className="px-3 py-2 text-sm rounded-2xl text-gray-900 dark:text-gray-100 bg-zinc-400 dark:bg-zinc-700 hover:bg-zinc-500 dark:hover:bg-zinc-600"
-              >
-                Save
-              </button>
+          {isEditing ? (
+            <div className="flex flex-col md:flex-row md:items-start md:gap-4">
+              <textarea
+                ref={textareaRef}
+                value={editContent}
+                onChange={handleTextareaChange}
+                className={`
+                  w-full
+                  bg-zinc-200 dark:bg-zinc-800 
+                  outline-none
+                  focus:outline-none
+                  focus:ring-0
+                  border-0
+                  focus:border-0
+                  rounded-lg
+                  resize-none
+                  text-gray-900 dark:text-gray-100
+                  p-0
+                  whitespace-pre-wrap
+                  break-words
+                  scrollbar-hide
+                  transition-all duration-200
+                `}
+                style={{ 
+                  fontSize: 'inherit', 
+                  lineHeight: 'inherit', 
+                  fontFamily: 'inherit',
+                  minHeight: '100px'
+                }}
+                placeholder="Type your message here..."
+              />
+              
+              <div className="flex flex-col md:flex-row md:items-start space-y-2 md:space-y-0 md:space-x-2 mt-3 md:mt-0 md:min-w-[180px]">
+                <button 
+                  onClick={handleCancel}
+                  className="px-4 py-2 text-sm rounded-lg text-gray-700 dark:text-gray-200 bg-zinc-300 dark:bg-zinc-700 hover:bg-zinc-400 dark:hover:bg-zinc-600 transition-colors duration-150 flex items-center justify-center"
+                >
+                  <X size={16} className="mr-1" /> Cancel
+                </button>
+                <button 
+                  onClick={handleSave}
+                  className={`
+                    px-4 py-2 text-sm rounded-lg text-white
+                    ${hasUnsavedChanges 
+                      ? 'bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700' 
+                      : 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'}
+                    transition-colors duration-150 flex items-center justify-center
+                  `}
+                  disabled={!hasUnsavedChanges}
+                >
+                  <Check size={16} className="mr-1" /> Save
+                </button>
+              </div>
+              
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center md:hidden">
+                Press <kbd className="px-1 py-0.5 bg-zinc-300 dark:bg-zinc-700 rounded">Esc</kbd> to cancel, 
+                <kbd className="px-1 py-0.5 bg-zinc-300 dark:bg-zinc-700 rounded ml-1">Ctrl+Enter</kbd> to save
+              </div>
             </div>
+          ) : (
+            <>
+              <div 
+                ref={contentRef} 
+                className={`
+                  prose dark:prose-invert prose-lg max-w-none
+                  transition-all duration-300
+                  ${isCollapsed ? 'overflow-hidden fade-bottom' : 'overflow-visible'}
+                `}
+              >
+                <ReactMarkdown>
+                  {message.content}
+                </ReactMarkdown>
+              </div>
+              
+              {actionFeedback.show && actionFeedback.type === 'saved' && (
+                <div className="absolute bottom-2 right-2 bg-green-600 text-white px-2 py-1 rounded text-xs animate-fade-in-out">
+                  Changes saved
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

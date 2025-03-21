@@ -22,6 +22,7 @@ const EditableTable = ({
   theme = "professional", 
   fontSize = 16,
   onSave,
+  onToggleEditMode,
   className = "" 
 }) => {
   const gridRef = useRef(null);
@@ -343,8 +344,15 @@ const EditableTable = ({
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={copyTableToClipboard} 
+          onClick={onToggleEditMode} 
           className="flex items-center gap-2"
+        >
+          <X className="h-4 w-4" />
+          Cancel Edit
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
         >
           <Copy className="h-4 w-4" />
           Copy Table

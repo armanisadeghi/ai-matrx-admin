@@ -1,5 +1,4 @@
 // utils/tailwind-config/utilities.ts
-
 export function createUtilities({ addUtilities, theme }: any) {
     const utilities = {
         '.animate-glow': {
@@ -37,8 +36,16 @@ export function createUtilities({ addUtilities, theme }: any) {
         },
         '.bg-gradient-radial': {
             backgroundImage: 'radial-gradient(var(--tw-gradient-stops))'
+        },
+        // Added new utility class for mask effect
+        '.mask-bottom': {
+            maskImage: 'linear-gradient(to bottom, black 75%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 75%, transparent 100%)'
+        },
+        '.fade-bottom': {
+            maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
         }
     };
-
     addUtilities(utilities, ['responsive', 'hover', 'focus', 'dark']);
 }

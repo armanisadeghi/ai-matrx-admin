@@ -1,4 +1,3 @@
-// tailwind.config.ts
 import type { Config } from "tailwindcss";
 import { animations } from './utils/tailwind-config/animations';
 import { colors } from './utils/tailwind-config/colors';
@@ -40,6 +39,11 @@ const config: Config = {
             ...animations,
             minWidth: {
                 '128': '32rem',
+            },
+            maxWidth: {
+                // Adding the specific percentage-based value
+                '[80%]': '80%',
+                '[90%]': '90%', // Adding 90% for mobile use
             },
             borderRadius: {
                 xl: 'calc(var(--radius) + 4px)',
@@ -121,4 +125,5 @@ const config: Config = {
         heroui() // Added HeroUI plugin
     ]
 };
+
 export default config;

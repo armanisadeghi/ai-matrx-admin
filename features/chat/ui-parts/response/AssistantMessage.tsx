@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, RefreshCw, Edit, Share2 } from "lucide-react";
 import ChatMarkdownDisplay from "@/components/mardown-display/ChatMarkdownDisplay";
 import MessageOptionsMenu from "./MessageOptionsMenu";
+import EnhancedChatMarkdown from "@/components/mardown-display/text-block/EnhancedChatMarkdown";
 
 interface AssistantMessageProps {
   content: string;
   isStreamActive: boolean;
+  onScrollToBottom?: () => void;
 }
 
-const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamActive = false }) => {
+const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamActive = false, onScrollToBottom }) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
@@ -46,11 +48,12 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamAc
     return (
         <div className="flex">
             <div className="max-w-full w-full relative">
-                <ChatMarkdownDisplay
+                <EnhancedChatMarkdown
                     content={content}
                     type="message"
                     role="assistant"
                     className="bg-transparent dark:bg-transparent"
+                    isStreamActive={isStreamActive}
                 />
                 
                 {!isStreamActive && (

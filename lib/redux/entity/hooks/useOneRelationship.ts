@@ -4,6 +4,8 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { RootState } from "@/lib/redux/store";
 
+const DEBUG = false;
+
 export function useOneRelationship(
     parentEntity: EntityKeys,
     childEntity: EntityKeys,
@@ -18,19 +20,26 @@ export function useOneRelationship(
         dispatch(parentActions.fetchAll({}));
     }, []);
 
-    const parentRecords = useAppSelector(parentSelectors.selectAllRecords);
+    const parentRecords = useAppSelector(parentSelectors.selectAllEffectiveRecords);
     const parentRecordsArray = useAppSelector(parentSelectors.selectRecordsArray);
     const activeParentRecord = useAppSelector(parentSelectors.selectActiveRecord);
     const activeParentId = activeParentRecord?.[parentReferenceField];
     const activeParentRecordKey = useAppSelector(parentSelectors.selectActiveRecordId);
 
+    if (DEBUG) {
+        console.log("--useOneRelationship-- activeParentId", activeParentId);
+        console.log("--useOneRelationship-- activeParentRecord", activeParentRecord);
+    }
+
     const matchingChildRecords = useAppSelector((state: RootState) =>
-        childSelectors.selectRecordsByFieldValue(state, childReferenceField, activeParentId)
+        childSelectors.selectEffectiveRecordsByFieldValues(state, childReferenceField, activeParentId)
     );
 
     const setActiveParent = useCallback(
         (recordKey: MatrxRecordId) => {
-            dispatch(parentActions.fetchOneWithFkIfk({ matrxRecordId: recordKey }));
+            if (!recordKey.startsWith("new-record-")) {
+                dispatch(parentActions.fetchOneWithFkIfk({ matrxRecordId: recordKey }));
+            }
             dispatch(parentActions.setActiveRecord(recordKey));
         },
         [dispatch, parentActions]
@@ -44,6 +53,9 @@ export function useOneRelationship(
         matchingChildRecords,
         setActiveParent,
         activeParentRecordKey,
+        parentSelectors,
+        childSelectors,
+        parentActions,
     };
 }
 

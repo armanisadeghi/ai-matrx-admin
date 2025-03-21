@@ -1,25 +1,29 @@
 "use client";
-import React from "react";
+
+import React, { useEffect } from "react";
 import ActionButtons from "@/features/chat/ui-parts/prompt-input/ActionButtons";
-import { useConversationWithRouting } from "@/hooks/ai/chat/useConversationWithRouting";
 import { ChatMode } from "@/types/chat/chat.types";
 import PromptInputContainer from "../prompt-input/PromptInputContainer";
+import { ChatResult } from "@/hooks/ai/chat/new/useChat";
+import InputPlaceholder from "../prompt-input/InputPlaceholder";
 
 interface WelcomeScreenProps {
+    chatHook: ChatResult;
     initialModelId?: string;
     initialMode?: ChatMode;
 }
-const DEFAULT_MODEL_ID = "dd45b76e-f470-4765-b6c4-1a275d7860bf" // "49848d52-9cc8-4ce4-bacb-32aa2201cd10";
-const DEFAULT_MODE = "general" as ChatMode;
-const NEW_CONVERSATION_ID = "new-conversation";
 
-const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId = DEFAULT_MODEL_ID, initialMode = DEFAULT_MODE }) => {
 
-    const chatHook = useConversationWithRouting({
-        initialConversationId: NEW_CONVERSATION_ID,
-        initialModelId,
-        initialMode,
-    });
+const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ chatHook, initialModelId, initialMode }) => {
+
+    useEffect(() => {
+        if (initialModelId) {
+            chatHook.updateModel(initialModelId);
+        }
+        if (initialMode) {
+            chatHook.updateMode(initialMode);
+        }
+    }, [initialModelId, initialMode]);
 
     const { isConversationReady } = chatHook;
 

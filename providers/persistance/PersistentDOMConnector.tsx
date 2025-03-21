@@ -33,8 +33,6 @@ export const PersistentDOMConnector: React.FC = () => {
         placeholder.innerHTML = '';
         placeholder.appendChild(container);
         
-        // Log successful positioning
-        console.log(`Positioned component ${id} in its placeholder`);
       }
     });
   };
@@ -43,7 +41,7 @@ export const PersistentDOMConnector: React.FC = () => {
     // Run initial positioning
     setTimeout(() => {
       positionComponents();
-      console.log("Initial positioning complete");
+      // console.log("Initial positioning complete");
     }, 100);
     
     // Set up observer to watch for DOM changes

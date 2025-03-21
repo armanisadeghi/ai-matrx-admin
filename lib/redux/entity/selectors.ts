@@ -495,6 +495,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectActiveRecord = createSelector([selectEntity, selectActiveRecordId], (entity, activeRecordId) => {
+        if (activeRecordId?.toString().startsWith("new-record-")) {
+            return activeRecordId ? entity.unsavedRecords[activeRecordId] : null;
+        }
         return activeRecordId ? entity.records[activeRecordId] : null;
     });
 
@@ -582,6 +585,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
                             return Array.isArray(condition.value) && condition.value.includes(value);
                         case "between":
                             return Array.isArray(condition.value) && value >= condition.value[0] && value <= condition.value[1];
+                        case "is":
+                            return value === condition.value;
                         default:
                             return true;
                     }
@@ -1039,16 +1044,20 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     );
 
     const selectEffectiveRecordsByFieldValues = createSelector(
-        [selectAllEffectiveRecords, (_: RootState, field: AllEntityFieldKeys, possibleValues: any[]) => ({ field, possibleValues })],
-        (records, { field, possibleValues }): EntityDataWithKey<EntityKeys>[] => {
+        [
+            selectAllEffectiveRecords, // First input: records from state
+            (_: RootState, field: AllEntityFieldKeys) => field, // Second input: field
+            (_: RootState, field: AllEntityFieldKeys, possibleValues: any[]) => possibleValues, // Third input: possibleValues
+        ],
+        (records, field, possibleValues): EntityDataWithKey<EntityKeys>[] => {
             if (!records) return [];
             if (!possibleValues || possibleValues.length === 0) return [];
-
+    
             const filteredRecords = Object.values(records).filter((record) => possibleValues.includes(record[field]));
             return filteredRecords;
         }
     );
-
+    
     const selectEnhancedRecords = createSelector(
         [selectQuickReference, selectAllEffectiveRecordsWithKeys],
         (quickReferenceRecords, fullRecords): EnhancedRecord[] => {

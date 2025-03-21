@@ -30,7 +30,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
-import { AiChatProvider } from "@/providers/ai-chat/AiChatProvider";
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
 let globalUserId: string | null = null;
@@ -54,14 +53,14 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
             <RecoilRoot>
                 <StoreProvider initialState={initialReduxState}>
-                    <PersistentComponentProvider>
-                        <EntityProvider>
-                            <SocketProvider>
-                                <DialogProvider>
-                                    <ContextMenuProvider>
-                                        <ChipMenuProvider>
-                                            <ToastProvider>
-                                                <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                    <ThemeProvider defaultTheme="dark" enableSystem={false}>
+                        <PersistentComponentProvider>
+                            <EntityProvider>
+                                <SocketProvider>
+                                    <DialogProvider>
+                                        <ContextMenuProvider>
+                                            <ChipMenuProvider>
+                                                <ToastProvider>
                                                     <PreferenceSyncProvider>
                                                         <RefProvider>
                                                             <EditorProvider>
@@ -74,10 +73,8 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                                     <ModuleHeaderProvider>
                                                                                         <GoogleAPIProvider>
                                                                                             <SearchTabProvider isMobile={isMobile}>
-                                                                                                <AiChatProvider>
-                                                                                                    <PersistentDOMConnector />
-                                                                                                    {children}
-                                                                                                </AiChatProvider>
+                                                                                                <PersistentDOMConnector />
+                                                                                                {children}
                                                                                             </SearchTabProvider>
                                                                                         </GoogleAPIProvider>
                                                                                     </ModuleHeaderProvider>
@@ -90,14 +87,14 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                             </EditorProvider>
                                                         </RefProvider>
                                                     </PreferenceSyncProvider>
-                                                </ThemeProvider>
-                                            </ToastProvider>
-                                        </ChipMenuProvider>
-                                    </ContextMenuProvider>
-                                </DialogProvider>
-                            </SocketProvider>
-                        </EntityProvider>
-                    </PersistentComponentProvider>
+                                                </ToastProvider>
+                                            </ChipMenuProvider>
+                                        </ContextMenuProvider>
+                                    </DialogProvider>
+                                </SocketProvider>
+                            </EntityProvider>
+                        </PersistentComponentProvider>
+                    </ThemeProvider>
                 </StoreProvider>
             </RecoilRoot>
         </SchemaProvider>

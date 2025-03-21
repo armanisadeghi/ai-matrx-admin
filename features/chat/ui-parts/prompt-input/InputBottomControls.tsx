@@ -17,11 +17,11 @@ import { CgAttachment } from "react-icons/cg";
 import { MdOutlineChecklist } from "react-icons/md";
 import { MdOutlineQuestionMark } from "react-icons/md";
 import { BsPatchQuestion } from "react-icons/bs";
-
+import { ChatResult } from "@/hooks/ai/chat/new/useChat";
 interface InputBottomControlsProps {
     isDisabled: boolean;
     isSubmitting: boolean;
-    chatHook: ConversationWithRoutingResult;
+    chatHook: ChatResult;
     onSendMessage: () => void;
     onToggleTools?: () => void;
 }
@@ -36,7 +36,7 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
     // Get models from the chat basics hook
     const { models } = useChatBasics();
 
-    const { fileManager, currentMessage, messageCrud, updateModelWithKey, currentModelId, updateChatMetadata } = chatHook;
+    const { fileManager, currentMessage, messageCrud, updateModel, modelId, updateChatMetadata } = chatHook;
 
     // Internal state management
     const [isListening, setIsListening] = useState<boolean>(false);
@@ -117,9 +117,9 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
 
     const handleModelSelect = useCallback(
         (modelKey: MatrxRecordId) => {
-            updateModelWithKey(modelKey);
+            updateModel(modelKey);
         },
-        [updateModelWithKey]
+        [updateModel]
     );
 
     return (
@@ -208,7 +208,7 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
                         {/* Model selection component */}
                         <ModelSelection
                             models={models}
-                            selectedModelKey={`id:${currentModelId}` as MatrxRecordId}
+                            selectedModelKey={`id:${modelId}` as MatrxRecordId}
                             onModelSelect={handleModelSelect}
                         />
 

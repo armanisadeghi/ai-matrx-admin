@@ -1,10 +1,12 @@
+'use client';
+
 import { useCallback, useEffect, useState } from "react";
 import { Conversation, MatrxRecordId } from "@/types";
 import { ChatMode, Message } from "@/types/chat/chat.types";
 import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
 import useConversationRouting from "./useConversationRouting";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
-import { useAiChat } from "@/providers/ai-chat/AiChatProvider";
+import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
 
 export interface ChatSubmitResult {
     success: boolean;
@@ -29,9 +31,9 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     const [isConversationReady, setIsConversationReady] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    const { setConversationId, chatSocket } = useAiChat();
+    console.log("----useConversationWithRouting-- ❌⚠️🛑🚫⛔🔒💣💥🧨📛");
 
-    const { isStreaming, submitSocketMessage } = chatSocket
+    const chatManager = new ChatTaskManager();
 
     const { currentModelId, currentMode, setCurrentModelId, setCurrentMode, navigateToConversation } = useConversationRouting({
         initialModelId,
@@ -50,14 +52,6 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         saveMessage,
         createNewMessage,
     } = conversationMessagesHook;
-
-    // Update the provider's conversation ID when our local ID changes
-    useEffect(() => {
-        if (currentConversationId) {
-            setConversationId(currentConversationId);
-        }
-    }, [currentConversationId, setConversationId]);
-
 
     useEffect(() => {
         if (currentConversationId) return;
@@ -160,7 +154,8 @@ export function useConversationWithRouting({ initialConversationId, initialModel
                 if (isCreatingNewConversation) {
                     await new Promise((resolve) => setTimeout(resolve, 200));
                 }
-                submitSocketMessage(currentMessage);
+                const eventName = chatManager.streamMessage(currentConversationId, currentMessage);
+                console.log(" - eventName", eventName);
                 return true;
             } else {
                 console.error("Failed to send message:", result.error);
@@ -172,7 +167,7 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         } finally {
             setIsSubmitting(false);
         }
-    }, [isCreatingNewConversation, saveNewConversationAndNavigate, saveMessage, chatSocket, currentMessage]);
+    }, [isCreatingNewConversation, saveNewConversationAndNavigate, saveMessage, currentMessage]);
 
     return {
         ...conversationMessagesHook,
@@ -195,11 +190,9 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         updateChatMetadata,
 
         fileManager,
-        chatSocket,
 
         submitChatMessage,
         isSubmitting,
-        isStreaming,
     };
 }
 

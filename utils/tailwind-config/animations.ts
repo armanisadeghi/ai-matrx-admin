@@ -56,6 +56,12 @@ export const animations = {
                 transform: "scale(0.95)",
             },
         },
+        "fadeInOut": { // Added new fadeInOut keyframe animation
+            "0%": { opacity: "0" },
+            "15%": { opacity: "1" },
+            "85%": { opacity: "1" },
+            "100%": { opacity: "0" },
+        },
         pulse: {
             "0%, 100%": { opacity: "1" },
             "50%": { opacity: "0.7" },
@@ -119,6 +125,7 @@ export const animations = {
         "hover-bounce": "hover-bounce 0.3s var(--animated-menu-bounce)",
         "fade-in": "fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         "fade-out": "fade-out 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        "fade-in-out": "fadeInOut 2s ease-in-out", // Added new animation class
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         spin: "spin 1s linear infinite",
         pizza: "pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite",

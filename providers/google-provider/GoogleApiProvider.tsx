@@ -172,7 +172,6 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
             }
 
             try {
-                console.log("Initializing token client");
                 tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
                     client_id: clientId,
                     scope: allScopes.join(" "),

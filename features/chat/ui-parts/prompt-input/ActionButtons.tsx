@@ -14,17 +14,17 @@ import { SiDassaultsystemes } from "react-icons/si";
 import HierarchicalToggleMenu from "@/components/matrx/toggles/HierarchicalToggleMenu";
 import { programmingLibraries } from "./constants";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
-import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWithRouting";
+import { ChatResult } from "@/hooks/ai/chat/new/useChat";
 
 interface ActionButtonsProps {
     onModeSelect?: (mode: ChatMode) => void;
     className?: string;
     initialMode?: ChatMode;
-    chatHook: ConversationWithRoutingResult;
+    chatHook: ChatResult;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className = "", chatHook }) => {
-    const { currentMode, updateMode } = chatHook;
+    const { mode: currentMode, updateMode } = chatHook;
 
     const { quickReferenceKeyDisplayPairs } = useFetchQuickRef("recipe");
 

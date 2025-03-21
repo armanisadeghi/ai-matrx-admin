@@ -1,15 +1,17 @@
-import React, { useState, useCallback } from "react";
-import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWithRouting";
+"use client";
+
+import React, { useState, useCallback, useEffect } from "react";
 import TextInput from "./TextInput";
 import InputBottomControls from "./InputBottomControls";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import FileChipsWithPreview from "@/components/ui/file-preview/FileChipsWithPreview";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
+import { ChatResult } from "@/hooks/ai/chat/new/useChat";
 
 interface PromptInputContainerProps {
     onMessageSent?: () => void;
     disabled?: boolean;
-    chatHook: ConversationWithRoutingResult;
+    chatHook: ChatResult;
     localContent?: string;
     onContentChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
@@ -23,23 +25,37 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 }) => {
     const [isLocalSubmitting, setIsLocalSubmitting] = useState<boolean>(false);
 
-    const { fileManager, currentMessage, currentConversation, messageCrud, createNewMessage, submitChatMessage, isSubmitting: isHookSubmitting } = chatHook;
+    const {
+        fileManager,
+        currentMessage,
+        currentConversation,
+        messageCrud,
+        createNewMessage,
+        submitChatMessage,
+        isSubmitting: isHookSubmitting,
+    } = chatHook;
+    const [content, setContent] = useState<string>("");
 
-    const messageContent = localContent !== undefined ? localContent : currentMessage?.content || "";
+    useEffect(() => {
+        if (localContent !== undefined) {
+            setContent(localContent);
+        } else if (currentMessage) {
+            setContent(currentMessage.content);
+        }
+    }, []);
 
     const handleContentChange = useCallback(
         (content: string) => {
+            setContent(content);
             if (onContentChange) {
                 const syntheticEvent = {
                     target: { value: content },
                     currentTarget: { value: content },
                 } as unknown as React.ChangeEvent<HTMLTextAreaElement>;
                 onContentChange(syntheticEvent);
-            } else {
-                messageCrud.updateContent(content);
             }
         },
-        [messageCrud, onContentChange]
+        [onContentChange]
     );
 
     const handleFileUpload = useCallback(
@@ -50,8 +66,9 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     );
 
     const handleSendMessage = useCallback(async () => {
-        // Check if there's content to send
-        if (!messageContent.trim() && fileManager.files.length === 0) {
+        messageCrud.updateContent(content);
+
+        if (!content.trim() && fileManager.files.length === 0) {
             return;
         }
 
@@ -76,7 +93,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             setIsLocalSubmitting(false);
             createNewMessage("", {}, true);
         }
-    }, [messageContent, fileManager.files.length, submitChatMessage, onMessageSent]);
+    }, [content, fileManager.files.length, submitChatMessage, onMessageSent]);
 
     const isDisabled = disabled || isLocalSubmitting || isHookSubmitting;
 
@@ -88,7 +105,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             {/* Text Input with Bottom Controls */}
             <div className="relative rounded-3xl">
                 <TextInput
-                    content={messageContent}
+                    content={content}
                     disabled={isDisabled}
                     onContentChange={handleContentChange}
                     onSubmit={handleSendMessage}
