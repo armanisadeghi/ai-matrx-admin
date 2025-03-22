@@ -121,7 +121,7 @@ export type createRecordSuccessPayload = {
     data: EntityData<EntityKeys>;
 }
 
-export interface EntityActions<TEntity extends EntityKeys> {
+export interface ManualEntityActions<TEntity extends EntityKeys> {
     // Fetch Actions
     fetchOne: (payload: FetchOnePayload) => void;
     fetchOneSuccess: (payload: EntityData<TEntity>) => void;

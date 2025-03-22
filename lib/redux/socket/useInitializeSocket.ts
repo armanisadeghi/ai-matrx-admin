@@ -18,7 +18,6 @@ export const useInitializeSocket = () => {
     useEffect(() => {
         const socketManager = SocketManager.getInstance();
 
-        // Handle connection states
         dispatch(socketConnecting());
         socketManager
             .connect()
@@ -27,11 +26,10 @@ export const useInitializeSocket = () => {
                 dispatch(socketInitialized());
             })
             .catch((error) => {
-                console.error('Socket connection error:', error);
+                console.error('useInitializeSocket - Socket connection error:', error);
                 dispatch(socketError(error.message));
             });
 
-        // Handle disconnect on unmount
         return () => {
             socketManager.disconnect();
             dispatch(socketDisconnected());

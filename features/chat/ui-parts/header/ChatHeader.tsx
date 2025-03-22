@@ -4,7 +4,7 @@ import React from "react";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import ClientHeaderContent from "@/features/chat/ui-parts/header/ClientHeaderContent";
 import { IconMenu2, IconX } from "@tabler/icons-react";
-
+import Link from "next/link";
 interface ChatHeaderProps {
     title?: string;
 }
@@ -21,7 +21,9 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ title = "Matrx" }) => {
                 <div className="p-1 rounded-md">
                     <IconMenu2 size={20} className="text-gray-800 dark:text-gray-200" />
                 </div>
-                <span className="font-medium text-gray-800 dark:text-gray-200">{title}</span>
+                <Link href="/c">
+                    <span className="font-medium text-gray-800 dark:text-gray-200">{title}</span>
+                </Link>
             </div>
 
             {/* Client-side header right icons */}

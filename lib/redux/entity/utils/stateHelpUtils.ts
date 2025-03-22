@@ -171,10 +171,20 @@ export function getRecordIdByRecord<TEntity extends EntityKeys>(entityState: Ent
 export const addToUnsavedRecords = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId) => {
     if (!state.records[recordKey]) {
         utilsLogger.log('warn', 'Attempted to add non-existent record to unsaved', { recordKey });
+
+        const keyConversion = `id:${recordKey}`
+        const newRecordConverstion = `new-record-${recordKey}`
+        const newRecordFromKey = recordKey.replace('id:', 'new-record-')
+        if (state.records[keyConversion]) {
+            utilsLogger.log('warn', '- The provided value is an id, not a recordKey. It will NOT be converted. Find the faulty code. You should have added:', keyConversion);
+        } else if (state.records[newRecordConverstion]) {
+            utilsLogger.log('warn', '- The provided value is an id, not a recordKey. This is a new record so you should have used:', newRecordConverstion);
+        } else if (state.records[newRecordFromKey]) {
+            utilsLogger.log('warn', '- The provided value is an key starting with ID but this is a new record so you should have used:', newRecordFromKey);
+        }
         return;
     }
 
-    // Only copy if it doesn't exist in unsaved records
     if (!state.unsavedRecords[recordKey]) {
         state.unsavedRecords[recordKey] = { ...state.records[recordKey] };
         utilsLogger.log('debug', 'Added record to unsaved', { recordKey });

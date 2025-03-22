@@ -29,6 +29,7 @@ export function useChatSocket({
         return () => {
             if (cleanupRef.current) {
                 cleanupRef.current();
+                setIsStreaming(false);
             }
         };
     }, []);
@@ -42,6 +43,7 @@ export function useChatSocket({
         if (cleanupRef.current) {
             cleanupRef.current();
             cleanupRef.current = null;
+            setIsStreaming(false);
         }
         
         setIsLoading(true);
@@ -50,8 +52,8 @@ export function useChatSocket({
         setIsStreaming(true);
         
         try {
-            // Use the enhanced streamMessage method
-            const [cleanup, getCurrentResponse] = taskManager.streamMessage(
+            // Use the enhanced async streamMessage method
+            const [cleanup, getCurrentResponse] = await taskManager.streamMessage(
                 conversationId,
                 message,
                 {
@@ -65,9 +67,12 @@ export function useChatSocket({
                         setError(errorMsg);
                         onError?.(errorMsg);
                         setIsStreaming(false);
+                        setIsLoading(false);
                     },
-                    onComplete: () => {
+                    onComplete: (fullText) => {
+                        setStreamingResponse(fullText);
                         setIsStreaming(false);
+                        setIsLoading(false);
                     }
                 }
             );
@@ -75,23 +80,22 @@ export function useChatSocket({
             // Store the cleanup function
             cleanupRef.current = cleanup;
             
+            // Return cleanup function
+            return () => {
+                if (cleanupRef.current) {
+                    cleanupRef.current();
+                    cleanupRef.current = null;
+                    setIsStreaming(false);
+                }
+            };
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An error occurred";
             setError(errorMessage);
             onError?.(errorMessage);
             setIsStreaming(false);
-        } finally {
             setIsLoading(false);
+            throw err; // Re-throw to allow caller to handle if needed
         }
-        
-        // Return a cleanup function
-        return () => {
-            if (cleanupRef.current) {
-                cleanupRef.current();
-                cleanupRef.current = null;
-                setIsStreaming(false);
-            }
-        };
     };
     
     return {

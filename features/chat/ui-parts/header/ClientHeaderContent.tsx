@@ -20,7 +20,7 @@ const ClientHeaderContent: React.FC = () => {
   return (
     <div className="flex items-center space-x-3">
       {/* New Chat Button */}
-      <Link href="/chat">
+      <Link href="/c">
         <button className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800">
           <IoCreateOutline size={18} />
         </button>

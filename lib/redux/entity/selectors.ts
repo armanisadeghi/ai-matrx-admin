@@ -70,6 +70,11 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+    const selectRecordCountByFieldValue = createSelector(
+        [selectRecordsByFieldValue],
+        (filteredRecords) => filteredRecords.length
+    );
+
     const selectRecordKeysByFieldValue = createSelector([selectRecordsByFieldValue], (records): MatrxRecordId[] => {
         if (!records) return [];
 
@@ -1612,6 +1617,8 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectFieldNameGroupsWithHidden,
 
         selectRecordsByFieldValue,
+        selectRecordCountByFieldValue, // new
+
         selectFirstRecordKeyByFieldValue,
         selectRecordKeysByFieldValue,
         selectRecordsArray,

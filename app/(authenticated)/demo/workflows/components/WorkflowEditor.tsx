@@ -40,6 +40,8 @@ import EmailNode from './nodes/EmailNode';
 import FileOperationNode from './nodes/FileOperationNode';
 import AuthenticationNode from './nodes/AuthenticationNode';
 import WebhookNode from './nodes/WebhookNode';
+import PersonalTaskNode from './nodes/PersonalTaskNode';
+import CalendarEventNode from './nodes/CalendarEventNode';
 
 // Define comprehensive node data interface
 interface NodeData {
@@ -71,6 +73,8 @@ interface NodeData {
   active?: boolean;
   lastTriggered?: string | null;
   hasError?: boolean;
+  taskStatus?: string;
+  eventStatus?: string;
 }
 
 // Define node types mapping
@@ -215,7 +219,7 @@ function WorkflowEditor() {
   
   const addNewNode = useCallback((type) => {
     const newNodeId = `node-${Date.now()}`;
-    let newNodeData;
+    let newNodeData: NodeData;
     
     switch(type) {
       case 'database':
@@ -266,6 +270,19 @@ function WorkflowEditor() {
           template: 'Hello {{name}},\n\nThis is an automated message.',
         };
         break;
+      case 'personalTask':
+        newNodeData = {
+          label: 'Personal Task',
+          taskStatus: 'pending',
+        };
+        break;
+      case 'calendarEvent':
+        newNodeData = {
+          label: 'Calendar Event',
+          eventStatus: 'upcoming',
+        };
+        break;
+        
       case 'fileOperation':
         newNodeData = { 
           label: 'File Operation',
@@ -446,6 +463,21 @@ function WorkflowEditor() {
                 <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 Email
               </button>
+              <button 
+                onClick={() => addNewNode('calendarEvent')}
+                className="w-full text-left text-sm px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center gap-2"
+              >
+                <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                Calendar Event
+              </button>
+              <button 
+                onClick={() => addNewNode('personalTask')}
+                className="w-full text-left text-sm px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center gap-2"
+              >
+                <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                Personal Task
+              </button>
+
               <button 
                 onClick={() => addNewNode('fileOperation')}
                 className="w-full text-left text-sm px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center gap-2"

@@ -81,10 +81,10 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
         let fullText = "";
 
         const unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
-            if (response?.info) {
-                options.onInfo?.(response.info.status, response.info.message, response.info.data);
-                return;
-            }
+            // if (response?.info) {
+            //     options.onInfo?.(response.info.status, response.info.message, response.info.data);
+            //     return;
+            // }
 
             if (response?.end === true || response?.end === "true" || response?.end === "True") {
                 options.onComplete?.(fullText);
@@ -100,6 +100,9 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
                     return;
                 } else if (data?.status === "non_fatal_error") {
                     options.onError?.(data.message, false);
+                    return;
+                } else if (data?.info) {
+                    options.onInfo?.(data.info.status, data.info.message, data.info.data);
                     return;
                 }
 

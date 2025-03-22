@@ -1,6 +1,4 @@
 // File: app/(authenticated)/chat/page.tsx
-import WelcomeScreen from "@/features/chat/ui-parts/layout/WelcomeScreen";
-import { Suspense } from "react";
 import { Metadata } from "next";
 import { ChatMode } from "@/types/chat/chat.types";
 import { DEFAULT_MODEL_ID, DEFAULT_MODE } from "@/constants/chat";

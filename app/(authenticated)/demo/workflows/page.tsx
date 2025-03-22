@@ -3,6 +3,10 @@ import WorkflowEditor from './components/WorkflowEditor';
 import { Button } from '@/components/ui/button';
 import { Save, Play, Settings } from 'lucide-react';
 
+// https://claude.ai/chat/8bc76086-87eb-421d-991c-48b6a82bebff - started, still going.
+// https://claude.ai/chat/1bf62aa3-6322-4c2a-9a3b-8efa206de2ec - added some nodes. Can continue.
+
+
 function WorkflowPage() {
   return (
     <div className="flex flex-col h-full">

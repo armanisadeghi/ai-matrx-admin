@@ -163,7 +163,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                 takeEvery('SOCKET_ENTITY_EVENT', function* (action: any) {
                     if (action.payload.entityKey === entityKey) {
                         const { eventType, data } = action.payload;
-                        sagaLogger.log('debug', `Handling socket event ${eventType}`, action.payload);
+                        sagaLogger.log('info', `SOCKET_ENTITY_EVENT Handling socket event ${eventType}`, action.payload);
                     }
                 }),
             ]);

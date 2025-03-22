@@ -77,6 +77,14 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
         [updateField]
     );
 
+
+    useEffect(() => {
+        if (conversationId) {
+            updateConversationId(conversationId);
+        }
+    }, [conversationId, updateConversationId]);
+
+
     const updateType = useCallback(
         (type: MessageType) => {
             updateField("type", type);

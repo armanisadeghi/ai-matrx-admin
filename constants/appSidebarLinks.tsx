@@ -35,6 +35,7 @@ import {
     Brain,
     LayoutPanelLeft,
     Puzzle,
+    Workflow,
 } from "lucide-react";
 import React from "react";
 import { IoLogoReact } from "react-icons/io5";
@@ -44,6 +45,18 @@ import { BsFillChatRightFill, BsChatRight } from "react-icons/bs";
 import { TbRelationManyToMany } from "react-icons/tb";
 
 //brokers/component-editor
+
+export const logEmojis = () => {
+    console.log("🔴 Danger: ❌⚠️🛑🚫⛔🔒💣💥🧨📛");
+    console.log("🟢 Success: ✅✔️🎉🏆🥇💚🌟🙌🟩");
+    console.log("🔵 Info: ℹ️🔍💬🧠📘📖📚📝🧾📡");
+    console.log("🟠 Warning: ⚠️🔶🚧🥵🕳️🧱🔥⏳📛");
+    console.log("🟣 Action/Progress: 🕹️🔄⏳📤📥💾🚀🏃‍♂️⚙️🔧");
+    console.log("🟤 System/Technical: 🖥️💻🧠🔐🛠️🔌📡🧮🧰🗂️");
+    console.log("⚪ Communication: 📞💬📨📩✉️📱🗣️📢📣💭");
+    console.log("🟡 Learning/Knowledge: 🧠📚📝🎓🧑‍🏫📘🔍💡🧪");
+    console.log("🧊 Cold/Ice/Neutral: 🧊🕊️⚪🔲💤🌫️🪞🛋️");
+};
 
 export const primaryLinks = [
     {
@@ -231,6 +244,11 @@ export const secondaryLinks = [
         label: "Model Endpoints",
         href: "/demo/many-to-many-ui/claude",
         icon: <TbRelationManyToMany className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Workflows",
+        href: "/demo/workflows",
+        icon: <Workflow className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Tailwind Test",

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDispatch } from 'react-redux';
 import {
     socketInitialized,
@@ -10,87 +10,98 @@ import {
 } from '@/lib/redux/socket/actions';
 import { SocketManager } from "@/lib/redux/socket/manager";
 
-/**
- * Hook for socket initialization, connection management, and status tracking.
- * This hook replaces the original useInitializeSocket and adds connection status.
- */
 export const useSocketConnection = () => {
     const dispatch = useDispatch();
-    
-    // Get the singleton instance of the socket manager
     const socketManager = SocketManager.getInstance();
     
-    // Track connection state
+    // Local state for connection status
     const [isConnected, setIsConnected] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     
-    // Initialize socket and connection state
+    // Handle socket events and reconnection
+    const setupSocketListeners = useCallback((socket: any) => {
+        const onConnect = () => {
+            setIsConnected(true);
+            setIsAuthenticated(true);
+            dispatch(socketConnected());
+            dispatch(socketInitialized());
+        };
+
+        const onDisconnect = () => {
+            setIsConnected(false);
+            setIsAuthenticated(false);
+            dispatch(socketDisconnected());
+            // Attempt reconnection
+            socketManager.connect().catch((error) => {
+                console.error('Reconnection failed:', error);
+                dispatch(socketError(error.message));
+            });
+        };
+
+        const onConnectError = (error: Error) => {
+            setIsConnected(false);
+            setIsAuthenticated(false);
+            dispatch(socketError(error.message));
+        };
+
+        socket.on("connect", onConnect);
+        socket.on("disconnect", onDisconnect);
+        socket.on("connect_error", onConnectError);
+
+        return () => {
+            socket.off("connect", onConnect);
+            socket.off("disconnect", onDisconnect);
+            socket.off("connect_error", onConnectError);
+        };
+    }, [dispatch, socketManager]);
+
+    // Initialize socket connection
     useEffect(() => {
-        let mounted = true;
-        
-        // Handle connection setup
-        dispatch(socketConnecting());
-        
-        socketManager
-            .connect()
-            .then(() => {
-                if (mounted) {
+        let isMounted = true;
+        let cleanupListeners: (() => void) | undefined;
+
+        const initializeSocket = async () => {
+            try {
+                dispatch(socketConnecting());
+                await socketManager.connect();
+                const socket = await socketManager.getSocket();
+
+                if (!socket || !isMounted) return;
+
+                // Set initial state based on current socket status
+                setIsConnected(socket.connected);
+                setIsAuthenticated(socket.connected);
+
+                // Setup event listeners
+                cleanupListeners = setupSocketListeners(socket);
+
+                // If already connected, trigger connect actions
+                if (socket.connected) {
                     dispatch(socketConnected());
                     dispatch(socketInitialized());
                 }
-            })
-            .catch((error) => {
-                if (mounted) {
-                    console.error('Socket connection error:', error);
-                    dispatch(socketError(error.message));
+            } catch (error) {
+                if (isMounted) {
+                    console.error('Socket initialization failed:', error);
+                    dispatch(socketError((error as Error).message));
                 }
-            });
-            
-        // Handle disconnect on unmount
+            }
+        };
+
+        initializeSocket();
+
         return () => {
-            mounted = false;
+            isMounted = false;
+            if (cleanupListeners) cleanupListeners();
             socketManager.disconnect();
             dispatch(socketDisconnected());
         };
-    }, [dispatch]);
-    
-    // Connection checker effect
-    useEffect(() => {
-        let mounted = true;
-        let checkInterval: NodeJS.Timeout;
-        
-        const checkConnection = () => {
-            try {
-                const socket = socketManager.getSocket();
-                if (mounted && socket) {
-                    setIsConnected(socket.connected);
-                    setIsAuthenticated(socket.connected);
-                }
-            } catch (error) {
-                if (mounted) {
-                    setIsConnected(false);
-                    setIsAuthenticated(false);
-                }
-            }
-        };
-        
-        // Check immediately and then set up interval
-        checkConnection();
-        checkInterval = setInterval(checkConnection, 1000);
-        
-        // Clean up on unmount
-        return () => {
-            mounted = false;
-            if (checkInterval) {
-                clearInterval(checkInterval);
-            }
-        };
-    }, []);
-    
+    }, [dispatch, socketManager, setupSocketListeners]);
+
     return {
         socketManager,
         isConnected,
-        isAuthenticated
+        isAuthenticated,
     };
 };
 

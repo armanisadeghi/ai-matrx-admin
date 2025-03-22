@@ -36,6 +36,7 @@ export class SchemaTaskManager extends BaseTaskManager<SchemaTaskData, Record<st
     createTask(index: number = 0): SchemaTaskBuilder {
         return new SchemaTaskBuilder(this.TASK, this.schema, this, index);
     }
+    
 }
 
 export class SchemaTaskBuilder {
@@ -66,18 +67,72 @@ export class SchemaTaskBuilder {
 
     stream(options: StreamOptions<Record<string, any>> = {}): [() => void, () => string] {
         this.validateRequiredFields();
-        if (options.overrides) {
-            this.taskData.setArg("overrides", { ...(this.taskData.getData().overrides || {}), ...options.overrides });
-        }
-        return this.manager.streamTask(this.taskData, options);
+        
+        let fullText = '';
+        let eventName = '';
+        
+        // Start the task but don't wait for it
+        this.manager.streamTask(this.taskData)
+            .then(name => {
+                eventName = name;
+                // Subscribe to the event once we have the name
+                return this.manager.getSocketManager().subscribeToEvent(name, handleResponse);
+            })
+            .then(unsub => {
+                unsubscribe = unsub;
+            })
+            .catch(err => {
+                console.error('Error starting stream task:', err);
+            });
+            
+        let unsubscribe = () => {};
+        
+        // Response handler function
+        const handleResponse = (response: any) => {
+            if (response?.end === true || response?.end === "true" || response?.end === "True") {
+                options.onComplete?.(fullText);
+                return;
+            }
+
+            if (response?.data !== undefined) {
+                const data = response.data;
+                if (data?.status === "fatal_error") {
+                    options.onError?.(data.message, true);
+                    return;
+                } else if (data?.status === "non_fatal_error") {
+                    options.onError?.(data.message, false);
+                    return;
+                } else if (data?.info) {
+                    options.onInfo?.(data.info.status, data.info.message, data.info.data);
+                    return;
+                }
+
+                const chunk = typeof data === "string" || data === null ? data : null;
+                if (chunk !== null) {
+                    fullText += chunk;
+                    options.onUpdate?.(chunk, fullText);
+                }
+            } else if (typeof response === "string") {
+                fullText += response;
+                options.onUpdate?.(response, fullText);
+            }
+        };
+        
+        // Create a cleanup function and a getText function to return as a tuple
+        const cleanup = () => {
+            unsubscribe();
+        };
+        
+        const getText = () => {
+            return fullText;
+        };
+        
+        return [cleanup, getText];
     }
 
     streamAsync(options: Omit<StreamOptions<Record<string, any>>, "onComplete"> = {}): Promise<string> {
         this.validateRequiredFields();
-        if (options.overrides) {
-            this.taskData.setArg("overrides", { ...(this.taskData.getData().overrides || {}), ...options.overrides });
-        }
-        return this.manager.streamTaskAsync(this.taskData, options);
+        return this.manager.streamTask(this.taskData);
     }
 
     private validateRequiredFields(): void {

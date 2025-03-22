@@ -1,25 +1,48 @@
-// redux/features/socket/socketSlice.ts
+import { createSlice, PayloadAction, Action } from "@reduxjs/toolkit";
+import { initializeSocket, startSocketTask, emitSocketMessage } from "./socketActions";
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+export type SocketStatus = "pending" | "running" | "completed" | "failed";
+export type StreamingStatus = "inactive" | "streaming" | "completed" | "failed";
 
-export type SocketStatus = 'pending' | 'running' | 'completed' | 'failed';
+interface StreamingTask {
+    status: StreamingStatus;
+    startedAt?: number;
+    error?: string;
+}
 
 interface SocketState {
     status: SocketStatus;
     isAuthenticated: boolean;
     sid: string | null;
     error: string | null;
+    streamingTasks: Record<string, StreamingTask>;
+}
+
+interface SocketErrorAction extends Action {
+    type: "socket/error";
+    payload: string;
+}
+
+interface SocketResponseReceivedAction extends Action {
+    type: "SOCKET_RESPONSE_RECEIVED";
+    payload: {
+        sid: string;
+        eventName: string;
+        taskIndex: number;
+        data: any;
+    };
 }
 
 const initialState: SocketState = {
-    status: 'pending',
+    status: "pending",
     isAuthenticated: false,
     sid: null,
     error: null,
+    streamingTasks: {},
 };
 
 const socketSlice = createSlice({
-    name: 'socket',
+    name: "socket",
     initialState,
     reducers: {
         setSocketStatus: (state, action: PayloadAction<SocketStatus>) => {
@@ -34,6 +57,84 @@ const socketSlice = createSlice({
         setSocketError: (state, action: PayloadAction<string | null>) => {
             state.error = action.payload;
         },
+        startStreamingTask: (state, action: PayloadAction<string>) => {
+            const eventName = action.payload;
+            if (!state.streamingTasks[eventName]) {
+                state.streamingTasks[eventName] = {
+                    status: "streaming",
+                    startedAt: Date.now(),
+                };
+            }
+        },
+        endStreamingTask: (state, action: PayloadAction<{ eventName: string; status?: StreamingStatus; error?: string }>) => {
+            const { eventName, status = "completed", error } = action.payload;
+            if (state.streamingTasks[eventName]) {
+                state.streamingTasks[eventName].status = status;
+                if (error) state.streamingTasks[eventName].error = error;
+            }
+        },
+        clearStreamingTask: (state, action: PayloadAction<string>) => {
+            delete state.streamingTasks[action.payload];
+        },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase("socket/connecting", (state) => {
+                state.status = "pending";
+                state.error = null;
+            })
+            .addCase("socket/connected", (state) => {
+                state.status = "running";
+            })
+            .addCase("socket/initialized", (state) => {
+                state.status = "running";
+            })
+            .addCase("socket/disconnected", (state) => {
+                state.status = "completed";
+                state.isAuthenticated = false;
+                state.sid = null;
+                state.streamingTasks = {};
+            })
+            .addCase("socket/error", (state, action: SocketErrorAction) => {
+                state.status = "failed";
+                state.error = action.payload;
+            })
+            .addCase(initializeSocket.pending, (state) => {
+                state.status = "pending";
+                state.error = null;
+            })
+            .addCase(initializeSocket.fulfilled, (state) => {
+                state.status = "running";
+            })
+            .addCase(initializeSocket.rejected, (state, action) => {
+                state.status = "failed";
+                state.error = action.error.message || "Initialization failed";
+            })
+            .addCase(startSocketTask.fulfilled, (state, action) => {
+                const { eventName, isStreaming } = action.payload;
+                if (isStreaming) {
+                    state.streamingTasks[eventName] = {
+                        status: "streaming",
+                        startedAt: Date.now(),
+                    };
+                }
+            })
+            .addCase(startSocketTask.rejected, (state, action) => {
+                state.error = action.error.message || "Task failed";
+            })
+            .addCase(emitSocketMessage.rejected, (state, action) => {
+                state.error = action.error.message || "Message emission failed";
+            })
+            .addCase("SOCKET_RESPONSE_RECEIVED", (state, action: SocketResponseReceivedAction) => {
+                const { eventName, taskIndex, data } = action.payload;
+                const fullEventName = `${state.sid}_${eventName}_${taskIndex}`;
+                if (state.streamingTasks[fullEventName]) {
+                    if (data.completed || data.error) {
+                        state.streamingTasks[fullEventName].status = data.error ? "failed" : "completed";
+                        if (data.error) state.streamingTasks[fullEventName].error = data.error;
+                    }
+                }
+            });
     },
 });
 
@@ -42,6 +143,9 @@ export const {
     setIsAuthenticated,
     setSocketSid,
     setSocketError,
+    startStreamingTask,
+    endStreamingTask,
+    clearStreamingTask,
 } = socketSlice.actions;
 
 export default socketSlice.reducer;

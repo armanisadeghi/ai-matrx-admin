@@ -22,15 +22,17 @@ export class ChatTaskManager {
         this.socketManager = SocketManager.getInstance();
     }
 
-    /**
-     * Sends multiple user messages and returns the event names
-     */
     async sendUserMessages(tasks: AiChatTaskData[]): Promise<string[]> {
         try {
+            const socket = await this.socketManager.getSocket();
+            if (!socket) {
+                throw new Error("Socket connection unavailable");
+            }
+
             const taskArray = tasks.map((task) => task.getTask());
 
             await new Promise<void>((resolve, reject) => {
-                this.socketManager.getSocket().emit(ChatTaskManager.SERVICE, taskArray, (response: any) => {
+                socket.emit(ChatTaskManager.SERVICE, taskArray, (response: any) => {
                     if (response?.error) {
                         reject(new Error(response.error));
                     } else {
@@ -39,76 +41,81 @@ export class ChatTaskManager {
                 });
             });
 
-            return taskArray.map((task) => {
-                const sid = this.socketManager.getSocket().id;
-                return `${sid}_${ChatTaskManager.TASK}_${task.index}`;
-            });
+            const sid = socket.id || "pending";
+            return taskArray.map((task) => `${sid}_${ChatTaskManager.TASK}_${task.index}`);
         } catch (error) {
             console.error("[CHAT TASK MANAGER] Failed to run tasks:", error);
             throw error;
         }
     }
 
-    /**
-     * Sends a single user message and returns the event name
-     */
     async sendUserMessage(task: AiChatTaskData): Promise<string> {
         const eventNames = await this.sendUserMessages([task]);
         return eventNames[0];
     }
 
-    /**
-     * Streams a message with automatic event handling
-     * Returns a cleanup function and the current response
-     */
-    streamMessage(
+    async streamMessage(
         conversationId: string, 
         message: Message, 
         options: StreamOptions = {}
-    ): [() => void, () => string] {
+    ): Promise<[() => void, () => string]> {
         let fullText = '';
         let unsubscribe: (() => void) | null = null;
         
-        // Create task data
-        const taskData = new AiChatTaskData(conversationId, 0)
-            .setMessage(message);
-            
-        if (options.modelOverride) {
-            taskData.setModelOverride(options.modelOverride);
-        }
-        
-        if (options.modeOverride) {
-            taskData.setModeOverride(options.modeOverride);
-        }
-        
-        // Pre-calculate the event name before sending
-        const sid = this.socketManager.getSocket().id;
-        const taskObj = taskData.getTask();
-        const eventName = `${sid}_${ChatTaskManager.TASK}_${taskObj.index}`;
+        try {
+            const socket = await this.socketManager.getSocket();
+            if (!socket) {
+                throw new Error("Socket connection unavailable");
+            }
 
-        // Set up event subscription first
-        unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
-            let chunk = '';
-            
-            if (response?.data) {
-                chunk = response.data;
-            } else if (typeof response === "string") {
-                chunk = response;
-            } else {
-                return; // No valid data to process
+            // Create task data
+            const taskData = new AiChatTaskData(conversationId, 0)
+                .setMessage(message);
+                
+            if (options.modelOverride) {
+                taskData.setModelOverride(options.modelOverride);
             }
             
-            fullText += chunk;
-            options.onUpdate?.(chunk, fullText);
-            
-            // Check if this is the end of the stream (could be enhanced with a more reliable method)
-            if (response?.end || response?.done) {
-                options.onComplete?.(fullText);
+            if (options.modeOverride) {
+                taskData.setModeOverride(options.modeOverride);
             }
-        });
-        
-        // Send the message after subscription is ready
-        this.sendUserMessage(taskData).catch(err => {
+            
+            const taskObj = taskData.getTask();
+            const eventName = `${socket.id || 'pending'}_${ChatTaskManager.TASK}_${taskObj.index}`;
+
+            // Set up event subscription
+            unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
+                let chunk = '';
+                
+                if (response?.data) {
+                    chunk = response.data;
+                } else if (typeof response === "string") {
+                    chunk = response;
+                } else {
+                    return;
+                }
+                
+                fullText += chunk;
+                options.onUpdate?.(chunk, fullText);
+                
+                if (response?.end || response?.done) {
+                    options.onComplete?.(fullText);
+                }
+            });
+            
+            // Send the message
+            await this.sendUserMessage(taskData);
+            
+            return [
+                () => {
+                    if (unsubscribe) {
+                        unsubscribe();
+                        unsubscribe = null;
+                    }
+                },
+                () => fullText
+            ];
+        } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An error occurred";
             options.onError?.(errorMessage);
             
@@ -116,45 +123,35 @@ export class ChatTaskManager {
                 unsubscribe();
                 unsubscribe = null;
             }
-        });
-        
-        // Return cleanup function and a way to get the current response
-        return [
-            () => {
-                if (unsubscribe) {
-                    unsubscribe();
-                    unsubscribe = null;
-                }
-            },
-            () => fullText
-        ];
+            throw err;
+        }
     }
 
-    /**
-     * Enhanced method that handles the entire process and returns a Promise
-     * This is useful when you want to wait for the complete response
-     */
     streamMessageAsync(
         conversationId: string, 
         message: Message, 
         options: Omit<StreamOptions, 'onComplete'> = {}
     ): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const [cleanup, _] = this.streamMessage(
-                conversationId,
-                message,
-                {
-                    ...options,
-                    onComplete: (fullText) => {
-                        cleanup();
-                        resolve(fullText);
-                    },
-                    onError: (error) => {
-                        cleanup();
-                        reject(new Error(error));
+        return new Promise(async (resolve, reject) => {
+            try {
+                const [cleanup] = await this.streamMessage(
+                    conversationId,
+                    message,
+                    {
+                        ...options,
+                        onComplete: (fullText) => {
+                            cleanup();
+                            resolve(fullText);
+                        },
+                        onError: (error) => {
+                            cleanup();
+                            reject(new Error(error));
+                        }
                     }
-                }
-            );
+                );
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 

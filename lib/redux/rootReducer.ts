@@ -27,7 +27,7 @@ import { storageReducer } from "./storage";
 import { createFileSystemSlice } from "./fileSystem/slice";
 import { AvailableBuckets, FileManagement } from "./fileSystem/types";
 import { UnifiedSchemaCache } from "@/types/entityTypes";
-
+import dynamicEventsReducer from "./features/dynamicEvents/dynamicEventsSlice";
 export const availableBuckets = [
   "userContent",
   "Audio",
@@ -94,5 +94,6 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     notes: notesReducer,
     tags: tagsReducer,
     storage: storageReducer,
+    dynamicEvents: dynamicEventsReducer,
   });
 };

@@ -1,15 +1,13 @@
-// lib/redux/socket/manager.ts
 import { supabase } from "@/utils/supabase/client";
 import { logTaskStart, logFallbackResponse, logFallbackData, logTaskConfirmed, logDirectResponse } from "./manager-debug";
-import { eventChannel, EventChannel } from 'redux-saga';
 
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 export class SocketManager {
     private static instance: SocketManager;
     private socket: any | null = null;
     private dynamicEventListeners: Map<string, (data: any) => void> = new Map();
-    private streamingStatus: Map<string, boolean> = new Map(); // Track streaming status per event
+    private streamingStatus: Map<string, boolean> = new Map();
     private readonly PRODUCTION_URL = "https://server.app.matrxserver.com";
     private readonly LOCAL_URL = "http://localhost:8000";
     private connectionPromise: Promise<void> | null = null;
@@ -109,30 +107,9 @@ export class SocketManager {
     }
 
     private registerEventHandlers() {
+        // Simplified: Only handle connect/disconnect, let SagaCoordinator handle onAny
         this.socket.on("connect", () => {});
         this.socket.on("disconnect", () => {});
-    }
-
-    // New method: Create an event channel for all socket events
-    createEventChannel(): EventChannel<any> {
-        return eventChannel((emit) => {
-            if (!this.isClientSide || !this.socket) {
-                console.warn("[SOCKET MANAGER] Cannot create event channel: No socket available");
-                return () => {};
-            }
-
-            const handleEvent = (eventName: string, ...args: any[]) => {
-                emit({ eventName, args });
-            };
-
-            this.socket.onAny(handleEvent);
-
-            return () => {
-                if (this.socket) {
-                    this.socket.offAny(handleEvent);
-                }
-            };
-        });
     }
 
     async startTask(eventName: string, data: any, callback: (response: any) => void): Promise<string> {
@@ -198,24 +175,18 @@ export class SocketManager {
         return eventNames;
     }
 
-    // New method to check streaming status
     isStreaming(eventName: string): boolean {
         return this.streamingStatus.get(eventName) || false;
     }
 
     private updateStreamingStatus(eventName: string, response: any) {
         const isEnd = response?.end === true || response?.end === "true" || response?.end === "True";
-        if (!this.streamingStatus.has(eventName)) {
-            // If this is the first data for this event, assume streaming has started
+        if (!this.streamingStatus.has(eventName) && response) {
             this.streamingStatus.set(eventName, true);
         } else if (isEnd) {
-            // If end flag is present and true, streaming has ended
             this.streamingStatus.set(eventName, false);
         }
-        // If response exists but no end flag, assume streaming continues
     }
-
-
 
     async createTask(eventName: string, data: any): Promise<string[]> {
         const socket = await this.getSocket();
@@ -247,7 +218,7 @@ export class SocketManager {
         return this.addDynamicEventListener(eventName, callback);
     }
 
-    addDynamicEventListener(eventName: string, listener: (data: any) => void): () => void {
+    private addDynamicEventListener(eventName: string, listener: (data: any) => void): () => void {
         const socket = this.socket;
         if (!socket) return () => {};
         if (this.dynamicEventListeners.has(eventName)) {
@@ -255,7 +226,7 @@ export class SocketManager {
             return () => {};
         }
         const wrappedListener = (data: any) => {
-            this.updateStreamingStatus(eventName, data); // Update status on each event
+            this.updateStreamingStatus(eventName, data);
             listener(data);
         };
         socket.on(eventName, wrappedListener);
@@ -263,13 +234,13 @@ export class SocketManager {
         return () => this.removeDynamicEventListener(eventName);
     }
 
-    removeDynamicEventListener(eventName: string) {
+    private removeDynamicEventListener(eventName: string) {
         if (!this.socket) return;
         const listener = this.dynamicEventListeners.get(eventName);
         if (listener) {
             this.socket.off(eventName, listener);
             this.dynamicEventListeners.delete(eventName);
-            this.streamingStatus.delete(eventName); // Clean up streaming status
+            this.streamingStatus.delete(eventName);
         }
     }
 
@@ -279,7 +250,7 @@ export class SocketManager {
             this.socket.off(eventName, listener);
         });
         this.dynamicEventListeners.clear();
-        this.streamingStatus.clear(); // Clear streaming status on cleanup
+        this.streamingStatus.clear();
     }
 
     private async testLocalConnection(): Promise<boolean> {

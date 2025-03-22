@@ -1,92 +1,50 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState, AppDispatch } from '../../store';
-import { setDynamicEvent, updateDynamicEventStatus, updateDynamicEventStream, removeDynamicEvent } from './dynamicEventsSlice';
-import { DynamicEvent, EventDetails, TaskDetails } from './types';
-import { SocketManager } from '@/lib/redux/socket/manager';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { RootState, AppDispatch } from "../../store";
+import { SchemaTaskManager } from "@/lib/redux/socket/schema/SchemaTaskManager";
+import { SERVICE_NAMES } from "@/constants/socket-constants";
+import { startSocketTask } from "../socket/socketActions";
+import {
+  updateEventStatus,
+  setSocketEventName,
+  setEventError,
+  DynamicEvent,
+} from "./dynamicEventsSlice";
+import { isTaskReady } from "./dynamicEventsSlice";
 
-export const setupDynamicEventListener = createAsyncThunk<void, string, { state: RootState, dispatch: AppDispatch }>(
-    'dynamicEvents/setupListener',
-    async (eventName, { dispatch, getState }) => {
-        const state = getState();
+export const submitDynamicEvent = createAsyncThunk<
+  void,
+  { eventId: string; stream?: boolean },
+  { state: RootState; dispatch: AppDispatch }
+>(
+  "dynamicEvents/submitDynamicEvent",
+  async ({ eventId, stream = false }, { dispatch, getState }) => {
+    const state = getState();
+    const event: DynamicEvent = state.dynamicEvents.events[eventId];
+    if (!event) throw new Error(`Event ${eventId} not found`);
 
-        const socketManager = SocketManager.getInstance();
-
-        const listener = (data: any) => {
-            console.log(`dynamic Event Thunks - Listener received data for ${eventName}:`, data);
-            if (typeof data === 'string') {
-                dispatch(updateDynamicEventStream({ eventName, textStream: data }));
-            } else if (data && data.data) {
-                dispatch(updateDynamicEventStream({ eventName, textStream: data.data }));
-            }
-            if (data && data.status) {
-                dispatch(updateDynamicEventStatus({ eventName, status: data.status }));
-            }
-        };
-
-        socketManager.addDynamicEventListener(eventName, listener);
-
-        const dynamicEvent: DynamicEvent = {
-            eventName,
-            namespace: "UserSession",
-            sid: socketManager.getSocketSid() || '',
-            status: 'assigned',
-            textStream: '',
-        };
-
-        dispatch(setDynamicEvent(dynamicEvent));
+    if (!isTaskReady(event)) {
+      throw new Error(`Task ${event.taskName} is not ready: missing required fields`);
     }
-);
 
-export const removeDynamicEventListener = createAsyncThunk<void, string, { state: RootState }>(
-    'dynamicEvents/removeListener',
-    async (eventName, { dispatch, getState }) => {
-        const state = getState();
-        const socketManager = SocketManager.getInstance();
+    const manager = new SchemaTaskManager(event.service as (typeof SERVICE_NAMES)[number], event.taskName);
+    const taskBuilder = manager.createTask();
+    Object.entries(event.taskData).forEach(([key, value]) => taskBuilder.setArg(key, value));
+    const taskData = taskBuilder.getTaskData().getTask();
 
-        socketManager.removeDynamicEventListener(eventName);
-        dispatch(removeDynamicEvent(eventName));
+    dispatch(updateEventStatus({ eventId, status: "pending" }));
+
+    const socketAction = await dispatch(
+      startSocketTask({
+        eventName: `${event.service}/${event.taskName}`,
+        data: [taskData],
+        isStreaming: stream,
+      })
+    );
+
+    if (startSocketTask.fulfilled.match(socketAction)) {
+      dispatch(setSocketEventName({ eventId, socketEventName: socketAction.payload.eventName }));
+    } else {
+      throw new Error(socketAction.error.message || "Failed to start task");
     }
-);
-
-export const submitEvent = createAsyncThunk<void, EventDetails, { state: RootState }>(
-    'dynamicEvents/submitEvent',
-    async (eventDetails, { dispatch, getState }) => {
-        const state = getState();
-        const socketManager = SocketManager.getInstance(matrixId, sessionUrl, socketNamespace);
-
-        // Setup listeners for each task
-        eventDetails.tasks.forEach((task, index) => {
-            const eventName = `${socketManager.getSocketSid()}_${eventDetails.event}_${task.task}_${index}`;
-            console.log('Setting up listener for:', eventName);
-            dispatch(setupDynamicEventListener(eventName));
-        });
-
-        // Submit the event using the startTask method from SocketManager
-        socketManager.startTask(eventDetails.event, eventDetails.tasks);
-    }
-);
-
-export const submitTaskData = createAsyncThunk<void, { eventName: string, task: string, taskData: any }, { state: RootState }>(
-    'dynamicEvents/submitTaskData',
-    async ({ eventName, task, taskData }, { dispatch, getState }) => {
-        console.log('submitTaskData thunk started', { eventName, task, taskData });
-        const state = getState();
-        const { requestStream } = state.dynamicEvents;
-
-        const taskDetails: TaskDetails = {
-            task,
-            index: 0,
-            stream: requestStream,
-            taskData,
-        };
-
-        const eventDetails: EventDetails = {
-            event: eventName,
-            tasks: [taskDetails],
-        };
-
-        console.log('Dispatching submitEvent with:', eventDetails);
-        await dispatch(submitEvent(eventDetails));
-        console.log('submitEvent dispatched');
-    }
+  }
 );

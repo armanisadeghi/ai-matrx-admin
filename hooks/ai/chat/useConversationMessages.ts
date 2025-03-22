@@ -3,10 +3,11 @@ import { ConversationData } from "@/types/AutomationSchemaTypes";
 import { MatrxRecordId } from "@/types/entityTypes";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChatMode, Conversation, Message, MessageRole } from "@/types/chat/chat.types";
-import { useConversationMessageCrud } from "@/app/entities/hooks/crud/by-relationships/useConversationMessageCrud";
+import { useCreateConvoAndMessage } from "@/app/entities/hooks/crud/by-relationships/useCreateConvoAndMessage";
 import { DEFAULT_MODEL_ID, DEFAULT_MODE, NEW_CONVERSATION_ID, NEW_CONVERSATION_LABEL } from "@/constants/chat";
 
-const DEBUG = false;
+const DEBUG = true;
+const VERBOSE = false;
 
 type MessageWithKey = Message & { matrxRecordId: MatrxRecordId };
 
@@ -29,21 +30,37 @@ interface SaveNewConversationResult {
 }
 
 export function useConversationMessages() {
-    const relationshipHook = useOneRelationship("conversation", "message", "id", "conversationId");
 
-    const { conversationCrud, messageCrud, createConversationAndMessage, saveConversationAndMessage } = useConversationMessageCrud({
+    const [isCreatingNewConversation, setIsCreatingNewConversation] = useState(false);
+    const [isComposingNewMessage, setIsComposingNewMessage] = useState(false);
+
+    const relationshipHook = useOneRelationship("conversation", "message", "id", "conversationId", [
+        {
+            field: "display_order",
+            operator: "neq",
+            value: 0,
+        },
+        {
+            field: "role",
+            operator: "neq",
+            value: "system",
+        },
+    ]);
+
+    const { activeParentId, activeParentRecord, setActiveParent, activeParentRecordKey, isParentLoading, isChildLoading, matchingChildRecords } = relationshipHook;
+
+    const isRelationshipLoading = isParentLoading || isChildLoading;
+
+    const { conversationCrud, messageCrud, createConversationAndMessage, saveConversationAndMessage } = useCreateConvoAndMessage({
         setActiveConversation: true,
         setActiveMessage: true,
         conversationSelectionMode: "single",
         messageSelectionMode: "multiple",
     });
 
-    const [isCreatingNewConversation, setIsCreatingNewConversation] = useState(false);
-    const [isComposingNewMessage, setIsComposingNewMessage] = useState(false);
-
-    const activeConversationId = relationshipHook.activeParentId;
-    const activeConversation = relationshipHook.activeParentRecord as ConversationData;
-    const allConversationMessages = relationshipHook.matchingChildRecords as MessageWithKey[];
+    const activeConversationId = activeParentId;
+    const activeConversation = activeParentRecord as ConversationData;
+    const allConversationMessages = matchingChildRecords as MessageWithKey[];
 
     const messages = useMemo(() => {
         const validMessages = allConversationMessages.filter(
@@ -52,14 +69,18 @@ export function useConversationMessages() {
         return validMessages.sort((a, b) => a.displayOrder - b.displayOrder);
     }, [allConversationMessages]);
 
+
     const currentConversation = useMemo(() => {
         return isCreatingNewConversation ? conversationCrud.conversation : activeConversation;
     }, [isCreatingNewConversation]);
 
     useEffect(() => {
-        if (DEBUG) {
+        if (VERBOSE) {
             console.log("--useConversationMessages-- currentConversation", JSON.stringify(conversationCrud.conversation, null, 2));
             console.log("--useConversationMessages-- activeConversation", JSON.stringify(activeConversation, null, 2));
+        }
+        if (VERBOSE) {
+            console.log("useConversationMessages activeConversationId: ", activeConversationId);
         }
     }, [conversationCrud.conversation, activeConversation]);
 
@@ -72,12 +93,23 @@ export function useConversationMessages() {
         return messageCrud.message;
     }, [messageCrud.message]);
 
+    const waitForLoading = useCallback(() => {
+        return new Promise<void>((resolve) => {
+            if (!isParentLoading) {
+                resolve();
+                return;
+            }
+            const unsubscribe = setInterval(() => {
+                if (!isParentLoading) {
+                    clearInterval(unsubscribe);
+                    resolve();
+                }
+            }, 100);
+        });
+    }, [isParentLoading]);
+
     const setActiveConversation = useCallback(
-        (conversationId: string) => {
-            console.log("---- useConversationMessages-- setActiveConversation-- ❌⚠️🛑🚫⛔");
-
-            const recordKey = `id:${conversationId}` as MatrxRecordId;
-
+        async (conversationId: string) => {
             if (conversationId === NEW_CONVERSATION_ID) {
                 setIsCreatingNewConversation(true);
                 if (isComposingNewMessage) {
@@ -85,18 +117,19 @@ export function useConversationMessages() {
                     setIsComposingNewMessage(false);
                 }
             } else {
+                await waitForLoading();
+                const recordKey = `id:${conversationId}` as MatrxRecordId;
                 setIsCreatingNewConversation(false);
                 if (isComposingNewMessage) {
                     messageCrud.resetMessage();
                     setIsComposingNewMessage(false);
-                }
+                }   
                 relationshipHook.setActiveParent(recordKey);
             }
         },
         [relationshipHook, messageCrud, isComposingNewMessage]
     );
 
-    // Create a new conversation and its first message
     const createNewConversation = useCallback(
         ({
             label = NEW_CONVERSATION_LABEL,
@@ -146,9 +179,8 @@ export function useConversationMessages() {
                 if (result.conversationRecordKey) {
                     relationshipHook.setActiveParent(result.conversationRecordKey);
                 } else if (result.conversationId) {
-                    // Fallback to ID if recordKey is not available (shouldn't happen)
                     console.warn("Using ID instead of recordKey to set active conversation");
-                    relationshipHook.setActiveParent(result.conversationId);
+                    relationshipHook.setActiveParent(`id:${result.conversationId}`);
                 }
 
                 return {
@@ -181,6 +213,8 @@ export function useConversationMessages() {
                 return null;
             }
 
+            console.log("--useConversationMessages-- createNewMessage", content, additionalData, add_one_to_count);
+
             setIsComposingNewMessage(true);
 
             const countAdjustment = add_one_to_count ? 3 : 1;
@@ -203,6 +237,8 @@ export function useConversationMessages() {
                 return maxSystemOrder + countAdjustment;
             })();
 
+            console.log("--useConversationMessages-- activeConversationId", activeConversationId);
+
             const messageId = messageCrud.createMessage({
                 conversationId: activeConversationId,
                 content,
@@ -224,6 +260,9 @@ export function useConversationMessages() {
             return { success: false, error: new Error("In new conversation mode") };
         }
 
+        console.log("--useConversationMessages-- saveMessage", currentMessage);
+        console.log("--useConversationMessages-- activeConversationId (But might be different than what was already submitted)", activeConversationId);
+
         const result = await messageCrud.saveMessage();
 
         if (result.success) {
@@ -233,22 +272,18 @@ export function useConversationMessages() {
         return result;
     }, [isCreatingNewConversation, messageCrud]);
 
-    // Placeholder for updating an existing conversation (to be implemented or used with external hook)
     const updateExistingConversation = useCallback(
         (updates: Partial<Conversation>) => {
             if (isCreatingNewConversation || !activeConversationId) {
                 console.error("Cannot update: No active existing conversation");
                 return false;
             }
-
-            // Use the conversation crud hook to update fields
             conversationCrud.batchUpdate(updates);
             return true;
         },
         [isCreatingNewConversation, activeConversationId, conversationCrud]
     );
 
-    // Placeholder for saving an updated conversation (to be implemented or used with external hook)
     const saveUpdatedConversation = useCallback(async () => {
         if (isCreatingNewConversation || !activeConversationId) {
             console.error("Cannot save update: No active existing conversation");
@@ -261,7 +296,6 @@ export function useConversationMessages() {
         return await conversationCrud.saveConversation();
     }, [isCreatingNewConversation, activeConversationId, conversationCrud]);
 
-    // Reset the current message being composed
     const resetCurrentMessage = useCallback(() => {
         if (isComposingNewMessage) {
             messageCrud.resetMessage();
@@ -269,22 +303,16 @@ export function useConversationMessages() {
         }
     }, [messageCrud, isComposingNewMessage]);
 
-    // Ensure a message is always being composed when we have an active conversation
+
     useEffect(() => {
-        // If we have an active conversation (new or existing) but no message is being composed
         const shouldStartNewMessage =
             (activeConversationId || isCreatingNewConversation) && !isComposingNewMessage && !messageCrud.messageId;
 
         if (shouldStartNewMessage) {
             if (isCreatingNewConversation) {
-                // For new conversations, we already create a message in createNewConversation
-                // This is a fallback in case that didn't happen for some reason
                 createConversationAndMessage({ label: "New Conversation" }, "");
             } else if (activeConversationId) {
-                // For existing conversations, create a new message to compose
-
                 if (messages.length === 0) return;
-
                 createNewMessage();
             }
         }
@@ -298,16 +326,18 @@ export function useConversationMessages() {
         createNewMessage,
     ]);
 
-    // Expose the consolidated interface
     return {
-        // Core/Consistent Data - Always Available
         currentConversation, // The current conversation (new or existing)
         currentMessages, // The messages in the current conversation (empty if new)
         currentMessage, // The message currently being composed/edited
 
-        // Conversation Status
-        isCreatingNewConversation, // Whether we're creating a new conversation
-        isComposingNewMessage, // Whether we're composing a new message
+
+        isCreatingNewConversation,
+        isComposingNewMessage,
+
+        isConversationLoading: isParentLoading,
+        isMessageLoading: isChildLoading,
+        isRelationshipLoading,
 
         // Record Access Info
         activeConversationId: isCreatingNewConversation ? null : activeConversationId,
@@ -323,7 +353,6 @@ export function useConversationMessages() {
         saveNewConversation, // Save a new conversation and its message
         updateExistingConversation, // Update an existing conversation
         saveUpdatedConversation, // Save updates to an existing conversation
-        NEW_CONVERSATION_ID, // Special ID for creating new conversations
 
         // Access to underlying hooks for advanced use cases
         conversationCrud,

@@ -12,6 +12,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { usePrepConversationSocket } from "@/lib/redux/socket/schema/hooks/usePrepConversationSocket";
 import { DEFAULT_MODEL_ID, DEFAULT_MODE } from "@/constants/chat";
 
+const DEBUG = false;
+const VERBOSE = false;
+
 export interface ChatSubmitResult {
     success: boolean;
     conversationId?: string;
@@ -42,7 +45,7 @@ export function useChat(isNewChat: boolean = false) {
     const match = pathname.match(/\/c\/([^\/?]+)/);
     const convoId = match ? match[1] : undefined;
 
-    
+
     const conversationMessagesHook = useConversationMessages();
 
     const { prepConversation } = usePrepConversationSocket({});
@@ -57,7 +60,25 @@ export function useChat(isNewChat: boolean = false) {
         currentConversation,
         saveMessage,
         createNewMessage,
+        isConversationLoading,
+        isMessageLoading,
+        isRelationshipLoading,
     } = conversationMessagesHook;
+
+    const waitForLoading = useCallback(() => {
+        return new Promise<void>((resolve) => {
+            if (!isConversationLoading) {
+                resolve();
+                return;
+            }
+            const unsubscribe = setInterval(() => {
+                if (!isConversationLoading) {
+                    clearInterval(unsubscribe);
+                    resolve();
+                }
+            }, 100);
+        });
+    }, [isConversationLoading]);
 
 
     const handleNewChat = useCallback(() => {
@@ -72,9 +93,10 @@ export function useChat(isNewChat: boolean = false) {
         setNewChat(true);
     }, [createNewConversation, modelId, mode]);
 
-    const handleExistingChat = useCallback((conversationId: string) => {
+    const handleExistingChat = useCallback(async (conversationId: string) => {
         console.log("--useChat-- handleExistingChat");
         setNewChat(false);
+        await waitForLoading();
         setActiveConversation(conversationId);
         setConversationId(conversationId);
         setIsConversationReady(true);
@@ -85,8 +107,6 @@ export function useChat(isNewChat: boolean = false) {
 
 
     useEffect(() => {
-        console.log("--useChat-- conversationId", conversationId);
-        console.log("--useChat-- newChat", newChat);
         if (conversationId) return;
         if (convoId) {
             handleExistingChat(convoId);
@@ -153,6 +173,9 @@ export function useChat(isNewChat: boolean = false) {
             setMessageId(result.messageId);
 
             router.push(`/c/${result.conversationId}`);
+            await new Promise((resolve) => setTimeout(resolve, 200));
+
+            handleExistingChat(result.conversationId);
         }
 
         return result;
