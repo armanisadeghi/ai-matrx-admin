@@ -4,17 +4,35 @@
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
-import React, { Suspense } from "react";
+import React, { Suspense, useState, useEffect } from "react";
 import ResponseColumn from "@/features/chat/ui-parts/response/ResponseColumn";
 import InputPlaceholder from "@/features/chat/ui-parts/prompt-input/InputPlaceholder";
 import PromptInputContainer from "@/features/chat/ui-parts/prompt-input/PromptInputContainer";
 import { useChat } from "@/hooks/ai/chat/new/useChat";
-import { BACKGROUND_PATTERN } from "@/constants/chat";
+import { BACKGROUND_PATTERN, NEW_CONVERSATION_ID } from "@/constants/chat";
 import WelcomeScreen from "@/features/chat/ui-parts/layout/WelcomeScreen";
+import { usePathname } from "next/navigation";
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
-    const chatHook = useChat(true);
-    const { isConversationReady } = chatHook;
+    const pathname = usePathname();
+    const match = pathname.match(/\/c\/([^\/?]+)/);
+    const convoId = match ? match[1] : NEW_CONVERSATION_ID  ;
+
+    const [newChat, setNewChat] = useState(false);
+
+    useEffect(() => {
+        if (convoId) {
+            setNewChat(false);
+        } else {
+            setNewChat(true);
+        }
+    }, [convoId]);
+
+    const chatHook = useChat("/c", convoId, newChat);
+
+
+
+    const { isConversationReady, isNewChat } = chatHook;
 
     return (
         <div
@@ -52,18 +70,20 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                     />
 
                     {/* Fixed input area at bottom */}
-                    {isConversationReady && !chatHook.newChat ? (
+                    {isConversationReady && !isNewChat ? (
                         <div className="absolute bottom-0 left-0 right-0 z-10 bg-zinc-100 dark:bg-zinc-850">
                             <div className="p-4">
                                 <div className="max-w-3xl mx-auto rounded-3xl">
-                                    <PromptInputContainer disabled={!chatHook.isConversationReady} chatHook={chatHook} />
+                                    <PromptInputContainer renderedBy="chat-layout" disabled={!chatHook.isConversationReady} chatHook={chatHook} />
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <Suspense fallback={<InputPlaceholder />}>
-                            <WelcomeScreen chatHook={chatHook} />
-                        </Suspense>
+                        isConversationReady && (
+                            <Suspense fallback={<InputPlaceholder />}>
+                                <WelcomeScreen chatHook={chatHook} />
+                            </Suspense>
+                        )
                     )}
                 </div>
 

@@ -28,6 +28,13 @@ import { createFileSystemSlice } from "./fileSystem/slice";
 import { AvailableBuckets, FileManagement } from "./fileSystem/types";
 import { UnifiedSchemaCache } from "@/types/entityTypes";
 import dynamicEventsReducer from "./features/dynamicEvents/dynamicEventsSlice";
+import { conversationReducer } from "./features/aiChats/conversationSlice";
+import { messagesReducer } from "./features/aiChats/messagesSlice";
+import { newMessageReducer } from "./features/aiChats/newMessageSlice";
+
+
+export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
+
 export const availableBuckets = [
   "userContent",
   "Audio",
@@ -36,9 +43,13 @@ export const availableBuckets = [
   "Videos",
   "Code",
   "any-file",
-] as const;
+  'userContent',
+  'code-editor',
+  'Notes',
+  'Spreadsheets',
+  'audio-recordings',
 
-export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
+] as const;
 
 const fileSystemReducers = availableBuckets.reduce<{ [K in AvailableBuckets]: Reducer<FileManagement> }>((acc, bucket) => {
   acc[bucket] = createFileSystemSlice(bucket).reducer;
@@ -95,5 +106,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     tags: tagsReducer,
     storage: storageReducer,
     dynamicEvents: dynamicEventsReducer,
+    conversation: conversationReducer,
+    messages: messagesReducer,
+    newMessage: newMessageReducer,
   });
 };

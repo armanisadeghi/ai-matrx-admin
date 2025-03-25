@@ -207,12 +207,15 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({ content, typ
             case "text":
                 return <BasicMarkdownContent key={index} content={block.content} isStreamActive={isStreamActive} />;
             case "code":
-                const match = /language-(\w+)/.exec(block.content.split("\n")[0]) || ["", ""];
-                const language = match[1] || "";
+                const firstLine = block.content.split("\n")[0].trim();
+                const language = firstLine.startsWith("```") ? firstLine.slice(3).trim() : "";
+                const codeContent = firstLine.startsWith("```") ? block.content.substring(block.content.indexOf("\n") + 1) : block.content;
+                console.log("language", language);
+
                 return (
                     <CodeBlock
                         key={index}
-                        code={block.content.replace(/^language-\w+\n/, "")}
+                        code={codeContent}
                         language={language}
                         fontSize={16}
                         className="my-3"

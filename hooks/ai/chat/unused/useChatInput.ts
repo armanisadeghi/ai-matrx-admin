@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { MatrxRecordId } from "@/types";
-import { useChatStorage } from "@/hooks/ai/chat/useChatStorage";
+import { useChatStorage } from "@/hooks/ai/chat/unused/useChatStorage";
 import { ChatInputSettings } from "@/types/chat/chat.types";
-import { useConversationMessages } from "./useConversationMessages";
+import { useConversationMessages } from "../useConversationMessages";
 
 interface UseChatInputProps {
     initialModelKey?: MatrxRecordId;
@@ -14,7 +14,6 @@ export function useChatInput({ initialModelKey, mainChatHook }: UseChatInputProp
     const { lastPrompt, selectedModelKey, isLoading, updatePrompt, clearPrompt, updateModelSelection } = useChatStorage();
     const {conversationCrud, messageCrud} = mainChatHook;
     const {updateCurrentModel, updateCurrentMode} = conversationCrud;
-    const {updateImageUrl, updateBlobUrl} = messageCrud;
 
     // Chat input state
     const [message, setMessage] = useState<string>("");

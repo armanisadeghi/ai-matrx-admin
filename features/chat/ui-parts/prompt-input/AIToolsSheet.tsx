@@ -3,12 +3,13 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Search, X, CheckSquare, Square, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
 import { allTools, Tool } from "./constants";
-import { ChatResult } from "@/hooks/ai/chat/new/useChat";
+import { ChatResult } from "@/hooks/ai/chat/useChat";
+import { NewChatResult } from "@/hooks/ai/chat/new/useChat";
 
 interface ToolSelectionSheetProps {
     isOpen: boolean;
     onClose: () => void;
-    chatHook: ChatResult;
+    chatHook: ChatResult | NewChatResult;
     onToolSelectionChange?: (selectedToolIds: string[]) => void;
 }
 
@@ -23,12 +24,12 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, chat
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [showCategories, setShowCategories] = useState(true);
 
-    const { currentMessage, messageCrud } = chatHook;
+    const { newMessage, messageCrud } = chatHook;
 
     const categories = useMemo(() => extractCategories(allTools), []);
 
     useEffect(() => {
-        setSelectedTools(currentMessage?.metadata?.available_tools || []);
+        setSelectedTools(newMessage?.metadata?.available_tools || []);
     }, []);
 
     useEffect(() => {

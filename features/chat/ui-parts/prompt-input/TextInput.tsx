@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback, forwardRef } from "react";
 import { Minimize2, Maximize2, Loader2, X } from "lucide-react";
 import { PasteImageHandler } from "@/components/ui/file-upload/PasteImageHandler";
 
@@ -14,7 +14,8 @@ interface TextInputProps {
     path?: string;
 }
 
-const TextInput: React.FC<TextInputProps> = ({
+// Wrap with forwardRef to accept the ref from parent
+const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(({
     content,
     placeholder = "What do you want to know?",
     disabled = false,
@@ -24,7 +25,7 @@ const TextInput: React.FC<TextInputProps> = ({
     onImagePasted,
     bucket = "userContent",
     path,
-}) => {
+}, ref) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const [textareaHeight, setTextareaHeight] = useState<string>("110px");
@@ -158,7 +159,7 @@ const TextInput: React.FC<TextInputProps> = ({
             )}
 
             <textarea
-                ref={textareaRef}
+                ref={ref} // Changed from textareaRef to use the forwarded ref
                 style={{
                     height: textareaHeight,
                     maxHeight: `${maxHeight}px`,
@@ -178,6 +179,6 @@ const TextInput: React.FC<TextInputProps> = ({
             />
         </div>
     );
-};
+});
 
 export default TextInput;

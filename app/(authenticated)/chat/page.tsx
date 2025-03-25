@@ -1,8 +1,8 @@
 // File: app/(authenticated)/chat/page.tsx
-import WelcomeScreen from "@/features/chat/ui-parts/layout/WelcomeScreen";
 import { Suspense } from 'react';
 import { Metadata } from 'next';
 import { ChatMode } from "@/types/chat/chat.types";
+import WelcomeStandalone from "@/features/chat/ui-parts/layout/WelcomeStandalone";
 
 const DEFAULT_MODEL_ID = "dd45b76e-f470-4765-b6c4-1a275d7860bf"; // "49848d52-9cc8-4ce4-bacb-32aa2201cd10";
 const DEFAULT_MODE = "general" as ChatMode;
@@ -46,7 +46,7 @@ export default async function ChatPage({
 
   return (
     <Suspense fallback={<WelcomeScreenFallback />}>
-      <WelcomeScreen initialModelId={modelId} initialMode={mode} />
+      <WelcomeStandalone initialModelId={modelId} initialMode={mode} />
     </Suspense>
   );
 }

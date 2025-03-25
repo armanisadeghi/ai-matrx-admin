@@ -17,6 +17,7 @@ export interface MultiSelectFieldConfig {
   dropdownClassName?: string;
   showSelectAll?: boolean;
   allowClear?: boolean;
+  customConfig?: any;
 }
 
 const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
@@ -25,7 +26,7 @@ const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
   placeholder = "Select options",
   defaultValue = [],
   onValueChange,
-  customConfig = {},
+  customConfig,
   customContent = null,
   isMobile = false,
 }) => {

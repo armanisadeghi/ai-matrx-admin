@@ -47,15 +47,15 @@ import { TbRelationManyToMany } from "react-icons/tb";
 //brokers/component-editor
 
 export const logEmojis = () => {
-    console.log("🔴 Danger: ❌⚠️🛑🚫⛔🔒💣💥🧨📛");
-    console.log("🟢 Success: ✅✔️🎉🏆🥇💚🌟🙌🟩");
-    console.log("🔵 Info: ℹ️🔍💬🧠📘📖📚📝🧾📡");
-    console.log("🟠 Warning: ⚠️🔶🚧🥵🕳️🧱🔥⏳📛");
-    console.log("🟣 Action/Progress: 🕹️🔄⏳📤📥💾🚀🏃‍♂️⚙️🔧");
-    console.log("🟤 System/Technical: 🖥️💻🧠🔐🛠️🔌📡🧮🧰🗂️");
-    console.log("⚪ Communication: 📞💬📨📩✉️📱🗣️📢📣💭");
-    console.log("🟡 Learning/Knowledge: 🧠📚📝🎓🧑‍🏫📘🔍💡🧪");
-    console.log("🧊 Cold/Ice/Neutral: 🧊🕊️⚪🔲💤🌫️🪞🛋️");
+    console.log("🔴 Danger: ❌ ⚠️ 🛑 🚫 ⛔ 🔒 💣 💥 🧨 📛 ");
+    console.log("🟢 Success: ✅ ✔️ 🎉 🏆 🥇 💚 🌟 🙌 🟩 ");
+    console.log("🔵 Info: ℹ️ 🔍 💬 🧠 📘 📖 📚 📝 🧾 📡 ");
+    console.log("🟠 Warning: ⚠️ 🔶 🚧 🥵 🕳️ 🧱 🔥 ⏳ 📛 ");
+    console.log("🟣 Action/Progress: 🕹️ 🔄 ⏳ 📤 📥 💾 🚀 🏃‍♂️ ⚙️ 🔧 ");
+    console.log("🟤 System/Technical: 🖥️ 💻 🧠 🔐 🛠️ 🔌 📡 🧮 🧰 🗂️ ");
+    console.log("⚪ Communication: 📞 💬 📨 📩 ✉️ 📱 🗣️ 📢 📣 💭 ");
+    console.log("🟡 Learning/Knowledge: 🧠 📚 📝 🎓 🧑‍🏫 📘 🔍 💡 🧪 ");
+    console.log("🧊 Cold/Ice/Neutral: 🧊 🕊️ ⚪ 🔲 💤 🌫️ 🪞 🛋️ ");
 };
 
 export const primaryLinks = [

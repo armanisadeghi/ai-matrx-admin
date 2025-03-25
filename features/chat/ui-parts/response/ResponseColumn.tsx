@@ -4,10 +4,11 @@ import React, { useMemo } from "react";
 import UserMessage from "@/features/chat/ui-parts/response/UserMessage";
 import AssistantMessage from "@/features/chat/ui-parts/response/AssistantMessage";
 import { useFetchConversationMessages } from "./useFetchConversationMessages";
-import { ChatResult } from "@/hooks/ai/chat/new/useChat";
+import { NewChatResult } from "@/hooks/ai/chat/new/useChat";
+import { ChatResult } from "@/hooks/ai/chat/useChat";
 import AssistantStream from "./stream/AssistantMessage";
 
-const DEBUG = false;
+const DEBUG = true;
 
 export type localMessage = {
     id: string;
@@ -24,7 +25,7 @@ export type localMessage = {
 };
 
 interface ResponseColumnProps {
-    chatHook: ChatResult;
+    chatHook: NewChatResult;
 }
 
 const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localMessage; onScrollToBottom: () => void }) => {
@@ -39,7 +40,7 @@ MessageItem.displayName = "MessageItem";
 
 const ResponseColumn: React.FC<ResponseColumnProps> = ({ chatHook }) => {
     const conversationId = useMemo(() => chatHook.conversationId, [chatHook.conversationId]);
-    const newChat = useMemo(() => chatHook.newChat, [chatHook.newChat]);
+    const newChat = useMemo(() => chatHook.isNewChat, [chatHook.isNewChat]);
     const eventName = useMemo(() => chatHook.eventName, [chatHook.eventName]);
 
     const { isStreaming, messagesToDisplay, isLastMessageAssistant } = useFetchConversationMessages({

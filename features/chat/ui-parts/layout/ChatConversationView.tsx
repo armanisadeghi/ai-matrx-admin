@@ -5,7 +5,6 @@ import InputPlaceholder from "../prompt-input/InputPlaceholder";
 import PromptInputContainer from "../prompt-input/PromptInputContainer";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { useChat } from "@/hooks/ai/chat/new/useChat";
-import { useEffect } from "react";
 
 
 interface ChatConversationViewProps {
@@ -17,11 +16,8 @@ const ChatConversationView: React.FC<ChatConversationViewProps> = ({
 }) => {
 
 
-    const chatHook = useChat(false);
+    const chatHook = useChat("/c", conversationId, false);
 
-    useEffect(() => {
-        chatHook.handleExistingChat(conversationId);
-    }, []);
 
     const { isConversationReady } = chatHook;
 

@@ -1,15 +1,14 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Paperclip, Search, ArrowUp, Mic, ListTree, AudioWaveform } from "lucide-react";
+import { Paperclip, Search, ArrowUp, Mic } from "lucide-react";
 import { LiaLightbulbSolid } from "react-icons/lia";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import { LuSearchCheck } from "react-icons/lu";
 import { MatrxRecordId } from "@/types";
-import ToggleButton from "../../../../components/matrx/toggles/ToggleButton";
+import ToggleButton from "@/components/matrx/toggles/ToggleButton";
 import ModelSelection from "@/features/chat/ui-parts/prompt-input/ModelSelection";
 import useChatBasics from "@/hooks/ai/chat/useChatBasics";
 import { ListTodo } from "lucide-react";
 import AIToolsSheet from "./AIToolsSheet";
-import { ConversationWithRoutingResult } from "@/hooks/ai/chat/useConversationWithRouting";
 import { FaMicrophoneLines } from "react-icons/fa6";
 import { LuBrainCircuit } from "react-icons/lu";
 import { LuBrain } from "react-icons/lu";
@@ -17,11 +16,13 @@ import { CgAttachment } from "react-icons/cg";
 import { MdOutlineChecklist } from "react-icons/md";
 import { MdOutlineQuestionMark } from "react-icons/md";
 import { BsPatchQuestion } from "react-icons/bs";
-import { ChatResult } from "@/hooks/ai/chat/new/useChat";
+import { ChatResult } from "@/hooks/ai/chat/useChat";
+import { NewChatResult } from "@/hooks/ai/chat/new/useChat";
+
 interface InputBottomControlsProps {
     isDisabled: boolean;
     isSubmitting: boolean;
-    chatHook: ChatResult;
+    chatHook: ChatResult | NewChatResult;
     onSendMessage: () => void;
     onToggleTools?: () => void;
 }
@@ -33,10 +34,10 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
     onToggleTools,
     chatHook,
 }) => {
-    // Get models from the chat basics hook
+
     const { models } = useChatBasics();
 
-    const { fileManager, currentMessage, messageCrud, updateModel, modelId, updateChatMetadata } = chatHook;
+    const { fileManager, newMessage, updateModel, modelId, updateChatMetadata } = chatHook;
 
     // Internal state management
     const [isListening, setIsListening] = useState<boolean>(false);
@@ -61,7 +62,7 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
     }, [settings]);
 
     useEffect(() => {
-        if (currentMessage?.metadata?.available_tools?.length > 0) {
+        if (newMessage?.metadata?.available_tools?.length > 0) {
             setSettings((prev) => ({ ...prev, toolsEnabled: true }));
         } else {
             setSettings((prev) => ({ ...prev, toolsEnabled: false }));
@@ -74,12 +75,12 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
     }, []);
 
     useEffect(() => {
-        if (currentMessage?.metadata?.files?.length > 0) {
+        if (newMessage?.metadata?.files?.length > 0) {
             setHasUploadedFiles(true);
         } else {
             setHasUploadedFiles(false);
         }
-    }, [currentMessage?.metadata?.files]);
+    }, [newMessage?.metadata?.files]);
 
     // Handler functions
     const handleToggleSearch = useCallback(() => {

@@ -212,7 +212,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 const processedStructures = fileNodeManager.processAllBucketStructures(rawStructures);
                 setStructures(processedStructures);
 
-                toast.success("Storage system initialized successfully");
+                // toast.success("Storage system initialized successfully");
                 setIsInitialized(true);
             } catch (error) {
                 toast.error(error);

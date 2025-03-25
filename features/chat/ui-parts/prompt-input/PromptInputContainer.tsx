@@ -1,19 +1,21 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import TextInput from "./TextInput";
 import InputBottomControls from "./InputBottomControls";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import FileChipsWithPreview from "@/components/ui/file-preview/FileChipsWithPreview";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
-import { ChatResult } from "@/hooks/ai/chat/new/useChat";
+import { NewChatResult } from "@/hooks/ai/chat/new/useChat";
+import { ChatResult } from "@/hooks/ai/chat/useChat";
 
 interface PromptInputContainerProps {
     onMessageSent?: () => void;
     disabled?: boolean;
-    chatHook: ChatResult;
+    chatHook: ChatResult | NewChatResult;
     localContent?: string;
     onContentChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    renderedBy?: string;
 }
 
 const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
@@ -22,15 +24,15 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     chatHook,
     localContent,
     onContentChange,
-}) => {
+    renderedBy,
+    }) => {
     const [isLocalSubmitting, setIsLocalSubmitting] = useState<boolean>(false);
+    const textInputRef = useRef<HTMLTextAreaElement>(null); // Added ref
 
     const {
         fileManager,
-        currentMessage,
         currentConversation,
         messageCrud,
-        createNewMessage,
         submitChatMessage,
         isSubmitting: isHookSubmitting,
     } = chatHook;
@@ -39,8 +41,8 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     useEffect(() => {
         if (localContent !== undefined) {
             setContent(localContent);
-        } else if (currentMessage) {
-            setContent(currentMessage.content);
+        } else if (messageCrud.message) {
+            setContent(messageCrud.message.content);
         }
     }, []);
 
@@ -81,6 +83,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 if (onMessageSent) {
                     onMessageSent();
                 }
+                textInputRef.current?.focus(); // Added focus after successful submit
                 return true;
             } else {
                 console.error("Failed to send message");
@@ -91,7 +94,6 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             return false;
         } finally {
             setIsLocalSubmitting(false);
-            createNewMessage("", {}, true);
         }
     }, [content, fileManager.files.length, submitChatMessage, onMessageSent]);
 
@@ -105,6 +107,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             {/* Text Input with Bottom Controls */}
             <div className="relative rounded-3xl">
                 <TextInput
+                    ref={textInputRef} // Added ref prop
                     content={content}
                     disabled={isDisabled}
                     onContentChange={handleContentChange}

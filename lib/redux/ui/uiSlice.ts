@@ -1,6 +1,13 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {loadDataForSchema, loadSchemaForContext} from "@/lib/redux/ui/uiThunks";
 
+interface UIState {
+    currentSchema: any;
+    data: any[];
+    loading: boolean;
+    errors: string[];
+}
+
 const initialState: UIState = {
     currentSchema: null,
     data: [],

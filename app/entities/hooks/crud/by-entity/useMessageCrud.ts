@@ -4,7 +4,7 @@ import { Message, MessageRole, MessageType, MessageMetadata } from "@/types/chat
 import { getPermanentId } from "@/lib/redux";
 
 interface UseMessageProps {
-    conversationId?: string;
+    conversationId: string | undefined;
 }
 
 export interface SaveMessageResult {
@@ -14,10 +14,11 @@ export interface SaveMessageResult {
     id?: string;
     message?: Message;
     conversationId?: string;
+    conversationRecordKey?: string;
     error?: Error;
 }
 
-export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
+export const useMessageCrud = ({ conversationId }: UseMessageProps) => {
     const { start, updateField, updateFields, saveAsync, currentRecordId, recordDataWithDefaults } = useCreateUpdateRecord({
         entityKey: "message",
         showSuccessToast: false,
@@ -29,7 +30,7 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
     const [hasRequiredFields, setHasRequiredFields] = useState<boolean>(!!conversationId);
 
     useEffect(() => {
-        const hasConversationId = !!messageWithDefaults?.conversationId;
+        const hasConversationId = conversationId;
         const hasDisplayOrder = messageWithDefaults?.displayOrder !== undefined;
         const hasSystemOrder = messageWithDefaults?.systemOrder !== undefined;
 
@@ -77,13 +78,11 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
         [updateField]
     );
 
-
     useEffect(() => {
         if (conversationId) {
             updateConversationId(conversationId);
         }
     }, [conversationId, updateConversationId]);
-
 
     const updateType = useCallback(
         (type: MessageType) => {
@@ -103,7 +102,6 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
         },
         [updateField, messageWithDefaults]
     );
-
 
     const updateFiles = useCallback(
         (files: { url: string; type: string; details?: any }[]) => {
@@ -170,6 +168,26 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
         [updateField]
     );
 
+    const updateCurrentModel = useCallback(
+        (model: string) => {
+            updateField("metadata.currentModel", model);
+        },
+        [updateField]
+    );
+
+    const updateCurrentMode = useCallback(
+        (mode: string) => {
+            updateField("metadata.currentMode", mode);
+        },
+        [updateField]
+    );
+
+    const updateCurrentEndpoint = useCallback(
+        (endpoint: string) => {
+            updateField("metadata.currentEndpoint", endpoint);
+        },
+        [updateField]
+    );
 
     const updateDisplayOrder = useCallback(
         (order: number) => {
@@ -236,6 +254,8 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
 
         try {
             const saveResult = await saveAsync();
+            const conversationId = saveResult.result?.data?.conversationId;
+            const conversationRecordKey = `id:${conversationId}`;
 
             return {
                 success: saveResult.success,
@@ -243,7 +263,8 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
                 recordKey: saveResult.result?.recordKey,
                 id: saveResult.result?.data?.id,
                 message: saveResult.result?.data as Message,
-                conversationId: saveResult.result?.data?.conversationId,
+                conversationId: conversationId,
+                conversationRecordKey: conversationRecordKey,
                 error: saveResult.error,
             };
         } catch (error) {
@@ -293,6 +314,9 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps = {}) => {
         removeTool,
         addBrokerValue,
         removeBrokerValue,
+        updateCurrentModel,
+        updateCurrentMode,
+        updateCurrentEndpoint,
     };
 };
 

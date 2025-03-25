@@ -3,6 +3,7 @@ import useCreateUpdateRecord from "../useCreateUpdateRecord";
 import { Conversation, ConversationMetadata, ChatMode } from "@/types/chat/chat.types";
 import { MatrxRecordId } from "@/types";
 import { getPermanentId } from "@/lib/redux";
+import { useUpdateRecordFields } from "../../unsaved-records/useUpdateFields";
 
 interface UseConversationProps {
 }
@@ -43,6 +44,8 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         showSuccessToast: false,
         showErrorToast: false,
     });
+
+    const { updateField: updateSavedConvoField, updateFields: updateSavedConvoFields } = useUpdateRecordFields("conversation", currentRecordId);
 
     const conversationWithDefaults = recordDataWithDefaults as Conversation | null;
 

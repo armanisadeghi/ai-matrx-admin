@@ -1,16 +1,23 @@
-'use client';
+// hooks/ai/chat/new/useChat.ts
+
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Conversation, MatrxRecordId } from "@/types";
+import { Conversation } from "@/types";
 import { ChatMode, Message } from "@/types/chat/chat.types";
 import useConversationMessages from "@/hooks/ai/chat/useConversationMessages";
-import useConversationRouting from "./useConversationRouting";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
 import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
+import { useRouter } from "next/navigation";
+import { usePrepConversationSocket } from "@/lib/redux/socket/schema/hooks/usePrepConversationSocket";
+import { DEFAULT_MODEL_ID, DEFAULT_MODE } from "@/constants/chat";
+
+const DEBUG = false;
+const VERBOSE = false;
 
 export interface ChatSubmitResult {
     success: boolean;
-    conversationId?: string;
+    convoId?: string;
     message?: Message;
     error?: Error;
     id?: string;
@@ -19,27 +26,24 @@ export interface ChatSubmitResult {
     conversation?: Conversation;
 }
 
-interface UseConversationWithRoutingProps {
-    initialConversationId?: string;
-    initialModelId?: string;
-    initialMode?: ChatMode;
-}
-
-export function useConversationWithRouting({ initialConversationId, initialModelId, initialMode }: UseConversationWithRoutingProps = {}) {
-    const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-    const [currentMessageId, setCurrentMessageId] = useState<string | null>(null);
+export function useChat(convoId: string, newChat: boolean = false) {
+    const [modelId, setModelId] = useState<string>(DEFAULT_MODEL_ID);
+    const [mode, setMode] = useState<ChatMode>(DEFAULT_MODE);
+    const [messageId, setMessageId] = useState<string | null>(null);
     const [isConversationReady, setIsConversationReady] = useState(false);
+    const [isMessageReady, setIsMessageReady] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
+    const [socketTaskStarted, setSocketTaskStarted] = useState<boolean>(false);
+    const [isStreaming, setIsStreaming] = useState<boolean>(false);
+    const [eventName, setEventName] = useState<string | null>(null);
 
     const chatManager = new ChatTaskManager();
+    const router = useRouter();
 
-    const { currentModelId, currentMode, setCurrentModelId, setCurrentMode, navigateToConversation } = useConversationRouting({
-        initialModelId,
-        initialMode,
-    });
+    const conversationMessagesHook = useConversationMessages(convoId, newChat);
 
-    const conversationMessagesHook = useConversationMessages();
+    const { prepConversation } = usePrepConversationSocket({});
+
     const {
         conversationCrud,
         messageCrud,
@@ -48,43 +52,67 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         isCreatingNewConversation,
         newMessage,
         saveMessage,
+        isRelationshipLoading,
     } = conversationMessagesHook;
 
+    const waitForLoading = useCallback(() => {
+        return new Promise<void>((resolve) => {
+            if (!isRelationshipLoading) {
+                resolve();
+                return;
+            }
+            const unsubscribe = setInterval(() => {
+                if (!isRelationshipLoading) {
+                    clearInterval(unsubscribe);
+                    resolve();
+                }
+            }, 100);
+        });
+    }, [isRelationshipLoading]);
+
+
+    const handleNewChat = useCallback(() => {
+        const { conversationId, messageId } = createNewConversation({
+            currentModel: modelId,
+            currentMode: mode,
+        });
+        setConversationId(conversationId);
+
+        setMessageId(messageId);
+        setIsConversationReady(true);
+    }, [createNewConversation, modelId, mode]);
+
+    const handleExistingChat = useCallback(async (conversationId: string) => {
+        console.log("🧪 useChat handleExistingChat");
+        await waitForLoading();
+        setIsConversationReady(true);
+        prepConversation(conversationId);
+    }, []);
+
+
     useEffect(() => {
-        if (currentConversationId) return;
-        if (initialConversationId == "new-conversation") {
-            const { conversationId, messageId } = createNewConversation({
-                currentModel: currentModelId,
-                currentMode: currentMode,
-            });
-
-            setCurrentConversationId(conversationId);
-            setCurrentMessageId(messageId);
-            setIsConversationReady(true);
+        console.log("🌟useChat useEffect");
+        console.log("-conversationId", conversationId);
+        if (isRelationshipLoading) return;
+        if (conversationId) {
+            handleExistingChat(conversationId);
         } else {
-            setActiveConversation(initialConversationId);
-            setCurrentConversationId(initialConversationId);
-            setIsConversationReady(true);
+            handleNewChat();
         }
-    }, [initialConversationId, currentModelId, currentMode, currentConversationId, createNewConversation, setActiveConversation]);
+    }, [conversationId]);
 
-    const updateModelId = useCallback(
-        (modelId: string) => {
+
+    const updateModel = useCallback(
+        (key: string) => {
+            const modelId = key.startsWith("id:") ? key.slice(3) : key;
+            
             if (conversationMessagesHook.currentConversation) {
                 conversationCrud.updateCurrentModel(modelId);
             }
-
-            setCurrentModelId(modelId);
+    
+            setModelId(modelId);
         },
-        [conversationMessagesHook.currentConversation, conversationCrud, currentMode]
-    );
-
-    const updateModelWithKey = useCallback(
-        (key: MatrxRecordId) => {
-            const modelId = key.replace("id:", "");
-            updateModelId(modelId);
-        },
-        [updateModelId]
+        [conversationMessagesHook.currentConversation, conversationCrud]
     );
 
     const updateMode = useCallback(
@@ -93,12 +121,12 @@ export function useConversationWithRouting({ initialConversationId, initialModel
                 conversationCrud.updateCurrentMode(mode);
             }
 
-            setCurrentMode(mode);
+            setMode(mode);
         },
         [conversationMessagesHook.currentConversation, conversationCrud]
     );
 
-    const updateEndpointId = useCallback(
+    const updateEndpoint = useCallback(
         (endpointId: string) => {
             if (conversationMessagesHook.currentConversation) {
                 conversationCrud.updateCurrentEndpoint(endpointId);
@@ -127,14 +155,17 @@ export function useConversationWithRouting({ initialConversationId, initialModel
         const result = await conversationMessagesHook.saveNewConversation();
 
         if (result.success && result.conversationId) {
-            setCurrentConversationId(result.conversationId);
-            setCurrentMessageId(result.messageId);
+            setConversationId(result.conversationId);
+            setMessageId(result.messageId);
 
-            navigateToConversation(result.conversationId);
+            router.push(`/c/${result.conversationId}`);
+            await new Promise((resolve) => setTimeout(resolve, 200));
+
+            handleExistingChat(result.conversationId);
         }
 
         return result;
-    }, [conversationMessagesHook, navigateToConversation]);
+    }, [conversationMessagesHook, router]);
 
     const submitChatMessage = useCallback(async () => {
         try {
@@ -151,7 +182,8 @@ export function useConversationWithRouting({ initialConversationId, initialModel
                 if (isCreatingNewConversation) {
                     await new Promise((resolve) => setTimeout(resolve, 200));
                 }
-                const eventName = chatManager.streamMessage(currentConversationId, newMessage);
+                const eventName = await chatManager.streamMessage(conversationId, newMessage);
+                setEventName(eventName);
                 console.log(" - eventName", eventName);
                 return true;
             } else {
@@ -169,29 +201,30 @@ export function useConversationWithRouting({ initialConversationId, initialModel
     return {
         ...conversationMessagesHook,
 
-        // Enhanced conversation creation
+        handleNewChat,
+        handleExistingChat,
+        newChat,
+
         saveNewConversationAndNavigate,
         isConversationReady,
-        currentConversationId,
-        currentMessageId,
+        conversationId,
+        messageId,
 
-        // Routing functionality
-        navigateToConversation,
-        currentModelId,
-        currentMode,
+        modelId,
+        mode,
 
-        updateModelId,
-        updateModelWithKey,
+        updateModel,
         updateMode,
-        updateEndpointId,
+        updateEndpoint,
         updateChatMetadata,
 
         fileManager,
+        eventName,
 
         submitChatMessage,
         isSubmitting,
     };
 }
 
-export type ConversationWithRoutingResult = ReturnType<typeof useConversationWithRouting>;
-export default useConversationWithRouting;
+export type ChatResult = ReturnType<typeof useChat>;
+export default useChat;

@@ -104,6 +104,10 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                 unsubscribe = socketManager.subscribeToEvent(eventName, (data: any) => {
                     const newContent = typeof data === "string" ? data : data?.data || "";
                     setContent((prev) => prev + newContent);
+                    const newObjectContent = typeof data === "object" ? data : null;
+                    if (newObjectContent) {
+                        console.log("[ChatStreamDisplay] New object content:", newObjectContent);
+                    }
                 });
             } catch (error) {
                 console.error("[ChatStreamDisplay] Socket setup failed:", error);

@@ -322,11 +322,13 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
 
             setActiveRecord: (state: EntityState<TEntity>, action: PayloadAction<MatrxRecordId>) => {
                 entityLogger.log(DEBUG, 'setActiveRecord', action.payload);
-                state.selection.lastActiveRecord = state.selection.activeRecord;
+                if (state.selection.activeRecord) {
+                    state.selection.lastActiveRecord = state.selection.activeRecord;
+                }
                 state.selection.activeRecord = action.payload;
 
                 if (!state.selection.selectedRecords.includes(action.payload)) {
-                    addRecordToSelection(state, entityKey, action.payload);
+                    state.selection.selectedRecords.push(action.payload);
                 }
             },
 
@@ -351,7 +353,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
 
                 if (!state.selection.selectedRecords.includes(recordKey)) {
                     entityLogger.log(DEBUG, 'Adding Active Record to Selection: ', recordKey);
-                    addRecordToSelection(state, entityKey, recordKey);
+                    state.selection.selectedRecords.push(recordKey);
                 }
             },
 

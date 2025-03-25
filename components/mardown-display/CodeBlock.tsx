@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { cn } from "@/styles/themes/utils";
 import CodeEditor from "@/components/code-editor/CodeEditor";
 import CodeBlockHeader from "./CodeBlockHeader";
 import { EditButton } from "./CodeBlockHeader";
+import { useTheme } from "@/styles/themes/ThemeProvider";
 
 interface CodeBlockProps {
     code: string;
@@ -30,29 +31,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const [isExpanded, setIsExpanded] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [isDark, setIsDark] = useState(false);
 
-    useEffect(() => {
-        const updateTheme = () => {
-            setIsDark(document.documentElement.classList.contains("dark"));
-        };
-
-        updateTheme();
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.attributeName === "class") {
-                    updateTheme();
-                }
-            });
-        });
-
-        observer.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ["class"],
-        });
-
-        return () => observer.disconnect();
-    }, []);
+    const { mode } = useTheme();
 
     const handleCopy = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -136,7 +116,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                         <div className={cn("overflow-hidden transition-all duration-200", isCollapsed ? "max-h-[150px]" : "max-h-none")}>
                             <SyntaxHighlighter
                                 language={language}
-                                style={isDark ? vscDarkPlus : vs}
+                                style={mode === 'dark' ? vscDarkPlus : vs}
                                 showLineNumbers={showLineNumbers}
                                 wrapLines={true}
                                 wrapLongLines={true}

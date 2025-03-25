@@ -4,8 +4,8 @@ import PromptInput from "@/features/chat/ui-parts/prompt-input/_dev/PromptInput"
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
 import WelcomeScreen from "@/features/chat/ui-parts/layout/WelcomeScreen";
 import { MatrxRecordId } from "@/types";
-import { useChatResponse } from "@/hooks/ai/chat/useChatResponse";
-import { useChatInput } from "@/hooks/ai/chat/useChatInput";
+import { useChatResponse } from "@/hooks/ai/chat/unused/useChatResponse";
+import { useChatInput } from "@/hooks/ai/chat/unused/useChatInput";
 import LoadingIndicator from "@/features/chat/ui-parts/common/LoadingIndicator";
 const DEFAULT_MODEL_ID = "id:49848d52-9cc8-4ce4-bacb-32aa2201cd10";
 

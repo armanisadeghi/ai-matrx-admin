@@ -57,6 +57,11 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }));
     });
 
+    const selectHasMinimumOneRecord = createSelector(
+        [selectAllRecords],
+        (records): boolean => Object.keys(records).length > 0
+    );
+
     const selectRecordsByFieldValue = createSelector(
         [
             selectRecordsArray,
@@ -70,6 +75,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
+    
     const selectRecordCountByFieldValue = createSelector(
         [selectRecordsByFieldValue],
         (filteredRecords) => filteredRecords.length
@@ -1487,6 +1493,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     return {
         selectEntity,
         selectAllRecords,
+        selectHasMinimumOneRecord,
         selectRecordByPrimaryKey,
         selectRecordsByPrimaryKeys,
         selectQuickReference,
@@ -1668,3 +1675,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 };
 
 export type EntitySelectors<TEntity extends EntityKeys> = ReturnType<typeof createEntitySelectors<TEntity>>;
+
+
+export const messageSelectors = createEntitySelectors("message");
+export const conversationSelectors = createEntitySelectors<"conversation">("conversation");

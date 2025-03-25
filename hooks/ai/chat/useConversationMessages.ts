@@ -1,10 +1,17 @@
 import { useOneRelationship } from "@/lib/redux/entity/hooks/useOneRelationship";
-import { ConversationData } from "@/types/AutomationSchemaTypes";
+import { ConversationData, MessageRecordWithKey } from "@/types/AutomationSchemaTypes";
 import { MatrxRecordId } from "@/types/entityTypes";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChatMode, Conversation, Message, MessageRole } from "@/types/chat/chat.types";
 import { useCreateConvoAndMessage } from "@/app/entities/hooks/crud/by-relationships/useCreateConvoAndMessage";
-import { DEFAULT_MODEL_ID, DEFAULT_MODE, NEW_CONVERSATION_ID, NEW_CONVERSATION_LABEL } from "@/constants/chat";
+import {
+    DEFAULT_MODEL_ID,
+    DEFAULT_MODE,
+    NEW_CONVERSATION_ID,
+    NEW_CONVERSATION_LABEL,
+    CHAT_RELATIONSHIP_BASE_CONFIG,
+    CHAT_CREATE_BASE_CONFIG,
+} from "@/constants/chat";
 
 const DEBUG = true;
 const VERBOSE = false;
@@ -29,38 +36,40 @@ interface SaveNewConversationResult {
     error?: Error;
 }
 
-export function useConversationMessages() {
+export function useConversationMessages(convoId: string, newChat: boolean) {
+    const [conversationId, setConversationId] = useState<string>(convoId);
 
     const [isCreatingNewConversation, setIsCreatingNewConversation] = useState(false);
     const [isComposingNewMessage, setIsComposingNewMessage] = useState(false);
 
-    const relationshipHook = useOneRelationship("conversation", "message", "id", "conversationId", [
-        {
-            field: "display_order",
-            operator: "neq",
-            value: 0,
-        },
-        {
-            field: "role",
-            operator: "neq",
-            value: "system",
-        },
-    ]);
+    const relationshipHook = useOneRelationship(CHAT_RELATIONSHIP_BASE_CONFIG);
 
-    const { activeParentId, activeParentRecord, setActiveParent, activeParentRecordKey, isParentLoading, isChildLoading, matchingChildRecords } = relationshipHook;
-
-    const isRelationshipLoading = isParentLoading || isChildLoading;
-
-    const { conversationCrud, messageCrud, createConversationAndMessage, saveConversationAndMessage } = useCreateConvoAndMessage({
-        setActiveConversation: true,
-        setActiveMessage: true,
-        conversationSelectionMode: "single",
-        messageSelectionMode: "multiple",
-    });
+    const { activeParentId, activeParentRecord, isParentLoading, isChildLoading, isRelationshipLoading, matchingChildRecords } =
+        relationshipHook;
 
     const activeConversationId = activeParentId;
     const activeConversation = activeParentRecord as ConversationData;
-    const allConversationMessages = matchingChildRecords as MessageWithKey[];
+    const allConversationMessages = matchingChildRecords as MessageRecordWithKey[];
+
+    const { conversationCrud, messageCrud, createConversationAndMessage, saveConversationAndMessage } =
+        useCreateConvoAndMessage(CHAT_CREATE_BASE_CONFIG);
+
+    const currentConversation = useMemo(() => {
+        return isCreatingNewConversation ? conversationCrud.conversation : activeConversation;
+    }, [isCreatingNewConversation]);
+
+    useEffect(() => {
+        if (VERBOSE) {
+            console.log(
+                " 🧠 useConversationMessages conversationCrud.conversation",
+                JSON.stringify(conversationCrud.conversation, null, 2)
+            );
+            console.log(" 💣 useConversationMessages activeConversation", JSON.stringify(activeConversation, null, 2));
+        }
+        if (VERBOSE) {
+            console.log("useConversationMessages activeConversationId: ", activeConversationId);
+        }
+    }, [conversationCrud.conversation, activeConversation]);
 
     const messages = useMemo(() => {
         const validMessages = allConversationMessages.filter(
@@ -69,27 +78,7 @@ export function useConversationMessages() {
         return validMessages.sort((a, b) => a.displayOrder - b.displayOrder);
     }, [allConversationMessages]);
 
-
-    const currentConversation = useMemo(() => {
-        return isCreatingNewConversation ? conversationCrud.conversation : activeConversation;
-    }, [isCreatingNewConversation]);
-
-    useEffect(() => {
-        if (VERBOSE) {
-            console.log("--useConversationMessages-- currentConversation", JSON.stringify(conversationCrud.conversation, null, 2));
-            console.log("--useConversationMessages-- activeConversation", JSON.stringify(activeConversation, null, 2));
-        }
-        if (VERBOSE) {
-            console.log("useConversationMessages activeConversationId: ", activeConversationId);
-        }
-    }, [conversationCrud.conversation, activeConversation]);
-
-    const currentMessages = useMemo(() => {
-        if (isCreatingNewConversation) return [];
-        return messages;
-    }, [isCreatingNewConversation, messages]);
-
-    const currentMessage = useMemo(() => {
+    const newMessage = useMemo(() => {
         return messageCrud.message;
     }, [messageCrud.message]);
 
@@ -111,24 +100,35 @@ export function useConversationMessages() {
     const setActiveConversation = useCallback(
         async (conversationId: string) => {
             if (conversationId === NEW_CONVERSATION_ID) {
+                console.log("💤 setActiveConversation NEW_CONVERSATION_ID");
                 setIsCreatingNewConversation(true);
                 if (isComposingNewMessage) {
                     messageCrud.resetMessage();
-                    setIsComposingNewMessage(false);
+                    setIsComposingNewMessage(false); // but how is the new message being started?
                 }
             } else {
                 await waitForLoading();
                 const recordKey = `id:${conversationId}` as MatrxRecordId;
+                console.log("💤 setActiveConversation recordKey", recordKey);
                 setIsCreatingNewConversation(false);
                 if (isComposingNewMessage) {
+                    console.log("is composing new message, resetting");
                     messageCrud.resetMessage();
                     setIsComposingNewMessage(false);
-                }   
+                }
+                await waitForLoading();
                 relationshipHook.setActiveParent(recordKey);
             }
         },
         [relationshipHook, messageCrud, isComposingNewMessage]
     );
+
+    useEffect(() => {
+        if (isParentLoading) return;
+        if (conversationId) {
+            setActiveConversation(conversationId);
+        }
+    }, [conversationId, isParentLoading]);
 
     const createNewConversation = useCallback(
         ({
@@ -208,13 +208,6 @@ export function useConversationMessages() {
     // Create a new message in the current active conversation
     const createNewMessage = useCallback(
         (content: string = "", additionalData: Partial<Message> = {}, add_one_to_count = false) => {
-            if (!activeConversationId || isCreatingNewConversation) {
-                console.log("Cannot create message: No active conversation", activeConversationId, isCreatingNewConversation);
-                return null;
-            }
-
-            console.log("--useConversationMessages-- createNewMessage", content, additionalData, add_one_to_count);
-
             setIsComposingNewMessage(true);
 
             const countAdjustment = add_one_to_count ? 3 : 1;
@@ -238,6 +231,7 @@ export function useConversationMessages() {
             })();
 
             console.log("--useConversationMessages-- activeConversationId", activeConversationId);
+            messageCrud.resetMessage();
 
             const messageId = messageCrud.createMessage({
                 conversationId: activeConversationId,
@@ -253,15 +247,17 @@ export function useConversationMessages() {
         [activeConversationId, isCreatingNewConversation, messageCrud, messages]
     );
 
-    // Save a message in the current active conversation
     const saveMessage = useCallback(async () => {
         if (isCreatingNewConversation) {
             console.error("Cannot save individual message: In new conversation mode");
             return { success: false, error: new Error("In new conversation mode") };
         }
 
-        console.log("--useConversationMessages-- saveMessage", currentMessage);
-        console.log("--useConversationMessages-- activeConversationId (But might be different than what was already submitted)", activeConversationId);
+        console.log("--useConversationMessages-- saveMessage", newMessage);
+        console.log(
+            "--useConversationMessages-- activeConversationId (But might be different than what was already submitted)",
+            activeConversationId
+        );
 
         const result = await messageCrud.saveMessage();
 
@@ -303,7 +299,6 @@ export function useConversationMessages() {
         }
     }, [messageCrud, isComposingNewMessage]);
 
-
     useEffect(() => {
         const shouldStartNewMessage =
             (activeConversationId || isCreatingNewConversation) && !isComposingNewMessage && !messageCrud.messageId;
@@ -327,10 +322,7 @@ export function useConversationMessages() {
     ]);
 
     return {
-        currentConversation, // The current conversation (new or existing)
-        currentMessages, // The messages in the current conversation (empty if new)
-        currentMessage, // The message currently being composed/edited
-
+        currentConversation,
 
         isCreatingNewConversation,
         isComposingNewMessage,
@@ -340,7 +332,7 @@ export function useConversationMessages() {
         isRelationshipLoading,
 
         // Record Access Info
-        activeConversationId: isCreatingNewConversation ? null : activeConversationId,
+        activeConversationId,
         activeConversationRecordKey: relationshipHook.activeParentRecordKey,
 
         // Message Management
@@ -359,10 +351,7 @@ export function useConversationMessages() {
         messageCrud,
         relationshipHook,
 
-        // Legacy naming to maintain compatibility
-        activeConversation: currentConversation,
-        messages: currentMessages,
-        message: currentMessage,
+        newMessage,
         allConversationMessages,
     };
 }

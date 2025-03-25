@@ -125,7 +125,6 @@ export const useCreateUpdateRecord = ({ entityKey, returnCallbackId = false, sho
         return createRecord(currentRecordId);
     }, [currentRecordId, createRecord]);
 
-    // New method: saveAsync - returns full callback result
     const saveAsync = useCallback((): Promise<SaveCallbackResult> => {
         if (!currentRecordId) {
             console.warn("Attempted to saveAsync without a current record ID");
@@ -133,23 +132,19 @@ export const useCreateUpdateRecord = ({ entityKey, returnCallbackId = false, sho
         }
 
         return new Promise<SaveCallbackResult>(async (resolve) => {
-            // Get the callback ID first
             const newCallbackId = await createRecordWithCallbackId(currentRecordId);
 
-            // Subscribe to the callback to get the result
             callbackManager.subscribe(newCallbackId, (result: SaveCallbackResult) => {
                 resolve(result);
             });
         });
     }, [currentRecordId, createRecordWithCallbackId]);
 
-    // New method: saveWithConfirmation - returns only success boolean
     const saveWithConfirmation = useCallback(async (): Promise<boolean> => {
         const result = await saveAsync();
         return result.success;
     }, [saveAsync]);
 
-    // Return a single result object
     const result: UseCreateUpdateRecordResult = {
         start,
         updateField,

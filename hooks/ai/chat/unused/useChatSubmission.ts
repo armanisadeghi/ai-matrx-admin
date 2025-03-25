@@ -13,8 +13,9 @@ export function useChatSubmission({
   onSubmitError 
 }: UseChatSubmissionProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isNewChat, setIsNewChat] = useState<boolean>(false);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
-  // This function handles the submission process and ensures proper cleanup
   const handleMessageSubmit = async (
     message: string, 
     sendMessageFn: (message: string) => void | Promise<any>,

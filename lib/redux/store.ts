@@ -9,6 +9,7 @@ import { loggerMiddleware } from "@/utils/logger";
 import { storageMiddleware } from "./storage/storageMiddleware";
 import { SerializableStateInvariantMiddlewareOptions } from "@reduxjs/toolkit";
 import { enableMapSet } from "immer";
+import { entitySagaMiddleware } from "./entity/entitySagaMiddleware";
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -42,7 +43,8 @@ export const makeStore = (initialState: any) => {
         sagaMiddleware,
         loggerMiddleware,
         socketMiddleware,
-        storageMiddleware
+        storageMiddleware,
+        entitySagaMiddleware
       ),
     devTools: process.env.NODE_ENV !== "production",
   });

@@ -14,13 +14,14 @@ import { SiDassaultsystemes } from "react-icons/si";
 import HierarchicalToggleMenu from "@/components/matrx/toggles/HierarchicalToggleMenu";
 import { programmingLibraries } from "./constants";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
-import { ChatResult } from "@/hooks/ai/chat/new/useChat";
+import { ChatResult } from "@/hooks/ai/chat/useChat";
+import { NewChatResult } from "@/hooks/ai/chat/new/useChat";    
 
 interface ActionButtonsProps {
     onModeSelect?: (mode: ChatMode) => void;
     className?: string;
     initialMode?: ChatMode;
-    chatHook: ChatResult;
+    chatHook: ChatResult | NewChatResult;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className = "", chatHook }) => {
