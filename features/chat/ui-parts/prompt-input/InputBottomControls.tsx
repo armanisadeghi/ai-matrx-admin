@@ -62,7 +62,7 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
     }, [settings]);
 
     useEffect(() => {
-        if (newMessage?.metadata?.available_tools?.length > 0) {
+        if (newMessage?.metadata?.availableTools?.length > 0) {
             setSettings((prev) => ({ ...prev, toolsEnabled: true }));
         } else {
             setSettings((prev) => ({ ...prev, toolsEnabled: false }));

@@ -126,11 +126,11 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps) => {
     );
 
     const updateAvailableTools = useCallback(
-        (available_tools: string[]) => {
+        (availableTools: string[]) => {
             const currentMetadata = messageWithDefaults?.metadata || {};
             const updatedMetadata = {
                 ...currentMetadata,
-                available_tools: available_tools,
+                availableTools: availableTools,
             };
             updateField("metadata", updatedMetadata);
         },
@@ -139,7 +139,7 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps) => {
 
     const addTool = useCallback(
         (tool: string) => {
-            updateField("metadata.available_tools", [...(messageWithDefaults?.metadata?.available_tools || []), tool]);
+            updateField("metadata.availableTools", [...(messageWithDefaults?.metadata?.availableTools || []), tool]);
         },
         [updateField, messageWithDefaults]
     );
@@ -147,8 +147,8 @@ export const useMessageCrud = ({ conversationId }: UseMessageProps) => {
     const removeTool = useCallback(
         (tool: string) => {
             updateField(
-                "metadata.available_tools",
-                (messageWithDefaults?.metadata?.available_tools || []).filter((t) => t !== tool)
+                "metadata.availableTools",
+                (messageWithDefaults?.metadata?.availableTools || []).filter((t) => t !== tool)
             );
         },
         [updateField, messageWithDefaults]

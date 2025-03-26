@@ -2,8 +2,8 @@
 'use client';
 
 import { createEntitySlice } from './slice';
-import { EntityKeys, AutomationEntities, AutomationEntity, Relationship } from '@/types/entityTypes';
-import { EntityMetadata } from '@/lib/redux/entity/types/stateTypes';
+import { EntityKeys, AutomationEntities, AutomationEntity } from '@/types/entityTypes';
+import { EntityFieldRecord, EntityMetadata } from '@/lib/redux/entity/types/stateTypes';
 import { createInitialState } from '@/lib/redux/entity/utils/initialize';
 import { createEntitySelectors } from './selectors';
 import { useAppDispatch } from '@/lib/redux/hooks';
@@ -24,7 +24,7 @@ export const initializeEntitySlice = <TEntity extends EntityKeys>(entityKey: TEn
         schemaType: schema.schemaType,
         primaryKeyMetadata: schema.primaryKeyMetadata,
         displayFieldMetadata: schema.displayFieldMetadata,
-        entityFields: schema.entityFields,
+        entityFields: schema.entityFields as EntityFieldRecord,
         relationships: schema.relationships,
     };
 
@@ -44,7 +44,7 @@ export const entitySliceRegistry = new Map<
 export function initializeEntitySlices(automationEntities: AutomationEntities) {
     Object.entries(automationEntities).forEach(([entityName, schema]) => {
         if (!entitySliceRegistry.has(entityName as EntityKeys)) {
-            const { initialState } = initializeEntitySlice(entityName as EntityKeys, schema);
+            const { initialState } = initializeEntitySlice(entityName as EntityKeys, schema as AutomationEntity<EntityKeys>);
             const entitySlice = createEntitySlice(entityName as EntityKeys, initialState);
             entitySliceRegistry.set(entityName as EntityKeys, {
                 actions: entitySlice.actions,

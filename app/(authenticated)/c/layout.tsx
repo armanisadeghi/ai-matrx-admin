@@ -5,7 +5,7 @@ import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnaly
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
 import React, { Suspense, useState, useEffect } from "react";
-import ResponseColumn from "@/features/chat/ui-parts/response/ResponseColumn";
+import ResponseColumn from "@/features/chat/ui-parts/response/ResponseColumnNew";
 import InputPlaceholder from "@/features/chat/ui-parts/prompt-input/InputPlaceholder";
 import PromptInputContainer from "@/features/chat/ui-parts/prompt-input/PromptInputContainer";
 import { useChat } from "@/hooks/ai/chat/new/useChat";
@@ -43,7 +43,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
             }}
         >
             {/* Header - fixed at top */}
-            <ChatHeader />
+            <ChatHeader baseRoute="/c" />
 
             {/* Main content area */}
             <main className="flex-1 flex flex-col relative overflow-hidden">

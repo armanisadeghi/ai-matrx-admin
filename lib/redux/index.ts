@@ -3,6 +3,7 @@ export * from './api';
 export * from './hooks';
 export * from './rootReducer';
 export * from './store';
+export * from './utils';
 export * from './actions/featureActions';
 export * from './dynamic/featureSchema';
 export * from './dynamic/moduleSchema';

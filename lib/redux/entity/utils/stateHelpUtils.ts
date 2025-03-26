@@ -233,6 +233,13 @@ export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {
     return `${prefix}${newUuid}`;
 };
 
+export const generateTempRecordAndId = (primaryKeyField: string = 'id') => {
+    const id = uuidv4();
+    const tempRecordKey = `new-record-${id}`;
+    const recordKey = `${primaryKeyField}:${id}`;
+    return { id, tempRecordKey, recordKey };
+};
+
 
 export const generateTempRecordIdFromFutureId = (state: EntityState<EntityKeys>, permanentId: string) => {
     const prefix = 'new-record-';

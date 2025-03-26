@@ -1,3 +1,4 @@
+import { DEFAULT_ENDPOINT_ID, DEFAULT_MODE, DEFAULT_MODEL_ID } from "@/constants/chat";
 import { MatrxRecordId } from "@/types";
 
 export type ChatMode = "general" | "research" | "brainstorm" | "analyze" | "images" | "video" | "code" | "recipe";
@@ -27,10 +28,11 @@ export type MessageType =
 
 export type MessageMetadata = {
     files?: any[] | null;
+    brokerValues?: Record<string, unknown> | null;
+    availableTools?: string[] | null;
+
     image_url?: string;
     blob_url?: string;
-    brokerValues: Record<string, unknown> | null;
-    available_tools: string[] | null;
     base64_image?: string;
     blob?: string;
     json_object?: Record<string, unknown>;
@@ -55,13 +57,15 @@ export type Message = {
     isPublic?: boolean;
 };
 
+
+
 export type ConversationMetadata = {
     currentModel: string | undefined;
     currentEndpoint: string | undefined;
     currentMode: ChatMode;
     concurrentRecipes: string[] | null;
     brokerValues: Record<string, unknown> | null;
-    available_tools: string[] | null;
+    availableTools: string[] | null;
     ModAssistantContext: string | null;
     ModUserContext: string | null;
     [key: string]: unknown;
@@ -69,10 +73,12 @@ export type ConversationMetadata = {
 
 export type Conversation = {
     id: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-    userId?: string;
-    metadata?: ConversationMetadata;
     label?: string;
     isPublic?: boolean;
+    userId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    metadata?: ConversationMetadata;
 };
+
+

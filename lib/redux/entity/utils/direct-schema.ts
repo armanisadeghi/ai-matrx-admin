@@ -1,5 +1,5 @@
 // lib/redux/entity/hooks/coreHooks.ts
-import { FieldKeys, AllEntityNameVariations, AnyEntityDatabaseTable, EntityKeys, ForeignKeyReference, TypeBrand } from '@/types/entityTypes';
+import { FieldKeys, AllEntityNameVariations, AnyEntityDatabaseTable, EntityKeys, ForeignKeyReference } from '@/types/entityTypes';
 import {
     FieldDataOptionsType,
     DataStructure,
@@ -18,12 +18,14 @@ import {
     BackendFieldName,
     DatabaseFieldName,
     AllEntityFieldKeys,
+    MatrxRecordId,
 } from '@/types';
 import { MatrxVariant } from '@/components/ui/types';
 import { getGlobalCache } from '@/utils/schema/schema-processing/processSchema';
 import { RelationshipDetails } from '@/utils/schema/fullRelationships';
 import { EntityMetadata, EntityFieldRecord } from '../types/stateTypes';
 import { getGlobalUserId } from '@/app/Providers';
+import { TypeBrand } from '@/utils/schema/initialSchemas';
 
 
 type ComponentProps = {
@@ -182,6 +184,35 @@ export const getEntityMetadata = (entityKey: EntityKeys) => {
     const result = ENTITY_METADATA.get(entityKey);
     return result as EntityMetadata;
 };
+
+export const getEntityPkmeta = (entityKey: EntityKeys) => {
+    const metadata = getEntityMetadata(entityKey);
+    return metadata.primaryKeyMetadata;
+};
+
+export const getFirstPkField = (entityKey: EntityKeys) => {
+    const metadata = getEntityPkmeta(entityKey);
+    return metadata.fields[0];
+};
+
+export const createRecordKey = (entityKey: EntityKeys, record: any): MatrxRecordId => {
+    const metadata = getEntityPkmeta(entityKey);
+    const key = metadata.database_fields
+        .map((field, index) => {
+            const frontendField = metadata.fields[index];
+            const value = record[frontendField];
+
+            if (value === undefined) {
+                console.error('error', `Missing value for primary key field: ${frontendField}`, { field: frontendField }, undefined, 'recordKey');
+            }
+            return `${field}:${value}`;
+        })
+        .join('::');
+
+    return key;
+};
+
+
 
 
 export const toEntityKey = (entityName: AllEntityNameVariations): EntityKeys => {

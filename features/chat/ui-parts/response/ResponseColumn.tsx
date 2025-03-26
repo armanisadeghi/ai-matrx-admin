@@ -8,7 +8,7 @@ import { NewChatResult } from "@/hooks/ai/chat/new/useChat";
 import { ChatResult } from "@/hooks/ai/chat/useChat";
 import AssistantStream from "./stream/AssistantMessage";
 
-const DEBUG = true;
+const DEBUG = false;
 
 export type localMessage = {
     id: string;

@@ -39,7 +39,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     useEffect(() => {
         // Clean data when it changes
-        const cleanHeaders = data.headers.map(header => header.replace(/\*\*/g, "").trim());
+        const cleanHeaders = data.headers?.map(header => header.replace(/\*\*/g, "").trim());
         const cleanRows = data.rows.map(row => 
             row.map(cell => cell.replace(/\*\*/g, "").trim())
         );

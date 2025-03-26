@@ -1,5 +1,5 @@
 // entityExports.ts
-import { getEntitySlice } from '@/lib/redux/entity/entitySlice';
+import { getEntitySelectors, getEntitySlice } from '@/lib/redux/entity/entitySlice';
 import { AutomationTableName } from '@/types/AutomationSchemaTypes';
 
 export function getReducers() {
@@ -345,3 +345,31 @@ export function getUserPreferencesReducer() {
 export function getUserPreferencesActions() {
     return getEntitySlice('userPreferences').actions;
 }
+
+
+
+export function getConversationReducer() {
+    return getEntitySlice('conversation').reducer;
+}
+
+export function getConversationActions() {
+    return getEntitySlice('conversation').actions;
+}
+
+export function getConversationSelectors() {
+    return getEntitySelectors('conversation');
+}
+
+
+export function getMessageReducer() {
+    return getEntitySlice('message').reducer;
+}
+
+export function getMessageActions() {
+    return getEntitySlice('message').actions;
+}
+
+export function getMessageSelectors() {
+    return getEntitySelectors('message');
+}
+

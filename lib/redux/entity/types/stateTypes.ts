@@ -264,6 +264,19 @@ export type EntityRecordArray<TEntity extends EntityKeys> = EntityData<TEntity>[
 
 export type EntityRecordMap<TEntity extends EntityKeys> = Record<MatrxRecordId, EntityData<TEntity>>;
 // Add this to your types
+
+export type RuntimeFilter = {
+    field: string;
+    operator: "eq" | "neq";
+    value: unknown;
+};
+
+export type RuntimeSort = {
+    field: string;
+    direction: "asc" | "desc";
+};
+
+
 // --- Main Slice State ---
 export interface EntityState<TEntity extends EntityKeys> {
     entityMetadata: EntityMetadata; // Field info is here: entityMetadata.fields has this: EntityStateField[]
@@ -280,6 +293,13 @@ export interface EntityState<TEntity extends EntityKeys> {
     subscription: SubscriptionConfig;
     flags: EntityFlags;
     metrics: EntityMetrics;
+    parentEntityField?: string;
+    activeParentId?: string;
+    runtimeFilters?: RuntimeFilter[];
+    runtimeSort?: RuntimeSort;
+    socketEventName?: string;
+    customData?: Record<string, unknown>;
+
 }
 
 

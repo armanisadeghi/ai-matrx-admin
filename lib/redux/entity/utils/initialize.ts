@@ -213,7 +213,13 @@ export function createInitialState<TEntity extends EntityKeys>(
             operationMode: ENTITY_DEFAULTS.OPERATION_MODE,
             operationFlags: ENTITY_DEFAULTS.OPERATION_FLAGS,
         },
-        metrics: initialMetricsState
+        metrics: initialMetricsState,
+        parentEntityField: undefined,
+        activeParentId: undefined,
+        runtimeFilters: [],
+        runtimeSort: undefined,
+        socketEventName: undefined,
+        customData: {},
     };
 }
 

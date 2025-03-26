@@ -15,6 +15,8 @@ import {
     EntityStatus,
     FlexibleQueryOptions,
     MatrxRecordId,
+    RuntimeFilter,
+    RuntimeSort,
 } from "@/lib/redux/entity/types/stateTypes";
 import { createRecordKey, getRecordIdByRecord, parseRecordKeys } from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
@@ -57,10 +59,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }));
     });
 
-    const selectHasMinimumOneRecord = createSelector(
-        [selectAllRecords],
-        (records): boolean => Object.keys(records).length > 0
-    );
+    const selectHasMinimumOneRecord = createSelector([selectAllRecords], (records): boolean => Object.keys(records).length > 0);
 
     const selectRecordsByFieldValue = createSelector(
         [
@@ -75,11 +74,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         }
     );
 
-    
-    const selectRecordCountByFieldValue = createSelector(
-        [selectRecordsByFieldValue],
-        (filteredRecords) => filteredRecords.length
-    );
+    const selectRecordCountByFieldValue = createSelector([selectRecordsByFieldValue], (filteredRecords) => filteredRecords.length);
 
     const selectRecordKeysByFieldValue = createSelector([selectRecordsByFieldValue], (records): MatrxRecordId[] => {
         if (!records) return [];
@@ -440,13 +435,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             })
     );
 
-    const selectQuickReferenceKeyDisplayPairs = createSelector(
-        [selectQuickReference],
-        (records) => records.map((record) => ({
-          recordKey: record.recordKey,
-          displayValue: record.displayValue
+    const selectQuickReferenceKeyDisplayPairs = createSelector([selectQuickReference], (records) =>
+        records.map((record) => ({
+            recordKey: record.recordKey,
+            displayValue: record.displayValue,
         }))
-      );
+    );
     // Selection Selectors ==================================================
 
     const selectSelectionState = createSelector([selectEntity], (entity) => {
@@ -1063,12 +1057,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         (records, field, possibleValues): EntityDataWithKey<EntityKeys>[] => {
             if (!records) return [];
             if (!possibleValues || possibleValues.length === 0) return [];
-    
+
             const filteredRecords = Object.values(records).filter((record) => possibleValues.includes(record[field]));
             return filteredRecords;
         }
     );
-    
+
     const selectEnhancedRecords = createSelector(
         [selectQuickReference, selectAllEffectiveRecordsWithKeys],
         (quickReferenceRecords, fullRecords): EnhancedRecord[] => {
@@ -1490,6 +1484,43 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
             return matchingRecords;
         });
 
+    const selectRuntimeFilters = createSelector([selectEntity], (entity): RuntimeFilter[] => entity?.runtimeFilters || []);
+
+    const selectRuntimeSort = createSelector(
+        [selectEntity],
+        (entity): RuntimeSort => entity?.runtimeSort || { field: "matrxRecordId", direction: "asc" }
+    );
+
+    // New selector for relation-filtered records
+    const selectRelationFilteredRecords = createSelector(
+        [selectRecordsArray, selectRuntimeFilters, selectRuntimeSort],
+        (records: EntityDataWithKey<TEntity>[], runtimeFilters: RuntimeFilter[], runtimeSort: RuntimeSort) => {
+            let result = [...records];
+
+            for (const filter of runtimeFilters) {
+                result = result.filter((item) =>
+                    filter.operator === "eq"
+                        ? item[filter.field as keyof EntityDataWithKey<TEntity>] === filter.value
+                        : item[filter.field as keyof EntityDataWithKey<TEntity>] !== filter.value
+                );
+            }
+
+            // Apply runtime sort
+            result.sort((a, b) => {
+                const aValue = a[runtimeSort.field as keyof EntityDataWithKey<TEntity>];
+                const bValue = b[runtimeSort.field as keyof EntityDataWithKey<TEntity>];
+                return runtimeSort.direction === "asc"
+                    ? aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+                    : bValue > aValue ? 1 : bValue < aValue ? -1 : 0;
+            });
+
+            return result;
+        }
+    );
+
+    const selectSocketEventName = createSelector([selectEntity], (entity): string | undefined => entity?.socketEventName);
+    const selectCustomData = createSelector([selectEntity], (entity): Record<string, unknown> | undefined => entity?.customData);
+
     return {
         selectEntity,
         selectAllRecords,
@@ -1671,11 +1702,15 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectNonPkFkFieldNames,
         selectMatchDataToNonPkFkFields,
         selectMatchListDataToNonPkFkFields,
+
+        selectRelationFilteredRecords,
+
+        selectSocketEventName,
+        selectCustomData,
     };
 };
 
 export type EntitySelectors<TEntity extends EntityKeys> = ReturnType<typeof createEntitySelectors<TEntity>>;
 
-
-export const messageSelectors = createEntitySelectors("message");
-export const conversationSelectors = createEntitySelectors<"conversation">("conversation");
+export const createMessageSelectors = createEntitySelectors<"message">("message");
+export const createConversationSelectors = createEntitySelectors<"conversation">("conversation");

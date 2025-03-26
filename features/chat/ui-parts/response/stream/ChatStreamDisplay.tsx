@@ -85,12 +85,12 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     useEffect(() => {
         let unsubscribe: () => void;
         let isMounted = true;
-
+    
         const setupSocket = async () => {
             try {
                 await socketManager.connect();
                 const socket = await socketManager.getSocket();
-
+    
                 if (!socket || !isMounted) {
                     if (isMounted) {
                         setConnectionStatus("error");
@@ -98,15 +98,20 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                     }
                     return;
                 }
-
+    
                 setConnectionStatus("connected");
-
+    
                 unsubscribe = socketManager.subscribeToEvent(eventName, (data: any) => {
-                    const newContent = typeof data === "string" ? data : data?.data || "";
+                    // Since data is always an object, check the type of data.data
+                    const dataContent = data?.data || "";
+                    const newContent = typeof dataContent === "string" 
+                        ? dataContent 
+                        : JSON.stringify(dataContent);
                     setContent((prev) => prev + newContent);
-                    const newObjectContent = typeof data === "object" ? data : null;
-                    if (newObjectContent) {
-                        console.log("[ChatStreamDisplay] New object content:", newObjectContent);
+                    
+                    // Log for debugging when data.data is an object
+                    if (typeof dataContent === "object" && dataContent !== null) {
+                        console.log("[ChatStreamDisplay] Nested object in data.data:", dataContent);
                     }
                 });
             } catch (error) {
@@ -117,9 +122,9 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                 }
             }
         };
-
+    
         setupSocket();
-
+    
         return () => {
             isMounted = false;
             if (unsubscribe) {

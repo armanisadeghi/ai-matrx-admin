@@ -7,7 +7,7 @@ import { ChatMode } from "@/types/chat/chat.types";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
 import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
 import { useRouter } from "next/navigation";
-import { DEFAULT_MODEL_ID, DEFAULT_MODE, DEFAULT_FAST_MODEL_ID } from "@/constants/chat";
+import { DEFAULT_MODEL_ID, DEFAULT_MODE, DEFAULT_FAST_MODEL_ID, DEFAULT_GPT_MODEL_ID } from "@/constants/chat";
 import { CombinedSaveChatResult, useChatRelationship } from "./useChatHooks";
 
 const DEBUG = false;
@@ -15,7 +15,7 @@ const VERBOSE = false;
 
 
 export function useChat(baseRoute: string = "/c", convoId: string, newChat: boolean = false) {
-    const [modelId, setModelId] = useState<string>(DEFAULT_FAST_MODEL_ID);
+    const [modelId, setModelId] = useState<string>(DEFAULT_GPT_MODEL_ID);
     const [mode, setMode] = useState<ChatMode>(DEFAULT_MODE);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [eventName, setEventName] = useState<string | null>(null);

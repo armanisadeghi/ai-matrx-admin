@@ -20,7 +20,7 @@ import {
 } from '../messagesSlice';
 import { ChatMode } from '../conversationSlice';
 import { NewMessageState } from '../newMessageSlice';
-import { messageSelectors, RootState } from '@/lib/redux';
+import { createMessageSelectors, RootState } from '@/lib/redux';
 import { MessageRecordWithKey } from '@/types';
 
 interface CreateNewConversationArgs {
@@ -138,7 +138,7 @@ export const updateExistingConversation = createAsyncThunk<
     const state = getState();
     
     // Fetch messages from the entity slice using the selector
-    const messages = messageSelectors.selectRecordsByFieldValue(
+    const messages = createMessageSelectors.selectRecordsByFieldValue(
       state,
       "conversationId",
       conversationId

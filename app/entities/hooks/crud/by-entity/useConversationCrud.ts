@@ -57,7 +57,7 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
                 currentMode: "general",
                 concurrentRecipes: null,
                 brokerValues: null,
-                available_tools: null,
+                availableTools: null,
                 ModAssistantContext: null,
                 ModUserContext: null,
             };
@@ -68,7 +68,7 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
                 "currentMode",
                 "concurrentRecipes",
                 "brokerValues",
-                "available_tools",
+                "availableTools",
                 "ModAssistantContext",
                 "ModUserContext",
             ];
@@ -179,7 +179,7 @@ export const useConversationCrud = ({}: UseConversationProps = {}): UseConversat
         (tools: string[] | null) => {
             const updatedMetadata = {
                 ...(conversationWithDefaults?.metadata || {}),
-                available_tools: tools,
+                availableTools: tools,
             };
             updateField("metadata", updatedMetadata);
         },

@@ -1,12 +1,13 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import useConversationCrud from "../by-entity/useConversationCrud";
 import useMessageCrud from "../by-entity/useMessageCrud";
 import { Conversation, Message } from "@/types/chat/chat.types";
 import { MatrxRecordId } from "@/types/entityTypes";
-import { useEntityTools } from "@/lib/redux/entity/hooks/coreHooks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { SelectionMode } from "@/lib/redux/entity/types/stateTypes";
 import { ConversationData } from "@/types/AutomationSchemaTypes";
+import { getEntitySlice, createEntitySelectors } from "@/lib/redux";
+
 
 export interface SaveConversationAndMessageResult {
     conversationSuccess: boolean;
@@ -50,8 +51,9 @@ export const useCreateConvoAndMessage = ({
     messageSelectionMode = "single",
 }: UseCreateConvoAndMessageParams): UseCreateConvoAndMessageReturn => {
     const dispatch = useAppDispatch();
-    const { actions: conversationActions, selectors: conversationSelectors } = useEntityTools("conversation");
-    const { actions: messageActions } = useEntityTools("message");
+    const conversationSelectors = createEntitySelectors("conversation");
+    const conversationActions = getEntitySlice("conversation").actions;
+    const messageActions = getEntitySlice("message").actions
 
     const activeConversation = useAppSelector(conversationSelectors.selectActiveRecord) as ConversationData | null;
     const activeConversationId = activeConversation?.id;

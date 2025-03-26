@@ -29,7 +29,7 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, chat
     const categories = useMemo(() => extractCategories(allTools), []);
 
     useEffect(() => {
-        setSelectedTools(newMessage?.metadata?.available_tools || []);
+        setSelectedTools(newMessage?.metadata?.availableTools || []);
     }, []);
 
     useEffect(() => {
