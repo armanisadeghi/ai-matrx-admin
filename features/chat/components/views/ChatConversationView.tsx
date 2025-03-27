@@ -2,24 +2,49 @@
 
 import InputPlaceholder from "@/features/chat/components/input/InputPlaceholder";
 import PromptInputContainer from "@/features/chat/components/input/PromptInputContainer";
-import { useChat } from "@/hooks/ai/chat/new/useChat";
+import { useCallback, useEffect, useState } from "react";
+import { useAppDispatch } from "@/lib/redux";
+import { useExistingChat } from "../../hooks/useExistingChat";
 
 interface ChatConversationViewProps {
-    conversationId: string;
+    existingConversationId: string
 }
 
-const ChatConversationView: React.FC<ChatConversationViewProps> = ({ conversationId }) => {
-    const chatHook = useChat("/chat", conversationId, false);
+const ChatConversationView: React.FC<ChatConversationViewProps> = ({ existingConversationId }) => {
+    const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
-    const { isConversationReady } = chatHook;
+    const dispatch = useAppDispatch();
+    const { submitChatMessage, isSubmitting, routeLoadComplete, chatActions } = useExistingChat({ existingConversationId });
 
-    const isReady = isConversationReady;
+    const isDisabled = !routeLoadComplete || isSubmitting;
+
+    const handleActualSubmit = useCallback(async (): Promise<boolean> => {
+        try {
+            const success = await submitChatMessage();
+            setSubmitSuccess(success);
+            if (!success) {
+                console.error("submitChatMessage returned false on WelcomeScreen");
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error("Error during submitChatMessage on WelcomeScreen:", error);
+            return false;
+        }
+    }, [submitChatMessage]);
 
     return (
         <div className="absolute bottom-0 left-0 right-0 z-10 bg-zinc-100 dark:bg-zinc-850">
             <div className="p-4">
                 <div className="max-w-3xl mx-auto rounded-3xl">
-                    {isReady ? <PromptInputContainer disabled={!isConversationReady} chatHook={chatHook} /> : <InputPlaceholder />}
+                    {routeLoadComplete ? (
+                        <PromptInputContainer
+                            disabled={isDisabled}
+                            onSubmit={handleActualSubmit}
+                        />
+                    ) : (
+                        <InputPlaceholder />
+                    )}
                 </div>
             </div>
         </div>

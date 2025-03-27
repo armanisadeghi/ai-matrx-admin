@@ -31,6 +31,9 @@ import dynamicEventsReducer from "./features/dynamicEvents/dynamicEventsSlice";
 import { conversationReducer } from "./features/aiChats/conversationSlice";
 import { messagesReducer } from "./features/aiChats/messagesSlice";
 import { newMessageReducer } from "./features/aiChats/newMessageSlice";
+import chatDisplayReducer from "./features/aiChats/chatDisplaySlice";
+
+
 
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
@@ -109,5 +112,6 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     conversation: conversationReducer,
     messages: messagesReducer,
     newMessage: newMessageReducer,
+    chatDisplay: chatDisplayReducer,
   });
 };

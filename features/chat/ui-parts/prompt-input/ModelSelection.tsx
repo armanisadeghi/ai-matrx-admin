@@ -19,7 +19,7 @@ interface Model {
 interface ModelSelectionProps {
     models: Record<MatrxRecordId, Model>;
     selectedModelKey: MatrxRecordId | undefined;
-    onModelSelect: (modelKey: MatrxRecordId) => void;
+    onModelSelect: (id: string) => void; // Updated to expect string
     className?: string;
 }
 
@@ -56,7 +56,7 @@ const ProviderSection = React.memo(
         provider: string;
         modelEntries: { model: Model; key: MatrxRecordId }[];
         selectedModelKey: MatrxRecordId | undefined;
-        onModelSelect: (key: MatrxRecordId) => void;
+        onModelSelect: (id: string) => void;
         onCloseDropdown: () => void;
     }) => (
         <div className="mt-2 first:mt-0">
@@ -70,7 +70,7 @@ const ProviderSection = React.memo(
                     modelKey={key}
                     isSelected={selectedModelKey === key}
                     onSelect={() => {
-                        onModelSelect(key);
+                        onModelSelect(model.id);
                         onCloseDropdown();
                     }}
                 />
@@ -179,8 +179,8 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(({ models, sele
     }, []);
 
     const handleModelSelectAndClose = useCallback(
-        (key: MatrxRecordId) => {
-            onModelSelect(key);
+        (id: string) => {
+            onModelSelect(id);
             setShowDropdown(false);
             setSearchTerm("");
         },
@@ -236,7 +236,7 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(({ models, sele
                                             model={model}
                                             modelKey={key}
                                             isSelected={selectedModelKey === key}
-                                            onSelect={() => handleModelSelectAndClose(key)}
+                                            onSelect={() => handleModelSelectAndClose(model.id)} // Use model.id
                                         />
                                     ))
                                 ) : (

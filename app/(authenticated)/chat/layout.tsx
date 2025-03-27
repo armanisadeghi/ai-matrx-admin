@@ -5,7 +5,7 @@ import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnaly
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
-import SmartResponseColumn from "@/features/chat/ui-parts/response/SmartResponseColumn";
+import ResponseColumnSix from "@/features/chat/ui-parts/response/ResponseColumnSix";
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
     const isDev = process.env.NODE_ENV === "development";
@@ -15,7 +15,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
             className="flex flex-col overflow-hidden bg-zinc-100 dark:bg-zinc-900 text-gray-800 dark:text-gray-100 absolute inset-0"
             style={{ backgroundImage: BACKGROUND_PATTERN }}
         >
-            <ChatHeader baseRoute="/chat" />
+            <ChatHeader />
 
             {/* Main content area */}
             <main className="flex-1 flex flex-col relative overflow-hidden">
@@ -28,7 +28,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 
                     {/* Scrollable message area */}
                     <div className="relative flex-1 overflow-y-auto scrollbar-hide pb-48 z-1">
-                        <SmartResponseColumn />
+                        <ResponseColumnSix />
                     </div>
 
                     {/* Simple blocker div with matching background */}
@@ -39,18 +39,18 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                 </div>
 
                 {children}
-                {isDev && (
-                    <MatrxDynamicPanel
-                        initialPosition="left"
-                        defaultExpanded={false}
-                        expandButtonProps={{
-                            label: "",
-                        }}
-                    >
-                        <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="message" />
-                    </MatrxDynamicPanel>
-                )}
             </main>
+            {isDev && (
+                <MatrxDynamicPanel
+                    initialPosition="left"
+                    defaultExpanded={false}
+                    expandButtonProps={{
+                        label: "",
+                    }}
+                >
+                    <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="message" />
+                </MatrxDynamicPanel>
+            )}
         </div>
     );
 }

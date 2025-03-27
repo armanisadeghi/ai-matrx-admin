@@ -6,9 +6,7 @@ import { EntityKeys, EntityData, EntityAnyFieldKey, EntityDataWithKey, AllEntity
 import { RootState } from "@/lib/redux/store";
 import {
     EnhancedRecord,
-    EntityDataWithId,
     EntityOperationMode,
-    EntityRecordArray,
     EntityRecordMap,
     EntityState,
     EntityStateField,
@@ -22,8 +20,9 @@ import { createRecordKey, getRecordIdByRecord, parseRecordKeys } from "@/lib/red
 import EntityLogger from "@/lib/redux/entity/utils/entityLogger";
 import { mapFieldDataToFormField } from "@/lib/redux/entity/utils/tempFormHelper";
 import { uniqBy } from "lodash";
-import { ObjectSpaceNormalMap } from "three";
-import { getEntitySlice } from "./entitySlice";
+import { EntityStateType } from "@/types/AutomationSchemaTypes";
+import debounce from 'lodash/debounce';
+
 
 interface FieldNameGroups<TEntity extends EntityKeys> {
     nativeFields: EntityAnyFieldKey<TEntity>[];
@@ -41,8 +40,10 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     if (!entityKey) return null;
     const entityLogger = EntityLogger.createLoggerWithDefaults(trace, entityKey);
 
-    const selectEntity = (state: RootState): EntityState<TEntity> => {
-        return state.entities[entityKey] || ({} as EntityState<TEntity>);
+    const selectEntity = (state: RootState): EntityStateType<TEntity> => {
+        const entityState = state.entities[entityKey];
+        if (!entityState) return {} as EntityStateType<TEntity>;
+        return entityState as EntityStateType<TEntity>;
     };
 
     const selectAllRecords = createSelector(
@@ -917,7 +918,9 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
     const selectDataState = createSelector(
         [selectLoadingState, selectIsStale, selectHasUnsavedChanges, selectOperationMode],
         (loading, isStale, hasUnsavedChanges, operationMode) => ({
-            isLoading: loading.loading,
+            isLoading: loading.loading || loading.externalLoading,
+            internalLoading: loading.loading,
+            externalLoading: loading.externalLoading,
             isError: !!loading.error,
             errorMessage: loading.error?.message,
             lastOperation: loading.lastOperation,
@@ -928,7 +931,22 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         })
     );
 
+    const selectIsInternalLoading = createSelector([selectDataState], (dataState) => dataState.internalLoading);
+    const selectIsExternalLoading = createSelector([selectDataState], (dataState) => dataState.externalLoading);
+
     const selectIsLoading = createSelector([selectDataState], (dataState) => dataState.isLoading);
+
+    const getStableLoading = (state: RootState, delay = 100): boolean => {
+        let currentValue = selectIsLoading(state);
+        let lastStableValue = currentValue;
+
+        const debouncedUpdate = debounce((newValue: boolean) => {
+            lastStableValue = newValue;
+        }, delay);
+
+        debouncedUpdate(currentValue);
+        return lastStableValue;
+    };
 
     // Pagination with additional computed properties
     const selectPaginationExtended = createSelector([selectPaginationInfo, selectFilteredRecords], (pagination, filteredRecords) => ({
@@ -1550,7 +1568,12 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
         selectRecordWithDisplay,
         selectMetadataSummary,
         selectDataState,
+
         selectIsLoading,
+        selectIsInternalLoading,
+        selectIsExternalLoading,
+        getStableLoading,
+        
         selectPaginationExtended,
         selectHistoryState,
         // Newly added selectors
@@ -1707,6 +1730,7 @@ export const createEntitySelectors = <TEntity extends EntityKeys>(entityKey: TEn
 
         selectSocketEventName,
         selectCustomData,
+        selectUnsavedRecords,
     };
 };
 

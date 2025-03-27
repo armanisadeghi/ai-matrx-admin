@@ -66,11 +66,12 @@ export const selectionReducers = <TEntity extends EntityKeys>(entityKey: TEntity
     },
 
     setActiveRecord: (state: EntityState<TEntity>, action: PayloadAction<MatrxRecordId>) => {
-        entityLogger.log(DEBUG, "setActiveRecord", action.payload);
+        entityLogger.log(INFO, "setActiveRecord", action.payload);
         if (state.selection.activeRecord) {
             state.selection.lastActiveRecord = state.selection.activeRecord;
         }
         state.selection.activeRecord = action.payload;
+        entityLogger.log(INFO, "setActiveRecord State Value:", state.selection.activeRecord);
 
         if (!state.selection.selectedRecords.includes(action.payload)) {
             state.selection.selectedRecords.push(action.payload);

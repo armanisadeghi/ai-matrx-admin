@@ -19,6 +19,31 @@ interface EntityAnalyzerState {
     }>;
 }
 
+// interface EntityState<TEntity extends EntityKeys> {
+//     entityMetadata: EntityMetadata; // Field info is here: entityMetadata.fields has this: EntityStateField[]
+//     records: Record<MatrxRecordId, EntityData<TEntity>>
+//     unsavedRecords: Record<MatrxRecordId, Partial<EntityData<TEntity>>>;
+//     pendingOperations: MatrxRecordId[]; // Array instead of Set
+//     quickReference: QuickReferenceState;
+//     selection: SelectionState;
+//     pagination: PaginationState;
+//     loading: LoadingState;
+//     cache: CacheState;
+//     history: HistoryState<TEntity>;
+//     filters: FilterState;
+//     subscription: SubscriptionConfig;
+//     flags: EntityFlags;
+//     metrics: EntityMetrics;
+//     parentEntityField?: string;
+//     activeParentId?: string;
+//     runtimeFilters?: RuntimeFilter[];
+//     runtimeSort?: RuntimeSort;
+//     socketEventName?: string;
+//     customData?: Record<string, unknown>;
+
+// }
+
+
 export const useEntityAnalyzer = (
     initialEntityKey?: EntityKeys | null
 ) => {
@@ -38,10 +63,15 @@ export const useEntityAnalyzer = (
         const stateMap: Record<string, EntityStateSection> = {
             selection: { title: "Selection State", data: entityState.selection },
             flags: { title: "Entity Flags", data: entityState.flags },
-            records: { title: "Records", data: entityState.records },
             unsavedRecords: { title: "Unsaved Records", data: entityState.unsavedRecords },
-            pendingOperations: { title: "Pending Operations", data: entityState.pendingOperations },
+            records: { title: "Records", data: entityState.records },
+            parentInfo: { title: "Parent Info", data: { parentEntityField: entityState.parentEntityField, activeParentId: entityState.activeParentId } },
+            socket: { title: "Socket Event", data: entityState.socketEventName },
+            customData: { title: "Custom Data", data: entityState.customData },
+            runtimeFilters: { title: "Runtime Filters", data: entityState.runtimeFilters },
+            runtimeSort: { title: "Runtime Sort", data: entityState.runtimeSort },
             quickReference: { title: "Quick Reference", data: entityState.quickReference },
+            pendingOperations: { title: "Pending Operations", data: entityState.pendingOperations },
             entityMetadata: { title: "Entity Metadata", data: entityState.entityMetadata },
             pagination: { title: "Pagination State", data: entityState.pagination },
             loading: { title: "Loading State", data: entityState.loading },
@@ -49,7 +79,8 @@ export const useEntityAnalyzer = (
             history: { title: "History State", data: entityState.history },
             filters: { title: "Filter State", data: entityState.filters },
             subscription: { title: "Subscription Config", data: entityState.subscription },
-            metrics: { title: "Entity Metrics", data: entityState.metrics }
+            metrics: { title: "Entity Metrics", data: entityState.metrics },
+
         };
 
         return Object.entries(stateMap)
@@ -62,6 +93,7 @@ export const useEntityAnalyzer = (
             }));
     };
 
+    const entityDisplayName = entityState?.entityMetadata.displayName;
     const sections = getEntitySections();
 
     const selectEntity = (entityKey: EntityKeys | null) => {
@@ -90,5 +122,8 @@ export const useEntityAnalyzer = (
 
         // Raw state access if needed
         rawEntityState: entityState,
+        
+        // Newly added
+        entityDisplayName,
     };
 };

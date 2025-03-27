@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Paperclip, Search, ArrowUp, Mic } from "lucide-react";
 import { LiaLightbulbSolid } from "react-icons/lia";
 import { HiOutlineLightBulb } from "react-icons/hi";
@@ -6,7 +6,6 @@ import { LuSearchCheck } from "react-icons/lu";
 import { MatrxRecordId } from "@/types";
 import ToggleButton from "@/components/matrx/toggles/ToggleButton";
 import ModelSelection from "@/features/chat/ui-parts/prompt-input/ModelSelection";
-import useChatBasics from "@/hooks/ai/chat/useChatBasics";
 import { ListTodo } from "lucide-react";
 import AIToolsSheet from "./AIToolsSheet";
 import { FaMicrophoneLines } from "react-icons/fa6";
@@ -16,46 +15,23 @@ import { CgAttachment } from "react-icons/cg";
 import { MdOutlineChecklist } from "react-icons/md";
 import { MdOutlineQuestionMark } from "react-icons/md";
 import { BsPatchQuestion } from "react-icons/bs";
-import { ChatResult } from "@/hooks/ai/chat/useChat";
-import { NewChatResult } from "@/hooks/ai/chat/new/useChat";
+import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
+import { useAppDispatch, useAppSelector } from "@/lib/redux";
 
 interface InputBottomControlsProps {
     isDisabled: boolean;
-    isSubmitting: boolean;
     onSendMessage: () => void;
     onToggleTools?: () => void;
 }
 
-const InputBottomControls: React.FC<InputBottomControlsProps> = ({
-    isDisabled,
-    isSubmitting,
-    onSendMessage,
-    onToggleTools,
-}) => {
+const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, onSendMessage, onToggleTools }) => {
+    const dispatch = useAppDispatch();
 
-    const {
-        models,
-        fetchAllModels,
-        conversationSelectors,
-        messageSelectors,
-        actions,
-        activeConversationRecord,
-        activeMessageRecord,
-        conversationRecordKey,
-        conversationId,
-        messageRecordKey,
-        messageId,
-        messageMetadata,
-        conversationMetadata,
-        fileManager
-    } = useChatBasics();
+    const { fileManager, chatActions, chatSelectors, messageKey } = useChatBasics();
 
-    useEffect(() => {
-        if (Object.keys(models).length === 0) {
-            fetchAllModels();
-        }
-    }, []);
-
+    const messageMetadata = useAppSelector(chatSelectors.activeMessageMetadata);
+    const conversationMetadata = useAppSelector(chatSelectors.activeConversationMetadata);
+    const models = useAppSelector(chatSelectors.aiModels);
 
     // Internal state management
     const [isListening, setIsListening] = useState<boolean>(false);
@@ -73,18 +49,23 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
         enableAskQuestions: false,
     });
 
+    const prevSettingsRef = useRef(settings);
+
     useEffect(() => {
-        actions.updateMultipleNestedFields({
-            conversationkeyOrId: conversationRecordKey,
-            messagekeyOrId: messageRecordKey,
-            updates: Object.entries(settings).map(([nestedKey, value]) => ({
-                field: "metadata",
-                nestedKey,
-                value
-            })),
-        });
-    }, [settings]);
-    
+        const changedSettings = Object.entries(settings).reduce((acc, [key, value]) => {
+            if (prevSettingsRef.current[key] !== value) {
+                acc.push({ field: "metadata", nestedKey: key, value });
+            }
+            return acc;
+        }, []);
+
+        if (changedSettings.length > 0) {
+            dispatch(chatActions.updateMultipleNestedFields({ updates: changedSettings }));
+            prevSettingsRef.current = settings;
+        }
+    }, [settings, dispatch, chatActions]);
+
+
     useEffect(() => {
         if (messageMetadata?.availableTools?.length > 0) {
             setSettings((prev) => ({ ...prev, toolsEnabled: true }));
@@ -99,12 +80,13 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
     }, []);
 
     useEffect(() => {
+        if (!messageKey) return;
         if (messageMetadata?.files?.length > 0) {
             setHasUploadedFiles(true);
         } else {
             setHasUploadedFiles(false);
         }
-    }, [messageMetadata?.files]);
+    }, [messageMetadata?.files, messageKey]);
 
     // Handler functions
     const handleToggleSearch = useCallback(() => {
@@ -142,12 +124,12 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({
 
     const handleModelSelect = useCallback(
         (modelKey: MatrxRecordId) => {
-            actions.updateModel({ conversationkeyOrId: conversationRecordKey, messagekeyOrId: messageRecordKey, value: modelKey });
+            dispatch(chatActions.updateModel({ value: modelKey }));
         },
-        [actions]
+        [dispatch, chatActions]
     );
 
-    const modelId = messageMetadata?.modelKey || conversationMetadata?.modelKey || "";
+    const modelId = messageMetadata?.currentModel || conversationMetadata?.currentModel || "";
 
     return (
         <>

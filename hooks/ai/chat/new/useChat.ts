@@ -13,7 +13,6 @@ import { CombinedSaveChatResult, useChatRelationship } from "./useChatHooks";
 const DEBUG = false;
 const VERBOSE = false;
 
-
 export function useChat(baseRoute: string = "/c", convoId: string, newChat: boolean = false) {
     const [modelId, setModelId] = useState<string>(DEFAULT_GPT_MODEL_ID);
     const [mode, setMode] = useState<ChatMode>(DEFAULT_MODE);
@@ -24,7 +23,6 @@ export function useChat(baseRoute: string = "/c", convoId: string, newChat: bool
     const router = useRouter();
 
     const chatRelationshipHook = useChatRelationship(convoId);
-
 
     const {
         isChatLoading,
@@ -40,7 +38,6 @@ export function useChat(baseRoute: string = "/c", convoId: string, newChat: bool
         newMessage,
         messageCrud,
     } = chatRelationshipHook;
-
 
     const updateModel = useCallback(
         (key: string) => {

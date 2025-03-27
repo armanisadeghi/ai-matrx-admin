@@ -43,7 +43,8 @@ const EnhancedEntityAnalyzer: React.FC<EnhancedEntityAnalyzerProps> = (
         isViewingEntity,
         getEntityLabel,
         selectEntity,
-        showEntityList
+        showEntityList,
+        entityDisplayName
     } = useEntityAnalyzer(selectedEntityKey);
 
     useEffect(() => {
@@ -95,7 +96,7 @@ const EnhancedEntityAnalyzer: React.FC<EnhancedEntityAnalyzerProps> = (
                          <EntityAnalyzerView entityKey={currentEntityKey}/>
 
                          <p className="text-md text-primary pl-2 mt-4">
-                                Automated Data Conversion
+                                {entityDisplayName} Entity State
                             </p>
 
                          {sections.map((section) => (
@@ -113,7 +114,7 @@ const EnhancedEntityAnalyzer: React.FC<EnhancedEntityAnalyzerProps> = (
                                  layout="autoGrid"
                                  minimizedPosition="top"
                                  className="min-h-0"
-                                 gridMinWidth="250px"
+                                 gridMinWidth="350px"
                              />
                          </Suspense>
                      </>

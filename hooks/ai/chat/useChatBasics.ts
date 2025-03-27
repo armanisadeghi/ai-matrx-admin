@@ -1,13 +1,19 @@
 import { useAiModelWithFetch } from "@/lib/redux/entity/hooks/useAllData";
 import { useCallback, useEffect } from "react";
-import { getChatActions } from "@/lib/redux/entity/custom-actions/chatActions";
-import { createConversationSelectors, createMessageSelectors, useAppDispatch, useAppSelector } from "@/lib/redux";
+import { getChatActions, getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
+import { createConversationSelectors, createMessageSelectors, useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
 import { ConversationRecordWithKey, MessageRecordWithKey } from "@/types";
 import { ConversationMetadata, MessageMetadata } from "@/types/chat/chat.types";
 import { useFileManagement } from "./useFileManagement";
+import { entityUpdateActionsWithThunks } from "@/lib/redux/entity/slices/updateReducers";
 
 export const useChatBasics = () => {
     const { aiModelRecords: models, fetchAll: fetchModels } = useAiModelWithFetch();
+
+    const chatActions = getChatActionsWithThunks();
+
+
+    const store = useAppStore();
     const dispatch = useAppDispatch();
     const conversationSelectors = createConversationSelectors;
     const messageSelectors = createMessageSelectors;
@@ -35,6 +41,8 @@ export const useChatBasics = () => {
     const fetchAllModels = useCallback(() => {
         fetchModels();
     }, [fetchModels]);
+
+
 
 
     return {

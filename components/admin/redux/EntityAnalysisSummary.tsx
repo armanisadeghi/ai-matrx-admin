@@ -19,6 +19,9 @@ const EntityAnalyzerView = ({ entityKey }: { entityKey: EntityKeys }) => {
     const statusInfo = React.useMemo(() => ({
         "Entity Name": entityLabel,
         "Active Record": state.selection.activeRecord || 'None',
+        "Socket Event": state.socketEventName || 'None',
+        "Parent Field": state.parentEntityField || 'None',
+        "Active Parent ID": state.activeParentId || 'None',
         "Selected Count": state.selection.selectedRecords.length,
         "Quick Ref Count": Object.keys(state.quickReference || {}).length,
         "Total Records": Object.keys(state.records || {}).length,

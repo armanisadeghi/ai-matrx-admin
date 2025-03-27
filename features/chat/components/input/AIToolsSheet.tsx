@@ -3,7 +3,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Search, X, CheckSquare, Square, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
 import { allTools, Tool } from "./constants";
-import useChatBasics from "@/hooks/ai/chat/useChatBasics";
+import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
+import { useAppDispatch, useAppSelector } from "@/lib/redux";
+
 
 interface ToolSelectionSheetProps {
     isOpen: boolean;
@@ -21,32 +23,24 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [showCategories, setShowCategories] = useState(true);
+    const dispatch = useAppDispatch();
 
     const {
-        models,
-        fetchAllModels,
-        conversationSelectors,
-        messageSelectors,
-        actions,
-        activeConversationRecord,
-        activeMessageRecord,
-        conversationRecordKey,
-        conversationId,
-        messageRecordKey,
-        messageId,
-        messageMetadata,
-        conversationMetadata,
+        chatActions,
+        chatSelectors,
+        messageKey,
     } = useChatBasics();
 
+    const availableTools = useAppSelector(chatSelectors.availableTools);
 
     const categories = useMemo(() => extractCategories(allTools), []);
 
     useEffect(() => {
-        setSelectedTools(messageMetadata?.availableTools || []);
+        setSelectedTools(availableTools || []);
     }, []);
 
     useEffect(() => {
-        actions.updateAvailableTools({ conversationkeyOrId: conversationRecordKey, messagekeyOrId: messageRecordKey, value: selectedTools });
+        dispatch(chatActions.updateAvailableTools({ value: selectedTools }));
         onToolSelectionChange?.(selectedTools);
     }, [selectedTools]);
 

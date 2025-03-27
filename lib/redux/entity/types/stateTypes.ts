@@ -438,6 +438,7 @@ export interface EntityFlags {
 export interface LoadingState {
     initialized: boolean;
     loading: boolean;
+    externalLoading: boolean;
     error: {
         message: string;
         code?: number;

@@ -95,3 +95,18 @@ export const DEFAULT_FIRST_MESSAGE: Partial<Message> = {
     isPublic: false,
 };
 
+export const DEFAULT_NEW_MESSAGE: Partial<Message> = {
+    id: "",
+    role: "user",
+    content: "",
+    type: "text",
+    metadata: {
+        brokerValues: {},
+        availableTools: [],
+        ModAssistantContext: "",
+        ModUserContext: "",
+        files: [],
+    },
+    isPublic: false,
+};
+

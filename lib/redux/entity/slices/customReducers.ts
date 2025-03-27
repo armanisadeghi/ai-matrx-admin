@@ -20,6 +20,7 @@ export const customReducers = <TEntity extends EntityKeys>(
         }>
     ) => {
         state.socketEventName = action.payload.socketEventName;
+        entityLogger.log(DEBUG, "setSocketEventName", { socketEventName: action.payload.socketEventName });
     },
 
     // Original: Overwrites entire customData
@@ -39,13 +40,14 @@ export const customReducers = <TEntity extends EntityKeys>(
             customData: Record<string, unknown>;
         }>
     ) => {
+        entityLogger.log(DEBUG, "state.customData", { stateCustomData: state.customData });
         const newCustomData = action.payload.customData;
-        entityLogger.log(INFO, "updateCustomDataSmart", { newCustomData });
+        entityLogger.log(DEBUG, "updateCustomDataSmart", { newCustomData });
 
         // Initialize customData if it doesn’t exist
         if (!state.customData || typeof state.customData !== "object") {
             state.customData = {};
-            entityLogger.log(INFO, "Initialized empty customData object");
+            entityLogger.log(DEBUG, "Initialized empty customData object");
         }
 
         // Merge new data into existing customData
@@ -54,7 +56,7 @@ export const customReducers = <TEntity extends EntityKeys>(
             ...newCustomData,
         };
 
-        entityLogger.log(INFO, "Custom Data After Update: ", state.customData);
+        entityLogger.log(DEBUG, "Custom Data After Update: ", state.customData);
     },
 });
 

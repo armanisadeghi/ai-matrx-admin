@@ -4,9 +4,10 @@ import React, { useEffect } from "react";
 import ActionButtons from "@/features/chat/ui-parts/prompt-input/ActionButtons";
 import { ChatMode } from "@/types/chat/chat.types";
 import PromptInputContainer from "../prompt-input/PromptInputContainer";
+import { ChatResult } from "@/hooks/ai/chat/useChat";
+import InputPlaceholder from "../prompt-input/InputPlaceholder";
 import { useChat } from "@/hooks/ai/chat/new/useChat";
 import { NEW_CONVERSATION_ID } from "@/constants/chat";
-
 
 
 interface WelcomeScreenProps {
@@ -17,7 +18,7 @@ interface WelcomeScreenProps {
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMode }) => {
 
-    const chatHook = useChat("/chat", NEW_CONVERSATION_ID, true);
+    const chatHook = useChat("/c", NEW_CONVERSATION_ID, true);
 
     useEffect(() => {
         if (initialModelId) {

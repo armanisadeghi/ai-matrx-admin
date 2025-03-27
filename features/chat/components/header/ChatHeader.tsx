@@ -3,8 +3,9 @@
 import React from "react";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import ClientHeaderContent from "@/features/chat/ui-parts/header/ClientHeaderContent";
-import { IconMenu2, IconX } from "@tabler/icons-react";
+import { IconMenu2 } from "@tabler/icons-react";
 import Link from "next/link";
+
 interface ChatHeaderProps {
     title?: string;
     baseRoute?: string;

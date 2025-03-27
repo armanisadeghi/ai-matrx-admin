@@ -7,6 +7,8 @@ import StreamingCode from "@/features/chat/ui-parts/response/stream/StreamingCod
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
 import StreamingTable from "@/features/chat/ui-parts/response/stream/StreamingTable";
 import { SocketManager } from "@/lib/redux/socket/manager";
+import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
+import { useAppDispatch } from "@/lib/redux";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
@@ -59,9 +61,11 @@ interface ChatStreamDisplayProps {
 }
 
 const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className }) => {
+    const dispatch = useAppDispatch();
     const [content, setContent] = useState<string>("");
     const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">("connecting");
     const socketManager = useMemo(() => SocketManager.getInstance(), []);
+    const chatActions = getChatActionsWithThunks();
 
     const containerStyles = useMemo(
         () =>
@@ -73,14 +77,11 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         [className]
     );
 
-    const tableData = useMemo(() => parseMarkdownTable(content), [content]);
-    const memoizedComponents = useMemo(
-        () => ({
-            ...components,
-            table: () => (tableData ? <StreamingTable data={tableData} /> : null),
-        }),
-        [tableData]
-    );
+    const tableData = parseMarkdownTable(content);
+    const componentsWithTable = ({
+        ...components,
+        table: () => (tableData ? <StreamingTable data={tableData} /> : null),
+    });
 
     useEffect(() => {
         let unsubscribe: () => void;
@@ -102,20 +103,26 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                 setConnectionStatus("connected");
     
                 unsubscribe = socketManager.subscribeToEvent(eventName, (data: any) => {
-                    // Since data is always an object, check the type of data.data
                     const dataContent = data?.data || "";
                     const newContent = typeof dataContent === "string" 
                         ? dataContent 
                         : JSON.stringify(dataContent);
                     setContent((prev) => prev + newContent);
-                    
-                    // Log for debugging when data.data is an object
+
+                
+                    const isEnd = data?.end === true || data?.end === "true" || data?.end === "True";
+                    if (isEnd) {
+                        console.log("[CHAT STREAM DISPLAY] Stream ended");
+                        dispatch(chatActions.setIsNotStreaming());
+                        dispatch(chatActions.setSocketEventName({ eventName: "STREAM COMPLETE" }));
+                    }
+
                     if (typeof dataContent === "object" && dataContent !== null) {
-                        console.log("[ChatStreamDisplay] Nested object in data.data:", dataContent);
+                        console.log("[CHAT STREAM DISPLAY] Nested object in data.data:", dataContent);
                     }
                 });
             } catch (error) {
-                console.error("[ChatStreamDisplay] Socket setup failed:", error);
+                console.error("[CHAT STREAM DISPLAY] Socket setup failed:", error);
                 if (isMounted) {
                     setConnectionStatus("error");
                     setContent("Error: Failed to initialize streaming");
@@ -140,14 +147,14 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
             case "error":
                 return (
                     <div className="text-red-500">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={memoizedComponents}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
                             {content}
                         </ReactMarkdown>
                     </div>
                 );
             case "connected":
                 return (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={memoizedComponents}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
                         {content}
                     </ReactMarkdown>
                 );

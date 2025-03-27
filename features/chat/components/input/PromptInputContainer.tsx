@@ -6,8 +6,8 @@ import InputBottomControls from "./InputBottomControls";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import FileChipsWithPreview from "@/components/ui/file-preview/FileChipsWithPreview";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
-import useChatBasics from "@/hooks/ai/chat/useChatBasics";
-import { NewChatResult } from "@/hooks/ai/chat/new/useChat";
+import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
+import { useAppDispatch, useAppSelector } from "@/lib/redux";
 
 interface PromptInputContainerProps {
     onMessageSent?: () => void;
@@ -15,7 +15,7 @@ interface PromptInputContainerProps {
     localContent?: string;
     onContentChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     renderedBy?: string;
-    chatHook?: NewChatResult;
+    onSubmit: () => Promise<boolean>;
 }
 
 const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
@@ -24,43 +24,40 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     localContent,
     onContentChange,
     renderedBy,
-    chatHook,
+    onSubmit,
 }) => {
-    const [isLocalSubmitting, setIsLocalSubmitting] = useState<boolean>(false);
-    const textInputRef = useRef<HTMLTextAreaElement>(null); // Added ref
+    const dispatch = useAppDispatch();
 
-    const {
-        fileManager,
-        actions,
-        conversationId,
-        activeMessageRecord,
-        messageRecordKey,
-    } = useChatBasics();
+    const textInputRef = useRef<HTMLTextAreaElement>(null);
 
-    const {submitChatMessage, isSubmitting: isHookSubmitting} = chatHook;
+    const { fileManager, chatActions, chatSelectors, conversationId } = useChatBasics();
 
     const [content, setContent] = useState<string>("");
 
+    const activeMessageRecord = useAppSelector(chatSelectors.activeMessage);
+
     useEffect(() => {
-        if (localContent !== undefined) {
+        if (activeMessageRecord?.content === "") {
+            setContent("");
+        } else if (localContent !== undefined) {
             setContent(localContent);
-        } else if (activeMessageRecord.content) {
+        } else if (activeMessageRecord?.content) {
             setContent(activeMessageRecord.content);
         }
-    }, []);
+    }, [activeMessageRecord?.content, localContent]);
 
     const handleContentChange = useCallback(
-        (content: string) => {
-            setContent(content);
+        (newContent: string) => {
+            setContent(newContent);
             if (onContentChange) {
                 const syntheticEvent = {
-                    target: { value: content },
-                    currentTarget: { value: content },
+                    target: { value: newContent },
+                    currentTarget: { value: newContent },
                 } as unknown as React.ChangeEvent<HTMLTextAreaElement>;
                 onContentChange(syntheticEvent);
             }
         },
-        [onContentChange]
+        [onContentChange, chatActions, dispatch]
     );
 
     const handleFileUpload = useCallback(
@@ -70,51 +67,39 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
         [fileManager]
     );
 
-    const handleSendMessage = useCallback(async () => {
-        actions.updateMessageFieldSmart({ keyOrId: messageRecordKey, field: "content", value: content });
+    const handleTriggerSubmit = useCallback(async () => {
+        dispatch(chatActions.updateMessageContent({ value: content }));
 
         if (!content.trim() && fileManager.files.length === 0) {
             return;
         }
 
-        try {
-            setIsLocalSubmitting(true);
+        const success = await onSubmit();
 
-            const success = await submitChatMessage();
+        if (success) {
+            setContent("");
+            fileManager.clearFiles();
 
-            if (success) {
-                if (onMessageSent) {
-                    onMessageSent();
-                }
-                textInputRef.current?.focus(); // Added focus after successful submit
-                return true;
-            } else {
-                console.error("Failed to send message");
-                return false;
+            if (onMessageSent) {
+                onMessageSent();
             }
-        } catch (error) {
-            console.error("Error sending message:", error);
-            return false;
-        } finally {
-            setIsLocalSubmitting(false);
+            textInputRef.current?.focus();
+        } else {
+            console.error("Failed to send message (handled by parent)");
         }
-    }, [content, fileManager.files.length, submitChatMessage, onMessageSent]);
-
-    const isDisabled = disabled || isLocalSubmitting || isHookSubmitting;
+    }, [content, fileManager, onSubmit, onMessageSent, chatActions, dispatch]);
 
     return (
         <div className="relative">
-            {/* File Chips Component */}
             <FileChipsWithPreview files={fileManager.files} onRemoveFile={fileManager.removeFile} />
 
-            {/* Text Input with Bottom Controls */}
             <div className="relative rounded-3xl">
                 <TextInput
-                    ref={textInputRef} // Added ref prop
+                    ref={textInputRef}
                     content={content}
-                    disabled={isDisabled}
+                    disabled={disabled}
                     onContentChange={handleContentChange}
-                    onSubmit={handleSendMessage}
+                    onSubmit={handleTriggerSubmit}
                     onImagePasted={(result) => {
                         fileManager.addFiles([result]);
                     }}
@@ -122,17 +107,11 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                     path={`chat-attachments/conversation-${conversationId}`}
                 />
 
-                {/* Bottom Controls Component */}
                 <div className="absolute bottom-0 left-0 right-0 rounded-3xl">
-                    <InputBottomControls
-                        isDisabled={isDisabled}
-                        isSubmitting={isLocalSubmitting || isHookSubmitting}
-                        onSendMessage={handleSendMessage}
-                    />
+                    <InputBottomControls isDisabled={disabled} onSendMessage={handleTriggerSubmit} />
                 </div>
             </div>
 
-            {/* File Upload Area */}
             {fileManager.showFileUpload && (
                 <div className="absolute bottom-full mb-10 w-full bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-3xl">
                     <FileUploadWithStorage

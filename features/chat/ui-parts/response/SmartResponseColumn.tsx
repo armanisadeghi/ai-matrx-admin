@@ -56,8 +56,11 @@ AssistantMessageItem.displayName = "AssistantMessageItem";
 
 const SmartResponseColumn: React.FC = () => {
     const selectors = createConversationSelectors;
-    const conversationId = useAppSelector(selectors.selectActiveRecordId);
+    const conversation = useAppSelector(selectors.selectActiveRecord);
+    const conversationId = conversation?.id;
     const eventName = useAppSelector(selectors.selectSocketEventName);
+
+    console.log("eventName", eventName);
     const customData = useAppSelector(selectors.selectCustomData);
     const isNewChat = useMemo(() => customData?.isNewChat !== false, [customData?.isNewChat]);
 

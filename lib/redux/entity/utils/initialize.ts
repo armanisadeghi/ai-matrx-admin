@@ -179,6 +179,7 @@ export function createInitialState<TEntity extends EntityKeys>(
         },
         loading: {
             loading: false,
+            externalLoading: false,
             initialized: true,
             error: null,
             lastOperation: null

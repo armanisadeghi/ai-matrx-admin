@@ -6,8 +6,8 @@ import { useCreateConvoAndMessage } from "@/app/entities/hooks/crud/by-relations
 import { NEW_CONVERSATION_ID, CHAT_RELATIONSHIP_BASE_CONFIG, CHAT_CREATE_BASE_CONFIG, NEW_CHAT_PARAMS, DEFAULT_GPT_MODEL_ID } from "@/constants/chat";
 import { usePrepConversationSocket } from "@/lib/redux/socket/schema/hooks/usePrepConversationSocket";
 
-const DEBUG = true;
-const VERBOSE = true;
+const DEBUG = false;
+const VERBOSE = false;
 
 type MessageWithKey = Message & { matrxRecordId: MatrxRecordId };
 

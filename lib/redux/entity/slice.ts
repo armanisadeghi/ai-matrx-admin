@@ -25,7 +25,7 @@ const DEBUG = "debug";
 const VERBOSE = "verbose";
 
 export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity, initialState: EntityState<TEntity>) => {
-    const entityLogger = EntityLogger.createLoggerWithDefaults(`Entity Slice`, entityKey, "ENTITY_SLICE");
+    const entityLogger = EntityLogger.createLoggerWithDefaults(`Entity Slice`, entityKey.toUpperCase());
     const modeManager = new EntityModeManager(entityKey);
 
     const slice = createSlice({
@@ -36,7 +36,7 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             ...creationReducers(entityKey, entityLogger, modeManager),
             ...crudReducers(entityKey, entityLogger, modeManager),
             ...selectionReducers(entityKey, entityLogger),
-            ...updateReducers(entityKey, entityLogger, modeManager),
+            ...updateReducers(entityKey, modeManager),
             ...historyReducers(entityKey, entityLogger),
             ...paginationReducers(entityKey, entityLogger),
             ...operationsReducers(entityKey, entityLogger, modeManager),
@@ -46,7 +46,6 @@ export const createEntitySlice = <TEntity extends EntityKeys>(entityKey: TEntity
             ...validationReducers(entityKey, entityLogger),
             ...relationshipReducers(entityKey, entityLogger),
             ...customReducers(entityKey, entityLogger),
-
 
             resetState: () => initialState,
         },

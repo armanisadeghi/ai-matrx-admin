@@ -14,7 +14,9 @@ import { SiDassaultsystemes } from "react-icons/si";
 import HierarchicalToggleMenu from "@/components/matrx/toggles/HierarchicalToggleMenu";
 import { programmingLibraries } from "./constants";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
-import useChatBasics from "@/hooks/ai/chat/useChatBasics";
+import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
+import { useAppDispatch, useAppSelector } from "@/lib/redux";
+
 
 
 
@@ -25,25 +27,14 @@ interface ActionButtonsProps {
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className = "" }) => {
-
+    const dispatch = useAppDispatch();
     const {
-        models,
-        fetchAllModels,
-        fileManager,
-        conversationSelectors,
-        messageSelectors,
-        actions,
-        activeConversationRecord,
-        conversationRecordKey,
-        conversationId,
-        activeMessageRecord,
-        messageRecordKey,
-        messageId,
-        messageMetadata,
-        conversationMetadata,
+        chatActions,
+        chatSelectors,
+        conversationKey,
     } = useChatBasics();
 
-    const currentMode = conversationMetadata?.currentMode;
+    const currentMode = useAppSelector(chatSelectors.currentMode);
 
     const { quickReferenceKeyDisplayPairs } = useFetchQuickRef("recipe");
 
@@ -61,8 +52,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className =
     const [selectedQuickRef, setSelectedQuickRef] = useState<string | null>(null);
 
     const handleModeSelect = (mode: ChatMode) => {
-        actions.updateMode({ conversationkeyOrId: conversationRecordKey, messagekeyOrId: messageRecordKey, value: mode });
-        console.log("mode", mode);
+        if (!conversationKey) return;
+        dispatch(chatActions.updateMode({ value: mode }));
+        console.log("HANDLE MODE SELECT mode", mode);
         if (mode !== "recipe") {
             setSelectedQuickRef(null);
         }

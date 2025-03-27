@@ -1,6 +1,6 @@
 // File: types/AutomationSchemaTypes.ts
-import {AutomationEntity, EntityData, EntityKeys, EntityDataMixed, EntityDataOptional, EntityDataWithKey, ProcessedEntityData} from '@/types/entityTypes';
-import { EntityState } from '@/lib/redux/entity/types/stateTypes';
+import {AutomationEntity, EntityData, EntityKeys, EntityDataMixed, EntityDataOptional, EntityDataWithKey, ProcessedEntityData, MatrxRecordId} from '@/types/entityTypes';
+import { EntityRecordMap, EntityState } from '@/lib/redux/entity/types/stateTypes';
 
 export type TypeBrand<T> = { _typeBrand: T };
 
@@ -165,7 +165,13 @@ export type AutomationEntityName = AutomationTableName | AutomationViewName;
 
 // export type SchemaEntityKeys = keyof ProcessedSchema;
 
-export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+// export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+
+export type Expand<T> = T extends Date
+  ? Date // Return Date as-is without expanding it
+  : T extends infer O
+  ? { [K in keyof O]: O[K] } // ===================================================================== Manual update - not auto-generated =======
+  : never;
 
 export type ExpandRecursively<T> = T extends object ? (T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never) : T;export type ExpandExcept<T, KeysToExclude extends string[] = []> = T extends object
     ? {
@@ -213,6 +219,7 @@ export type AiModelRecordWithKey = Expand<EntityDataWithKey<"aiModel">>;
 export type AiModelProcessed = Expand<ProcessedEntityData<"aiModel">>;
 export type AiModelData = Expand<EntityDataMixed<"aiModel">>;
 export type AiModelState = EntityStateType<"aiModel">;
+export type AiModelRecordMap = Record<MatrxRecordId, AiModelData>;    // ================= NOT AUTO-GENERATED =================
 
 export type AiModelEndpointType = AutomationEntity<"aiModelEndpoint">;
 export type AiModelEndpointDataRequired = Expand<EntityData<"aiModelEndpoint">>;
@@ -349,6 +356,7 @@ export type ConversationRecordWithKey = Expand<EntityDataWithKey<"conversation">
 export type ConversationProcessed = Expand<ProcessedEntityData<"conversation">>;
 export type ConversationData = Expand<EntityDataMixed<"conversation">>;
 export type ConversationState = EntityStateType<"conversation">;
+export type ConversationRecordMap = Record<MatrxRecordId, ConversationData>;    // ================= NOT AUTO-GENERATED =================
 
 export type DataBrokerType = AutomationEntity<"dataBroker">;
 export type DataBrokerDataRequired = Expand<EntityData<"dataBroker">>;
@@ -453,6 +461,7 @@ export type MessageRecordWithKey = Expand<EntityDataWithKey<"message">>;
 export type MessageProcessed = Expand<ProcessedEntityData<"message">>;
 export type MessageData = Expand<EntityDataMixed<"message">>;
 export type MessageState = EntityStateType<"message">;
+export type MessageRecordMap = Record<MatrxRecordId, MessageData>;    // ================= NOT AUTO-GENERATED =================
 
 export type MessageBrokerType = AutomationEntity<"messageBroker">;
 export type MessageBrokerDataRequired = Expand<EntityData<"messageBroker">>;

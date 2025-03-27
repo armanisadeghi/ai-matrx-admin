@@ -9,8 +9,13 @@ const ReactMarkdown = dynamic(() => import("react-markdown"), {
   ssr: false,
 });
 
+type SimpleMessage = {
+  id: string;
+  content: string;
+  [key: string]: any;
+};
 interface UserMessageProps {
-  message: Message;
+  message: SimpleMessage;
   onMessageUpdate?: (id: string, content: string) => void;
   onSavePrompt?: (content: string) => void;
   onScrollToBottom?: () => void;

@@ -16,6 +16,11 @@ export const stateReducers = <TEntity extends EntityKeys>(entityKey: TEntity, en
         }
     },
 
+    setExternalLoading: (state: EntityState<TEntity>, action: PayloadAction<boolean>) => {
+        entityLogger.log(DEBUG, "setExternalLoading", action.payload);
+        state.loading.externalLoading = action.payload;
+    },
+
     setError: (state: EntityState<TEntity>, action: PayloadAction<LoadingState["error"]>) => {
         entityLogger.log("error", "setError", action.payload);
         state.loading.error = action.payload;

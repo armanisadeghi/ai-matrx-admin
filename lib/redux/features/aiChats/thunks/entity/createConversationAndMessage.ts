@@ -5,7 +5,7 @@ import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import { createAppThunk } from "@/lib/redux/utils";
 import { EntityKeys, MatrxRecordId } from "@/types";
 import { saveRecordsInOrder } from "@/lib/redux/entity/thunks/createRecordThunk";
-
+import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 
 interface CreateConversationAndMessagePayload {
     conversationOverrides?: Partial<Conversation>;
@@ -67,9 +67,16 @@ export const createConversationAndMessage = createAppThunk<
                 })
             );
 
+            dispatch(conversationSlice.actions.setActiveRecord(conversationTempKey));
+            dispatch(messageSlice.actions.setActiveRecord(messageTempKey));
+            dispatch(messageSlice.actions.setActiveParentId(conversationId));
+            dispatch(messageSlice.actions.addRuntimeFilter({ field: "conversationId", operator: "eq", value: conversationId }));
+
             return {
                 conversationId,
                 messageId,
+                conversationTempKey,
+                messageTempKey,
                 conversationRecordKey,
                 messageRecordKey,
             };
@@ -79,45 +86,60 @@ export const createConversationAndMessage = createAppThunk<
     }
 );
 
-
 interface SaveConversationAndMessagePayload {
-    conversationTempId: MatrxRecordId; // e.g., 'new-record-convo123'
-    messageTempId: MatrxRecordId;     // e.g., 'new-record-msg456'
-  }
-  
-  interface SaveConversationAndMessageResult {
-    conversationCallbackId: string;
-    messageCallbackId: string;
-  }
-  
-  export const saveConversationAndMessage = createAppThunk<
+    conversationTempId: MatrxRecordId;
+    messageTempId: MatrxRecordId;
+}
+
+interface SaveConversationAndMessageResult {
+    success: boolean;
+    conversationData: {
+        tempRecordId: string;
+        recordKey: string;
+        data: any;
+    };
+    messageData: {
+        tempRecordId: string;
+        recordKey: string;
+        data: any;
+    };
+}
+
+export const saveConversationAndMessage = createAppThunk<
     SaveConversationAndMessageResult,
     SaveConversationAndMessagePayload,
     { rejectValue: string }
-  >(
-    'chat/saveConversationAndMessage',
-    async ({ conversationTempId, messageTempId }, { dispatch, rejectWithValue }) => {
-      try {
+>("chat/saveConversationAndMessage", async ({ conversationTempId, messageTempId }, { dispatch, rejectWithValue }) => {
+    try {
         const payloads = [
-          { entityKey: 'conversation' as EntityKeys, matrxRecordId: conversationTempId },
-          { entityKey: 'message' as EntityKeys, matrxRecordId: messageTempId },
+            { entityKey: "conversation" as EntityKeys, matrxRecordId: conversationTempId },
+            { entityKey: "message" as EntityKeys, matrxRecordId: messageTempId },
         ];
-  
-        const result = await dispatch(saveRecordsInOrder(payloads));
-  
-        if (saveRecordsInOrder.fulfilled.match(result)) {
-          const [conversationResult, messageResult] = result.payload;
-          return {
-            conversationCallbackId: conversationResult.callbackId,
-            messageCallbackId: messageResult.callbackId,
-          };
-        } else {
-          return rejectWithValue(result.payload || 'Failed to save conversation and message');
-        }
-      } catch (error) {
-        return rejectWithValue(
-          error instanceof Error ? error.message : 'Failed to save conversation and message'
+
+        const chatActions = getChatActionsWithThunks();
+
+        const results = await dispatch(saveRecordsInOrder(payloads)).unwrap();
+
+        const [conversationResult, messageResult] = results;
+
+        dispatch(
+            chatActions.updateNextOrderData({
+                keyOrId: conversationResult.data.data.id,
+                nextDisplayOrderToUse: messageResult.data.data.displayOrder + 2,
+                nextSystemOrderToUse: messageResult.data.data.systemOrder + 2,
+                isNewChat: false,
+            })
         );
-      }
+
+        const returnValue = {
+            success: true,
+            conversationData: conversationResult.data,
+            messageData: messageResult.data,
+        };
+        return returnValue;
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "Failed to save conversation and message";
+        console.error("SAVE_CONVERSATION_AND_MESSAGE: Error:", errorMsg);
+        return rejectWithValue(errorMsg);
     }
-  );
+});

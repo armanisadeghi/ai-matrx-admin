@@ -9,7 +9,7 @@ import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManage
 import { useRouter } from "next/navigation";
 import { DEFAULT_MODEL_ID, DEFAULT_MODE, DEFAULT_FAST_MODEL_ID, DEFAULT_GPT_MODEL_ID } from "@/constants/chat";
 import { CombinedSaveChatResult, useChatRelationship } from "./useChatHooks";
-import useChatBasics from "@/hooks/ai/chat/useChatBasics";
+import useChatBasics from "./useNewChatBasics";
 
 const DEBUG = false;
 const VERBOSE = false;
@@ -21,19 +21,15 @@ export function useChat(baseRoute: string = "/chat", convoId: string, newChat: b
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const {
-        models,
-        fetchAllModels,
-        conversationSelectors,
-        messageSelectors,
-        actions,
-        activeConversationRecord,
-        activeMessageRecord,
-        conversationRecordKey,
+        fileManager,
+        chatActions,
+        chatSelectors,
         conversationId,
-        messageRecordKey,
+        conversationKey,
         messageId,
-        messageMetadata,
-        conversationMetadata,
+        messageKey,
+        initialLoadComplete,
+        routeLoadComplete,
     } = useChatBasics();
 
     const chatManager = new ChatTaskManager();
@@ -96,10 +92,6 @@ export function useChat(baseRoute: string = "/chat", convoId: string, newChat: b
         [activeConversation, conversationCrud]
     );
 
-    const fileManager = useFileManagement({
-        onFilesUpdate: messageCrud.updateFiles,
-    });
-
     const updateChatMetadata = useCallback(
         (metadata: any) => {
             if (isNewChat) {
@@ -125,7 +117,7 @@ export function useChat(baseRoute: string = "/chat", convoId: string, newChat: b
             if (result.success) {
                 await new Promise((resolve) => setTimeout(resolve, 200));
                 const eventName = await chatManager.streamMessage(conversationId, result.message);
-                actions.setSocketEventName({ eventName: eventName });
+                chatActions.setSocketEventName({ eventName: eventName });
                 router.push(`${baseRoute}/${result.conversationId}`);
 
                 return true;
