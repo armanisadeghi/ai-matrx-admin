@@ -283,6 +283,8 @@ const flashcardSetRelationsFieldOverrides: AllFieldOverrides = {};
 
 const flashcardSetsFieldOverrides: AllFieldOverrides = {};
 
+const fullSpectrumPositionsFieldOverrides: AllFieldOverrides = {};
+
 const messageFieldOverrides: AllFieldOverrides = {};
 
 const messageBrokerFieldOverrides: AllFieldOverrides = {};
@@ -360,6 +362,28 @@ const recipeToolFieldOverrides: AllFieldOverrides = {};
 
 const registeredFunctionFieldOverrides: AllFieldOverrides = {};
 
+const scrapeConfigurationFieldOverrides: AllFieldOverrides = {};
+
+const scrapeDomainFieldOverrides: AllFieldOverrides = {};
+
+const scrapeDomainDisallowedNotesFieldOverrides: AllFieldOverrides = {};
+
+const scrapeDomainNotesFieldOverrides: AllFieldOverrides = {};
+
+const scrapeDomainQuickScrapeSettingsFieldOverrides: AllFieldOverrides = {};
+
+const scrapeDomainRobotsTxtFieldOverrides: AllFieldOverrides = {};
+
+const scrapeDomainSitemapFieldOverrides: AllFieldOverrides = {};
+
+const scrapeOverrideFieldOverrides: AllFieldOverrides = {};
+
+const scrapeOverrideValueFieldOverrides: AllFieldOverrides = {};
+
+const scrapePathPatternFieldOverrides: AllFieldOverrides = {};
+
+const scrapePathPatternOverrideFieldOverrides: AllFieldOverrides = {};
+
 const subcategoryFieldOverrides: AllFieldOverrides = {};
 
 const systemFunctionFieldOverrides: AllFieldOverrides = {};
@@ -422,6 +446,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     flashcardImages: flashcardImagesFieldOverrides,
     flashcardSetRelations: flashcardSetRelationsFieldOverrides,
     flashcardSets: flashcardSetsFieldOverrides,
+    fullSpectrumPositions: fullSpectrumPositionsFieldOverrides,
     message: messageFieldOverrides,
     messageBroker: messageBrokerFieldOverrides,
     messageTemplate: messageTemplateFieldOverrides,
@@ -442,6 +467,17 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     recipeProcessor: recipeProcessorFieldOverrides,
     recipeTool: recipeToolFieldOverrides,
     registeredFunction: registeredFunctionFieldOverrides,
+    scrapeConfiguration: scrapeConfigurationFieldOverrides,
+    scrapeDomain: scrapeDomainFieldOverrides,
+    scrapeDomainDisallowedNotes: scrapeDomainDisallowedNotesFieldOverrides,
+    scrapeDomainNotes: scrapeDomainNotesFieldOverrides,
+    scrapeDomainQuickScrapeSettings: scrapeDomainQuickScrapeSettingsFieldOverrides,
+    scrapeDomainRobotsTxt: scrapeDomainRobotsTxtFieldOverrides,
+    scrapeDomainSitemap: scrapeDomainSitemapFieldOverrides,
+    scrapeOverride: scrapeOverrideFieldOverrides,
+    scrapeOverrideValue: scrapeOverrideValueFieldOverrides,
+    scrapePathPattern: scrapePathPatternFieldOverrides,
+    scrapePathPatternOverride: scrapePathPatternOverrideFieldOverrides,
     subcategory: subcategoryFieldOverrides,
     systemFunction: systemFunctionFieldOverrides,
     taskAssignments: taskAssignmentsFieldOverrides,

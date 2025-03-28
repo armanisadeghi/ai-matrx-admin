@@ -183,6 +183,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["setId"],
   nativeFieldsNoPk: ["userId", "name", "createdAt", "updatedAt", "sharedWith", "public", "topic", "lesson", "difficulty", "audioOverview"]
 },
+  fullSpectrumPositions: {
+  nativeFields: ["id", "createdAt", "updatedAt", "title", "description", "alternateTitles", "qualifications", "sizzleQuestions", "redFlags", "additionalDetails"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "title", "description", "alternateTitles", "qualifications", "sizzleQuestions", "redFlags", "additionalDetails"]
+},
   message: {
   nativeFields: ["id", "conversationId", "role", "content", "type", "displayOrder", "systemOrder", "createdAt", "metadata", "userId", "isPublic"],
   primaryKeyFields: ["id"],
@@ -282,6 +287,61 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "name", "modulePath", "className", "description", "returnBroker"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "modulePath", "className", "description", "returnBroker"]
+},
+  scrapeConfiguration: {
+  nativeFields: ["id", "scrapeMode", "interactionSettingsId", "scrapePathPatternId", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeMode", "interactionSettingsId", "scrapePathPatternId", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeDomain: {
+  nativeFields: ["id", "url", "commonName", "scrapeAllowed", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["url", "commonName", "scrapeAllowed", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeDomainDisallowedNotes: {
+  nativeFields: ["id", "scrapeDomainId", "notes", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeDomainId", "notes", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeDomainNotes: {
+  nativeFields: ["id", "scrapeDomainId", "notes", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeDomainId", "notes", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeDomainQuickScrapeSettings: {
+  nativeFields: ["id", "scrapeDomainId", "enabled", "proxyType", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeDomainId", "enabled", "proxyType", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeDomainRobotsTxt: {
+  nativeFields: ["id", "scrapeDomainId", "robotsTxt", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeDomainId", "robotsTxt", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeDomainSitemap: {
+  nativeFields: ["id", "scrapeDomainId", "sitemap", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeDomainId", "sitemap", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeOverride: {
+  nativeFields: ["id", "name", "configType", "selectorType", "matchType", "action", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["name", "configType", "selectorType", "matchType", "action", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeOverrideValue: {
+  nativeFields: ["id", "value", "scrapeOverrideId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["value", "scrapeOverrideId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapePathPattern: {
+  nativeFields: ["id", "scrapeDomainId", "pathPattern", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeDomainId", "pathPattern", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapePathPatternOverride: {
+  nativeFields: ["id", "name", "scrapePathPatternId", "scrapeOverrideId", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["name", "scrapePathPatternId", "scrapeOverrideId", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
   subcategory: {
   nativeFields: ["id", "categoryId", "name", "description", "slug", "icon", "features", "createdAt"],

@@ -136,6 +136,10 @@ export const primaryKeys = {
     frontendFields: ['set_id'],
     databaseColumns: ['setId'],
   },
+  fullSpectrumPositions: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   message: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -213,6 +217,50 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   registeredFunction: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeConfiguration: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeDomain: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeDomainDisallowedNotes: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeDomainNotes: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeDomainQuickScrapeSettings: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeDomainRobotsTxt: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeDomainSitemap: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeOverride: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeOverrideValue: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapePathPattern: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapePathPatternOverride: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },

@@ -384,6 +384,19 @@ export type FlashcardSets = {
     audioOverview?: string;
 }
 
+export type FullSpectrumPositions = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    title?: string;
+    description?: string;
+    alternateTitles?: string;
+    qualifications?: string;
+    sizzleQuestions?: string;
+    redFlags?: string;
+    additionalDetails?: string;
+}
+
 export type Message = {
     id: string;
     conversationId: string;
@@ -450,7 +463,7 @@ export type Organizations = {
 
 export type Permissions = {
     id: string;
-    resourceType: "applet" | "broker_value" | "conversation" | "document" | "message" | "organization" | "recipe" | "workflow" | undefined;
+    resourceType: "applet" | "broker_value" | "conversation" | "document" | "message" | "organization" | "recipe" | "scrape_domain" | "workflow" | undefined;
     resourceId: string;
     grantedToUserId?: string;
     grantedToOrganizationId?: string;
@@ -563,6 +576,129 @@ export type RegisteredFunction = {
     className?: string;
     description?: string;
     returnBroker?: string;
+}
+
+export type ScrapeConfiguration = {
+    id: string;
+    scrapeMode: string;
+    interactionSettingsId?: string;
+    scrapePathPatternId: string;
+    isActive?: boolean;
+    userId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeDomain = {
+    id: string;
+    url?: string;
+    commonName?: string;
+    scrapeAllowed?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeDomainDisallowedNotes = {
+    id: string;
+    scrapeDomainId: string;
+    notes?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeDomainNotes = {
+    id: string;
+    scrapeDomainId?: string;
+    notes?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeDomainQuickScrapeSettings = {
+    id: string;
+    scrapeDomainId: string;
+    enabled: boolean;
+    proxyType?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeDomainRobotsTxt = {
+    id: string;
+    scrapeDomainId?: string;
+    robotsTxt?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeDomainSitemap = {
+    id: string;
+    scrapeDomainId?: string;
+    sitemap?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeOverride = {
+    id: string;
+    name: string;
+    configType: string;
+    selectorType?: string;
+    matchType?: string;
+    action: string;
+    userId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeOverrideValue = {
+    id: string;
+    value: string;
+    scrapeOverrideId: string;
+    userId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapePathPattern = {
+    id: string;
+    scrapeDomainId?: string;
+    pathPattern?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapePathPatternOverride = {
+    id: string;
+    name: string;
+    scrapePathPatternId: string;
+    scrapeOverrideId: string;
+    isActive: boolean;
+    userId?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isPublic: boolean;
+    authenticatedRead: boolean;
 }
 
 export type Subcategory = {

@@ -2995,6 +2995,92 @@ export const useFlashcardSetsWithFetch = (): UseFlashcardSetsWithFetchReturn => 
 
 
 
+type UseFullSpectrumPositionsWithFetchReturn = {
+    fullSpectrumPositionsSelectors: EntitySelectors<"fullSpectrumPositions">;
+    fullSpectrumPositionsActions: EntityActions<"fullSpectrumPositions">;
+    fullSpectrumPositionsRecords: Record<MatrxRecordId, FullSpectrumPositionsData>;
+    fullSpectrumPositionsUnsavedRecords: Record<MatrxRecordId, Partial<FullSpectrumPositionsData>>;
+    fullSpectrumPositionsSelectedRecordIds: MatrxRecordId[];
+    fullSpectrumPositionsIsLoading: boolean;
+    fullSpectrumPositionsIsError: boolean;
+    fullSpectrumPositionsQuickRefRecords: QuickReferenceRecord[];
+    addFullSpectrumPositionsMatrxId: (recordId: MatrxRecordId) => void;
+    addFullSpectrumPositionsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeFullSpectrumPositionsMatrxId: (recordId: MatrxRecordId) => void;
+    removeFullSpectrumPositionsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addFullSpectrumPositionsPkValue: (pkValue: string) => void;
+    addFullSpectrumPositionsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeFullSpectrumPositionsPkValue: (pkValue: string) => void;
+    removeFullSpectrumPositionsPkValues: (pkValues: Record<string, unknown>) => void;
+    isFullSpectrumPositionsMissingRecords: boolean;
+    setFullSpectrumPositionsShouldFetch: (shouldFetch: boolean) => void;
+    setFullSpectrumPositionsFetchMode: (fetchMode: FetchMode) => void;
+    fetchFullSpectrumPositionsQuickRefs: () => void;
+    fetchFullSpectrumPositionsOne: (recordId: MatrxRecordId) => void;
+    fetchFullSpectrumPositionsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchFullSpectrumPositionsAll: () => void;
+    fetchFullSpectrumPositionsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useFullSpectrumPositionsWithFetch = (): UseFullSpectrumPositionsWithFetchReturn => {
+    const {
+        selectors: fullSpectrumPositionsSelectors,
+        actions: fullSpectrumPositionsActions,
+        allRecords: fullSpectrumPositionsRecords,
+        unsavedRecords: fullSpectrumPositionsUnsavedRecords,
+        selectedRecordIds: fullSpectrumPositionsSelectedRecordIds,
+        isLoading: fullSpectrumPositionsIsLoading,
+        isError: fullSpectrumPositionsIsError,
+        quickRefRecords: fullSpectrumPositionsQuickRefRecords,
+        addMatrxId: addFullSpectrumPositionsMatrxId,
+        addMatrxIds: addFullSpectrumPositionsMatrxIds,
+        removeMatrxId: removeFullSpectrumPositionsMatrxId,
+        removeMatrxIds: removeFullSpectrumPositionsMatrxIds,
+        addPkValue: addFullSpectrumPositionsPkValue,
+        addPkValues: addFullSpectrumPositionsPkValues,
+        removePkValue: removeFullSpectrumPositionsPkValue,
+        removePkValues: removeFullSpectrumPositionsPkValues,
+        isMissingRecords: isFullSpectrumPositionsMissingRecords,
+        setShouldFetch: setFullSpectrumPositionsShouldFetch,
+        setFetchMode: setFullSpectrumPositionsFetchMode,
+        fetchQuickRefs: fetchFullSpectrumPositionsQuickRefs,
+        fetchOne: fetchFullSpectrumPositionsOne,
+        fetchOneWithFkIfk: fetchFullSpectrumPositionsOneWithFkIfk,
+        fetchAll: fetchFullSpectrumPositionsAll,
+        fetchPaginated: fetchFullSpectrumPositionsPaginated,
+
+    } = useEntityWithFetch("fullSpectrumPositions");
+
+    return {
+        fullSpectrumPositionsSelectors,
+        fullSpectrumPositionsActions,
+        fullSpectrumPositionsRecords,
+        fullSpectrumPositionsUnsavedRecords,
+        fullSpectrumPositionsSelectedRecordIds,
+        fullSpectrumPositionsIsLoading,
+        fullSpectrumPositionsIsError,
+        fullSpectrumPositionsQuickRefRecords,
+        addFullSpectrumPositionsMatrxId,
+        addFullSpectrumPositionsMatrxIds,
+        removeFullSpectrumPositionsMatrxId,
+        removeFullSpectrumPositionsMatrxIds,
+        addFullSpectrumPositionsPkValue,
+        addFullSpectrumPositionsPkValues,
+        removeFullSpectrumPositionsPkValue,
+        removeFullSpectrumPositionsPkValues,
+        isFullSpectrumPositionsMissingRecords,
+        setFullSpectrumPositionsShouldFetch,
+        setFullSpectrumPositionsFetchMode,
+        fetchFullSpectrumPositionsQuickRefs,
+        fetchFullSpectrumPositionsOne,
+        fetchFullSpectrumPositionsOneWithFkIfk,
+        fetchFullSpectrumPositionsAll,
+        fetchFullSpectrumPositionsPaginated,
+    };
+};
+
+
+
 type UseMessageWithFetchReturn = {
     messageSelectors: EntitySelectors<"message">;
     messageActions: EntityActions<"message">;
@@ -4710,6 +4796,952 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
         fetchRegisteredFunctionOneWithFkIfk,
         fetchRegisteredFunctionAll,
         fetchRegisteredFunctionPaginated,
+    };
+};
+
+
+
+type UseScrapeConfigurationWithFetchReturn = {
+    scrapeConfigurationSelectors: EntitySelectors<"scrapeConfiguration">;
+    scrapeConfigurationActions: EntityActions<"scrapeConfiguration">;
+    scrapeConfigurationRecords: Record<MatrxRecordId, ScrapeConfigurationData>;
+    scrapeConfigurationUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeConfigurationData>>;
+    scrapeConfigurationSelectedRecordIds: MatrxRecordId[];
+    scrapeConfigurationIsLoading: boolean;
+    scrapeConfigurationIsError: boolean;
+    scrapeConfigurationQuickRefRecords: QuickReferenceRecord[];
+    addScrapeConfigurationMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeConfigurationMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeConfigurationMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeConfigurationMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeConfigurationPkValue: (pkValue: string) => void;
+    addScrapeConfigurationPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeConfigurationPkValue: (pkValue: string) => void;
+    removeScrapeConfigurationPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeConfigurationMissingRecords: boolean;
+    setScrapeConfigurationShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeConfigurationFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeConfigurationQuickRefs: () => void;
+    fetchScrapeConfigurationOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeConfigurationOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeConfigurationAll: () => void;
+    fetchScrapeConfigurationPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeConfigurationWithFetch = (): UseScrapeConfigurationWithFetchReturn => {
+    const {
+        selectors: scrapeConfigurationSelectors,
+        actions: scrapeConfigurationActions,
+        allRecords: scrapeConfigurationRecords,
+        unsavedRecords: scrapeConfigurationUnsavedRecords,
+        selectedRecordIds: scrapeConfigurationSelectedRecordIds,
+        isLoading: scrapeConfigurationIsLoading,
+        isError: scrapeConfigurationIsError,
+        quickRefRecords: scrapeConfigurationQuickRefRecords,
+        addMatrxId: addScrapeConfigurationMatrxId,
+        addMatrxIds: addScrapeConfigurationMatrxIds,
+        removeMatrxId: removeScrapeConfigurationMatrxId,
+        removeMatrxIds: removeScrapeConfigurationMatrxIds,
+        addPkValue: addScrapeConfigurationPkValue,
+        addPkValues: addScrapeConfigurationPkValues,
+        removePkValue: removeScrapeConfigurationPkValue,
+        removePkValues: removeScrapeConfigurationPkValues,
+        isMissingRecords: isScrapeConfigurationMissingRecords,
+        setShouldFetch: setScrapeConfigurationShouldFetch,
+        setFetchMode: setScrapeConfigurationFetchMode,
+        fetchQuickRefs: fetchScrapeConfigurationQuickRefs,
+        fetchOne: fetchScrapeConfigurationOne,
+        fetchOneWithFkIfk: fetchScrapeConfigurationOneWithFkIfk,
+        fetchAll: fetchScrapeConfigurationAll,
+        fetchPaginated: fetchScrapeConfigurationPaginated,
+
+    } = useEntityWithFetch("scrapeConfiguration");
+
+    return {
+        scrapeConfigurationSelectors,
+        scrapeConfigurationActions,
+        scrapeConfigurationRecords,
+        scrapeConfigurationUnsavedRecords,
+        scrapeConfigurationSelectedRecordIds,
+        scrapeConfigurationIsLoading,
+        scrapeConfigurationIsError,
+        scrapeConfigurationQuickRefRecords,
+        addScrapeConfigurationMatrxId,
+        addScrapeConfigurationMatrxIds,
+        removeScrapeConfigurationMatrxId,
+        removeScrapeConfigurationMatrxIds,
+        addScrapeConfigurationPkValue,
+        addScrapeConfigurationPkValues,
+        removeScrapeConfigurationPkValue,
+        removeScrapeConfigurationPkValues,
+        isScrapeConfigurationMissingRecords,
+        setScrapeConfigurationShouldFetch,
+        setScrapeConfigurationFetchMode,
+        fetchScrapeConfigurationQuickRefs,
+        fetchScrapeConfigurationOne,
+        fetchScrapeConfigurationOneWithFkIfk,
+        fetchScrapeConfigurationAll,
+        fetchScrapeConfigurationPaginated,
+    };
+};
+
+
+
+type UseScrapeDomainWithFetchReturn = {
+    scrapeDomainSelectors: EntitySelectors<"scrapeDomain">;
+    scrapeDomainActions: EntityActions<"scrapeDomain">;
+    scrapeDomainRecords: Record<MatrxRecordId, ScrapeDomainData>;
+    scrapeDomainUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainData>>;
+    scrapeDomainSelectedRecordIds: MatrxRecordId[];
+    scrapeDomainIsLoading: boolean;
+    scrapeDomainIsError: boolean;
+    scrapeDomainQuickRefRecords: QuickReferenceRecord[];
+    addScrapeDomainMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeDomainMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeDomainMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeDomainMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeDomainPkValue: (pkValue: string) => void;
+    addScrapeDomainPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeDomainPkValue: (pkValue: string) => void;
+    removeScrapeDomainPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeDomainMissingRecords: boolean;
+    setScrapeDomainShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeDomainFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeDomainQuickRefs: () => void;
+    fetchScrapeDomainOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainAll: () => void;
+    fetchScrapeDomainPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeDomainWithFetch = (): UseScrapeDomainWithFetchReturn => {
+    const {
+        selectors: scrapeDomainSelectors,
+        actions: scrapeDomainActions,
+        allRecords: scrapeDomainRecords,
+        unsavedRecords: scrapeDomainUnsavedRecords,
+        selectedRecordIds: scrapeDomainSelectedRecordIds,
+        isLoading: scrapeDomainIsLoading,
+        isError: scrapeDomainIsError,
+        quickRefRecords: scrapeDomainQuickRefRecords,
+        addMatrxId: addScrapeDomainMatrxId,
+        addMatrxIds: addScrapeDomainMatrxIds,
+        removeMatrxId: removeScrapeDomainMatrxId,
+        removeMatrxIds: removeScrapeDomainMatrxIds,
+        addPkValue: addScrapeDomainPkValue,
+        addPkValues: addScrapeDomainPkValues,
+        removePkValue: removeScrapeDomainPkValue,
+        removePkValues: removeScrapeDomainPkValues,
+        isMissingRecords: isScrapeDomainMissingRecords,
+        setShouldFetch: setScrapeDomainShouldFetch,
+        setFetchMode: setScrapeDomainFetchMode,
+        fetchQuickRefs: fetchScrapeDomainQuickRefs,
+        fetchOne: fetchScrapeDomainOne,
+        fetchOneWithFkIfk: fetchScrapeDomainOneWithFkIfk,
+        fetchAll: fetchScrapeDomainAll,
+        fetchPaginated: fetchScrapeDomainPaginated,
+
+    } = useEntityWithFetch("scrapeDomain");
+
+    return {
+        scrapeDomainSelectors,
+        scrapeDomainActions,
+        scrapeDomainRecords,
+        scrapeDomainUnsavedRecords,
+        scrapeDomainSelectedRecordIds,
+        scrapeDomainIsLoading,
+        scrapeDomainIsError,
+        scrapeDomainQuickRefRecords,
+        addScrapeDomainMatrxId,
+        addScrapeDomainMatrxIds,
+        removeScrapeDomainMatrxId,
+        removeScrapeDomainMatrxIds,
+        addScrapeDomainPkValue,
+        addScrapeDomainPkValues,
+        removeScrapeDomainPkValue,
+        removeScrapeDomainPkValues,
+        isScrapeDomainMissingRecords,
+        setScrapeDomainShouldFetch,
+        setScrapeDomainFetchMode,
+        fetchScrapeDomainQuickRefs,
+        fetchScrapeDomainOne,
+        fetchScrapeDomainOneWithFkIfk,
+        fetchScrapeDomainAll,
+        fetchScrapeDomainPaginated,
+    };
+};
+
+
+
+type UseScrapeDomainDisallowedNotesWithFetchReturn = {
+    scrapeDomainDisallowedNotesSelectors: EntitySelectors<"scrapeDomainDisallowedNotes">;
+    scrapeDomainDisallowedNotesActions: EntityActions<"scrapeDomainDisallowedNotes">;
+    scrapeDomainDisallowedNotesRecords: Record<MatrxRecordId, ScrapeDomainDisallowedNotesData>;
+    scrapeDomainDisallowedNotesUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainDisallowedNotesData>>;
+    scrapeDomainDisallowedNotesSelectedRecordIds: MatrxRecordId[];
+    scrapeDomainDisallowedNotesIsLoading: boolean;
+    scrapeDomainDisallowedNotesIsError: boolean;
+    scrapeDomainDisallowedNotesQuickRefRecords: QuickReferenceRecord[];
+    addScrapeDomainDisallowedNotesMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeDomainDisallowedNotesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeDomainDisallowedNotesMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeDomainDisallowedNotesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeDomainDisallowedNotesPkValue: (pkValue: string) => void;
+    addScrapeDomainDisallowedNotesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeDomainDisallowedNotesPkValue: (pkValue: string) => void;
+    removeScrapeDomainDisallowedNotesPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeDomainDisallowedNotesMissingRecords: boolean;
+    setScrapeDomainDisallowedNotesShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeDomainDisallowedNotesFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeDomainDisallowedNotesQuickRefs: () => void;
+    fetchScrapeDomainDisallowedNotesOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainDisallowedNotesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainDisallowedNotesAll: () => void;
+    fetchScrapeDomainDisallowedNotesPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeDomainDisallowedNotesWithFetch = (): UseScrapeDomainDisallowedNotesWithFetchReturn => {
+    const {
+        selectors: scrapeDomainDisallowedNotesSelectors,
+        actions: scrapeDomainDisallowedNotesActions,
+        allRecords: scrapeDomainDisallowedNotesRecords,
+        unsavedRecords: scrapeDomainDisallowedNotesUnsavedRecords,
+        selectedRecordIds: scrapeDomainDisallowedNotesSelectedRecordIds,
+        isLoading: scrapeDomainDisallowedNotesIsLoading,
+        isError: scrapeDomainDisallowedNotesIsError,
+        quickRefRecords: scrapeDomainDisallowedNotesQuickRefRecords,
+        addMatrxId: addScrapeDomainDisallowedNotesMatrxId,
+        addMatrxIds: addScrapeDomainDisallowedNotesMatrxIds,
+        removeMatrxId: removeScrapeDomainDisallowedNotesMatrxId,
+        removeMatrxIds: removeScrapeDomainDisallowedNotesMatrxIds,
+        addPkValue: addScrapeDomainDisallowedNotesPkValue,
+        addPkValues: addScrapeDomainDisallowedNotesPkValues,
+        removePkValue: removeScrapeDomainDisallowedNotesPkValue,
+        removePkValues: removeScrapeDomainDisallowedNotesPkValues,
+        isMissingRecords: isScrapeDomainDisallowedNotesMissingRecords,
+        setShouldFetch: setScrapeDomainDisallowedNotesShouldFetch,
+        setFetchMode: setScrapeDomainDisallowedNotesFetchMode,
+        fetchQuickRefs: fetchScrapeDomainDisallowedNotesQuickRefs,
+        fetchOne: fetchScrapeDomainDisallowedNotesOne,
+        fetchOneWithFkIfk: fetchScrapeDomainDisallowedNotesOneWithFkIfk,
+        fetchAll: fetchScrapeDomainDisallowedNotesAll,
+        fetchPaginated: fetchScrapeDomainDisallowedNotesPaginated,
+
+    } = useEntityWithFetch("scrapeDomainDisallowedNotes");
+
+    return {
+        scrapeDomainDisallowedNotesSelectors,
+        scrapeDomainDisallowedNotesActions,
+        scrapeDomainDisallowedNotesRecords,
+        scrapeDomainDisallowedNotesUnsavedRecords,
+        scrapeDomainDisallowedNotesSelectedRecordIds,
+        scrapeDomainDisallowedNotesIsLoading,
+        scrapeDomainDisallowedNotesIsError,
+        scrapeDomainDisallowedNotesQuickRefRecords,
+        addScrapeDomainDisallowedNotesMatrxId,
+        addScrapeDomainDisallowedNotesMatrxIds,
+        removeScrapeDomainDisallowedNotesMatrxId,
+        removeScrapeDomainDisallowedNotesMatrxIds,
+        addScrapeDomainDisallowedNotesPkValue,
+        addScrapeDomainDisallowedNotesPkValues,
+        removeScrapeDomainDisallowedNotesPkValue,
+        removeScrapeDomainDisallowedNotesPkValues,
+        isScrapeDomainDisallowedNotesMissingRecords,
+        setScrapeDomainDisallowedNotesShouldFetch,
+        setScrapeDomainDisallowedNotesFetchMode,
+        fetchScrapeDomainDisallowedNotesQuickRefs,
+        fetchScrapeDomainDisallowedNotesOne,
+        fetchScrapeDomainDisallowedNotesOneWithFkIfk,
+        fetchScrapeDomainDisallowedNotesAll,
+        fetchScrapeDomainDisallowedNotesPaginated,
+    };
+};
+
+
+
+type UseScrapeDomainNotesWithFetchReturn = {
+    scrapeDomainNotesSelectors: EntitySelectors<"scrapeDomainNotes">;
+    scrapeDomainNotesActions: EntityActions<"scrapeDomainNotes">;
+    scrapeDomainNotesRecords: Record<MatrxRecordId, ScrapeDomainNotesData>;
+    scrapeDomainNotesUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainNotesData>>;
+    scrapeDomainNotesSelectedRecordIds: MatrxRecordId[];
+    scrapeDomainNotesIsLoading: boolean;
+    scrapeDomainNotesIsError: boolean;
+    scrapeDomainNotesQuickRefRecords: QuickReferenceRecord[];
+    addScrapeDomainNotesMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeDomainNotesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeDomainNotesMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeDomainNotesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeDomainNotesPkValue: (pkValue: string) => void;
+    addScrapeDomainNotesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeDomainNotesPkValue: (pkValue: string) => void;
+    removeScrapeDomainNotesPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeDomainNotesMissingRecords: boolean;
+    setScrapeDomainNotesShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeDomainNotesFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeDomainNotesQuickRefs: () => void;
+    fetchScrapeDomainNotesOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainNotesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainNotesAll: () => void;
+    fetchScrapeDomainNotesPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeDomainNotesWithFetch = (): UseScrapeDomainNotesWithFetchReturn => {
+    const {
+        selectors: scrapeDomainNotesSelectors,
+        actions: scrapeDomainNotesActions,
+        allRecords: scrapeDomainNotesRecords,
+        unsavedRecords: scrapeDomainNotesUnsavedRecords,
+        selectedRecordIds: scrapeDomainNotesSelectedRecordIds,
+        isLoading: scrapeDomainNotesIsLoading,
+        isError: scrapeDomainNotesIsError,
+        quickRefRecords: scrapeDomainNotesQuickRefRecords,
+        addMatrxId: addScrapeDomainNotesMatrxId,
+        addMatrxIds: addScrapeDomainNotesMatrxIds,
+        removeMatrxId: removeScrapeDomainNotesMatrxId,
+        removeMatrxIds: removeScrapeDomainNotesMatrxIds,
+        addPkValue: addScrapeDomainNotesPkValue,
+        addPkValues: addScrapeDomainNotesPkValues,
+        removePkValue: removeScrapeDomainNotesPkValue,
+        removePkValues: removeScrapeDomainNotesPkValues,
+        isMissingRecords: isScrapeDomainNotesMissingRecords,
+        setShouldFetch: setScrapeDomainNotesShouldFetch,
+        setFetchMode: setScrapeDomainNotesFetchMode,
+        fetchQuickRefs: fetchScrapeDomainNotesQuickRefs,
+        fetchOne: fetchScrapeDomainNotesOne,
+        fetchOneWithFkIfk: fetchScrapeDomainNotesOneWithFkIfk,
+        fetchAll: fetchScrapeDomainNotesAll,
+        fetchPaginated: fetchScrapeDomainNotesPaginated,
+
+    } = useEntityWithFetch("scrapeDomainNotes");
+
+    return {
+        scrapeDomainNotesSelectors,
+        scrapeDomainNotesActions,
+        scrapeDomainNotesRecords,
+        scrapeDomainNotesUnsavedRecords,
+        scrapeDomainNotesSelectedRecordIds,
+        scrapeDomainNotesIsLoading,
+        scrapeDomainNotesIsError,
+        scrapeDomainNotesQuickRefRecords,
+        addScrapeDomainNotesMatrxId,
+        addScrapeDomainNotesMatrxIds,
+        removeScrapeDomainNotesMatrxId,
+        removeScrapeDomainNotesMatrxIds,
+        addScrapeDomainNotesPkValue,
+        addScrapeDomainNotesPkValues,
+        removeScrapeDomainNotesPkValue,
+        removeScrapeDomainNotesPkValues,
+        isScrapeDomainNotesMissingRecords,
+        setScrapeDomainNotesShouldFetch,
+        setScrapeDomainNotesFetchMode,
+        fetchScrapeDomainNotesQuickRefs,
+        fetchScrapeDomainNotesOne,
+        fetchScrapeDomainNotesOneWithFkIfk,
+        fetchScrapeDomainNotesAll,
+        fetchScrapeDomainNotesPaginated,
+    };
+};
+
+
+
+type UseScrapeDomainQuickScrapeSettingsWithFetchReturn = {
+    scrapeDomainQuickScrapeSettingsSelectors: EntitySelectors<"scrapeDomainQuickScrapeSettings">;
+    scrapeDomainQuickScrapeSettingsActions: EntityActions<"scrapeDomainQuickScrapeSettings">;
+    scrapeDomainQuickScrapeSettingsRecords: Record<MatrxRecordId, ScrapeDomainQuickScrapeSettingsData>;
+    scrapeDomainQuickScrapeSettingsUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainQuickScrapeSettingsData>>;
+    scrapeDomainQuickScrapeSettingsSelectedRecordIds: MatrxRecordId[];
+    scrapeDomainQuickScrapeSettingsIsLoading: boolean;
+    scrapeDomainQuickScrapeSettingsIsError: boolean;
+    scrapeDomainQuickScrapeSettingsQuickRefRecords: QuickReferenceRecord[];
+    addScrapeDomainQuickScrapeSettingsMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeDomainQuickScrapeSettingsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeDomainQuickScrapeSettingsMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeDomainQuickScrapeSettingsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeDomainQuickScrapeSettingsPkValue: (pkValue: string) => void;
+    addScrapeDomainQuickScrapeSettingsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeDomainQuickScrapeSettingsPkValue: (pkValue: string) => void;
+    removeScrapeDomainQuickScrapeSettingsPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeDomainQuickScrapeSettingsMissingRecords: boolean;
+    setScrapeDomainQuickScrapeSettingsShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeDomainQuickScrapeSettingsFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeDomainQuickScrapeSettingsQuickRefs: () => void;
+    fetchScrapeDomainQuickScrapeSettingsOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainQuickScrapeSettingsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainQuickScrapeSettingsAll: () => void;
+    fetchScrapeDomainQuickScrapeSettingsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeDomainQuickScrapeSettingsWithFetch = (): UseScrapeDomainQuickScrapeSettingsWithFetchReturn => {
+    const {
+        selectors: scrapeDomainQuickScrapeSettingsSelectors,
+        actions: scrapeDomainQuickScrapeSettingsActions,
+        allRecords: scrapeDomainQuickScrapeSettingsRecords,
+        unsavedRecords: scrapeDomainQuickScrapeSettingsUnsavedRecords,
+        selectedRecordIds: scrapeDomainQuickScrapeSettingsSelectedRecordIds,
+        isLoading: scrapeDomainQuickScrapeSettingsIsLoading,
+        isError: scrapeDomainQuickScrapeSettingsIsError,
+        quickRefRecords: scrapeDomainQuickScrapeSettingsQuickRefRecords,
+        addMatrxId: addScrapeDomainQuickScrapeSettingsMatrxId,
+        addMatrxIds: addScrapeDomainQuickScrapeSettingsMatrxIds,
+        removeMatrxId: removeScrapeDomainQuickScrapeSettingsMatrxId,
+        removeMatrxIds: removeScrapeDomainQuickScrapeSettingsMatrxIds,
+        addPkValue: addScrapeDomainQuickScrapeSettingsPkValue,
+        addPkValues: addScrapeDomainQuickScrapeSettingsPkValues,
+        removePkValue: removeScrapeDomainQuickScrapeSettingsPkValue,
+        removePkValues: removeScrapeDomainQuickScrapeSettingsPkValues,
+        isMissingRecords: isScrapeDomainQuickScrapeSettingsMissingRecords,
+        setShouldFetch: setScrapeDomainQuickScrapeSettingsShouldFetch,
+        setFetchMode: setScrapeDomainQuickScrapeSettingsFetchMode,
+        fetchQuickRefs: fetchScrapeDomainQuickScrapeSettingsQuickRefs,
+        fetchOne: fetchScrapeDomainQuickScrapeSettingsOne,
+        fetchOneWithFkIfk: fetchScrapeDomainQuickScrapeSettingsOneWithFkIfk,
+        fetchAll: fetchScrapeDomainQuickScrapeSettingsAll,
+        fetchPaginated: fetchScrapeDomainQuickScrapeSettingsPaginated,
+
+    } = useEntityWithFetch("scrapeDomainQuickScrapeSettings");
+
+    return {
+        scrapeDomainQuickScrapeSettingsSelectors,
+        scrapeDomainQuickScrapeSettingsActions,
+        scrapeDomainQuickScrapeSettingsRecords,
+        scrapeDomainQuickScrapeSettingsUnsavedRecords,
+        scrapeDomainQuickScrapeSettingsSelectedRecordIds,
+        scrapeDomainQuickScrapeSettingsIsLoading,
+        scrapeDomainQuickScrapeSettingsIsError,
+        scrapeDomainQuickScrapeSettingsQuickRefRecords,
+        addScrapeDomainQuickScrapeSettingsMatrxId,
+        addScrapeDomainQuickScrapeSettingsMatrxIds,
+        removeScrapeDomainQuickScrapeSettingsMatrxId,
+        removeScrapeDomainQuickScrapeSettingsMatrxIds,
+        addScrapeDomainQuickScrapeSettingsPkValue,
+        addScrapeDomainQuickScrapeSettingsPkValues,
+        removeScrapeDomainQuickScrapeSettingsPkValue,
+        removeScrapeDomainQuickScrapeSettingsPkValues,
+        isScrapeDomainQuickScrapeSettingsMissingRecords,
+        setScrapeDomainQuickScrapeSettingsShouldFetch,
+        setScrapeDomainQuickScrapeSettingsFetchMode,
+        fetchScrapeDomainQuickScrapeSettingsQuickRefs,
+        fetchScrapeDomainQuickScrapeSettingsOne,
+        fetchScrapeDomainQuickScrapeSettingsOneWithFkIfk,
+        fetchScrapeDomainQuickScrapeSettingsAll,
+        fetchScrapeDomainQuickScrapeSettingsPaginated,
+    };
+};
+
+
+
+type UseScrapeDomainRobotsTxtWithFetchReturn = {
+    scrapeDomainRobotsTxtSelectors: EntitySelectors<"scrapeDomainRobotsTxt">;
+    scrapeDomainRobotsTxtActions: EntityActions<"scrapeDomainRobotsTxt">;
+    scrapeDomainRobotsTxtRecords: Record<MatrxRecordId, ScrapeDomainRobotsTxtData>;
+    scrapeDomainRobotsTxtUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainRobotsTxtData>>;
+    scrapeDomainRobotsTxtSelectedRecordIds: MatrxRecordId[];
+    scrapeDomainRobotsTxtIsLoading: boolean;
+    scrapeDomainRobotsTxtIsError: boolean;
+    scrapeDomainRobotsTxtQuickRefRecords: QuickReferenceRecord[];
+    addScrapeDomainRobotsTxtMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeDomainRobotsTxtMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeDomainRobotsTxtMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeDomainRobotsTxtMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeDomainRobotsTxtPkValue: (pkValue: string) => void;
+    addScrapeDomainRobotsTxtPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeDomainRobotsTxtPkValue: (pkValue: string) => void;
+    removeScrapeDomainRobotsTxtPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeDomainRobotsTxtMissingRecords: boolean;
+    setScrapeDomainRobotsTxtShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeDomainRobotsTxtFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeDomainRobotsTxtQuickRefs: () => void;
+    fetchScrapeDomainRobotsTxtOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainRobotsTxtOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainRobotsTxtAll: () => void;
+    fetchScrapeDomainRobotsTxtPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeDomainRobotsTxtWithFetch = (): UseScrapeDomainRobotsTxtWithFetchReturn => {
+    const {
+        selectors: scrapeDomainRobotsTxtSelectors,
+        actions: scrapeDomainRobotsTxtActions,
+        allRecords: scrapeDomainRobotsTxtRecords,
+        unsavedRecords: scrapeDomainRobotsTxtUnsavedRecords,
+        selectedRecordIds: scrapeDomainRobotsTxtSelectedRecordIds,
+        isLoading: scrapeDomainRobotsTxtIsLoading,
+        isError: scrapeDomainRobotsTxtIsError,
+        quickRefRecords: scrapeDomainRobotsTxtQuickRefRecords,
+        addMatrxId: addScrapeDomainRobotsTxtMatrxId,
+        addMatrxIds: addScrapeDomainRobotsTxtMatrxIds,
+        removeMatrxId: removeScrapeDomainRobotsTxtMatrxId,
+        removeMatrxIds: removeScrapeDomainRobotsTxtMatrxIds,
+        addPkValue: addScrapeDomainRobotsTxtPkValue,
+        addPkValues: addScrapeDomainRobotsTxtPkValues,
+        removePkValue: removeScrapeDomainRobotsTxtPkValue,
+        removePkValues: removeScrapeDomainRobotsTxtPkValues,
+        isMissingRecords: isScrapeDomainRobotsTxtMissingRecords,
+        setShouldFetch: setScrapeDomainRobotsTxtShouldFetch,
+        setFetchMode: setScrapeDomainRobotsTxtFetchMode,
+        fetchQuickRefs: fetchScrapeDomainRobotsTxtQuickRefs,
+        fetchOne: fetchScrapeDomainRobotsTxtOne,
+        fetchOneWithFkIfk: fetchScrapeDomainRobotsTxtOneWithFkIfk,
+        fetchAll: fetchScrapeDomainRobotsTxtAll,
+        fetchPaginated: fetchScrapeDomainRobotsTxtPaginated,
+
+    } = useEntityWithFetch("scrapeDomainRobotsTxt");
+
+    return {
+        scrapeDomainRobotsTxtSelectors,
+        scrapeDomainRobotsTxtActions,
+        scrapeDomainRobotsTxtRecords,
+        scrapeDomainRobotsTxtUnsavedRecords,
+        scrapeDomainRobotsTxtSelectedRecordIds,
+        scrapeDomainRobotsTxtIsLoading,
+        scrapeDomainRobotsTxtIsError,
+        scrapeDomainRobotsTxtQuickRefRecords,
+        addScrapeDomainRobotsTxtMatrxId,
+        addScrapeDomainRobotsTxtMatrxIds,
+        removeScrapeDomainRobotsTxtMatrxId,
+        removeScrapeDomainRobotsTxtMatrxIds,
+        addScrapeDomainRobotsTxtPkValue,
+        addScrapeDomainRobotsTxtPkValues,
+        removeScrapeDomainRobotsTxtPkValue,
+        removeScrapeDomainRobotsTxtPkValues,
+        isScrapeDomainRobotsTxtMissingRecords,
+        setScrapeDomainRobotsTxtShouldFetch,
+        setScrapeDomainRobotsTxtFetchMode,
+        fetchScrapeDomainRobotsTxtQuickRefs,
+        fetchScrapeDomainRobotsTxtOne,
+        fetchScrapeDomainRobotsTxtOneWithFkIfk,
+        fetchScrapeDomainRobotsTxtAll,
+        fetchScrapeDomainRobotsTxtPaginated,
+    };
+};
+
+
+
+type UseScrapeDomainSitemapWithFetchReturn = {
+    scrapeDomainSitemapSelectors: EntitySelectors<"scrapeDomainSitemap">;
+    scrapeDomainSitemapActions: EntityActions<"scrapeDomainSitemap">;
+    scrapeDomainSitemapRecords: Record<MatrxRecordId, ScrapeDomainSitemapData>;
+    scrapeDomainSitemapUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeDomainSitemapData>>;
+    scrapeDomainSitemapSelectedRecordIds: MatrxRecordId[];
+    scrapeDomainSitemapIsLoading: boolean;
+    scrapeDomainSitemapIsError: boolean;
+    scrapeDomainSitemapQuickRefRecords: QuickReferenceRecord[];
+    addScrapeDomainSitemapMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeDomainSitemapMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeDomainSitemapMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeDomainSitemapMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeDomainSitemapPkValue: (pkValue: string) => void;
+    addScrapeDomainSitemapPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeDomainSitemapPkValue: (pkValue: string) => void;
+    removeScrapeDomainSitemapPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeDomainSitemapMissingRecords: boolean;
+    setScrapeDomainSitemapShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeDomainSitemapFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeDomainSitemapQuickRefs: () => void;
+    fetchScrapeDomainSitemapOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainSitemapOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeDomainSitemapAll: () => void;
+    fetchScrapeDomainSitemapPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeDomainSitemapWithFetch = (): UseScrapeDomainSitemapWithFetchReturn => {
+    const {
+        selectors: scrapeDomainSitemapSelectors,
+        actions: scrapeDomainSitemapActions,
+        allRecords: scrapeDomainSitemapRecords,
+        unsavedRecords: scrapeDomainSitemapUnsavedRecords,
+        selectedRecordIds: scrapeDomainSitemapSelectedRecordIds,
+        isLoading: scrapeDomainSitemapIsLoading,
+        isError: scrapeDomainSitemapIsError,
+        quickRefRecords: scrapeDomainSitemapQuickRefRecords,
+        addMatrxId: addScrapeDomainSitemapMatrxId,
+        addMatrxIds: addScrapeDomainSitemapMatrxIds,
+        removeMatrxId: removeScrapeDomainSitemapMatrxId,
+        removeMatrxIds: removeScrapeDomainSitemapMatrxIds,
+        addPkValue: addScrapeDomainSitemapPkValue,
+        addPkValues: addScrapeDomainSitemapPkValues,
+        removePkValue: removeScrapeDomainSitemapPkValue,
+        removePkValues: removeScrapeDomainSitemapPkValues,
+        isMissingRecords: isScrapeDomainSitemapMissingRecords,
+        setShouldFetch: setScrapeDomainSitemapShouldFetch,
+        setFetchMode: setScrapeDomainSitemapFetchMode,
+        fetchQuickRefs: fetchScrapeDomainSitemapQuickRefs,
+        fetchOne: fetchScrapeDomainSitemapOne,
+        fetchOneWithFkIfk: fetchScrapeDomainSitemapOneWithFkIfk,
+        fetchAll: fetchScrapeDomainSitemapAll,
+        fetchPaginated: fetchScrapeDomainSitemapPaginated,
+
+    } = useEntityWithFetch("scrapeDomainSitemap");
+
+    return {
+        scrapeDomainSitemapSelectors,
+        scrapeDomainSitemapActions,
+        scrapeDomainSitemapRecords,
+        scrapeDomainSitemapUnsavedRecords,
+        scrapeDomainSitemapSelectedRecordIds,
+        scrapeDomainSitemapIsLoading,
+        scrapeDomainSitemapIsError,
+        scrapeDomainSitemapQuickRefRecords,
+        addScrapeDomainSitemapMatrxId,
+        addScrapeDomainSitemapMatrxIds,
+        removeScrapeDomainSitemapMatrxId,
+        removeScrapeDomainSitemapMatrxIds,
+        addScrapeDomainSitemapPkValue,
+        addScrapeDomainSitemapPkValues,
+        removeScrapeDomainSitemapPkValue,
+        removeScrapeDomainSitemapPkValues,
+        isScrapeDomainSitemapMissingRecords,
+        setScrapeDomainSitemapShouldFetch,
+        setScrapeDomainSitemapFetchMode,
+        fetchScrapeDomainSitemapQuickRefs,
+        fetchScrapeDomainSitemapOne,
+        fetchScrapeDomainSitemapOneWithFkIfk,
+        fetchScrapeDomainSitemapAll,
+        fetchScrapeDomainSitemapPaginated,
+    };
+};
+
+
+
+type UseScrapeOverrideWithFetchReturn = {
+    scrapeOverrideSelectors: EntitySelectors<"scrapeOverride">;
+    scrapeOverrideActions: EntityActions<"scrapeOverride">;
+    scrapeOverrideRecords: Record<MatrxRecordId, ScrapeOverrideData>;
+    scrapeOverrideUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeOverrideData>>;
+    scrapeOverrideSelectedRecordIds: MatrxRecordId[];
+    scrapeOverrideIsLoading: boolean;
+    scrapeOverrideIsError: boolean;
+    scrapeOverrideQuickRefRecords: QuickReferenceRecord[];
+    addScrapeOverrideMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeOverrideMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeOverrideMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeOverrideMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeOverridePkValue: (pkValue: string) => void;
+    addScrapeOverridePkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeOverridePkValue: (pkValue: string) => void;
+    removeScrapeOverridePkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeOverrideMissingRecords: boolean;
+    setScrapeOverrideShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeOverrideFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeOverrideQuickRefs: () => void;
+    fetchScrapeOverrideOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeOverrideOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeOverrideAll: () => void;
+    fetchScrapeOverridePaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeOverrideWithFetch = (): UseScrapeOverrideWithFetchReturn => {
+    const {
+        selectors: scrapeOverrideSelectors,
+        actions: scrapeOverrideActions,
+        allRecords: scrapeOverrideRecords,
+        unsavedRecords: scrapeOverrideUnsavedRecords,
+        selectedRecordIds: scrapeOverrideSelectedRecordIds,
+        isLoading: scrapeOverrideIsLoading,
+        isError: scrapeOverrideIsError,
+        quickRefRecords: scrapeOverrideQuickRefRecords,
+        addMatrxId: addScrapeOverrideMatrxId,
+        addMatrxIds: addScrapeOverrideMatrxIds,
+        removeMatrxId: removeScrapeOverrideMatrxId,
+        removeMatrxIds: removeScrapeOverrideMatrxIds,
+        addPkValue: addScrapeOverridePkValue,
+        addPkValues: addScrapeOverridePkValues,
+        removePkValue: removeScrapeOverridePkValue,
+        removePkValues: removeScrapeOverridePkValues,
+        isMissingRecords: isScrapeOverrideMissingRecords,
+        setShouldFetch: setScrapeOverrideShouldFetch,
+        setFetchMode: setScrapeOverrideFetchMode,
+        fetchQuickRefs: fetchScrapeOverrideQuickRefs,
+        fetchOne: fetchScrapeOverrideOne,
+        fetchOneWithFkIfk: fetchScrapeOverrideOneWithFkIfk,
+        fetchAll: fetchScrapeOverrideAll,
+        fetchPaginated: fetchScrapeOverridePaginated,
+
+    } = useEntityWithFetch("scrapeOverride");
+
+    return {
+        scrapeOverrideSelectors,
+        scrapeOverrideActions,
+        scrapeOverrideRecords,
+        scrapeOverrideUnsavedRecords,
+        scrapeOverrideSelectedRecordIds,
+        scrapeOverrideIsLoading,
+        scrapeOverrideIsError,
+        scrapeOverrideQuickRefRecords,
+        addScrapeOverrideMatrxId,
+        addScrapeOverrideMatrxIds,
+        removeScrapeOverrideMatrxId,
+        removeScrapeOverrideMatrxIds,
+        addScrapeOverridePkValue,
+        addScrapeOverridePkValues,
+        removeScrapeOverridePkValue,
+        removeScrapeOverridePkValues,
+        isScrapeOverrideMissingRecords,
+        setScrapeOverrideShouldFetch,
+        setScrapeOverrideFetchMode,
+        fetchScrapeOverrideQuickRefs,
+        fetchScrapeOverrideOne,
+        fetchScrapeOverrideOneWithFkIfk,
+        fetchScrapeOverrideAll,
+        fetchScrapeOverridePaginated,
+    };
+};
+
+
+
+type UseScrapeOverrideValueWithFetchReturn = {
+    scrapeOverrideValueSelectors: EntitySelectors<"scrapeOverrideValue">;
+    scrapeOverrideValueActions: EntityActions<"scrapeOverrideValue">;
+    scrapeOverrideValueRecords: Record<MatrxRecordId, ScrapeOverrideValueData>;
+    scrapeOverrideValueUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeOverrideValueData>>;
+    scrapeOverrideValueSelectedRecordIds: MatrxRecordId[];
+    scrapeOverrideValueIsLoading: boolean;
+    scrapeOverrideValueIsError: boolean;
+    scrapeOverrideValueQuickRefRecords: QuickReferenceRecord[];
+    addScrapeOverrideValueMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeOverrideValueMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeOverrideValueMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeOverrideValueMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeOverrideValuePkValue: (pkValue: string) => void;
+    addScrapeOverrideValuePkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeOverrideValuePkValue: (pkValue: string) => void;
+    removeScrapeOverrideValuePkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeOverrideValueMissingRecords: boolean;
+    setScrapeOverrideValueShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeOverrideValueFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeOverrideValueQuickRefs: () => void;
+    fetchScrapeOverrideValueOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeOverrideValueOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeOverrideValueAll: () => void;
+    fetchScrapeOverrideValuePaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeOverrideValueWithFetch = (): UseScrapeOverrideValueWithFetchReturn => {
+    const {
+        selectors: scrapeOverrideValueSelectors,
+        actions: scrapeOverrideValueActions,
+        allRecords: scrapeOverrideValueRecords,
+        unsavedRecords: scrapeOverrideValueUnsavedRecords,
+        selectedRecordIds: scrapeOverrideValueSelectedRecordIds,
+        isLoading: scrapeOverrideValueIsLoading,
+        isError: scrapeOverrideValueIsError,
+        quickRefRecords: scrapeOverrideValueQuickRefRecords,
+        addMatrxId: addScrapeOverrideValueMatrxId,
+        addMatrxIds: addScrapeOverrideValueMatrxIds,
+        removeMatrxId: removeScrapeOverrideValueMatrxId,
+        removeMatrxIds: removeScrapeOverrideValueMatrxIds,
+        addPkValue: addScrapeOverrideValuePkValue,
+        addPkValues: addScrapeOverrideValuePkValues,
+        removePkValue: removeScrapeOverrideValuePkValue,
+        removePkValues: removeScrapeOverrideValuePkValues,
+        isMissingRecords: isScrapeOverrideValueMissingRecords,
+        setShouldFetch: setScrapeOverrideValueShouldFetch,
+        setFetchMode: setScrapeOverrideValueFetchMode,
+        fetchQuickRefs: fetchScrapeOverrideValueQuickRefs,
+        fetchOne: fetchScrapeOverrideValueOne,
+        fetchOneWithFkIfk: fetchScrapeOverrideValueOneWithFkIfk,
+        fetchAll: fetchScrapeOverrideValueAll,
+        fetchPaginated: fetchScrapeOverrideValuePaginated,
+
+    } = useEntityWithFetch("scrapeOverrideValue");
+
+    return {
+        scrapeOverrideValueSelectors,
+        scrapeOverrideValueActions,
+        scrapeOverrideValueRecords,
+        scrapeOverrideValueUnsavedRecords,
+        scrapeOverrideValueSelectedRecordIds,
+        scrapeOverrideValueIsLoading,
+        scrapeOverrideValueIsError,
+        scrapeOverrideValueQuickRefRecords,
+        addScrapeOverrideValueMatrxId,
+        addScrapeOverrideValueMatrxIds,
+        removeScrapeOverrideValueMatrxId,
+        removeScrapeOverrideValueMatrxIds,
+        addScrapeOverrideValuePkValue,
+        addScrapeOverrideValuePkValues,
+        removeScrapeOverrideValuePkValue,
+        removeScrapeOverrideValuePkValues,
+        isScrapeOverrideValueMissingRecords,
+        setScrapeOverrideValueShouldFetch,
+        setScrapeOverrideValueFetchMode,
+        fetchScrapeOverrideValueQuickRefs,
+        fetchScrapeOverrideValueOne,
+        fetchScrapeOverrideValueOneWithFkIfk,
+        fetchScrapeOverrideValueAll,
+        fetchScrapeOverrideValuePaginated,
+    };
+};
+
+
+
+type UseScrapePathPatternWithFetchReturn = {
+    scrapePathPatternSelectors: EntitySelectors<"scrapePathPattern">;
+    scrapePathPatternActions: EntityActions<"scrapePathPattern">;
+    scrapePathPatternRecords: Record<MatrxRecordId, ScrapePathPatternData>;
+    scrapePathPatternUnsavedRecords: Record<MatrxRecordId, Partial<ScrapePathPatternData>>;
+    scrapePathPatternSelectedRecordIds: MatrxRecordId[];
+    scrapePathPatternIsLoading: boolean;
+    scrapePathPatternIsError: boolean;
+    scrapePathPatternQuickRefRecords: QuickReferenceRecord[];
+    addScrapePathPatternMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapePathPatternMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapePathPatternMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapePathPatternMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapePathPatternPkValue: (pkValue: string) => void;
+    addScrapePathPatternPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapePathPatternPkValue: (pkValue: string) => void;
+    removeScrapePathPatternPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapePathPatternMissingRecords: boolean;
+    setScrapePathPatternShouldFetch: (shouldFetch: boolean) => void;
+    setScrapePathPatternFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapePathPatternQuickRefs: () => void;
+    fetchScrapePathPatternOne: (recordId: MatrxRecordId) => void;
+    fetchScrapePathPatternOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapePathPatternAll: () => void;
+    fetchScrapePathPatternPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapePathPatternWithFetch = (): UseScrapePathPatternWithFetchReturn => {
+    const {
+        selectors: scrapePathPatternSelectors,
+        actions: scrapePathPatternActions,
+        allRecords: scrapePathPatternRecords,
+        unsavedRecords: scrapePathPatternUnsavedRecords,
+        selectedRecordIds: scrapePathPatternSelectedRecordIds,
+        isLoading: scrapePathPatternIsLoading,
+        isError: scrapePathPatternIsError,
+        quickRefRecords: scrapePathPatternQuickRefRecords,
+        addMatrxId: addScrapePathPatternMatrxId,
+        addMatrxIds: addScrapePathPatternMatrxIds,
+        removeMatrxId: removeScrapePathPatternMatrxId,
+        removeMatrxIds: removeScrapePathPatternMatrxIds,
+        addPkValue: addScrapePathPatternPkValue,
+        addPkValues: addScrapePathPatternPkValues,
+        removePkValue: removeScrapePathPatternPkValue,
+        removePkValues: removeScrapePathPatternPkValues,
+        isMissingRecords: isScrapePathPatternMissingRecords,
+        setShouldFetch: setScrapePathPatternShouldFetch,
+        setFetchMode: setScrapePathPatternFetchMode,
+        fetchQuickRefs: fetchScrapePathPatternQuickRefs,
+        fetchOne: fetchScrapePathPatternOne,
+        fetchOneWithFkIfk: fetchScrapePathPatternOneWithFkIfk,
+        fetchAll: fetchScrapePathPatternAll,
+        fetchPaginated: fetchScrapePathPatternPaginated,
+
+    } = useEntityWithFetch("scrapePathPattern");
+
+    return {
+        scrapePathPatternSelectors,
+        scrapePathPatternActions,
+        scrapePathPatternRecords,
+        scrapePathPatternUnsavedRecords,
+        scrapePathPatternSelectedRecordIds,
+        scrapePathPatternIsLoading,
+        scrapePathPatternIsError,
+        scrapePathPatternQuickRefRecords,
+        addScrapePathPatternMatrxId,
+        addScrapePathPatternMatrxIds,
+        removeScrapePathPatternMatrxId,
+        removeScrapePathPatternMatrxIds,
+        addScrapePathPatternPkValue,
+        addScrapePathPatternPkValues,
+        removeScrapePathPatternPkValue,
+        removeScrapePathPatternPkValues,
+        isScrapePathPatternMissingRecords,
+        setScrapePathPatternShouldFetch,
+        setScrapePathPatternFetchMode,
+        fetchScrapePathPatternQuickRefs,
+        fetchScrapePathPatternOne,
+        fetchScrapePathPatternOneWithFkIfk,
+        fetchScrapePathPatternAll,
+        fetchScrapePathPatternPaginated,
+    };
+};
+
+
+
+type UseScrapePathPatternOverrideWithFetchReturn = {
+    scrapePathPatternOverrideSelectors: EntitySelectors<"scrapePathPatternOverride">;
+    scrapePathPatternOverrideActions: EntityActions<"scrapePathPatternOverride">;
+    scrapePathPatternOverrideRecords: Record<MatrxRecordId, ScrapePathPatternOverrideData>;
+    scrapePathPatternOverrideUnsavedRecords: Record<MatrxRecordId, Partial<ScrapePathPatternOverrideData>>;
+    scrapePathPatternOverrideSelectedRecordIds: MatrxRecordId[];
+    scrapePathPatternOverrideIsLoading: boolean;
+    scrapePathPatternOverrideIsError: boolean;
+    scrapePathPatternOverrideQuickRefRecords: QuickReferenceRecord[];
+    addScrapePathPatternOverrideMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapePathPatternOverrideMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapePathPatternOverrideMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapePathPatternOverrideMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapePathPatternOverridePkValue: (pkValue: string) => void;
+    addScrapePathPatternOverridePkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapePathPatternOverridePkValue: (pkValue: string) => void;
+    removeScrapePathPatternOverridePkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapePathPatternOverrideMissingRecords: boolean;
+    setScrapePathPatternOverrideShouldFetch: (shouldFetch: boolean) => void;
+    setScrapePathPatternOverrideFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapePathPatternOverrideQuickRefs: () => void;
+    fetchScrapePathPatternOverrideOne: (recordId: MatrxRecordId) => void;
+    fetchScrapePathPatternOverrideOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapePathPatternOverrideAll: () => void;
+    fetchScrapePathPatternOverridePaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapePathPatternOverrideWithFetch = (): UseScrapePathPatternOverrideWithFetchReturn => {
+    const {
+        selectors: scrapePathPatternOverrideSelectors,
+        actions: scrapePathPatternOverrideActions,
+        allRecords: scrapePathPatternOverrideRecords,
+        unsavedRecords: scrapePathPatternOverrideUnsavedRecords,
+        selectedRecordIds: scrapePathPatternOverrideSelectedRecordIds,
+        isLoading: scrapePathPatternOverrideIsLoading,
+        isError: scrapePathPatternOverrideIsError,
+        quickRefRecords: scrapePathPatternOverrideQuickRefRecords,
+        addMatrxId: addScrapePathPatternOverrideMatrxId,
+        addMatrxIds: addScrapePathPatternOverrideMatrxIds,
+        removeMatrxId: removeScrapePathPatternOverrideMatrxId,
+        removeMatrxIds: removeScrapePathPatternOverrideMatrxIds,
+        addPkValue: addScrapePathPatternOverridePkValue,
+        addPkValues: addScrapePathPatternOverridePkValues,
+        removePkValue: removeScrapePathPatternOverridePkValue,
+        removePkValues: removeScrapePathPatternOverridePkValues,
+        isMissingRecords: isScrapePathPatternOverrideMissingRecords,
+        setShouldFetch: setScrapePathPatternOverrideShouldFetch,
+        setFetchMode: setScrapePathPatternOverrideFetchMode,
+        fetchQuickRefs: fetchScrapePathPatternOverrideQuickRefs,
+        fetchOne: fetchScrapePathPatternOverrideOne,
+        fetchOneWithFkIfk: fetchScrapePathPatternOverrideOneWithFkIfk,
+        fetchAll: fetchScrapePathPatternOverrideAll,
+        fetchPaginated: fetchScrapePathPatternOverridePaginated,
+
+    } = useEntityWithFetch("scrapePathPatternOverride");
+
+    return {
+        scrapePathPatternOverrideSelectors,
+        scrapePathPatternOverrideActions,
+        scrapePathPatternOverrideRecords,
+        scrapePathPatternOverrideUnsavedRecords,
+        scrapePathPatternOverrideSelectedRecordIds,
+        scrapePathPatternOverrideIsLoading,
+        scrapePathPatternOverrideIsError,
+        scrapePathPatternOverrideQuickRefRecords,
+        addScrapePathPatternOverrideMatrxId,
+        addScrapePathPatternOverrideMatrxIds,
+        removeScrapePathPatternOverrideMatrxId,
+        removeScrapePathPatternOverrideMatrxIds,
+        addScrapePathPatternOverridePkValue,
+        addScrapePathPatternOverridePkValues,
+        removeScrapePathPatternOverridePkValue,
+        removeScrapePathPatternOverridePkValues,
+        isScrapePathPatternOverrideMissingRecords,
+        setScrapePathPatternOverrideShouldFetch,
+        setScrapePathPatternOverrideFetchMode,
+        fetchScrapePathPatternOverrideQuickRefs,
+        fetchScrapePathPatternOverrideOne,
+        fetchScrapePathPatternOverrideOneWithFkIfk,
+        fetchScrapePathPatternOverrideAll,
+        fetchScrapePathPatternOverridePaginated,
     };
 };
 
