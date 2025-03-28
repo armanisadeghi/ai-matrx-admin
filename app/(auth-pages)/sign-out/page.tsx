@@ -1,21 +1,43 @@
-// File: app/(auth-pages)/sign-out/hold-hold-page.tsx
+// Updated app/(auth-pages)/sign-out/page.tsx
 
 import { signOutAction } from "@/actions/auth.actions";
-import { Message } from "@/components/form-message";
+import { AuthMessageType } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 import Link from "next/link";
 
-export default function SignOut({
-                                    searchParams,
-                                }: {
-    searchParams: Message;
-}) {
+interface SignOutProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function SignOut({
+    searchParams,
+}: SignOutProps) {
+    const awaitedSearchParams = await searchParams;
+
+    const redirectTo = (awaitedSearchParams.redirectTo as string) || '/dashboard';
+    const error = awaitedSearchParams.error as string;
+    const success = awaitedSearchParams.success as string;
+
+    let message: AuthMessageType | undefined;
+    
+    if (success) {
+        message = {
+            type: "success",
+            message: success
+        };
+    } else if (error) {
+        message = {
+            type: "error",
+            message: error
+        };
+    }
+
     return (
         <AuthPageContainer
             title="Sign Out"
             subtitle="Are you sure you want to sign out?"
-            message={searchParams}
+            message={message}
         >
             <div className="space-y-6">
                 <p className="text-center text-gray-600 dark:text-gray-400">

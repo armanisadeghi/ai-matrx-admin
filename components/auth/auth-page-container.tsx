@@ -1,14 +1,13 @@
-// File: components/auth/auth-page-container.tsx
-
+// Updated components/auth/auth-page-container.tsx
 import React from 'react';
 import MatrixLogo from "@/public/MatrixLogo";
-import { FormMessage, Message } from "@/components/form-message";
+import { FormMessage, AuthMessageType } from "@/components/form-message";
 
-interface AuthPageContainerProps {
+export interface AuthPageContainerProps {
     children: React.ReactNode;
     title: string;
     subtitle?: React.ReactNode;
-    message?: Message;
+    message?: AuthMessageType;
 }
 
 export default function AuthPageContainer({ children, title, subtitle, message }: AuthPageContainerProps) {
@@ -33,7 +32,12 @@ export default function AuthPageContainer({ children, title, subtitle, message }
                         {children}
                     </div>
                 </div>
-                {message && <FormMessage message={message} />}
+                
+                {message && (
+                    <div className="px-8 pb-6">
+                        <FormMessage message={message} />
+                    </div>
+                )}
             </div>
         </div>
     );

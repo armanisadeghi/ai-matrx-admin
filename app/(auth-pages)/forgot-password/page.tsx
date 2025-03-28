@@ -1,22 +1,37 @@
 // File: app/(auth-pages)/forgot-password/page.tsx
 
-import {forgotPasswordAction} from "@/actions/auth.actions";
-import {Message} from "@/components/form-message";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
+import { forgotPasswordAction } from "@/actions/auth.actions";
+import { AuthMessageType } from "@/components/form-message";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import {SubmitButton} from "@/components/submit-button";
+import { SubmitButton } from "@/components/submit-button";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
-type Props = {
-    searchParams: { [key: string]: string | string[] | undefined }
+interface ForgotPasswordProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-// Make the component async
-export default async function ForgotPassword({ searchParams }: Props) {
-    const message: Message = {
-        success: searchParams.success as string
-    };
+export default async function ForgotPassword({ searchParams }: ForgotPasswordProps) {
+    const awaitedSearchParams = await searchParams;
+
+    const redirectTo = (awaitedSearchParams.redirectTo as string) || '/dashboard';
+    const error = awaitedSearchParams.error as string;
+    const success = awaitedSearchParams.success as string;
+
+    let message: AuthMessageType | undefined;
+    
+    if (success) {
+        message = {
+            type: "success",
+            message: success
+        };
+    } else if (error) {
+        message = {
+            type: "error",
+            message: error
+        };
+    }
 
     return (
         <AuthPageContainer
@@ -54,6 +69,8 @@ export default async function ForgotPassword({ searchParams }: Props) {
                         Reset Password
                     </SubmitButton>
                 </div>
+                {/* Add hidden input for redirectTo if needed */}
+                <input type="hidden" name="redirectTo" value={redirectTo} />
             </form>
         </AuthPageContainer>
     );

@@ -25,7 +25,9 @@ const DesktopMenu = () => {
                 <Link href="/dashboard">
                     <Button variant="primary">Dashboard</Button>
                 </Link>
-                <Button>Start your project</Button>
+                <Link href="/sign-up">
+                    <Button>Start your project</Button>
+                </Link>
             </div>
         </div>
     );

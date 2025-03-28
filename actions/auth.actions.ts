@@ -7,11 +7,13 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const signUpAction = async (formData: FormData): Promise<void> => {
+export async function signUpAction (formData: FormData): Promise<void> {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
-  const supabase = createClient();
-  const origin = headers().get("origin");
+
+  const supabase = await createClient()
+  
+  const origin = (await headers()).get("origin");
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
 
   if (!email || !password) {
@@ -39,12 +41,12 @@ export const signUpAction = async (formData: FormData): Promise<void> => {
 };
 
 
-export const signInAction = async (formData: FormData) => {
+export async function signInAction (formData: FormData) {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
   console.log("SignInAction - RedirectTo:", redirectTo); // Debug log
-  const supabase = createClient();
+  const supabase = await createClient()
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -58,9 +60,9 @@ export const signInAction = async (formData: FormData) => {
   return redirect(redirectTo);
 };
 
-export const signInWithGoogleAction = async (formData: FormData) => {
-  const supabase = createClient();
-  const origin = headers().get("origin");
+export async function signInWithGoogleAction (formData: FormData) {
+  const supabase = await createClient()
+  const origin = (await headers()).get("origin");
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
   console.log("SignInWithGoogleAction - RedirectTo:", redirectTo); // Debug log
 
@@ -92,9 +94,9 @@ export const signInWithGoogleAction = async (formData: FormData) => {
 
 
 
-export const signInWithGithubAction = async (formData: FormData) => {
-  const supabase = createClient();
-  const origin = headers().get("origin");
+export async function signInWithGithubAction (formData: FormData) {
+  const supabase = await createClient()
+  const origin = (await headers()).get("origin");
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
   console.log("SignInWithGithubAction - RedirectTo:", redirectTo); // Debug log
 
@@ -122,10 +124,10 @@ export const signInWithGithubAction = async (formData: FormData) => {
 
 
 
-export const forgotPasswordAction = async (formData: FormData) => {
+export async function forgotPasswordAction (formData: FormData) {
   const email = formData.get("email")?.toString();
-  const supabase = createClient();
-  const origin = headers().get("origin");
+  const supabase = await createClient()
+  const origin = (await headers()).get("origin");
   const callbackUrl = formData.get("callbackUrl")?.toString();
 
   if (!email) {
@@ -156,8 +158,8 @@ export const forgotPasswordAction = async (formData: FormData) => {
   );
 };
 
-export const resetPasswordAction = async (formData: FormData) => {
-  const supabase = createClient();
+export async function resetPasswordAction (formData: FormData) {
+  const supabase = await createClient()
 
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
@@ -193,16 +195,16 @@ export const resetPasswordAction = async (formData: FormData) => {
   encodedRedirect("success", "/reset-password", "Password updated");
 };
 
-export const signOutAction = async () => {
-  const supabase = createClient();
+export async function signOutAction () {
+  const supabase = await createClient()
   await supabase.auth.signOut();
   return redirect("/login");
 };
 
 
-export const signUpWithGoogleAction = async (formData: FormData) => {
-  const supabase = createClient();
-  const origin = headers().get("origin");
+export async function signUpWithGoogleAction (formData: FormData) {
+  const supabase = await createClient()
+  const origin = (await headers()).get("origin");
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
 
   const callbackUrl = new URL("/auth/callback", origin);
@@ -229,8 +231,8 @@ export const signUpWithGoogleAction = async (formData: FormData) => {
 
 
 export const signUpWithGithubAction = async (formData: FormData) => {
-  const supabase = createClient();
-  const origin = headers().get("origin");
+  const supabase = await createClient()
+  const origin = (await headers()).get("origin");
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
 
   const callbackUrl = new URL("/auth/callback", origin);

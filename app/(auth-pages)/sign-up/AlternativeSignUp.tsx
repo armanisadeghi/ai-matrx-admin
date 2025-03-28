@@ -4,7 +4,7 @@ import {
     signUpAction,
     signInWithGithubAction, signInWithGoogleAction
 } from "@/actions/auth.actions";
-import { FormMessage, Message } from "@/components/form-message";
+import { FormMessage, AuthMessageType } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,32 @@ import Link from "next/link";
 import MatrixLogo from "@/public/MatrixLogo";
 import { IconBrandGoogle, IconBrandGithub } from "@tabler/icons-react";
 
-export default function SignUp({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-    const redirectTo = searchParams.redirectTo as string || '/dashboard';
+interface SignUpProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function SignUp({ searchParams }: SignUpProps) {
+
+    const awaitedSearchParams = await searchParams;
+
+    const redirectTo = (awaitedSearchParams.redirectTo as string) || '/dashboard';
+    const error = awaitedSearchParams.error as string;
+    const success = awaitedSearchParams.success as string;
+
+    let message: AuthMessageType | undefined;
+    
+    if (success) {
+        message = {
+            type: "success",
+            message: success
+        };
+    } else if (error) {
+        message = {
+            type: "error",
+            message: error
+        };
+    }
+
 
     return (
         <div className="bg-gray-50 dark:bg-neutral-950 flex items-center w-full justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
@@ -132,7 +156,7 @@ export default function SignUp({ searchParams }: { searchParams: { [key: string]
                         </p>
                     </div>
                 </div>
-                <FormMessage message={searchParams as Message} />
+                <FormMessage message={searchParams as unknown as AuthMessageType} />
             </div>
         </div>
     );

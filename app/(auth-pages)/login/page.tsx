@@ -7,21 +7,63 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 import AuthPageContainer from "@/components/auth/auth-page-container";
+import { AuthMessageType } from '@/components/form-message';
 
-export default function SignIn() {
+interface SignInProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function SignIn({ searchParams }: SignInProps) {
+    const awaitedSearchParams = await searchParams;
+    
+    // Convert search params to URLSearchParams for easy manipulation
+    const searchParamsString = new URLSearchParams(
+        Object.entries(awaitedSearchParams).reduce((acc, [key, value]) => {
+            if (value) acc[key] = String(value);
+            return acc;
+        }, {} as Record<string, string>)
+    ).toString();
+
+    const redirectTo = (awaitedSearchParams.redirectTo as string) || '/dashboard';
+    const error = awaitedSearchParams.error as string;
+    const success = awaitedSearchParams.success as string;
+
+    let message: AuthMessageType | undefined;
+    
+    if (success) {
+        message = {
+            type: "success",
+            message: success
+        };
+    } else if (error) {
+        message = {
+            type: "error",
+            message: error
+        };
+    }
+
+    // Create action bindings with redirectTo
+    const loginWithRedirect = login.bind(null, redirectTo);
+    const googleLoginWithRedirect = loginWithGoogle.bind(null, redirectTo);
+    const githubLoginWithRedirect = loginWithGithub.bind(null, redirectTo);
+
     return (
         <AuthPageContainer
             title="Sign in to your account"
             subtitle={
                 <>
                     Don't have an account?{" "}
-                    <Link className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" href={`/sign-up?`}>
-                        Sign up
+                    <Link 
+                        className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" 
+                        href={`/sign-up${searchParamsString ? `?${searchParamsString}` : ''}`}
+                    >
+                        Sign up Here
                     </Link>
                 </>
             }
+            message={message}
         >
-            <form action={login} className="space-y-6">
+            <form action={loginWithRedirect} className="space-y-6">
                 <div>
                     <Label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Email address
@@ -45,7 +87,10 @@ export default function SignIn() {
                             Password
                         </Label>
                         <div className="text-sm">
-                            <Link className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" href="/forgot-password">
+                            <Link 
+                                className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500" 
+                                href={`/forgot-password${searchParamsString ? `?${searchParamsString}` : ''}`}
+                            >
                                 Forgot your password?
                             </Link>
                         </div>
@@ -64,7 +109,10 @@ export default function SignIn() {
                 </div>
 
                 <div>
-                    <SubmitButton pendingText="Signing In..." className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    <SubmitButton 
+                        pendingText="Signing In..." 
+                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                    >
                         Sign in
                     </SubmitButton>
                 </div>
@@ -83,15 +131,21 @@ export default function SignIn() {
                 </div>
 
                 <div className="mt-6 grid grid-cols-2 gap-3">
-                    <form action={loginWithGoogle}>
-                        <SubmitButton pendingText="Connecting..." className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200">
+                    <form action={googleLoginWithRedirect}>
+                        <SubmitButton 
+                            pendingText="Connecting..." 
+                            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
+                        >
                             <IconBrandGoogle className="h-5 w-5 mr-2" />
                             <span>Google</span>
                         </SubmitButton>
                     </form>
 
-                    <form action={loginWithGithub}>
-                        <SubmitButton pendingText="Connecting..." className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200">
+                    <form action={githubLoginWithRedirect}>
+                        <SubmitButton 
+                            pendingText="Connecting..." 
+                            className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
+                        >
                             <IconBrandGithub className="h-5 w-5 mr-2" />
                             <span>GitHub</span>
                         </SubmitButton>

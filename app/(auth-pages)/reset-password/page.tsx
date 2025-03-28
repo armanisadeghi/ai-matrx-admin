@@ -2,23 +2,46 @@
 // @ts-nocheck
 
 import {resetPasswordAction} from "@/actions/auth.actions";
-import {Message} from "@/components/form-message";
+import {AuthMessageType} from "@/components/form-message";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {SubmitButton} from "@/components/submit-button";
 import AuthPageContainer from "@/components/auth/auth-page-container";
 
+interface ResetPasswordProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+
 export default async function ResetPassword(
     {
         searchParams,
-    }: {
-        searchParams: Message;
-    }) {
+    }: ResetPasswordProps) {
+        const awaitedSearchParams = await searchParams;
+
+        const redirectTo = (awaitedSearchParams.redirectTo as string) || '/dashboard';
+        const error = awaitedSearchParams.error as string;
+        const success = awaitedSearchParams.success as string;
+    
+        let message: AuthMessageType | undefined;
+        
+        if (success) {
+            message = {
+                type: "success",
+                message: success
+            };
+        } else if (error) {
+            message = {
+                type: "error",
+                message: error
+            };
+        }
+    
     return (
         <AuthPageContainer
             title="Reset password"
             subtitle="Please enter your new password below."
-            message={searchParams}
+            message={searchParams as unknown as AuthMessageType}
         >
             <form action={resetPasswordAction} className="space-y-6">
                 <div>
