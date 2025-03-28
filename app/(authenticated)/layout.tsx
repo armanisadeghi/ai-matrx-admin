@@ -11,7 +11,9 @@ import { ClientDebugWrapper } from "@/components/admin/ClientDebugWrapper";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
 import { setGlobalUserId } from "@/lib/globalState";
+
 const schemaSystem = initializeSchemaSystem();
+
 const clientGlobalCache = generateClientGlobalCache();
 
 async function fetchTestDirectories() {

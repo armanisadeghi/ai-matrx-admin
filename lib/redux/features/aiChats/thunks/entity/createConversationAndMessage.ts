@@ -7,6 +7,11 @@ import { EntityKeys, MatrxRecordId } from "@/types";
 import { saveRecordsInOrder } from "@/lib/redux/entity/thunks/createRecordThunk";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 
+const INFO = false;
+const DEBUG = true;
+const VERBOSE = false;
+
+
 interface CreateConversationAndMessagePayload {
     conversationOverrides?: Partial<Conversation>;
     messageOverrides?: Partial<Message>;
@@ -119,6 +124,8 @@ export const saveConversationAndMessage = createAppThunk<
         const chatActions = getChatActionsWithThunks();
 
         const results = await dispatch(saveRecordsInOrder(payloads)).unwrap();
+
+        if (DEBUG) console.log("\x1b[34m[SAVE_CONVERSATION_AND_MESSAGE] Results:\x1b[0m", JSON.stringify(results, null, 2));
 
         const [conversationResult, messageResult] = results;
 

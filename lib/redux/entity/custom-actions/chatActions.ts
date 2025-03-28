@@ -5,7 +5,7 @@ import {
     createConversationAndMessage,
     saveConversationAndMessage,
 } from "@/lib/redux/features/aiChats/thunks/entity/createConversationAndMessage";
-import { Message } from "@/types/chat/chat.types";
+import { Conversation, Message } from "@/types/chat/chat.types";
 import { fetchRelatedRecordsThunk } from "../thunks/fetchRelatedRecordsThunk";
 import { createMessageForConversation, saveMessageThunk } from "@/lib/redux/features/aiChats/thunks/entity/createMessageThunk";
 import { fetchRelatedMessagesThunk } from "../../features/aiChats/thunks/entity/fetchRelatedMessagesThunk";
@@ -466,6 +466,21 @@ export const getChatActionsWithThunks = () => {
             dispatch(conversationActions.fetchOne({ matrxRecordId }));
             dispatch(conversationActions.setActiveRecord(matrxRecordId));
             dispatch(fetchRelatedMessagesThunk({ conversationId }));
+        },
+
+        fetchMessagesForActiveConversation: () => (dispatch: AppDispatch, getState: () => RootState) => {
+            const activeConversationKey = getState().entities["conversation"].selection.activeRecord;
+            if (!activeConversationKey) {
+                console.warn("FETCH MESSAGES FOR ACTIVE CONVERSATION: No active conversation found");
+                return;
+            }
+            const activeConversation = getState().entities["conversation"].records[activeConversationKey] as Conversation;
+            if (!activeConversation) {
+                console.warn("FETCH MESSAGES FOR ACTIVE CONVERSATION: No active conversation found");
+                return;
+            }
+            const activeConversationId = activeConversation.id;
+            dispatch(fetchRelatedMessagesThunk({ conversationId: activeConversationId }));
         },
 
         setActiveMessage: (messageId: string) => (dispatch: AppDispatch) => {

@@ -39,13 +39,13 @@ export function useNewChat() {
     );
 
     const queryString = createQueryString({
-        live: "true",
+        live: "true", // Not used at this time.
     });
 
     useEffect(() => {
         if(isStreaming) return;
         if (!isStreaming && readyToNavigate) {
-            router.push(`${pathname}/${conversationId}?${queryString}`);
+            router.push(`${pathname}/${conversationId}`);
         }
     }, [isStreaming, readyToNavigate, conversationId, pathname, router, queryString]);
 

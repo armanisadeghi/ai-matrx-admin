@@ -140,7 +140,7 @@ const UserMessage: React.FC<UserMessageProps> = ({
         
         <div className={`
           rounded-b-2xl
-          ${isHovered || isEditing ? 'rounded-t-none' : 'rounded-t-2xl'} 
+          rounded-t-none
           bg-zinc-200 dark:bg-zinc-800 
           px-4 py-2
           text-gray-900 dark:text-gray-100
@@ -174,7 +174,7 @@ const UserMessage: React.FC<UserMessageProps> = ({
               
               {actionFeedback.show && actionFeedback.type === 'saved' && (
                 <div className="absolute bottom-2 right-2 bg-green-600 text-white px-2 py-1 rounded text-xs animate-fade-in-out">
-                  Changes saved
+                  saved
                 </div>
               )}
             </>

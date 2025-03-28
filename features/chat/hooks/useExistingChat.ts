@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { saveMessageThunk } from "@/lib/redux/features/aiChats/thunks/entity/createMessageThunk";
@@ -18,67 +18,42 @@ interface ExistingChatProps {
 export function useExistingChat({ existingConversationId }: ExistingChatProps) {
     const [firstLoadComplete, setFirstLoadComplete] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    const [readyToUpdate, setReadyToUpdate] = useState<boolean>(false);
     const dispatch = useAppDispatch();
 
+    const chatManager = new ChatTaskManager(dispatch);
+    const router = useRouter();
+
     const { chatActions, conversationId, routeLoadComplete, chatSelectors, messageKey } = useChatBasics();
+    const isStreaming = useAppSelector(chatSelectors.isStreaming);
 
     const handlerCoordinatedFetch = useCallback(() => {
         dispatch(chatActions.setActiveConversation(existingConversationId));
         dispatch(chatActions.coordinateActiveConversationAndMessageFetch(existingConversationId));
+        setFirstLoadComplete(true);
     }, [existingConversationId, dispatch, chatActions]);
 
     useEffect(() => {
-        handlerCoordinatedFetch();
-        setFirstLoadComplete(true);
-    }, []);
-
-    useEffect(() => {
         if (!firstLoadComplete) return;
-        
-        if ( existingConversationId !== conversationId) {
+
+        if (existingConversationId !== conversationId) {
+            console.log(
+                "SHOULD NOT SEE THIS!!! --- Check The Code --- USE EXISTING CHAT. Fetching Records Again!. ===== This is probably not good ===="
+            );
             dispatch(chatActions.setExternalConversationLoading(true));
-            console.log("USE EXISTING CHAT. Fetching Records Again!. ===== This is probably not good ====");
             console.log("USE EXISTING CHAT. existingConversationId:", existingConversationId);
             console.log("USE EXISTING CHAT. conversationId:", conversationId);
             handlerCoordinatedFetch();
         } else {
             dispatch(chatActions.setExternalConversationLoading(false));
         }
-    }, [existingConversationId, conversationId, dispatch, chatActions, firstLoadComplete]);
+    }, [existingConversationId, conversationId]);
 
-    const isStreaming = useAppSelector(chatSelectors.isStreaming);
-
-    const chatManager = new ChatTaskManager(dispatch);
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-
-    const createQueryString = useCallback(
-        (updates: Record<string, string | undefined>) => {
-            const params = new URLSearchParams(searchParams.toString());
-            Object.entries(updates).forEach(([name, value]) => {
-                if (value) {
-                    params.set(name, value);
-                } else {
-                    params.delete(name);
-                }
-            });
-            return params.toString();
-        },
-        [searchParams]
-    );
-
-    const queryString = createQueryString({
-        live: "true",
-    });
-
-    useEffect(() => {
-        if (isStreaming) return; // NOTE: REMOVED LOGIC HERE! NEeds testing. ==========================
-        if (!isStreaming) {
-            dispatch(chatActions.coordinateActiveConversationAndMessageFetch(conversationId));
-        }
-    }, [isStreaming, conversationId]);
+    // useEffect(() => {
+    //     if (isStreaming) return; // NOTE: REMOVED LOGIC HERE! NEeds testing. ==========================
+    //     if (!isStreaming) {
+    //         dispatch(chatActions.coordinateActiveConversationAndMessageFetch(conversationId));
+    //     }
+    // }, [isStreaming, conversationId]);
 
     const submitChatMessage = useCallback(async () => {
         try {

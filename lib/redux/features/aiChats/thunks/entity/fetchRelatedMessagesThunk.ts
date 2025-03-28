@@ -6,8 +6,8 @@ import { createMessageForConversation } from "./createMessageThunk";
 
 
 const INFO = true;
-const DEBUG = true;
-const VERBOSE = true;
+const DEBUG = false;
+const VERBOSE = false;
 
 interface FetchRelatedMessagesPayload {
     conversationId: string;
@@ -102,10 +102,10 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
                     systemOrder: nextSystemOrderToUse
                 })).unwrap();
 
-                if (INFO) console.log("FETCH_RELATED_MESSAGES: New message result:", JSON.stringify(messageResult, null, 2));
+                if (DEBUG) console.log("FETCH_RELATED_MESSAGES: New message result:", JSON.stringify(messageResult, null, 2));
 
                 dispatch(messageActions.setActiveRecord(messageResult.messageTempKey));
-                console.log("FETCH_RELATED_MESSAGES: Set Active Message to Temp Record:", messageResult.messageTempKey);
+                if (INFO) console.log("FETCH_RELATED_MESSAGES: Set Active Message to Temp Record:", messageResult.messageTempKey);
 
                 newMessageResult = messageResult;
             }

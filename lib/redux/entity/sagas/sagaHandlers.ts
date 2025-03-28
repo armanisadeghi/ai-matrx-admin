@@ -946,7 +946,7 @@ function* handleFetchPaginated<TEntity extends EntityKeys>({
     action: PayloadAction<{ page: number; pageSize: number; options?: QueryOptions<TEntity>; maxCount?: number }>;
 }) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('handleFetchPaginated', entityKey);
-    const DEBUG_LEVEL = 'debug';
+    const DEBUG_LEVEL = 'info';
 
     try {
         entityLogger.log(DEBUG_LEVEL, 'Starting fetchPaginated', action.payload);

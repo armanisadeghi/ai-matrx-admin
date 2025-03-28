@@ -115,7 +115,8 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                     if (isEnd) {
                         console.log("[CHAT STREAM DISPLAY] Stream ended");
                         dispatch(chatActions.setIsNotStreaming());
-                        // dispatch(chatActions.setSocketEventName({ eventName: "STREAM COMPLETE" }));
+                        dispatch(chatActions.fetchMessagesForActiveConversation());
+                        //dispatch(chatActions.setSocketEventName({ eventName: "STREAM COMPLETE" }));
                     }
 
                     if (typeof dataContent === "object" && dataContent !== null) {

@@ -26,6 +26,12 @@ interface FetchCallbackResult {
     originalPayload: FetchRecordsPayload;
 }
 
+
+const INFO = false;
+const DEBUG = true;
+const VERBOSE = true;
+
+
 export const fetchRelatedRecordsThunk = createAppThunk<
     FetchRelatedRecordsResult,
     FetchRelatedRecordsPayload,
@@ -62,6 +68,8 @@ export const fetchRelatedRecordsThunk = createAppThunk<
                 },
             };
 
+            if (VERBOSE) console.log("\x1b[34m[FETCH_RELATED_RECORDS] Payload:\x1b[0m", JSON.stringify(payload, null, 2));
+
             dispatch(actions.fetchRecords(payload));
 
             const callbackData: FetchCallbackResult = await new Promise((resolve, reject) => {
@@ -70,7 +78,8 @@ export const fetchRelatedRecordsThunk = createAppThunk<
                 };
 
                 const success = callbackManager.subscribe(callbackId, listener);
-                
+
+
                 if (!success) {
                     const errorMsg = `Failed to subscribe to callback ${callbackId}`;
                     console.error(`FETCH_RELATED_RECORDS: ${errorMsg}`);
@@ -79,6 +88,7 @@ export const fetchRelatedRecordsThunk = createAppThunk<
             });
 
             if (callbackData.success) {
+                if (DEBUG) console.log("\x1b[34m[FETCH_RELATED_RECORDS] Results:\x1b[0m", JSON.stringify(callbackData.result, null, 2));
                 return {
                     success: true,
                     result: callbackData.result,

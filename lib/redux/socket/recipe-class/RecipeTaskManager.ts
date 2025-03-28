@@ -13,21 +13,13 @@ export class RecipeTaskManager {
 
     async runRecipeTasks(tasks: RecipeTaskData[]): Promise<string[]> {
         try {
+            const socket = await this.socketManager.getSocket();
             const taskArray = tasks.map(task => task.getTask());
             
-            await new Promise<void>((resolve, reject) => {
-                this.socketManager.getSocket().emit(RecipeTaskManager.SERVICE, taskArray, (response: any) => {
-                    if (response?.error) {
-                        reject(new Error(response.error));
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            await this.socketManager.emit(RecipeTaskManager.SERVICE, taskArray);
 
-            // Return expected response event names
             return taskArray.map(task => {
-                const sid = this.socketManager.getSocket().id;
+                const sid = socket.id || "pending";
                 return `${sid}_${RecipeTaskManager.TASK}_${task.index}`;
             });
         } catch (error) {
