@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Edit2, Copy, ChevronUp, ChevronDown, Save, Clock, Check, X, ArrowDown } from 'lucide-react';
-import { Message } from '@/types/chat/chat.types';
 import dynamic from 'next/dynamic';
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), {
@@ -50,7 +49,7 @@ const UserMessage: React.FC<UserMessageProps> = ({
     if (contentRef.current) {
       // Only apply max-height when collapsed
       contentRef.current.style.maxHeight = isCollapsed ? '80px' : 'none';
-      contentRef.current.style.height = 'auto'; // Allow natural height
+      contentRef.current.style.height = 'auto';
     }
   }, [isCollapsed, message.content, isEditing]);
 
@@ -137,7 +136,6 @@ const UserMessage: React.FC<UserMessageProps> = ({
     e.stopPropagation();
     if (onScrollToBottom) {
       onScrollToBottom();
-      showFeedback('scrolled');
     }
   };
 
@@ -158,7 +156,7 @@ const UserMessage: React.FC<UserMessageProps> = ({
           onClick={toggleCollapse}
           className={`
             flex items-center justify-between 
-            px-3 py-2 rounded-t-lg
+            px-3 py-0.5 rounded-t-xl
             bg-zinc-300 dark:bg-zinc-700
             text-xs text-gray-700 dark:text-gray-300
             transition-all duration-200
@@ -248,7 +246,7 @@ const UserMessage: React.FC<UserMessageProps> = ({
           rounded-b-2xl
           ${isHovered || isEditing ? 'rounded-t-none' : 'rounded-t-2xl'} 
           bg-zinc-200 dark:bg-zinc-800 
-          p-4
+          px-4 py-2
           text-gray-900 dark:text-gray-100
           relative
           w-full

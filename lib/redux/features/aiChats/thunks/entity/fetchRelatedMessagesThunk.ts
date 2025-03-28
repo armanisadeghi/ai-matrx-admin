@@ -5,7 +5,9 @@ import { MessageRecordMap } from "@/types";
 import { createMessageForConversation } from "./createMessageThunk";
 
 
-const DEBUG = false
+const INFO = true;
+const DEBUG = true;
+const VERBOSE = true;
 
 interface FetchRelatedMessagesPayload {
     conversationId: string;
@@ -42,14 +44,14 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
             };
 
             const results = await dispatch(fetchRelatedRecordsThunk(payload)).unwrap();
-            if (DEBUG) console.log("FETCH_RELATED_MESSAGES: Results:", JSON.stringify(results, null, 2));
+            if (VERBOSE) console.log("FETCH_RELATED_MESSAGES: Results:", JSON.stringify(results, null, 2));
 
             const allMessageRecords = getState().entities["message"].records as MessageRecordMap;
             const matchingMessageRecords = Object.values(allMessageRecords).filter(
                 (message) => message.conversationId === conversationId
             );
 
-            if (DEBUG) console.log("FETCH_RELATED_MESSAGES: Matching message records:", JSON.stringify(matchingMessageRecords, null, 2));
+            if (VERBOSE) console.log("FETCH_RELATED_MESSAGES: Matching message records:", JSON.stringify(matchingMessageRecords, null, 2));
 
             let nextDisplayOrderToUse: number | undefined;
             let nextSystemOrderToUse: number | undefined;
@@ -59,17 +61,24 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
             if (matchingMessageRecords.length === 0) {
                 statusMessage = "No messages found for this conversation";
             } else {
-                const maxDisplayOrderMessage = matchingMessageRecords.reduce((max, message) =>
-                    message.displayOrder > max.displayOrder ? message : max,
-                    matchingMessageRecords[0]
-                );
-
-                if (maxDisplayOrderMessage.displayOrder < 1) {
-                    statusMessage = "No valid message order found (all display orders are less than 1)";
+                // Filter messages to only include those with role = 'user'
+                const userMessages = matchingMessageRecords.filter(message => message.role === 'user');
+            
+                if (userMessages.length === 0) {
+                    statusMessage = "No user messages found in this conversation";
                 } else {
-                    nextDisplayOrderToUse = maxDisplayOrderMessage.displayOrder + 2;
-                    nextSystemOrderToUse = maxDisplayOrderMessage.systemOrder + 2;
-                    statusMessage = "Successfully calculated next message orders";
+                    const maxDisplayOrderMessage = userMessages.reduce((max, message) =>
+                        message.displayOrder > max.displayOrder ? message : max,
+                        userMessages[0]
+                    );
+            
+                    if (maxDisplayOrderMessage.displayOrder < 1) {
+                        statusMessage = "No valid message order found (all display orders are less than 1)";
+                    } else {
+                        nextDisplayOrderToUse = maxDisplayOrderMessage.displayOrder + 2;
+                        nextSystemOrderToUse = maxDisplayOrderMessage.systemOrder + 2;
+                        statusMessage = "Successfully calculated next message orders";
+                    }
                 }
             }
 
@@ -93,13 +102,16 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
                     systemOrder: nextSystemOrderToUse
                 })).unwrap();
 
+                if (INFO) console.log("FETCH_RELATED_MESSAGES: New message result:", JSON.stringify(messageResult, null, 2));
+
                 dispatch(messageActions.setActiveRecord(messageResult.messageTempKey));
+                console.log("FETCH_RELATED_MESSAGES: Set Active Message to Temp Record:", messageResult.messageTempKey);
 
                 newMessageResult = messageResult;
-                if (DEBUG) console.log("FETCH_RELATED_MESSAGES: New message result:", JSON.stringify(newMessageResult, null, 2));
             }
 
             if (results.success) {
+                if (DEBUG) console.log("FETCH_RELATED_MESSAGES: SUCCESS! New message result:", JSON.stringify(newMessageResult, null, 2));
                 return {
                     success: true,
                     fetchResult: results.result,
@@ -107,6 +119,7 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
                     statusMessage,
                 };
             } else {
+                console.warn("FETCH_RELATED_MESSAGES FAILED: New message result:", JSON.stringify(newMessageResult, null, 2));
                 return {
                     success: false,
                     fetchResult: null,

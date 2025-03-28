@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, RefreshCw, Edit, Share2 } from "lucide-react";
 import MessageOptionsMenu from "./MessageOptionsMenu";
-import EnhancedChatMarkdown from "@/components/mardown-display/text-block/EnhancedChatMarkdown";
-import FullScreenMarkdownEditor from "@/components/mardown-display/text-block/FullScreenMarkdownEditor";
+import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
+import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 
 interface AssistantMessageProps {
     content: string;

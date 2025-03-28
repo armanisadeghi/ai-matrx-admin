@@ -56,7 +56,7 @@ export const animations = {
                 transform: "scale(0.95)",
             },
         },
-        "fadeInOut": { // Added new fadeInOut keyframe animation
+        "fadeInOut": {
             "0%": { opacity: "0" },
             "15%": { opacity: "1" },
             "85%": { opacity: "1" },
@@ -76,6 +76,17 @@ export const animations = {
             },
             "100%": {
                 filter: "drop-shadow(0 0 12px var(--glow-color)) drop-shadow(0 0 20px var(--glow-color))",
+            },
+        },
+        "glow-sweep": {
+            "0%": {
+                backgroundPosition: "-100% 0",
+            },
+            "50%": {
+                backgroundPosition: "200% 0",
+            },
+            "100%": {
+                backgroundPosition: "-100% 0",
             },
         },
         "scale-in": {
@@ -125,13 +136,14 @@ export const animations = {
         "hover-bounce": "hover-bounce 0.3s var(--animated-menu-bounce)",
         "fade-in": "fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         "fade-out": "fade-out 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        "fade-in-out": "fadeInOut 2s ease-in-out", // Added new animation class
+        "fade-in-out": "fadeInOut 2s ease-in-out",
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         spin: "spin 1s linear infinite",
         pizza: "pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         pulse: "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         slowPulse: "slowPulse 5s ease-in-out infinite",
         glow: "glow 2s ease-in-out infinite alternate",
+        "glow-sweep": "glow-sweep 3s ease-in-out infinite",
         "slide-down": "slide-down 0.5s ease-out",
         "slide-up": "slide-up 0.3s ease-out",
         "scale-in": "scale-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)",

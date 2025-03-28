@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import UserMessage from "@/features/chat/ui-parts/response/UserMessage";
-import AssistantMessage from "@/features/chat/ui-parts/response/AssistantMessage";
+import AssistantMessage from "@/features/chat/components/response/assistant-message/AssistantMessage";
 import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
 import { useSelector } from "react-redux";
 import {

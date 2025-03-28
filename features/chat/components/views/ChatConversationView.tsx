@@ -2,8 +2,7 @@
 
 import InputPlaceholder from "@/features/chat/components/input/InputPlaceholder";
 import PromptInputContainer from "@/features/chat/components/input/PromptInputContainer";
-import { useCallback, useEffect, useState } from "react";
-import { useAppDispatch } from "@/lib/redux";
+import { useCallback, useState } from "react";
 import { useExistingChat } from "../../hooks/useExistingChat";
 
 interface ChatConversationViewProps {
@@ -11,17 +10,13 @@ interface ChatConversationViewProps {
 }
 
 const ChatConversationView: React.FC<ChatConversationViewProps> = ({ existingConversationId }) => {
-    const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
-
-    const dispatch = useAppDispatch();
-    const { submitChatMessage, isSubmitting, routeLoadComplete, chatActions } = useExistingChat({ existingConversationId });
+    const { submitChatMessage, isSubmitting, routeLoadComplete } = useExistingChat({ existingConversationId });
 
     const isDisabled = !routeLoadComplete || isSubmitting;
 
     const handleActualSubmit = useCallback(async (): Promise<boolean> => {
         try {
             const success = await submitChatMessage();
-            setSubmitSuccess(success);
             if (!success) {
                 console.error("submitChatMessage returned false on WelcomeScreen");
                 return false;

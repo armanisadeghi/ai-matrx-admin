@@ -30,11 +30,18 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     renderedBy,
     onSubmit,
 }) => {
+
+    const [localDisabled, setLocalDisabled] = useState<boolean>(false);
+
+    useEffect(() => {
+        setLocalDisabled(disabled);
+    }, [disabled]);
+
     const dispatch = useAppDispatch();
 
     const textInputRef = useRef<HTMLTextAreaElement>(null);
 
-    const { chatActions, chatSelectors, conversationId } = useChatBasics();
+    const { chatActions, chatSelectors, conversationId, messageId } = useChatBasics();
 
     const fileManager = useFileManagement({
         onFilesUpdate: (files) => chatActions.updateFiles({ value: files.map((file) => file.url) }),
@@ -77,13 +84,28 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     );
 
     const handleTriggerSubmit = useCallback(async () => {
+        setLocalDisabled(true);
+        if (!activeMessageRecord) {
+            console.error("PromptInputContainer: handleTriggerSubmit: activeMessageRecord was not found");
+            console.log("Active Message Record:", activeMessageRecord);
+            console.log("Message Id:", messageId);
+            return;
+        }
+        const localContent = content;
+        setContent("");
         dispatch(chatActions.updateMessageContent({ value: content }));
-        dispatch(addMessage({
-            id: activeMessageRecord?.id,
-            role: "user",
-            content: content,
-            tempId: activeMessageRecord?.id,
-        }));
+
+
+
+
+
+
+        // dispatch(addMessage({
+        //     id: activeMessageRecord?.id,
+        //     role: "user",
+        //     content: content,
+        //     tempId: activeMessageRecord?.id,
+        // }));
 
         if (!content.trim() && fileManager.files.length === 0) {
             return;
@@ -93,6 +115,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
         if (success) {
             setContent("");
+            setLocalDisabled(false);
             fileManager.clearFiles();
 
             if (onMessageSent) {
@@ -100,6 +123,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
             }
             textInputRef.current?.focus();
         } else {
+            setContent(localContent);
             console.error("Failed to send message (handled by parent)");
         }
     }, [content, fileManager, onSubmit, onMessageSent, chatActions, dispatch]);
@@ -112,7 +136,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 <TextInput
                     ref={textInputRef}
                     content={content}
-                    disabled={disabled}
+                    disabled={localDisabled}
                     onContentChange={handleContentChange}
                     onSubmit={handleTriggerSubmit}
                     onImagePasted={(result) => {
@@ -123,7 +147,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 />
 
                 <div className="absolute bottom-0 left-0 right-0 rounded-3xl">
-                    <InputBottomControls isDisabled={disabled} onSendMessage={handleTriggerSubmit} fileManager={fileManager} />
+                    <InputBottomControls isDisabled={localDisabled} onSendMessage={handleTriggerSubmit} fileManager={fileManager} />
                 </div>
             </div>
 

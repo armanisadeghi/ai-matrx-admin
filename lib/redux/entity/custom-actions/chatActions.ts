@@ -503,7 +503,10 @@ export const getChatActionsWithThunks = () => {
 
         updateMessageContent: (params: { keyOrId?: string; value: string }) => (dispatch: AppDispatch, getState: () => RootState) => {
             const keyOrId = params.keyOrId ?? getState().entities["message"].selection.activeRecord;
-            if (!keyOrId) return;
+            if (!keyOrId) {
+                console.warn("CHAT ACTIONS THUNK - UPDATE MESSAGE CONTENT: Key or Id was not found");
+                return;
+            }
             dispatch(messageActions.updateFieldSmart({ keyOrId, field: "content", value: params.value }));
         },
 

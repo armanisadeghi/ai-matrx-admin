@@ -124,7 +124,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(({
             } ${className}`}
         >
             {/* Minimize/Maximize buttons are only shown when not processing an image */}
-            {!isPasteProcessing && isExpanded && (
+            {!isPasteProcessing && isExpanded && (parseInt(textareaHeight) > 200) && (
                 <button
                     onClick={handleMinimize}
                     className="absolute top-2 right-2 p-1.5 rounded-full text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 z-10"

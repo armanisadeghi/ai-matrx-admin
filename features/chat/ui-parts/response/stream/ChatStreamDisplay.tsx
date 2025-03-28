@@ -115,7 +115,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                     if (isEnd) {
                         console.log("[CHAT STREAM DISPLAY] Stream ended");
                         dispatch(chatActions.setIsNotStreaming());
-                        dispatch(chatActions.setSocketEventName({ eventName: "STREAM COMPLETE" }));
+                        // dispatch(chatActions.setSocketEventName({ eventName: "STREAM COMPLETE" }));
                     }
 
                     if (typeof dataContent === "object" && dataContent !== null) {
@@ -141,6 +141,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         };
     }, [eventName, socketManager]);
 
+
     const renderContent = () => {
         switch (connectionStatus) {
             case "connecting":
@@ -161,6 +162,8 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                 );
         }
     };
+
+    if (content.length < 2) return;
 
     return (
         <div className="mb-3 w-full text-left">

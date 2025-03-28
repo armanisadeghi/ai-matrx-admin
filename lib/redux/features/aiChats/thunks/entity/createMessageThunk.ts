@@ -115,6 +115,8 @@ export const createMessageForActiveConversation = createAppThunk<
             ...allOverrides,
         };
 
+        console.log("CREATE MESSAGE FOR ACTIVE CONVERSATION: messageInitialData", messageInitialData);
+
         const messageSlice = getEntitySlice("message");
 
         dispatch(
@@ -158,6 +160,10 @@ export const saveMessageThunk = createAppThunk<SaveMessageResult, SaveMessagePay
     async ({ messageTempId }, { dispatch, rejectWithValue }) => {
         try {
             // Dispatch the saveUnsavedRecord thunk and get initial result
+            if (!messageTempId) {
+                return rejectWithValue("SAVE MESSAGE THUNK: Message temp id was not found");
+            }
+
             const initialResult = await dispatch(saveUnsavedRecord({
                 entityKey: "message" as EntityKeys,
                 matrxRecordId: messageTempId

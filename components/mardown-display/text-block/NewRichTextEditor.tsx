@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 // Keep icon imports needed for header
 import { ExpandIcon, MinimizeIcon, Copy, Download, Edit, Eye } from "lucide-react";
 // Remove formatting button icons (Bold, Italic, etc.)
-import FullScreenMarkdownEditor from './FullScreenMarkdownEditor'; // Import the new editor
+import FullScreenMarkdownEditor from '../chat-markdown/FullScreenMarkdownEditor'; // Import the new editor
 import dynamic from 'next/dynamic'; // For ReactMarkdown
 
 // Dynamically import ReactMarkdown for view mode

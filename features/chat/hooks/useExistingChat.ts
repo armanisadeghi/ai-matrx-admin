@@ -38,6 +38,9 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
         
         if ( existingConversationId !== conversationId) {
             dispatch(chatActions.setExternalConversationLoading(true));
+            console.log("USE EXISTING CHAT. Fetching Records Again!. ===== This is probably not good ====");
+            console.log("USE EXISTING CHAT. existingConversationId:", existingConversationId);
+            console.log("USE EXISTING CHAT. conversationId:", conversationId);
             handlerCoordinatedFetch();
         } else {
             dispatch(chatActions.setExternalConversationLoading(false));
@@ -71,15 +74,20 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
     });
 
     useEffect(() => {
-        if (isStreaming) return;
-        if (!isStreaming && readyToUpdate) {
+        if (isStreaming) return; // NOTE: REMOVED LOGIC HERE! NEeds testing. ==========================
+        if (!isStreaming) {
             dispatch(chatActions.coordinateActiveConversationAndMessageFetch(conversationId));
         }
-    }, [isStreaming, readyToUpdate, conversationId]);
+    }, [isStreaming, conversationId]);
 
     const submitChatMessage = useCallback(async () => {
         try {
             setIsSubmitting(true);
+
+            if (!messageKey) {
+                console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", "Message key was not found");
+                return false;
+            }
 
             const result = await dispatch(saveMessageThunk({ messageTempId: messageKey })).unwrap();
 
@@ -96,14 +104,14 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
                 if (DEBUG) console.log("SUBMIT MESSAGE eventName:", eventName);
                 return true;
             } else {
-                console.error("USE NEW CHAT ERROR! submitChatMessage failed:", result);
+                console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", result);
                 return false;
             }
         } catch (error) {
-            console.error("USE NEW CHAT ERROR! submitChatMessage failed:", error);
+            console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", error);
             return false;
         } finally {
-            setReadyToUpdate(true);
+            // setReadyToUpdate(true);
             setIsSubmitting(false);
         }
     }, [dispatch, chatActions, chatManager, router]);

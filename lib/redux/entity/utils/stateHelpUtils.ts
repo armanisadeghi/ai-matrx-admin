@@ -213,9 +213,9 @@ export const removeFromUnsavedRecords = <TEntity extends EntityKeys>(state: Enti
 };
 
 export const clearUnsavedRecords = <TEntity extends EntityKeys>(state: EntityState<TEntity>) => {
-    state.unsavedRecords = {};
-    state.flags.hasUnsavedChanges = false;
-    utilsLogger.log('warn', 'Cleared all unsaved records');
+    // state.unsavedRecords = {};
+    // state.flags.hasUnsavedChanges = false;
+    utilsLogger.log('warn', 'NOTICE!!!! NOT CLEARING ALL UNSAVED RECORDS! Cleared all unsaved records');
 };
 
 export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {

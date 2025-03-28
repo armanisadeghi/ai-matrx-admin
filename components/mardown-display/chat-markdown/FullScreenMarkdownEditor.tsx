@@ -9,7 +9,7 @@ import remarkGfm from 'remark-gfm';
 import dynamic from 'next/dynamic';
 import type { Editor as TuiEditorReactComp } from '@toast-ui/react-editor';
 import { useTheme } from "@/styles/themes/ThemeProvider";
-import EditorLoading from './editorLoading';
+import EditorLoading from '../text-block/editorLoading';
 
 // Import the Toast UI Editor dark theme CSS
 import '@toast-ui/editor/dist/toastui-editor.css';

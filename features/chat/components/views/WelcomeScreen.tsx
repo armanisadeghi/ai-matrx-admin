@@ -16,7 +16,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
     const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
 
     const dispatch = useAppDispatch();
-    const { submitChatMessage, isSubmitting, initialLoadComplete, chatActions, conversationId } = useNewChat();
+    const { submitChatMessage, isSubmitting, initialLoadComplete, chatActions } = useNewChat();
 
     useEffect(() => {
         dispatch(chatActions.createConversationAndMessage({}));
@@ -57,6 +57,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
                     <h1 className="text-3xl font-medium mb-2 text-gray-800 dark:text-gray-100">Chat. Reimagined.</h1>
                     <p className="text-xl text-gray-600 dark:text-gray-400">Artificial Intelligence with Matrx Superpowers.</p>
                 </div>
+                
             </div>
         );
     }

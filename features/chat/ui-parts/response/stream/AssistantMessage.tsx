@@ -3,10 +3,9 @@ import ChatStreamDisplay from "./ChatStreamDisplay";
 
 interface AssistantStreamProps {
     eventName: string;
-    isStreamActive?: boolean;
 }
 
-const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName, isStreamActive = false }) => {
+const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName }) => {
     return (
         <div className="flex">
             <div className="max-w-full w-full relative">

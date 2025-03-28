@@ -9,7 +9,7 @@ import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManage
 import { useRouter } from "next/navigation";
 import { DEFAULT_MODEL_ID, DEFAULT_MODE, DEFAULT_FAST_MODEL_ID, DEFAULT_GPT_MODEL_ID } from "@/constants/chat";
 import { CombinedSaveChatResult, useChatRelationship } from "./useChatHooks";
-import useChatBasics from "./useNewChatBasics";
+import useChatBasics from "../useNewChatBasics";
 
 const DEBUG = false;
 const VERBOSE = false;
@@ -21,7 +21,6 @@ export function useChat(baseRoute: string = "/chat", convoId: string, newChat: b
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const {
-        fileManager,
         chatActions,
         chatSelectors,
         conversationId,
@@ -116,7 +115,7 @@ export function useChat(baseRoute: string = "/chat", convoId: string, newChat: b
 
             if (result.success) {
                 await new Promise((resolve) => setTimeout(resolve, 200));
-                const eventName = await chatManager.streamMessage(conversationId, result.message);
+                const eventName = await chatManager.streamMessage({conversationId, message: result.message});
                 chatActions.setSocketEventName({ eventName: eventName });
                 router.push(`${baseRoute}/${result.conversationId}`);
 
@@ -151,8 +150,6 @@ export function useChat(baseRoute: string = "/chat", convoId: string, newChat: b
         updateMode,
         updateEndpoint,
         updateChatMetadata,
-
-        fileManager,
 
         submitChatMessage,
         isSubmitting,

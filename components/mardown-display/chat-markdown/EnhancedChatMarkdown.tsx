@@ -269,7 +269,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({ content, typ
                     />
                 ) : null;
             case "code":
-                 console.log("Rendering CodeBlock - Language:", block.language || "none", "Code:", block.content.substring(0, 50) + "..."); // Debug log
                 return (
                     <CodeBlock
                         key={index}

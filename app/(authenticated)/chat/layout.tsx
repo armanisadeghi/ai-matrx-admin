@@ -5,7 +5,7 @@ import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnaly
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
-import ResponseColumnSix from "@/features/chat/ui-parts/response/ResponseColumnSix";
+import ResponseColumn from "@/features/chat/components/response/ResponseColumn";
 import ResponseColumnSeven from "@/features/chat/ui-parts/response/ResponseColumnSeven";
 
 
@@ -30,7 +30,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
 
                     {/* Scrollable message area */}
                     <div className="relative flex-1 overflow-y-auto scrollbar-hide pb-48 z-1">
-                        <ResponseColumnSix />
+                        <ResponseColumn />
                     </div>
 
                     {/* Simple blocker div with matching background */}

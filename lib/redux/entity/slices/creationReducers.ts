@@ -7,6 +7,8 @@ import {
     setSuccess,
     setNewActiveRecord,
     removeFromUnsavedRecords,
+    parseRecordKey,
+    parseMatrxRecordId,
 } from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "../utils/entityLogger";
 import { CreateRecordPayload, createRecordSuccessPayload, DirectCreateRecordPayload } from "@/lib/redux/entity/actions";
@@ -118,12 +120,19 @@ export const creationReducers = <TEntity extends EntityKeys>(
     },
 
     createRecord: (state: EntityState<TEntity>, action: PayloadAction<CreateRecordPayload>) => {
-        entityLogger.log(DEBUG, "createRecord", action.payload);
+        entityLogger.log(DEBUG, "CREATE RECORD ACTION PAYLOAD: ", action.payload);
         const tempRecordId = action.payload.tempRecordId;
-        const recordData = state.unsavedRecords[tempRecordId];
+        const data = state.unsavedRecords[tempRecordId] as EntityData<TEntity>;
+        if (data) {
+            entityLogger.log(INFO, "WARNING! EXPERIMENTAL FEATURE FOR AN OPTIMISTIC UPDATE BUT NOT USING OPTIMISTIC UPDATE FEATURE! createRecord - data: ", data);
+            entityLogger.log(INFO, "- Temp Record Id: ", tempRecordId);
+            const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, data);
+            state.records[recordKey] = data;
+        }
 
-        if (!recordData) {
-            entityLogger.log("error", "No unsaved data found for temp record", tempRecordId);
+        if (!data) {
+            entityLogger.log("error", "No unsaved data found for temp record -->", tempRecordId, "<--- That's that Id");
+            entityLogger.log("error", "Current Unsaved Records: ", JSON.stringify(state.unsavedRecords, null, 2));
             return;
         }
         setLoading(state, "CREATE");
