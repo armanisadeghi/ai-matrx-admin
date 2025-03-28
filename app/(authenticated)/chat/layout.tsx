@@ -6,6 +6,8 @@ import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
 import ResponseColumnSix from "@/features/chat/ui-parts/response/ResponseColumnSix";
+import ResponseColumnSeven from "@/features/chat/ui-parts/response/ResponseColumnSeven";
+
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
     const isDev = process.env.NODE_ENV === "development";

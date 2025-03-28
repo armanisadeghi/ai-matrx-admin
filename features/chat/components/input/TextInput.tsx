@@ -25,8 +25,21 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(({
     onImagePasted,
     bucket = "userContent",
     path,
-}, ref) => {
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+}, forwardedRef) => {
+    // Create local ref that we'll use internally
+    const localRef = useRef<HTMLTextAreaElement>(null);
+    
+    // Sync the forwarded ref with our local ref
+    useEffect(() => {
+        if (!forwardedRef) return;
+        
+        if (typeof forwardedRef === 'function') {
+            forwardedRef(localRef.current);
+        } else {
+            forwardedRef.current = localRef.current;
+        }
+    }, [forwardedRef]);
+    
     const [isFocused, setIsFocused] = useState<boolean>(false);
     const [textareaHeight, setTextareaHeight] = useState<string>("110px");
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
@@ -35,13 +48,13 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(({
     const [pasteProcessRef, setPasteProcessRef] = useState<any>(null);
 
     const adjustTextareaHeight = useCallback(() => {
-        if (textareaRef.current) {
+        if (localRef.current) {
             const minHeight = 110;
             const bottomPadding = 60;
-            textareaRef.current.style.height = "auto";
-            const scrollHeight = textareaRef.current.scrollHeight;
+            localRef.current.style.height = "auto";
+            const scrollHeight = localRef.current.scrollHeight;
             const newHeight = Math.min(Math.max(minHeight, scrollHeight), maxHeight - bottomPadding);
-            textareaRef.current.style.height = `${newHeight}px`;
+            localRef.current.style.height = `${newHeight}px`;
             setTextareaHeight(`${newHeight}px`);
             setIsExpanded(newHeight > minHeight);
         }
@@ -80,9 +93,9 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(({
     }, []);
 
     const handleMaximize = useCallback(() => {
-        if (textareaRef.current) {
+        if (localRef.current) {
             const bottomPadding = 60;
-            setTextareaHeight(`${Math.min(textareaRef.current.scrollHeight, maxHeight - bottomPadding)}px`);
+            setTextareaHeight(`${Math.min(localRef.current.scrollHeight, maxHeight - bottomPadding)}px`);
             setIsExpanded(true);
         }
     }, [maxHeight]);
@@ -151,7 +164,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(({
                 <PasteImageHandler
                     bucket={bucket}
                     path={path}
-                    targetElement={textareaRef.current}
+                    targetElement={localRef.current}
                     onImagePasted={onImagePasted}
                     disabled={disabled}
                     onProcessingChange={handleProcessingChange}
@@ -159,7 +172,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(({
             )}
 
             <textarea
-                ref={ref} // Changed from textareaRef to use the forwarded ref
+                ref={localRef}
                 style={{
                     height: textareaHeight,
                     maxHeight: `${maxHeight}px`,
@@ -180,5 +193,7 @@ const TextInput = forwardRef<HTMLTextAreaElement, TextInputProps>(({
         </div>
     );
 });
+
+TextInput.displayName = 'TextInput'; // Add display name for React DevTools
 
 export default TextInput;

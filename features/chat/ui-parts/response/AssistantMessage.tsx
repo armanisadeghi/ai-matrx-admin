@@ -1,22 +1,24 @@
 import React, { useState } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, RefreshCw, Edit, Share2 } from "lucide-react";
-import ChatMarkdownDisplay from "@/components/mardown-display/ChatMarkdownDisplay";
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/text-block/EnhancedChatMarkdown";
+import FullScreenMarkdownEditor from "@/components/mardown-display/text-block/FullScreenMarkdownEditor";
 
 interface AssistantMessageProps {
-  content: string;
-  isStreamActive: boolean;
-  onScrollToBottom?: () => void;
+    content: string;
+    isStreamActive: boolean;
+    onScrollToBottom?: () => void;
+    onContentUpdate?: (newContent: string) => void; // 2. Add callback prop for updates
 }
 
-const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamActive = false, onScrollToBottom }) => {
+const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamActive = false, onScrollToBottom, onContentUpdate }) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
-    
+    const [isEditorOpen, setIsEditorOpen] = useState(false); // 3. State for modal visibility
+
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(content);
@@ -26,23 +28,43 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamAc
             console.error("Failed to copy: ", err);
         }
     };
-    
+
     const handleLike = () => {
         setIsLiked(!isLiked);
         if (isDisliked) setIsDisliked(false);
     };
-    
+
     const handleDislike = () => {
         setIsDisliked(!isDisliked);
         if (isLiked) setIsLiked(false);
     };
-    
+
     const handleSpeak = () => {
         setIsSpeaking(!isSpeaking);
     };
-    
+
     const toggleOptionsMenu = () => {
         setShowOptions(!showOptions);
+    };
+
+    const handleEditClick = () => {
+        if (onContentUpdate) {
+            // Only allow editing if the callback is provided
+            setIsEditorOpen(true);
+        } else {
+            console.warn("Edit clicked but no onContentUpdate handler provided.");
+        }
+    };
+
+    const handleSaveEdit = (newContent: string) => {
+        if (onContentUpdate) {
+            onContentUpdate(newContent); // Call the parent's update function
+        }
+        setIsEditorOpen(false); // Close the modal
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditorOpen(false); // Close the modal
     };
 
     return (
@@ -55,7 +77,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamAc
                     className="bg-transparent dark:bg-transparent"
                     isStreamActive={isStreamActive}
                 />
-                
+
                 {!isStreamActive && (
                     <div className="flex items-center space-x-0">
                         <button
@@ -101,8 +123,9 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamAc
                             <RefreshCw size={16} />
                         </button>
                         <button
-                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700"
+                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded" // Added rounded
                             aria-label="Edit message"
+                            onClick={handleEditClick} // Use the new handler
                         >
                             <Edit size={16} />
                         </button>
@@ -125,6 +148,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamAc
                     </div>
                 )}
             </div>
+            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} />
         </div>
     );
 };

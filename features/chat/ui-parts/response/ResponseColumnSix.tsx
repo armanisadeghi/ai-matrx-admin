@@ -27,10 +27,15 @@ export type localMessage = {
 };
 
 const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localMessage; onScrollToBottom: () => void }) => {
+    const handleContentEdit = (newContent: string) => {
+        console.log("newContent", newContent);
+    };
+
+
     return message.role === "user" ? (
         <UserMessage key={message.id} message={message} onScrollToBottom={onScrollToBottom} />
     ) : (
-        <AssistantMessage key={message.id} content={message.content} isStreamActive={false} onScrollToBottom={onScrollToBottom} />
+        <AssistantMessage key={message.id} content={message.content} isStreamActive={false} onScrollToBottom={onScrollToBottom} onContentUpdate={handleContentEdit} />
     );
 });
 

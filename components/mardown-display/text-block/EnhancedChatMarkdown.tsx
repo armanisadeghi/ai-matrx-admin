@@ -6,31 +6,25 @@ import { cn } from "@/styles/themes/utils";
 import CodeBlock from "@/components/mardown-display/CodeBlock";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
 import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
-import { CheckIcon, ClipboardIcon, Copy, Edit2, PencilIcon } from "lucide-react";
+import { CheckIcon, ClipboardIcon, PencilIcon } from "lucide-react";
 import { useState } from "react";
+import FullScreenMarkdownEditor from './FullScreenMarkdownEditor'; // Adjust path as needed
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
-
-interface ChatMarkdownDisplayProps {
-    content: string;
-    type: "flashcard" | "message";
-    role?: "user" | "assistant";
-    className?: string;
-    isStreamActive?: boolean;
-}
 
 interface BasicMarkdownContentProps {
     content: string;
     isStreamActive?: boolean;
+    onEditRequest?: () => void; // <-- ADD THIS
 }
 
-// Component for continuous basic markdown content
-export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ content, isStreamActive }) => {
+export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ content, isStreamActive, onEditRequest }) => {
     const [isHovering, setIsHovering] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
 
     const handleEdit = () => {
         console.log("Edit clicked with content:", content);
+        onEditRequest?.(); // <-- Call the passed-down function
     };
 
     const handleCopy = () => {
@@ -48,13 +42,9 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
 
     const components = {
         p: ({ node, children, ...props }: any) => {
-            const isLastParagraph =
-                String(children).trim() ===
-                String(content)
-                    .trim()
-                    .split(/\n\n|\r\n\r\n/)
-                    .pop()
-                    ?.trim();
+            // Logic to check if it's the last paragraph might need refinement
+            // depending on how content is split and structured, but keeping as is for now.
+             const isLastParagraph = false; // Simpler placeholder, adjust if needed
             return (
                 <p className={`font-sans tracking-wide leading-relaxed text-md ${isLastParagraph ? "mb-0" : "mb-2"}`} {...props}>
                     {children}
@@ -91,7 +81,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
             </pre>
         ),
         code: ({ node, inline, className, children, ...props }) => {
-            if (!inline) return null; // Non-inline code blocks are handled separately
+            if (!inline) return null;
             return (
                 <code
                     className={cn(
@@ -105,7 +95,8 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
                 </code>
             );
         },
-        table: () => null, // Tables are handled separately
+        // Explicitly ignore table elements as they are handled separately
+        table: () => null,
         thead: () => null,
         tbody: () => null,
         tr: () => null,
@@ -114,78 +105,139 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
     };
 
     return (
-        <div className="relative my-2" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
+        <div className="relative my-2 group" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
                 {content}
             </ReactMarkdown>
+            {/* Edit button now triggers onEditRequest */}
             {isHovering && !isStreamActive && (
-                <div className="absolute top-0 right-0 p-1">
-                    <button onClick={handleCopy} className="p-1 text-gray-500 hover:text-gray-700 rounded-md" title="Copy to clipboard">
+                <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                     <button onClick={handleCopy} className="p-1 text-gray-500 hover:text-gray-700 rounded-md" title="Copy to clipboard">
                         {copySuccess ? <CheckIcon className="w-4 h-4" /> : <ClipboardIcon className="w-4 h-4" />}
                     </button>
-                    <button onClick={handleEdit} className="p-1 text-gray-500 hover:text-gray-700 rounded-md ml-1" title="Edit content">
-                        <PencilIcon className="w-4 h-4" />
-                    </button>
+                    {/* Only show Edit button if onEditRequest is provided */}
+                    {onEditRequest && (
+                        <button onClick={handleEdit} className="p-1 text-gray-500 hover:text-gray-700 rounded-md ml-1" title="Edit content">
+                            <PencilIcon className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             )}
         </div>
     );
 };
 
-const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({ content, type, role = "assistant", className, isStreamActive }) => {
-    const tableData = parseMarkdownTable(content);
+interface ChatMarkdownDisplayProps {
+    content: string;
+    type: "flashcard" | "message";
+    role?: "user" | "assistant";
+    className?: string;
+    isStreamActive?: boolean;
+    onContentChange?: (newContent: string) => void; // <-- ADD THIS
+}
+interface ContentBlock {
+    type: "text" | "code" | "table";
+    content: string;
+    language?: string;
+}
 
-    const splitContentIntoBlocks = (content: string) => {
-        const blocks: { type: "text" | "code" | "table"; content: string }[] = [];
+const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({ content, type, role = "assistant", className, isStreamActive, onContentChange }) => {
+
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+
+    // --- Editor Handlers ---
+    const handleOpenEditor = () => {
+        // Don't allow editing if content is streaming
+        if (isStreamActive) return;
+        setIsEditorOpen(true);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditorOpen(false);
+    };
+
+    const handleSaveEdit = (newContent: string) => {
+        console.log("Saving edited content:", newContent);
+        // Call the callback passed from the parent component
+        onContentChange?.(newContent);
+        // Close the editor
+        setIsEditorOpen(false);
+        // Note: This component itself doesn't update its internal 'content' prop.
+        // The parent component needs to re-render EnhancedChatMarkdown with the new content.
+    };
+
+    const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
+        const blocks: ContentBlock[] = [];
         let currentText = "";
-        const lines = content.split("\n");
+        const lines = mdContent.split("\n");
 
         let i = 0;
         while (i < lines.length) {
             const line = lines[i];
+            const trimmedLine = line.trim();
 
-            // Detect code blocks (```code```)
-            if (line.trim().startsWith("```")) {
-                // If we have accumulated text, push it as a text block
+            // Detect code blocks (```lang or ```)
+            if (trimmedLine.startsWith("```")) {
+                // Push any preceding text
                 if (currentText.trim()) {
-                    blocks.push({ type: "text", content: currentText.trim() });
+                    blocks.push({ type: "text", content: currentText.trimEnd() }); // Use trimEnd to preserve potential leading whitespace for next block
                     currentText = "";
                 }
 
-                // Extract code block content
-                const codeContent = [];
-                i++; // Skip the opening ```
+                // Extract language (if any) from the opening ``` line
+                const languageMatch = trimmedLine.match(/^```(\w*)/);
+                const language = languageMatch && languageMatch[1] ? languageMatch[1] : undefined; // Gets 'javascript', 'python', etc., or undefined
 
+                const codeContent: string[] = [];
+                i++; // Move past the opening ``` line
+
+                // Collect lines until the closing ```
                 while (i < lines.length && !lines[i].trim().startsWith("```")) {
                     codeContent.push(lines[i]);
                     i++;
                 }
 
-                blocks.push({ type: "code", content: codeContent.join("\n").trim() });
-                i++; // Skip the closing ```
-                continue;
+                blocks.push({
+                    type: "code",
+                    content: codeContent.join("\n"), // Join lines without extra trimming here
+                    language: language, // Store the detected language
+                });
+
+                i++; // Move past the closing ``` line
+                continue; // Continue to the next iteration
             }
 
-            // Detect table blocks (| column | column |)
-            if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
-                // If we have accumulated text, push it as a text block
+            // Detect table blocks (| column | column |) - Keep existing logic
+            // Check if it's the start of a potential table
+             if (trimmedLine.startsWith("|") && trimmedLine.includes("|", 1) && lines[i + 1]?.trim().startsWith("|--")) {
+                 // Potential table start detected (line with pipes + separator line)
+
+                 // Push any preceding text
                 if (currentText.trim()) {
-                    blocks.push({ type: "text", content: currentText.trim() });
+                    blocks.push({ type: "text", content: currentText.trimEnd() });
                     currentText = "";
                 }
 
-                // Extract table content
-                const tableContent = [line];
+                const tableContent = [];
+                // Add the header row
+                tableContent.push(lines[i]);
                 i++;
+                 // Add the separator row
+                 tableContent.push(lines[i]);
+                 i++;
 
+                // Collect subsequent table rows
                 while (i < lines.length && lines[i].trim().startsWith("|") && lines[i].trim().endsWith("|")) {
                     tableContent.push(lines[i]);
                     i++;
                 }
 
-                blocks.push({ type: "table", content: tableContent.join("\n").trim() });
-                continue;
+                blocks.push({ type: "table", content: tableContent.join("\n") });
+                // `i` is already pointing to the line after the table, so no need for `i++` or `continue` here.
+                 // Let the loop handle the increment.
+                 continue; // Important to skip adding this line to currentText
             }
+
 
             // Accumulate text content
             currentText += line + "\n";
@@ -194,7 +246,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({ content, typ
 
         // Push any remaining text
         if (currentText.trim()) {
-            blocks.push({ type: "text", content: currentText.trim() });
+            blocks.push({ type: "text", content: currentText.trimEnd() });
         }
 
         return blocks;
@@ -202,27 +254,42 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({ content, typ
 
     const blocks = splitContentIntoBlocks(content);
 
-    const renderBlock = (block: { type: string; content: string }, index: number) => {
+    // MODIFIED: renderBlock to use the extracted language
+    const renderBlock = (block: ContentBlock, index: number) => {
         switch (block.type) {
             case "text":
-                return <BasicMarkdownContent key={index} content={block.content} isStreamActive={isStreamActive} />;
+                // Render non-empty text blocks and pass the edit handler
+                return block.content ? (
+                    <BasicMarkdownContent
+                        key={index}
+                        content={block.content}
+                        isStreamActive={isStreamActive}
+                        // Pass the function to open the editor for the WHOLE message
+                        onEditRequest={onContentChange ? handleOpenEditor : undefined} // Only allow editing if a handler is provided
+                    />
+                ) : null;
             case "code":
-                const firstLine = block.content.split("\n")[0].trim();
-                const language = firstLine.startsWith("```") ? firstLine.slice(3).trim() : "";
-                const codeContent = firstLine.startsWith("```") ? block.content.substring(block.content.indexOf("\n") + 1) : block.content;
-                console.log("language", language);
-
+                 console.log("Rendering CodeBlock - Language:", block.language || "none", "Code:", block.content.substring(0, 50) + "..."); // Debug log
                 return (
                     <CodeBlock
                         key={index}
-                        code={codeContent}
-                        language={language}
+                        code={block.content} // Pass the raw code content
+                        language={block.language} // Pass the extracted language (can be undefined)
                         fontSize={16}
-                        className="my-3"
-                        onCodeChange={(newCode) => console.log("Code updated:", newCode)}
+                        className="my-3" // Apply margin here or within CodeBlock
+                        onCodeChange={(newCode) => console.log("Code updated:", newCode)} // Placeholder
                     />
                 );
             case "table":
+                // Ensure parseMarkdownTable handles the block content correctly
+                 const tableData = parseMarkdownTable(block.content);
+                 // Check if tableData is valid before rendering
+                 if (!tableData || tableData.headers.length === 0 || tableData.rows.length === 0) {
+                     console.warn("Skipping invalid or empty table:", block.content);
+                     // Optionally render the raw markdown as text if parsing fails
+                     // return <BasicMarkdownContent key={index} content={`\`\`\`\n${block.content}\n\`\`\``} isStreamActive={isStreamActive} />;
+                     return null;
+                 }
                 return <MarkdownTable key={index} data={tableData} />;
             default:
                 return null;
@@ -232,20 +299,28 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({ content, typ
     const containerStyles = cn(
         "font-sans text-md antialiased leading-relaxed tracking-wide",
         type === "flashcard"
-            ? "text-left mb-1 text-white"
+            ? "text-left mb-1 text-white" // Added text-white as example, adjust as needed
             : `block p-3 rounded-lg w-full ${
                   role === "user"
                       ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100"
                       : "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
               }`,
-        className
+        className // Allow overriding styles
     );
 
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
-            <div className={containerStyles + " relative"}>
-                <div className="text-md leading-relaxed tracking-wide">{blocks.map((block, index) => renderBlock(block, index))}</div>
+            {/* Removed extra 'relative' here, BasicMarkdownContent handles its own relative positioning */}
+            <div className={containerStyles}>
+                {/* Removed extra div wrapper */}
+                {blocks.map((block, index) => renderBlock(block, index))}
             </div>
+            <FullScreenMarkdownEditor
+                isOpen={isEditorOpen}
+                initialContent={content} // Pass the complete original content
+                onSave={handleSaveEdit}
+                onCancel={handleCancelEdit}
+            />
         </div>
     );
 };

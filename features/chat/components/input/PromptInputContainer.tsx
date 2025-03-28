@@ -8,7 +8,11 @@ import FileChipsWithPreview from "@/components/ui/file-preview/FileChipsWithPrev
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-
+import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
+import { 
+    addMessage, 
+  } from "@/lib/redux/features/aiChats/chatDisplaySlice";
+  
 interface PromptInputContainerProps {
     onMessageSent?: () => void;
     disabled?: boolean;
@@ -30,7 +34,12 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
     const textInputRef = useRef<HTMLTextAreaElement>(null);
 
-    const { fileManager, chatActions, chatSelectors, conversationId } = useChatBasics();
+    const { chatActions, chatSelectors, conversationId } = useChatBasics();
+
+    const fileManager = useFileManagement({
+        onFilesUpdate: (files) => chatActions.updateFiles({ value: files.map((file) => file.url) }),
+    });
+
 
     const [content, setContent] = useState<string>("");
 
@@ -69,6 +78,12 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
     const handleTriggerSubmit = useCallback(async () => {
         dispatch(chatActions.updateMessageContent({ value: content }));
+        dispatch(addMessage({
+            id: activeMessageRecord?.id,
+            role: "user",
+            content: content,
+            tempId: activeMessageRecord?.id,
+        }));
 
         if (!content.trim() && fileManager.files.length === 0) {
             return;
@@ -108,7 +123,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 />
 
                 <div className="absolute bottom-0 left-0 right-0 rounded-3xl">
-                    <InputBottomControls isDisabled={disabled} onSendMessage={handleTriggerSubmit} />
+                    <InputBottomControls isDisabled={disabled} onSendMessage={handleTriggerSubmit} fileManager={fileManager} />
                 </div>
             </div>
 

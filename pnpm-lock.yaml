@@ -215,6 +215,12 @@ importers:
       '@tanstack/react-virtual':
         specifier: ^3.13.2
         version: 3.13.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@toast-ui/editor-plugin-color-syntax':
+        specifier: ^3.1.0
+        version: 3.1.0
+      '@toast-ui/react-editor':
+        specifier: ^3.2.3
+        version: 3.2.3(react@19.0.0)
       '@tsparticles/engine':
         specifier: latest
         version: 3.8.1
@@ -548,6 +554,9 @@ importers:
       ts-node:
         specifier: latest
         version: 10.9.2(@types/node@22.13.8)(typescript@5.8.2)
+      tui-color-picker:
+        specifier: ^2.2.8
+        version: 2.2.8
       unsplash-js:
         specifier: latest
         version: 7.0.19
@@ -3996,6 +4005,17 @@ packages:
 
   '@tanstack/virtual-core@3.13.2':
     resolution: {integrity: sha512-Qzz4EgzMbO5gKrmqUondCjiHcuu4B1ftHb0pjCut661lXZdGoHeze9f/M8iwsK1t5LGR6aNuNGU7mxkowaW6RQ==}
+
+  '@toast-ui/editor-plugin-color-syntax@3.1.0':
+    resolution: {integrity: sha512-UVKfMBPV+3snSaJn9RUKGbxJbgi92D2t68ow8wAjGezvMp1ht4UVETrvomdTGr+RYhXSeH3JvSwN9nmQqw0qzA==}
+
+  '@toast-ui/editor@3.2.2':
+    resolution: {integrity: sha512-ASX7LFjN2ZYQJrwmkUajPs7DRr9FsM1+RQ82CfTO0Y5ZXorBk1VZS4C2Dpxinx9kl55V4F8/A2h2QF4QMDtRbA==}
+
+  '@toast-ui/react-editor@3.2.3':
+    resolution: {integrity: sha512-86QdgiOkBeSwRBEUWRKsTpnm6yu5j9HNJ3EfQN8EGcd7kI8k8AhExXyUJ3NNgNTzN7FfSKMw+1VaCDDC+aZ3dw==}
+    peerDependencies:
+      react: ^17.0.1
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -8880,6 +8900,9 @@ packages:
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
+  tui-color-picker@2.2.8:
+    resolution: {integrity: sha512-q5sE9NQ5NR9lYpilYjcI7Sdv0KCogo+W8fZY+AYTj/HYg+9fscYy3UuJ6UQiV1bF+ARCLwFRWC8UcOt9kuUctQ==}
 
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
@@ -14458,6 +14481,26 @@ snapshots:
 
   '@tanstack/virtual-core@3.13.2': {}
 
+  '@toast-ui/editor-plugin-color-syntax@3.1.0':
+    dependencies:
+      tui-color-picker: 2.2.8
+
+  '@toast-ui/editor@3.2.2':
+    dependencies:
+      dompurify: 2.5.8
+      prosemirror-commands: 1.7.0
+      prosemirror-history: 1.4.1
+      prosemirror-inputrules: 1.4.0
+      prosemirror-keymap: 1.2.2
+      prosemirror-model: 1.24.1
+      prosemirror-state: 1.4.3
+      prosemirror-view: 1.38.0
+
+  '@toast-ui/react-editor@3.2.3(react@19.0.0)':
+    dependencies:
+      '@toast-ui/editor': 3.2.2
+      react: 19.0.0
+
   '@tsconfig/node10@1.0.11': {}
 
   '@tsconfig/node12@1.0.11': {}
@@ -15965,8 +16008,7 @@ snapshots:
 
   dom-walk@0.1.2: {}
 
-  dompurify@2.5.8:
-    optional: true
+  dompurify@2.5.8: {}
 
   dotenv@16.4.7: {}
 
@@ -20500,6 +20542,8 @@ snapshots:
   tslib@2.4.0: {}
 
   tslib@2.8.1: {}
+
+  tui-color-picker@2.2.8: {}
 
   tunnel-agent@0.6.0:
     dependencies:

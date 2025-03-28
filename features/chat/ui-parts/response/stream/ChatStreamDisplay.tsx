@@ -51,7 +51,11 @@ const components = {
             </code>
         );
     },
-    pre: ({ children, ...props }) => <pre className="my-3" {...props}>{children}</pre>,
+    pre: ({ children, ...props }) => (
+        <pre className="my-3" {...props}>
+            {children}
+        </pre>
+    ),
     table: ({ node, ...props }: any) => <StreamingTable data={props.tableData} />,
 };
 
@@ -78,20 +82,20 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     );
 
     const tableData = parseMarkdownTable(content);
-    const componentsWithTable = ({
+    const componentsWithTable = {
         ...components,
         table: () => (tableData ? <StreamingTable data={tableData} /> : null),
-    });
+    };
 
     useEffect(() => {
         let unsubscribe: () => void;
         let isMounted = true;
-    
+
         const setupSocket = async () => {
             try {
                 await socketManager.connect();
                 const socket = await socketManager.getSocket();
-    
+
                 if (!socket || !isMounted) {
                     if (isMounted) {
                         setConnectionStatus("error");
@@ -99,17 +103,14 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                     }
                     return;
                 }
-    
+
                 setConnectionStatus("connected");
-    
+
                 unsubscribe = socketManager.subscribeToEvent(eventName, (data: any) => {
                     const dataContent = data?.data || "";
-                    const newContent = typeof dataContent === "string" 
-                        ? dataContent 
-                        : JSON.stringify(dataContent);
+                    const newContent = typeof dataContent === "string" ? dataContent : JSON.stringify(dataContent);
                     setContent((prev) => prev + newContent);
 
-                
                     const isEnd = data?.end === true || data?.end === "true" || data?.end === "True";
                     if (isEnd) {
                         console.log("[CHAT STREAM DISPLAY] Stream ended");
@@ -129,9 +130,9 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                 }
             }
         };
-    
+
         setupSocket();
-    
+
         return () => {
             isMounted = false;
             if (unsubscribe) {

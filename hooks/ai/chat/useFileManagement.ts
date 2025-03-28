@@ -128,3 +128,5 @@ export function useFileManagement({ onFilesUpdate }: FileManagementProps = {}) {
 
     return result;
 }
+
+export type FileManager = ReturnType<typeof useFileManagement>;

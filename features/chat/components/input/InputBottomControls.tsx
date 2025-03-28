@@ -17,17 +17,20 @@ import { MdOutlineQuestionMark } from "react-icons/md";
 import { BsPatchQuestion } from "react-icons/bs";
 import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { FileManager } from "@/hooks/ai/chat/useFileManagement";
+
 
 interface InputBottomControlsProps {
     isDisabled: boolean;
     onSendMessage: () => void;
     onToggleTools?: () => void;
+    fileManager: FileManager;
 }
 
-const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, onSendMessage, onToggleTools }) => {
+const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, onSendMessage, onToggleTools, fileManager }) => {
     const dispatch = useAppDispatch();
 
-    const { fileManager, chatActions, chatSelectors, messageKey } = useChatBasics();
+    const { chatActions, chatSelectors, messageKey } = useChatBasics();
 
     const messageMetadata = useAppSelector(chatSelectors.activeMessageMetadata);
     const conversationMetadata = useAppSelector(chatSelectors.activeConversationMetadata);

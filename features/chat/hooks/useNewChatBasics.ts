@@ -18,10 +18,6 @@ export const useChatBasics = () => {
     const initialLoadComplete = useAppSelector(chatSelectors.initialLoadComplete)
     const routeLoadComplete = useAppSelector(chatSelectors.routeLoadComplete)
 
-    const fileManager = useFileManagement({
-        onFilesUpdate: (files) => chatActions.updateFiles({ value: files.map((file) => file.url) }),
-    });
-
     if (DEBUG) {console.log("useChatBasics", {
             conversationId,
             messageId,
@@ -35,7 +31,6 @@ export const useChatBasics = () => {
 
 
     return {
-        fileManager,
         chatActions,
         chatSelectors,
         conversationId,

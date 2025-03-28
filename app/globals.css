@@ -4,6 +4,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 2. TUI Editor Base CSS */
+@import '@toast-ui/editor/dist/toastui-editor.css';
+/* 3. TUI Editor Plugin CSS (If using plugins) */
+@import 'tui-color-picker/dist/tui-color-picker.css';
+@import '@toast-ui/editor-plugin-color-syntax/dist/toastui-editor-plugin-color-syntax.css';
+
+/* 4. TUI Editor Dark Theme CSS (Conditional Import) */
+/* Apply TUI's built-in dark styles when .dark class is present */
+html.dark, body.dark { /* Or just .dark if your class is on html/body */
+  @import '@toast-ui/editor/dist/toastui-editor-dark.css';
+}
+
+
+
 @layer base {
     :root {
         --background: 48 22% 100%;
@@ -185,7 +199,7 @@
         font-size: 16px; /* Base font size */
     }
     body {
-        @apply bg-texture-light dark:bg-texture-dark text-foreground;
+        @apply bg-background text-foreground;;
         font-synthesis-weight: none;
         text-rendering: optimizeLegibility;
         font-size: 1.0625rem; /* Slightly larger than default, equivalent to 17px */
@@ -224,7 +238,7 @@
 
 @layer components {
     .card {
-        @apply bg-texture-light dark:bg-texture-dark;
+        @apply bg-card;
     }
 }
 
@@ -470,26 +484,7 @@
     --primary-rgb: 14, 165, 233; /* Example RGB values for a blue color */
 }
 
-.shiki-wrapper {
-    @apply font-mono text-sm overflow-x-auto;
-}
 
-.shiki-wrapper pre {
-    @apply p-4 rounded-lg border bg-muted/10 overflow-x-auto;
-}
-
-.shiki {
-    @apply !bg-transparent;
-}
-
-.shiki code {
-    @apply whitespace-pre-wrap break-words w-full;
-}
-
-[data-theme="dark"] .shiki,
-[data-theme="dark"] .shiki span {
-    color-scheme: dark;
-}
 
 .mask-bottom {
     mask-image: linear-gradient(to bottom, black calc(100% - 3rem), transparent 100%);
@@ -497,6 +492,44 @@
 
 .prose :where(code):not(:where([class~="not-prose"] *)) {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+
+/* Custom CSS for fixing markdown syntax in dark mode */
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-code,
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-code-block,
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-heading,
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-list,
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-marked-text,
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-block-quote,
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-link,
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-table {
+  color: #d5dff1 !important; /* Light blue color that stands out in dark mode */
+}
+
+/* Make syntax markers more visible in dark mode */
+.toastui-editor-dark .toastui-editor-md-delimiter,
+.toastui-editor-dark .toastui-editor-md-thematic-break,
+.toastui-editor-dark .toastui-editor-md-meta,
+.toastui-editor-dark .toastui-editor-md-marker {
+    color: #789be9 !important; /* Light blue color that stands out in dark mode */
+}
+
+/* Improve text content visibility */
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-text {
+    color: #d5dff1 !important; /* Light blue color that stands out in dark mode */
+}
+
+/* Fix inline code in dark mode */
+.toastui-editor-dark .toastui-editor-md-container .toastui-editor-md-code {
+  background-color: rgba(135, 135, 135, 0.15) !important;
+  border-radius: 3px;
+  padding: 0 0.25em;
+}
+
+/* Fix the cursor color in dark mode for better visibility */
+.toastui-editor-dark .toastui-editor-md-container .ProseMirror {
+    color: #ffffff !important; /* Light blue color that stands out in dark mode */
 }
 
 @layer utilities {

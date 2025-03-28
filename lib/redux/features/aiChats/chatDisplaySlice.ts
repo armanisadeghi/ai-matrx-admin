@@ -46,7 +46,12 @@ export const chatDisplaySlice = createSlice({
                 message.content = action.payload.content;
             }
         },
-
+        appendMessageContent(state, action: PayloadAction<{ id: string; content: string }>) {
+            const message = state.messages.find((msg) => msg.id === action.payload.id || msg.tempId === action.payload.id);
+            if (message) {
+                message.content += action.payload.content;
+            }
+        },
         // Clear all messages
         clearMessages(state) {
             state.messages = [];
@@ -54,7 +59,7 @@ export const chatDisplaySlice = createSlice({
     },
 });
 
-export const { addInitialMessages, addMessage, updateMessageId, updateMessageContent, clearMessages } = chatDisplaySlice.actions;
+export const { addInitialMessages, addMessage, updateMessageId, updateMessageContent, appendMessageContent, clearMessages } = chatDisplaySlice.actions;
 
 export default chatDisplaySlice.reducer;
 

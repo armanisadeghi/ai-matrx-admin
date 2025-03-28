@@ -4,6 +4,9 @@ import { createAppThunk } from "@/lib/redux/utils";
 import { MessageRecordMap } from "@/types";
 import { createMessageForConversation } from "./createMessageThunk";
 
+
+const DEBUG = false
+
 interface FetchRelatedMessagesPayload {
     conversationId: string;
 }
@@ -39,14 +42,14 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
             };
 
             const results = await dispatch(fetchRelatedRecordsThunk(payload)).unwrap();
-            console.log("FETCH_RELATED_MESSAGES: Results:", JSON.stringify(results, null, 2));
+            if (DEBUG) console.log("FETCH_RELATED_MESSAGES: Results:", JSON.stringify(results, null, 2));
 
             const allMessageRecords = getState().entities["message"].records as MessageRecordMap;
             const matchingMessageRecords = Object.values(allMessageRecords).filter(
                 (message) => message.conversationId === conversationId
             );
 
-            console.log("FETCH_RELATED_MESSAGES: Matching message records:", JSON.stringify(matchingMessageRecords, null, 2));
+            if (DEBUG) console.log("FETCH_RELATED_MESSAGES: Matching message records:", JSON.stringify(matchingMessageRecords, null, 2));
 
             let nextDisplayOrderToUse: number | undefined;
             let nextSystemOrderToUse: number | undefined;
@@ -80,7 +83,7 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
                     },
                 };
 
-                console.log("FETCH_RELATED_MESSAGES: Custom data params:", JSON.stringify(customDataParams, null, 2));
+                if (DEBUG) console.log("FETCH_RELATED_MESSAGES: Custom data params:", JSON.stringify(customDataParams, null, 2));
                 dispatch(conversationActions.updateCustomDataSmart(customDataParams));
                 
                 // Await the thunk and unwrap the result
@@ -93,7 +96,7 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
                 dispatch(messageActions.setActiveRecord(messageResult.messageTempKey));
 
                 newMessageResult = messageResult;
-                console.log("FETCH_RELATED_MESSAGES: New message result:", JSON.stringify(newMessageResult, null, 2));
+                if (DEBUG) console.log("FETCH_RELATED_MESSAGES: New message result:", JSON.stringify(newMessageResult, null, 2));
             }
 
             if (results.success) {
