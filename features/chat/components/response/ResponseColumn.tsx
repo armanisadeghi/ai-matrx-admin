@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef } from "react";
 import UserMessage from "@/features/chat/components/response/user-message/UserMessage";
 import AssistantMessage from "@/features/chat/components/response/assistant-message/AssistantMessage";
 import { useAppSelector } from "@/lib/redux";
-import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
+import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { ChevronDoubleDown } from "@mynaui/icons-react";
-import AssistantStream from "@/features/chat/ui-parts/response/stream/AssistantMessage";
+import AssistantStream from "@/features/chat/components/response/assistant-message/stream/AssistantMessage";
 
 
 

@@ -6,9 +6,12 @@ import {
   Globe,
   File,
   Code2,
+  Terminal,
+  FileText,
+  Braces,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SiPython } from "react-icons/si";
+import { SiKotlin, SiSwift, SiDocker, SiGraphql, SiPython, SiRuby, SiGo, SiRust, SiR } from "react-icons/si";
 import { SiJavascript } from "react-icons/si";
 import { SiTypescript } from "react-icons/si";
 import { PiFileSqlBold } from "react-icons/pi";
@@ -20,6 +23,16 @@ export const languageMap = {
     color: 'text-yellow-500'
   },
   typescript: {
+    name: 'TypeScript',
+    icon: (props) => <SiTypescript {...props} />,
+    color: 'text-blue-500'
+  },
+  jsx: {
+    name: 'JavaScript',
+    icon: (props) => <SiJavascript {...props} />,
+    color: 'text-yellow-500'
+  },
+  tsx: {
     name: 'TypeScript',
     icon: (props) => <SiTypescript {...props} />,
     color: 'text-blue-500'
@@ -64,8 +77,84 @@ export const languageMap = {
     icon: (props) => <File {...props} />,
     color: 'text-indigo-500'
   },
-  // Add more languages as needed
+  // Additional languages commonly returned by AI models
+  bash: {
+    name: 'Bash',
+    icon: (props) => <Terminal {...props} />,
+    color: 'text-green-600'
+  },
+  shell: {
+    name: 'Shell',
+    icon: (props) => <Terminal {...props} />,
+    color: 'text-gray-500'
+  },
+  powershell: {
+    name: 'PowerShell',
+    icon: (props) => <Terminal {...props} />,
+    color: 'text-blue-700'
+  },
+  ruby: {
+    name: 'Ruby',
+    icon: (props) => <SiRuby {...props} />,
+    color: 'text-red-600'
+  },
+  go: {
+    name: 'Go',
+    icon: (props) => <SiGo {...props} />,
+    color: 'text-cyan-500'
+  },
+  rust: {
+    name: 'Rust',
+    icon: (props) => <SiRust {...props} />,
+    color: 'text-orange-700'
+  },
+  json: {
+    name: 'JSON',
+    icon: (props) => <Braces {...props} />,
+    color: 'text-yellow-600'
+  },
+  yaml: {
+    name: 'YAML',
+    icon: (props) => <FileText {...props} />,
+    color: 'text-purple-400'
+  },
+  xml: {
+    name: 'XML',
+    icon: (props) => <FileCode {...props} />,
+    color: 'text-blue-300'
+  },
+  markdown: {
+    name: 'Markdown',
+    icon: (props) => <FileText {...props} />,
+    color: 'text-gray-600'
+  },
+  r: {
+    name: 'R',
+    icon: (props) => <SiR {...props} />,
+    color: 'text-blue-800'
+  },
+  swift: {
+    name: 'Swift',
+    icon: (props) => <SiSwift {...props} />,
+    color: 'text-orange-500'
+  },
+  kotlin: {
+    name: 'Kotlin',
+    icon: (props) => <SiKotlin {...props} />,
+    color: 'text-purple-600'
+  },
+  docker: {
+    name: 'Dockerfile',
+    icon: (props) => <SiDocker {...props} />,
+    color: 'text-blue-500'
+  },
+  graphql: {
+    name: 'GraphQL',
+    icon: (props) => <SiGraphql {...props} />,
+    color: 'text-pink-600'
+  }
 };
+
 
 interface LanguageDisplayProps {
   language: string;

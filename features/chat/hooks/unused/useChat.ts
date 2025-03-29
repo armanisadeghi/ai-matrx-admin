@@ -9,7 +9,7 @@ import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManage
 import { useRouter } from "next/navigation";
 import { DEFAULT_MODEL_ID, DEFAULT_MODE, DEFAULT_FAST_MODEL_ID, DEFAULT_GPT_MODEL_ID } from "@/constants/chat";
 import { CombinedSaveChatResult, useChatRelationship } from "./useChatHooks";
-import useChatBasics from "../useNewChatBasics";
+import useChatBasics from "../useChatBasics";
 
 const DEBUG = false;
 const VERBOSE = false;

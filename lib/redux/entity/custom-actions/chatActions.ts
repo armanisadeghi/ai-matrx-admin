@@ -306,7 +306,7 @@ export const getChatActionsWithThunks = () => {
     return {
         // Initial setup (run once, could be moved elsewhere if not needed per call)
         initialize: () => (dispatch: AppDispatch) => {
-            dispatch(conversationActions.fetchAll({}));
+            dispatch(conversationActions.fetchAll({}));  // Change to make this paginated and fetch only the last 10 added by date and figure out how to include the one from the route.
             dispatch(aiModelActions.fetchAll({}));
             dispatch(messageActions.setParentEntityField(parentEntityField));
             dispatch(messageActions.setRuntimeFilters(DEFAULT_MESSAGE_RUNTIME_FILTERS));

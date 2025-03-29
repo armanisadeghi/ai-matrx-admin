@@ -7,7 +7,7 @@ import {Provider} from 'react-redux';
 import {AppStore, makeStore} from '@/lib/redux/store';
 import {loadPreferences} from '@/lib/redux/middleware/preferencesMiddleware';
 import {InitialReduxState} from '@/types/reduxTypes';
-import {EntityRelationshipManager} from '@/utils/schema/relationshipUtils';
+// import {EntityRelationshipManager} from '@/utils/schema/relationshipUtils';
 
 export default function StoreProvider(
     {
@@ -21,7 +21,7 @@ export default function StoreProvider(
 
     if (!storeRef.current) {
         storeRef.current = makeStore(initialState);
-        EntityRelationshipManager.getInstance(initialState?.globalCache);
+        // EntityRelationshipManager.getInstance(initialState?.globalCache);
     }
 
     useEffect(() => {

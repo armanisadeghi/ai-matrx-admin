@@ -1,10 +1,8 @@
 'use client';
-
 import React, { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import MessageHeader from './MessageHeader';
 import EditMode from './EditMode';
-
 const ReactMarkdown = dynamic(() => import("react-markdown"), {
   ssr: false,
 });
@@ -37,6 +35,9 @@ const UserMessage: React.FC<UserMessageProps> = ({
   
   const contentRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
+  
+  // Check if content is long enough to enable collapse
+  const canCollapse = message.content.length > 250;
   
   const formattedDateTime = new Date(message.createdAt || Date.now()).toLocaleString([], {
     month: 'short',
@@ -94,7 +95,10 @@ const UserMessage: React.FC<UserMessageProps> = ({
   };
 
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+    // Only toggle if content is long enough
+    if (canCollapse) {
+      setIsCollapsed(!isCollapsed);
+    }
   };
 
   const handleSavePrompt = (e: React.MouseEvent) => {
@@ -120,8 +124,8 @@ const UserMessage: React.FC<UserMessageProps> = ({
   return (
     <div 
       className="flex justify-end my-3 transition-all duration-200"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => canCollapse && setIsHovered(true)}
+      onMouseLeave={() => canCollapse && setIsHovered(false)}
     >
       <div className="max-w-[90%] relative w-full shadow-sm hover:shadow-md transition-shadow duration-200">
         <MessageHeader 
@@ -129,7 +133,7 @@ const UserMessage: React.FC<UserMessageProps> = ({
           isCollapsed={isCollapsed}
           isEditing={isEditing}
           isHovered={isHovered}
-          actionFeedback={actionFeedback}
+          canCollapse={canCollapse}
           toggleCollapse={toggleCollapse}
           handleCopy={handleCopy}
           handleEdit={handleEdit}

@@ -12,6 +12,7 @@ interface CodeBlockProps {
     language: string;
     fontSize?: number;
     showLineNumbers?: boolean;
+    wrapLines?: boolean;
     className?: string;
     onCodeChange?: (newCode: string) => void;
     inline?: boolean;
@@ -21,7 +22,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     code: initialCode,
     language,
     fontSize = 16,
-    showLineNumbers = true,
+    showLineNumbers = false,
+    wrapLines = false,
     className,
     onCodeChange,
     inline = false,
@@ -31,6 +33,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     const [isExpanded, setIsExpanded] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [lineNumbers, setLineNumbers] = useState(showLineNumbers);
+    const [showWrapLines, setShowWrapLines] = useState(wrapLines);
 
     const { mode } = useTheme();
 
@@ -50,6 +54,16 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         a.download = `code.${language}`;
         a.click();
         window.URL.revokeObjectURL(url);
+    };
+
+    const toggleLineNumbers = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setLineNumbers(!lineNumbers);
+    };
+
+    const toggleWrapLines = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowWrapLines(!showWrapLines);
     };
 
     const toggleExpand = (e: React.MouseEvent) => {
@@ -86,7 +100,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     return (
         <div
             className={cn(
-                "my-4 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-200",
+                "my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-200",
                 isExpanded && "fixed inset-4 z-50 bg-white dark:bg-neutral-900",
                 className
             )}
@@ -102,6 +116,8 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 toggleEdit={toggleEdit}
                 toggleExpand={toggleExpand}
                 toggleCollapse={toggleCollapse}
+                toggleLineNumbers={toggleLineNumbers}
+                toggleWrapLines={toggleWrapLines}
                 isCopied={isCopied}
             />
             <div className="relative">
@@ -116,10 +132,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                         <div className={cn("overflow-hidden transition-all duration-200", isCollapsed ? "max-h-[150px]" : "max-h-none")}>
                             <SyntaxHighlighter
                                 language={language}
-                                style={mode === 'dark' ? vscDarkPlus : vs}
-                                showLineNumbers={showLineNumbers}
-                                wrapLines={true}
-                                wrapLongLines={true}
+                                style={mode === "dark" ? vscDarkPlus : vs}
+                                showLineNumbers={lineNumbers}
+                                wrapLines={showWrapLines}
+                                wrapLongLines={showWrapLines}
                                 customStyle={{
                                     paddingTop: "1rem",
                                     paddingRight: "1rem",

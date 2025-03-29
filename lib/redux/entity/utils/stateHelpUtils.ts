@@ -1,6 +1,6 @@
 // lib/redux/entity/utils.ts
 
-import { AllEntityFieldKeys, EntityData, EntityKeys } from '@/types/entityTypes';
+import { AllEntityFieldKeys, EntityData, EntityKeys } from "@/types/entityTypes";
 import {
     EntityOperationFlags,
     EntityOperationMode,
@@ -10,15 +10,19 @@ import {
     FilterState,
     MatrxRecordId,
     PrimaryKeyMetadata,
-} from '@/lib/redux/entity/types/stateTypes';
-import EntityLogger from './entityLogger';
-import { v4 as uuidv4 } from 'uuid';
+} from "@/lib/redux/entity/types/stateTypes";
+import EntityLogger from "./entityLogger";
+import { v4 as uuidv4 } from "uuid";
 
 // EntityLogger.addFeatureToFilter("utils");
 
-const utilsLogger = EntityLogger.createLoggerWithDefaults('UTILS', 'NoEntity', 'utils');
+const utilsLogger = EntityLogger.createLoggerWithDefaults("UTILS", "NoEntity", "utils");
 
-export const setLoading = <TEntity extends EntityKeys>(state: EntityState<TEntity>, operation: EntityOperations, reverseLoading: boolean = false) => {
+export const setLoading = <TEntity extends EntityKeys>(
+    state: EntityState<TEntity>,
+    operation: EntityOperations,
+    reverseLoading: boolean = false
+) => {
     const flagKey = `${operation}_STATUS` as keyof EntityOperationFlags;
 
     const preState = {
@@ -29,11 +33,11 @@ export const setLoading = <TEntity extends EntityKeys>(state: EntityState<TEntit
         reverseLoading: reverseLoading,
     };
 
-    utilsLogger.log('debug', `stateHelpUtils.ts setLoading Setting loading state for operation:`, preState);
+    utilsLogger.log("debug", `stateHelpUtils.ts setLoading Setting loading state for operation:`, preState);
 
     // Ensure initialization
     if (!state.loading.initialized) {
-        utilsLogger.log('warn', 'stateHelpUtils.ts setLoading called but state.loading.initialized is false.');
+        utilsLogger.log("warn", "stateHelpUtils.ts setLoading called but state.loading.initialized is false.");
         state.loading.initialized = true;
         state.loading.loading = false;
         state.loading.error = null;
@@ -42,13 +46,17 @@ export const setLoading = <TEntity extends EntityKeys>(state: EntityState<TEntit
 
     // Check if operation is valid
     if (!(flagKey in state.flags.operationFlags)) {
-        utilsLogger.log('debug', `Invalid operation: ${operation}`, 'setLoading');
+        utilsLogger.log("debug", `Invalid operation: ${operation}`, "setLoading");
         return false;
     }
 
     // Check if we're already loading
     if (state.loading.loading) {
-        utilsLogger.log('debug', `stateHelpUtils.ts setLoading Setting loading state while already loading. Current operation:`, state.loading.lastOperation);
+        utilsLogger.log(
+            "debug",
+            `stateHelpUtils.ts setLoading Setting loading state while already loading. Current operation:`,
+            state.loading.lastOperation
+        );
         return false;
     }
 
@@ -56,7 +64,7 @@ export const setLoading = <TEntity extends EntityKeys>(state: EntityState<TEntit
     state.loading.loading = true;
     state.loading.error = null;
     state.loading.lastOperation = operation;
-    state.flags.operationFlags[flagKey] = 'LOADING';
+    state.flags.operationFlags[flagKey] = "LOADING";
 
     if (reverseLoading) {
         state.loading.loading = false;
@@ -70,7 +78,7 @@ export const setLoading = <TEntity extends EntityKeys>(state: EntityState<TEntit
         reverseLoading: reverseLoading,
     };
 
-    utilsLogger.log('debug', `stateHelpUtils.ts setLoading Finished:`, postState);
+    utilsLogger.log("debug", `stateHelpUtils.ts setLoading Finished:`, postState);
 
     return true;
 };
@@ -80,25 +88,25 @@ export const setSuccess = <TEntity extends EntityKeys>(state: EntityState<TEntit
 
     // Validate operation
     if (!(flagKey in state.flags.operationFlags)) {
-        utilsLogger.log('debug', `Invalid operation flag: ${operation}`, 'setSuccess');
+        utilsLogger.log("debug", `Invalid operation flag: ${operation}`, "setSuccess");
         return false;
     }
 
     // Validate state transition
     if (!state.loading.loading) {
-        utilsLogger.log('debug', `Cannot set success when not in loading state: ${operation}`, 'setSuccess');
+        utilsLogger.log("debug", `Cannot set success when not in loading state: ${operation}`, "setSuccess");
         return false;
     }
 
     if (state.loading.lastOperation !== operation) {
-        utilsLogger.log('debug', `Operation mismatch. Expected ${operation} but found ${state.loading.lastOperation}`, 'setSuccess');
+        utilsLogger.log("debug", `Operation mismatch. Expected ${operation} but found ${state.loading.lastOperation}`, "setSuccess");
         return false;
     }
 
     // Set success state
     state.loading.loading = false;
     state.loading.error = null;
-    state.flags.operationFlags[flagKey] = 'SUCCESS';
+    state.flags.operationFlags[flagKey] = "SUCCESS";
     return true;
 };
 
@@ -106,13 +114,13 @@ export const resetFlag = <TEntity extends EntityKeys>(state: EntityState<TEntity
     const flagKey = `${operation}_STATUS` as keyof EntityOperationFlags;
 
     if (!(flagKey in state.flags.operationFlags)) {
-        utilsLogger.log('error', `Invalid operation for resetFlag: ${operation}`, 'resetFlag');
+        utilsLogger.log("error", `Invalid operation for resetFlag: ${operation}`, "resetFlag");
         return false;
     }
 
     // Allow reset from any non-IDLE state
-    if (state.flags.operationFlags[flagKey] !== 'IDLE') {
-        state.flags.operationFlags[flagKey] = 'IDLE';
+    if (state.flags.operationFlags[flagKey] !== "IDLE") {
+        state.flags.operationFlags[flagKey] = "IDLE";
 
         // If this was the last operation and we're not loading something else,
         // clear the loading state
@@ -134,7 +142,7 @@ export interface SelectionSummary {
     mode: SelectionMode;
 }
 
-export type SelectionMode = 'single' | 'multiple' | 'none';
+export type SelectionMode = "single" | "multiple" | "none";
 
 export const createSelectionHelper = (selectedRecords: MatrxRecordId[]) => ({
     isSelected: (recordKey: MatrxRecordId) => selectedRecords.includes(recordKey),
@@ -160,7 +168,10 @@ export interface SelectionState {
     lastSelected?: MatrxRecordId;
 }
 
-export function getRecordIdByRecord<TEntity extends EntityKeys>(entityState: EntityState<TEntity>, record: EntityData<TEntity>): MatrxRecordId | null {
+export function getRecordIdByRecord<TEntity extends EntityKeys>(
+    entityState: EntityState<TEntity>,
+    record: EntityData<TEntity>
+): MatrxRecordId | null {
     const entry = Object.entries(entityState.records).find(([, value]) => value === record);
     const allRecords = Object.entries(entityState.records);
     return entry ? (entry[0] as MatrxRecordId) : null;
@@ -170,24 +181,36 @@ export function getRecordIdByRecord<TEntity extends EntityKeys>(entityState: Ent
 
 export const addToUnsavedRecords = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId) => {
     if (!state.records[recordKey]) {
-        utilsLogger.log('warn', 'Attempted to add non-existent record to unsaved', { recordKey });
+        utilsLogger.log("warn", "Attempted to add non-existent record to unsaved", { recordKey });
 
-        const keyConversion = `id:${recordKey}`
-        const newRecordConverstion = `new-record-${recordKey}`
-        const newRecordFromKey = recordKey.replace('id:', 'new-record-')
+        const keyConversion = `id:${recordKey}`;
+        const newRecordConverstion = `new-record-${recordKey}`;
+        const newRecordFromKey = recordKey.replace("id:", "new-record-");
         if (state.records[keyConversion]) {
-            utilsLogger.log('warn', '- The provided value is an id, not a recordKey. It will NOT be converted. Find the faulty code. You should have added:', keyConversion);
+            utilsLogger.log(
+                "warn",
+                "- The provided value is an id, not a recordKey. It will NOT be converted. Find the faulty code. You should have added:",
+                keyConversion
+            );
         } else if (state.records[newRecordConverstion]) {
-            utilsLogger.log('warn', '- The provided value is an id, not a recordKey. This is a new record so you should have used:', newRecordConverstion);
+            utilsLogger.log(
+                "warn",
+                "- The provided value is an id, not a recordKey. This is a new record so you should have used:",
+                newRecordConverstion
+            );
         } else if (state.records[newRecordFromKey]) {
-            utilsLogger.log('warn', '- The provided value is an key starting with ID but this is a new record so you should have used:', newRecordFromKey);
+            utilsLogger.log(
+                "warn",
+                "- The provided value is an key starting with ID but this is a new record so you should have used:",
+                newRecordFromKey
+            );
         }
         return;
     }
 
     if (!state.unsavedRecords[recordKey]) {
         state.unsavedRecords[recordKey] = { ...state.records[recordKey] };
-        utilsLogger.log('debug', 'Added record to unsaved', { recordKey });
+        utilsLogger.log("debug", "Added record to unsaved", { recordKey });
     }
 };
 
@@ -196,18 +219,18 @@ export const checkAndUpdateUnsavedChanges = <TEntity extends EntityKeys>(state: 
 
     if (!hasUnsavedRecords && state.flags.hasUnsavedChanges) {
         state.flags.hasUnsavedChanges = false;
-        utilsLogger.log('debug', 'Cleared unsaved changes flag');
+        utilsLogger.log("debug", "Cleared unsaved changes flag");
     } else if (hasUnsavedRecords && !state.flags.hasUnsavedChanges) {
         state.flags.hasUnsavedChanges = true;
-        utilsLogger.log('debug', 'Set unsaved changes flag');
+        utilsLogger.log("debug", "Set unsaved changes flag");
     }
 };
 
 export const removeFromUnsavedRecords = <TEntity extends EntityKeys>(state: EntityState<TEntity>, recordKey: MatrxRecordId) => {
     if (state.unsavedRecords[recordKey]) {
         delete state.unsavedRecords[recordKey];
-        utilsLogger.log('debug', 'Removed record from unsaved', { recordKey });
-        utilsLogger.log('debug', '--- Unsaved Records After Removal: ', state.unsavedRecords);
+        utilsLogger.log("debug", "Removed record from unsaved", { recordKey });
+        utilsLogger.log("debug", "--- Unsaved Records After Removal: ", state.unsavedRecords);
         checkAndUpdateUnsavedChanges(state);
     }
 };
@@ -215,12 +238,12 @@ export const removeFromUnsavedRecords = <TEntity extends EntityKeys>(state: Enti
 export const clearUnsavedRecords = <TEntity extends EntityKeys>(state: EntityState<TEntity>) => {
     // state.unsavedRecords = {};
     // state.flags.hasUnsavedChanges = false;
-    utilsLogger.log('warn', 'NOTICE!!!! NOT CLEARING ALL UNSAVED RECORDS! Cleared all unsaved records');
+    utilsLogger.log("warn", "NOTICE!!!! NOT CLEARING ALL UNSAVED RECORDS! Cleared all unsaved records");
 };
 
 export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {
     const newUuid = uuidv4();
-    const prefix = 'new-record-';
+    const prefix = "new-record-";
 
     // console.log("state.unsavedRecords", state.unsavedRecords)
 
@@ -233,20 +256,18 @@ export const generateTemporaryRecordId = (state: EntityState<EntityKeys>) => {
     return `${prefix}${newUuid}`;
 };
 
-export const generateTempRecordAndId = (primaryKeyField: string = 'id') => {
+export const generateTempRecordAndId = (primaryKeyField: string = "id") => {
     const id = uuidv4();
     const tempRecordKey = `new-record-${id}`;
     const recordKey = `${primaryKeyField}:${id}`;
     return { id, tempRecordKey, recordKey };
 };
 
-
 export const generateTempRecordIdFromFutureId = (state: EntityState<EntityKeys>, permanentId: string) => {
-    const prefix = 'new-record-';
+    const prefix = "new-record-";
     // Ensure the permanent ID isn't already used as a temp ID
-    const existingTempId = Object.keys(state.unsavedRecords)
-        .find(id => id.replace(prefix, '') === permanentId);
-    
+    const existingTempId = Object.keys(state.unsavedRecords).find((id) => id.replace(prefix, "") === permanentId);
+
     if (existingTempId) {
         throw new Error(`ID ${permanentId} is already in use as a temporary ID`);
     }
@@ -258,13 +279,12 @@ export const getPermanentId = (temporaryId: string) => {
     if (!temporaryId) {
         return null;
     }
-    const prefix = 'new-record-';
+    const prefix = "new-record-";
     if (!temporaryId.startsWith(prefix)) {
         return temporaryId; // If it's not a temp ID, return as is
     }
-    return temporaryId.replace(prefix, '');
+    return temporaryId.replace(prefix, "");
 };
-
 
 export const updateUnsavedRecord = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId, changes: Partial<EntityData<EntityKeys>>) => {
     if (state.unsavedRecords[recordKey]) {
@@ -274,9 +294,9 @@ export const updateUnsavedRecord = (state: EntityState<EntityKeys>, recordKey: M
         };
         state.flags.hasUnsavedChanges = true;
         if (!state.flags.operationMode) {
-            state.flags.operationMode = 'update';
+            state.flags.operationMode = "update";
         }
-        utilsLogger.log('debug', 'Updated unsaved record', { recordKey, changes });
+        utilsLogger.log("debug", "Updated unsaved record", { recordKey, changes });
     }
 };
 
@@ -288,7 +308,7 @@ export const addRecordToSelection = (state: EntityState<EntityKeys>, entityKey: 
         addToUnsavedRecords(state, recordKey);
         updateSelectionMode(state, recordKey);
     } else {
-        utilsLogger.log('debug', 'Record already in selection, no change:', {
+        utilsLogger.log("debug", "Record already in selection, no change:", {
             recordKey,
             currentSelection: state.selection.selectedRecords,
         });
@@ -302,7 +322,7 @@ export const removeRecordFromSelection = (state: EntityState<EntityKeys>, record
     if (state.selection.lastSelected === recordKey) {
         const newLastSelected = state.selection.selectedRecords[state.selection.selectedRecords.length - 1];
         state.selection.lastSelected = newLastSelected;
-        utilsLogger.log('debug', 'Updated lastSelected after removal:', {
+        utilsLogger.log("debug", "Updated lastSelected after removal:", {
             oldLastSelected: recordKey,
             newLastSelected,
         });
@@ -312,9 +332,11 @@ export const removeRecordFromSelection = (state: EntityState<EntityKeys>, record
 
 export const removeActiveRecord = (state: EntityState<EntityKeys>) => {
     const oldActiveRecord = state.selection.activeRecord;
-    state.selection.lastActiveRecord = oldActiveRecord;
+    if (state.selection.lastActiveRecord !== oldActiveRecord) {
+        state.selection.lastActiveRecord = oldActiveRecord;
+    }
     state.selection.activeRecord = null;
-    utilsLogger.log('debug', 'Removed active record:', {
+    utilsLogger.log("info", "[REMOVE ACTIVE RECORD] Removed active record:", {
         previousActive: oldActiveRecord,
         newLastActive: state.selection.lastActiveRecord,
     });
@@ -322,7 +344,7 @@ export const removeActiveRecord = (state: EntityState<EntityKeys>) => {
 
 export const findBestActiveRecord = (state: EntityState<EntityKeys>) => {
     const result = state.selection.lastActiveRecord || state.selection.selectedRecords[0] || state.selection.lastSelected;
-    utilsLogger.log('debug', 'Found best active record:', {
+    utilsLogger.log("debug", "Found best active record:", {
         result,
         considered: {
             lastActiveRecord: state.selection.lastActiveRecord,
@@ -336,71 +358,71 @@ export const findBestActiveRecord = (state: EntityState<EntityKeys>) => {
 // BIG CHANGE ======= ACTIVE RECORD DOES NOT CLEAR SELECTIONS NOW =================
 
 export const setNewActiveRecord = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId) => {
-    // Early return if the record is already active
     if (state.selection.activeRecord === recordKey) {
         return;
     }
 
-    // Update active record tracking
-    const oldActiveRecord = state.selection.activeRecord;
-    state.selection.lastActiveRecord = oldActiveRecord;
-    state.selection.activeRecord = recordKey;
+    if (recordKey) {
+        const oldActiveRecord = state.selection.activeRecord;
+        state.selection.lastActiveRecord = oldActiveRecord;
+        state.selection.activeRecord = recordKey;
+    }
 
-    // Add to selections if not already included
     if (!state.selection.selectedRecords.includes(recordKey)) {
         state.selection.selectedRecords.push(recordKey);
     }
 };
 
 export const updateSelectionMode = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId = null) => {
-    utilsLogger.log('debug', 'Updating selection mode. With or without Record Key. Got: ', { recordKey });
+    utilsLogger.log("debug", "Updating selection mode. With or without Record Key. Got: ", { recordKey });
     if (state.selection.selectedRecords.length === 1) {
-        utilsLogger.log('debug', 'Switching to single selection mode');
+        utilsLogger.log("debug", "Switching to single selection mode");
         switchToSingleSelectionMode(state, recordKey);
     } else if (state.selection.selectedRecords.length > 1) {
-        utilsLogger.log('debug', 'Switching to multiple selection mode');
+        utilsLogger.log("debug", "Switching to multiple selection mode");
         switchToMultipleSelectionMode(state);
     } else {
-        utilsLogger.log('debug', 'Switching to no selection mode');
-        state.selection.selectionMode = 'none';
+        utilsLogger.log("debug", "Switching to no selection mode");
+        state.selection.selectionMode = "none";
     }
 };
 
 export const switchToSingleSelectionMode = (state: EntityState<EntityKeys>, recordKey: MatrxRecordId = null) => {
-    utilsLogger.log('debug', 'Starting switchToSingleSelectionMode. Got recordKey: ', { recordKey });
+    utilsLogger.log("debug", "Starting switchToSingleSelectionMode. Got recordKey: ", { recordKey });
 
     if (recordKey !== null) {
-        utilsLogger.log('debug', 'Using provided recordKey as active record: ', { recordKey });
+        utilsLogger.log("debug", "Using provided recordKey as active record: ", { recordKey });
         state.selection.activeRecord = recordKey;
     } else {
-        utilsLogger.log('debug', 'No recordKey provided, finding best active record');
+        utilsLogger.log("debug", "No recordKey provided, finding best active record");
         state.selection.activeRecord = findBestActiveRecord(state);
     }
 
-    utilsLogger.log('debug', 'Setting selected records to active record: ', { activeRecord: state.selection.activeRecord });
+    utilsLogger.log("debug", "Setting selected records to active record: ", { activeRecord: state.selection.activeRecord });
     state.selection.selectedRecords = [state.selection.activeRecord];
 
-    utilsLogger.log('debug', 'Setting selection mode to single');
-    state.selection.selectionMode = 'single';
+    utilsLogger.log("debug", "Setting selection mode to single");
+    state.selection.selectionMode = "single";
 };
 
 export const switchToMultipleSelectionMode = (state: EntityState<EntityKeys>) => {
-    state.selection.selectionMode = 'multiple';
-    utilsLogger.log('debug', 'switchToMultipleSelectionMode called');
+    state.selection.selectionMode = "multiple";
+    utilsLogger.log("debug", "switchToMultipleSelectionMode called");
+    utilsLogger.log("info", "[SWITCH TO MULTIPLE SELECTION MODE] WARNING! No longer removes active record");
 
-    removeActiveRecord(state);
+    // removeActiveRecord(state);
 };
 
 export const switchToNoSelectionMode = (state: EntityState<EntityKeys>) => {
-    state.selection.selectionMode = 'none';
-    console.log('switchToNoSelectionMode called');
+    state.selection.selectionMode = "none";
+    console.log("switchToNoSelectionMode called");
     removeSelections(state);
 };
 
 export const setSpecificSelectionMode = (state: EntityState<EntityKeys>, mode) => {
-    if (mode === 'single') {
+    if (mode === "single") {
         switchToSingleSelectionMode(state);
-    } else if (mode === 'multiple') {
+    } else if (mode === "multiple") {
         switchToMultipleSelectionMode(state);
     } else {
         switchToNoSelectionMode(state);
@@ -408,9 +430,9 @@ export const setSpecificSelectionMode = (state: EntityState<EntityKeys>, mode) =
 };
 
 export const toggleSelectionMode = (state: EntityState<EntityKeys>) => {
-    if (state.selection.selectionMode === 'single' || state.selection.selectionMode === 'none') {
+    if (state.selection.selectionMode === "single" || state.selection.selectionMode === "none") {
         switchToMultipleSelectionMode(state);
-    } else if (state.selection.selectionMode === 'multiple') {
+    } else if (state.selection.selectionMode === "multiple") {
         switchToSingleSelectionMode(state);
     }
 };
@@ -419,8 +441,10 @@ export const removeSelections = (state: EntityState<EntityKeys>) => {
     if (state.selection.selectedRecords.length > 0) {
         state.selection.lastSelected = state.selection.selectedRecords[0];
     }
+    console.log("removeSelections called", { state: state.selection });
     state.selection.selectedRecords = [];
-    state.selection.selectionMode = 'none';
+    state.selection.selectionMode = "none";
+    console.log("removeSelections calling removeActiveRecord");
     removeActiveRecord(state);
 };
 
@@ -430,7 +454,7 @@ export const handleSelectionForDeletedRecord = (state: EntityState<EntityKeys>, 
     }
     if (state.selection.activeRecord === recordKey) {
         removeActiveRecord(state);
-        console.log('handleSelectionForDeletedRecord called to delete', { recordKey });
+        console.log("handleSelectionForDeletedRecord called to delete", { recordKey });
     }
     removeFromUnsavedRecords(state, recordKey);
 };
@@ -447,7 +471,7 @@ export const resetStateIsModified = (state: EntityState<EntityKeys>) => {
 export const setError = (state: EntityState<EntityKeys>, action) => {
     state.loading.loading = false;
     state.loading.error = {
-        message: action.payload?.message || 'An error occurred',
+        message: action.payload?.message || "An error occurred",
         code: action.payload?.code,
         details: action.payload?.details,
     };
@@ -471,7 +495,7 @@ export interface CacheState {
  * Key Management Utilities
  */
 export const isMatrxRecordId = (input: unknown): boolean => {
-    if (typeof input !== 'string') {
+    if (typeof input !== "string") {
         return false;
     }
     const keyPattern = /^\w+:[^:]+(::\w+:[^:]+)*$/;
@@ -485,34 +509,37 @@ export const createMatrxRecordId = (metadata: PrimaryKeyMetadata, record: Record
             const value = record[frontendField];
             return `${field}:${value}`;
         })
-        .join('::');
+        .join("::");
 };
 
-export const createMultipleMatrxRecordIds = (metadata: PrimaryKeyMetadata, records: Record<AllEntityFieldKeys, unknown>[]): MatrxRecordId[] => {
+export const createMultipleMatrxRecordIds = (
+    metadata: PrimaryKeyMetadata,
+    records: Record<AllEntityFieldKeys, unknown>[]
+): MatrxRecordId[] => {
     return records.map((record) => {
         return createMatrxRecordId(metadata, record);
     });
 };
 
 export const parseMatrxRecordId = (key: MatrxRecordId): Record<AllEntityFieldKeys, unknown> => {
-    return key.split('::').reduce((acc, pair) => {
-        const colonIndex = pair.indexOf(':');
-        
+    return key.split("::").reduce((acc, pair) => {
+        const colonIndex = pair.indexOf(":");
+
         if (colonIndex === -1) {
             // If there's no colon, log an error but continue with "id" as the default field
             console.error(`parseMatrxRecordId Warning: No colon found in record key part: ${pair}. Using "id" as default field.`);
-            acc['id' as AllEntityFieldKeys] = pair;
+            acc["id" as AllEntityFieldKeys] = pair;
         } else {
             const field = pair.substring(0, colonIndex);
             const value = pair.substring(colonIndex + 1);
-            
+
             if (field && value !== undefined) {
                 acc[field as AllEntityFieldKeys] = value;
             } else {
                 throw new Error(`parseMatrxRecordId Invalid format in record key part: ${pair}`);
             }
         }
-        
+
         return acc;
     }, {} as Record<AllEntityFieldKeys, unknown>);
 };
@@ -524,7 +551,7 @@ export const parseMultipleMatrxRecordIds = (keys: MatrxRecordId[]): Record<AllEn
 };
 
 export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): MatrxRecordId => {
-    utilsLogger.log('debug', 'Creating record key:', { record }, undefined, 'recordKey');
+    utilsLogger.log("debug", "Creating record key:", { record }, undefined, "recordKey");
 
     const key = metadata.database_fields
         .map((field, index) => {
@@ -532,19 +559,25 @@ export const createRecordKey = (metadata: PrimaryKeyMetadata, record: any): Matr
             const value = record[frontendField];
 
             if (value === undefined) {
-                utilsLogger.log('error', `Missing value for primary key field: ${frontendField}`, { field: frontendField }, undefined, 'recordKey');
+                utilsLogger.log(
+                    "error",
+                    `Missing value for primary key field: ${frontendField}`,
+                    { field: frontendField },
+                    undefined,
+                    "recordKey"
+                );
             }
             return `${field}:${value}`;
         })
-        .join('::');
+        .join("::");
 
-    utilsLogger.log('debug', 'Generated record key:', { key }, undefined, 'recordKey');
+    utilsLogger.log("debug", "Generated record key:", { key }, undefined, "recordKey");
     return key;
 };
 
 export const parseRecordKey = (key: MatrxRecordId): Record<AllEntityFieldKeys, unknown> => {
-    return key.split('::').reduce((acc, pair) => {
-        const [field, value] = pair.split(':');
+    return key.split("::").reduce((acc, pair) => {
+        const [field, value] = pair.split(":");
         if (field && value !== undefined) {
             acc[field] = value;
         } else {
@@ -560,8 +593,11 @@ export const parseRecordKeys = (keys: MatrxRecordId[]): Record<AllEntityFieldKey
     });
 };
 
-export function isEntityData<TEntity extends EntityKeys>(input: unknown, fields: Record<keyof EntityData<TEntity>, unknown>): input is EntityData<TEntity> {
-    if (typeof input !== 'object' || input === null) return false;
+export function isEntityData<TEntity extends EntityKeys>(
+    input: unknown,
+    fields: Record<keyof EntityData<TEntity>, unknown>
+): input is EntityData<TEntity> {
+    if (typeof input !== "object" || input === null) return false;
 
     return Object.keys(fields).every((key) => {
         return key in (input as Record<string, unknown>);
@@ -574,7 +610,7 @@ export function isEntityData<TEntity extends EntityKeys>(input: unknown, fields:
 export const hasPrimaryKeyValues = (metadata: PrimaryKeyMetadata, record: any): boolean => {
     return metadata.fields.every((field) => {
         const hasValue = record[field] !== undefined;
-        if (!hasValue && process.env.NODE_ENV === 'development') {
+        if (!hasValue && process.env.NODE_ENV === "development") {
             console.warn(`Missing primary key value for field: ${field}`);
         }
         return hasValue;
@@ -588,7 +624,7 @@ export const createWhereClause = (metadata: PrimaryKeyMetadata, record: any): Re
         const frontendField = metadata.fields[index];
         const value = record[frontendField];
 
-        if (value === undefined && process.env.NODE_ENV === 'development') {
+        if (value === undefined && process.env.NODE_ENV === "development") {
             console.warn(`Missing value for where clause field: ${frontendField}`);
         }
 
@@ -603,25 +639,25 @@ export const createWhereClause = (metadata: PrimaryKeyMetadata, record: any): Re
  */
 const evaluateCondition = (value: any, condition: FilterCondition): boolean => {
     switch (condition.operator) {
-        case 'eq':
+        case "eq":
             return value === condition.value;
-        case 'neq':
+        case "neq":
             return value !== condition.value;
-        case 'gt':
+        case "gt":
             return value > condition.value;
-        case 'gte':
+        case "gte":
             return value >= condition.value;
-        case 'lt':
+        case "lt":
             return value < condition.value;
-        case 'lte':
+        case "lte":
             return value <= condition.value;
-        case 'like':
+        case "like":
             return String(value).includes(String(condition.value));
-        case 'ilike':
+        case "ilike":
             return String(value).toLowerCase().includes(String(condition.value).toLowerCase());
-        case 'in':
+        case "in":
             return Array.isArray(condition.value) && condition.value.includes(value);
-        case 'between':
+        case "between":
             return Array.isArray(condition.value) && value >= condition.value[0] && value <= condition.value[1];
         default:
             console.warn(`Unknown operator: ${condition.operator}`);
@@ -629,11 +665,11 @@ const evaluateCondition = (value: any, condition: FilterCondition): boolean => {
     }
 };
 
-const compareValues = (a: any, b: any, direction: 'asc' | 'desc'): number => {
+const compareValues = (a: any, b: any, direction: "asc" | "desc"): number => {
     if (a === b) return 0;
 
     const comparison = a < b ? -1 : 1;
-    return direction === 'asc' ? comparison : -comparison;
+    return direction === "asc" ? comparison : -comparison;
 };
 
 export const applyFilters = <TEntity extends EntityKeys>(records: EntityData<TEntity>[], filters: FilterState): EntityData<TEntity>[] => {
@@ -665,9 +701,9 @@ export const applyFilters = <TEntity extends EntityKeys>(records: EntityData<TEn
  */
 export const isSerializableValue = (value: unknown): boolean => {
     if (value === null || value === undefined) return true;
-    if (typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') return true;
+    if (typeof value === "boolean" || typeof value === "number" || typeof value === "string") return true;
     if (Array.isArray(value)) return value.every(isSerializableValue);
-    if (typeof value === 'object') {
+    if (typeof value === "object") {
         return Object.values(value).every(isSerializableValue);
     }
     return false;
@@ -677,14 +713,14 @@ export const isSerializableValue = (value: unknown): boolean => {
 export type SerializableRecord = Record<string, string | number | boolean | null | undefined>;
 
 export interface SingleRecordContext {
-    type: 'single';
+    type: "single";
     activeRecordId: MatrxRecordId;
     unsavedChanges: Record<string, any>;
     operationMode: EntityOperationMode;
 }
 
 export interface MultiSelectSingleChangeContext {
-    type: 'multiSelectSingle';
+    type: "multiSelectSingle";
     selectedRecordIds: MatrxRecordId[];
     activeRecordId: MatrxRecordId;
     unsavedChanges: Record<string, any>;
@@ -692,7 +728,7 @@ export interface MultiSelectSingleChangeContext {
 }
 
 export interface MultiSelectMultiChangeContext {
-    type: 'multiSelectMulti';
+    type: "multiSelectMulti";
     selectedRecordIds: MatrxRecordId[];
     changedRecords: Map<MatrxRecordId, Record<string, any>>;
     operationMode: EntityOperationMode;
@@ -702,7 +738,7 @@ export interface MultiSelectMultiChangeContext {
 export type OperationContextType = SingleRecordContext | MultiSelectSingleChangeContext | MultiSelectMultiChangeContext;
 
 export interface OperationContextState {
-    contextType: OperationContextType['type'];
+    contextType: OperationContextType["type"];
     context: OperationContextType;
     relationshipMap?: Map<string, Set<MatrxRecordId>>; // For tracking related records
 }
@@ -713,7 +749,7 @@ export function determineOperationContext(state: EntityState<EntityKeys>, operat
 
     if (!hasMultipleSelected) {
         return {
-            type: 'single',
+            type: "single",
             activeRecordId: state.selection.activeRecord,
             unsavedChanges: state.unsavedRecords[state.selection.activeRecord] || {},
             operationMode: operation,
@@ -722,7 +758,7 @@ export function determineOperationContext(state: EntityState<EntityKeys>, operat
 
     if (hasMultipleSelected && !hasMultipleChanges) {
         return {
-            type: 'multiSelectSingle',
+            type: "multiSelectSingle",
             selectedRecordIds: state.selection.selectedRecords,
             activeRecordId: state.selection.activeRecord,
             unsavedChanges: state.unsavedRecords[state.selection.activeRecord] || {},
@@ -731,7 +767,7 @@ export function determineOperationContext(state: EntityState<EntityKeys>, operat
     }
 
     return {
-        type: 'multiSelectMulti',
+        type: "multiSelectMulti",
         selectedRecordIds: state.selection.selectedRecords,
         changedRecords: new Map(Object.entries(state.unsavedRecords)),
         operationMode: operation,
@@ -742,19 +778,19 @@ export function handleOperationModeChange(state: EntityState<EntityKeys>, newMod
     const context = determineOperationContext(state, newMode);
 
     switch (context.type) {
-        case 'single':
+        case "single":
             return handleSingleRecordOperation(state, context);
 
-        case 'multiSelectSingle':
+        case "multiSelectSingle":
             return handleMultiSelectSingleChange(state, context);
 
-        case 'multiSelectMulti':
+        case "multiSelectMulti":
             return handleComplexMultiRecordOperation(state, context);
     }
 }
 
 export function validateOperationTransition(currentContext: OperationContextType, newMode: EntityOperationMode): boolean {
-    if (currentContext.type === 'multiSelectMulti') {
+    if (currentContext.type === "multiSelectMulti") {
         // Complex validation for multi-record changes
         return validateComplexStateTransition(currentContext, newMode);
     }
@@ -767,23 +803,23 @@ export function handleSingleRecordOperation(state: EntityState<EntityKeys>, cont
     const { activeRecordId, unsavedChanges, operationMode } = context;
 
     switch (operationMode) {
-        case 'create':
-            utilsLogger.log('debug', 'handleCreateOperation called (Not Implemented)', 'handleSingleRecordOperation');
+        case "create":
+            utilsLogger.log("debug", "handleCreateOperation called (Not Implemented)", "handleSingleRecordOperation");
             return state; // Temporary return until implemented
 
-        case 'update':
-            utilsLogger.log('debug', 'handleUpdateOperation called (Not Implemented)', 'handleSingleRecordOperation');
+        case "update":
+            utilsLogger.log("debug", "handleUpdateOperation called (Not Implemented)", "handleSingleRecordOperation");
             return state;
 
-        case 'delete':
-            utilsLogger.log('debug', 'handleDeleteOperation called (Not Implemented)', 'handleSingleRecordOperation');
+        case "delete":
+            utilsLogger.log("debug", "handleDeleteOperation called (Not Implemented)", "handleSingleRecordOperation");
             return state;
 
-        case 'view':
+        case "view":
             return state;
 
         default:
-            utilsLogger.log('error', 'Invalid operation mode for single record operation', 'handleSingleRecordOperation');
+            utilsLogger.log("error", "Invalid operation mode for single record operation", "handleSingleRecordOperation");
             return state;
     }
 }
@@ -792,20 +828,20 @@ export function handleMultiSelectSingleChange(state: EntityState<EntityKeys>, co
     const { selectedRecordIds, activeRecordId, unsavedChanges, operationMode } = context;
 
     switch (operationMode) {
-        case 'create':
+        case "create":
             // return handleCreateOperation(state, activeRecordId, unsavedChanges);
-            utilsLogger.log('debug', 'handleCreateOperation called (Not Implemented)', 'handleMultiSelectSingleChange');
+            utilsLogger.log("debug", "handleCreateOperation called (Not Implemented)", "handleMultiSelectSingleChange");
 
-        case 'update':
+        case "update":
             // return handleUpdateOperation(state, activeRecordId, unsavedChanges);
-            utilsLogger.log('debug', 'handleUpdateOperation called (Not Implemented)', 'handleMultiSelectSingleChange');
+            utilsLogger.log("debug", "handleUpdateOperation called (Not Implemented)", "handleMultiSelectSingleChange");
 
-        case 'delete':
+        case "delete":
             // return handleDeleteOperation(state, activeRecordId);
-            utilsLogger.log('debug', 'handleDeleteOperation called (Not Implemented)', 'handleMultiSelectSingleChange');
+            utilsLogger.log("debug", "handleDeleteOperation called (Not Implemented)", "handleMultiSelectSingleChange");
 
         default:
-            utilsLogger.log('error', 'Invalid operation mode for multi-select single record operation', 'handleMultiSelectSingleChange');
+            utilsLogger.log("error", "Invalid operation mode for multi-select single record operation", "handleMultiSelectSingleChange");
             return;
     }
 }
@@ -814,20 +850,20 @@ export function handleComplexMultiRecordOperation(state: EntityState<EntityKeys>
     const { selectedRecordIds, changedRecords, operationMode } = context;
 
     switch (operationMode) {
-        case 'create':
+        case "create":
             // return handleCreateOperation(state, activeRecordId, unsavedChanges);
-            utilsLogger.log('debug', 'handleCreateOperation called (Not Implemented)', 'handleComplexMultiRecordOperation');
+            utilsLogger.log("debug", "handleCreateOperation called (Not Implemented)", "handleComplexMultiRecordOperation");
 
-        case 'update':
+        case "update":
             // return handleUpdateOperation(state, activeRecordId, unsavedChanges);
-            utilsLogger.log('debug', 'handleUpdateOperation called (Not Implemented)', 'handleComplexMultiRecordOperation');
+            utilsLogger.log("debug", "handleUpdateOperation called (Not Implemented)", "handleComplexMultiRecordOperation");
 
-        case 'delete':
+        case "delete":
             // return handleDeleteOperation(state, activeRecordId);
-            utilsLogger.log('debug', 'handleDeleteOperation called (Not Implemented)', 'handleComplexMultiRecordOperation');
+            utilsLogger.log("debug", "handleDeleteOperation called (Not Implemented)", "handleComplexMultiRecordOperation");
 
         default:
-            utilsLogger.log('error', 'Invalid operation mode for complex multi-record operation', 'handleComplexMultiRecordOperation');
+            utilsLogger.log("error", "Invalid operation mode for complex multi-record operation", "handleComplexMultiRecordOperation");
             return;
     }
 }
@@ -836,14 +872,14 @@ export function validateBasicStateTransition(context: OperationContextType, newM
     const { operationMode } = context;
 
     switch (newMode) {
-        case 'create':
-            return operationMode !== 'create';
+        case "create":
+            return operationMode !== "create";
 
-        case 'update':
-            return operationMode !== 'delete';
+        case "update":
+            return operationMode !== "delete";
 
-        case 'delete':
-            return operationMode !== 'create';
+        case "delete":
+            return operationMode !== "create";
 
         default:
             return false;
@@ -854,14 +890,14 @@ export function validateComplexStateTransition(context: MultiSelectMultiChangeCo
     const { operationMode } = context;
 
     switch (newMode) {
-        case 'create':
-            return operationMode !== 'create';
+        case "create":
+            return operationMode !== "create";
 
-        case 'update':
-            return operationMode !== 'delete';
+        case "update":
+            return operationMode !== "delete";
 
-        case 'delete':
-            return operationMode !== 'create';
+        case "delete":
+            return operationMode !== "create";
 
         default:
             return false;

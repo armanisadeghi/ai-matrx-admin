@@ -11,7 +11,7 @@ import Link from "next/link";
 import { IoCreateOutline } from "react-icons/io5";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch } from "@/lib/redux";
-import { usePathname } from "next/navigation";
+    
 
 interface ClientHeaderContentProps {
     baseRoute?: string;
@@ -20,11 +20,9 @@ interface ClientHeaderContentProps {
 const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "/chat" }) => {
     const dispatch = useAppDispatch();
     const chatActions = getChatActionsWithThunks();
-    const pathname = usePathname();
 
     useEffect(() => {
         dispatch(chatActions.initialize());
-        console.log("CLIENT HEADER CONTENT Dispatched Initialization Action.");
     }, []);
 
     const user = useSelector((state: RootState) => state.user);

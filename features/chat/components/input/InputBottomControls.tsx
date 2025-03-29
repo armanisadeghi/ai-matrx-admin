@@ -15,7 +15,7 @@ import { CgAttachment } from "react-icons/cg";
 import { MdOutlineChecklist } from "react-icons/md";
 import { MdOutlineQuestionMark } from "react-icons/md";
 import { BsPatchQuestion } from "react-icons/bs";
-import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
+import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { FileManager } from "@/hooks/ai/chat/useFileManagement";
 

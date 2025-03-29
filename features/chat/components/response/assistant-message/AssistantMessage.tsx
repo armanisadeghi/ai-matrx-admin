@@ -8,7 +8,7 @@ interface AssistantMessageProps {
     content: string;
     isStreamActive: boolean;
     onScrollToBottom?: () => void;
-    onContentUpdate?: (newContent: string) => void; // 2. Add callback prop for updates
+    onContentUpdate?: (newContent: string) => void;
 }
 
 const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamActive = false, onScrollToBottom, onContentUpdate }) => {
@@ -123,9 +123,9 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamAc
                             <RefreshCw size={16} />
                         </button>
                         <button
-                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded" // Added rounded
+                            className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700 rounded"
                             aria-label="Edit message"
-                            onClick={handleEditClick} // Use the new handler
+                            onClick={handleEditClick}
                         >
                             <Edit size={16} />
                         </button>

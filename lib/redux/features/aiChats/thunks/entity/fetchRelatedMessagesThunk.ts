@@ -21,7 +21,7 @@ interface FetchRelatedMessagesResult {
         messageId: string;
         messageTempKey: string;
         messageRecordKey: string;
-    } | null; // Made nullable since it might not always be set
+    } | null;
     statusMessage?: string;
 }
 
@@ -102,10 +102,10 @@ export const fetchRelatedMessagesThunk = createAppThunk<FetchRelatedMessagesResu
                     systemOrder: nextSystemOrderToUse
                 })).unwrap();
 
-                if (DEBUG) console.log("FETCH_RELATED_MESSAGES: New message result:", JSON.stringify(messageResult, null, 2));
+                if (INFO) console.log("FETCH_RELATED_MESSAGES: New message result:", JSON.stringify(messageResult, null, 2));
 
-                dispatch(messageActions.setActiveRecord(messageResult.messageTempKey));
                 if (INFO) console.log("FETCH_RELATED_MESSAGES: Set Active Message to Temp Record:", messageResult.messageTempKey);
+                dispatch(messageActions.setActiveRecord(messageResult.messageTempKey));
 
                 newMessageResult = messageResult;
             }

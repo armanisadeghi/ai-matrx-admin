@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
+import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 
 const INFO = true;

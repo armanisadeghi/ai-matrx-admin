@@ -14,7 +14,7 @@ import { SiDassaultsystemes } from "react-icons/si";
 import HierarchicalToggleMenu from "@/components/matrx/toggles/HierarchicalToggleMenu";
 import { programmingLibraries } from "./constants";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
-import useChatBasics from "@/features/chat/hooks/useNewChatBasics";
+import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 
 

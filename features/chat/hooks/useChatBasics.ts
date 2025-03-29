@@ -1,5 +1,4 @@
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import { useAppSelector } from "@/lib/redux";
 
@@ -14,7 +13,6 @@ export const useChatBasics = () => {
     const messageId = useAppSelector(chatSelectors.activeMessageId)
     const messageKey = useAppSelector(chatSelectors.activeMessageKey)
     const eventName = useAppSelector(chatSelectors.conversationSocketEventName)
-
     const initialLoadComplete = useAppSelector(chatSelectors.initialLoadComplete)
     const routeLoadComplete = useAppSelector(chatSelectors.routeLoadComplete)
 

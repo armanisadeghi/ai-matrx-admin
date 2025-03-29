@@ -65,7 +65,7 @@ export const fetchReducers = <TEntity extends EntityKeys>(entityKey: TEntity, en
         const { data, page, pageSize, totalCount } = action.payload;
         const { primaryKeyMetadata } = state.entityMetadata;
 
-        entityLogger.log(DEBUG, "fetchRecordsSuccess", { data, page, pageSize, totalCount });
+        entityLogger.log(DEBUG, "fetchRecordsSuccess totalCount", totalCount);
 
         data.forEach((record) => {
             const recordKey = createRecordKey(primaryKeyMetadata, record);

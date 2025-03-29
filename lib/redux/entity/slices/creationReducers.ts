@@ -15,7 +15,7 @@ import { CreateRecordPayload, createRecordSuccessPayload, DirectCreateRecordPayl
 import { EntityModeManager } from "../utils/crudOpsManagement";
 
 const INFO = "info";
-const DEBUG = "debug";
+const DEBUG = "info";
 const VERBOSE = "verbose";
 
 export const creationReducers = <TEntity extends EntityKeys>(

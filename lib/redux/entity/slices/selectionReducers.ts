@@ -14,7 +14,7 @@ import {
 import EntityLogger from "../utils/entityLogger";
 
 const INFO = "info";
-const DEBUG = "debug";
+const DEBUG = "info";
 const VERBOSE = "verbose";
 
 export const selectionReducers = <TEntity extends EntityKeys>(entityKey: TEntity, entityLogger: EntityLogger) => ({
@@ -67,25 +67,35 @@ export const selectionReducers = <TEntity extends EntityKeys>(entityKey: TEntity
 
     setActiveRecord: (state: EntityState<TEntity>, action: PayloadAction<MatrxRecordId>) => {
         entityLogger.log(DEBUG, "setActiveRecord", action.payload);
-        if (state.selection.activeRecord) {
+        let recordKey: MatrxRecordId;
+
+        if (action.payload.includes(":") ) {
+            recordKey = action.payload;
+        } else if (action.payload.includes("new-record")) {
+            recordKey = action.payload;
+        } else {
+            recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, { id: action.payload });
+        }
+
+        if (state.selection.activeRecord !== recordKey) {
             state.selection.lastActiveRecord = state.selection.activeRecord;
         }
-        state.selection.activeRecord = action.payload;
-        entityLogger.log(DEBUG, "setActiveRecord State Value:", state.selection.activeRecord);
+        if (state.selection.activeRecord !== recordKey) {
+            state.selection.activeRecord = recordKey;
+            entityLogger.log(DEBUG, "setActiveRecord State Value:", state.selection.activeRecord);
+        }
 
-        if (!state.selection.selectedRecords.includes(action.payload)) {
-            state.selection.selectedRecords.push(action.payload);
+        if (!state.selection.selectedRecords.includes(recordKey)) {
+            state.selection.selectedRecords.push(recordKey);
         }
     },
 
     setActiveRecordSmart: (state: EntityState<TEntity>, action: PayloadAction<string>) => {
         let recordKey: MatrxRecordId;
 
-        // Check if the payload is already a record key (contains a colon)
-        if (action.payload.includes(":")) {
+        if (action.payload.includes(":") || action.payload.includes("new-record")) {
             recordKey = action.payload;
         } else {
-            // If it's a simple ID, create a record key using the state's metadata
             recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, { id: action.payload });
         }
 

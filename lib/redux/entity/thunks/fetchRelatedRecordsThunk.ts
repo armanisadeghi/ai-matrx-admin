@@ -27,9 +27,9 @@ interface FetchCallbackResult {
 }
 
 
-const INFO = false;
-const DEBUG = true;
-const VERBOSE = true;
+const INFO = true;
+const DEBUG = false;
+const VERBOSE = false;
 
 
 export const fetchRelatedRecordsThunk = createAppThunk<
@@ -88,7 +88,7 @@ export const fetchRelatedRecordsThunk = createAppThunk<
             });
 
             if (callbackData.success) {
-                if (DEBUG) console.log("\x1b[34m[FETCH_RELATED_RECORDS] Results:\x1b[0m", JSON.stringify(callbackData.result, null, 2));
+                if (DEBUG) console.log("\x1b[34m[FETCH_RELATED_RECORDS] Results:\x1b[0m", JSON.stringify(callbackData, null, 2));
                 return {
                     success: true,
                     result: callbackData.result,

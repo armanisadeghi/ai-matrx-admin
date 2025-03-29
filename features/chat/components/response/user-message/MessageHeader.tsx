@@ -1,14 +1,13 @@
 'use client';
-
-import React from 'react';
-import { Copy, ChevronUp, ChevronDown, Save, Clock, Edit2, X, ArrowDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Copy, ChevronUp, ChevronDown, Save, Clock, Edit2, X, ArrowDown, CheckCircle } from 'lucide-react';
 
 interface MessageHeaderProps {
   formattedDateTime: string;
   isCollapsed: boolean;
   isEditing: boolean;
   isHovered: boolean;
-  actionFeedback: {type: string, show: boolean};
+  canCollapse: boolean;
   toggleCollapse: () => void;
   handleCopy: (e: React.MouseEvent) => void;
   handleEdit: (e: React.MouseEvent) => void;
@@ -22,7 +21,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
   isCollapsed,
   isEditing,
   isHovered,
-  actionFeedback,
+  canCollapse,
   toggleCollapse,
   handleCopy,
   handleEdit,
@@ -30,6 +29,33 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
   handleSavePrompt,
   handleScrollToBottom
 }) => {
+  // State for each button's feedback status
+  const [copyFeedback, setCopyFeedback] = useState(false);
+  const [saveFeedback, setSaveFeedback] = useState(false);
+  const [scrollFeedback, setScrollFeedback] = useState(false);
+  
+  // Function to handle showing feedback for a specific action
+  const showFeedback = (setStateFn: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setStateFn(true);
+    setTimeout(() => setStateFn(false), 1500); // Hide after 1.5 seconds
+  };
+  
+  // Wrapper functions for each action that shows appropriate feedback
+  const onCopy = (e: React.MouseEvent) => {
+    handleCopy(e);
+    showFeedback(setCopyFeedback);
+  };
+  
+  const onSavePrompt = (e: React.MouseEvent) => {
+    handleSavePrompt(e);
+    showFeedback(setSaveFeedback);
+  };
+  
+  const onScrollToBottom = (e: React.MouseEvent) => {
+    handleScrollToBottom(e);
+    showFeedback(setScrollFeedback);
+  };
+
   return (
     <div 
       onClick={toggleCollapse}
@@ -40,7 +66,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
         text-xs text-gray-700 dark:text-gray-300
         transition-all duration-200
         ${isHovered || isEditing ? 'opacity-100' : 'opacity-80'}
-        cursor-pointer
+        ${canCollapse ? 'cursor-pointer' : 'cursor-default'}
       `}
     >
       <div className="flex items-center space-x-2">
@@ -48,64 +74,63 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
           <Clock size={12} className="mr-1" />
           {formattedDateTime}
         </span>
-        <span className="text-xs opacity-70">
-          {isCollapsed ? 
-            <ChevronDown size={14} className="ml-1 text-blue-500" /> : 
-            <ChevronUp size={14} className="ml-1 text-blue-500" />
-          }
-        </span>
+        {canCollapse && (
+          <span className="text-xs opacity-70">
+            {isCollapsed ? 
+              <ChevronDown size={14} className="ml-1" /> : 
+              <ChevronUp size={14} className="ml-1" />
+            }
+          </span>
+        )}
       </div>
       
       <div className="flex items-center space-x-1" onClick={e => e.stopPropagation()}>
         <button 
-          onClick={handleScrollToBottom}
+          onClick={onScrollToBottom}
           className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
           aria-label="Scroll to bottom"
           disabled={isEditing}
         >
-          <ArrowDown size={16} className={isEditing ? "opacity-40" : ""} />
+          {scrollFeedback ? (
+            <CheckCircle size={16} />
+          ) : (
+            <ArrowDown size={16} className={isEditing ? "opacity-40" : ""} />
+          )}
           <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
             Scroll to bottom
           </span>
-          {actionFeedback.show && actionFeedback.type === 'scrolled' && (
-            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-2 py-1 rounded text-xs">
-              Scrolled!
-            </span>
-          )}
         </button>
         
         <button 
-          onClick={handleSavePrompt}
+          onClick={onSavePrompt}
           className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
           aria-label="Save as prompt"
           disabled={isEditing}
         >
-          <Save size={16} className={isEditing ? "opacity-40" : ""} />
+          {saveFeedback ? (
+            <CheckCircle size={16}/>
+          ) : (
+            <Save size={16} className={isEditing ? "opacity-40" : ""} />
+          )}
           <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
             Save as prompt
           </span>
-          {actionFeedback.show && actionFeedback.type === 'prompt-saved' && (
-            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-2 py-1 rounded text-xs">
-              Saved!
-            </span>
-          )}
         </button>
         
         <button 
-          onClick={handleCopy}
+          onClick={onCopy}
           className="p-1.5 rounded-full hover:bg-zinc-400/50 dark:hover:bg-zinc-600/50 transition-colors duration-150 relative group"
           aria-label="Copy to clipboard"
           disabled={isEditing}
         >
-          <Copy size={16} className={isEditing ? "opacity-40" : ""} />
+          {copyFeedback ? (
+            <CheckCircle size={16} />
+          ) : (
+            <Copy size={16} className={isEditing ? "opacity-40" : ""} />
+          )}
           <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
             Copy to clipboard
           </span>
-          {actionFeedback.show && actionFeedback.type === 'copied' && (
-            <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-2 py-1 rounded text-xs">
-              Copied!
-            </span>
-          )}
         </button>
         
         <button 

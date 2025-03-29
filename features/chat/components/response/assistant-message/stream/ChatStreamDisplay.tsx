@@ -3,9 +3,9 @@ import React, { memo, useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
-import StreamingCode from "@/features/chat/ui-parts/response/stream/StreamingCode";
+import StreamingCode from "@/features/chat/components/response/assistant-message/stream/StreamingCode";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
-import StreamingTable from "@/features/chat/ui-parts/response/stream/StreamingTable";
+import StreamingTable from "@/features/chat/components/response/assistant-message/stream/StreamingTable";
 import { SocketManager } from "@/lib/redux/socket/manager";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch } from "@/lib/redux";
@@ -25,11 +25,11 @@ const components = {
             {children}
         </li>
     ),
-    a: ({ ...props }) => <a className="text-blue-500 underline font-medium text-md" {...props} />,
-    h1: ({ ...props }) => <h1 className="text-xl font-bold mb-3 font-heading" {...props} />,
-    h2: ({ ...props }) => <h2 className="text-xl font-medium mb-2 font-heading" {...props} />,
-    h3: ({ ...props }) => <h3 className="text-lg font-medium mb-2 font-heading" {...props} />,
-    h4: ({ ...props }) => <h4 className="text-md font-medium mb-1 font-heading" {...props} />,
+    a: ({ node, ...props }) => <a className="text-blue-500 underline font-medium text-md" {...props} />,
+    h1: ({ node, ...props }) => <h1 className="text-xl text-blue-500 font-bold mb-3 font-heading" {...props} />,
+    h2: ({ node, ...props }) => <h2 className="text-xl text-blue-500 font-medium mb-2 font-heading" {...props} />,
+    h3: ({ node, ...props }) => <h3 className="text-lg text-blue-500 font-medium mb-2 font-heading" {...props} />,
+    h4: ({ node, ...props }) => <h4 className="text-md text-blue-500 font-medium mb-1 font-heading" {...props} />,
     code: ({ inline, className, children, ...props }) => {
         const match = /language-(\w+)/.exec(className || "");
         const language = match ? match[1] : "";
@@ -141,7 +141,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
             }
         };
     }, [eventName, socketManager]);
-
 
     const renderContent = () => {
         switch (connectionStatus) {

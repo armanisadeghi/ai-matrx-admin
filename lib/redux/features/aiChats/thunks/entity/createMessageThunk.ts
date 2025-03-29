@@ -8,6 +8,12 @@ import { SaveCallbackResult, saveRecordsInOrder, saveUnsavedRecord } from "@/lib
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { callbackManager } from "@/utils/callbackManager";
 
+const INFO = true;
+const DEBUG = false;
+const VERBOSE = false;
+
+
+
 interface CreateMessagePayload {
     conversationId: string;
     displayOrder: number;
@@ -38,12 +44,12 @@ export const createMessageForConversation = createAppThunk<CreateMessageResult, 
 
             const messageInitialData: Partial<Message> = {
                 ...DEFAULT_NEW_MESSAGE,
+                ...messageOverrides,
                 id: messageId,
                 displayOrder: displayOrder,
                 systemOrder: systemOrder,
                 conversationId: conversationId,
                 content: messageContent,
-                ...messageOverrides,
             };
 
             const messageSlice = getEntitySlice("message");
@@ -55,8 +61,13 @@ export const createMessageForConversation = createAppThunk<CreateMessageResult, 
                 })
             );
 
+            if (INFO) console.log("CREATE MESSAGE FOR CONVERSATION: created Message with temp id", messageTempKey);
+
             dispatch(messageSlice.actions.setActiveParentId(conversationId));
+
+
             dispatch(chatActions.setStandardMessageFilterAndSort());
+
             dispatch(messageSlice.actions.addRuntimeFilter({ field: "conversationId", operator: "eq", value: conversationId }));
             dispatch(messageSlice.actions.setActiveRecord(messageTempKey));
 
