@@ -6,7 +6,6 @@ import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
 import ResponseColumn from "@/features/chat/components/response/ResponseColumn";
-import ResponseColumnSeven from "@/features/chat/ui-parts/response/ResponseColumnSeven";
 
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
@@ -29,7 +28,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                     />
 
                     {/* Scrollable message area */}
-                    <div className="relative flex-1 overflow-y-auto scrollbar-hide pb-48 z-1">
+                    <div className="relative flex-1 overflow-y-auto scrollbar-hide pb-8 z-1">
                         <ResponseColumn />
                     </div>
 

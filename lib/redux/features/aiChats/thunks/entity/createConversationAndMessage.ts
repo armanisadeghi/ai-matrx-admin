@@ -7,8 +7,8 @@ import { EntityKeys, MatrxRecordId } from "@/types";
 import { saveRecordsInOrder } from "@/lib/redux/entity/thunks/createRecordThunk";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 
-const INFO = false;
-const DEBUG = true;
+const INFO = true;
+const DEBUG = false;
 const VERBOSE = false;
 
 

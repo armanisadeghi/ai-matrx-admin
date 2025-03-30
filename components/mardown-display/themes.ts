@@ -89,11 +89,11 @@ export const THEMES = {
             text: "text-gray-700 dark:text-gray-300",
         },
         table: {
-            header: "bg-gray-300 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer",
+            header: "bg-gray-300 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700 cursor-pointer",
             headerText: "text-bold text-gray-900 dark:text-gray-100",
             row: {
-                even: "bg-white dark:bg-transparent cursor-pointer",
-                odd: "bg-gray-50/50 dark:bg-gray-900/30 cursor-pointer",
+                even: "bg-white dark:bg-transparent border-gray-300 dark:border-blue-900 cursor-pointer",
+                odd: "bg-gray-50/50 dark:bg-gray-900/30 border-gray-300 dark:border-blue-900 cursor-pointer",
                 hover: "hover:bg-gray-50 dark:hover:bg-gray-600/20 cursor-pointer",
             },
             border: "border-gray-300 dark:border-gray-900",

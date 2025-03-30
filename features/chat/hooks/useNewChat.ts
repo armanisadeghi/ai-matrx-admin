@@ -39,7 +39,7 @@ export function useNewChat() {
     );
 
     const queryString = createQueryString({
-        live: "true", // Not used at this time.
+        live: "true",
     });
 
     useEffect(() => {

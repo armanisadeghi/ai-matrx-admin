@@ -10,6 +10,8 @@ import dynamic from 'next/dynamic';
 import type { Editor as TuiEditorReactComp } from '@toast-ui/react-editor';
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import EditorLoading from '../text-block/editorLoading';
+import MarkdownAnalyzer, { MarkdownAnalysisData } from './MarkdownAnalyzer';
+
 
 // Import the Toast UI Editor dark theme CSS
 import '@toast-ui/editor/dist/toastui-editor.css';
@@ -29,6 +31,8 @@ interface FullScreenMarkdownEditorProps {
     initialContent: string;
     onSave: (newContent: string) => void;
     onCancel: () => void;
+    analysisData?: MarkdownAnalysisData;
+    messageId?: string;
 }
 
 const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
@@ -36,6 +40,8 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     initialContent,
     onSave,
     onCancel,
+    analysisData,
+    messageId,
 }) => {
     const [editedContent, setEditedContent] = useState(initialContent);
     const [activeTab, setActiveTab] = useState<string>("write");
@@ -179,6 +185,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                             <TabsTrigger value="write">Write</TabsTrigger>
                             <TabsTrigger value="rich">Rich Text</TabsTrigger>
                             <TabsTrigger value="preview">Preview</TabsTrigger>
+                            <TabsTrigger value="analysis">Analysis</TabsTrigger>
                         </TabsList>
                     </Tabs>
                 </DialogHeader>
@@ -224,6 +231,13 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                                 </ReactMarkdown>
                             )}
                         </div>
+                    </TabsContent>
+
+                    <TabsContent value="analysis" className="flex-grow mt-0 border-none overflow-auto p-4 outline-none ring-0">
+
+                        {/* TODO: Add analysis here */}
+                        <MarkdownAnalyzer messageId={messageId} mardownAnalysisData={analysisData} />
+
                     </TabsContent>
                 </Tabs>
 

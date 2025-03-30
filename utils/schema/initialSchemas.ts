@@ -19304,7 +19304,7 @@ fileStructure: {
             isRequired: true,
             maxLength: null,
             isArray: false,
-            defaultValue: "file_structure_id_seq" as const,
+            defaultValue: "public.file_structure_id_seq" as const,
             isPrimaryKey: true,
             isDisplayField: false,
             defaultGeneratorFunction: "",

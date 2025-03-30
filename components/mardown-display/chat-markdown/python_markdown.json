@@ -1,0 +1,989 @@
+{
+    "output": [
+        {
+            "line": "Certainly! The biggest countries in the world by total area are:",
+            "position": "1",
+            "category": "other_text",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [["plain_text", "Certainly! The biggest countries in the world by total area are:"]]
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "2",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "1. **Russia** - Approximately 17.1 million square kilometers (6.6 million square miles). It is the largest country in the world, spanning Eastern Europe and northern Asia.",
+            "position": "3",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "1."],
+                    ["bold_text", "Russia"],
+                    [
+                        "plain_text",
+                        "- Approximately 17.1 million square kilometers (6.6 million square miles). It is the largest country in the world, spanning Eastern Europe and northern Asia."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "4",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "2. **Canada** - About 9.98 million square kilometers (3.85 million square miles). It is the second-largest country, located in North America.",
+            "position": "5",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "2."],
+                    ["bold_text", "Canada"],
+                    [
+                        "plain_text",
+                        "- About 9.98 million square kilometers (3.85 million square miles). It is the second-largest country, located in North America."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "6",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "3. **China** - Roughly 9.6 million square kilometers (3.7 million square miles). It is the largest country in Asia and the most populous country in the world.",
+            "position": "7",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "3."],
+                    ["bold_text", "China"],
+                    [
+                        "plain_text",
+                        "- Roughly 9.6 million square kilometers (3.7 million square miles). It is the largest country in Asia and the most populous country in the world."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "8",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "4. **United States** - Approximately 9.83 million square kilometers (3.8 million square miles), including all its territories. It is the fourth-largest country and is located in North America.",
+            "position": "9",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "4."],
+                    ["bold_text", "United States"],
+                    [
+                        "plain_text",
+                        "- Approximately 9.83 million square kilometers (3.8 million square miles), including all its territories. It is the fourth-largest country and is located in North America."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "10",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "5. **Brazil** - About 8.5 million square kilometers (3.3 million square miles). It is the largest country in South America.",
+            "position": "11",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "5."],
+                    ["bold_text", "Brazil"],
+                    [
+                        "plain_text",
+                        "- About 8.5 million square kilometers (3.3 million square miles). It is the largest country in South America."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "12",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "6. **Australia** - Roughly 7.7 million square kilometers (2.97 million square miles). It is the largest country in Oceania and is often referred to as a continent.",
+            "position": "13",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "6."],
+                    ["bold_text", "Australia"],
+                    [
+                        "plain_text",
+                        "- Roughly 7.7 million square kilometers (2.97 million square miles). It is the largest country in Oceania and is often referred to as a continent."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "14",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "7. **India** - Approximately 3.29 million square kilometers (1.27 million square miles). It is the seventh-largest country and is located in South Asia.",
+            "position": "15",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "7."],
+                    ["bold_text", "India"],
+                    [
+                        "plain_text",
+                        "- Approximately 3.29 million square kilometers (1.27 million square miles). It is the seventh-largest country and is located in South Asia."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "16",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "8. **Argentina** - About 2.78 million square kilometers (1.07 million square miles). It is the second-largest country in South America.",
+            "position": "17",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "8."],
+                    ["bold_text", "Argentina"],
+                    [
+                        "plain_text",
+                        "- About 2.78 million square kilometers (1.07 million square miles). It is the second-largest country in South America."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "18",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "9. **Kazakhstan** - Roughly 2.72 million square kilometers (1.05 million square miles). It is the largest landlocked country in the world and is located in Central Asia.",
+            "position": "19",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "9."],
+                    ["bold_text", "Kazakhstan"],
+                    [
+                        "plain_text",
+                        "- Roughly 2.72 million square kilometers (1.05 million square miles). It is the largest landlocked country in the world and is located in Central Asia."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "20",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "10. **Algeria** - Approximately 2.38 million square kilometers (919,595 square miles). It is the largest country in Africa.",
+            "position": "21",
+            "category": "numbered_list",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    ["numbered_list_marker_text", "10."],
+                    ["bold_text", "Algeria"],
+                    [
+                        "plain_text",
+                        "- Approximately 2.38 million square kilometers (919,595 square miles). It is the largest country in Africa."
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "1",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "",
+            "position": "22",
+            "category": "line_break",
+            "clean_line": "",
+            "segmentation": {
+                "segments": []
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        },
+        {
+            "line": "These countries vary greatly in terms of geography, climate, culture, and population. If you would like more specific information about any of these countries, feel free to ask!",
+            "position": "23",
+            "category": "other_text",
+            "clean_line": "",
+            "segmentation": {
+                "segments": [
+                    [
+                        "plain_text",
+                        "These countries vary greatly in terms of geography, climate, culture, and population. If you would like more specific information about any of these countries, feel free to ask!"
+                    ]
+                ]
+            },
+            "metadata": {
+                "level": "None",
+                "code_language": "None",
+                "table_has_numerical_content": "None",
+                "table_rows_count": "None",
+                "table_column_count": "None"
+            }
+        }
+    ],
+    "analysis": {
+        "section_groups": [
+            {
+                "pattern_type": "concurrent_lists_group",
+                "sections": [
+                    {
+                        "section_type": "plain_text",
+                        "position": "1",
+                        "lines": [
+                            {
+                                "line": "Certainly! The biggest countries in the world by total area are:",
+                                "position": "1",
+                                "category": "other_text",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [["plain_text", "Certainly! The biggest countries in the world by total area are:"]]
+                                },
+                                "metadata": {
+                                    "level": "None",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "plain_text",
+                            "char_count": "64",
+                            "content_elements_count": {
+                                "LineCategory.OTHER_TEXT": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "2",
+                        "lines": [
+                            {
+                                "line": "1. **Russia** - Approximately 17.1 million square kilometers (6.6 million square miles). It is the largest country in the world, spanning Eastern Europe and northern Asia.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "1."],
+                                        ["bold_text", "Russia"],
+                                        [
+                                            "plain_text",
+                                            "- Approximately 17.1 million square kilometers (6.6 million square miles). It is the largest country in the world, spanning Eastern Europe and northern Asia."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "171",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "3",
+                        "lines": [
+                            {
+                                "line": "2. **Canada** - About 9.98 million square kilometers (3.85 million square miles). It is the second-largest country, located in North America.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "2."],
+                                        ["bold_text", "Canada"],
+                                        [
+                                            "plain_text",
+                                            "- About 9.98 million square kilometers (3.85 million square miles). It is the second-largest country, located in North America."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "141",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "4",
+                        "lines": [
+                            {
+                                "line": "3. **China** - Roughly 9.6 million square kilometers (3.7 million square miles). It is the largest country in Asia and the most populous country in the world.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "3."],
+                                        ["bold_text", "China"],
+                                        [
+                                            "plain_text",
+                                            "- Roughly 9.6 million square kilometers (3.7 million square miles). It is the largest country in Asia and the most populous country in the world."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "158",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "5",
+                        "lines": [
+                            {
+                                "line": "4. **United States** - Approximately 9.83 million square kilometers (3.8 million square miles), including all its territories. It is the fourth-largest country and is located in North America.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "4."],
+                                        ["bold_text", "United States"],
+                                        [
+                                            "plain_text",
+                                            "- Approximately 9.83 million square kilometers (3.8 million square miles), including all its territories. It is the fourth-largest country and is located in North America."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "192",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "6",
+                        "lines": [
+                            {
+                                "line": "5. **Brazil** - About 8.5 million square kilometers (3.3 million square miles). It is the largest country in South America.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "5."],
+                                        ["bold_text", "Brazil"],
+                                        [
+                                            "plain_text",
+                                            "- About 8.5 million square kilometers (3.3 million square miles). It is the largest country in South America."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "123",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "7",
+                        "lines": [
+                            {
+                                "line": "6. **Australia** - Roughly 7.7 million square kilometers (2.97 million square miles). It is the largest country in Oceania and is often referred to as a continent.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "6."],
+                                        ["bold_text", "Australia"],
+                                        [
+                                            "plain_text",
+                                            "- Roughly 7.7 million square kilometers (2.97 million square miles). It is the largest country in Oceania and is often referred to as a continent."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "163",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "8",
+                        "lines": [
+                            {
+                                "line": "7. **India** - Approximately 3.29 million square kilometers (1.27 million square miles). It is the seventh-largest country and is located in South Asia.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "7."],
+                                        ["bold_text", "India"],
+                                        [
+                                            "plain_text",
+                                            "- Approximately 3.29 million square kilometers (1.27 million square miles). It is the seventh-largest country and is located in South Asia."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "152",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "9",
+                        "lines": [
+                            {
+                                "line": "8. **Argentina** - About 2.78 million square kilometers (1.07 million square miles). It is the second-largest country in South America.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "8."],
+                                        ["bold_text", "Argentina"],
+                                        [
+                                            "plain_text",
+                                            "- About 2.78 million square kilometers (1.07 million square miles). It is the second-largest country in South America."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "135",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "10",
+                        "lines": [
+                            {
+                                "line": "9. **Kazakhstan** - Roughly 2.72 million square kilometers (1.05 million square miles). It is the largest landlocked country in the world and is located in Central Asia.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "9."],
+                                        ["bold_text", "Kazakhstan"],
+                                        [
+                                            "plain_text",
+                                            "- Roughly 2.72 million square kilometers (1.05 million square miles). It is the largest landlocked country in the world and is located in Central Asia."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "169",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    },
+                    {
+                        "section_type": "other_section_type",
+                        "position": "11",
+                        "lines": [
+                            {
+                                "line": "10. **Algeria** - Approximately 2.38 million square kilometers (919,595 square miles). It is the largest country in Africa.",
+                                "position": "1",
+                                "category": "numbered_list",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        ["numbered_list_marker_text", "10."],
+                                        ["bold_text", "Algeria"],
+                                        [
+                                            "plain_text",
+                                            "- Approximately 2.38 million square kilometers (919,595 square miles). It is the largest country in Africa."
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "1",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "other_section_type",
+                            "char_count": "123",
+                            "content_elements_count": {
+                                "LineCategory.NUMBERED_LIST": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    }
+                ],
+                "start_position": "1",
+                "end_position": "11"
+            },
+            {
+                "pattern_type": "other_section_group",
+                "sections": [
+                    {
+                        "section_type": "plain_text",
+                        "position": "12",
+                        "lines": [
+                            {
+                                "line": "These countries vary greatly in terms of geography, climate, culture, and population. If you would like more specific information about any of these countries, feel free to ask!",
+                                "position": "1",
+                                "category": "other_text",
+                                "clean_line": "",
+                                "segmentation": {
+                                    "segments": [
+                                        [
+                                            "plain_text",
+                                            "These countries vary greatly in terms of geography, climate, culture, and population. If you would like more specific information about any of these countries, feel free to ask!"
+                                        ]
+                                    ]
+                                },
+                                "metadata": {
+                                    "level": "None",
+                                    "code_language": "None",
+                                    "table_has_numerical_content": "None",
+                                    "table_rows_count": "None",
+                                    "table_column_count": "None"
+                                }
+                            }
+                        ],
+                        "analysis": {
+                            "section_type": "plain_text",
+                            "char_count": "177",
+                            "content_elements_count": {
+                                "LineCategory.OTHER_TEXT": "1"
+                            },
+                            "metadata": {
+                                "level": "None",
+                                "code_language": "None",
+                                "table_has_numerical_content": "None",
+                                "table_rows_count": "None",
+                                "table_column_count": "None"
+                            }
+                        }
+                    }
+                ],
+                "start_position": "12",
+                "end_position": "12"
+            }
+        ],
+        "analysis": {
+            "total_char_count": "1768",
+            "total_header_count": "0",
+            "total_bullet_count": "0",
+            "total_numbered_bullet_count": "10",
+            "total_code_block_count": "0",
+            "total_content_sections": "12",
+            "content_char_distribution_std": "33.85351689353126",
+            "content_distribution_percentage": "77.02",
+            "total_sub_bullet_count": "0",
+            "total_all_list_items": "10",
+            "average_list_items_per_content_section": "0.8333333333333334",
+            "header_level_counts": {},
+            "primary_header_level": "0",
+            "primary_content_type": "bullet-heavy",
+            "avg_section_depth": "1.0"
+        }
+    }
+}

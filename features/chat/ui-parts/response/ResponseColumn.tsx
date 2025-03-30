@@ -6,7 +6,7 @@ import AssistantMessage from "@/features/chat/components/response/assistant-mess
 import { useFetchConversationMessages } from "./useFetchConversationMessages";
 import { NewChatResult } from "@/hooks/ai/chat/new/useChat";
 import { ChatResult } from "@/hooks/ai/chat/useChat";
-import AssistantStream from "../../components/response/assistant-message/stream/AssistantMessage";
+import AssistantStream from "../../components/response/assistant-message/stream/AssistantStream";
 
 const DEBUG = false;
 

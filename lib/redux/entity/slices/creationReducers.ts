@@ -7,15 +7,13 @@ import {
     setSuccess,
     setNewActiveRecord,
     removeFromUnsavedRecords,
-    parseRecordKey,
-    parseMatrxRecordId,
 } from "@/lib/redux/entity/utils/stateHelpUtils";
 import EntityLogger from "../utils/entityLogger";
 import { CreateRecordPayload, createRecordSuccessPayload, DirectCreateRecordPayload } from "@/lib/redux/entity/actions";
 import { EntityModeManager } from "../utils/crudOpsManagement";
 
 const INFO = "info";
-const DEBUG = "info";
+const DEBUG = "debug";
 const VERBOSE = "verbose";
 
 export const creationReducers = <TEntity extends EntityKeys>(
@@ -33,15 +31,14 @@ export const creationReducers = <TEntity extends EntityKeys>(
             };
             return;
         }
-        // Since we are only STARTING the process, there is nothing to load so we use 'reverseLoading' = true
         setLoading(state, "CREATE", true);
     },
 
     startRecordCreationWithData: (
         state: EntityState<TEntity>,
         action: PayloadAction<{
-            tempId: string; // Making this required since we need it for the record
-            initialData: Partial<EntityData<TEntity>>; // Making this required since this is the purpose of this action
+            tempId: string;
+            initialData: Partial<EntityData<TEntity>>;
         }>
     ) => {
         entityLogger.log(DEBUG, "startRecordCreationWithData", action.payload);
@@ -124,7 +121,8 @@ export const creationReducers = <TEntity extends EntityKeys>(
         const tempRecordId = action.payload.tempRecordId;
         const data = state.unsavedRecords[tempRecordId] as EntityData<TEntity>;
         if (data) {
-            entityLogger.log(INFO, "WARNING! EXPERIMENTAL FEATURE FOR AN OPTIMISTIC UPDATE BUT NOT USING OPTIMISTIC UPDATE FEATURE! createRecord - data: ", data);
+            entityLogger.log(INFO, "WARNING! EXPERIMENTAL FEATURE FOR AN OPTIMISTIC UPDATE BUT NOT USING OPTIMISTIC UPDATE FEATURE! createRecord");
+            entityLogger.log(DEBUG, "data: ", data);
             entityLogger.log(INFO, "- Temp Record Id: ", tempRecordId);
             const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, data);
             state.records[recordKey] = data;

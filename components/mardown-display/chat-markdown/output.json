@@ -1,0 +1,131 @@
+[
+    {
+        "line": "The three largest countries in the world by land area are:",
+        "position": "1",
+        "category": "other_text",
+        "clean_line": "",
+        "segmentation": {
+            "segments": [["plain_text", "The three largest countries in the world by land area are:"]]
+        },
+        "metadata": {
+            "level": "None",
+            "code_language": "None",
+            "table_has_numerical_content": "None",
+            "table_rows_count": "None",
+            "table_column_count": "None"
+        }
+    },
+    {
+        "line": "",
+        "position": "2",
+        "category": "line_break",
+        "clean_line": "",
+        "segmentation": {
+            "segments": []
+        },
+        "metadata": {
+            "level": "None",
+            "code_language": "None",
+            "table_has_numerical_content": "None",
+            "table_rows_count": "None",
+            "table_column_count": "None"
+        }
+    },
+    {
+        "line": "1. **Russia** - Approximately 17.1 million square kilometers.",
+        "position": "3",
+        "category": "numbered_list",
+        "clean_line": "",
+        "segmentation": {
+            "segments": [
+                ["numbered_list_marker_text", "1."],
+                ["bold_text", "Russia"],
+                ["plain_text", "- Approximately 17.1 million square kilometers."]
+            ]
+        },
+        "metadata": {
+            "level": "1",
+            "code_language": "None",
+            "table_has_numerical_content": "None",
+            "table_rows_count": "None",
+            "table_column_count": "None"
+        }
+    },
+    {
+        "line": "2. **Canada** - Approximately 9.98 million square kilometers.",
+        "position": "4",
+        "category": "numbered_list",
+        "clean_line": "",
+        "segmentation": {
+            "segments": [
+                ["numbered_list_marker_text", "2."],
+                ["bold_text", "Canada"],
+                ["plain_text", "- Approximately 9.98 million square kilometers."]
+            ]
+        },
+        "metadata": {
+            "level": "1",
+            "code_language": "None",
+            "table_has_numerical_content": "None",
+            "table_rows_count": "None",
+            "table_column_count": "None"
+        }
+    },
+    {
+        "line": "3. **China** - Approximately 9.6 million square kilometers.",
+        "position": "5",
+        "category": "numbered_list",
+        "clean_line": "",
+        "segmentation": {
+            "segments": [
+                ["numbered_list_marker_text", "3."],
+                ["bold_text", "China"],
+                ["plain_text", "- Approximately 9.6 million square kilometers."]
+            ]
+        },
+        "metadata": {
+            "level": "1",
+            "code_language": "None",
+            "table_has_numerical_content": "None",
+            "table_rows_count": "None",
+            "table_column_count": "None"
+        }
+    },
+    {
+        "line": "",
+        "position": "6",
+        "category": "line_break",
+        "clean_line": "",
+        "segmentation": {
+            "segments": []
+        },
+        "metadata": {
+            "level": "None",
+            "code_language": "None",
+            "table_has_numerical_content": "None",
+            "table_rows_count": "None",
+            "table_column_count": "None"
+        }
+    },
+    {
+        "line": "These figures can vary slightly based on different sources, but these are generally accepted as the largest countries.",
+        "position": "7",
+        "category": "other_text",
+        "clean_line": "",
+        "segmentation": {
+            "segments": [
+                [
+                    "plain_text",
+                    "These figures can vary slightly based on different sources, but these are generally accepted as the largest countries."
+                ]
+            ]
+        },
+        "metadata": {
+            "level": "None",
+            "code_language": "None",
+            "table_has_numerical_content": "None",
+            "table_rows_count": "None",
+            "table_column_count": "None"
+        }
+    }
+]

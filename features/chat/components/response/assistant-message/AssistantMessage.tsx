@@ -3,21 +3,26 @@ import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, RefreshCw, Edit, S
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
+import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/MarkdownAnalyzer";
+import { localMessage } from "../ResponseColumn";
 
 interface AssistantMessageProps {
-    content: string;
+    message: localMessage;
     isStreamActive: boolean;
     onScrollToBottom?: () => void;
     onContentUpdate?: (newContent: string) => void;
+    markdownAnalysisData?: MarkdownAnalysisData;
 }
 
-const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamActive = false, onScrollToBottom, onContentUpdate }) => {
+const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamActive = false, onScrollToBottom, onContentUpdate, markdownAnalysisData }) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
-    const [isEditorOpen, setIsEditorOpen] = useState(false); // 3. State for modal visibility
+    const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const content = message.content;
+
 
     const handleCopy = async () => {
         try {
@@ -76,6 +81,8 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamAc
                     role="assistant"
                     className="bg-transparent dark:bg-transparent"
                     isStreamActive={isStreamActive}
+                    analysisData={markdownAnalysisData}
+                    messageId={message.id}
                 />
 
                 {!isStreamActive && (
@@ -148,7 +155,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ content, isStreamAc
                     </div>
                 )}
             </div>
-            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} />
+            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} analysisData={markdownAnalysisData} />
         </div>
     );
 };

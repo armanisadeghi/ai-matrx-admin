@@ -14,7 +14,7 @@ import {
 import EntityLogger from "../utils/entityLogger";
 
 const INFO = "info";
-const DEBUG = "info";
+const DEBUG = "debug";
 const VERBOSE = "verbose";
 
 export const selectionReducers = <TEntity extends EntityKeys>(entityKey: TEntity, entityLogger: EntityLogger) => ({

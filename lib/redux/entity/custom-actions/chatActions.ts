@@ -9,6 +9,8 @@ import { Conversation, Message } from "@/types/chat/chat.types";
 import { fetchRelatedRecordsThunk } from "../thunks/fetchRelatedRecordsThunk";
 import { createMessageForConversation, saveMessageThunk } from "@/lib/redux/features/aiChats/thunks/entity/createMessageThunk";
 import { fetchRelatedMessagesThunk } from "../../features/aiChats/thunks/entity/fetchRelatedMessagesThunk";
+import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/MarkdownAnalyzer";
+import { SocketInfoResponse } from "@/features/chat/components/response/ResponseColumn";
 
 export type RuntimeFilter = {
     field: string;
@@ -751,6 +753,19 @@ export const getChatActionsWithThunks = () => {
             console.log("[CHAT ACTIONS THUNK] setting isNotStreaming");
             dispatch(conversationActions.updateCustomDataSmart({ customData: { isStreaming: false } }));
             dispatch(messageActions.updateCustomDataSmart({ customData: { isStreaming: false } }));
+        },
+
+        setMarkdownAnalysisData: 
+        (params: { data: SocketInfoResponse }) => (dispatch: AppDispatch) => {
+            const markdownAnalysisData: MarkdownAnalysisData = {
+                output: params.data.data.output,
+                analysis: params.data.data.analysis,
+                related_id: params.data.related_id,
+            };
+
+            console.log("[CHAT ACTIONS THUNK] setting markdownAnalysisData", markdownAnalysisData);
+    
+            dispatch(messageActions.updateNestedFieldSmart({ keyOrId: params.data.related_id, field: "metadata", nestedKey: "markdownAnalysisData", value: markdownAnalysisData }));
         },
 
         updateConversationMetadataFieldSmart:

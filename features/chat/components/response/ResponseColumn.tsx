@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import UserMessage from "@/features/chat/components/response/user-message/UserMessage";
 import AssistantMessage from "@/features/chat/components/response/assistant-message/AssistantMessage";
 import { useAppSelector } from "@/lib/redux";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
-import { ChevronDoubleDown } from "@mynaui/icons-react";
-import AssistantStream from "@/features/chat/components/response/assistant-message/stream/AssistantMessage";
-
-
+import AssistantStream from "@/features/chat/components/response/assistant-message/stream/AssistantStream";
+import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/MarkdownAnalyzer";
 
 const INFO = true;
 const DEBUG = true;
@@ -26,6 +24,7 @@ export type localMessage = {
     userId?: string;
     isPublic?: boolean;
     matrxRecordId?: string;
+    markdownAnalysisData?: MarkdownAnalysisData;
 };
 
 const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localMessage; onScrollToBottom: () => void }) => {
@@ -33,32 +32,71 @@ const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localM
         console.log("newContent", newContent);
     };
 
+    if (VERBOSE && message.role === "assistant") {
+        console.log("Message Item", message.id, JSON.stringify(message.markdownAnalysisData));
+    }
+
     return message.role === "user" ? (
         <UserMessage key={message.id} message={message} onScrollToBottom={onScrollToBottom} />
     ) : (
         <AssistantMessage
             key={message.id}
-            content={message.content}
+            message={message}
             isStreamActive={false}
             onScrollToBottom={onScrollToBottom}
             onContentUpdate={handleContentEdit}
+            markdownAnalysisData={message.markdownAnalysisData || null}
         />
     );
 });
 
 MessageItem.displayName = "MessageItem";
 
+export type SocketInfoResponse = {
+    type: string;
+    status: string;
+    message: string;
+    related_id: string;
+    data: MarkdownAnalysisData;
+};
+
 const ResponseColumn: React.FC = () => {
     const [streamKey, setStreamKey] = useState<string>("stream-0");
+    const [analysisDataResponse, setAnalysisDataResponse] = useState<MarkdownAnalysisData | null>(null);
     const { chatSelectors, eventName } = useChatBasics();
     const messagesToDisplay = useAppSelector(chatSelectors.messageRelationFilteredRecords);
     const messageCount = messagesToDisplay.length;
 
+    const messagesToDisplayWithAnalysisData = useMemo(
+        () =>
+            messagesToDisplay.map((message) => {
+                if (analysisDataResponse && message.id === analysisDataResponse.related_id) {
+                    return {
+                        ...message, // Spread the original message properties
+                        markdownAnalysisData: analysisDataResponse,
+                    };
+                }
+                return {
+                    ...message,
+                };
+            }),
+        [messagesToDisplay, analysisDataResponse]
+    );
+
     const bottomRef = useRef<HTMLDivElement>(null);
-    const [isAtBottom, setIsAtBottom] = useState(true);
+    const isStreaming = useAppSelector(chatSelectors.isStreaming);
+
+    const handleScrollToBottom = () => {
+        // Repeat scroll 3 times with 100ms intervals
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, i * 100);
+        }
+    };
 
     useEffect(() => {
-        if (messageCount == 0) return;
+        if (messageCount === 0) return;
         const timer = setTimeout(() => {
             const assistantMessages = messagesToDisplay.filter((message) => message.role === "assistant");
             const maxDisplayOrder = Math.max(...assistantMessages.map((message) => message.displayOrder), 0);
@@ -67,70 +105,42 @@ const ResponseColumn: React.FC = () => {
         return () => clearTimeout(timer);
     }, [messageCount, messagesToDisplay]);
 
-    const handleScrollToBottom = () => {
-        console.log("scrolling to bottom");
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    useEffect(() => {
+        handleScrollToBottom();
+    }, [messageCount]);
+
+    const onVisibilityChange = (isVisible: boolean) => {
+        if (!isStreaming) return;
+        if (isVisible) {
+            handleScrollToBottom();
+        }
     };
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsAtBottom(entry.isIntersecting);
-            },
-            {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.1
-            }
-        );
-
-        const currentRef = bottomRef.current;
-
-        if (currentRef) {
-            observer.observe(currentRef);
-        }
-
-        return () => {
-            if (currentRef) {
-                observer.unobserve(currentRef);
-            }
-            observer.disconnect();
+    const handleAddAnalysisData = (data: SocketInfoResponse) => {
+        const markdownAnalysisData: MarkdownAnalysisData = {
+            output: data.data.output,
+            analysis: data.data.analysis,
+            related_id: data.related_id,
         };
-    }, []);
 
+        setAnalysisDataResponse(markdownAnalysisData);
+    };
 
     return (
-        <div className="w-full px-4 py-6 relative">
-            <div className="max-w-3xl mx-auto space-y-6">
-                {messagesToDisplay.map((message) => (
-                    <MessageItem
-                        key={message.id}
-                        message={message}
-                        onScrollToBottom={handleScrollToBottom}
-                    />
+        <div className="w-full pt-0 pb-24 relative">
+            <div className="max-w-3xl mx-auto px-6 space-y-6">
+                {messagesToDisplayWithAnalysisData.map((message) => (
+                    <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} />
                 ))}
-
-                <AssistantStream key={streamKey} eventName={eventName} />
-
-                <div ref={bottomRef} style={{ height: '1px' }} />
+                <AssistantStream
+                    key={streamKey}
+                    eventName={eventName}
+                    handleVisibility={onVisibilityChange}
+                    scrollToBottom={handleScrollToBottom}
+                    handleAddAnalysisData={handleAddAnalysisData}
+                />
+                <div ref={bottomRef} style={{ height: "1px" }} />
             </div>
-
-            {!isAtBottom && (
-                <button
-                    onClick={handleScrollToBottom}
-                    className="
-                        fixed bottom-10 right-10 z-50 // Position fixed at bottom-right
-                        p-2 bg-gray-700 bg-opacity-50
-                        text-white rounded-full
-                        hover:bg-opacity-75 focus:outline-non
-                        focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-                        transition-opacity duration-300
-                    "
-                    aria-label="Scroll to bottom"
-                >
-                    <ChevronDoubleDown className="w-5 h-5" />
-                </button>
-            )}
         </div>
     );
 };

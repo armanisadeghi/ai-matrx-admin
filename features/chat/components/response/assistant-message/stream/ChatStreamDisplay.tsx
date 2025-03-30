@@ -1,5 +1,5 @@
 "use client";
-import React, { memo, useState, useEffect, useMemo } from "react";
+import React, { memo, useState, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
@@ -9,7 +9,7 @@ import StreamingTable from "@/features/chat/components/response/assistant-messag
 import { SocketManager } from "@/lib/redux/socket/manager";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch } from "@/lib/redux";
-
+import { SocketInfoResponse } from "@/features/chat/components/response/ResponseColumn";
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 const components = {
@@ -62,14 +62,16 @@ const components = {
 interface ChatStreamDisplayProps {
     eventName: string;
     className?: string;
+    handleAddAnalysisData?: (data: SocketInfoResponse) => void;
 }
 
-const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className }) => {
+const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className, handleAddAnalysisData }) => {
     const dispatch = useAppDispatch();
     const [content, setContent] = useState<string>("");
     const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">("connecting");
     const socketManager = useMemo(() => SocketManager.getInstance(), []);
     const chatActions = getChatActionsWithThunks();
+    const latestDataContent = useRef<any>(null); // Store the latest dataContent
 
     const containerStyles = useMemo(
         () =>
@@ -111,16 +113,19 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                     const newContent = typeof dataContent === "string" ? dataContent : JSON.stringify(dataContent);
                     setContent((prev) => prev + newContent);
 
+                    // Store the latest dataContent in a ref instead of dispatching immediately
+                    latestDataContent.current = dataContent;
+
                     const isEnd = data?.end === true || data?.end === "true" || data?.end === "True";
                     if (isEnd) {
                         console.log("[CHAT STREAM DISPLAY] Stream ended");
                         dispatch(chatActions.setIsNotStreaming());
                         dispatch(chatActions.fetchMessagesForActiveConversation());
-                        //dispatch(chatActions.setSocketEventName({ eventName: "STREAM COMPLETE" }));
                     }
 
+                    // Optionally call handleAddAnalysisData immediately if needed
                     if (typeof dataContent === "object" && dataContent !== null) {
-                        console.log("[CHAT STREAM DISPLAY] Nested object in data.data:", dataContent);
+                        handleAddAnalysisData?.(dataContent);
                     }
                 });
             } catch (error) {
@@ -134,13 +139,18 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
 
         setupSocket();
 
+        // Cleanup function runs on unmount
         return () => {
             isMounted = false;
             if (unsubscribe) {
                 unsubscribe();
             }
+            // Dispatch setMarkdownAnalysisData only when the component unmounts
+            if (latestDataContent.current && typeof latestDataContent.current === "object" && latestDataContent.current !== null) {
+                dispatch(chatActions.setMarkdownAnalysisData({ data: latestDataContent.current }));
+            }
         };
-    }, [eventName, socketManager]);
+    }, [eventName, socketManager, dispatch, chatActions, handleAddAnalysisData]);
 
     const renderContent = () => {
         switch (connectionStatus) {
@@ -163,7 +173,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         }
     };
 
-    if (content.length < 2) return;
+    if (content.length < 2) return null; // Adjusted to return null for consistency
 
     return (
         <div className="mb-3 w-full text-left">

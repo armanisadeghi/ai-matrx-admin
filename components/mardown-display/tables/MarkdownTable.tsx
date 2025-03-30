@@ -18,35 +18,33 @@ interface MarkdownTableProps {
     onSave?: (tableData: { headers: string[]; rows: string[][] }) => void;
 }
 
-const MarkdownTable: React.FC<MarkdownTableProps> = ({ 
-    data, 
-    className = "", 
-    fontSize = 16, 
-    theme = "professional", 
-    onSave = () => {} 
+const MarkdownTable: React.FC<MarkdownTableProps> = ({
+    data,
+    className = "",
+    fontSize = 16,
+    theme = "professional",
+    onSave = () => {},
 }) => {
     const [tableData, setTableData] = useState<{
         headers: string[];
         rows: string[][];
     }>({
         headers: [],
-        rows: []
+        rows: [],
     });
-    const [editMode, setEditMode] = useState<'none' | 'header' | number>('none');
+    const [editMode, setEditMode] = useState<"none" | "header" | number>("none");
     const tableFontsize = fontSize;
     const toast = useToastManager();
     const tableTheme = THEMES[theme].table || THEMES.professional.table;
 
     useEffect(() => {
         // Clean data when it changes
-        const cleanHeaders = data.headers?.map(header => header.replace(/\*\*/g, "").trim());
-        const cleanRows = data.rows.map(row => 
-            row.map(cell => cell.replace(/\*\*/g, "").trim())
-        );
-        
+        const cleanHeaders = data.headers?.map((header) => header.replace(/\*\*/g, "").trim());
+        const cleanRows = data.rows.map((row) => row.map((cell) => cell.replace(/\*\*/g, "").trim()));
+
         setTableData({
             headers: cleanHeaders,
-            rows: cleanRows
+            rows: cleanRows,
         });
     }, [data]);
 
@@ -73,10 +71,12 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             const csvContent = [
                 tableData.headers.join(","),
                 ...tableData.rows.map((row) =>
-                    row.map((cell) => {
-                        const escaped = cell.replace(/"/g, '""');
-                        return cell.includes(",") ? `"${escaped}"` : escaped;
-                    }).join(",")
+                    row
+                        .map((cell) => {
+                            const escaped = cell.replace(/"/g, '""');
+                            return cell.includes(",") ? `"${escaped}"` : escaped;
+                        })
+                        .join(",")
                 ),
             ].join("\n");
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -99,14 +99,14 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     const toggleGlobalEditMode = () => {
-        if (editMode !== 'none') {
+        if (editMode !== "none") {
             // Save current state and exit edit mode
             onSave(tableData);
-            setEditMode('none');
+            setEditMode("none");
             toast.info("Edit mode deactivated");
         } else {
             // Enter edit mode for header by default
-            setEditMode('header');
+            setEditMode("header");
             toast.info("Edit mode activated");
         }
     };
@@ -116,7 +116,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         newHeaders[index] = value;
         setTableData({
             ...tableData,
-            headers: newHeaders
+            headers: newHeaders,
         });
     };
 
@@ -125,70 +125,70 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         newRows[rowIndex][colIndex] = value;
         setTableData({
             ...tableData,
-            rows: newRows
+            rows: newRows,
         });
     };
 
     const handleRowClick = (rowIndex: number) => {
-        if (editMode === 'none') return; // Do nothing if not in edit mode
-        
+        if (editMode === "none") return; // Do nothing if not in edit mode
+
         // If we're already editing something, save the current state
         onSave(tableData);
-        
+
         // Set the new row as the one being edited
         setEditMode(rowIndex);
     };
 
     const handleHeaderClick = () => {
-        if (editMode === 'none') return; // Do nothing if not in edit mode
-        
+        if (editMode === "none") return; // Do nothing if not in edit mode
+
         // If we're already editing something, save the current state
         onSave(tableData);
-        
+
         // Set the header as being edited
-        setEditMode('header');
+        setEditMode("header");
     };
 
     const handleSave = () => {
         onSave(tableData);
-        setEditMode('none');
+        setEditMode("none");
         toast.success("Table data saved");
     };
 
     const handleCancel = () => {
         // Reset to original data
-        const cleanHeaders = data.headers.map(header => header.replace(/\*\*/g, "").trim());
-        const cleanRows = data.rows.map(row => 
-            row.map(cell => cell.replace(/\*\*/g, "").trim())
-        );
-        
+        const cleanHeaders = data.headers.map((header) => header.replace(/\*\*/g, "").trim());
+        const cleanRows = data.rows.map((row) => row.map((cell) => cell.replace(/\*\*/g, "").trim()));
+
         setTableData({
             headers: cleanHeaders,
-            rows: cleanRows
+            rows: cleanRows,
         });
-        setEditMode('none');
+        setEditMode("none");
         toast.info("Edits cancelled");
     };
 
-    const isEditingEnabled = editMode !== 'none';
-    const isEditingHeader = editMode === 'header';
+    const isEditingEnabled = editMode !== "none";
+    const isEditingHeader = editMode === "header";
 
     return (
         <div className="w-full space-y-4 my-4">
             <div className={cn("overflow-x-auto rounded-xl border-3", tableTheme.border)}>
                 <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${tableFontsize}px` }}>
                     <thead>
-                        <tr 
-                            className={cn(
-                                "border-b", 
-                                tableTheme.border, 
-                                tableTheme.header,
-                                isEditingEnabled && "cursor-pointer"
-                            )}
+                        <tr
+                            className={cn("border-b", tableTheme.border, tableTheme.header, isEditingEnabled && "cursor-pointer")}
                             onClick={isEditingEnabled ? handleHeaderClick : undefined}
                         >
                             {tableData.headers.map((header, i) => (
-                                <th key={i} className={cn("px-1 py-2 text-left font-semibold", tableTheme.headerText)}>
+                                <th
+                                    key={i}
+                                    className={cn(
+                                        "px-1 py-2 text-left font-semibold",
+                                        tableTheme.headerText,
+                                        i < tableData.headers.length - 1 && "border-r border-gray-300 dark:border-gray-700"
+                                    )}
+                                >
                                     {isEditingHeader ? (
                                         <input
                                             type="text"
@@ -222,17 +222,25 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                                 onClick={isEditingEnabled ? () => handleRowClick(rowIndex) : undefined}
                             >
                                 {row.map((cell, colIndex) => (
-                                    <td key={colIndex} className={cn("px-1 py-2", colIndex === 0 && "font-semibold")}>
+                                    <td
+                                        key={colIndex}
+                                        className={cn(
+                                            "px-1 pt-1 pb-0",
+                                            colIndex < row.length - 1 && "border-r border-gray-300 dark:border-gray-700",
+                                            colIndex === 0 && "font-semibold"
+                                        )}
+                                    >
                                         {editMode === rowIndex ? (
-                                            <input
-                                                type="text"
+                                            <textarea
                                                 value={cell}
                                                 onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
                                                 className={cn(
                                                     "w-full bg-transparent outline-none border border-dashed border-blue-300 p-1",
+                                                    "resize-y min-h-[8rem]",
                                                     colIndex === 0 && "font-semibold"
                                                 )}
                                                 onClick={(e) => e.stopPropagation()}
+                                                onFocus={(e) => e.target.select()}
                                             />
                                         ) : (
                                             cell
@@ -260,7 +268,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         </>
                     )}
                 </div>
-                
+
                 {/* Right side buttons (always shown but toggled between edit/view) */}
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={copyTableToClipboard} className="flex items-center gap-2">

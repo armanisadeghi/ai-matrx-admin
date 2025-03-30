@@ -2,7 +2,7 @@
 "use client";
 
 import { createSelector } from "@reduxjs/toolkit";
-import { EntityKeys, EntityAnyFieldKey, EntityFieldKeys } from "@/types/entityTypes";
+import { EntityKeys, EntityFieldKeys } from "@/types/entityTypes";
 import { RootState } from "@/lib/redux/store";
 import { RuntimeFilter, RuntimeSort } from "@/lib/redux/entity/types/stateTypes";
 import { createEntitySelectors } from "../selectors";
@@ -18,7 +18,7 @@ import {
     MessageRecordMap,
     MessageRecordWithKey,
 } from "@/types/AutomationSchemaTypes";
-import { useAppSelector } from "../..";
+import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/MarkdownAnalyzer";
 
 const trace = "ENTITY SELECTORS";
 
@@ -398,13 +398,22 @@ export const createChatSelectors = () => {
 
     const routeLoadComplete = createSelector(
         [initialLoadComplete, hasMinOneActiveMessage, messageIsLoading, isConversationExternalLoading],
-        (initialLoadComplete, hasActiveMessage, messageIsLoading, isConversationExternalLoading) => initialLoadComplete && hasActiveMessage && !messageIsLoading && !isConversationExternalLoading
+        (initialLoadComplete, hasActiveMessage, messageIsLoading, isConversationExternalLoading) =>
+            initialLoadComplete && hasActiveMessage && !messageIsLoading && !isConversationExternalLoading
     );
 
     const activeMessageMetadata = createSelector([activeMessage], (message) => message?.metadata);
     const activeConversationMetadata = createSelector([activeConversation], (conversation) => conversation?.metadata);
 
     const availableTools = createSelector([activeMessageMetadata], (metadata) => metadata?.availableTools);
+
+    const selectMarkdownAnalysisData = createSelector(
+        [messagesArray, (_state: RootState, messageId: string) => messageId],
+        (messages, messageId): MarkdownAnalysisData | undefined => {
+            const message = messages.find((msg) => msg.id === messageId);
+            return message?.metadata?.markdownAnalysisData as MarkdownAnalysisData | undefined;
+        }
+    );
 
     const files = createSelector([activeMessageMetadata], (metadata) => metadata?.files);
 
@@ -470,7 +479,6 @@ export const createChatSelectors = () => {
         isConversationExternalLoading,
         isMessageExternalLoading,
 
-
         activeMessageMetadata,
         activeConversationMetadata,
         availableTools,
@@ -483,6 +491,7 @@ export const createChatSelectors = () => {
 
         isLastMessageAssistant,
         isStreaming,
+        selectMarkdownAnalysisData,
     };
 };
 

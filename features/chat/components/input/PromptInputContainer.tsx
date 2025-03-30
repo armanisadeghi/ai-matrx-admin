@@ -9,6 +9,7 @@ import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
+import { useIsMobile } from "@/hooks/use-mobile";
   
 interface PromptInputContainerProps {
     onMessageSent?: () => void;
@@ -27,6 +28,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 }) => {
 
     const [localDisabled, setLocalDisabled] = useState<boolean>(false);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         setLocalDisabled(disabled);
@@ -38,7 +40,6 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
     const { chatActions, chatSelectors, conversationId, messageId } = useChatBasics();
 
-    console.log("Message Id:", messageId);
 
     const fileManager = useFileManagement({
         onFilesUpdate: (files) => chatActions.updateFiles({ value: files.map((file) => file.url) }),
@@ -48,7 +49,6 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     const [content, setContent] = useState<string>("");
 
     const activeMessageRecord = useAppSelector(chatSelectors.activeMessage);
-    console.log("PromptInputContainer Active Message Record:", activeMessageRecord);
 
     useEffect(() => {
         if (activeMessageRecord?.content === "") {
