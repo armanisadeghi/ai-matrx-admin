@@ -32,6 +32,7 @@ interface FloatingSheetProps {
     role?: string; // New: ARIA role (defaults to "dialog")
     hasBackdrop?: boolean; // New: Whether to show a backdrop behind the sheet
     onBackdropClick?: () => void; // New: Handler for backdrop clicks
+    isMobile?: boolean; // New: Flag to enable mobile-friendly mode
 }
 
 const FloatingSheet: React.FC<FloatingSheetProps> = ({
@@ -64,26 +65,25 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     role = "dialog",
     hasBackdrop = true,
     onBackdropClick,
+    isMobile = false, // Default to false to maintain backward compatibility
 }) => {
     // Create a state to track if the component has been initially rendered
     const [hasRendered, setHasRendered] = useState(false);
-
     // Refs for focusing and scroll preservation
     const sheetRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
     const [scrollPosition, setScrollPosition] = useState(0);
-
+    
     // Handle initial render
     useEffect(() => {
         if (!hasRendered) {
             setHasRendered(true);
         }
     }, []);
-
+    
     // Handle body scroll locking when sheet is open
     useEffect(() => {
         if (!lockScroll) return;
-
         if (isOpen) {
             // Store current scroll position before locking
             const scrollY = window.scrollY;
@@ -102,7 +102,6 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                 window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
             }
         }
-
         return () => {
             document.body.style.position = "";
             document.body.style.width = "";
@@ -110,7 +109,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             document.body.style.overflow = "";
         };
     }, [isOpen, lockScroll]);
-
+    
     // Handle ESC key press
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -118,37 +117,35 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                 onClose();
             }
         };
-
         if (isOpen && closeOnEsc) {
             document.addEventListener("keydown", handleKeyDown);
         }
-
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [isOpen, closeOnEsc, onClose]);
-
+    
     // Handle focus management for accessibility
     useEffect(() => {
         if (isOpen && initialFocus && sheetRef.current) {
             sheetRef.current.focus();
         }
     }, [isOpen, initialFocus]);
-
+    
     // Handle scroll position preservation
     useEffect(() => {
         if (isOpen && contentRef.current && preserveScrollPosition) {
             contentRef.current.scrollTop = scrollPosition;
         }
     }, [isOpen, preserveScrollPosition, scrollPosition]);
-
+    
     // Save scroll position when closing
     useEffect(() => {
         if (!isOpen && contentRef.current && preserveScrollPosition) {
             setScrollPosition(contentRef.current.scrollTop);
         }
     }, [isOpen, preserveScrollPosition]);
-
+    
     // Function to close the sheet when clicking backdrop
     const handleBackdropClick = useCallback(() => {
         if (onBackdropClick) {
@@ -157,9 +154,14 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             onClose();
         }
     }, [closeOnBackdropClick, onClose, onBackdropClick]);
-
+    
     // Determine max width based on the width prop
     const getWidthClass = () => {
+        // For mobile mode, ignore width prop and use full width
+        if (isMobile) {
+            return "max-w-full w-full";
+        }
+        
         const widthMap: Record<string, string> = {
             sm: "max-w-sm",
             md: "max-w-md",
@@ -170,22 +172,32 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             "4xl": "max-w-4xl",
             full: "max-w-full",
         };
-
+        
         // For top/bottom positions, use full width by default unless explicitly set
         if ((position === "top" || position === "bottom") && width === "md") {
             return "max-w-full";
         }
-
+        
         return widthMap[width] || "max-w-md";
     };
-
+    
     // Determine height for top/bottom/center positions
     const getHeightClass = () => {
+        // For mobile mode with bottom position, use a fixed height
+        if (isMobile && position === "bottom") {
+            return "max-h-[90vh]";
+        }
+        
+        // For mobile mode with full screen (other positions), use full height
+        if (isMobile && position !== "bottom") {
+            return "max-h-full h-full";
+        }
+        
         // Only apply height constraints for top, bottom, or center positions
         if (position === "right" || position === "left") {
             return "";
         }
-
+        
         const heightMap: Record<string, string> = {
             sm: "max-h-sm",
             md: "max-h-md",
@@ -197,12 +209,23 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             full: "max-h-full",
             auto: position === "center" ? "max-h-[85vh]" : "max-h-[50vh]", // Default reasonable heights
         };
-
+        
         return heightMap[height] || heightMap.auto;
     };
-
+    
     // Determine position classes
     const getPositionClasses = () => {
+        // For mobile mode, use full screen positioning
+        if (isMobile) {
+            // For bottom sheet on mobile, position at the bottom with no spacing
+            if (position === "bottom") {
+                return "inset-x-0 bottom-0";
+            }
+            
+            // For other positions on mobile, use full screen
+            return "inset-0";
+        }
+        
         const positionMap: Record<string, string> = {
             right: `top-${spacing} bottom-${spacing} right-${spacing}`,
             left: `top-${spacing} bottom-${spacing} left-${spacing}`,
@@ -210,12 +233,23 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             bottom: `bottom-${spacing} left-${spacing} right-${spacing}`,
             center: "inset-0 flex items-center justify-center", // For centered modal style
         };
-
+        
         return positionMap[position] || `top-${spacing} bottom-${spacing} right-${spacing}`;
     };
-
+    
     // Determine transform classes for animations
     const getTransformClass = () => {
+        // For mobile mode
+        if (isMobile) {
+            // For bottom sheet on mobile, slide up from bottom
+            if (position === "bottom") {
+                return isOpen ? "translate-y-0" : "translate-y-full";
+            }
+            
+            // For other positions on mobile, fade in/out
+            return isOpen ? "opacity-100" : "opacity-0";
+        }
+        
         const transformMap: Record<string, string> = {
             right: isOpen ? "translate-x-0" : "translate-x-full",
             left: isOpen ? "translate-x-0" : "-translate-x-full",
@@ -223,21 +257,52 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             bottom: isOpen ? "translate-y-0" : "translate-y-full",
             center: isOpen ? "scale-100 opacity-100" : "scale-95 opacity-0", // Scale + fade for center modal
         };
-
+        
         return transformMap[position] || (isOpen ? "translate-x-0" : "translate-x-full");
     };
-
+    
+    // Determine rounded corners for mobile
+    const getRoundedClass = () => {
+        if (isMobile) {
+            // For bottom sheet, only round the top corners
+            if (position === "bottom") {
+                return "rounded-t-xl";
+            }
+            
+            // For full screen on mobile, no rounded corners
+            return "";
+        }
+        
+        return `rounded-${rounded}`;
+    };
+    
     const positionClasses = getPositionClasses();
     const widthClass = getWidthClass();
     const heightClass = getHeightClass();
     const transformClass = getTransformClass();
-
+    const roundedClass = getRoundedClass();
+    
     // Determine if we need to show the header
     const showHeader = title || showCloseButton || headerContent;
-
     // Determine if we need to show the footer
     const showFooter = footer || footerContent;
-
+    
+    // Mobile-specific header styles
+    const getMobileHeaderClass = () => {
+        if (isMobile) {
+            return "sticky top-0 bg-white dark:bg-slate-900 z-10 px-4 py-4";
+        }
+        return "px-4 py-3";
+    };
+    
+    // Mobile-specific footer styles
+    const getMobileFooterClass = () => {
+        if (isMobile) {
+            return "sticky bottom-0 bg-white dark:bg-slate-900 z-10 px-4 py-4 mt-auto";
+        }
+        return "px-4 pt-2 pb-6";
+    };
+    
     // CRITICAL: We always render the sheet regardless of isOpen state
     // This ensures state is preserved inside sheet contents
     return (
@@ -245,21 +310,21 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
             {/* Backdrop - Only shown when open */}
             {isOpen && hasBackdrop && (
                 <div
-                    className={`fixed inset-0 bg-black/50 z-40 backdrop-blur-sm transition-opacity duration-${animationDuration} ${backdropClassName}`}
+                    className={`fixed inset-0 bg-black/50 z-40 ${isMobile ? "backdrop-blur-sm" : ""} transition-opacity duration-${animationDuration} ${backdropClassName}`}
                     onClick={handleBackdropClick}
                     aria-hidden="true"
                     data-testid="floating-sheet-backdrop"
                 />
             )}
-
+            
             {/* Sheet - Always rendered but visibility and position controlled by CSS */}
             <div
                 ref={sheetRef}
                 className={`fixed ${positionClasses} z-50 ${
-                    position === "center" ? "" : "w-full"
-                } ${widthClass} ${heightClass} rounded-${rounded} bg-white dark:bg-slate-900 shadow-lg transform transition-all duration-${animationDuration} ease-in-out ${transformClass} ${
+                    isMobile || position === "center" ? "" : "w-full"
+                } ${widthClass} ${heightClass} ${roundedClass} bg-white dark:bg-slate-900 shadow-lg transform transition-all duration-${animationDuration} ease-in-out ${transformClass} ${
                     isOpen ? "visible opacity-100" : "invisible opacity-0"
-                } h-full outline-none ${className}`}
+                } ${isMobile ? "h-full flex flex-col" : "h-full"} outline-none ${className}`}
                 role={role}
                 aria-modal={isOpen}
                 aria-hidden={!isOpen}
@@ -267,21 +332,20 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                 tabIndex={-1}
                 data-testid="floating-sheet"
             >
-                <div className="flex flex-col h-full">
+                <div className={`flex flex-col h-full ${isMobile ? "overflow-hidden" : ""}`}>
                     {/* Header - Only show if title exists or showCloseButton is true or headerContent exists */}
                     {showHeader && (
                         <div
-                            className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-700 px-4 py-3 ${headerClassName}`}
+                            className={`flex items-center justify-between border-b border-gray-200 dark:border-gray-700 ${getMobileHeaderClass()} ${headerClassName}`}
                         >
                             <div className="flex-1 min-w-0">
                                 {typeof title === "string" ? (
-                                    <h2 id="sheet-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    <h2 id="sheet-title" className={`${isMobile ? "text-xl" : "text-lg"} font-semibold text-gray-900 dark:text-gray-100`}>
                                         {title}
                                     </h2>
                                 ) : (
                                     <div id="sheet-title">{title}</div>
                                 )}
-
                                 {description &&
                                     (typeof description === "string" ? (
                                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
@@ -289,20 +353,18 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                                         <div className="mt-1">{description}</div>
                                     ))}
                             </div>
-
                             {headerContent && <div className="ml-4 flex items-center">{headerContent}</div>}
-
                             {showCloseButton && (
                                 <button
                                     onClick={onClose}
-                                    className="ml-4 rounded-full p-1.5 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
+                                    className={`ml-4 rounded-full ${isMobile ? "p-2" : "p-1.5"} text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600`}
                                     aria-label="Close"
                                     data-testid="floating-sheet-close"
                                 >
                                     {closeButton || (
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
-                                            className="h-5 w-5"
+                                            className={`${isMobile ? "h-6 w-6" : "h-5 w-5"}`}
                                             viewBox="0 0 24 24"
                                             fill="none"
                                             stroke="currentColor"
@@ -318,16 +380,20 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                             )}
                         </div>
                     )}
-
+                    
                     {/* Content area */}
-                    <div ref={contentRef} className={`flex-1 overflow-y-auto ${contentClassName}`} data-testid="floating-sheet-content">
+                    <div 
+                        ref={contentRef} 
+                        className={`flex-1 overflow-y-auto ${isMobile ? "px-4 py-4" : ""} ${contentClassName}`} 
+                        data-testid="floating-sheet-content"
+                    >
                         {children}
                     </div>
-
+                    
                     {/* Footer - Only render if provided */}
                     {showFooter && (
                         <div
-                            className={`border-t border-gray-200 dark:border-gray-700 px-4 pt-2 pb-6 ${footerClassName}`}
+                            className={`border-t border-gray-200 dark:border-gray-700 ${getMobileFooterClass()} ${footerClassName}`}
                             data-testid="floating-sheet-footer"
                         >
                             {footer || footerContent}

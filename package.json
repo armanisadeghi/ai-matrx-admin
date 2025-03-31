@@ -31,6 +31,7 @@
         "@hello-pangea/dnd": "latest",
         "@heroui/react": "^2.7.4",
         "@hookform/resolvers": "latest",
+        "@lobehub/icons": "^1.94.0",
         "@midudev/tailwind-animations": "latest",
         "@monaco-editor/react": "^4.7.0",
         "@mux/mux-player-react": "^3.3.0",

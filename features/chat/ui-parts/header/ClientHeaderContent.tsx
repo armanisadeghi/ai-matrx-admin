@@ -12,6 +12,7 @@ import { IoCreateOutline } from "react-icons/io5";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch } from "@/lib/redux";
     
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ClientHeaderContentProps {
     baseRoute?: string;
@@ -20,6 +21,7 @@ interface ClientHeaderContentProps {
 const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "/chat" }) => {
     const dispatch = useAppDispatch();
     const chatActions = getChatActionsWithThunks();
+    const isMobile = useIsMobile();
 
     useEffect(() => {
         dispatch(chatActions.initialize());
@@ -30,7 +32,7 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
     const profilePhoto = user.userMetadata?.picture || null;
 
     return (
-        <div className="flex items-center space-x-3">
+        <div className={`flex items-center ${isMobile ? 'pr-10 -pt-2 space-x-2' : 'space-x-3'}`}>
             {/* New Chat Button */}
             <Link href={`${baseRoute}`}>
                 <button className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800">

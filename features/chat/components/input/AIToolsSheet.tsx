@@ -11,6 +11,7 @@ interface ToolSelectionSheetProps {
     isOpen: boolean;
     onClose: () => void;
     onToolSelectionChange?: (selectedToolIds: string[]) => void;
+    isMobile?: boolean;
 }
 
 const extractCategories = (tools: Tool[]): string[] => {
@@ -18,13 +19,14 @@ const extractCategories = (tools: Tool[]): string[] => {
     return Array.from(categories).sort();
 };
 
-const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onToolSelectionChange }) => {
+const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onToolSelectionChange, isMobile }) => {
     const [selectedTools, setSelectedTools] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [showCategories, setShowCategories] = useState(true);
     const dispatch = useAppDispatch();
 
+    
     const {
         chatActions,
         chatSelectors,
@@ -130,16 +132,19 @@ const AIToolsSheet: React.FC<ToolSelectionSheetProps> = ({ isOpen, onClose, onTo
         </div>
     );
 
+
+    
     return (
         <FloatingSheet
             isOpen={isOpen}
             onClose={onClose}
             position="right"
-            width="lg"
+            width="sm"
             title="AI Tools"
             description="Enhance your chat with powerful tools"
             footer={Footer}
             contentClassName="p-0"
+            isMobile={isMobile}
         >
             <div className="flex flex-col h-full">
                 {/* Search Bar */}

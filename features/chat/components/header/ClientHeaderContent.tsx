@@ -1,7 +1,6 @@
 'use client';
-
 import React from "react";
-import { Bell, MessageSquare } from "lucide-react";
+import { Bell } from "lucide-react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
@@ -9,6 +8,7 @@ import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { TbListSearch } from "react-icons/tb";
 import Link from "next/link";
 import { IoCreateOutline } from "react-icons/io5";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ClientHeaderContentProps {
     baseRoute?: string;
@@ -20,7 +20,8 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
   const displayName = user.userMetadata?.name || user.userMetadata?.fullName || 
                      (user.email?.split('@')[0]) || "User";
   const profilePhoto = user.userMetadata?.picture || null;
-
+  const isMobile = useIsMobile();
+  
   return (
     <div className="flex items-center space-x-3">
       {/* New Chat Button */}
@@ -56,6 +57,9 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
           </div>
         )}
       </button>
+      hi
+      {/* Invisible spacer to prevent overlap with menu on mobile */}
+       <div className="w-8 h-5 invisible" />
     </div>
   );
 };

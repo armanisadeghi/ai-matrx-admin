@@ -82,37 +82,49 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     );
 
     const handleTriggerSubmit = useCallback(async () => {
-        setLocalDisabled(true);
         if (!activeMessageRecord) {
             console.error("PromptInputContainer: handleTriggerSubmit: activeMessageRecord was not found");
             console.log("Message Id:", messageId);
             return;
         }
-        const localContent = content;
-        setContent("");
-        dispatch(chatActions.updateMessageContent({ value: content }));
-
+    
+        // Don't submit if no content
         if (!content.trim() && fileManager.files.length === 0) {
             return;
         }
-
-        const success = await onSubmit();
-
-        if (success) {
-            setContent("");
-            setLocalDisabled(false);
-            fileManager.clearFiles();
-
-            if (onMessageSent) {
-                onMessageSent();
+    
+        // Store current content for potential rollback
+        const previousContent = content;
+        
+        // Immediately clear the input (this will be rendered)
+        setContent("");
+        setLocalDisabled(true);
+        
+        // Update Redux store with the original content
+        dispatch(chatActions.updateMessageContent({ value: previousContent }));
+        
+        try {
+            // Attempt submission
+            const success = await onSubmit();
+            
+            if (success) {
+                // Input is already clear, just handle post-success actions
+                fileManager.clearFiles();
+                
+                if (onMessageSent) {
+                    onMessageSent();
+                }
+                textInputRef.current?.focus();
+            } else {
+                // Restore the previous content if submission failed
+                setContent(previousContent);
+                console.error("Failed to send message (handled by parent)");
             }
-            textInputRef.current?.focus();
-        } else {
-            setContent(localContent);
-            console.error("Failed to send message (handled by parent)");
+        } finally {
+            setLocalDisabled(false);
         }
-    }, [content, fileManager, onSubmit, onMessageSent, chatActions, dispatch]);
-
+    }, [content, fileManager, onSubmit, onMessageSent, chatActions, dispatch, activeMessageRecord, messageId]);
+    
     return (
         <div className="relative">
             <FileChipsWithPreview files={fileManager.files} onRemoveFile={fileManager.removeFile} />
