@@ -62,6 +62,16 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
         if (changedSettings.length > 0) {
             dispatch(chatActions.updateMultipleNestedFields({ updates: changedSettings }));
             prevSettingsRef.current = settings;
+
+            if (changedSettings.some((setting) => setting.nestedKey === "thinkEnabled")) {
+                dispatch(chatActions.updateMode({ value: "thinking" }));
+            }
+            if (changedSettings.some((setting) => setting.nestedKey === "planEnabled")) {
+                dispatch(chatActions.updateMode({ value: "plan" }));
+            }
+            if (changedSettings.some((setting) => setting.nestedKey === "enableAskQuestions")) {
+                dispatch(chatActions.updateMode({ value: "askQuestions" }));
+            }
         }
     }, [settings, dispatch, chatActions]);
     
