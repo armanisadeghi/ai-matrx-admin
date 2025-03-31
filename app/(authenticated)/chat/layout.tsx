@@ -4,7 +4,7 @@ import React from "react";
 import EnhancedEntityAnalyzer from "@/components/admin/redux/EnhancedEntityAnalyzer";
 import MatrxDynamicPanel from "@/components/matrx/resizable/MatrxDynamicPanel";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
-import ChatHeader from "@/features/chat/ui-parts/header/ChatHeader";
+import ChatHeader from "@/features/chat/components/header/ChatHeader";
 import ResponseColumn from "@/features/chat/components/response/ResponseColumn";
 
 

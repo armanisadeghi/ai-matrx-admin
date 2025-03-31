@@ -308,7 +308,7 @@ export const getChatActionsWithThunks = () => {
     return {
         // Initial setup (run once, could be moved elsewhere if not needed per call)
         initialize: () => (dispatch: AppDispatch) => {
-            dispatch(conversationActions.fetchAll({}));  // Change to make this paginated and fetch only the last 10 added by date and figure out how to include the one from the route.
+            dispatch(conversationActions.fetchAll({})); // Change to make this paginated and fetch only the last 10 added by date and figure out how to include the one from the route.
             dispatch(aiModelActions.fetchAll({}));
             dispatch(messageActions.setParentEntityField(parentEntityField));
             dispatch(messageActions.setRuntimeFilters(DEFAULT_MESSAGE_RUNTIME_FILTERS));
@@ -615,6 +615,30 @@ export const getChatActionsWithThunks = () => {
                 );
             },
 
+        updateSelectedRecipe:
+            (params: { conversationkeyOrId?: string; messagekeyOrId?: string; recipeId: string }) =>
+            (dispatch: AppDispatch, getState: () => RootState) => {
+                const convKeyOrId = params.conversationkeyOrId ?? getState().entities["conversation"].selection.activeRecord;
+                const msgKeyOrId = params.messagekeyOrId ?? getState().entities["message"].selection.activeRecord;
+                if (!convKeyOrId || !msgKeyOrId) return;
+                dispatch(
+                    conversationActions.updateNestedFieldSmart({
+                        keyOrId: convKeyOrId,
+                        field: "metadata",
+                        nestedKey: "selectedRecipe",
+                        value: params.recipeId,
+                    })
+                );
+                dispatch(
+                    messageActions.updateNestedFieldSmart({
+                        keyOrId: msgKeyOrId,
+                        field: "metadata",
+                        nestedKey: "selectedRecipe",
+                        value: params.recipeId,
+                    })
+                );
+            },
+
         updateBrokerValues:
             (params: { conversationkeyOrId?: string; messagekeyOrId?: string; value: Record<string, unknown> }) =>
             (dispatch: AppDispatch, getState: () => RootState) => {
@@ -755,8 +779,7 @@ export const getChatActionsWithThunks = () => {
             dispatch(messageActions.updateCustomDataSmart({ customData: { isStreaming: false } }));
         },
 
-        setMarkdownAnalysisData: 
-        (params: { data: SocketInfoResponse }) => (dispatch: AppDispatch) => {
+        setMarkdownAnalysisData: (params: { data: SocketInfoResponse }) => (dispatch: AppDispatch) => {
             const markdownAnalysisData: MarkdownAnalysisData = {
                 output: params.data.data.output,
                 analysis: params.data.data.analysis,
@@ -764,8 +787,15 @@ export const getChatActionsWithThunks = () => {
             };
 
             console.log("[CHAT ACTIONS THUNK] setting markdownAnalysisData", markdownAnalysisData);
-    
-            dispatch(messageActions.updateNestedFieldSmart({ keyOrId: params.data.related_id, field: "metadata", nestedKey: "markdownAnalysisData", value: markdownAnalysisData }));
+
+            dispatch(
+                messageActions.updateNestedFieldSmart({
+                    keyOrId: params.data.related_id,
+                    field: "metadata",
+                    nestedKey: "markdownAnalysisData",
+                    value: markdownAnalysisData,
+                })
+            );
         },
 
         updateConversationMetadataFieldSmart:

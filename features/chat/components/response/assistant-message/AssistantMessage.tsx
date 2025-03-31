@@ -142,6 +142,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamAc
                         >
                             <Share2 size={16} />
                         </button>
+                        
                         <div className="relative">
                             <button
                                 className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700"

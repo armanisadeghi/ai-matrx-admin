@@ -2,7 +2,7 @@
 
 import React from "react";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
-import ClientHeaderContent from "@/features/chat/ui-parts/header/ClientHeaderContent";
+import ClientHeaderContent from "@/features/chat/components/header/ClientHeaderContent";
 import { IconMenu2 } from "@tabler/icons-react";
 import Link from "next/link";
 

@@ -72,7 +72,7 @@ const ResponseColumn: React.FC = () => {
             messagesToDisplay.map((message) => {
                 if (analysisDataResponse && message.id === analysisDataResponse.related_id) {
                     return {
-                        ...message, // Spread the original message properties
+                        ...message,
                         markdownAnalysisData: analysisDataResponse,
                     };
                 }
@@ -91,7 +91,7 @@ const ResponseColumn: React.FC = () => {
         for (let i = 0; i < 3; i++) {
             setTimeout(() => {
                 bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-            }, i * 100);
+            }, i * 20);
         }
     };
 
@@ -110,8 +110,10 @@ const ResponseColumn: React.FC = () => {
     }, [messageCount]);
 
     const onVisibilityChange = (isVisible: boolean) => {
+        console.log("onVisibilityChange", isVisible);
+        console.log("isStreaming", isStreaming);
         if (!isStreaming) return;
-        if (isVisible) {
+        if (!isVisible) {
             handleScrollToBottom();
         }
     };

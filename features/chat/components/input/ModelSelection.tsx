@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { MatrxRecordId } from "@/types";
-import { DeepSeek, Gemini, Claude, OpenAI, Grok, Meta, Qwen, Mistral } from "@lobehub/icons";
-import { Groq } from '@lobehub/icons';
-
+import { DeepSeek, Gemini, Claude, OpenAI, Grok, Meta, Qwen, Mistral, Groq, Cerebras, Microsoft  } from "@lobehub/icons";
 interface Model {
     id: string;
     name: string;
@@ -17,7 +15,6 @@ interface Model {
     controls?: Record<string, unknown>;
     modelProvider?: string;
 }
-
 interface ModelSelectionProps {
     models: Record<MatrxRecordId, Model>;
     selectedModelKey: MatrxRecordId | undefined;
@@ -25,7 +22,6 @@ interface ModelSelectionProps {
     isMobile?: boolean;
     className?: string;
 }
-
 // Memoize the model entry component to prevent rerenders
 const ModelEntry = React.memo(
     ({ model, modelKey, isSelected, onSelect }: { model: Model; modelKey: MatrxRecordId; isSelected: boolean; onSelect: () => void }) => (
@@ -46,37 +42,51 @@ const ModelEntry = React.memo(
         </button>
     )
 );
-
 const ProviderIcon = ({ provider }: { provider: string }) => {
     // Convert provider to lowercase for case-insensitive matching
     const providerLower = provider.toLowerCase();
-
     // Icon mapping using lowercase keys
     switch (providerLower) {
         case "openai":
+        case "openai_chat":
             return <OpenAI className="w-5 h-5 inline-block mr-2" />;
         case "meta":
+        case "meta_chat":
             return <Meta.Color className="w-5 h-5 inline-block mr-2" />;
         case "anthropic":
+        case "anthropic_chat":
             return <Claude.Color className="w-5 h-5 inline-block mr-2" />;
         case "google":
         case "google_chat":
             return <Gemini.Color className="w-5 h-5 inline-block mr-2" />;
         case "xai":
-            return <Grok className="w-5 h-5 inline-block mr-2" />;
+        case "xai_chat":
+            return <Grok className="w-5 h-5 inline-block mr-2 text-black" />;
         case "deepseek":
+        case "deepseek ai":
+        case "deepseek_chat":
             return <DeepSeek.Color className="w-5 h-5 inline-block mr-2" />;
         case "qwen":
+        case "qwen_chat":
             return <Qwen.Color className="w-5 h-5 inline-block mr-2" />;
         case "mistral":
+        case "mixtral":
+        case "mistral_chat":
             return <Mistral.Color className="w-5 h-5 inline-block mr-2" />;
         case "groq":
-            return <Groq className="w-5 h-5 inline-block mr-2" />;
+        case "groq_chat":
+            return <Groq className="w-5 h-5 inline-block mr-2 text-orange-500" />;
+        case "cerebras":
+        case "cerebras_chat":
+            return <Cerebras.Color className="w-5 h-5 inline-block mr-2" />;
+        case "microsoft":
+        case "microsoft_chat":
+            return <Microsoft.Color className="w-5 h-5 inline-block mr-2" />;
         default:
+            console.log("providerLower", providerLower);
             return null;
     }
 };
-
 // Memoize the provider section component
 const ProviderSection = React.memo(
     ({
@@ -116,6 +126,7 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
         const [showDropdown, setShowDropdown] = useState<boolean>(false);
         const [searchTerm, setSearchTerm] = useState<string>("");
         const dropdownRef = useRef<HTMLDivElement>(null);
+        const searchInputRef = useRef<HTMLInputElement>(null);
 
         // Memoize the selected model name
         const selectedModelName = useMemo(
@@ -125,6 +136,16 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
                     : "Select a model",
             [selectedModelKey, models]
         );
+        
+        // Focus the search input when dropdown opens
+        useEffect(() => {
+            if (showDropdown && searchInputRef.current) {
+                // Use a small timeout to ensure the DOM is fully updated
+                setTimeout(() => {
+                    searchInputRef.current?.focus();
+                }, 0);
+            }
+        }, [showDropdown]);
 
         // Close dropdown when clicking outside - use useCallback to prevent recreation on every render
         const handleClickOutside = useCallback((event: MouseEvent) => {
@@ -132,18 +153,15 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
                 setShowDropdown(false);
             }
         }, []);
-
         useEffect(() => {
             document.addEventListener("mousedown", handleClickOutside);
             return () => {
                 document.removeEventListener("mousedown", handleClickOutside);
             };
         }, [handleClickOutside]);
-
         // Memoize the organization of models by provider
         const providersWithModels = useMemo(() => {
             const providers: Record<string, { model: Model; key: MatrxRecordId }[]> = {};
-
             Object.entries(models).forEach(([key, model]) => {
                 const provider = model.provider || model.modelProvider || "Other";
                 if (!providers[provider]) {
@@ -151,15 +169,12 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
                 }
                 providers[provider].push({ model, key });
             });
-
             const priorityProviders = ["Anthropic", "OpenAI", "Meta"];
-
             return Object.entries(providers)
                 .sort(([a], [b]) => {
                     // Check if either provider is in the priority list
                     const aIndex = priorityProviders.indexOf(a);
                     const bIndex = priorityProviders.indexOf(b);
-
                     // If both are in priority list, sort by priority
                     if (aIndex !== -1 && bIndex !== -1) {
                         return aIndex - bIndex;
@@ -181,7 +196,6 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
                     modelEntries.sort((a, b) => (a.model.commonName || a.model.name).localeCompare(b.model.commonName || b.model.name)),
                 ]);
         }, [models]); // Only recalculate when models change
-
         // Memoize the filtered models based on search term
         const filteredModels = useMemo(
             () =>
@@ -197,20 +211,16 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
                     : [],
             [models, searchTerm]
         );
-
         // Memoize handlers
         const toggleDropdown = useCallback(() => {
             setShowDropdown((prev) => !prev);
         }, []);
-
         const closeDropdown = useCallback(() => {
             setShowDropdown(false);
         }, []);
-
         const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
             setSearchTerm(e.target.value);
         }, []);
-
         const handleModelSelectAndClose = useCallback(
             (id: string) => {
                 onModelSelect(id);
@@ -219,7 +229,6 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
             },
             [onModelSelect]
         );
-
         return (
             <div className={`relative ${className}`} ref={dropdownRef}>
                 {isMobile ? (
@@ -257,10 +266,10 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
                                 <X size={16} />
                             </button>
                         </div>
-
                         {/* Search input */}
                         <div className="p-2 border-b border-zinc-200 dark:border-zinc-700">
                             <input
+                                ref={searchInputRef}
                                 type="text"
                                 placeholder="Search models..."
                                 value={searchTerm}
@@ -268,7 +277,6 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
                                 className="w-full px-3 py-1.5 rounded-md bg-zinc-100 dark:bg-zinc-700 text-gray-900 dark:text-gray-100 text-sm"
                             />
                         </div>
-
                         <div className="max-h-[350px] overflow-y-auto py-1 overscroll-contain">
                             {searchTerm ? (
                                 // Show search results
@@ -307,9 +315,7 @@ const ModelSelection: React.FC<ModelSelectionProps> = React.memo(
         );
     }
 );
-
 ModelSelection.displayName = "ModelSelection";
 ModelEntry.displayName = "ModelEntry";
 ProviderSection.displayName = "ProviderSection";
-
 export default ModelSelection;

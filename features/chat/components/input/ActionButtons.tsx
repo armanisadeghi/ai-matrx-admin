@@ -1,8 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { ChatMode } from "@/types/chat/chat.types";
-import { MessageSquare, Image, Video, Search, SquarePlay, Lightbulb, BarChart, Code } from "lucide-react";
+import { MessageSquare, Image, Video, SquarePlay, Lightbulb, BarChart, Code } from "lucide-react";
 import ToggleButton from "@/components/matrx/toggles/ToggleButton";
-import { LuWorkflow } from "react-icons/lu";
 import { BsChatLeftText } from "react-icons/bs";
 import { MdOutlineImage } from "react-icons/md";
 import { TbTopologyComplex } from "react-icons/tb";
@@ -10,15 +9,11 @@ import { GiBrainstorm } from "react-icons/gi";
 import { SiStudyverse } from "react-icons/si";
 import { FaChartLine } from "react-icons/fa";
 import { IoCodeWorkingSharp } from "react-icons/io5";
-import { SiDassaultsystemes } from "react-icons/si";
 import HierarchicalToggleMenu from "@/components/matrx/toggles/HierarchicalToggleMenu";
 import { programmingLibraries } from "./constants";
-import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-
-
-
+import RecipeSelectionButton from "./RecipeSelectionButton";
 
 interface ActionButtonsProps {
     onModeSelect?: (mode: ChatMode) => void;
@@ -28,57 +23,43 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className = "" }) => {
     const dispatch = useAppDispatch();
-    const {
-        chatActions,
-        chatSelectors,
-        conversationKey,
-    } = useChatBasics();
+    const { chatActions, chatSelectors, conversationKey } = useChatBasics();
 
     const currentMode = useAppSelector(chatSelectors.currentMode);
-
-    const { quickReferenceKeyDisplayPairs } = useFetchQuickRef("recipe");
-
-    const quickRefOptions = useMemo(
-        () =>
-            quickReferenceKeyDisplayPairs.map(({ recordKey, displayValue }) => ({
-                id: recordKey,
-                label: displayValue,
-                icon: <LuWorkflow />,
-            })),
-        [quickReferenceKeyDisplayPairs]
-    );
-
     const [selectedLibraries, setSelectedLibraries] = useState<string[]>([]);
-    const [selectedQuickRef, setSelectedQuickRef] = useState<string | null>(null);
+    const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>([]);
 
     const handleModeSelect = (mode: ChatMode) => {
         if (!conversationKey) return;
         dispatch(chatActions.updateMode({ value: mode }));
         console.log("HANDLE MODE SELECT mode", mode);
+
         if (mode !== "recipe") {
-            setSelectedQuickRef(null);
+            setSelectedRecipeIds([]);
         }
         if (mode !== "code") {
             setSelectedLibraries([]);
         }
+
         if (onModeSelect) {
             onModeSelect(mode);
         }
     };
 
-    const handleQuickRefSelection = (selectedIds: string[]) => {
+    const handleRecipeSelection = (selectedIds: string[]) => {
+        setSelectedRecipeIds(selectedIds);
+
         if (selectedIds.length > 0) {
             handleModeSelect("recipe");
-            setSelectedQuickRef(selectedIds[0]);
+            dispatch(chatActions.updateSelectedRecipe({ recipeId: selectedIds[0] }));
         } else {
-            setSelectedQuickRef(null);
             handleModeSelect("general");
         }
     };
 
     const handleLibrarySelection = (selectedIds: string[]) => {
-        handleModeSelect("code");
         setSelectedLibraries(selectedIds);
+        handleModeSelect("code");
     };
 
     const actionButtons = [
@@ -139,22 +120,11 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className =
                     tooltip={tooltip}
                 />
             ))}
-            <HierarchicalToggleMenu
-                label="Recipe"
-                defaultIcon={<LuWorkflow />}
-                enabledIcon={<SiDassaultsystemes />}
-                options={quickRefOptions}
-                selectedIds={selectedQuickRef ? [selectedQuickRef] : []}
-                onSelectionChange={handleQuickRefSelection}
+            <RecipeSelectionButton
+                selectedRecipeIds={selectedRecipeIds}
+                onRecipeSelection={handleRecipeSelection}
                 tooltip="Select a recipe to use"
-                direction="top"
-                size="md"
-                maxHeight="400px"
-                minWidth="280px"
-                enableSearch={true}
-                selectionMode="single"
-                collapsibleCategories={false}
-                defaultExpandedCategories={false}
+                isEnabled={currentMode === "recipe"}
             />
             <HierarchicalToggleMenu
                 label="Code"

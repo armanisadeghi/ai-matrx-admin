@@ -10,6 +10,10 @@ import { SocketManager } from "@/lib/redux/socket/manager";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch } from "@/lib/redux";
 import { SocketInfoResponse } from "@/features/chat/components/response/ResponseColumn";
+import { parseTaggedContent } from "@/components/mardown-display/parsers/thinking-parser";
+import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
+
+
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 const components = {
@@ -71,8 +75,8 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">("connecting");
     const socketManager = useMemo(() => SocketManager.getInstance(), []);
     const chatActions = getChatActionsWithThunks();
-    const latestDataContent = useRef<any>(null); // Store the latest dataContent
-
+    const latestDataContent = useRef<any>(null);
+    
     const containerStyles = useMemo(
         () =>
             cn(
@@ -82,22 +86,28 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
             ),
         [className]
     );
+    
+    // Memoize these operations to prevent recalculation on every render
+    const parsedContent = useMemo(() => {
+        const tableData = parseMarkdownTable(content);
+        const contentSegments = parseTaggedContent(content);
+        return { tableData, contentSegments };
+    }, [content]);
 
-    const tableData = parseMarkdownTable(content);
-    const componentsWithTable = {
+    const componentsWithTable = useMemo(() => ({
         ...components,
-        table: () => (tableData ? <StreamingTable data={tableData} /> : null),
-    };
+        table: () => (parsedContent.tableData ? <StreamingTable data={parsedContent.tableData} /> : null),
+    }), [parsedContent.tableData]);
 
     useEffect(() => {
         let unsubscribe: () => void;
         let isMounted = true;
-
+        
         const setupSocket = async () => {
             try {
                 await socketManager.connect();
                 const socket = await socketManager.getSocket();
-
+                
                 if (!socket || !isMounted) {
                     if (isMounted) {
                         setConnectionStatus("error");
@@ -105,27 +115,25 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                     }
                     return;
                 }
-
+                
                 setConnectionStatus("connected");
-
+                
                 unsubscribe = socketManager.subscribeToEvent(eventName, (data: any) => {
                     const dataContent = data?.data || "";
                     const newContent = typeof dataContent === "string" ? dataContent : JSON.stringify(dataContent);
+                    
                     setContent((prev) => prev + newContent);
-
-                    // Store the latest dataContent in a ref instead of dispatching immediately
                     latestDataContent.current = dataContent;
-
+                    
                     const isEnd = data?.end === true || data?.end === "true" || data?.end === "True";
                     if (isEnd) {
                         console.log("[CHAT STREAM DISPLAY] Stream ended");
                         dispatch(chatActions.setIsNotStreaming());
                         dispatch(chatActions.fetchMessagesForActiveConversation());
                     }
-
-                    // Optionally call handleAddAnalysisData immediately if needed
+                    
                     if (typeof dataContent === "object" && dataContent !== null) {
-                        handleAddAnalysisData?.(dataContent);
+                        // handleAddAnalysisData?.(dataContent);
                     }
                 });
             } catch (error) {
@@ -136,45 +144,59 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                 }
             }
         };
-
+        
         setupSocket();
-
-        // Cleanup function runs on unmount
+        
         return () => {
             isMounted = false;
             if (unsubscribe) {
                 unsubscribe();
             }
-            // Dispatch setMarkdownAnalysisData only when the component unmounts
             if (latestDataContent.current && typeof latestDataContent.current === "object" && latestDataContent.current !== null) {
                 dispatch(chatActions.setMarkdownAnalysisData({ data: latestDataContent.current }));
             }
         };
     }, [eventName, socketManager, dispatch, chatActions, handleAddAnalysisData]);
+    
+    // Simple content rendering function
+const renderContent = () => {
+        if (connectionStatus === "connecting") {
+            return null;
+        }
 
-    const renderContent = () => {
-        switch (connectionStatus) {
-            case "connecting":
-                return;
-            case "error":
-                return (
-                    <div className="text-red-500">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
-                            {content}
-                        </ReactMarkdown>
-                    </div>
-                );
-            case "connected":
-                return (
+        if (connectionStatus === "error") {
+            return (
+                <div className="text-red-500">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
                         {content}
                     </ReactMarkdown>
-                );
+                </div>
+            );
         }
+
+        // Render all content segments
+        return parsedContent.contentSegments.map((segment, index) => (
+            <React.Fragment key={index}>
+                {segment.isThinking ? (
+                    <ThinkingVisualization
+                        thinkingText={segment.content}
+                        showThinking={true}
+                        onToggleThinking={() => {}}
+                    />
+                ) : (
+                    <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]} 
+                        components={componentsWithTable}
+                    >
+                        {segment.content}
+                    </ReactMarkdown>
+                )}
+            </React.Fragment>
+        ));
     };
 
-    if (content.length < 2) return null; // Adjusted to return null for consistency
-
+    if (content.length < 2) return null;
+        
     return (
         <div className="mb-3 w-full text-left">
             <div className={containerStyles}>
@@ -185,5 +207,4 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
 });
 
 ChatStreamDisplay.displayName = "ChatStreamDisplay";
-
 export default ChatStreamDisplay;

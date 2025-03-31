@@ -10,12 +10,14 @@ import { CheckIcon, ClipboardIcon, PencilIcon } from "lucide-react";
 import { useState } from "react";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor"; // Adjust path as needed
 import { MarkdownAnalysisData } from "./MarkdownAnalyzer";
+import ThinkingVisualization from "./ThinkingVisualization";
+import SynapticFlowThinking from "./SynapticFlowThinking";
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 interface BasicMarkdownContentProps {
     content: string;
     isStreamActive?: boolean;
-    onEditRequest?: () => void; 
+    onEditRequest?: () => void;
     analysisData?: MarkdownAnalysisData;
 }
 
@@ -170,7 +172,7 @@ interface ChatMarkdownDisplayProps {
     messageId?: string;
 }
 interface ContentBlock {
-    type: "text" | "code" | "table";
+    type: "text" | "code" | "table" | "thinking";
     content: string;
     language?: string;
 }
@@ -213,6 +215,31 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
             const line = lines[i];
             const trimmedLine = line.trim();
 
+            // Detect thinking blocks (<thinking> or <think>)
+            if (trimmedLine === "<thinking>" || trimmedLine === "<think>") {
+                if (currentText.trim()) {
+                    blocks.push({ type: "text", content: currentText.trimEnd() });
+                    currentText = "";
+                }
+
+                const thinkingContent: string[] = [];
+                i++; // Move past opening tag
+
+                while (i < lines.length && lines[i].trim() !== "</thinking>" && lines[i].trim() !== "</think>") {
+                    thinkingContent.push(lines[i]);
+                    i++;
+                }
+
+                const thinkingBlock: ContentBlock = {
+                    type: "thinking",
+                    content: thinkingContent.join("\n"),
+                };
+                blocks.push(thinkingBlock);
+
+                i++; // Move past closing tag
+                continue;
+            }
+
             // Detect code blocks (```lang or ```)
             if (trimmedLine.startsWith("```")) {
                 if (currentText.trim()) {
@@ -231,11 +258,10 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     i++;
                 }
 
-                // Explicitly type the block to satisfy ContentBlock interface
                 const codeBlock: ContentBlock = {
                     type: "code",
                     content: codeContent.join("\n"),
-                    language, // Optional, can be undefined
+                    language,
                 };
                 blocks.push(codeBlock);
 
@@ -271,7 +297,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     content: tableContent.join("\n"),
                 };
                 blocks.push(tableBlock);
-                console.log("Detected table block:", tableBlock);
                 continue;
             }
 
@@ -292,6 +317,8 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     // MODIFIED: renderBlock to use the extracted language
     const renderBlock = (block: ContentBlock, index: number) => {
         switch (block.type) {
+            case "thinking":
+                return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true} onToggleThinking={() => {}} />;
             case "text":
                 return block.content ? (
                     <BasicMarkdownContent
@@ -339,7 +366,14 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
-            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} analysisData={analysisData} messageId={messageId} />
+            <FullScreenMarkdownEditor
+                isOpen={isEditorOpen}
+                initialContent={content}
+                onSave={handleSaveEdit}
+                onCancel={handleCancelEdit}
+                analysisData={analysisData}
+                messageId={messageId}
+            />
         </div>
     );
 };

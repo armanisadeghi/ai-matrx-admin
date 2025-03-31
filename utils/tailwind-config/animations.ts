@@ -56,7 +56,7 @@ export const animations = {
                 transform: "scale(0.95)",
             },
         },
-        "fadeInOut": {
+        fadeInOut: {
             "0%": { opacity: "0" },
             "15%": { opacity: "1" },
             "85%": { opacity: "1" },
@@ -120,12 +120,62 @@ export const animations = {
             },
         },
         "smooth-drop": {
-            "0%": { height: "0"},
-            "100%": { height: "auto"},
+            "0%": { height: "0" },
+            "100%": { height: "auto" },
         },
         "smooth-lift": {
             "0%": { height: "auto" },
             "100%": { height: "0" },
+        },
+        "float-particle": {
+            "0%, 100%": {
+                transform: "translateY(0) translateX(0)",
+                opacity: "0.2",
+            },
+            "25%": {
+                transform: "translateY(-10px) translateX(5px)",
+                opacity: "0.5",
+            },
+            "50%": {
+                transform: "translateY(-5px) translateX(10px)",
+                opacity: "0.3",
+            },
+            "75%": {
+                transform: "translateY(5px) translateX(-5px)",
+                opacity: "0.4",
+            },
+        },
+        "pulse-line": {
+            "0%, 100%": {
+                opacity: "0.1",
+            },
+            "50%": {
+                opacity: "0.3",
+            },
+        },
+        sparkle: {
+            "0%, 100%": {
+                opacity: "1",
+                transform: "scale(1)",
+            },
+            "50%": {
+                opacity: "0.8",
+                transform: "scale(1.2)",
+            },
+        },
+        "thinking-text": {
+            "0%": {
+                opacity: "0.3",
+            },
+            "15%": {
+                opacity: "1",
+            },
+            "85%": {
+                opacity: "1",
+            },
+            "100%": {
+                opacity: "0.3",
+            },
         },
     },
     animation: {
@@ -151,5 +201,10 @@ export const animations = {
         fadeIn: "fadeIn 0.2s ease-out forwards",
         "smooth-drop": "smooth-drop 0.6s ease-in-out",
         "smooth-lift": "smooth-lift 0.6s ease-in-out",
+
+        "float-particle": "float-particle 5s linear infinite",
+        "pulse-line": "pulse-line 3s ease-in-out infinite",
+        sparkle: "sparkle 1.5s ease-in-out infinite",
+        "thinking-text": "thinking-text 2.5s ease-in-out infinite",
     },
 };
