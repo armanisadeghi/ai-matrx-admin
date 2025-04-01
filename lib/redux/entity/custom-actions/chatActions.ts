@@ -775,6 +775,7 @@ export const getChatActionsWithThunks = () => {
 
         updateFiles: (params: { keyOrId?: string; value: string[] }) => (dispatch: AppDispatch, getState: () => RootState) => {
             const keyOrId = params.keyOrId ?? getState().entities["message"].selection.activeRecord;
+            console.log("[CHAT ACTIONS THUNK] updating files", params.value);
             if (!keyOrId) return;
             dispatch(
                 messageActions.updateNestedFieldSmart({

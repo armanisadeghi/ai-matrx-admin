@@ -40,7 +40,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     const { chatActions, chatSelectors, conversationId, messageId } = useChatBasics();
 
     const fileManager = useFileManagement({
-        onFilesUpdate: (files) => chatActions.updateFiles({ value: files.map((file) => file.url) }),
+        onFilesUpdate: (files) => dispatch(chatActions.updateFiles({ value: files.map((file) => file.url) })),
     });
 
     const [content, setContent] = useState<string>("");

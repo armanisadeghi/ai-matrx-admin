@@ -43,6 +43,8 @@ export function useFileManagement({ onFilesUpdate }: FileManagementProps = {}) {
                     return file;
                 });
 
+                console.log("[FILE MANAGEMENT] sanitizedFiles", sanitizedFiles);
+
                 // Call the update handler if it exists
                 if (onFilesUpdate) {
                     onFilesUpdate(sanitizedFiles);
