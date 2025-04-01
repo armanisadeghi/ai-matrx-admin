@@ -92,6 +92,7 @@ export const programmingLibraries = [
             { id: "pytorch", label: "PyTorch", icon: <Flame /> },
             { id: "scikitLearn", label: "Scikit-Learn", icon: <Code /> },
             { id: "keras", label: "Keras", icon: <Activity /> },
+            { id: "lora", label: "LoRA", icon: <Brain /> },
             { id: "xgboost", label: "XGBoost", icon: <Rocket /> },
             { id: "lightgbm", label: "LightGBM", icon: <Leaf /> },
           ],

@@ -3,7 +3,7 @@ import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, RefreshCw, Edit, S
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/MarkdownAnalyzer";
+import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "../ResponseColumn";
 
 interface AssistantMessageProps {
@@ -156,7 +156,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamAc
                     </div>
                 )}
             </div>
-            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} analysisData={markdownAnalysisData} />
+            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} analysisData={markdownAnalysisData} messageId={message.id} />
         </div>
     );
 };

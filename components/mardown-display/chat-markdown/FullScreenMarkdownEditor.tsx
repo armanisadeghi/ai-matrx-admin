@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, X } from 'lucide-react';
 import remarkGfm from 'remark-gfm';
@@ -10,7 +10,8 @@ import dynamic from 'next/dynamic';
 import type { Editor as TuiEditorReactComp } from '@toast-ui/react-editor';
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import EditorLoading from '../text-block/editorLoading';
-import MarkdownAnalyzer, { MarkdownAnalysisData } from './MarkdownAnalyzer';
+import MarkdownAnalyzer from './analyzer/MarkdownAnalyzer';
+import { MarkdownAnalysisData } from './analyzer/types';
 
 
 // Import the Toast UI Editor dark theme CSS
@@ -189,6 +190,11 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                         </TabsList>
                     </Tabs>
                 </DialogHeader>
+                {/* Add DialogDescription here */}
+                <DialogDescription className="sr-only">
+                    A dialog for editing content with options to write in markdown, use a rich text editor, preview the content, or analyze it.
+                </DialogDescription>
+
 
                 <Tabs value={activeTab} className="flex-grow flex flex-col overflow-hidden">
                     <TabsContent value="write" className="flex-grow mt-0 border-none p-0 outline-none ring-0">
@@ -236,7 +242,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                     <TabsContent value="analysis" className="flex-grow mt-0 border-none overflow-auto p-4 outline-none ring-0">
 
                         {/* TODO: Add analysis here */}
-                        <MarkdownAnalyzer messageId={messageId} mardownAnalysisData={analysisData} />
+                        <MarkdownAnalyzer messageId={messageId} />
 
                     </TabsContent>
                 </Tabs>

@@ -9,7 +9,6 @@ import StreamingTable from "@/features/chat/components/response/assistant-messag
 import { SocketManager } from "@/lib/redux/socket/manager";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch } from "@/lib/redux";
-import { SocketInfoResponse } from "@/features/chat/components/response/ResponseColumn";
 import { parseTaggedContent } from "@/components/mardown-display/parsers/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
 
@@ -66,10 +65,9 @@ const components = {
 interface ChatStreamDisplayProps {
     eventName: string;
     className?: string;
-    handleAddAnalysisData?: (data: SocketInfoResponse) => void;
 }
 
-const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className, handleAddAnalysisData }) => {
+const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className }) => {
     const dispatch = useAppDispatch();
     const [content, setContent] = useState<string>("");
     const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">("connecting");
@@ -133,7 +131,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                     }
                     
                     if (typeof dataContent === "object" && dataContent !== null) {
-                        // handleAddAnalysisData?.(dataContent);
+                        console.log("[CHAT STREAM DISPLAY] Analysis data received:", JSON.stringify(dataContent, null, 2));
                     }
                 });
             } catch (error) {
@@ -152,11 +150,8 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
             if (unsubscribe) {
                 unsubscribe();
             }
-            if (latestDataContent.current && typeof latestDataContent.current === "object" && latestDataContent.current !== null) {
-                dispatch(chatActions.setMarkdownAnalysisData({ data: latestDataContent.current }));
-            }
         };
-    }, [eventName, socketManager, dispatch, chatActions, handleAddAnalysisData]);
+    }, [eventName, socketManager, dispatch, chatActions]);
     
     // Simple content rendering function
 const renderContent = () => {

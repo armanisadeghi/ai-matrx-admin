@@ -18,7 +18,7 @@ import {
     MessageRecordMap,
     MessageRecordWithKey,
 } from "@/types/AutomationSchemaTypes";
-import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/MarkdownAnalyzer";
+import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
 
 const trace = "ENTITY SELECTORS";
 
@@ -411,7 +411,7 @@ export const createChatSelectors = () => {
         [messagesArray, (_state: RootState, messageId: string) => messageId],
         (messages, messageId): MarkdownAnalysisData | undefined => {
             const message = messages.find((msg) => msg.id === messageId);
-            return message?.metadata?.markdownAnalysisData as MarkdownAnalysisData | undefined;
+            return message?.metadata?.markdownAnalysis as MarkdownAnalysisData | undefined;
         }
     );
 

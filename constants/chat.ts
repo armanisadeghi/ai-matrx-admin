@@ -25,6 +25,9 @@ export const DEFAULT_MODE = "general" as ChatMode;
 export const NEW_CONVERSATION_ID = "new-conversation";
 export const NEW_CONVERSATION_LABEL = "New Conversation";
 
+export const DEFAULT_IMAGE_MODEL_IDs = ["4de7f70f-c859-408d-9ef9-37466ad35a59"];
+
+
 export const CHAT_RELATIONSHIP_BASE_CONFIG = {
     parentEntity: "conversation" as EntityKeys,
     childEntity: "message" as EntityKeys,

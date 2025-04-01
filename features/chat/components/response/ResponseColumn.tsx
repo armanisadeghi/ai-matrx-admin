@@ -6,7 +6,7 @@ import AssistantMessage from "@/features/chat/components/response/assistant-mess
 import { useAppSelector } from "@/lib/redux";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import AssistantStream from "@/features/chat/components/response/assistant-message/stream/AssistantStream";
-import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/MarkdownAnalyzer";
+import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
 
 const INFO = true;
 const DEBUG = true;
@@ -52,42 +52,18 @@ const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localM
 
 MessageItem.displayName = "MessageItem";
 
-export type SocketInfoResponse = {
-    type: string;
-    status: string;
-    message: string;
-    related_id: string;
-    data: MarkdownAnalysisData;
-};
 
 const ResponseColumn: React.FC = () => {
     const [streamKey, setStreamKey] = useState<string>("stream-0");
-    const [analysisDataResponse, setAnalysisDataResponse] = useState<MarkdownAnalysisData | null>(null);
     const { chatSelectors, eventName } = useChatBasics();
     const messagesToDisplay = useAppSelector(chatSelectors.messageRelationFilteredRecords);
     const messageCount = messagesToDisplay.length;
 
-    const messagesToDisplayWithAnalysisData = useMemo(
-        () =>
-            messagesToDisplay.map((message) => {
-                if (analysisDataResponse && message.id === analysisDataResponse.related_id) {
-                    return {
-                        ...message,
-                        markdownAnalysisData: analysisDataResponse,
-                    };
-                }
-                return {
-                    ...message,
-                };
-            }),
-        [messagesToDisplay, analysisDataResponse]
-    );
 
     const bottomRef = useRef<HTMLDivElement>(null);
     const isStreaming = useAppSelector(chatSelectors.isStreaming);
 
     const handleScrollToBottom = () => {
-        // Repeat scroll 3 times with 100ms intervals
         for (let i = 0; i < 3; i++) {
             setTimeout(() => {
                 bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -110,28 +86,17 @@ const ResponseColumn: React.FC = () => {
     }, [messageCount]);
 
     const onVisibilityChange = (isVisible: boolean) => {
-        console.log("onVisibilityChange", isVisible);
-        console.log("isStreaming", isStreaming);
         if (!isStreaming) return;
         if (!isVisible) {
             handleScrollToBottom();
         }
     };
 
-    const handleAddAnalysisData = (data: SocketInfoResponse) => {
-        const markdownAnalysisData: MarkdownAnalysisData = {
-            output: data.data.output,
-            analysis: data.data.analysis,
-            related_id: data.related_id,
-        };
-
-        setAnalysisDataResponse(markdownAnalysisData);
-    };
 
     return (
         <div className="w-full pt-0 pb-24 relative">
             <div className="max-w-3xl mx-auto px-6 space-y-6">
-                {messagesToDisplayWithAnalysisData.map((message) => (
+                {messagesToDisplay.map((message) => (
                     <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} />
                 ))}
                 <AssistantStream
@@ -139,7 +104,6 @@ const ResponseColumn: React.FC = () => {
                     eventName={eventName}
                     handleVisibility={onVisibilityChange}
                     scrollToBottom={handleScrollToBottom}
-                    handleAddAnalysisData={handleAddAnalysisData}
                 />
                 <div ref={bottomRef} style={{ height: "1px" }} />
             </div>

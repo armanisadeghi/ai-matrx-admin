@@ -9,8 +9,7 @@ import { Conversation, Message } from "@/types/chat/chat.types";
 import { fetchRelatedRecordsThunk } from "../thunks/fetchRelatedRecordsThunk";
 import { createMessageForConversation, saveMessageThunk } from "@/lib/redux/features/aiChats/thunks/entity/createMessageThunk";
 import { fetchRelatedMessagesThunk } from "../../features/aiChats/thunks/entity/fetchRelatedMessagesThunk";
-import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/MarkdownAnalyzer";
-import { SocketInfoResponse } from "@/features/chat/components/response/ResponseColumn";
+
 
 export type RuntimeFilter = {
     field: string;
@@ -615,7 +614,7 @@ export const getChatActionsWithThunks = () => {
                 );
             },
 
-        updateSelectedRecipe:
+            updateSelectedRecipe:
             (params: { conversationkeyOrId?: string; messagekeyOrId?: string; recipeId: string }) =>
             (dispatch: AppDispatch, getState: () => RootState) => {
                 const convKeyOrId = params.conversationkeyOrId ?? getState().entities["conversation"].selection.activeRecord;
@@ -635,6 +634,31 @@ export const getChatActionsWithThunks = () => {
                         field: "metadata",
                         nestedKey: "selectedRecipe",
                         value: params.recipeId,
+                    })
+                );
+            },
+
+
+        updateTechStack:
+            (params: { conversationkeyOrId?: string; messagekeyOrId?: string; libraries: string[] }) =>
+            (dispatch: AppDispatch, getState: () => RootState) => {
+                const convKeyOrId = params.conversationkeyOrId ?? getState().entities["conversation"].selection.activeRecord;
+                const msgKeyOrId = params.messagekeyOrId ?? getState().entities["message"].selection.activeRecord;
+                if (!convKeyOrId || !msgKeyOrId) return;
+                dispatch(
+                    conversationActions.updateNestedFieldSmart({
+                        keyOrId: convKeyOrId,
+                        field: "metadata",
+                        nestedKey: "techStack",
+                        value: params.libraries,
+                    })
+                );
+                dispatch(
+                    messageActions.updateNestedFieldSmart({
+                        keyOrId: msgKeyOrId,
+                        field: "metadata",
+                        nestedKey: "techStack",
+                        value: params.libraries,
                     })
                 );
             },
@@ -777,25 +801,6 @@ export const getChatActionsWithThunks = () => {
             console.log("[CHAT ACTIONS THUNK] setting isNotStreaming");
             dispatch(conversationActions.updateCustomDataSmart({ customData: { isStreaming: false } }));
             dispatch(messageActions.updateCustomDataSmart({ customData: { isStreaming: false } }));
-        },
-
-        setMarkdownAnalysisData: (params: { data: SocketInfoResponse }) => (dispatch: AppDispatch) => {
-            const markdownAnalysisData: MarkdownAnalysisData = {
-                output: params.data.data.output,
-                analysis: params.data.data.analysis,
-                related_id: params.data.related_id,
-            };
-
-            console.log("[CHAT ACTIONS THUNK] setting markdownAnalysisData", markdownAnalysisData);
-
-            dispatch(
-                messageActions.updateNestedFieldSmart({
-                    keyOrId: params.data.related_id,
-                    field: "metadata",
-                    nestedKey: "markdownAnalysisData",
-                    value: markdownAnalysisData,
-                })
-            );
         },
 
         updateConversationMetadataFieldSmart:

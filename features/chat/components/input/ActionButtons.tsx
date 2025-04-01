@@ -14,7 +14,7 @@ import { programmingLibraries } from "./constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import RecipeSelectionButton from "./RecipeSelectionButton";
-
+import { DEFAULT_IMAGE_MODEL_IDs } from "@/constants/chat";
 interface ActionButtonsProps {
     onModeSelect?: (mode: ChatMode) => void;
     className?: string;
@@ -26,7 +26,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className =
     const { chatActions, chatSelectors, conversationKey } = useChatBasics();
 
     const currentMode = useAppSelector(chatSelectors.currentMode);
-    const [selectedLibraries, setSelectedLibraries] = useState<string[]>([]);
+    const [selectedTechStack, setSelectedTechStack] = useState<string[]>([]);
     const [selectedRecipeIds, setSelectedRecipeIds] = useState<string[]>([]);
 
     const handleModeSelect = (mode: ChatMode) => {
@@ -38,11 +38,16 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className =
             setSelectedRecipeIds([]);
         }
         if (mode !== "code") {
-            setSelectedLibraries([]);
+            setSelectedTechStack([]);
         }
 
         if (onModeSelect) {
             onModeSelect(mode);
+        }
+
+        if (mode === "images") {
+            const random_model = DEFAULT_IMAGE_MODEL_IDs[Math.floor(Math.random() * DEFAULT_IMAGE_MODEL_IDs.length)];
+            dispatch(chatActions.updateModel({ value: random_model }));
         }
     };
 
@@ -58,8 +63,9 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className =
     };
 
     const handleLibrarySelection = (selectedIds: string[]) => {
-        setSelectedLibraries(selectedIds);
+        setSelectedTechStack(selectedIds);
         handleModeSelect("code");
+        dispatch(chatActions.updateTechStack({ libraries: selectedIds }));
     };
 
     const actionButtons = [
@@ -131,7 +137,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ onModeSelect, className =
                 defaultIcon={<Code />}
                 enabledIcon={<IoCodeWorkingSharp />}
                 options={programmingLibraries}
-                selectedIds={selectedLibraries}
+                selectedIds={selectedTechStack}
                 onSelectionChange={handleLibrarySelection}
                 tooltip="Select libraries for code generation"
                 direction="bottom"

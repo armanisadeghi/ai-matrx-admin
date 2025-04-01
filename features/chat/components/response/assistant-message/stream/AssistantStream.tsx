@@ -1,15 +1,15 @@
 import React, { useRef, useEffect, useState } from "react";
 import ChatStreamDisplay from "./ChatStreamDisplay";
 import { ChevronDoubleDown } from "@mynaui/icons-react";
-import { SocketInfoResponse } from "@/features/chat/components/response/ResponseColumn";
+
+
 interface AssistantStreamProps {
     eventName: string;
     handleVisibility?: (isVisible: boolean) => void;
     scrollToBottom?: () => void;
-    handleAddAnalysisData?: (data: SocketInfoResponse) => void;
 }
 
-const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName, handleVisibility, scrollToBottom, handleAddAnalysisData }) => {
+const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName, handleVisibility, scrollToBottom }) => {
     const observerRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -58,7 +58,7 @@ const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName, handleVisi
     return (
         <div className="flex">
             <div ref={containerRef} className="max-w-full w-full relative">
-                <ChatStreamDisplay key={eventName} eventName={eventName} className="bg-transparent dark:bg-transparent" handleAddAnalysisData={handleAddAnalysisData} />
+                <ChatStreamDisplay key={eventName} eventName={eventName} className="bg-transparent dark:bg-transparent"/>
                 {isInvisible && (
                     <button
                         ref={buttonRef}
