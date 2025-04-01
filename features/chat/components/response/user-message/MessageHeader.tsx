@@ -71,7 +71,6 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
     >
       <div className="flex items-center space-x-2">
         <span className="flex items-center text-xs opacity-70">
-          <Clock size={12} className="mr-1" />
           {formattedDateTime}
         </span>
         {canCollapse && (

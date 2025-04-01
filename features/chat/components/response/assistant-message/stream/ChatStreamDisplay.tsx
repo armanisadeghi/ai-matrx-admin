@@ -9,7 +9,7 @@ import StreamingTable from "@/features/chat/components/response/assistant-messag
 import { SocketManager } from "@/lib/redux/socket/manager";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch } from "@/lib/redux";
-import { parseTaggedContent } from "@/components/mardown-display/parsers/thinking-parser";
+import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
 
 

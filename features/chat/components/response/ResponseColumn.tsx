@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import UserMessage from "@/features/chat/components/response/user-message/UserMessage";
 import AssistantMessage from "@/features/chat/components/response/assistant-message/AssistantMessage";
 import { useAppSelector } from "@/lib/redux";
@@ -55,14 +55,16 @@ MessageItem.displayName = "MessageItem";
 
 const ResponseColumn: React.FC = () => {
     const [streamKey, setStreamKey] = useState<string>("stream-0");
+    const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
     const { chatSelectors, eventName } = useChatBasics();
     const messagesToDisplay = useAppSelector(chatSelectors.messageRelationFilteredRecords);
     const messageCount = messagesToDisplay.length;
 
-
     const bottomRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const isStreaming = useAppSelector(chatSelectors.isStreaming);
 
+    
     const handleScrollToBottom = () => {
         for (let i = 0; i < 3; i++) {
             setTimeout(() => {
@@ -81,20 +83,78 @@ const ResponseColumn: React.FC = () => {
         return () => clearTimeout(timer);
     }, [messageCount, messagesToDisplay]);
 
-    useEffect(() => {
-        handleScrollToBottom();
-    }, [messageCount]);
+    // Handling touch start for mobile users
+    const touchStartY = useRef<number | null>(null);
 
-    const onVisibilityChange = (isVisible: boolean) => {
+    useEffect(() => {
+        // Function to detect wheel events (mouse scrolling)
+        const handleWheel = (e: WheelEvent) => {
+            // Detect scroll up (negative deltaY means scrolling up)
+            if (e.deltaY < 0) {
+                setAutoScrollEnabled(false);
+            }
+        };
+
+        // Functions to detect touch scrolling for mobile
+        const handleTouchStart = (e: TouchEvent) => {
+            touchStartY.current = e.touches[0].clientY;
+        };
+
+        const handleTouchMove = (e: TouchEvent) => {
+            if (touchStartY.current !== null) {
+                const touchY = e.touches[0].clientY;
+                // If touch moved upward (user is scrolling up)
+                if (touchY > touchStartY.current) {
+                    setAutoScrollEnabled(false);
+                }
+                touchStartY.current = touchY;
+            }
+        };
+
+        // Handle key events (arrow up, page up)
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'Home') {
+                setAutoScrollEnabled(false);
+            }
+        };
+
+        // Add all event listeners
+        document.addEventListener('wheel', handleWheel, { passive: true });
+        document.addEventListener('touchstart', handleTouchStart, { passive: true });
+        document.addEventListener('touchmove', handleTouchMove, { passive: true });
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            // Remove all event listeners on cleanup
+            document.removeEventListener('wheel', handleWheel);
+            document.removeEventListener('touchstart', handleTouchStart);
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (autoScrollEnabled) {
+            handleScrollToBottom();
+        }
+    }, [messageCount, autoScrollEnabled]);
+
+    const handleAutoScrollToBottom = (isVisible: boolean) => {
         if (!isStreaming) return;
-        if (!isVisible) {
+        if (!isVisible && autoScrollEnabled) {
             handleScrollToBottom();
         }
     };
 
+    // Reset auto-scroll when a new message starts coming in
+    useEffect(() => {
+        if (isStreaming) {
+            setAutoScrollEnabled(true);
+        }
+    }, [isStreaming]);
 
     return (
-        <div className="w-full pt-0 pb-24 relative">
+        <div className="w-full pt-0 pb-24 relative" ref={containerRef}>
             <div className="max-w-3xl mx-auto px-6 space-y-6">
                 {messagesToDisplay.map((message) => (
                     <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} />
@@ -102,7 +162,7 @@ const ResponseColumn: React.FC = () => {
                 <AssistantStream
                     key={streamKey}
                     eventName={eventName}
-                    handleVisibility={onVisibilityChange}
+                    handleVisibility={handleAutoScrollToBottom}
                     scrollToBottom={handleScrollToBottom}
                 />
                 <div ref={bottomRef} style={{ height: "1px" }} />

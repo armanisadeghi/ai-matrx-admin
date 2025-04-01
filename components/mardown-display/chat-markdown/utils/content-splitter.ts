@@ -1,4 +1,4 @@
-import { ContentBlock } from "./EnhancedChatMarkdown";
+import { ContentBlock } from "../EnhancedChatMarkdown";
 
 
 export     const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {

@@ -9,12 +9,10 @@ import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { useFileManagement } from "@/hooks/ai/chat/useFileManagement";
-import { useIsMobile } from "@/hooks/use-mobile";
-  
+
 interface PromptInputContainerProps {
     onMessageSent?: () => void;
     disabled?: boolean;
-    localContent?: string;
     onContentChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
     onSubmit: () => Promise<boolean>;
 }
@@ -22,13 +20,10 @@ interface PromptInputContainerProps {
 const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
     onMessageSent,
     disabled = false,
-    localContent,
     onContentChange,
     onSubmit,
 }) => {
-
     const [localDisabled, setLocalDisabled] = useState<boolean>(false);
-    const isMobile = useIsMobile();
 
     useEffect(() => {
         setLocalDisabled(disabled);
@@ -38,27 +33,20 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
 
     const textInputRef = useRef<HTMLTextAreaElement>(null);
 
-    const { chatActions, chatSelectors, conversationId, messageId } = useChatBasics();
+    useEffect(() => {
+        textInputRef.current?.focus();
+    }, []);
 
+    const { chatActions, chatSelectors, conversationId, messageId } = useChatBasics();
 
     const fileManager = useFileManagement({
         onFilesUpdate: (files) => chatActions.updateFiles({ value: files.map((file) => file.url) }),
     });
 
-
     const [content, setContent] = useState<string>("");
 
     const activeMessageRecord = useAppSelector(chatSelectors.activeMessage);
 
-    useEffect(() => {
-        if (activeMessageRecord?.content === "") {
-            setContent("");
-        } else if (localContent !== undefined) {
-            setContent(localContent);
-        } else if (activeMessageRecord?.content) {
-            setContent(activeMessageRecord.content);
-        }
-    }, [activeMessageRecord?.content, localContent]);
 
     const handleContentChange = useCallback(
         (newContent: string) => {
@@ -81,50 +69,44 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
         [fileManager]
     );
 
+    useEffect(() => {
+        console.log("TextInput received content:", content);
+    }, [content]);
+
     const handleTriggerSubmit = useCallback(async () => {
         if (!activeMessageRecord) {
             console.error("PromptInputContainer: handleTriggerSubmit: activeMessageRecord was not found");
             console.log("Message Id:", messageId);
             return;
         }
-    
-        // Don't submit if no content
+
         if (!content.trim() && fileManager.files.length === 0) {
             return;
         }
-    
-        // Store current content for potential rollback
-        const previousContent = content;
-        
-        // Immediately clear the input (this will be rendered)
+
+        dispatch(chatActions.updateMessageContent({ value: content }));
         setContent("");
-        setLocalDisabled(true);
-        
-        // Update Redux store with the original content
-        dispatch(chatActions.updateMessageContent({ value: previousContent }));
-        
+
         try {
-            // Attempt submission
             const success = await onSubmit();
-            
+
             if (success) {
-                // Input is already clear, just handle post-success actions
                 fileManager.clearFiles();
-                
+
                 if (onMessageSent) {
                     onMessageSent();
                 }
                 textInputRef.current?.focus();
             } else {
-                // Restore the previous content if submission failed
-                setContent(previousContent);
+                setContent(activeMessageRecord.content);
                 console.error("Failed to send message (handled by parent)");
             }
         } finally {
             setLocalDisabled(false);
+
         }
     }, [content, fileManager, onSubmit, onMessageSent, chatActions, dispatch, activeMessageRecord, messageId]);
-    
+
     return (
         <div className="relative">
             <FileChipsWithPreview files={fileManager.files} onRemoveFile={fileManager.removeFile} />

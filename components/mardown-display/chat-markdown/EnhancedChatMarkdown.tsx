@@ -9,7 +9,7 @@ import BasicMarkdownContent from "./BasicMarkdownContent";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import ImageBlock from "./ImageBlock";
 import { MarkdownAnalysisData } from "./analyzer/types";
-import { splitContentIntoBlocks } from "./utils";
+import { splitContentIntoBlocks } from "./utils/content-splitter";
 
 interface ChatMarkdownDisplayProps {
     content: string;

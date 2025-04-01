@@ -29,15 +29,14 @@ const UserMessage: React.FC<UserMessageProps> = ({
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editContent, setEditContent] = useState<string>(message.content);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
   const [actionFeedback, setActionFeedback] = useState<{type: string, show: boolean}>({type: '', show: false});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
   
   const contentRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   
-  // Check if content is long enough to enable collapse
-  const canCollapse = message.content.length > 250 || isCollapsed;
+  const canCollapse = message.content.length > 300 || isCollapsed;
   
   const formattedDateTime = new Date(message.createdAt || Date.now()).toLocaleString([], {
     month: 'short',
@@ -48,6 +47,7 @@ const UserMessage: React.FC<UserMessageProps> = ({
 
   // Handle height adjustments
   useEffect(() => {
+    if (!canCollapse) return;
     if (contentRef.current) {
       // Only apply max-height when collapsed
       contentRef.current.style.maxHeight = isCollapsed ? '80px' : 'none';
@@ -151,7 +151,7 @@ const UserMessage: React.FC<UserMessageProps> = ({
           relative
           w-full
           transition-all duration-200
-          ${isCollapsed ? 'pb-8' : ''}
+          ${isCollapsed ? 'pb-2' : ''}
         `}>
           {isEditing ? (
             <EditMode 
