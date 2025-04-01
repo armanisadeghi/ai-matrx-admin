@@ -100,7 +100,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
     return (
         <div
             className={cn(
-                "my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-200",
+                "w-full my-4 rounded-t-xl rounded-b-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 transition-all duration-200",
                 isExpanded && "fixed inset-4 z-50 bg-white dark:bg-neutral-900",
                 className
             )}
@@ -117,7 +117,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
                 toggleExpand={toggleExpand}
                 toggleCollapse={toggleCollapse}
                 toggleLineNumbers={toggleLineNumbers}
-                toggleWrapLines={toggleWrapLines}
+                // toggleWrapLines={toggleWrapLines}
                 isCopied={isCopied}
             />
             <div className="relative">

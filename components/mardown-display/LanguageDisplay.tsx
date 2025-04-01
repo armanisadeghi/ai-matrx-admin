@@ -15,6 +15,7 @@ import { SiKotlin, SiSwift, SiDocker, SiGraphql, SiPython, SiRuby, SiGo, SiRust,
 import { SiJavascript } from "react-icons/si";
 import { SiTypescript } from "react-icons/si";
 import { PiFileSqlBold } from "react-icons/pi";
+import { TwoColorPythonIcon } from '@/components/DirectoryTree/custom-icons';
 
 export const languageMap = {
   javascript: {
@@ -39,7 +40,7 @@ export const languageMap = {
   },
   python: {
     name: 'Python',
-    icon: (props) => <SiPython {...props} />,
+    icon: (props) => <TwoColorPythonIcon/>,
     color: 'text-green-500'
   },
   java: {
@@ -169,7 +170,7 @@ const LanguageDisplay: React.FC<LanguageDisplayProps> = ({ language, className }
   if (!langInfo) {
     // If language is not in our map, return the original text
     return (
-      <span className={cn("text-sm text-neutral-500 dark:text-neutral-400 font-mono", className)}>
+      <span className={cn("text-sm text-neutral-800 dark:text-neutral-200 font-mono", className)}>
         {language}
       </span>
     );
@@ -180,7 +181,7 @@ const LanguageDisplay: React.FC<LanguageDisplayProps> = ({ language, className }
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
       <Icon size={14} className={cn(langInfo.color)} />
-      <span className="text-sm text-neutral-500 dark:text-neutral-400 font-mono">
+      <span className="text-sm text-neutral-800 dark:text-neutral-200 font-mono">
         {langInfo.name}
       </span>
     </div>

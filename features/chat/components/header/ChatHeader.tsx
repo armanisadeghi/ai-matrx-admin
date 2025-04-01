@@ -1,7 +1,6 @@
 // File: features/chat/ui-parts/layout/ChatHeader.tsx
 
 import React from "react";
-import { BACKGROUND_PATTERN } from "@/constants/chat";
 import ClientHeaderContent from "@/features/chat/components/header/ClientHeaderContent";
 import { IconMenu2 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -15,9 +14,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ baseRoute = "/chat", title = "M
     return (
         <header
             className="p-3 flex items-center justify-between bg-zinc-100 dark:bg-zinc-850 z-10"
-            style={{
-                backgroundImage: BACKGROUND_PATTERN,
-            }}
+            // Remove the background pattern from here
         >
             <div className="flex items-center space-x-2">
                 <div className="p-1 rounded-md">

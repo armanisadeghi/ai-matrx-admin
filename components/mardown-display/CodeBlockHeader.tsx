@@ -11,11 +11,11 @@ interface CodeBlockHeaderProps {
     code: string;
     handleCopy: (e: React.MouseEvent) => void;
     handleDownload: (e: React.MouseEvent) => void;
-    toggleEdit: (e: React.MouseEvent) => void;
-    toggleExpand: (e: React.MouseEvent) => void;
-    toggleCollapse: (e?: React.MouseEvent) => void;
-    toggleLineNumbers: (e: React.MouseEvent) => void;
-    toggleWrapLines: (e: React.MouseEvent) => void;
+    toggleEdit?: (e: React.MouseEvent) => void;
+    toggleExpand?: (e: React.MouseEvent) => void;
+    toggleCollapse?: (e?: React.MouseEvent) => void;
+    toggleLineNumbers?: (e: React.MouseEvent) => void;
+    toggleWrapLines?: (e: React.MouseEvent) => void;
     isCopied: boolean;
 }
 
@@ -50,14 +50,16 @@ export const CodeBlockHeader: React.FC<CodeBlockHeaderProps> = ({
             onClick={isEditing || !canCollapse ? undefined : toggleCollapse}
         >
             <div className="flex items-center space-x-4">
-                <div className="flex space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
+                {!language && (
+                    <div className="flex space-x-2">
+                        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                )}
                 <div className="flex items-center space-x-2">
                     <LanguageDisplay language={language} />
-                    <span className="text-xs text-neutral-400 dark:text-neutral-500">
+                    <span className="text-xs text-neutral-600 dark:text-neutral-400">
                         {linesCount} {linesCount === 1 ? "line" : "lines"}
                     </span>
                 </div>
@@ -85,10 +87,10 @@ interface CodeBlockButtonsProps {
     canCollapse: boolean;
     handleCopy: (e: React.MouseEvent) => void;
     handleDownload: (e: React.MouseEvent) => void;
-    toggleEdit: (e: React.MouseEvent) => void;
-    toggleExpand: (e: React.MouseEvent) => void;
-    toggleLineNumbers: (e: React.MouseEvent) => void;
-    toggleWrapLines: (e: React.MouseEvent) => void;
+    toggleEdit?: (e: React.MouseEvent) => void;
+    toggleExpand?: (e: React.MouseEvent) => void;
+    toggleLineNumbers?: (e: React.MouseEvent) => void;
+    toggleWrapLines?: (e: React.MouseEvent) => void;
 }
 
 const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
@@ -104,30 +106,41 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
 }) => {
     const buttonClass =
         "py-3 px-2 rounded-xl text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors flex items-center gap-1";
+
     return (
         <div className="flex items-center space-x-1">
-            <button onClick={toggleLineNumbers} className={buttonClass} title="Toggle line numbers">
-                <Hash size={16} />
-                <span>Lines</span>
-            </button>
-            <button onClick={toggleWrapLines} className={buttonClass} title="Toggle wrap lines">
-                <WrapText size={16} />
-                <span>Wrap</span>
-            </button>
+            {toggleLineNumbers && (
+                <button onClick={toggleLineNumbers} className={buttonClass} title="Toggle line numbers">
+                    <Hash size={16} />
+                    <span>Lines</span>
+                </button>
+            )}
+            
+            {toggleWrapLines && (
+                <button onClick={toggleWrapLines} className={buttonClass} title="Toggle wrap lines">
+                    <WrapText size={16} />
+                    <span>Wrap</span>
+                </button>
+            )}
+            
             <button onClick={handleCopy} className={buttonClass} title={isCopied ? "Copied!" : "Copy code"}>
                 {isCopied ? <Check size={16} /> : <Copy size={16} />}
                 <span>Copy</span>
             </button>
+            
             <button onClick={handleDownload} className={buttonClass} title="Download code">
                 <Download size={16} />
                 <span>Download</span>
             </button>
-            {isEditing ? (
+            
+            {toggleEdit && isEditing && (
                 <button onClick={toggleEdit} className={buttonClass} title="Exit edit mode">
                     <Eye size={16} />
                     <span>View</span>
                 </button>
-            ) : (
+            )}
+            
+            {toggleExpand && !isEditing && (
                 <button onClick={toggleExpand} className={buttonClass} title={isExpanded ? "Minimize" : "Expand"}>
                     {isExpanded ? <Minimize size={16} /> : <Expand size={16} />}
                     <span>{isExpanded ? "Minimize" : "Expand"}</span>
@@ -138,7 +151,8 @@ const CodeBlockButtons: React.FC<CodeBlockButtonsProps> = ({
 };
 
 export const EditButton = ({ isEditing, toggleEdit }) => {
-    if (isEditing) return null;
+    if (isEditing || !toggleEdit) return null;
+    
     return (
         <button
             onClick={toggleEdit}

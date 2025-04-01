@@ -105,10 +105,10 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     };
 
     const containerStyles = cn(
-        "font-sans text-md antialiased leading-relaxed tracking-wide",
+        "py-3 px-0 space-y-4 font-sans text-md antialiased leading-relaxed tracking-wide",
         type === "flashcard"
             ? "text-left mb-1 text-white"
-            : `block p-3 rounded-lg w-full ${
+            : `block rounded-lg w-full ${
                   role === "user"
                       ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-700 dark:text-neutral-100"
                       : "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
