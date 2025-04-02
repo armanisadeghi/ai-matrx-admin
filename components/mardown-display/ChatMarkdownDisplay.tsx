@@ -3,7 +3,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
-import CodeBlock from "./CodeBlock";
+import CodeBlock from "./code/CodeBlock";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
 import MarkdownTable from "./tables/MarkdownTable";
 

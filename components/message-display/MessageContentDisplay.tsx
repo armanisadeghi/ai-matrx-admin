@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
 import { TableWrapper, LinkWrapper } from '.';
-import CodeBlock from '../mardown-display/CodeBlock';
+import CodeBlock from '../mardown-display/code/CodeBlock';
 
 interface MessageContentDisplayProps {
     content: string;

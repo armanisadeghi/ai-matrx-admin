@@ -66,7 +66,7 @@ const CodeEditor = ({ defaultLanguage = "javascript", defaultValue = "// Start c
                 <div className="flex-grow relative">
                     <Editor
                         height={`${height - 100}px`}
-                        width={`${width}px`}
+                        width="100%"
                         defaultLanguage={language}
                         language={language}
                         defaultValue={defaultValue}

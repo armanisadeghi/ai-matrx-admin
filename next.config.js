@@ -18,12 +18,9 @@ const nextConfig = {
     },
     // Disable build caching for Vercel deployments
     generateBuildId: async () => {
-        // Generate a unique build ID for each build, preventing cache utilization
         return `build-${Date.now()}`;
     },
-    // This setting helps prevent build output caching as well
     onDemandEntries: {
-        // Keep the build fresh by setting a low period
         maxInactiveAge: 1,
     },
     serverExternalPackages: ["@react-pdf/renderer", "canvas", "next-mdx-remote", "vscode-oniguruma", "websocket"],
@@ -40,7 +37,7 @@ const nextConfig = {
             },
         ],
     },
-    webpack: (config, { isServer }) => {
+    webpack: (config, { isServer, dev }) => {
         // First apply your existing webpack config
         config = configureWebpack(config, { isServer });
 
@@ -52,6 +49,16 @@ const nextConfig = {
                 filename: "static/[hash][ext]",
             },
         });
+
+        // Suppress THREE.WebGLProgram shader error in development mode
+        if (dev) {
+            const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
+            config.plugins.push(
+                new FilterWarningsPlugin({
+                    exclude: /THREE\.WebGLProgram: Shader Error 0 - VALIDATE_STATUS false/,
+                })
+            );
+        }
 
         // Disable webpack caching to ensure fresh builds
         config.cache = false;

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { cn } from "@/styles/themes/utils";
-import CodeBlock from "@/components/mardown-display/CodeBlock";
+import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
 import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import ThinkingVisualization from "./ThinkingVisualization";

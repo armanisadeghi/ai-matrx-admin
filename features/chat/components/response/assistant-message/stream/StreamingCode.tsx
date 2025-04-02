@@ -4,7 +4,7 @@ import { vscDarkPlus, vs } from "react-syntax-highlighter/dist/cjs/styles/prism"
 import { cn } from "@/styles/themes/utils";
 import LanguageDisplay from "@/components/mardown-display/LanguageDisplay";
 import { useTheme } from "@/styles/themes/ThemeProvider";
-import CodeBlockHeader from "@/components/mardown-display/CodeBlockHeader";
+import CodeBlockHeader from "@/components/mardown-display/code/CodeBlockHeader";
 
 interface StreamingCodeProps {
     code: string;

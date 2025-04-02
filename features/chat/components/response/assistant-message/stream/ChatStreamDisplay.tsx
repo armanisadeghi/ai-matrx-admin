@@ -11,7 +11,7 @@ import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chat
 import { useAppDispatch } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
-import CodeBlock from "@/components/mardown-display/CodeBlock";
+import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
