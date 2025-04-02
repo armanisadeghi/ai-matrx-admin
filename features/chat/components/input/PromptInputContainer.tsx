@@ -69,10 +69,6 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
         [fileManager]
     );
 
-    useEffect(() => {
-        console.log("TextInput received content:", content);
-    }, [content]);
-
     const handleTriggerSubmit = useCallback(async () => {
         if (!activeMessageRecord) {
             console.error("PromptInputContainer: handleTriggerSubmit: activeMessageRecord was not found");

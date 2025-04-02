@@ -123,7 +123,7 @@ export const creationReducers = <TEntity extends EntityKeys>(
         if (data) {
             entityLogger.log(INFO, "WARNING! EXPERIMENTAL FEATURE FOR AN OPTIMISTIC UPDATE BUT NOT USING OPTIMISTIC UPDATE FEATURE! createRecord");
             entityLogger.log(DEBUG, "data: ", data);
-            entityLogger.log(INFO, "- Temp Record Id: ", tempRecordId);
+            entityLogger.log(DEBUG, "- Temp Record Id: ", tempRecordId);
             const recordKey = createRecordKey(state.entityMetadata.primaryKeyMetadata, data);
             state.records[recordKey] = data;
         }

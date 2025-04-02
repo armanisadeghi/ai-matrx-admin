@@ -7,25 +7,21 @@ import { LayoutWithSidebar } from "@/components/layout/MatrixLayout";
 import { appSidebarLinks, adminSidebarLinks } from "@/constants";
 import { generateClientGlobalCache, initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
 import { InitialReduxState } from "@/types/reduxTypes";
-import { ClientDebugWrapper } from "@/components/admin/ClientDebugWrapper";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
 import { setGlobalUserId } from "@/lib/globalState";
+import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
 
 const schemaSystem = initializeSchemaSystem();
-
 const clientGlobalCache = generateClientGlobalCache();
 
 async function fetchTestDirectories() {
     try {
-        // In Next.js, we can use fetch to get JSON from the public directory
         const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/test-directories.json`);
-
         if (!response.ok) {
             console.error(`Failed to fetch test directories: ${response.status} ${response.statusText}`);
             return [];
         }
-
         return await response.json();
     } catch (error) {
         console.error("Error fetching test directories:", error);
@@ -69,12 +65,13 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         userPreferences: preferences?.preferences || {},
         globalCache: clientGlobalCache,
     };
+
     return (
         <Providers initialReduxState={initialReduxState}>
             <LayoutWithSidebar {...layoutProps}>
                 <NavigationLoader />
                 {children}
-                <ClientDebugWrapper user={userData} />
+                <AdminIndicatorWrapper />
             </LayoutWithSidebar>
         </Providers>
     );

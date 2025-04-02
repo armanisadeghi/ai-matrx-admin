@@ -55,7 +55,7 @@ export class SocketConnectionManager {
         }
     }
 
-    private async getPrioritizedUrls(baseUrl: string): Promise<string[]> {
+    public async getPrioritizedUrls(baseUrl: string): Promise<string[]> {
         if (baseUrl) return [baseUrl];
         const overrideUrl = process.env.NEXT_PUBLIC_SOCKET_OVERRIDE;
         const isProduction = process.env.NODE_ENV === "production";
@@ -66,7 +66,6 @@ export class SocketConnectionManager {
         }
 
         if (!isProduction && this.isClientSide) {
-            // Only check local on client-side
             const isLocalAvailable = await this.isLocalServerAvailable();
             if (isLocalAvailable) {
                 urls.push(this.DEFAULT_LOCAL_URL);
@@ -103,6 +102,8 @@ export class SocketConnectionManager {
             auth: resolvedAuth,
             reconnection: false,
         });
+        console.log("socket", socket);
+        console.log("this.sockets", this.sockets);
 
         return new Promise((resolve, reject) => {
             socket.on("connect", () => {

@@ -1,18 +1,37 @@
+// components/AdminIndicator.tsx
 import React, { useState, useRef, useEffect } from 'react';
-import { Activity, Server, Database, Settings, ChevronRight, ChevronDown, X, Move } from 'lucide-react';
-import { SocketManager } from '@/lib/redux/socket/manager';
+import { Server, ChevronRight, ChevronDown, X, Move, User } from 'lucide-react';
+import { TbBrandSocketIo } from 'react-icons/tb';
+import { usePathname } from 'next/navigation';
+import { PiPathFill } from "react-icons/pi";
 
-const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = true }) => {
-  const [size, setSize] = useState('small'); // 'small', 'medium', 'large'
+interface User {
+  id: string;
+  email?: string;
+  name?: string;
+  [key: string]: any;
+}
+
+interface AdminIndicatorProps {
+  user: User;
+  socketConnected?: boolean;
+  socketUrl: string;
+}
+
+const AdminIndicator = ({ 
+  user, 
+  socketConnected = false, 
+  socketUrl = ""
+}: AdminIndicatorProps) => {
+  const [size, setSize] = useState('small');
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-
-  
+  const currentPath = usePathname();
   const indicatorRef = useRef(null);
   
-  // Handle dragging functionality
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event from bubbling up
     if (indicatorRef.current) {
       const rect = indicatorRef.current.getBoundingClientRect();
       setDragOffset({
@@ -23,7 +42,15 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
     }
   };
   
-  const handleMouseMove = (e) => {
+  // Add this function to handle container clicks
+  const handleContainerMouseDown = (e: React.MouseEvent) => {
+    // Only trigger drag if clicking on the container itself, not its children
+    if (e.currentTarget === e.target) {
+      handleMouseDown(e);
+    }
+  };
+  
+  const handleMouseMove = (e: MouseEvent) => {
     if (isDragging) {
       setPosition({
         x: e.clientX - dragOffset.x,
@@ -36,7 +63,6 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
     setIsDragging(false);
   };
   
-  // Add and remove event listeners
   useEffect(() => {
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
@@ -52,7 +78,6 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
     };
   }, [isDragging]);
   
-  // Cycle through sizes
   const cycleSize = (direction = 'up') => {
     const sizes = ['small', 'medium', 'large'];
     const currentIndex = sizes.indexOf(size);
@@ -66,28 +91,30 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
     }
   };
   
-  // Small size component
   const SmallIndicator = () => (
-    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 text-white shadow-lg">
+    <div 
+      className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-800 text-white shadow-lg" 
+      onMouseDown={handleContainerMouseDown}
+    >
       <div 
         className="cursor-move p-1 rounded hover:bg-slate-700" 
         onMouseDown={handleMouseDown}
       >
         <Move size={14} />
       </div>
-      
-      <div className="flex items-center">
+      <div className="flex items-center gap-1">
         <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-        <Activity size={14} className="ml-1" />
+        <TbBrandSocketIo size={14} />
       </div>
-      
-      <div className="flex items-center">
-        <div className={`w-2 h-2 rounded-full ${isLocalhost ? 'bg-yellow-400' : 'bg-blue-400'}`} />
-        <Server size={14} className="ml-1" />
+      <div className="flex items-center gap-1">
+        <div className={`w-2 h-2 rounded-full ${socketUrl === "Not connected" || socketUrl === "Connection error" ? 'bg-red-500' : (socketUrl.includes('localhost') ? 'bg-green-400' : 'bg-blue-400')}`} />
+        <Server size={14} />
       </div>
-      
       <button 
-        onClick={() => cycleSize('up')}
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent event from bubbling up
+          cycleSize('up');
+        }} 
         className="p-1 rounded hover:bg-slate-700"
       >
         <ChevronRight size={14} />
@@ -95,11 +122,13 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
     </div>
   );
   
-  // Medium size component
   const MediumIndicator = () => (
-    <div className="flex flex-col w-48 rounded-lg bg-slate-800 text-white shadow-lg overflow-hidden">
-      <div className="flex justify-between items-center px-3 py-2 bg-slate-900">
-        <div className="font-semibold text-xs">Admin Controls</div>
+    <div 
+      className="flex flex-col w-96 rounded-lg bg-slate-800 text-white shadow-lg overflow-hidden" 
+      onMouseDown={handleContainerMouseDown}
+    >
+      <div className="flex justify-between items-center px-2 py-1 bg-slate-900">
+        <div className="font-semibold text-sm">Matrx Admin</div>
         <div className="flex items-center gap-1">
           <div 
             className="cursor-move p-1 rounded hover:bg-slate-700" 
@@ -107,68 +136,67 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
           >
             <Move size={14} />
           </div>
-          <div className="flex">
-            <button 
-              onClick={() => cycleSize('down')}
-              className="p-1 rounded hover:bg-slate-700"
-            >
-              <ChevronRight size={14} className="rotate-180" />
-            </button>
-            <button 
-              onClick={() => cycleSize('up')}
-              className="p-1 rounded hover:bg-slate-700"
-            >
-              <ChevronDown size={14} />
-            </button>
-          </div>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              cycleSize('down');
+            }} 
+            className="p-1 rounded hover:bg-slate-700"
+          >
+            <ChevronRight size={14} className="rotate-180" />
+          </button>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              cycleSize('up');
+            }} 
+            className="p-1 rounded hover:bg-slate-700"
+          >
+            <ChevronDown size={14} />
+          </button>
         </div>
       </div>
-      
-      <div className="px-3 py-2 text-xs">
-        <div className="flex justify-between items-center mb-2">
-          <div className="flex items-center gap-1">
-            <Activity size={14} />
-            <span>Socket Status</span>
-          </div>
+      <div className="px-2 py-1 text-xs space-y-1">
+        <div className="flex items-center justify-between gap-2">
+          <User size={16} />
+          <span className="text-blue-400 truncate flex-1 text-right">
+            {user.email || user.name || user.id}
+          </span>
+        </div>
+        <div className={`flex items-center justify-between gap-2 ${socketConnected ? 'text-green-400' : 'text-red-400'}`}>
+          <TbBrandSocketIo size={16} />
           <span className={socketConnected ? 'text-green-400' : 'text-red-400'}>
             {socketConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
-        
-        <div className="flex justify-between items-center mb-2">
-          <div className="flex items-center gap-1">
-            <Server size={14} />
-            <span>Environment</span>
-          </div>
-          <span className={isLocalhost ? 'text-yellow-400' : 'text-blue-400'}>
-            {isLocalhost ? 'Localhost' : 'Production'}
+        <div className="flex items-center justify-between gap-2">
+          <Server size={16} />
+          <span 
+            className={socketUrl === "Not connected" || socketUrl === "Connection error" ? 'text-red-400' : (socketUrl.includes('localhost') ? 'text-green-400' : 'text-blue-400')} 
+            title={socketUrl}
+          >
+            {socketUrl}
           </span>
         </div>
-        
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-1">
-            <Database size={14} />
-            <span>Active Users</span>
+        <div className="flex items-start justify-between gap-2">
+          <PiPathFill size={16} />
+          <div className="text-xs font-semibold text-blue-400 flex flex-col items-end" title={currentPath}>
+            {currentPath.split('/').filter(part => part).map((part, index) => (
+              <span key={index} className="text-blue-400">
+                {part}
+              </span>
+            ))}
           </div>
-          <span>234</span>
         </div>
-      </div>
-      
-      <div className="px-3 py-2 border-t border-slate-700">
-        <button 
-          onClick={() => setSize('large')}
-          className="w-full text-xs py-1 px-2 bg-slate-700 hover:bg-slate-600 rounded flex items-center justify-center gap-1"
-        >
-          <Settings size={12} />
-          <span>Admin Panel</span>
-        </button>
       </div>
     </div>
   );
   
-  // Large size component - placeholder for your existing component
   const LargeIndicator = () => (
-    <div className="w-80 rounded-lg bg-slate-800 text-white shadow-lg overflow-hidden">
+    <div 
+      className="w-80 rounded-lg bg-slate-800 text-white shadow-lg overflow-hidden"
+      onMouseDown={handleContainerMouseDown}
+    >
       <div className="flex justify-between items-center px-4 py-3 bg-slate-900">
         <div className="font-semibold">Admin Dashboard</div>
         <div className="flex items-center gap-1">
@@ -180,13 +208,19 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
           </div>
           <div className="flex">
             <button 
-              onClick={() => setSize('medium')}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSize('medium');
+              }} 
               className="p-1 rounded hover:bg-slate-700"
             >
               <ChevronRight size={16} className="rotate-180" />
             </button>
             <button 
-              onClick={() => setSize('small')}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSize('small');
+              }} 
               className="p-1 rounded hover:bg-slate-700"
             >
               <X size={16} />
@@ -194,37 +228,38 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
           </div>
         </div>
       </div>
-      
       <div className="p-4">
-        <div className="text-sm mb-4">
-          This is where your full admin component would go. 
-          You mentioned you already have a great component for this.
-        </div>
-        
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-slate-700 p-3 rounded">
-            <div className="text-xs text-slate-400">Server Status</div>
-            <div className="text-lg font-semibold text-green-400">Online</div>
+            <div className="text-xs text-slate-400">User ID</div>
+            <div className="text-sm font-semibold text-blue-400 truncate" title={user.id}>
+              {user.id.slice(0, 8)}...
+            </div>
           </div>
           <div className="bg-slate-700 p-3 rounded">
-            <div className="text-xs text-slate-400">Active Users</div>
-            <div className="text-lg font-semibold">234</div>
+            <div className="text-xs text-slate-400">Socket Status</div>
+            <div className={`text-lg font-semibold ${socketConnected ? 'text-green-400' : 'text-red-400'}`}>
+              {socketConnected ? 'Online' : 'Offline'}
+            </div>
           </div>
-          <div className="bg-slate-700 p-3 rounded">
-            <div className="text-xs text-slate-400">Database</div>
-            <div className="text-lg font-semibold text-blue-400">Connected</div>
-          </div>
-          <div className="bg-slate-700 p-3 rounded">
-            <div className="text-xs text-slate-400">Environment</div>
-            <div className="text-lg font-semibold text-yellow-400">Localhost</div>
+          <div className="bg-slate-700 p-3 rounded col-span-2">
+            <div className="text-xs text-slate-400">Server URL</div>
+            <div className={`text-sm font-semibold ${socketUrl.includes('localhost') ? 'text-yellow-400' : 'text-blue-400'}`} title={socketUrl}>
+              {socketUrl}
+            </div>
           </div>
         </div>
-        
         <div className="flex gap-2">
-          <button className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm">
+          <button 
+            className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
             View Logs
           </button>
-          <button className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-sm">
+          <button 
+            className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
             User Management
           </button>
         </div>
@@ -232,7 +267,6 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
     </div>
   );
   
-  // Display the appropriate size
   const renderIndicator = () => {
     switch(size) {
       case 'medium':
@@ -244,9 +278,6 @@ const AdminIndicator = ({ isAdmin = true, socketConnected = true, isLocalhost = 
     }
   };
 
-  // Only display for admins
-  if (!isAdmin) return null;
-  
   return (
     <div 
       ref={indicatorRef}
