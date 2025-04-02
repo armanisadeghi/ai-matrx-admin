@@ -35,7 +35,7 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
             {/* New Chat Button */}
             <Link href={`${baseRoute}`}>
                 <button className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800">
-                    <IoCreateOutline size={18} />
+                    <IoCreateOutline size={22} />
                 </button>
             </Link>
 
@@ -43,18 +43,15 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
             <ThemeSwitcherIcon className="p-0.5" />
 
             <button className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800">
-                <Bell size={18} />
-            </button>
-            <button className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800">
-                <TbListSearch size={18} />
+                <TbListSearch size={22} />
             </button>
             <button className="p-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800">
                 {profilePhoto ? (
                     <Image
                         src={profilePhoto || "/happy-robot-avatar.jpg"}
                         className="h-5 w-5 rounded-full"
-                        width={20}
-                        height={20}
+                        width={22}
+                        height={22}
                         alt={`${displayName}'s profile`}
                     />
                 ) : (
