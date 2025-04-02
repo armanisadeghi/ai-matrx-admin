@@ -4,15 +4,13 @@ import { Message } from "@/types/chat/chat.types";
 import { getEntitySlice } from "@/lib/redux/entity/entitySlice";
 import { createAppThunk } from "@/lib/redux/utils";
 import { ConversationData, EntityKeys, MatrxRecordId } from "@/types";
-import { SaveCallbackResult, saveRecordsInOrder, saveUnsavedRecord } from "@/lib/redux/entity/thunks/createRecordThunk";
+import { SaveCallbackResult, saveUnsavedRecord } from "@/lib/redux/entity/thunks/createRecordThunk";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { callbackManager } from "@/utils/callbackManager";
 
 const INFO = true;
 const DEBUG = false;
 const VERBOSE = false;
-
-
 
 interface CreateMessagePayload {
     conversationId: string;
@@ -61,10 +59,9 @@ export const createMessageForConversation = createAppThunk<CreateMessageResult, 
                 })
             );
 
-            if (INFO) console.log("CREATE MESSAGE FOR CONVERSATION: created Message with temp id", messageTempKey);
+            if (DEBUG) console.log("CREATE MESSAGE FOR CONVERSATION: created Message with temp id", messageTempKey);
 
             dispatch(messageSlice.actions.setActiveParentId(conversationId));
-
 
             dispatch(chatActions.setStandardMessageFilterAndSort());
 
@@ -175,10 +172,12 @@ export const saveMessageThunk = createAppThunk<SaveMessageResult, SaveMessagePay
                 return rejectWithValue("SAVE MESSAGE THUNK: Message temp id was not found");
             }
 
-            const initialResult = await dispatch(saveUnsavedRecord({
-                entityKey: "message" as EntityKeys,
-                matrxRecordId: messageTempId
-            })).unwrap();
+            const initialResult = await dispatch(
+                saveUnsavedRecord({
+                    entityKey: "message" as EntityKeys,
+                    matrxRecordId: messageTempId,
+                })
+            ).unwrap();
 
             const { callbackId } = initialResult;
 
@@ -202,8 +201,8 @@ export const saveMessageThunk = createAppThunk<SaveMessageResult, SaveMessagePay
                 messageData: {
                     tempRecordId: messageTempId,
                     recordKey: callbackData.result.recordKey, // Assuming callbackData.result has this structure
-                    data: callbackData.result
-                }
+                    data: callbackData.result,
+                },
             };
 
             return returnValue;

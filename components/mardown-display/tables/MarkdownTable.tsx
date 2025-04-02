@@ -11,6 +11,7 @@ interface MarkdownTableProps {
     data: {
         headers: string[];
         rows: string[][];
+        normalizedData?: Array<{ [key: string]: string }>;
     };
     className?: string;
     fontSize?: number;
@@ -28,10 +29,13 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const [tableData, setTableData] = useState<{
         headers: string[];
         rows: string[][];
+        normalizedData?: Array<{ [key: string]: string }>;
     }>({
         headers: [],
         rows: [],
+        normalizedData: data.normalizedData,
     });
+    const [showNormalized, setShowNormalized] = useState(false);
     const [editMode, setEditMode] = useState<"none" | "header" | number>("none");
     const tableFontsize = fontSize;
     const toast = useToastManager();
@@ -45,6 +49,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         setTableData({
             headers: cleanHeaders,
             rows: cleanRows,
+            normalizedData: data.normalizedData,
         });
     }, [data]);
 
@@ -63,6 +68,15 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.success("Table copied to clipboard");
         } catch (err: any) {
             toast.error(err.message || "Failed to copy table");
+        }
+    };
+
+    const copyJsonToClipboard = async () => {
+        try {
+            await navigator.clipboard.writeText(JSON.stringify(tableData.normalizedData, null, 2));
+            toast.success("JSON copied to clipboard");
+        } catch (err: any) {
+            toast.error(err.message || "Failed to copy JSON");
         }
     };
 
@@ -163,6 +177,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         setTableData({
             headers: cleanHeaders,
             rows: cleanRows,
+            normalizedData: data.normalizedData,
         });
         setEditMode("none");
         toast.info("Edits cancelled");
@@ -173,126 +188,134 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     return (
         <div className="w-full space-y-4 my-4">
-            <div className={cn("overflow-x-auto rounded-xl border-3", tableTheme.border)}>
-                <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${tableFontsize}px` }}>
-                    <thead>
-                        <tr
-                            className={cn("border-b", tableTheme.border, tableTheme.header, isEditingEnabled && "cursor-pointer")}
-                            onClick={isEditingEnabled ? handleHeaderClick : undefined}
-                        >
-                            {tableData.headers.map((header, i) => (
-                                <th
-                                    key={i}
-                                    className={cn(
-                                        "px-1 py-2 text-left font-semibold",
-                                        tableTheme.headerText,
-                                        i < tableData.headers.length - 1 && "border-r border-gray-300 dark:border-gray-700"
-                                    )}
-                                >
-                                    {isEditingHeader ? (
-                                        <input
-                                            type="text"
-                                            value={header}
-                                            onChange={(e) => handleHeaderChange(i, e.target.value)}
-                                            className={cn(
-                                                "w-full bg-transparent outline-none border border-dashed border-blue-300 p-1",
-                                                tableTheme.headerText
-                                            )}
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                    ) : (
-                                        header
-                                    )}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {tableData.rows.map((row, rowIndex) => (
+            {showNormalized ? (
+                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto">
+                    {JSON.stringify(tableData.normalizedData, null, 2)}
+                </pre>
+            ) : (
+                <div className={cn("overflow-x-auto rounded-xl border-3", tableTheme.border)}>
+                    <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${tableFontsize}px` }}>
+                        <thead>
                             <tr
-                                key={rowIndex}
-                                className={cn(
-                                    "border-b transition-colors",
-                                    tableTheme.border,
-                                    tableTheme.row.hover,
-                                    rowIndex % 2 === 0 ? tableTheme.row.even : tableTheme.row.odd,
-                                    isEditingEnabled && "cursor-pointer",
-                                    editMode === rowIndex && "bg-blue-50 dark:bg-blue-900/20"
-                                )}
-                                onClick={isEditingEnabled ? () => handleRowClick(rowIndex) : undefined}
+                                className={cn("border-b", tableTheme.border, tableTheme.header, isEditingEnabled && "cursor-pointer")}
+                                onClick={isEditingEnabled ? handleHeaderClick : undefined}
                             >
-                                {row.map((cell, colIndex) => (
-                                    <td
-                                        key={colIndex}
+                                {tableData.headers.map((header, i) => (
+                                    <th
+                                        key={i}
                                         className={cn(
-                                            "px-1 pt-1 pb-0",
-                                            colIndex < row.length - 1 && "border-r border-gray-300 dark:border-gray-700",
-                                            colIndex === 0 && "font-semibold"
+                                            "px-1 py-2 text-left font-semibold",
+                                            tableTheme.headerText,
+                                            i < tableData.headers.length - 1 && "border-r border-gray-300 dark:border-gray-700"
                                         )}
                                     >
-                                        {editMode === rowIndex ? (
-                                            <textarea
-                                                value={cell}
-                                                onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
+                                        {isEditingHeader ? (
+                                            <input
+                                                type="text"
+                                                value={header}
+                                                onChange={(e) => handleHeaderChange(i, e.target.value)}
                                                 className={cn(
                                                     "w-full bg-transparent outline-none border border-dashed border-blue-300 p-1",
-                                                    "resize-y min-h-[8rem]",
-                                                    colIndex === 0 && "font-semibold"
+                                                    tableTheme.headerText
                                                 )}
                                                 onClick={(e) => e.stopPropagation()}
-                                                onFocus={(e) => e.target.select()}
                                             />
                                         ) : (
-                                            cell
+                                            header
                                         )}
-                                    </td>
+                                    </th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <div className="flex justify-between">
-                {/* Left side buttons (only shown in edit mode) */}
-                <div className="flex gap-2">
-                    {isEditingEnabled && (
-                        <>
-                            <Button variant="outline" size="sm" onClick={handleCancel} className="flex items-center gap-2">
-                                <X className="h-4 w-4" />
-                                Cancel
-                            </Button>
-                            <Button variant="default" size="sm" onClick={handleSave} className="flex items-center gap-2">
-                                <Save className="h-4 w-4" />
-                                Save
-                            </Button>
-                        </>
-                    )}
+                        </thead>
+                        <tbody>
+                            {tableData.rows.map((row, rowIndex) => (
+                                <tr
+                                    key={rowIndex}
+                                    className={cn(
+                                        "border-b transition-colors",
+                                        tableTheme.border,
+                                        tableTheme.row.hover,
+                                        rowIndex % 2 === 0 ? tableTheme.row.even : tableTheme.row.odd,
+                                        isEditingEnabled && "cursor-pointer",
+                                        editMode === rowIndex && "bg-blue-50 dark:bg-blue-900/20"
+                                    )}
+                                    onClick={isEditingEnabled ? () => handleRowClick(rowIndex) : undefined}
+                                >
+                                    {row.map((cell, colIndex) => (
+                                        <td
+                                            key={colIndex}
+                                            className={cn(
+                                                "px-1 pt-1 pb-0",
+                                                colIndex < row.length - 1 && "border-r border-gray-300 dark:border-gray-700",
+                                                colIndex === 0 && "font-semibold"
+                                            )}
+                                        >
+                                            {editMode === rowIndex ? (
+                                                <textarea
+                                                    value={cell}
+                                                    onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
+                                                    className={cn(
+                                                        "w-full bg-transparent outline-none border border-dashed border-blue-300 p-1",
+                                                        "resize-y min-h-[8rem]",
+                                                        colIndex === 0 && "font-semibold"
+                                                    )}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onFocus={(e) => e.target.select()}
+                                                />
+                                            ) : (
+                                                cell
+                                            )}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-
-                {/* Right side buttons (always shown but toggled between edit/view) */}
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={copyTableToClipboard} className="flex items-center gap-2">
+            )}
+            <div className="flex justify-end gap-2">
+                {tableData.normalizedData && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowNormalized(!showNormalized)}
+                        className="flex items-center gap-2"
+                    >
+                        <Eye className="h-4 w-4" />
+                        {showNormalized ? "Table" : "Data"}
+                    </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={copyTableToClipboard} className="flex items-center gap-2">
+                    <Copy className="h-4 w-4" />
+                    Text
+                </Button>
+                {tableData.normalizedData && (
+                    <Button variant="outline" size="sm" onClick={copyJsonToClipboard} className="flex items-center gap-2">
                         <Copy className="h-4 w-4" />
-                        Copy
+                        Data
                     </Button>
-                    <Button variant="outline" size="sm" onClick={downloadCSV} className="flex items-center gap-2">
-                        <Download className="h-4 w-4" />
-                        CSV
-                    </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={downloadCSV} className="flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    CSV
+                </Button>
+                {isEditingEnabled ? (
+                    <>
+                        <Button variant="outline" size="sm" onClick={handleSave} className="flex items-center gap-2">
+                            <Save className="h-4 w-4" />
+                            Save
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleCancel} className="flex items-center gap-2">
+                            <X className="h-4 w-4" />
+                            Cancel
+                        </Button>
+                    </>
+                ) : (
                     <Button variant="outline" size="sm" onClick={toggleGlobalEditMode} className="flex items-center gap-2">
-                        {isEditingEnabled ? (
-                            <>
-                                <Eye className="h-4 w-4" />
-                                View
-                            </>
-                        ) : (
-                            <>
-                                <Edit className="h-4 w-4" />
-                                Edit
-                            </>
-                        )}
+                        <Edit className="h-4 w-4" />
+                        Edit
                     </Button>
-                </div>
+                )}
             </div>
         </div>
     );

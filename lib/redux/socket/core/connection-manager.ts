@@ -102,8 +102,6 @@ export class SocketConnectionManager {
             auth: resolvedAuth,
             reconnection: false,
         });
-        console.log("socket", socket);
-        console.log("this.sockets", this.sockets);
 
         return new Promise((resolve, reject) => {
             socket.on("connect", () => {

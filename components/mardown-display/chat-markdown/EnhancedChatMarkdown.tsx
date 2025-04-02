@@ -94,11 +94,11 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 );
             case "table":
                 const tableData = parseMarkdownTable(block.content);
-                if (!tableData || tableData.headers.length === 0 || tableData.rows.length === 0) {
+                if (!tableData.markdown || tableData.markdown.headers.length === 0 || tableData.markdown.rows.length === 0) {
                     console.warn("Skipping invalid or empty table:", block.content);
                     return null;
                 }
-                return <MarkdownTable key={index} data={tableData} />;
+                return <MarkdownTable key={index} data={{ ...tableData.markdown, normalizedData: tableData.data }} />;
             default:
                 return null;
         }

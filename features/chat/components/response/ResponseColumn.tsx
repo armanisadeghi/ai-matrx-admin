@@ -155,7 +155,7 @@ const ResponseColumn: React.FC = () => {
 
     return (
         <div className="w-full pt-0 pb-24 relative" ref={containerRef}>
-            <div className="max-w-3xl mx-auto px-3 space-y-6 border-2 border-blue-500">
+            <div className="max-w-3xl mx-auto px-4 md:px-3 space-y-6 overflow-x-hidden">
                 {messagesToDisplay.map((message) => (
                     <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} />
                 ))}
