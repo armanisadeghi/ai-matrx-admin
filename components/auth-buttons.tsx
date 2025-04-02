@@ -4,15 +4,11 @@ import { Button } from "@/components/ui/button";
 import { type ComponentProps } from "react";
 import { useFormStatus } from "react-dom";
 
-type Props = Omit<ComponentProps<typeof Button>, 'type'> & {
+type Props = Omit<ComponentProps<typeof Button>, "type"> & {
     pendingText?: string;
 };
 
-export function EmailSignInButton({
-                                      children,
-                                      pendingText = "Signing in...",
-                                      ...props
-                                  }: Props) {
+export function EmailSignInButton({ children, pendingText = "Signing in...", ...props }: Props) {
     const { pending } = useFormStatus();
 
     return (
@@ -22,11 +18,7 @@ export function EmailSignInButton({
     );
 }
 
-export function GoogleSignInButton({
-                                       children,
-                                       pendingText = "Connecting...",
-                                       ...props
-                                   }: Props) {
+export function GoogleSignInButton({ children, pendingText = "Connecting...", ...props }: Props) {
     const { pending } = useFormStatus();
 
     return (
@@ -36,11 +28,7 @@ export function GoogleSignInButton({
     );
 }
 
-export function GithubSignInButton({
-                                       children,
-                                       pendingText = "Connecting...",
-                                       ...props
-                                   }: Props) {
+export function GithubSignInButton({ children, pendingText = "Connecting...", ...props }: Props) {
     const { pending } = useFormStatus();
 
     return (

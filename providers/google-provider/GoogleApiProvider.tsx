@@ -1,3 +1,5 @@
+// providers/google-provider/GoogleApiProvider.tsx
+
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
@@ -61,6 +63,8 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
 
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
+    console.log("clientId", clientId);
+
     // Reset error helper function
     const resetError = useCallback(() => {
         setError(null);
@@ -81,7 +85,9 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
     useEffect(() => {
         try {
             const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+            console.log("savedToken", savedToken);
             const savedScopes = localStorage.getItem(SCOPES_STORAGE_KEY);
+            console.log("savedScopes", savedScopes);
 
             if (savedToken) {
                 console.log("Restoring authentication from storage");
@@ -206,6 +212,7 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
             if (response && response.access_token) {
                 console.log("Access token received");
                 const newToken = response.access_token;
+                console.log("newToken", newToken);
                 setToken(newToken);
                 setIsAuthenticated(true);
 

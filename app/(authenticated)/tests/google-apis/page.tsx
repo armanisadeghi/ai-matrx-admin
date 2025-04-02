@@ -1,5 +1,6 @@
-"use client";
 // app/(authenticated)/tests/google-apis/page.tsx
+"use client";
+
 import GoogleAccessCard from "@/components/GoogleAccessCard";
 import { googleServices, googleBrandColors } from "@/lib/googleScopes";
 import { useGoogleAPI } from "@/providers/google-provider/GoogleApiProvider";

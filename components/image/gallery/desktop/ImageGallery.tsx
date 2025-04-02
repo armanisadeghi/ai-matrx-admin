@@ -6,8 +6,8 @@ import { SimpleImageViewer } from './SimpleImageViewer';
 import { SearchBar } from '../SearchBar';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Grid, Grid3X3 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
 
 export interface SimplePhoto {
     id: string;
@@ -22,7 +22,8 @@ export function ImageGallery({ imageUrls = [] }) {
     const [selectedPhoto, setSelectedPhoto] = useState<SimplePhoto | null>(null);
     const [favorites, setFavorites] = useState<SimplePhoto[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState<'grid' | 'natural'>('grid'); // Added viewMode state
+    const [viewMode, setViewMode] = useState<'grid' | 'natural'>('grid');
+    
     const { toast } = useToast();
     
     const observer = useRef<IntersectionObserver | null>(null);

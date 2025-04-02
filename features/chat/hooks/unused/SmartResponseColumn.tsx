@@ -45,7 +45,7 @@ const AssistantMessageItem = React.memo(
     }) => (
         <AssistantMessage 
             key={message?.id || "stream"} 
-            content={content} 
+            message={message} 
             isStreamActive={isStreamActive} 
             onScrollToBottom={onScrollToBottom} 
         />

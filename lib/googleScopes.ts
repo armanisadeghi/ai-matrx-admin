@@ -1,4 +1,5 @@
 // lib/googleScopes.ts
+
 export const googleServices = {
     drive: {
       name: "Google Drive",
