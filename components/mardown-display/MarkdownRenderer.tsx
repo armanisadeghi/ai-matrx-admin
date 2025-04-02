@@ -99,7 +99,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
         ),
         table: () => {
             if (!tableData) return null;
-            return <MarkdownTable data={tableData} />;
+            return <MarkdownTable data={tableData.markdown} />;
         },
         thead: () => null,
         tbody: () => null,

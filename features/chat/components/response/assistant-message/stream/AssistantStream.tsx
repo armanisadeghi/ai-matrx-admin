@@ -43,7 +43,7 @@ const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName, handleVisi
                 {isInvisible && (
                     <button
                         onClick={scrollToBottom}
-                        className="fixed bottom-0 z-50 p-2 bg-blue-500 dark:bg-opacity-25 text-white rounded-full hover:bg-opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-opacity duration-300"
+                        className="fixed bottom-0 z-7 p-2 bg-blue-500 dark:bg-opacity-25 text-white rounded-full hover:bg-opacity-75 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-opacity duration-300"
                         style={{ 
                             marginBottom: "170px",
                             left: "calc(50% + 385px)" // This is a hard-coded value that places the button at the right edge of a centered container

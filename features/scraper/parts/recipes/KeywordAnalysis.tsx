@@ -105,7 +105,7 @@ const KeywordAnalysisPage: React.FC<KeywordAnalysisPageProps> = ({ value, overvi
     const ContentComparisonTable = () => {
         const tableData = parseMarkdownTable(streamingResponse);
 
-        return <Card title="Content Comparison">{tableData && <MarkdownTable data={tableData} />}</Card>;
+        return <Card title="Content Comparison">{tableData && <MarkdownTable data={tableData.markdown} />}</Card>;
     };
 
     const tabs = [

@@ -42,16 +42,26 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const tableTheme = THEMES[theme].table || THEMES.professional.table;
 
     useEffect(() => {
-        // Clean data when it changes
-        const cleanHeaders = data.headers?.map((header) => header.replace(/\*\*/g, "").trim());
-        const cleanRows = data.rows.map((row) => row.map((cell) => cell.replace(/\*\*/g, "").trim()));
-
+        // Use the raw data with Markdown intact
         setTableData({
-            headers: cleanHeaders,
-            rows: cleanRows,
+            headers: data.headers,
+            rows: data.rows,
             normalizedData: data.normalizedData,
         });
     }, [data]);
+
+    // Simple Markdown renderer for bold and italic
+    const renderMarkdown = (text: string) => {
+        let html = text
+            .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>") // Bold with **
+            .replace(/\*([^*]+)\*/g, "<em>$1</em>") // Italic with *
+            .replace(/_([^_]+)_/g, "<em>$1</em>"); // Italic with _
+
+        // Handle cases where bold and italic overlap (e.g., ***text***)
+        html = html.replace(/<em><strong>([^<]+)<\/strong><\/em>/g, "<strong><em>$1</em></strong>");
+
+        return <span dangerouslySetInnerHTML={{ __html: html }} />;
+    };
 
     const copyTableToClipboard = async () => {
         try {
@@ -83,7 +93,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const downloadCSV = () => {
         try {
             const csvContent = [
-                tableData.headers.join(","),
+                tableData.headers.map((h) => h.replace(/"/g, '""')).join(","),
                 ...tableData.rows.map((row) =>
                     row
                         .map((cell) => {
@@ -114,12 +124,10 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     const toggleGlobalEditMode = () => {
         if (editMode !== "none") {
-            // Save current state and exit edit mode
             onSave(tableData);
             setEditMode("none");
             toast.info("Edit mode deactivated");
         } else {
-            // Enter edit mode for header by default
             setEditMode("header");
             toast.info("Edit mode activated");
         }
@@ -128,38 +136,24 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const handleHeaderChange = (index: number, value: string) => {
         const newHeaders = [...tableData.headers];
         newHeaders[index] = value;
-        setTableData({
-            ...tableData,
-            headers: newHeaders,
-        });
+        setTableData({ ...tableData, headers: newHeaders });
     };
 
     const handleCellChange = (rowIndex: number, colIndex: number, value: string) => {
         const newRows = [...tableData.rows];
         newRows[rowIndex][colIndex] = value;
-        setTableData({
-            ...tableData,
-            rows: newRows,
-        });
+        setTableData({ ...tableData, rows: newRows });
     };
 
     const handleRowClick = (rowIndex: number) => {
-        if (editMode === "none") return; // Do nothing if not in edit mode
-
-        // If we're already editing something, save the current state
+        if (editMode === "none") return;
         onSave(tableData);
-
-        // Set the new row as the one being edited
         setEditMode(rowIndex);
     };
 
     const handleHeaderClick = () => {
-        if (editMode === "none") return; // Do nothing if not in edit mode
-
-        // If we're already editing something, save the current state
+        if (editMode === "none") return;
         onSave(tableData);
-
-        // Set the header as being edited
         setEditMode("header");
     };
 
@@ -170,13 +164,9 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     const handleCancel = () => {
-        // Reset to original data
-        const cleanHeaders = data.headers.map((header) => header.replace(/\*\*/g, "").trim());
-        const cleanRows = data.rows.map((row) => row.map((cell) => cell.replace(/\*\*/g, "").trim()));
-
         setTableData({
-            headers: cleanHeaders,
-            rows: cleanRows,
+            headers: data.headers,
+            rows: data.rows,
             normalizedData: data.normalizedData,
         });
         setEditMode("none");
@@ -221,7 +211,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                                                 onClick={(e) => e.stopPropagation()}
                                             />
                                         ) : (
-                                            header
+                                            renderMarkdown(header)
                                         )}
                                     </th>
                                 ))}
@@ -263,7 +253,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                                                     onFocus={(e) => e.target.select()}
                                                 />
                                             ) : (
-                                                cell
+                                                renderMarkdown(cell)
                                             )}
                                         </td>
                                     ))}

@@ -165,7 +165,7 @@ const ThinkingVisualization = ({
       
       {/* Header with sparkle icon and toggle */}
       <div 
-        className="relative z-10 flex items-center justify-between px-4 py-2 cursor-pointer"
+        className="relative z-5 flex items-center justify-between px-4 py-2 cursor-pointer"
         onClick={toggleExpanded}
       >
         <div className="flex items-center space-x-2">
@@ -215,7 +215,7 @@ const ThinkingVisualization = ({
       </div>
       
       {/* Thinking content with conditional max height */}
-      <div className="relative z-10 px-4 pb-2">
+      <div className="relative z-5 px-4 pb-2">
         <div 
           className={`overflow-hidden transition-all duration-300 ease-in-out ${
             expanded ? 'max-h-96' : 'max-h-12'

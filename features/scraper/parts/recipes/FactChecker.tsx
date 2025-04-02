@@ -248,7 +248,7 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
         return (
             <Card title="Claims Assessment Table">
                 {tableData ? (
-                    <MarkdownTable data={tableData} />
+                    <MarkdownTable data={tableData.markdown} />
                 ) : (
                     <EmptyState message={streamingResponse ? "No table data found in the analysis" : "Claims table will appear here..."} />
                 )}

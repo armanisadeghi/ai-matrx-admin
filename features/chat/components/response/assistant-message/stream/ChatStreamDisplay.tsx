@@ -95,7 +95,13 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     const componentsWithTable = useMemo(
         () => ({
             ...components,
-            table: () => (parsedContent.tableData ? <StreamingTable data={parsedContent.tableData} /> : null),
+            table: () => {
+                if (!parsedContent.tableData?.markdown) return null;
+                return <StreamingTable data={{ 
+                    headers: parsedContent.tableData.markdown.headers, 
+                    rows: parsedContent.tableData.markdown.rows 
+                }} />;
+            },
         }),
         [parsedContent.tableData]
     );

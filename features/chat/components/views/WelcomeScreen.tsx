@@ -66,7 +66,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ initialModelId, initialMo
         <div
             className={`absolute ${
                 submitSuccess
-                    ? "bottom-0 left-0 right-0 z-10 bg-zinc-100 dark:bg-zinc-850"
+                    ? "bottom-0 left-0 right-0 z-6 bg-zinc-100 dark:bg-zinc-850"
                     : "inset-0 flex flex-col items-center justify-center px-4 md:px-8"
             }`}
         >

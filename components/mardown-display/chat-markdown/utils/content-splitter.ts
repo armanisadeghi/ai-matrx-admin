@@ -1,28 +1,64 @@
 import { ContentBlock } from "../EnhancedChatMarkdown";
 
-
-export     const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
+export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     const blocks: ContentBlock[] = [];
     let currentText = "";
     const lines = mdContent.split(/\r?\n/);
+    let insideMarkdownBlock = false;
 
     let i = 0;
     while (i < lines.length) {
         const line = lines[i];
         const trimmedLine = line.trim();
 
+        // Handle ```markdown opening marker
+        if (trimmedLine === "```markdown") {
+            insideMarkdownBlock = true;
+            i++; // Skip the marker
+            continue;
+        }
+
+        // Handle closing ``` when inside a markdown block
+        if (trimmedLine === "```" && insideMarkdownBlock) {
+            insideMarkdownBlock = false;
+            i++; // Skip the marker
+            continue;
+        }
+
+        // Only process as code block if not inside markdown block
+        if (trimmedLine.startsWith("```") && !insideMarkdownBlock) {
+            if (currentText.trim()) {
+                blocks.push({ type: "text", content: currentText.trimEnd() });
+                currentText = "";
+            }
+            const languageMatch = trimmedLine.match(/^```(\w*)/);
+            const language = languageMatch && languageMatch[1] ? languageMatch[1] : undefined;
+            const codeContent: string[] = [];
+            i++; // Move past opening ```
+            while (i < lines.length && !lines[i].trim().startsWith("```")) {
+                codeContent.push(lines[i]);
+                i++;
+            }
+            blocks.push({
+                type: "code",
+                content: codeContent.join("\n"),
+                language,
+            });
+            i++; // Move past closing ```
+            continue;
+        }
+
         // Detect image markdown syntax (e.g., ![alt](url))
-        const imageMatch = trimmedLine.match(/^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)$/);
+        const imageMatch = trimmedLine.match(/^!$$ (.*?) $$$$ (https?:\/\/[^\s)]+) $$$/);
         if (imageMatch) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
             }
-
             const [, alt, src] = imageMatch;
             blocks.push({
                 type: "image",
-                content: trimmedLine, // Keep original for reference
+                content: trimmedLine,
                 src,
                 alt: alt || "Image",
             });
@@ -36,70 +72,47 @@ export     const splitContentIntoBlocks = (mdContent: string): ContentBlock[] =>
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
             }
-
             const thinkingContent: string[] = [];
-            i++; // Move past opening tag
+            i++;
             while (i < lines.length && lines[i].trim() !== "</thinking>" && lines[i].trim() !== "</think>") {
                 thinkingContent.push(lines[i]);
                 i++;
             }
-
             blocks.push({
                 type: "thinking",
                 content: thinkingContent.join("\n"),
             });
-            i++; // Move past closing tag
+            i++;
             continue;
         }
 
-        // Detect code blocks (```lang or ```)
-        if (trimmedLine.startsWith("```")) {
-            if (currentText.trim()) {
-                blocks.push({ type: "text", content: currentText.trimEnd() });
-                currentText = "";
-            }
-
-            const languageMatch = trimmedLine.match(/^```(\w*)/);
-            const language = languageMatch && languageMatch[1] ? languageMatch[1] : undefined;
-
-            const codeContent: string[] = [];
-            i++; // Move past opening ```
-            while (i < lines.length && !lines[i].trim().startsWith("```")) {
-                codeContent.push(lines[i]);
-                i++;
-            }
-
-            blocks.push({
-                type: "code",
-                content: codeContent.join("\n"),
-                language,
-            });
-            i++; // Move past closing ```
-            continue;
-        }
-
-        // Detect table blocks
+        // Detect table blocks - improved to handle empty cells
         if (
             trimmedLine.startsWith("|") &&
+            trimmedLine.endsWith("|") &&
             trimmedLine.includes("|", 1) &&
             i + 1 < lines.length &&
-            lines[i + 1].trim().match(/^\|[-:\s|]+$/)
+            lines[i + 1].trim().match(/^\|[-:\s|]+$/m) // Separator row with pipes
         ) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
             }
-
             const tableContent: string[] = [];
             tableContent.push(lines[i]); // Header row
             i++;
             tableContent.push(lines[i]); // Separator row
             i++;
-            while (i < lines.length && lines[i].trim().startsWith("|") && lines[i].trim().includes("|", 1)) {
+            // Continue while the line maintains table structure (starts and ends with |)
+            while (
+                i < lines.length &&
+                lines[i].trim().startsWith("|") &&
+                lines[i].trim().endsWith("|") &&
+                lines[i].trim().includes("|", 1) // At least one internal pipe
+            ) {
                 tableContent.push(lines[i]);
                 i++;
             }
-
             blocks.push({
                 type: "table",
                 content: tableContent.join("\n"),

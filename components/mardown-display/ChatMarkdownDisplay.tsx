@@ -103,7 +103,7 @@ const ChatMarkdownDisplay: React.FC<ChatMarkdownDisplayProps> = ({ content, type
         ),
         table: () => {
             if (!tableData) return null;
-            return <MarkdownTable data={tableData} />;
+            return <MarkdownTable data={tableData.markdown} />;
         },
         thead: () => null,
         tbody: () => null,

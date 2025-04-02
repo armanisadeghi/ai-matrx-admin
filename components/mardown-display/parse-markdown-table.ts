@@ -1,6 +1,5 @@
 import {MarkdownTableData} from "./types";
 
-// Define a new type for the normalized data
 type NormalizedTableData = Array<{ [key: string]: string }>;
 
 export const parseMarkdownTable = (content: string): { 
@@ -8,67 +7,63 @@ export const parseMarkdownTable = (content: string): {
     data: NormalizedTableData | null 
 } => {
     try {
-        const lines = content.split('\n');
+        const lines = content.split('\n').filter(line => line.trim().length > 0);
+        
         const tableStartIndex = lines.findIndex(line => line.trim().startsWith('|'));
         if (tableStartIndex === -1) return { markdown: null, data: null };
 
-        // Find table end index
-        let tableEndIndex = tableStartIndex;
-        while (tableEndIndex < lines.length && lines[tableEndIndex].trim().startsWith('|')) {
-            tableEndIndex++;
-        }
-
-        // Extract table lines
-        const tableLines = lines
-            .slice(tableStartIndex, tableEndIndex)
-            .filter(line => line.trim().length > 0);
-
+        const tableLines = lines.slice(tableStartIndex);
         if (tableLines.length < 3) return { markdown: null, data: null };
 
-        // Process headers and rows
-        const processRow = (line: string) =>
-            line
-                .split('|')
-                .map(cell => cell.trim())
-                .filter(cell => cell.length > 0);
+        if (!tableLines[1].includes('-')) return { markdown: null, data: null };
+
+        // Process rows, preserving empty cells
+        const processRow = (line: string) => {
+            const cells = line.split('|').map(cell => cell.trim());
+            // Remove the first and last empty elements (from leading/trailing |)
+            if (cells.length > 0 && cells[0] === '') cells.shift();
+            if (cells.length > 0 && cells[cells.length - 1] === '') cells.pop();
+            return cells;
+        };
 
         const headers = processRow(tableLines[0]);
-        const rows = tableLines
-            .slice(2) // Skip header and separator lines
-            .map(processRow);
+        if (headers.length === 0) return { markdown: null, data: null };
 
-        // Convert to normalized data
+        const rows = tableLines
+            .slice(2)
+            .map(processRow)
+            .filter(row => row.some(cell => cell.length > 0)); // Only filter completely empty rows
+
+        if (rows.length === 0) return { markdown: null, data: null };
+
+        // Clean markdown formatting for normalized data only
+        const cleanText = (text: string) => {
+            return text
+                .replace(/\*\*([^*]+)\*\*/g, '$1')
+                .replace(/\*([^*]+)\*/g, '$1')
+                .replace(/_([^_]+)_/g, '$1')
+                .replace(/`([^`]+)`/g, '$1')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+                .replace(/#{1,6}\s*/g, '')
+                .trim();
+        };
+
+        // Convert to normalized data with cleaned text
         const normalizedData = rows.map(row => {
             const rowData: { [key: string]: string } = {};
             headers.forEach((header, index) => {
-                rowData[header] = row[index] || ''; // Use empty string if cell is undefined
+                const cleanHeader = cleanText(header);
+                rowData[cleanHeader] = index < row.length ? cleanText(row[index]) : '';
             });
             return rowData;
         });
 
         return { 
-            markdown: { headers, rows },
-            data: normalizedData 
+            markdown: { headers, rows }, // Keep original markdown with empty cells
+            data: normalizedData         // Cleaned version with proper alignment
         };
     } catch (error) {
-        console.error('Error parsing markdown table:', error);
         return { markdown: null, data: null };
     }
 };
 
-// // Example usage:
-// const markdown = `
-// | Name | Age | City |
-// |------|-----|------|
-// | John | 25  | NY   |
-// | Jane | 30  | LA   |
-// `;
-
-// const result = parseMarkdownTable(markdown);
-// console.log(result.data);
-// /* Output:
-// [
-//     { "Name": "John", "Age": "25", "City": "NY" },
-//     { "Name": "Jane", "Age": "30", "City": "LA" }
-// ]
-// */

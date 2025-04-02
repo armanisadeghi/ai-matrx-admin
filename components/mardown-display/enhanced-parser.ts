@@ -99,7 +99,7 @@ export function enhancedMarkdownParser(markdown: string): ParsedContent {
                 } else {
                     currentSection.tables.push({
                         title: currentSection.title,
-                        data: tableData,
+                        data: tableData.markdown,
                     });
                 }
 
