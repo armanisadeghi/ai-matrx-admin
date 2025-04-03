@@ -711,6 +711,32 @@ export const getChatActionsWithThunks = () => {
                 );
             },
 
+            updateAvailableBrokers:
+            (params: { conversationkeyOrId?: string; messagekeyOrId?: string; value: string[] }) =>
+            (dispatch: AppDispatch, getState: () => RootState) => {
+                const convKeyOrId = params.conversationkeyOrId ?? getState().entities["conversation"].selection.activeRecord;
+                const msgKeyOrId = params.messagekeyOrId ?? getState().entities["message"].selection.activeRecord;
+                if (!convKeyOrId || !msgKeyOrId) return;
+                dispatch(
+                    conversationActions.updateNestedFieldSmart({
+                        keyOrId: convKeyOrId,
+                        field: "metadata",
+                        nestedKey: "availableBrokers",
+                        value: params.value,
+                    })
+                );
+                dispatch(
+                    messageActions.updateNestedFieldSmart({
+                        keyOrId: msgKeyOrId,
+                        field: "metadata",
+                        nestedKey: "availableBrokers",
+                        value: params.value,
+                    })
+                );
+            },
+
+
+
         updateModAssistantContext:
             (params: { conversationkeyOrId?: string; messagekeyOrId?: string; value: string }) =>
             (dispatch: AppDispatch, getState: () => RootState) => {

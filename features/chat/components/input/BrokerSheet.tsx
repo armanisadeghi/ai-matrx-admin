@@ -1,8 +1,9 @@
 "use client";
+
 import React, { useState, useEffect, useMemo } from "react";
 import { Search, X, CheckSquare, Square, ChevronDown, ChevronUp, Filter } from "lucide-react";
 import FloatingSheet from "@/components/ui/matrx/FloatingSheet";
-import { allTools, Tool } from "./constants";
+import { allInformationBrokers, InformationBroker } from "./constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 
@@ -10,17 +11,17 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 interface BrokerSheetProps {
     isOpen: boolean;
     onClose: () => void;
-    onToolSelectionChange?: (selectedToolIds: string[]) => void;
+    onBrokerSelectionChange?: (selectedBrokerIds: string[]) => void;
     isMobile?: boolean;
 }
 
-const extractCategories = (tools: Tool[]): string[] => {
-    const categories = new Set(tools.map((tool) => tool.category));
+const extractCategories = (brokers: InformationBroker[]): string[] => {
+    const categories = new Set(brokers.map((broker) => broker.category));
     return Array.from(categories).sort();
 };
 
-const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onToolSelectionChange, isMobile }) => {
-    const [selectedTools, setSelectedTools] = useState<string[]>([]);
+const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onBrokerSelectionChange, isMobile }) => {
+    const [selectedBrokers, setSelectedBrokers] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [showCategories, setShowCategories] = useState(true);
@@ -33,65 +34,65 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onToolSelect
         messageKey,
     } = useChatBasics();
 
-    const availableTools = useAppSelector(chatSelectors.availableTools);
+    const availableBrokers = useAppSelector(chatSelectors.availableBrokers);
 
-    const categories = useMemo(() => extractCategories(allTools), []);
+    const categories = useMemo(() => extractCategories(allInformationBrokers), []);
 
     useEffect(() => {
-        setSelectedTools(availableTools || []);
+        setSelectedBrokers(availableBrokers || []);
     }, []);
 
     useEffect(() => {
-        dispatch(chatActions.updateAvailableTools({ value: selectedTools }));
-        onToolSelectionChange?.(selectedTools);
-    }, [selectedTools]);
+        dispatch(chatActions.updateAvailableBrokers({ value: selectedBrokers }));
+        onBrokerSelectionChange?.(selectedBrokers);
+    }, [selectedBrokers]);
 
-    const filteredTools = useMemo(() => {
-        return allTools.filter((tool) => {
+    const filteredBrokers = useMemo(() => {
+        return allInformationBrokers.filter((broker) => {
             const matchesSearch =
                 searchQuery === "" ||
-                tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                tool.description.toLowerCase().includes(searchQuery.toLowerCase());
+                broker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                broker.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-            const matchesCategory = activeCategory === null || tool.category === activeCategory;
+            const matchesCategory = activeCategory === null || broker.category === activeCategory;
 
             return matchesSearch && matchesCategory;
         });
     }, [searchQuery, activeCategory]);
 
-    const toolsByCategory = useMemo(() => {
-        const grouped: Record<string, Tool[]> = {};
+    const brokersByCategory = useMemo(() => {
+        const grouped: Record<string, InformationBroker[]> = {};
 
-        filteredTools.forEach((tool) => {
-            if (!grouped[tool.category]) {
-                grouped[tool.category] = [];
+        filteredBrokers.forEach((broker) => {
+            if (!grouped[broker.category]) {
+                grouped[broker.category] = [];
             }
-            grouped[tool.category].push(tool);
+            grouped[broker.category].push(broker);
         });
 
         return grouped;
-    }, [filteredTools]);
+    }, [filteredBrokers]);
 
-    const toggleTool = (toolId: string) => {
-        setSelectedTools((prev) => {
-            const newSelection = prev.includes(toolId) ? prev.filter((id) => id !== toolId) : [...prev, toolId];
+    const toggleBroker = (brokerId: string) => {
+        setSelectedBrokers((prev) => {
+            const newSelection = prev.includes(brokerId) ? prev.filter((id) => id !== brokerId) : [...prev, brokerId];
 
             return newSelection;
         });
     };
 
     const toggleCategory = (category: string) => {
-        const toolsInCategory = allTools.filter((tool) => tool.category === category).map((tool) => tool.id);
+        const brokersInCategory = allInformationBrokers.filter((broker) => broker.category === category).map((broker) => broker.id);
 
-        const allSelected = toolsInCategory.every((id) => selectedTools.includes(id));
+        const allSelected = brokersInCategory.every((id) => selectedBrokers.includes(id));
 
-        setSelectedTools((prev) => {
+        setSelectedBrokers((prev) => {
             let newSelection;
 
             if (allSelected) {
-                newSelection = prev.filter((id) => !toolsInCategory.includes(id));
+                newSelection = prev.filter((id) => !brokersInCategory.includes(id));
             } else {
-                const toAdd = toolsInCategory.filter((id) => !prev.includes(id));
+                const toAdd = brokersInCategory.filter((id) => !prev.includes(id));
                 newSelection = [...prev, ...toAdd];
             }
 
@@ -100,12 +101,12 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onToolSelect
     };
 
     const selectAll = () => {
-        const allToolIds = allTools.map((tool) => tool.id);
-        setSelectedTools(allToolIds);
+        const allBrokerIds = allInformationBrokers.map((broker) => broker.id);
+        setSelectedBrokers(allBrokerIds);
     };
 
     const deselectAll = () => {
-        setSelectedTools([]);
+        setSelectedBrokers([]);
     };
 
     const clearFilters = () => {
@@ -116,7 +117,7 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onToolSelect
     const Footer = (
         <div className="flex justify-between items-center pb-4">
             <div className="text-sm text-gray-600 dark:text-gray-300">
-                {selectedTools.length} of {allTools.length} tools selected
+                {selectedBrokers.length} of {allInformationBrokers.length} brokers selected
             </div>
             <div className="flex space-x-2">
                 <button
@@ -229,7 +230,7 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onToolSelect
 
                 {/* Tools List */}
                 <div className="flex-1 overflow-y-auto">
-                    {filteredTools.length === 0 ? (
+                    {filteredBrokers.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full py-8 px-4 text-center">
                             <Search size={36} className="text-gray-300 dark:text-gray-600 mb-3" />
                             <h3 className="text-base font-medium text-gray-900 dark:text-gray-100 mb-1">No tools found</h3>
@@ -244,7 +245,7 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onToolSelect
                     ) : (
                         <div className="divide-y divide-gray-200 dark:divide-gray-700">
                             {/* If showing by category */}
-                            {Object.entries(toolsByCategory).map(([category, tools]) => (
+                            {Object.entries(brokersByCategory).map(([category, brokers]) => (
                                 <div key={category}>
                                     <div
                                         className="px-3 py-2 flex justify-between items-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 sticky top-0 bg-zinc-50 dark:bg-zinc-700 z-10"
@@ -252,19 +253,19 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onToolSelect
                                     >
                                         <h3 className="font-medium text-sm text-gray-900 dark:text-gray-100">{category}</h3>
                                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                                            {tools.filter((tool) => selectedTools.includes(tool.id)).length} of {tools.length} selected
+                                            {brokers.filter((broker) => selectedBrokers.includes(broker.id)).length} of {brokers.length} selected
                                         </div>
                                     </div>
 
                                     <div>
-                                        {tools.map((tool) => (
+                                        {brokers.map((broker) => (
                                             <div
-                                                key={tool.id}
+                                                key={broker.id}
                                                 className="px-4 py-2 flex items-start hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-                                                onClick={() => toggleTool(tool.id)}
+                                                onClick={() => toggleBroker(broker.id)}
                                             >
                                                 <div className="mr-2 mt-0.5 flex-shrink-0">
-                                                    {selectedTools.includes(tool.id) ? (
+                                                    {selectedBrokers.includes(broker.id) ? (
                                                         <CheckSquare size={18} className="text-blue-600 dark:text-blue-400" />
                                                     ) : (
                                                         <Square size={18} className="text-gray-400" />
@@ -274,14 +275,14 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onToolSelect
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center">
                                                         <span className="mr-2 text-gray-500 dark:text-gray-400 flex-shrink-0">
-                                                            {tool.icon}
+                                                            {broker.icon}
                                                         </span>
                                                         <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
-                                                            {tool.name}
+                                                            {broker.name}
                                                         </h4>
                                                     </div>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
-                                                        {tool.description}
+                                                        {broker.description}
                                                     </p>
                                                 </div>
                                             </div>

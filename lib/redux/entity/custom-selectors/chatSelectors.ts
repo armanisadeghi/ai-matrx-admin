@@ -406,6 +406,7 @@ export const createChatSelectors = () => {
     const activeConversationMetadata = createSelector([activeConversation], (conversation) => conversation?.metadata);
 
     const availableTools = createSelector([activeMessageMetadata], (metadata) => metadata?.availableTools);
+    const availableBrokers = createSelector([activeMessageMetadata], (metadata) => metadata?.availableBrokers);
 
     const selectMarkdownAnalysisData = createSelector(
         [messagesArray, (_state: RootState, messageId: string) => messageId],
@@ -482,6 +483,7 @@ export const createChatSelectors = () => {
         activeMessageMetadata,
         activeConversationMetadata,
         availableTools,
+        availableBrokers,
         files,
         currentMode,
         effectiveConversations,
