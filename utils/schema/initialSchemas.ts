@@ -64,7 +64,7 @@ action: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:action:id',
             uniqueFieldId: 'supabase_automation_matrix:action:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -128,7 +128,7 @@ action: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:action:name',
             uniqueFieldId: 'supabase_automation_matrix:action:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: 255,
@@ -192,7 +192,7 @@ action: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:action:matrix',
             uniqueFieldId: 'supabase_automation_matrix:action:matrix',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -256,7 +256,7 @@ action: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:action:transformer',
             uniqueFieldId: 'supabase_automation_matrix:action:transformer',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -320,7 +320,7 @@ action: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:action:node_type',
             uniqueFieldId: 'supabase_automation_matrix:action:nodeType',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: 50,
@@ -384,7 +384,7 @@ action: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:action:reference_id',
             uniqueFieldId: 'supabase_automation_matrix:action:referenceId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -577,7 +577,7 @@ admins: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:admins:user_id',
             uniqueFieldId: 'supabase_automation_matrix:admins:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -641,7 +641,7 @@ admins: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:admins:created_at',
             uniqueFieldId: 'supabase_automation_matrix:admins:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -765,7 +765,7 @@ aiAgent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:id',
             uniqueFieldId: 'supabase_automation_matrix:aiAgent:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -829,7 +829,7 @@ aiAgent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:name',
             uniqueFieldId: 'supabase_automation_matrix:aiAgent:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -893,7 +893,7 @@ aiAgent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:recipe_id',
             uniqueFieldId: 'supabase_automation_matrix:aiAgent:recipeId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -957,7 +957,7 @@ aiAgent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:ai_settings_id',
             uniqueFieldId: 'supabase_automation_matrix:aiAgent:aiSettingsId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -1021,7 +1021,7 @@ aiAgent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_agent:system_message_override',
             uniqueFieldId: 'supabase_automation_matrix:aiAgent:systemMessageOverride',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -1214,7 +1214,7 @@ aiEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:id',
             uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -1278,7 +1278,7 @@ aiEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:name',
             uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -1342,7 +1342,7 @@ aiEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:provider',
             uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:provider',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -1406,7 +1406,7 @@ aiEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:description',
             uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -1470,7 +1470,7 @@ aiEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:additional_cost',
             uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:additionalCost',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -1534,7 +1534,7 @@ aiEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:cost_details',
             uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:costDetails',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -1598,7 +1598,7 @@ aiEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_endpoint:params',
             uniqueFieldId: 'supabase_automation_matrix:aiEndpoint:params',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -1789,7 +1789,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:id',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -1853,7 +1853,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:name',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -1917,7 +1917,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:common_name',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:commonName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -1981,7 +1981,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:model_class',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:modelClass',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -2045,7 +2045,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:provider',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:provider',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -2109,7 +2109,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:endpoints',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:endpoints',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -2173,7 +2173,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:context_window',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:contextWindow',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -2237,7 +2237,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:max_tokens',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:maxTokens',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -2301,7 +2301,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:capabilities',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:capabilities',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -2365,7 +2365,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:controls',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:controls',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -2429,7 +2429,7 @@ aiModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model:model_provider',
             uniqueFieldId: 'supabase_automation_matrix:aiModel:modelProvider',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -2689,7 +2689,7 @@ aiModelEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:id',
             uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -2753,7 +2753,7 @@ aiModelEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:ai_model_id',
             uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:aiModelId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -2817,7 +2817,7 @@ aiModelEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:ai_endpoint_id',
             uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:aiEndpointId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -2881,7 +2881,7 @@ aiModelEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:available',
             uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:available',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -2945,7 +2945,7 @@ aiModelEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:endpoint_priority',
             uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:endpointPriority',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -3009,7 +3009,7 @@ aiModelEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:configuration',
             uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:configuration',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -3073,7 +3073,7 @@ aiModelEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:notes',
             uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:notes',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -3137,7 +3137,7 @@ aiModelEndpoint: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_model_endpoint:created_at',
             uniqueFieldId: 'supabase_automation_matrix:aiModelEndpoint:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -3330,7 +3330,7 @@ aiProvider: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:id',
             uniqueFieldId: 'supabase_automation_matrix:aiProvider:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -3394,7 +3394,7 @@ aiProvider: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:name',
             uniqueFieldId: 'supabase_automation_matrix:aiProvider:name',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -3458,7 +3458,7 @@ aiProvider: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:company_description',
             uniqueFieldId: 'supabase_automation_matrix:aiProvider:companyDescription',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -3522,7 +3522,7 @@ aiProvider: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:documentation_link',
             uniqueFieldId: 'supabase_automation_matrix:aiProvider:documentationLink',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -3586,7 +3586,7 @@ aiProvider: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_provider:models_link',
             uniqueFieldId: 'supabase_automation_matrix:aiProvider:modelsLink',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -3777,7 +3777,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:id',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -3841,7 +3841,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:ai_endpoint',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:aiEndpoint',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -3905,7 +3905,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:ai_provider',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:aiProvider',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -3969,7 +3969,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:ai_model',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:aiModel',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -4033,7 +4033,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:temperature',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:temperature',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -4097,7 +4097,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:max_tokens',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:maxTokens',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -4161,7 +4161,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:top_p',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:topP',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -4225,7 +4225,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:frequency_penalty',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:frequencyPenalty',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -4289,7 +4289,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:presence_penalty',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:presencePenalty',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -4353,7 +4353,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:stream',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:stream',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -4417,7 +4417,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:response_format',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:responseFormat',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -4481,7 +4481,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:size',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:size',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -4545,7 +4545,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:quality',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:quality',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -4609,7 +4609,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:count',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:count',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -4673,7 +4673,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:audio_voice',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:audioVoice',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -4737,7 +4737,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:audio_format',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:audioFormat',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -4801,7 +4801,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:modalities',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:modalities',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -4865,7 +4865,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:tools',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:tools',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -4929,7 +4929,7 @@ aiSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:ai_settings:preset_name',
             uniqueFieldId: 'supabase_automation_matrix:aiSettings:presetName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -5191,7 +5191,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:id',
             uniqueFieldId: 'supabase_automation_matrix:applet:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -5255,7 +5255,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:name',
             uniqueFieldId: 'supabase_automation_matrix:applet:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -5319,7 +5319,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:description',
             uniqueFieldId: 'supabase_automation_matrix:applet:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -5383,7 +5383,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:creator',
             uniqueFieldId: 'supabase_automation_matrix:applet:creator',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -5447,7 +5447,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:type',
             uniqueFieldId: 'supabase_automation_matrix:applet:type',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -5524,7 +5524,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:compiled_recipe_id',
             uniqueFieldId: 'supabase_automation_matrix:applet:compiledRecipeId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -5588,7 +5588,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:slug',
             uniqueFieldId: 'supabase_automation_matrix:applet:slug',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -5652,7 +5652,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:created_at',
             uniqueFieldId: 'supabase_automation_matrix:applet:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -5716,7 +5716,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:user_id',
             uniqueFieldId: 'supabase_automation_matrix:applet:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -5780,7 +5780,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:is_public',
             uniqueFieldId: 'supabase_automation_matrix:applet:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -5844,7 +5844,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:data_source_config',
             uniqueFieldId: 'supabase_automation_matrix:applet:dataSourceConfig',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -5908,7 +5908,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:result_component_config',
             uniqueFieldId: 'supabase_automation_matrix:applet:resultComponentConfig',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -5972,7 +5972,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:next_step_config',
             uniqueFieldId: 'supabase_automation_matrix:applet:nextStepConfig',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -6036,7 +6036,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:subcategory_id',
             uniqueFieldId: 'supabase_automation_matrix:applet:subcategoryId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -6100,7 +6100,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:cta_text',
             uniqueFieldId: 'supabase_automation_matrix:applet:ctaText',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -6164,7 +6164,7 @@ applet: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:applet:theme',
             uniqueFieldId: 'supabase_automation_matrix:applet:theme',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -6357,7 +6357,7 @@ arg: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:arg:id',
             uniqueFieldId: 'supabase_automation_matrix:arg:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -6421,7 +6421,7 @@ arg: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:arg:name',
             uniqueFieldId: 'supabase_automation_matrix:arg:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -6485,7 +6485,7 @@ arg: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:arg:required',
             uniqueFieldId: 'supabase_automation_matrix:arg:required',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -6549,7 +6549,7 @@ arg: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:arg:default',
             uniqueFieldId: 'supabase_automation_matrix:arg:default',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -6613,7 +6613,7 @@ arg: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:arg:data_type',
             uniqueFieldId: 'supabase_automation_matrix:arg:dataType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -6706,7 +6706,7 @@ arg: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:arg:ready',
             uniqueFieldId: 'supabase_automation_matrix:arg:ready',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -6770,7 +6770,7 @@ arg: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:arg:registered_function',
             uniqueFieldId: 'supabase_automation_matrix:arg:registeredFunction',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -6928,7 +6928,7 @@ audioLabel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_label:id',
             uniqueFieldId: 'supabase_automation_matrix:audioLabel:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -6992,7 +6992,7 @@ audioLabel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_label:created_at',
             uniqueFieldId: 'supabase_automation_matrix:audioLabel:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -7056,7 +7056,7 @@ audioLabel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_label:name',
             uniqueFieldId: 'supabase_automation_matrix:audioLabel:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -7120,7 +7120,7 @@ audioLabel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_label:description',
             uniqueFieldId: 'supabase_automation_matrix:audioLabel:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -7277,7 +7277,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:id',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -7341,7 +7341,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:created_at',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -7405,7 +7405,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:user_id',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -7469,7 +7469,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:name',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -7533,7 +7533,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:label',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:label',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -7597,7 +7597,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:file_url',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:fileUrl',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -7661,7 +7661,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:duration',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:duration',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -7725,7 +7725,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:local_path',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:localPath',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -7789,7 +7789,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:size',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:size',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -7853,7 +7853,7 @@ audioRecording: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording:is_public',
             uniqueFieldId: 'supabase_automation_matrix:audioRecording:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -8011,7 +8011,7 @@ audioRecordingUsers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording_users:id',
             uniqueFieldId: 'supabase_automation_matrix:audioRecordingUsers:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -8075,7 +8075,7 @@ audioRecordingUsers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording_users:created_at',
             uniqueFieldId: 'supabase_automation_matrix:audioRecordingUsers:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -8139,7 +8139,7 @@ audioRecordingUsers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording_users:first_name',
             uniqueFieldId: 'supabase_automation_matrix:audioRecordingUsers:firstName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -8203,7 +8203,7 @@ audioRecordingUsers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording_users:last_name',
             uniqueFieldId: 'supabase_automation_matrix:audioRecordingUsers:lastName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -8267,7 +8267,7 @@ audioRecordingUsers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:audio_recording_users:email',
             uniqueFieldId: 'supabase_automation_matrix:audioRecordingUsers:email',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -8391,7 +8391,7 @@ automationBoundaryBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:id',
             uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -8455,7 +8455,7 @@ automationBoundaryBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:matrix',
             uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:matrix',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -8519,7 +8519,7 @@ automationBoundaryBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:broker',
             uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:broker',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -8583,7 +8583,7 @@ automationBoundaryBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:spark_source',
             uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:sparkSource',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -8684,7 +8684,7 @@ automationBoundaryBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_boundary_broker:beacon_destination',
             uniqueFieldId: 'supabase_automation_matrix:automationBoundaryBroker:beaconDestination',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -8898,7 +8898,7 @@ automationMatrix: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:id',
             uniqueFieldId: 'supabase_automation_matrix:automationMatrix:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -8962,7 +8962,7 @@ automationMatrix: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:name',
             uniqueFieldId: 'supabase_automation_matrix:automationMatrix:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -9026,7 +9026,7 @@ automationMatrix: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:description',
             uniqueFieldId: 'supabase_automation_matrix:automationMatrix:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -9090,7 +9090,7 @@ automationMatrix: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:average_seconds',
             uniqueFieldId: 'supabase_automation_matrix:automationMatrix:averageSeconds',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -9154,7 +9154,7 @@ automationMatrix: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:is_automated',
             uniqueFieldId: 'supabase_automation_matrix:automationMatrix:isAutomated',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -9218,7 +9218,7 @@ automationMatrix: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:automation_matrix:cognition_matrices',
             uniqueFieldId: 'supabase_automation_matrix:automationMatrix:cognitionMatrices',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -9442,7 +9442,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:id',
             uniqueFieldId: 'supabase_automation_matrix:broker:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -9506,7 +9506,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:name',
             uniqueFieldId: 'supabase_automation_matrix:broker:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -9570,7 +9570,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:value',
             uniqueFieldId: 'supabase_automation_matrix:broker:value',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -9634,7 +9634,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:data_type',
             uniqueFieldId: 'supabase_automation_matrix:broker:dataType',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -9727,7 +9727,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:ready',
             uniqueFieldId: 'supabase_automation_matrix:broker:ready',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -9791,7 +9791,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:default_source',
             uniqueFieldId: 'supabase_automation_matrix:broker:defaultSource',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -9892,7 +9892,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:display_name',
             uniqueFieldId: 'supabase_automation_matrix:broker:displayName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -9956,7 +9956,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:description',
             uniqueFieldId: 'supabase_automation_matrix:broker:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -10020,7 +10020,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:tooltip',
             uniqueFieldId: 'supabase_automation_matrix:broker:tooltip',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -10084,7 +10084,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:validation_rules',
             uniqueFieldId: 'supabase_automation_matrix:broker:validationRules',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -10148,7 +10148,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:sample_entries',
             uniqueFieldId: 'supabase_automation_matrix:broker:sampleEntries',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -10212,7 +10212,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:custom_source_component',
             uniqueFieldId: 'supabase_automation_matrix:broker:customSourceComponent',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -10276,7 +10276,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:additional_params',
             uniqueFieldId: 'supabase_automation_matrix:broker:additionalParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -10340,7 +10340,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:other_source_params',
             uniqueFieldId: 'supabase_automation_matrix:broker:otherSourceParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -10404,7 +10404,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:default_destination',
             uniqueFieldId: 'supabase_automation_matrix:broker:defaultDestination',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -10489,7 +10489,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:output_component',
             uniqueFieldId: 'supabase_automation_matrix:broker:outputComponent',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -10818,7 +10818,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:tags',
             uniqueFieldId: 'supabase_automation_matrix:broker:tags',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -10882,7 +10882,7 @@ broker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker:string_value',
             uniqueFieldId: 'supabase_automation_matrix:broker:stringValue',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -11142,7 +11142,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:id',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -11206,7 +11206,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:user_id',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -11270,7 +11270,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:data_broker',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:dataBroker',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -11334,7 +11334,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:data',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:data',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -11398,7 +11398,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:category',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:category',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -11462,7 +11462,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:sub_category',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:subCategory',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -11526,7 +11526,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:tags',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:tags',
-            
+
             dataType: 'string[]' as const,
             isRequired: false,
             maxLength: null,
@@ -11590,7 +11590,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:comments',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:comments',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -11654,7 +11654,7 @@ brokerValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:broker_value:created_at',
             uniqueFieldId: 'supabase_automation_matrix:brokerValue:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -11812,7 +11812,7 @@ bucketStructures: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:bucket_structures:bucket_id',
             uniqueFieldId: 'supabase_automation_matrix:bucketStructures:bucketId',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -11876,7 +11876,7 @@ bucketStructures: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:bucket_structures:structure',
             uniqueFieldId: 'supabase_automation_matrix:bucketStructures:structure',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -11940,7 +11940,7 @@ bucketStructures: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:bucket_structures:last_updated',
             uniqueFieldId: 'supabase_automation_matrix:bucketStructures:lastUpdated',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -12064,7 +12064,7 @@ bucketTreeStructures: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:bucket_tree_structures:bucket_id',
             uniqueFieldId: 'supabase_automation_matrix:bucketTreeStructures:bucketId',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -12128,7 +12128,7 @@ bucketTreeStructures: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:bucket_tree_structures:tree_structure',
             uniqueFieldId: 'supabase_automation_matrix:bucketTreeStructures:treeStructure',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -12192,7 +12192,7 @@ bucketTreeStructures: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:bucket_tree_structures:last_updated',
             uniqueFieldId: 'supabase_automation_matrix:bucketTreeStructures:lastUpdated',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -12316,7 +12316,7 @@ category: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:category:id',
             uniqueFieldId: 'supabase_automation_matrix:category:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -12380,7 +12380,7 @@ category: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:category:name',
             uniqueFieldId: 'supabase_automation_matrix:category:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -12444,7 +12444,7 @@ category: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:category:description',
             uniqueFieldId: 'supabase_automation_matrix:category:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -12508,7 +12508,7 @@ category: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:category:slug',
             uniqueFieldId: 'supabase_automation_matrix:category:slug',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -12572,7 +12572,7 @@ category: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:category:icon',
             uniqueFieldId: 'supabase_automation_matrix:category:icon',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -12636,7 +12636,7 @@ category: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:category:created_at',
             uniqueFieldId: 'supabase_automation_matrix:category:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -12793,7 +12793,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:id',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -12857,7 +12857,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:recipe_id',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:recipeId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -12921,7 +12921,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:version',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:version',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -12985,7 +12985,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:compiled_recipe',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:compiledRecipe',
-            
+
             dataType: 'object' as const,
             isRequired: true,
             maxLength: null,
@@ -13049,7 +13049,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:created_at',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -13113,7 +13113,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -13177,7 +13177,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:user_id',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -13241,7 +13241,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:is_public',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -13305,7 +13305,7 @@ compiledRecipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:compiled_recipe:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:compiledRecipe:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -13497,7 +13497,7 @@ conversation: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:conversation:id',
             uniqueFieldId: 'supabase_automation_matrix:conversation:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -13561,7 +13561,7 @@ conversation: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:conversation:created_at',
             uniqueFieldId: 'supabase_automation_matrix:conversation:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -13625,7 +13625,7 @@ conversation: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:conversation:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:conversation:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -13689,7 +13689,7 @@ conversation: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:conversation:user_id',
             uniqueFieldId: 'supabase_automation_matrix:conversation:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -13753,7 +13753,7 @@ conversation: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:conversation:metadata',
             uniqueFieldId: 'supabase_automation_matrix:conversation:metadata',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -13817,7 +13817,7 @@ conversation: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:conversation:label',
             uniqueFieldId: 'supabase_automation_matrix:conversation:label',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -13881,7 +13881,7 @@ conversation: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:conversation:is_public',
             uniqueFieldId: 'supabase_automation_matrix:conversation:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -14038,7 +14038,7 @@ dataBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_broker:id',
             uniqueFieldId: 'supabase_automation_matrix:dataBroker:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -14102,7 +14102,7 @@ dataBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_broker:name',
             uniqueFieldId: 'supabase_automation_matrix:dataBroker:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -14166,7 +14166,7 @@ dataBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_broker:data_type',
             uniqueFieldId: 'supabase_automation_matrix:dataBroker:dataType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -14259,7 +14259,7 @@ dataBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_broker:default_value',
             uniqueFieldId: 'supabase_automation_matrix:dataBroker:defaultValue',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -14323,7 +14323,7 @@ dataBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_broker:input_component',
             uniqueFieldId: 'supabase_automation_matrix:dataBroker:inputComponent',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -14387,7 +14387,7 @@ dataBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_broker:color',
             uniqueFieldId: 'supabase_automation_matrix:dataBroker:color',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -14540,7 +14540,7 @@ dataBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_broker:output_component',
             uniqueFieldId: 'supabase_automation_matrix:dataBroker:outputComponent',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -14801,7 +14801,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:id',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -14865,7 +14865,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:options',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:options',
-            
+
             dataType: 'string[]' as const,
             isRequired: false,
             maxLength: null,
@@ -14929,7 +14929,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:include_other',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:includeOther',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -14993,7 +14993,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:min',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:min',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -15057,7 +15057,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:max',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:max',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -15121,7 +15121,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:step',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:step',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -15185,7 +15185,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:acceptable_filetypes',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:acceptableFiletypes',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -15249,7 +15249,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:src',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:src',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -15313,7 +15313,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:color_overrides',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:colorOverrides',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -15377,7 +15377,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:additional_params',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:additionalParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -15441,7 +15441,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:sub_component',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:subComponent',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -15505,7 +15505,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:component',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:component',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -15750,7 +15750,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:name',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:name',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -15814,7 +15814,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:description',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -15878,7 +15878,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:placeholder',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:placeholder',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -15942,7 +15942,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:container_class_name',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:containerClassName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16006,7 +16006,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:collapsible_class_name',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:collapsibleClassName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16070,7 +16070,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:label_class_name',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:labelClassName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16134,7 +16134,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:description_class_name',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:descriptionClassName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16198,7 +16198,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:component_class_name',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:componentClassName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16262,7 +16262,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:size',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:size',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16375,7 +16375,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:height',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:height',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16488,7 +16488,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:width',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:width',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16601,7 +16601,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:min_height',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:minHeight',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16714,7 +16714,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:max_height',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:maxHeight',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16827,7 +16827,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:min_width',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:minWidth',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -16940,7 +16940,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:max_width',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:maxWidth',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -17053,7 +17053,7 @@ dataInputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_input_component:orientation',
             uniqueFieldId: 'supabase_automation_matrix:dataInputComponent:orientation',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -17291,7 +17291,7 @@ dataOutputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:id',
             uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -17355,7 +17355,7 @@ dataOutputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:component_type',
             uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:componentType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -17684,7 +17684,7 @@ dataOutputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:ui_component',
             uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:uiComponent',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -17748,7 +17748,7 @@ dataOutputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:props',
             uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:props',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -17812,7 +17812,7 @@ dataOutputComponent: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:data_output_component:additional_params',
             uniqueFieldId: 'supabase_automation_matrix:dataOutputComponent:additionalParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -17969,7 +17969,7 @@ displayOption: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:display_option:id',
             uniqueFieldId: 'supabase_automation_matrix:displayOption:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -18033,7 +18033,7 @@ displayOption: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:display_option:name',
             uniqueFieldId: 'supabase_automation_matrix:displayOption:name',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -18097,7 +18097,7 @@ displayOption: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:display_option:default_params',
             uniqueFieldId: 'supabase_automation_matrix:displayOption:defaultParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -18161,7 +18161,7 @@ displayOption: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:display_option:customizable_params',
             uniqueFieldId: 'supabase_automation_matrix:displayOption:customizableParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -18225,7 +18225,7 @@ displayOption: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:display_option:additional_params',
             uniqueFieldId: 'supabase_automation_matrix:displayOption:additionalParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -18382,7 +18382,7 @@ emails: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:emails:id',
             uniqueFieldId: 'supabase_automation_matrix:emails:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -18446,7 +18446,7 @@ emails: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:emails:sender',
             uniqueFieldId: 'supabase_automation_matrix:emails:sender',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -18510,7 +18510,7 @@ emails: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:emails:recipient',
             uniqueFieldId: 'supabase_automation_matrix:emails:recipient',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -18574,7 +18574,7 @@ emails: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:emails:subject',
             uniqueFieldId: 'supabase_automation_matrix:emails:subject',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -18638,7 +18638,7 @@ emails: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:emails:body',
             uniqueFieldId: 'supabase_automation_matrix:emails:body',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -18702,7 +18702,7 @@ emails: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:emails:timestamp',
             uniqueFieldId: 'supabase_automation_matrix:emails:timestamp',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -18766,7 +18766,7 @@ emails: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:emails:is_read',
             uniqueFieldId: 'supabase_automation_matrix:emails:isRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -18890,7 +18890,7 @@ extractor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:extractor:id',
             uniqueFieldId: 'supabase_automation_matrix:extractor:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -18954,7 +18954,7 @@ extractor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:extractor:name',
             uniqueFieldId: 'supabase_automation_matrix:extractor:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -19018,7 +19018,7 @@ extractor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:extractor:output_type',
             uniqueFieldId: 'supabase_automation_matrix:extractor:outputType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -19111,7 +19111,7 @@ extractor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:extractor:default_identifier',
             uniqueFieldId: 'supabase_automation_matrix:extractor:defaultIdentifier',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -19175,7 +19175,7 @@ extractor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:extractor:default_index',
             uniqueFieldId: 'supabase_automation_matrix:extractor:defaultIndex',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -19299,12 +19299,12 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:id',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:id',
-            
+
             dataType: 'number' as const,
             isRequired: true,
             maxLength: null,
             isArray: false,
-            defaultValue: "public.file_structure_id_seq" as const,
+            defaultValue: "file_structure_id_seq" as const,
             isPrimaryKey: true,
             isDisplayField: false,
             defaultGeneratorFunction: "",
@@ -19363,7 +19363,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:bucket_id',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:bucketId',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -19427,7 +19427,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:path',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:path',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -19491,7 +19491,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:is_folder',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:isFolder',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -19555,7 +19555,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:file_id',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:fileId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -19619,7 +19619,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:parent_path',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:parentPath',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -19683,7 +19683,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:name',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -19747,7 +19747,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:metadata',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:metadata',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -19811,7 +19811,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:created_at',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -19875,7 +19875,7 @@ fileStructure: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:file_structure:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:fileStructure:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -19999,7 +19999,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -20063,7 +20063,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:user_id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -20127,7 +20127,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:topic',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:topic',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -20191,7 +20191,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:lesson',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:lesson',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -20255,7 +20255,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:difficulty',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:difficulty',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -20319,7 +20319,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:front',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:front',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -20383,7 +20383,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:back',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:back',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -20447,7 +20447,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:example',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:example',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -20511,7 +20511,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:detailed_explanation',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:detailedExplanation',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -20575,7 +20575,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:audio_explanation',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:audioExplanation',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -20639,7 +20639,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:personal_notes',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:personalNotes',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -20703,7 +20703,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:is_deleted',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:isDeleted',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -20767,7 +20767,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:public',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:public',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -20831,7 +20831,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:shared_with',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:sharedWith',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -20895,7 +20895,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:created_at',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -20959,7 +20959,7 @@ flashcardData: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_data:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:flashcardData:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -21184,7 +21184,7 @@ flashcardHistory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -21248,7 +21248,7 @@ flashcardHistory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:flashcard_id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:flashcardId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -21312,7 +21312,7 @@ flashcardHistory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:user_id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -21376,7 +21376,7 @@ flashcardHistory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:review_count',
             uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:reviewCount',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -21440,7 +21440,7 @@ flashcardHistory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:correct_count',
             uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:correctCount',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -21504,7 +21504,7 @@ flashcardHistory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:incorrect_count',
             uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:incorrectCount',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -21568,7 +21568,7 @@ flashcardHistory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:created_at',
             uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -21632,7 +21632,7 @@ flashcardHistory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_history:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:flashcardHistory:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -21790,7 +21790,7 @@ flashcardImages: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardImages:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -21854,7 +21854,7 @@ flashcardImages: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:flashcard_id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardImages:flashcardId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -21918,7 +21918,7 @@ flashcardImages: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:file_path',
             uniqueFieldId: 'supabase_automation_matrix:flashcardImages:filePath',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -21982,7 +21982,7 @@ flashcardImages: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:file_name',
             uniqueFieldId: 'supabase_automation_matrix:flashcardImages:fileName',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -22046,7 +22046,7 @@ flashcardImages: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:mime_type',
             uniqueFieldId: 'supabase_automation_matrix:flashcardImages:mimeType',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -22110,7 +22110,7 @@ flashcardImages: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:size',
             uniqueFieldId: 'supabase_automation_matrix:flashcardImages:size',
-            
+
             dataType: 'number' as const,
             isRequired: true,
             maxLength: null,
@@ -22174,7 +22174,7 @@ flashcardImages: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_images:created_at',
             uniqueFieldId: 'supabase_automation_matrix:flashcardImages:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -22335,7 +22335,7 @@ flashcardSetRelations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:flashcard_id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:flashcardId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -22399,7 +22399,7 @@ flashcardSetRelations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:set_id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:setId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -22463,7 +22463,7 @@ flashcardSetRelations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_set_relations:order',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSetRelations:order',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -22656,7 +22656,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:set_id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:setId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -22720,7 +22720,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:user_id',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -22784,7 +22784,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:name',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -22848,7 +22848,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:created_at',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -22912,7 +22912,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -22976,7 +22976,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:shared_with',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:sharedWith',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -23040,7 +23040,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:public',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:public',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -23104,7 +23104,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:topic',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:topic',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23168,7 +23168,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:lesson',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:lesson',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23232,7 +23232,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:difficulty',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:difficulty',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23296,7 +23296,7 @@ flashcardSets: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:flashcard_sets:audio_overview',
             uniqueFieldId: 'supabase_automation_matrix:flashcardSets:audioOverview',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23453,7 +23453,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:id',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -23517,7 +23517,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:created_at',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -23581,7 +23581,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -23645,7 +23645,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:title',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:title',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23709,7 +23709,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:description',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23773,7 +23773,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:alternate_titles',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:alternateTitles',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23837,7 +23837,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:qualifications',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:qualifications',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23901,7 +23901,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:sizzle_questions',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:sizzleQuestions',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -23965,7 +23965,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:red_flags',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:redFlags',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -24029,7 +24029,7 @@ fullSpectrumPositions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:full_spectrum_positions:additional_details',
             uniqueFieldId: 'supabase_automation_matrix:fullSpectrumPositions:additionalDetails',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -24153,7 +24153,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:id',
             uniqueFieldId: 'supabase_automation_matrix:message:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -24217,7 +24217,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:conversation_id',
             uniqueFieldId: 'supabase_automation_matrix:message:conversationId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -24281,7 +24281,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:role',
             uniqueFieldId: 'supabase_automation_matrix:message:role',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -24362,7 +24362,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:content',
             uniqueFieldId: 'supabase_automation_matrix:message:content',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -24426,7 +24426,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:type',
             uniqueFieldId: 'supabase_automation_matrix:message:type',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -24523,7 +24523,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:display_order',
             uniqueFieldId: 'supabase_automation_matrix:message:displayOrder',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -24587,7 +24587,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:system_order',
             uniqueFieldId: 'supabase_automation_matrix:message:systemOrder',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -24651,7 +24651,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:created_at',
             uniqueFieldId: 'supabase_automation_matrix:message:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -24715,7 +24715,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:metadata',
             uniqueFieldId: 'supabase_automation_matrix:message:metadata',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -24779,7 +24779,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:user_id',
             uniqueFieldId: 'supabase_automation_matrix:message:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -24843,7 +24843,7 @@ message: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message:is_public',
             uniqueFieldId: 'supabase_automation_matrix:message:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -25001,7 +25001,7 @@ messageBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_broker:id',
             uniqueFieldId: 'supabase_automation_matrix:messageBroker:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -25065,7 +25065,7 @@ messageBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_broker:message_id',
             uniqueFieldId: 'supabase_automation_matrix:messageBroker:messageId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -25129,7 +25129,7 @@ messageBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_broker:broker_id',
             uniqueFieldId: 'supabase_automation_matrix:messageBroker:brokerId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -25193,7 +25193,7 @@ messageBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_broker:default_value',
             uniqueFieldId: 'supabase_automation_matrix:messageBroker:defaultValue',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -25257,7 +25257,7 @@ messageBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_broker:default_component',
             uniqueFieldId: 'supabase_automation_matrix:messageBroker:defaultComponent',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -25485,7 +25485,7 @@ messageTemplate: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_template:id',
             uniqueFieldId: 'supabase_automation_matrix:messageTemplate:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -25549,7 +25549,7 @@ messageTemplate: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_template:role',
             uniqueFieldId: 'supabase_automation_matrix:messageTemplate:role',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -25630,7 +25630,7 @@ messageTemplate: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_template:type',
             uniqueFieldId: 'supabase_automation_matrix:messageTemplate:type',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -25727,7 +25727,7 @@ messageTemplate: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_template:created_at',
             uniqueFieldId: 'supabase_automation_matrix:messageTemplate:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -25791,7 +25791,7 @@ messageTemplate: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:message_template:content',
             uniqueFieldId: 'supabase_automation_matrix:messageTemplate:content',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -25982,7 +25982,7 @@ organizationInvitations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_invitations:id',
             uniqueFieldId: 'supabase_automation_matrix:organizationInvitations:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -26046,7 +26046,7 @@ organizationInvitations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_invitations:organization_id',
             uniqueFieldId: 'supabase_automation_matrix:organizationInvitations:organizationId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -26110,7 +26110,7 @@ organizationInvitations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_invitations:email',
             uniqueFieldId: 'supabase_automation_matrix:organizationInvitations:email',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -26174,7 +26174,7 @@ organizationInvitations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_invitations:token',
             uniqueFieldId: 'supabase_automation_matrix:organizationInvitations:token',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -26238,7 +26238,7 @@ organizationInvitations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_invitations:role',
             uniqueFieldId: 'supabase_automation_matrix:organizationInvitations:role',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -26315,7 +26315,7 @@ organizationInvitations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_invitations:invited_at',
             uniqueFieldId: 'supabase_automation_matrix:organizationInvitations:invitedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -26379,7 +26379,7 @@ organizationInvitations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_invitations:invited_by',
             uniqueFieldId: 'supabase_automation_matrix:organizationInvitations:invitedBy',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -26443,7 +26443,7 @@ organizationInvitations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_invitations:expires_at',
             uniqueFieldId: 'supabase_automation_matrix:organizationInvitations:expiresAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -26601,7 +26601,7 @@ organizationMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_members:id',
             uniqueFieldId: 'supabase_automation_matrix:organizationMembers:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -26665,7 +26665,7 @@ organizationMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_members:organization_id',
             uniqueFieldId: 'supabase_automation_matrix:organizationMembers:organizationId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -26729,7 +26729,7 @@ organizationMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_members:user_id',
             uniqueFieldId: 'supabase_automation_matrix:organizationMembers:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -26793,7 +26793,7 @@ organizationMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_members:role',
             uniqueFieldId: 'supabase_automation_matrix:organizationMembers:role',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -26870,7 +26870,7 @@ organizationMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_members:joined_at',
             uniqueFieldId: 'supabase_automation_matrix:organizationMembers:joinedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -26934,7 +26934,7 @@ organizationMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organization_members:invited_by',
             uniqueFieldId: 'supabase_automation_matrix:organizationMembers:invitedBy',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -27092,7 +27092,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:id',
             uniqueFieldId: 'supabase_automation_matrix:organizations:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -27156,7 +27156,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:name',
             uniqueFieldId: 'supabase_automation_matrix:organizations:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -27220,7 +27220,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:slug',
             uniqueFieldId: 'supabase_automation_matrix:organizations:slug',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -27284,7 +27284,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:description',
             uniqueFieldId: 'supabase_automation_matrix:organizations:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -27348,7 +27348,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:logo_url',
             uniqueFieldId: 'supabase_automation_matrix:organizations:logoUrl',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -27412,7 +27412,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:website',
             uniqueFieldId: 'supabase_automation_matrix:organizations:website',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -27476,7 +27476,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:created_at',
             uniqueFieldId: 'supabase_automation_matrix:organizations:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -27540,7 +27540,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:organizations:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -27604,7 +27604,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:created_by',
             uniqueFieldId: 'supabase_automation_matrix:organizations:createdBy',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -27668,7 +27668,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:is_personal',
             uniqueFieldId: 'supabase_automation_matrix:organizations:isPersonal',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -27732,7 +27732,7 @@ organizations: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:organizations:settings',
             uniqueFieldId: 'supabase_automation_matrix:organizations:settings',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -27957,7 +27957,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:id',
             uniqueFieldId: 'supabase_automation_matrix:permissions:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -28021,7 +28021,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:resource_type',
             uniqueFieldId: 'supabase_automation_matrix:permissions:resourceType',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -28122,7 +28122,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:resource_id',
             uniqueFieldId: 'supabase_automation_matrix:permissions:resourceId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -28186,7 +28186,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:granted_to_user_id',
             uniqueFieldId: 'supabase_automation_matrix:permissions:grantedToUserId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -28250,7 +28250,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:granted_to_organization_id',
             uniqueFieldId: 'supabase_automation_matrix:permissions:grantedToOrganizationId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -28314,7 +28314,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:is_public',
             uniqueFieldId: 'supabase_automation_matrix:permissions:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -28378,7 +28378,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:permission_level',
             uniqueFieldId: 'supabase_automation_matrix:permissions:permissionLevel',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -28459,7 +28459,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:created_at',
             uniqueFieldId: 'supabase_automation_matrix:permissions:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -28523,7 +28523,7 @@ permissions: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:permissions:created_by',
             uniqueFieldId: 'supabase_automation_matrix:permissions:createdBy',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -28681,7 +28681,7 @@ processor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:processor:id',
             uniqueFieldId: 'supabase_automation_matrix:processor:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -28745,7 +28745,7 @@ processor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:processor:name',
             uniqueFieldId: 'supabase_automation_matrix:processor:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -28809,7 +28809,7 @@ processor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:processor:depends_default',
             uniqueFieldId: 'supabase_automation_matrix:processor:dependsDefault',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -28873,7 +28873,7 @@ processor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:processor:default_extractors',
             uniqueFieldId: 'supabase_automation_matrix:processor:defaultExtractors',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -28937,7 +28937,7 @@ processor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:processor:params',
             uniqueFieldId: 'supabase_automation_matrix:processor:params',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -29129,7 +29129,7 @@ projectMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:project_members:id',
             uniqueFieldId: 'supabase_automation_matrix:projectMembers:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -29193,7 +29193,7 @@ projectMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:project_members:project_id',
             uniqueFieldId: 'supabase_automation_matrix:projectMembers:projectId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -29257,7 +29257,7 @@ projectMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:project_members:user_id',
             uniqueFieldId: 'supabase_automation_matrix:projectMembers:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -29321,7 +29321,7 @@ projectMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:project_members:role',
             uniqueFieldId: 'supabase_automation_matrix:projectMembers:role',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -29385,7 +29385,7 @@ projectMembers: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:project_members:created_at',
             uniqueFieldId: 'supabase_automation_matrix:projectMembers:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -29543,7 +29543,7 @@ projects: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:projects:id',
             uniqueFieldId: 'supabase_automation_matrix:projects:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -29607,7 +29607,7 @@ projects: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:projects:name',
             uniqueFieldId: 'supabase_automation_matrix:projects:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -29671,7 +29671,7 @@ projects: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:projects:description',
             uniqueFieldId: 'supabase_automation_matrix:projects:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -29735,7 +29735,7 @@ projects: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:projects:created_at',
             uniqueFieldId: 'supabase_automation_matrix:projects:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -29799,7 +29799,7 @@ projects: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:projects:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:projects:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -29863,7 +29863,7 @@ projects: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:projects:created_by',
             uniqueFieldId: 'supabase_automation_matrix:projects:createdBy',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -30054,7 +30054,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:id',
             uniqueFieldId: 'supabase_automation_matrix:recipe:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -30118,7 +30118,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:name',
             uniqueFieldId: 'supabase_automation_matrix:recipe:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -30182,7 +30182,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:description',
             uniqueFieldId: 'supabase_automation_matrix:recipe:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -30246,7 +30246,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:tags',
             uniqueFieldId: 'supabase_automation_matrix:recipe:tags',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -30310,7 +30310,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:sample_output',
             uniqueFieldId: 'supabase_automation_matrix:recipe:sampleOutput',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -30374,7 +30374,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:is_public',
             uniqueFieldId: 'supabase_automation_matrix:recipe:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -30438,7 +30438,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:status',
             uniqueFieldId: 'supabase_automation_matrix:recipe:status',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -30527,7 +30527,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:version',
             uniqueFieldId: 'supabase_automation_matrix:recipe:version',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -30591,7 +30591,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:post_result_options',
             uniqueFieldId: 'supabase_automation_matrix:recipe:postResultOptions',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -30655,7 +30655,7 @@ recipe: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe:user_id',
             uniqueFieldId: 'supabase_automation_matrix:recipe:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -31084,7 +31084,7 @@ recipeBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:id',
             uniqueFieldId: 'supabase_automation_matrix:recipeBroker:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -31148,7 +31148,7 @@ recipeBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:recipe',
             uniqueFieldId: 'supabase_automation_matrix:recipeBroker:recipe',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -31212,7 +31212,7 @@ recipeBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:broker',
             uniqueFieldId: 'supabase_automation_matrix:recipeBroker:broker',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -31276,7 +31276,7 @@ recipeBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:broker_role',
             uniqueFieldId: 'supabase_automation_matrix:recipeBroker:brokerRole',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -31349,7 +31349,7 @@ recipeBroker: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_broker:required',
             uniqueFieldId: 'supabase_automation_matrix:recipeBroker:required',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -31542,7 +31542,7 @@ recipeDisplay: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:id',
             uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -31606,7 +31606,7 @@ recipeDisplay: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:recipe',
             uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:recipe',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -31670,7 +31670,7 @@ recipeDisplay: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:display',
             uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:display',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -31734,7 +31734,7 @@ recipeDisplay: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:priority',
             uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:priority',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -31798,7 +31798,7 @@ recipeDisplay: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_display:display_settings',
             uniqueFieldId: 'supabase_automation_matrix:recipeDisplay:displaySettings',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -31991,7 +31991,7 @@ recipeFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:id',
             uniqueFieldId: 'supabase_automation_matrix:recipeFunction:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -32055,7 +32055,7 @@ recipeFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:recipe',
             uniqueFieldId: 'supabase_automation_matrix:recipeFunction:recipe',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -32119,7 +32119,7 @@ recipeFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:function',
             uniqueFieldId: 'supabase_automation_matrix:recipeFunction:function',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -32183,7 +32183,7 @@ recipeFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:role',
             uniqueFieldId: 'supabase_automation_matrix:recipeFunction:role',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -32280,7 +32280,7 @@ recipeFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_function:params',
             uniqueFieldId: 'supabase_automation_matrix:recipeFunction:params',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -32473,7 +32473,7 @@ recipeMessage: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_message:id',
             uniqueFieldId: 'supabase_automation_matrix:recipeMessage:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -32537,7 +32537,7 @@ recipeMessage: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_message:message_id',
             uniqueFieldId: 'supabase_automation_matrix:recipeMessage:messageId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -32601,7 +32601,7 @@ recipeMessage: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_message:recipe_id',
             uniqueFieldId: 'supabase_automation_matrix:recipeMessage:recipeId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -32665,7 +32665,7 @@ recipeMessage: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_message:order',
             uniqueFieldId: 'supabase_automation_matrix:recipeMessage:order',
-            
+
             dataType: 'number' as const,
             isRequired: true,
             maxLength: null,
@@ -32858,7 +32858,7 @@ recipeMessageReorderQueue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_message_reorder_queue:recipe_id',
             uniqueFieldId: 'supabase_automation_matrix:recipeMessageReorderQueue:recipeId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -32922,7 +32922,7 @@ recipeMessageReorderQueue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_message_reorder_queue:last_modified',
             uniqueFieldId: 'supabase_automation_matrix:recipeMessageReorderQueue:lastModified',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -33046,7 +33046,7 @@ recipeModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:id',
             uniqueFieldId: 'supabase_automation_matrix:recipeModel:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -33110,7 +33110,7 @@ recipeModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:recipe',
             uniqueFieldId: 'supabase_automation_matrix:recipeModel:recipe',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -33174,7 +33174,7 @@ recipeModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:ai_model',
             uniqueFieldId: 'supabase_automation_matrix:recipeModel:aiModel',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -33238,7 +33238,7 @@ recipeModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:role',
             uniqueFieldId: 'supabase_automation_matrix:recipeModel:role',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -33315,7 +33315,7 @@ recipeModel: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_model:priority',
             uniqueFieldId: 'supabase_automation_matrix:recipeModel:priority',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -33508,7 +33508,7 @@ recipeProcessor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:id',
             uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -33572,7 +33572,7 @@ recipeProcessor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:recipe',
             uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:recipe',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -33636,7 +33636,7 @@ recipeProcessor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:processor',
             uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:processor',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -33700,7 +33700,7 @@ recipeProcessor: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_processor:params',
             uniqueFieldId: 'supabase_automation_matrix:recipeProcessor:params',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -33893,7 +33893,7 @@ recipeTool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:id',
             uniqueFieldId: 'supabase_automation_matrix:recipeTool:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -33957,7 +33957,7 @@ recipeTool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:recipe',
             uniqueFieldId: 'supabase_automation_matrix:recipeTool:recipe',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -34021,7 +34021,7 @@ recipeTool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:tool',
             uniqueFieldId: 'supabase_automation_matrix:recipeTool:tool',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -34085,7 +34085,7 @@ recipeTool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:recipe_tool:params',
             uniqueFieldId: 'supabase_automation_matrix:recipeTool:params',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -34278,7 +34278,7 @@ registeredFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:registered_function:id',
             uniqueFieldId: 'supabase_automation_matrix:registeredFunction:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -34342,7 +34342,7 @@ registeredFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:registered_function:name',
             uniqueFieldId: 'supabase_automation_matrix:registeredFunction:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -34406,7 +34406,7 @@ registeredFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:registered_function:module_path',
             uniqueFieldId: 'supabase_automation_matrix:registeredFunction:modulePath',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -34470,7 +34470,7 @@ registeredFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:registered_function:class_name',
             uniqueFieldId: 'supabase_automation_matrix:registeredFunction:className',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -34534,7 +34534,7 @@ registeredFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:registered_function:description',
             uniqueFieldId: 'supabase_automation_matrix:registeredFunction:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -34598,7 +34598,7 @@ registeredFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:registered_function:return_broker',
             uniqueFieldId: 'supabase_automation_matrix:registeredFunction:returnBroker',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -34824,7 +34824,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -34888,7 +34888,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:scrape_mode',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:scrapeMode',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -34952,7 +34952,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:interaction_settings_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:interactionSettingsId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -35016,7 +35016,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:scrape_path_pattern_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:scrapePathPatternId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -35080,7 +35080,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:is_active',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:isActive',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -35144,7 +35144,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:user_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -35208,7 +35208,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -35272,7 +35272,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -35336,7 +35336,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -35400,7 +35400,7 @@ scrapeConfiguration: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_configuration:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeConfiguration:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -35558,7 +35558,7 @@ scrapeDomain: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomain:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -35622,7 +35622,7 @@ scrapeDomain: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain:url',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomain:url',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -35686,7 +35686,7 @@ scrapeDomain: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain:common_name',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomain:commonName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -35750,7 +35750,7 @@ scrapeDomain: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain:scrape_allowed',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomain:scrapeAllowed',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -35814,7 +35814,7 @@ scrapeDomain: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomain:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -35878,7 +35878,7 @@ scrapeDomain: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomain:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -35942,7 +35942,7 @@ scrapeDomain: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomain:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -36006,7 +36006,7 @@ scrapeDomain: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomain:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -36333,7 +36333,7 @@ scrapeDomainDisallowedNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_disallowed_notes:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainDisallowedNotes:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -36397,7 +36397,7 @@ scrapeDomainDisallowedNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_disallowed_notes:scrape_domain_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainDisallowedNotes:scrapeDomainId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -36461,7 +36461,7 @@ scrapeDomainDisallowedNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_disallowed_notes:notes',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainDisallowedNotes:notes',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -36525,7 +36525,7 @@ scrapeDomainDisallowedNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_disallowed_notes:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainDisallowedNotes:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -36589,7 +36589,7 @@ scrapeDomainDisallowedNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_disallowed_notes:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainDisallowedNotes:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -36653,7 +36653,7 @@ scrapeDomainDisallowedNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_disallowed_notes:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainDisallowedNotes:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -36717,7 +36717,7 @@ scrapeDomainDisallowedNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_disallowed_notes:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainDisallowedNotes:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -36875,7 +36875,7 @@ scrapeDomainNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_notes:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainNotes:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -36939,7 +36939,7 @@ scrapeDomainNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_notes:scrape_domain_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainNotes:scrapeDomainId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -37003,7 +37003,7 @@ scrapeDomainNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_notes:notes',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainNotes:notes',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -37067,7 +37067,7 @@ scrapeDomainNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_notes:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainNotes:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -37131,7 +37131,7 @@ scrapeDomainNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_notes:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainNotes:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -37195,7 +37195,7 @@ scrapeDomainNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_notes:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainNotes:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -37259,7 +37259,7 @@ scrapeDomainNotes: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_notes:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainNotes:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -37417,7 +37417,7 @@ scrapeDomainQuickScrapeSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_quick_scrape_settings:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainQuickScrapeSettings:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -37481,7 +37481,7 @@ scrapeDomainQuickScrapeSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_quick_scrape_settings:scrape_domain_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainQuickScrapeSettings:scrapeDomainId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -37545,7 +37545,7 @@ scrapeDomainQuickScrapeSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_quick_scrape_settings:enabled',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainQuickScrapeSettings:enabled',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -37609,7 +37609,7 @@ scrapeDomainQuickScrapeSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_quick_scrape_settings:proxy_type',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainQuickScrapeSettings:proxyType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -37673,7 +37673,7 @@ scrapeDomainQuickScrapeSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_quick_scrape_settings:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainQuickScrapeSettings:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -37737,7 +37737,7 @@ scrapeDomainQuickScrapeSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_quick_scrape_settings:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainQuickScrapeSettings:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -37801,7 +37801,7 @@ scrapeDomainQuickScrapeSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_quick_scrape_settings:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainQuickScrapeSettings:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -37865,7 +37865,7 @@ scrapeDomainQuickScrapeSettings: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_quick_scrape_settings:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainQuickScrapeSettings:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -38023,7 +38023,7 @@ scrapeDomainRobotsTxt: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_robots_txt:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainRobotsTxt:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -38087,7 +38087,7 @@ scrapeDomainRobotsTxt: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_robots_txt:scrape_domain_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainRobotsTxt:scrapeDomainId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -38151,7 +38151,7 @@ scrapeDomainRobotsTxt: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_robots_txt:robots_txt',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainRobotsTxt:robotsTxt',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -38215,7 +38215,7 @@ scrapeDomainRobotsTxt: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_robots_txt:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainRobotsTxt:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -38279,7 +38279,7 @@ scrapeDomainRobotsTxt: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_robots_txt:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainRobotsTxt:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -38343,7 +38343,7 @@ scrapeDomainRobotsTxt: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_robots_txt:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainRobotsTxt:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -38407,7 +38407,7 @@ scrapeDomainRobotsTxt: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_robots_txt:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainRobotsTxt:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -38565,7 +38565,7 @@ scrapeDomainSitemap: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_sitemap:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainSitemap:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -38629,7 +38629,7 @@ scrapeDomainSitemap: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_sitemap:scrape_domain_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainSitemap:scrapeDomainId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -38693,7 +38693,7 @@ scrapeDomainSitemap: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_sitemap:sitemap',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainSitemap:sitemap',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -38757,7 +38757,7 @@ scrapeDomainSitemap: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_sitemap:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainSitemap:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -38821,7 +38821,7 @@ scrapeDomainSitemap: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_sitemap:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainSitemap:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -38885,7 +38885,7 @@ scrapeDomainSitemap: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_sitemap:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainSitemap:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -38949,7 +38949,7 @@ scrapeDomainSitemap: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_domain_sitemap:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeDomainSitemap:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -39107,7 +39107,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -39171,7 +39171,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:name',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -39235,7 +39235,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:config_type',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:configType',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -39299,7 +39299,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:selector_type',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:selectorType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -39363,7 +39363,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:match_type',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:matchType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -39427,7 +39427,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:action',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:action',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -39491,7 +39491,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:user_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -39555,7 +39555,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -39619,7 +39619,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -39683,7 +39683,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -39747,7 +39747,7 @@ scrapeOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverride:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -39938,7 +39938,7 @@ scrapeOverrideValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override_value:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverrideValue:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -40002,7 +40002,7 @@ scrapeOverrideValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override_value:value',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverrideValue:value',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -40066,7 +40066,7 @@ scrapeOverrideValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override_value:scrape_override_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverrideValue:scrapeOverrideId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -40130,7 +40130,7 @@ scrapeOverrideValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override_value:user_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverrideValue:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -40194,7 +40194,7 @@ scrapeOverrideValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override_value:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverrideValue:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -40258,7 +40258,7 @@ scrapeOverrideValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override_value:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverrideValue:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -40322,7 +40322,7 @@ scrapeOverrideValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override_value:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverrideValue:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -40386,7 +40386,7 @@ scrapeOverrideValue: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_override_value:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapeOverrideValue:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -40544,7 +40544,7 @@ scrapePathPattern: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPattern:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -40608,7 +40608,7 @@ scrapePathPattern: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern:scrape_domain_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPattern:scrapeDomainId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -40672,7 +40672,7 @@ scrapePathPattern: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern:path_pattern',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPattern:pathPattern',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -40736,7 +40736,7 @@ scrapePathPattern: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPattern:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -40800,7 +40800,7 @@ scrapePathPattern: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPattern:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -40864,7 +40864,7 @@ scrapePathPattern: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPattern:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -40928,7 +40928,7 @@ scrapePathPattern: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPattern:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: false,
             maxLength: null,
@@ -41154,7 +41154,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:id',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -41218,7 +41218,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:name',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -41282,7 +41282,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:scrape_path_pattern_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:scrapePathPatternId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -41346,7 +41346,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:scrape_override_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:scrapeOverrideId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -41410,7 +41410,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:is_active',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:isActive',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -41474,7 +41474,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:user_id',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -41538,7 +41538,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:created_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -41602,7 +41602,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -41666,7 +41666,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:is_public',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:isPublic',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -41730,7 +41730,7 @@ scrapePathPatternOverride: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:scrape_path_pattern_override:authenticated_read',
             uniqueFieldId: 'supabase_automation_matrix:scrapePathPatternOverride:authenticatedRead',
-            
+
             dataType: 'boolean' as const,
             isRequired: true,
             maxLength: null,
@@ -41923,7 +41923,7 @@ subcategory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:subcategory:id',
             uniqueFieldId: 'supabase_automation_matrix:subcategory:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -41987,7 +41987,7 @@ subcategory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:subcategory:category_id',
             uniqueFieldId: 'supabase_automation_matrix:subcategory:categoryId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -42051,7 +42051,7 @@ subcategory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:subcategory:name',
             uniqueFieldId: 'supabase_automation_matrix:subcategory:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -42115,7 +42115,7 @@ subcategory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:subcategory:description',
             uniqueFieldId: 'supabase_automation_matrix:subcategory:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -42179,7 +42179,7 @@ subcategory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:subcategory:slug',
             uniqueFieldId: 'supabase_automation_matrix:subcategory:slug',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -42243,7 +42243,7 @@ subcategory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:subcategory:icon',
             uniqueFieldId: 'supabase_automation_matrix:subcategory:icon',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -42307,7 +42307,7 @@ subcategory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:subcategory:features',
             uniqueFieldId: 'supabase_automation_matrix:subcategory:features',
-            
+
             dataType: 'string[]' as const,
             isRequired: true,
             maxLength: null,
@@ -42371,7 +42371,7 @@ subcategory: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:subcategory:created_at',
             uniqueFieldId: 'supabase_automation_matrix:subcategory:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -42563,7 +42563,7 @@ systemFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:system_function:id',
             uniqueFieldId: 'supabase_automation_matrix:systemFunction:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -42627,7 +42627,7 @@ systemFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:system_function:name',
             uniqueFieldId: 'supabase_automation_matrix:systemFunction:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -42691,7 +42691,7 @@ systemFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:system_function:description',
             uniqueFieldId: 'supabase_automation_matrix:systemFunction:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -42755,7 +42755,7 @@ systemFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:system_function:sample',
             uniqueFieldId: 'supabase_automation_matrix:systemFunction:sample',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -42819,7 +42819,7 @@ systemFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:system_function:input_params',
             uniqueFieldId: 'supabase_automation_matrix:systemFunction:inputParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -42883,7 +42883,7 @@ systemFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:system_function:output_options',
             uniqueFieldId: 'supabase_automation_matrix:systemFunction:outputOptions',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -42947,7 +42947,7 @@ systemFunction: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:system_function:rf_id',
             uniqueFieldId: 'supabase_automation_matrix:systemFunction:rfId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -43173,7 +43173,7 @@ taskAssignments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_assignments:id',
             uniqueFieldId: 'supabase_automation_matrix:taskAssignments:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -43237,7 +43237,7 @@ taskAssignments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_assignments:task_id',
             uniqueFieldId: 'supabase_automation_matrix:taskAssignments:taskId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -43301,7 +43301,7 @@ taskAssignments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_assignments:user_id',
             uniqueFieldId: 'supabase_automation_matrix:taskAssignments:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -43365,7 +43365,7 @@ taskAssignments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_assignments:assigned_by',
             uniqueFieldId: 'supabase_automation_matrix:taskAssignments:assignedBy',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -43429,7 +43429,7 @@ taskAssignments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_assignments:assigned_at',
             uniqueFieldId: 'supabase_automation_matrix:taskAssignments:assignedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -43587,7 +43587,7 @@ taskAttachments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_attachments:id',
             uniqueFieldId: 'supabase_automation_matrix:taskAttachments:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -43651,7 +43651,7 @@ taskAttachments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_attachments:task_id',
             uniqueFieldId: 'supabase_automation_matrix:taskAttachments:taskId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -43715,7 +43715,7 @@ taskAttachments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_attachments:file_name',
             uniqueFieldId: 'supabase_automation_matrix:taskAttachments:fileName',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -43779,7 +43779,7 @@ taskAttachments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_attachments:file_type',
             uniqueFieldId: 'supabase_automation_matrix:taskAttachments:fileType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -43843,7 +43843,7 @@ taskAttachments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_attachments:file_size',
             uniqueFieldId: 'supabase_automation_matrix:taskAttachments:fileSize',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -43907,7 +43907,7 @@ taskAttachments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_attachments:file_path',
             uniqueFieldId: 'supabase_automation_matrix:taskAttachments:filePath',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -43971,7 +43971,7 @@ taskAttachments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_attachments:uploaded_by',
             uniqueFieldId: 'supabase_automation_matrix:taskAttachments:uploadedBy',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -44035,7 +44035,7 @@ taskAttachments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_attachments:uploaded_at',
             uniqueFieldId: 'supabase_automation_matrix:taskAttachments:uploadedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -44193,7 +44193,7 @@ taskComments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_comments:id',
             uniqueFieldId: 'supabase_automation_matrix:taskComments:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -44257,7 +44257,7 @@ taskComments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_comments:task_id',
             uniqueFieldId: 'supabase_automation_matrix:taskComments:taskId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -44321,7 +44321,7 @@ taskComments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_comments:user_id',
             uniqueFieldId: 'supabase_automation_matrix:taskComments:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -44385,7 +44385,7 @@ taskComments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_comments:content',
             uniqueFieldId: 'supabase_automation_matrix:taskComments:content',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -44449,7 +44449,7 @@ taskComments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_comments:created_at',
             uniqueFieldId: 'supabase_automation_matrix:taskComments:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -44513,7 +44513,7 @@ taskComments: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:task_comments:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:taskComments:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -44671,7 +44671,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:id',
             uniqueFieldId: 'supabase_automation_matrix:tasks:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -44735,7 +44735,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:title',
             uniqueFieldId: 'supabase_automation_matrix:tasks:title',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -44799,7 +44799,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:description',
             uniqueFieldId: 'supabase_automation_matrix:tasks:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -44863,7 +44863,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:project_id',
             uniqueFieldId: 'supabase_automation_matrix:tasks:projectId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -44927,7 +44927,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:status',
             uniqueFieldId: 'supabase_automation_matrix:tasks:status',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -44991,7 +44991,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:due_date',
             uniqueFieldId: 'supabase_automation_matrix:tasks:dueDate',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -45055,7 +45055,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:created_at',
             uniqueFieldId: 'supabase_automation_matrix:tasks:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -45119,7 +45119,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:tasks:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -45183,7 +45183,7 @@ tasks: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tasks:created_by',
             uniqueFieldId: 'supabase_automation_matrix:tasks:createdBy',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -45443,7 +45443,7 @@ tool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tool:id',
             uniqueFieldId: 'supabase_automation_matrix:tool:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -45507,7 +45507,7 @@ tool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tool:name',
             uniqueFieldId: 'supabase_automation_matrix:tool:name',
-            
+
             dataType: 'string' as const,
             isRequired: true,
             maxLength: null,
@@ -45571,7 +45571,7 @@ tool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tool:source',
             uniqueFieldId: 'supabase_automation_matrix:tool:source',
-            
+
             dataType: 'object' as const,
             isRequired: true,
             maxLength: null,
@@ -45635,7 +45635,7 @@ tool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tool:description',
             uniqueFieldId: 'supabase_automation_matrix:tool:description',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -45699,7 +45699,7 @@ tool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tool:parameters',
             uniqueFieldId: 'supabase_automation_matrix:tool:parameters',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -45763,7 +45763,7 @@ tool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tool:required_args',
             uniqueFieldId: 'supabase_automation_matrix:tool:requiredArgs',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -45827,7 +45827,7 @@ tool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tool:system_function',
             uniqueFieldId: 'supabase_automation_matrix:tool:systemFunction',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -45891,7 +45891,7 @@ tool: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:tool:additional_params',
             uniqueFieldId: 'supabase_automation_matrix:tool:additionalParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -46083,7 +46083,7 @@ transformer: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:transformer:id',
             uniqueFieldId: 'supabase_automation_matrix:transformer:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -46147,7 +46147,7 @@ transformer: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:transformer:name',
             uniqueFieldId: 'supabase_automation_matrix:transformer:name',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -46211,7 +46211,7 @@ transformer: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:transformer:input_params',
             uniqueFieldId: 'supabase_automation_matrix:transformer:inputParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -46275,7 +46275,7 @@ transformer: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:transformer:output_params',
             uniqueFieldId: 'supabase_automation_matrix:transformer:outputParams',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -46432,7 +46432,7 @@ userPreferences: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:user_id',
             uniqueFieldId: 'supabase_automation_matrix:userPreferences:userId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -46496,7 +46496,7 @@ userPreferences: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:preferences',
             uniqueFieldId: 'supabase_automation_matrix:userPreferences:preferences',
-            
+
             dataType: 'object' as const,
             isRequired: true,
             maxLength: null,
@@ -46560,7 +46560,7 @@ userPreferences: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:created_at',
             uniqueFieldId: 'supabase_automation_matrix:userPreferences:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -46624,7 +46624,7 @@ userPreferences: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:user_preferences:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:userPreferences:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -46748,7 +46748,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:id',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -46812,7 +46812,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:created_at',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -46876,7 +46876,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:applicant_name',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:applicantName',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -46940,7 +46940,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:person_id',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:personId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -47004,7 +47004,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:date_of_birth',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:dateOfBirth',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -47068,7 +47068,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:date_of_injury',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:dateOfInjury',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -47132,7 +47132,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:age_at_doi',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:ageAtDoi',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -47196,7 +47196,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:occupational_code',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:occupationalCode',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -47260,7 +47260,7 @@ wcClaim: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_claim:weekly_earnings',
             uniqueFieldId: 'supabase_automation_matrix:wcClaim:weeklyEarnings',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -47417,7 +47417,7 @@ wcImpairmentDefinition: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_impairment_definition:id',
             uniqueFieldId: 'supabase_automation_matrix:wcImpairmentDefinition:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -47481,7 +47481,7 @@ wcImpairmentDefinition: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_impairment_definition:impairment_number',
             uniqueFieldId: 'supabase_automation_matrix:wcImpairmentDefinition:impairmentNumber',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -47545,7 +47545,7 @@ wcImpairmentDefinition: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_impairment_definition:fec_rank',
             uniqueFieldId: 'supabase_automation_matrix:wcImpairmentDefinition:fecRank',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -47609,7 +47609,7 @@ wcImpairmentDefinition: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_impairment_definition:name',
             uniqueFieldId: 'supabase_automation_matrix:wcImpairmentDefinition:name',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -47673,7 +47673,7 @@ wcImpairmentDefinition: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_impairment_definition:attributes',
             uniqueFieldId: 'supabase_automation_matrix:wcImpairmentDefinition:attributes',
-            
+
             dataType: 'object' as const,
             isRequired: false,
             maxLength: null,
@@ -47737,7 +47737,7 @@ wcImpairmentDefinition: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_impairment_definition:finger_type',
             uniqueFieldId: 'supabase_automation_matrix:wcImpairmentDefinition:fingerType',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -47915,7 +47915,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:id',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -47979,7 +47979,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:created_at',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -48043,7 +48043,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:report_id',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:reportId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -48107,7 +48107,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:impairment_definition_id',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:impairmentDefinitionId',
-            
+
             dataType: 'uuid' as const,
             isRequired: false,
             maxLength: null,
@@ -48171,7 +48171,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:digit',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:digit',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -48235,7 +48235,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:le',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:le',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -48299,7 +48299,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:side',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:side',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -48376,7 +48376,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:ue',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:ue',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -48440,7 +48440,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:wpi',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:wpi',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -48504,7 +48504,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:pain',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:pain',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -48568,7 +48568,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:industrial',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:industrial',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -48632,7 +48632,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:rating',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:rating',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -48696,7 +48696,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:formula',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:formula',
-            
+
             dataType: 'string' as const,
             isRequired: false,
             maxLength: null,
@@ -48760,7 +48760,7 @@ wcInjury: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_injury:updated_at',
             uniqueFieldId: 'supabase_automation_matrix:wcInjury:updatedAt',
-            
+
             dataType: 'date' as const,
             isRequired: false,
             maxLength: null,
@@ -48953,7 +48953,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:id',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:id',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -49017,7 +49017,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:created_at',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:createdAt',
-            
+
             dataType: 'date' as const,
             isRequired: true,
             maxLength: null,
@@ -49081,7 +49081,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:claim_id',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:claimId',
-            
+
             dataType: 'uuid' as const,
             isRequired: true,
             maxLength: null,
@@ -49145,7 +49145,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:final_rating',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:finalRating',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -49209,7 +49209,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:left_side_total',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:leftSideTotal',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -49273,7 +49273,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:right_side_total',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:rightSideTotal',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -49337,7 +49337,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:default_side_total',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:defaultSideTotal',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -49401,7 +49401,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:compensation_amount',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:compensationAmount',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -49465,7 +49465,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:compensation_weeks',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:compensationWeeks',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,
@@ -49529,7 +49529,7 @@ wcReport: {
 
             uniqueColumnId: 'supabase_automation_matrix:public:wc_report:compensation_days',
             uniqueFieldId: 'supabase_automation_matrix:wcReport:compensationDays',
-            
+
             dataType: 'number' as const,
             isRequired: false,
             maxLength: null,

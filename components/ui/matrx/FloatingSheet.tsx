@@ -290,7 +290,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     // Mobile-specific header styles
     const getMobileHeaderClass = () => {
         if (isMobile) {
-            return "sticky top-0 bg-white dark:bg-slate-900 z-10 px-4 py-4";
+            return "sticky top-0 bg-zinc-100 dark:bg-zinc-850 z-10 px-4 py-4";
         }
         return "px-4 py-3";
     };
@@ -298,7 +298,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
     // Mobile-specific footer styles
     const getMobileFooterClass = () => {
         if (isMobile) {
-            return "sticky bottom-0 bg-white dark:bg-slate-900 z-10 px-4 py-4 mt-auto";
+            return "sticky bottom-0 bg-zinc-100 dark:bg-zinc-850 z-10 px-4 py-4 mt-auto";
         }
         return "px-4 pt-2 pb-6";
     };
@@ -322,7 +322,7 @@ const FloatingSheet: React.FC<FloatingSheetProps> = ({
                 ref={sheetRef}
                 className={`fixed ${positionClasses} z-50 ${
                     isMobile || position === "center" ? "" : "w-full"
-                } ${widthClass} ${heightClass} ${roundedClass} bg-white dark:bg-slate-900 shadow-lg transform transition-all duration-${animationDuration} ease-in-out ${transformClass} ${
+                } ${widthClass} ${heightClass} ${roundedClass} bg-zinc-100 dark:bg-zinc-850 shadow-xl transform transition-all duration-${animationDuration} ease-in-out ${transformClass} ${
                     isOpen ? "visible opacity-100" : "invisible opacity-0"
                 } ${isMobile ? "h-full flex flex-col" : "h-full"} outline-none ${className}`}
                 role={role}

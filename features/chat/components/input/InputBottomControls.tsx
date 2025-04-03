@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Paperclip, Search, ArrowUp, Mic } from "lucide-react";
+import { TbVariablePlus } from "react-icons/tb";
 import { LiaLightbulbSolid } from "react-icons/lia";
 import { HiOutlineLightBulb } from "react-icons/hi";
 import { LuSearchCheck } from "react-icons/lu";
@@ -20,6 +21,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { FileManager } from "@/hooks/ai/chat/useFileManagement";
 import MobileInputBottomControls from "./mobile/MobileInputBottomControls";
 import { useIsMobile } from "@/hooks/use-mobile";
+import BrokerSheet from "./BrokerSheet";
 
 interface InputBottomControlsProps {
     isDisabled: boolean;
@@ -35,10 +37,11 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
     const messageMetadata = useAppSelector(chatSelectors.activeMessageMetadata);
     const conversationMetadata = useAppSelector(chatSelectors.activeConversationMetadata);
     const models = useAppSelector(chatSelectors.aiModels);
-    
+
     // Internal state management
     const [isListening, setIsListening] = useState<boolean>(false);
     const [isToolsSheetOpen, setIsToolsSheetOpen] = useState<boolean>(false);
+    const [isBrokerSheetOpen, setIsBrokerSheetOpen] = useState<boolean>(false);
     const [hasUploadedFiles, setHasUploadedFiles] = useState<boolean>(false);
     const [settings, setSettings] = useState({
         searchEnabled: false,
@@ -49,9 +52,10 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
         planEnabled: false,
         audioEnabled: false,
         enableAskQuestions: false,
+        enableBrokers: false,
     });
     const prevSettingsRef = useRef(settings);
-    
+
     useEffect(() => {
         const changedSettings = Object.entries(settings).reduce((acc, [key, value]) => {
             if (prevSettingsRef.current[key] !== value) {
@@ -74,7 +78,7 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
             }
         }
     }, [settings, dispatch, chatActions]);
-    
+
     useEffect(() => {
         if (messageMetadata?.availableTools?.length > 0) {
             setSettings((prev) => ({ ...prev, toolsEnabled: true }));
@@ -82,12 +86,12 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
             setSettings((prev) => ({ ...prev, toolsEnabled: false }));
         }
     }, [isToolsSheetOpen]);
-    
+
     // Update settings without rewriting all properties
     const updateSettings = useCallback((newSettings: Partial<typeof settings>) => {
         setSettings((prev) => ({ ...prev, ...newSettings }));
     }, []);
-    
+
     useEffect(() => {
         if (!messageKey) return;
         if (messageMetadata?.files?.length > 0) {
@@ -96,62 +100,66 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
             setHasUploadedFiles(false);
         }
     }, [messageMetadata?.files, messageKey]);
-    
+
     // Handler functions
     const handleToggleSearch = useCallback(() => {
         updateSettings({ searchEnabled: !settings.searchEnabled });
     }, [settings.searchEnabled, updateSettings]);
-    
+
     const handleToggleTools = useCallback(() => {
         setIsToolsSheetOpen(!isToolsSheetOpen);
     }, [settings.toolsEnabled, updateSettings, isToolsSheetOpen]);
-    
+
+    const handleToggleBrokers = useCallback(() => {
+        setIsBrokerSheetOpen(!isBrokerSheetOpen);
+    }, [settings.enableBrokers, updateSettings, isBrokerSheetOpen]);
+
     const handleToggleThink = useCallback(() => {
         updateSettings({ thinkEnabled: !settings.thinkEnabled });
     }, [settings.thinkEnabled, updateSettings]);
-    
+
     const handleToggleResearch = useCallback(() => {
         updateSettings({ researchEnabled: !settings.researchEnabled });
     }, [settings.researchEnabled, updateSettings]);
-    
+
     const handleToggleRecipes = useCallback(() => {
         updateSettings({ recipesEnabled: !settings.recipesEnabled });
     }, [settings.recipesEnabled, updateSettings]);
-    
+
     const handleToggleAskQuestions = useCallback(() => {
         updateSettings({ enableAskQuestions: !settings.enableAskQuestions });
     }, [settings.enableAskQuestions, updateSettings]);
-    
+
     const handleTogglePlan = useCallback(() => {
         updateSettings({ planEnabled: !settings.planEnabled });
     }, [settings.planEnabled, updateSettings]);
-    
+
     const handleToggleMicrophone = useCallback(() => {
         setIsListening(!isListening);
         updateSettings({ audioEnabled: !settings.audioEnabled });
     }, [isListening, settings.audioEnabled, updateSettings]);
-    
+
     const handleModelSelect = useCallback(
         (modelKey: MatrxRecordId) => {
             dispatch(chatActions.updateModel({ value: modelKey }));
         },
         [dispatch, chatActions]
     );
-    
+
     const modelId = messageMetadata?.currentModel || conversationMetadata?.currentModel || "";
-    
+
     // Conditionally render mobile or desktop version
     if (isMobile) {
         return (
-            <MobileInputBottomControls 
-                isDisabled={isDisabled} 
-                onSendMessage={onSendMessage} 
-                onToggleTools={handleToggleTools} 
-                fileManager={fileManager} 
+            <MobileInputBottomControls
+                isDisabled={isDisabled}
+                onSendMessage={onSendMessage}
+                onToggleTools={handleToggleTools}
+                fileManager={fileManager}
             />
         );
     }
-    
+
     // Desktop version
     return (
         <>
@@ -207,6 +215,16 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
                         enabledIcon={<BsPatchQuestion />}
                         tooltip="Ask me questions"
                     />
+                    <ToggleButton
+                        isEnabled={settings.enableBrokers}
+                        isWaiting={isBrokerSheetOpen}
+                        onClick={handleToggleBrokers}
+                        disabled={isDisabled}
+                        label=""
+                        defaultIcon={<TbVariablePlus />}
+                        enabledIcon={<TbVariablePlus />}
+                        tooltip="Add Information Brokers"
+                    />
                     {/* Tools Toggle Button */}
                     <ToggleButton
                         isEnabled={settings.toolsEnabled}
@@ -250,6 +268,7 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
                 </div>
             </div>
             <AIToolsSheet isOpen={isToolsSheetOpen} onClose={() => setIsToolsSheetOpen(false)} />
+            <BrokerSheet isOpen={isBrokerSheetOpen} onClose={() => setIsBrokerSheetOpen(false)} />
         </>
     );
 };

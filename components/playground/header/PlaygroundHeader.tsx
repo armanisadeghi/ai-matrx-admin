@@ -5,7 +5,7 @@ import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import PlaygroundHeaderLeft from "./PlaygroundHeaderLeft";
 import PlaygroundHeaderCenter from "./PlaygroundHeaderCenter";
 import PlaygroundHeaderRight from "./PlaygroundHeaderRight";
-import { UseAiCockpitHook } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
+import { UseAiCockpitHook } from "../hooks/useAiCockpit";
 
 interface PlaygroundHeaderProps {
   initialSettings?: {

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Code, Play } from "lucide-react";
 import PlaygroundActionsDropdown from "./PlaygroundActionsDropdown";
 import PanelToggle from "@/components/matrx/PanelToggle";
-import { UseAiCockpitHook } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
+import { UseAiCockpitHook } from "../hooks/useAiCockpit";
+
 
 
 interface PlaygroundHeaderRightProps {
