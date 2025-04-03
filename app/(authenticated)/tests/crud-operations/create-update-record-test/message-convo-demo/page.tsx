@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useConversationMessages } from "@/hooks/ai/chat/useConversationMessages";
+// import { useConversationMessages } from "@/hooks/ai/chat/useConversationMessages";
 import { useToast } from "@/components/ui/use-toast";
 import { ChatMode } from "@/types/chat/chat.types";
 import { MessageRole, MessageType } from "@/types/chat/chat.types";

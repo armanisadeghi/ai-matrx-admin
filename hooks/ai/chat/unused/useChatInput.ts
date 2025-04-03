@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { MatrxRecordId } from "@/types";
 import { useChatStorage } from "@/hooks/ai/chat/unused/useChatStorage";
 import { ChatInputSettings } from "@/types/chat/chat.types";
-import { useConversationMessages } from "../useConversationMessages";
+// import { useConversationMessages } from "../useConversationMessages";
 
 interface UseChatInputProps {
     initialModelKey?: MatrxRecordId;
