@@ -175,15 +175,17 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
 
     const isEditingEnabled = editMode !== "none";
     const isEditingHeader = editMode === "header";
+    const editingBorderStyle = "overflow-x-auto rounded-xl border-3 border-dashed border-red-500 rounded-xl";
+    const normalBorderStyle = `overflow-x-auto rounded-xl border-3 ${tableTheme.border}`;
 
     return (
         <div className="w-full space-y-4 my-4">
             {showNormalized ? (
-                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto">
+                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto ">
                     {JSON.stringify(tableData.normalizedData, null, 2)}
                 </pre>
             ) : (
-                <div className={cn("overflow-x-auto rounded-xl border-3", tableTheme.border)}>
+                <div className={cn(isEditingEnabled ? editingBorderStyle : normalBorderStyle)}>
                     <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${tableFontsize}px` }}>
                         <thead>
                             <tr
@@ -275,10 +277,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         {showNormalized ? "Table" : "Data"}
                     </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={copyTableToClipboard} className="flex items-center gap-2">
-                    <Copy className="h-4 w-4" />
-                    Text
-                </Button>
                 {tableData.normalizedData && (
                     <Button variant="outline" size="sm" onClick={copyJsonToClipboard} className="flex items-center gap-2">
                         <Copy className="h-4 w-4" />
@@ -289,13 +287,17 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     <Download className="h-4 w-4" />
                     CSV
                 </Button>
+                <Button variant="outline" size="sm" onClick={copyTableToClipboard} className="flex items-center gap-2">
+                    <Copy className="h-4 w-4" />
+                    Text
+                </Button>
                 {isEditingEnabled ? (
                     <>
-                        <Button variant="outline" size="sm" onClick={handleSave} className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={handleSave} className="flex items-center gap-2 border-1 border-dashed border-green-500 rounded-xl">
                             <Save className="h-4 w-4" />
                             Save
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleCancel} className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={handleCancel} className="flex items-center gap-2 border-1 border-dashed border-red-500 rounded-xl">
                             <X className="h-4 w-4" />
                             Cancel
                         </Button>
