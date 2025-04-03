@@ -65,6 +65,7 @@
         "@radix-ui/react-toggle": "latest",
         "@radix-ui/react-toggle-group": "latest",
         "@radix-ui/react-tooltip": "latest",
+        "@react-oauth/google": "^0.12.1",
         "@react-pdf/renderer": "^4.3.0",
         "@react-three/fiber": "latest",
         "@reactflow/node-resizer": "^2.2.14",

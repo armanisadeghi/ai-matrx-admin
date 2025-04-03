@@ -13,8 +13,6 @@ import {SimplePricingWithFourTiers} from "@/components/packs/PricingSection";
 import TopMenu from '@/components/layout/PublicTopMenu';
 import Link from 'next/link';
 
-
-
 interface FeatureCardProps {
     Icon: LucideIcon;
     title: string;
@@ -23,7 +21,6 @@ interface FeatureCardProps {
 }
 
 const FeatureCard: React.FC<FeatureCardProps> = ({Icon, title, description, features}) => (
-
     <CardContainer className="inter-var">
         <CardBody
             className="bg-background relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] border-border w-full h-full rounded-xl p-6 border">
@@ -58,11 +55,21 @@ const FeatureCard: React.FC<FeatureCardProps> = ({Icon, title, description, feat
     </CardContainer>
 );
 
+const Footer: React.FC = () => (
+    <footer className="py-6 border-t border-border mt-12">
+        <div className="container mx-auto px-4 flex justify-center">
+            <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Privacy Policy
+            </Link>
+        </div>
+    </footer>
+);
+
 const HomePage: React.FC = () => {
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-background text-foreground flex flex-col">
             <TopMenu/>
-            <main className="container mx-auto px-4 py-16 text-center">
+            <main className="container mx-auto px-4 py-16 text-center flex-grow">
                 {/*<h1 className="text-6xl font-bold mb-4">AI Matrx</h1>*/}
                 <div>
                     <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
@@ -71,7 +78,6 @@ const HomePage: React.FC = () => {
                         with <Cover>NO CODE</Cover>
                     </h1>
                 </div>
-
                 {/*<h2 className="text-4xl font-semibold mb-6">Redefining Enterprise AI Integration</h2>*/}
                 <p className="text-xl mb-10 max-w-3xl mx-auto">
                     Empower your business with a no-code AI platform that orchestrates, automates, and elevates your
@@ -94,7 +100,6 @@ const HomePage: React.FC = () => {
                         </button>
                     </Link>
                 </div>
-
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-left mb-16">
                     <FeatureCard
                         Icon={Wand2}
@@ -159,10 +164,9 @@ const HomePage: React.FC = () => {
                         </ul>
                     </div>
                 </BackgroundBeamsWithCollision>
-
                 <SimplePricingWithFourTiers/>
-
             </main>
+            <Footer />
         </div>
     );
 };
