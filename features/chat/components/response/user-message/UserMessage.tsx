@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import MessageHeader from "./MessageHeader";
 import EditMode from "./EditMode";
-import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type SimpleMessage = {
     id: string;
@@ -30,6 +30,14 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
 
     const canCollapse = message.content.length > 300 || isCollapsed;
 
+
+    useEffect(() => {
+        if (message.content.length > 300) {
+            setIsCollapsed(true);
+        }
+    }, []);
+
+
     const formattedDateTime = new Date(message.createdAt || Date.now()).toLocaleString([], {
         month: "short",
         day: "numeric",
@@ -37,29 +45,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
         minute: "2-digit",
     });
 
-    const minimalHighlightStyle = {
-      ...prism,
-      'code[class*="language-"]': { // Reset default code styles
-        background: 'transparent',
-        padding: 0,
-        margin: 0,
-        fontFamily: 'inherit',
-        whiteSpace: 'pre-wrap', // Preserve whitespace
-      },
-      'pre[class*="language-"]': { // Reset default pre styles
-        background: 'transparent',
-        padding: 0,
-        margin: 0,
-        fontFamily: 'inherit',
-        whiteSpace: 'pre-wrap',
-      },
-      keyword: { color: '#d73a49' }, // Subtle red for keywords
-      string: { color: '#032f62' }, // Dark blue for strings
-      number: { color: '#005cc5' }, // Blue for numbers
-      comment: { color: '#6a737d' }, // Gray for comments
-      // Ignore other token types to keep it minimal
-    };
-    // Handle height adjustments
+
     useEffect(() => {
         if (!canCollapse) return;
         if (contentRef.current) {
@@ -141,7 +127,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
             onMouseEnter={() => canCollapse && setIsHovered(true)}
             onMouseLeave={() => canCollapse && setIsHovered(false)}
         >
-            <div className="max-w-[90%] relative w-full shadow-sm hover:shadow-md transition-shadow duration-200">
+            <div className="max-w-[90%] relative w-full shadow-sm hover:shadow-md rounded-2xl border border-neutral-200 dark:border-neutral-700 transition-shadow duration-200">
                 <MessageHeader
                     formattedDateTime={formattedDateTime}
                     isCollapsed={isCollapsed}
@@ -157,17 +143,9 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                 />
 
                 <div
-                    className={`
-          rounded-b-2xl
-          rounded-t-none
-          bg-zinc-200 dark:bg-zinc-800 
-          px-4 py-2
-          text-gray-900 dark:text-gray-100
-          relative
-          w-full
-          transition-all duration-200
-          ${isCollapsed ? "pb-2" : ""}
-        `}
+                    className={`rounded-b-2xl rounded-t-none text-sm bg-zinc-200 dark:bg-zinc-800 px-4 py-2 text-gray-900 dark:text-gray-100 relative w-full transition-all duration-200
+                                ${isCollapsed ? "pb-2" : ""}
+                                `}
                 >
                     {isEditing ? (
                         <EditMode
@@ -181,7 +159,7 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                         <>
                             <div
                                 ref={contentRef}
-                                className={`
+                                className={`text-sm rounded-b-2xl
                                   prose dark:prose-invert prose-lg max-w-none
                                   transition-all duration-300
                                   ${isCollapsed ? "overflow-hidden fade-bottom" : "overflow-visible"}
@@ -190,6 +168,17 @@ const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onS
                             >
                                 {message.content}
                             </div>
+                            {isCollapsed && (
+                            <div
+                                className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-neutral-900 to-transparent opacity-80 rounded-b-2xl cursor-pointer"
+                                onClick={toggleCollapse}
+                            >
+                                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-neutral-400 text-xs">
+                                    Click to expand {message.content.split("\n").length - 3} more lines
+                                </div>
+                            </div>
+                        )}
+
 
                             {actionFeedback.show && actionFeedback.type === "saved" && (
                                 <div className="absolute bottom-2 right-2 bg-green-600 text-white px-2 py-1 rounded text-xs animate-fade-in-out">
