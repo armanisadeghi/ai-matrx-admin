@@ -74,19 +74,61 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             }
             const thinkingContent: string[] = [];
             i++;
-            while (i < lines.length && lines[i].trim() !== "</thinking>" && lines[i].trim() !== "</think>") {
+            let foundMarker = false;
+
+            while (i < lines.length) {
+                const currentTrimmedLine = lines[i].trim();
+
+                // Check for normal closing tag
+                if (currentTrimmedLine === "</thinking>" || currentTrimmedLine === "</think>") {
+                    break;
+                }
+
+                // Check for our special marker
+                if (currentTrimmedLine.startsWith("### I have everything")) {
+                    foundMarker = true;
+                    thinkingContent.push(lines[i]);
+                    i++;
+                    break; // Exit immediately after marker
+                }
+
                 thinkingContent.push(lines[i]);
                 i++;
             }
+
             blocks.push({
                 type: "thinking",
                 content: thinkingContent.join("\n"),
             });
-            i++;
-            continue;
-        }
 
-        // Detect table blocks - improved to handle empty cells
+            // Handle content after marker or no closing tag
+            if (foundMarker || i >= lines.length) {
+                let hasSkippedEmptyLine = false;
+                while (i < lines.length) {
+                    const remainingLine = lines[i].trim();
+                    // Skip closing tag if present
+                    if (remainingLine === "</thinking>" || remainingLine === "</think>") {
+                        i++;
+                        continue;
+                    }
+                    // Skip first empty line after marker if present
+                    if (!hasSkippedEmptyLine && remainingLine === "") {
+                        hasSkippedEmptyLine = true;
+                        i++;
+                        continue;
+                    }
+                    currentText += lines[i] + "\n";
+                    i++;
+                }
+            } else {
+                i++; // Skip the closing tag
+            }
+            continue;
+        } // Detect table blocks - improved to handle empty cells
+
+
+
+        
         if (
             trimmedLine.startsWith("|") &&
             trimmedLine.endsWith("|") &&

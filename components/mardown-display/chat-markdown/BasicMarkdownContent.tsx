@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
 import { CheckIcon, ClipboardIcon, PencilIcon } from "lucide-react";
 import { useState } from "react";
-import { MarkdownAnalysisData } from "./analyzer/types";
+import { LinkComponent } from "./parts/LinkComponent";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
@@ -16,12 +16,7 @@ interface BasicMarkdownContentProps {
     messageId?: string;
 }
 
-export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
-    content,
-    isStreamActive,
-    onEditRequest,
-    messageId,
-}) => {
+export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ content, isStreamActive, onEditRequest, messageId }) => {
     const [isHovering, setIsHovering] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
 
@@ -98,7 +93,10 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({
                 </li>
             );
         },
-        a: ({ node, ...props }) => <a className="text-blue-500 underline font-medium text-md" {...props} />,
+        a: ({ node, href, children, ...props }) => <LinkComponent href={href}>{children}</LinkComponent>,
+        // a: ({ node, ...props }) => (
+        //     <a className="text-blue-500 underline font-medium text-md" target="_blank" rel="noopener noreferrer" {...props} />
+        // ),
         h1: ({ node, ...props }) => <h1 className="text-xl text-blue-500 font-bold mb-3 font-heading" {...props} />,
         h2: ({ node, ...props }) => <h2 className="text-xl text-blue-500 font-medium mb-2 font-heading" {...props} />,
         h3: ({ node, ...props }) => <h3 className="text-lg text-blue-500 font-medium mb-2 font-heading" {...props} />,

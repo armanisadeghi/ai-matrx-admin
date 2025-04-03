@@ -62,6 +62,9 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         setIsEditorOpen(false);
     };
 
+    const [showThinking, setShowThinking] = useState(false);
+    
+
     const processedContent = preprocessContent(content);
     const blocks = splitContentIntoBlocks(processedContent);
 
@@ -70,7 +73,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
             case "image":
                 return <ImageBlock key={index} src={block.src!} alt={block.alt} />;
             case "thinking":
-                return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true} onToggleThinking={() => {}} />;
+                return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true}/>;
             case "text":
                 return block.content ? (
                     <BasicMarkdownContent
