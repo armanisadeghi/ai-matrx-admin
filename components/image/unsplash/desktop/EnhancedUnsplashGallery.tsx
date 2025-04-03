@@ -1,5 +1,5 @@
 'use client';
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useUnsplashGallery } from '@/hooks/images/useUnsplashGallery';
 import { ImageCard } from './ImageCard';
@@ -52,7 +52,7 @@ export function EnhancedUnsplashGallery() {
     const [viewMode, setViewMode] = useState<'grid' | 'natural'>('grid');
     const { toast } = useToast();
     const observer = useRef<IntersectionObserver | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState('ai');
     const [isSharing, setIsSharing] = useState(false);
 
     const lastPhotoElementRef = useCallback(
@@ -105,9 +105,13 @@ export function EnhancedUnsplashGallery() {
         handleSearch(query);
     };
 
+    useEffect(() => {
+        handleSearch('ai');
+    }, []);
+
     return (
         <div className="container mx-auto p-4 space-y-8">
-            <h1 className="text-4xl font-bold text-foreground mb-6">Unsplash Gallery</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-6">Public Image Gallery</h1>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
                 <SearchBar

@@ -167,18 +167,19 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
             if (window.google?.accounts) {
                 setIsGoogleLoaded(true);
                 setIsInitializing(false);
-                initializeTokenClient(allScopes);
+                initializeTokenClient();
             } else {
                 setTimeout(checkGoogleLoaded, 100);
             }
         };
 
-        const initializeTokenClient = (scopes: string[]) => {
+        const initializeTokenClient = () => {
             if (!window.google?.accounts?.oauth2) return;
             tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
                 client_id: clientId,
-                scope: scopes.join(" "),
+                scope: allScopes.join(" "),
                 callback: (response: TokenResponse) => {
+                    console.log("Token client callback fired:", response);
                     handleCredentialResponse(response);
                     setAuthInProgress(false);
                 },
@@ -283,7 +284,7 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
     const getGrantedScopes = useCallback(() => grantedScopes, [grantedScopes]);
 
     const requestScopes = async (scopes: string[]): Promise<boolean> => {
-        if (!isGoogleLoaded || !window.google?.accounts) {
+        if (!isGoogleLoaded || !window.google?.accounts || !tokenClientRef.current) {
             setError("Google auth not ready.");
             return false;
         }
@@ -296,32 +297,34 @@ export default function GoogleAPIProvider({ children }: GoogleAPIProviderProps) 
         setAuthInProgress(true);
 
         return new Promise<boolean>((resolve) => {
-            const scopeClient = window.google.accounts.oauth2.initTokenClient({
+            // Reinitialize token client with new scopes if needed
+            tokenClientRef.current = window.google.accounts.oauth2.initTokenClient({
                 client_id: clientId,
                 scope: scopes.join(" "),
                 callback: (response: TokenResponse) => {
-                    console.log("Scope request response:", response);
+                    console.log("Scope request callback fired:", response);
                     if (response.access_token) {
                         setToken(response.access_token);
                         const newScopes = response.scope.split(" ");
                         setGrantedScopes(newScopes);
                         saveAuthToStorage(response.access_token, newScopes);
-                        resolve(true); // Explicitly resolve with boolean
+                        resolve(true);
                     } else {
-                        resolve(false); // Explicitly resolve with boolean
+                        console.log("No access token in scope response.");
+                        resolve(false);
                     }
                     setAuthInProgress(false);
                 },
                 error_callback: (err: ErrorResponse) => {
-                    console.log("Scope error:", err);
+                    console.log("Scope request error:", err);
                     setAuthInProgress(false);
-                    resolve(false); // Explicitly resolve with boolean
+                    resolve(false);
                 },
             });
-            scopeClient.requestAccessToken();
+            console.log("Requesting scopes:", scopes);
+            tokenClientRef.current.requestAccessToken();
         });
     };
-
     return (
         <GoogleAPIContext.Provider
             value={{
