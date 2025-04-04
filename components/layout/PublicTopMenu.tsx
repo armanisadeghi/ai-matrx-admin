@@ -9,7 +9,7 @@ const DesktopMenu = () => {
     return (
         <div className="container hidden md:flex h-14 max-w-screen-2xl items-center">
             <div className="flex-shrink-0">
-                <LogoHorizontal size="lg" />
+                <LogoHorizontal size="md" />
             </div>
 
             <nav className="ml-6 space-x-4">
@@ -37,7 +37,7 @@ const MobileMenu = () => {
     return (
         <div className="container flex md:hidden h-14 max-w-screen-2xl items-center">
             <div className="flex-shrink-0">
-                <LogoHorizontal size="lg" />
+                <LogoHorizontal size="md" />
             </div>
 
             <div className="ml-auto flex items-center space-x-3">

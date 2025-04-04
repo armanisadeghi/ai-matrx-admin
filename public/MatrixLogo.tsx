@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 type LogoProps = {
@@ -26,17 +27,17 @@ export const Logo: React.FC<LogoProps> = ({
     const { icon: iconSize, text: textSize, spacing } = sizeConfig[size];
     
     const renderIcon = () => (
-        // Using a direct img tag to bypass Next.js image optimization
-        <img
-            src="/matrx/favicon-32x32.png"
-            alt="Matrx Logo"
-            width={iconSize}
+        // Using a more consistent path format that works reliably in both development and production
+        <Image 
+            src={`/matrx/favicon-32x32.png`}
+            alt="Matrx Logo" 
+            width={iconSize} 
             height={iconSize}
-            style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
+            priority // Add priority to ensure the logo loads quickly
         />
     );
     
-    const renderText = () => <span className={`font-bold ${textSize}`}>Matrx</span>;
+    const renderText = () => <span className={`font-bold ${textSize} px-2`}>AI Matrx</span>;
     
     const renderContent = () => {
         switch (variant) {
