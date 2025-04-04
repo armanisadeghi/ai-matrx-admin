@@ -19,16 +19,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     moduleName={MODULE_NAME}
                 />
             </div>
-
-            <MatrxDynamicPanel
-                initialPosition="left"
-                defaultExpanded={false}
-                expandButtonProps={{
-                    label: "Entity State",
-                }}
-            >
-                <EnhancedEntityAnalyzer defaultExpanded={false} selectedEntityKey="recipe" />
-            </MatrxDynamicPanel>
             <main className="flex-1 overflow-hidden">{children}</main>
         </div>
     );
