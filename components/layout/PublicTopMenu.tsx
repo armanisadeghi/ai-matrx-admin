@@ -13,7 +13,7 @@ const DesktopMenu = () => {
             </div>
 
             <nav className="ml-6 space-x-4">
-                <a href="#" className="text-foreground/60 hover:text-foreground">Solution</a>
+                <a href="#" className="text-foreground/60 hover:text-foreground">Platform</a>
                 <a href="#" className="text-foreground/60 hover:text-foreground">Developers</a>
                 <a href="#" className="text-foreground/60 hover:text-foreground">Pricing</a>
                 <a href="#" className="text-foreground/60 hover:text-foreground">Docs</a>
@@ -26,7 +26,7 @@ const DesktopMenu = () => {
                     <Button variant="primary">Dashboard</Button>
                 </Link>
                 <Link href="/sign-up">
-                    <Button>Start your project</Button>
+                    <Button>Get Started</Button>
                 </Link>
             </div>
         </div>

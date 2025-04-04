@@ -27,11 +27,13 @@ export const Logo: React.FC<LogoProps> = ({
     const { icon: iconSize, text: textSize, spacing } = sizeConfig[size];
     
     const renderIcon = () => (
+        // Using a more consistent path format that works reliably in both development and production
         <Image 
-            src="/matrx/favicon-32x32.png" 
+            src={`/matrx/favicon-32x32.png`}
             alt="Matrx Logo" 
             width={iconSize} 
             height={iconSize}
+            priority // Add priority to ensure the logo loads quickly
         />
     );
     

@@ -149,7 +149,7 @@ const HomePage: React.FC = () => {
                             </li>
                             <li className="flex items-start">
                                 <span className="text-primary text-2xl mr-4 mt-1">✓</span>
-                                <span className="text-xl"><strong className="font-semibold">No-Code Simplicity:</strong> Empower your team to build sophisticated AI applications without extensive technical knowledge.</span>
+                                <span className="text-xl"><strong className="font-semibold">No-Code Simplicity:</strong> Empower your team to create sophisticated AI applications without extensive technical knowledge.</span>
                             </li>
                             <li className="flex items-start">
                                 <span className="text-primary text-2xl mr-4 mt-1">✓</span>
