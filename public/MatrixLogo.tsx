@@ -1,51 +1,54 @@
-import React from 'react';
-import { Infinity } from 'lucide-react';
-import Link from 'next/link';
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 type LogoProps = {
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
-    variant?: 'icon' | 'horizontal' | 'vertical';
+    size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
+    variant?: "icon" | "horizontal" | "vertical";
     href?: string;
     linkEnabled?: boolean;
 };
 
 const sizeConfig = {
-    xs: { icon: 16, text: 'text-xs', spacing: 'space-x-1' },
-    sm: { icon: 20, text: 'text-sm', spacing: 'space-x-1' },
-    md: { icon: 24, text: 'text-base', spacing: 'space-x-1.5' },
-    lg: { icon: 32, text: 'text-lg', spacing: 'space-x-2' },
-    xl: { icon: 40, text: 'text-xl', spacing: 'space-x-2' },
-    '2xl': { icon: 48, text: 'text-2xl', spacing: 'space-x-2.5' },
+    xs: { icon: 16, text: "text-xs", spacing: "space-x-1" },
+    sm: { icon: 20, text: "text-sm", spacing: "space-x-1" },
+    md: { icon: 24, text: "text-base", spacing: "space-x-1.5" },
+    lg: { icon: 32, text: "text-lg", spacing: "space-x-2" },
+    xl: { icon: 40, text: "text-xl", spacing: "space-x-2" },
+    "2xl": { icon: 48, text: "text-2xl", spacing: "space-x-2.5" },
 };
 
-export const Logo: React.FC<LogoProps> = ({
-                                              size = 'md',
-                                              variant = 'horizontal',
-                                              href = '/',
-                                              linkEnabled = true
-                                          }) => {
+export const Logo: React.FC<LogoProps> = ({ 
+    size = "md", 
+    variant = "horizontal", 
+    href = "/", 
+    linkEnabled = true 
+}) => {
     const { icon: iconSize, text: textSize, spacing } = sizeConfig[size];
-
+    
     const renderIcon = () => (
-        <Infinity size={iconSize} />
+        <Image 
+            src="/matrx/favicon-32x32.png" 
+            alt="Matrx Logo" 
+            width={iconSize} 
+            height={iconSize}
+        />
     );
-
-    const renderText = () => (
-        <span className={`font-bold ${textSize}`}>AI Matrix</span>
-    );
-
+    
+    const renderText = () => <span className={`font-bold ${textSize}`}>Matrx</span>;
+    
     const renderContent = () => {
         switch (variant) {
-            case 'icon':
+            case "icon":
                 return renderIcon();
-            case 'vertical':
+            case "vertical":
                 return (
-                    <div className={`flex flex-col items-center ${spacing.replace('x-', 'y-')}`}>
+                    <div className={`flex flex-col items-center ${spacing.replace("x-", "y-")}`}>
                         {renderIcon()}
                         {renderText()}
                     </div>
                 );
-            case 'horizontal':
+            case "horizontal":
             default:
                 return (
                     <div className={`flex items-center ${spacing}`}>
@@ -55,7 +58,7 @@ export const Logo: React.FC<LogoProps> = ({
                 );
         }
     };
-
+    
     if (linkEnabled) {
         return (
             <Link href={href} className="cursor-pointer">
@@ -63,20 +66,12 @@ export const Logo: React.FC<LogoProps> = ({
             </Link>
         );
     }
-
+    
     return renderContent();
 };
 
-export const LogoIcon: React.FC<Omit<LogoProps, 'variant'>> = (props) => (
-    <Logo {...props} variant="icon" />
-);
-
-export const LogoHorizontal: React.FC<Omit<LogoProps, 'variant'>> = (props) => (
-    <Logo {...props} variant="horizontal" />
-);
-
-export const LogoVertical: React.FC<Omit<LogoProps, 'variant'>> = (props) => (
-    <Logo {...props} variant="vertical" />
-);
+export const LogoIcon: React.FC<Omit<LogoProps, "variant">> = (props) => <Logo {...props} variant="icon" />;
+export const LogoHorizontal: React.FC<Omit<LogoProps, "variant">> = (props) => <Logo {...props} variant="horizontal" />;
+export const LogoVertical: React.FC<Omit<LogoProps, "variant">> = (props) => <Logo {...props} variant="vertical" />;
 
 export default Logo;
