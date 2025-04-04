@@ -27,6 +27,6 @@ export const config = {
          * - sitemap.xml (sitemap file)
          * - robots.txt (robots metadata)
          */
-        '/((?!api|_next/static|_next/image|$|public|matrx|auth|sign-up|forgot-password|error|reset-password|flash-cards|tests|ava|dash|contact|about|privacy-policy|favicon.ico|sitemap.xml|robots.txt).*)',
+        '/((?!api|_next/static|_next/image|$|public|matrx|auth|app_redirect|app_callback|sign-up|forgot-password|error|reset-password|flash-cards|tests|ava|dash|contact|about|privacy-policy|favicon.ico|sitemap.xml|robots.txt).*)',
     ],
 }
