@@ -1,3 +1,5 @@
+// next.config.js
+
 const { getHeaders } = require("./utils/next-config/headers");
 // const { remotePatterns } = require("./utils/next-config/imageConfig");
 const { configureWebpack } = require("./utils/next-config/webpackConfig");
