@@ -48,6 +48,10 @@
     "name": "dynamic-layouts"
   },
   {
+    "path": "/tests/fetch-test",
+    "name": "fetch-test"
+  },
+  {
     "path": "/tests/flashcard-app-tests",
     "name": "flashcard-app-tests"
   },
@@ -58,6 +62,10 @@
   {
     "path": "/tests/full-screen-demo",
     "name": "full-screen-demo"
+  },
+  {
+    "path": "/tests/google-apis",
+    "name": "google-apis"
   },
   {
     "path": "/tests/links",
@@ -86,6 +94,10 @@
   {
     "path": "/tests/notes-app",
     "name": "notes-app"
+  },
+  {
+    "path": "/tests/notion-apis",
+    "name": "notion-apis"
   },
   {
     "path": "/tests/openai-chat",
