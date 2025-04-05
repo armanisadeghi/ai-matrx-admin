@@ -53,6 +53,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["aiEndpoint", "aiProvider", "aiModel", "temperature", "maxTokens", "topP", "frequencyPenalty", "presencePenalty", "stream", "responseFormat", "size", "quality", "count", "audioVoice", "audioFormat", "modalities", "tools", "presetName"]
 },
+  aiTrainingData: {
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "systemPrompt", "userQuery", "thinkingContent", "responseContent", "reflectionContent", "qualityScore", "source", "metadata", "questionsThinking", "questionsContent", "structuredQuestions", "reflectionThinking"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "systemPrompt", "userQuery", "thinkingContent", "responseContent", "reflectionContent", "qualityScore", "source", "metadata", "questionsThinking", "questionsContent", "structuredQuestions", "reflectionThinking"]
+},
   applet: {
   nativeFields: ["id", "name", "description", "creator", "type", "compiledRecipeId", "slug", "createdAt", "userId", "isPublic", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "subcategoryId", "ctaText", "theme"],
   primaryKeyFields: ["id"],

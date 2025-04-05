@@ -140,6 +140,23 @@ const aiSettingsEntityOverrides: EntityOverrides<'aiSettings'> = {
 
 
 
+const aiTrainingDataEntityOverrides: EntityOverrides<'aiTrainingData'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const appletEntityOverrides: EntityOverrides<'applet'> = {
     schemaType: null,
     entityName: null,
@@ -1355,6 +1372,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     aiModelEndpoint: aiModelEndpointEntityOverrides,
     aiProvider: aiProviderEntityOverrides,
     aiSettings: aiSettingsEntityOverrides,
+    aiTrainingData: aiTrainingDataEntityOverrides,
     applet: appletEntityOverrides,
     arg: argEntityOverrides,
     audioLabel: audioLabelEntityOverrides,
