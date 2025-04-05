@@ -759,6 +759,92 @@ export const useAiSettingsWithFetch = (): UseAiSettingsWithFetchReturn => {
 
 
 
+type UseAiTrainingDataWithFetchReturn = {
+    aiTrainingDataSelectors: EntitySelectors<"aiTrainingData">;
+    aiTrainingDataActions: EntityActions<"aiTrainingData">;
+    aiTrainingDataRecords: Record<MatrxRecordId, AiTrainingDataData>;
+    aiTrainingDataUnsavedRecords: Record<MatrxRecordId, Partial<AiTrainingDataData>>;
+    aiTrainingDataSelectedRecordIds: MatrxRecordId[];
+    aiTrainingDataIsLoading: boolean;
+    aiTrainingDataIsError: boolean;
+    aiTrainingDataQuickRefRecords: QuickReferenceRecord[];
+    addAiTrainingDataMatrxId: (recordId: MatrxRecordId) => void;
+    addAiTrainingDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAiTrainingDataMatrxId: (recordId: MatrxRecordId) => void;
+    removeAiTrainingDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAiTrainingDataPkValue: (pkValue: string) => void;
+    addAiTrainingDataPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAiTrainingDataPkValue: (pkValue: string) => void;
+    removeAiTrainingDataPkValues: (pkValues: Record<string, unknown>) => void;
+    isAiTrainingDataMissingRecords: boolean;
+    setAiTrainingDataShouldFetch: (shouldFetch: boolean) => void;
+    setAiTrainingDataFetchMode: (fetchMode: FetchMode) => void;
+    fetchAiTrainingDataQuickRefs: () => void;
+    fetchAiTrainingDataOne: (recordId: MatrxRecordId) => void;
+    fetchAiTrainingDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAiTrainingDataAll: () => void;
+    fetchAiTrainingDataPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useAiTrainingDataWithFetch = (): UseAiTrainingDataWithFetchReturn => {
+    const {
+        selectors: aiTrainingDataSelectors,
+        actions: aiTrainingDataActions,
+        allRecords: aiTrainingDataRecords,
+        unsavedRecords: aiTrainingDataUnsavedRecords,
+        selectedRecordIds: aiTrainingDataSelectedRecordIds,
+        isLoading: aiTrainingDataIsLoading,
+        isError: aiTrainingDataIsError,
+        quickRefRecords: aiTrainingDataQuickRefRecords,
+        addMatrxId: addAiTrainingDataMatrxId,
+        addMatrxIds: addAiTrainingDataMatrxIds,
+        removeMatrxId: removeAiTrainingDataMatrxId,
+        removeMatrxIds: removeAiTrainingDataMatrxIds,
+        addPkValue: addAiTrainingDataPkValue,
+        addPkValues: addAiTrainingDataPkValues,
+        removePkValue: removeAiTrainingDataPkValue,
+        removePkValues: removeAiTrainingDataPkValues,
+        isMissingRecords: isAiTrainingDataMissingRecords,
+        setShouldFetch: setAiTrainingDataShouldFetch,
+        setFetchMode: setAiTrainingDataFetchMode,
+        fetchQuickRefs: fetchAiTrainingDataQuickRefs,
+        fetchOne: fetchAiTrainingDataOne,
+        fetchOneWithFkIfk: fetchAiTrainingDataOneWithFkIfk,
+        fetchAll: fetchAiTrainingDataAll,
+        fetchPaginated: fetchAiTrainingDataPaginated,
+
+    } = useEntityWithFetch("aiTrainingData");
+
+    return {
+        aiTrainingDataSelectors,
+        aiTrainingDataActions,
+        aiTrainingDataRecords,
+        aiTrainingDataUnsavedRecords,
+        aiTrainingDataSelectedRecordIds,
+        aiTrainingDataIsLoading,
+        aiTrainingDataIsError,
+        aiTrainingDataQuickRefRecords,
+        addAiTrainingDataMatrxId,
+        addAiTrainingDataMatrxIds,
+        removeAiTrainingDataMatrxId,
+        removeAiTrainingDataMatrxIds,
+        addAiTrainingDataPkValue,
+        addAiTrainingDataPkValues,
+        removeAiTrainingDataPkValue,
+        removeAiTrainingDataPkValues,
+        isAiTrainingDataMissingRecords,
+        setAiTrainingDataShouldFetch,
+        setAiTrainingDataFetchMode,
+        fetchAiTrainingDataQuickRefs,
+        fetchAiTrainingDataOne,
+        fetchAiTrainingDataOneWithFkIfk,
+        fetchAiTrainingDataAll,
+        fetchAiTrainingDataPaginated,
+    };
+};
+
+
+
 type UseAppletWithFetchReturn = {
     appletSelectors: EntitySelectors<"applet">;
     appletActions: EntityActions<"applet">;

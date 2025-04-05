@@ -93,6 +93,7 @@ export type AutomationTableName =
     | 'aiModelEndpoint'
     | 'aiProvider'
     | 'aiSettings'
+    | 'aiTrainingData'
     | 'applet'
     | 'arg'
     | 'audioLabel'
@@ -257,6 +258,15 @@ export type AiSettingsProcessed = Expand<ProcessedEntityData<"aiSettings">>;
 export type AiSettingsData = Expand<EntityDataMixed<"aiSettings">>;
 export type AiSettingsState = EntityStateType<"aiSettings">;
 export type AiSettingsRecordMap = Record<"aiSettingsRecordId", AiSettingsData>;
+
+export type AiTrainingDataType = AutomationEntity<"aiTrainingData">;
+export type AiTrainingDataDataRequired = Expand<EntityData<"aiTrainingData">>;
+export type AiTrainingDataDataOptional = Expand<EntityDataOptional<"aiTrainingData">>;
+export type AiTrainingDataRecordWithKey = Expand<EntityDataWithKey<"aiTrainingData">>;
+export type AiTrainingDataProcessed = Expand<ProcessedEntityData<"aiTrainingData">>;
+export type AiTrainingDataData = Expand<EntityDataMixed<"aiTrainingData">>;
+export type AiTrainingDataState = EntityStateType<"aiTrainingData">;
+export type AiTrainingDataRecordMap = Record<"aiTrainingDataRecordId", AiTrainingDataData>;
 
 export type AppletType = AutomationEntity<"applet">;
 export type AppletDataRequired = Expand<EntityData<"applet">>;

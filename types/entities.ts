@@ -86,6 +86,26 @@ export type AiSettings = {
     presetName?: string;
 }
 
+export type AiTrainingData = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    userId?: string;
+    isPublic?: boolean;
+    systemPrompt?: string;
+    userQuery?: string;
+    thinkingContent?: string;
+    responseContent?: string;
+    reflectionContent?: string;
+    qualityScore?: number;
+    source?: string;
+    metadata?: Record<string, unknown>;
+    questionsThinking?: string;
+    questionsContent?: string;
+    structuredQuestions?: Record<string, unknown>;
+    reflectionThinking?: string;
+}
+
 export type Applet = {
     id: string;
     name: string;

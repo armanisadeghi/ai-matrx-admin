@@ -172,6 +172,8 @@ const aiSettingsFieldOverrides: AllFieldOverrides = {
 };
 
 
+const aiTrainingDataFieldOverrides: AllFieldOverrides = {};
+
 const appletFieldOverrides: AllFieldOverrides = {};
 
 const argFieldOverrides: AllFieldOverrides = {};
@@ -420,6 +422,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     aiModelEndpoint: aiModelEndpointFieldOverrides,
     aiProvider: aiProviderFieldOverrides,
     aiSettings: aiSettingsFieldOverrides,
+    aiTrainingData: aiTrainingDataFieldOverrides,
     applet: appletFieldOverrides,
     arg: argFieldOverrides,
     audioLabel: audioLabelFieldOverrides,

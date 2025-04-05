@@ -32,6 +32,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  aiTrainingData: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   applet: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
