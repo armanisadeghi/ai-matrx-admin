@@ -32,12 +32,12 @@ const CONTENT_TYPES = {
 const VIEW_MODES = {
     raw: {
         icon: Baseline,
-        label: "Raw Text",
+        label: "Raw",
         supportedTypes: ["markdown", "json"],
     },
     rendered: {
         icon: Eye,
-        label: "Rendered",
+        label: "Clean",
         supportedTypes: ["markdown"],
     },
     sectionCards: {
@@ -47,12 +47,12 @@ const VIEW_MODES = {
     },
     enhancedSectionCards: {
         icon: LayoutTemplate,
-        label: "Enhanced Cards",
+        label: "Custom 1",
         supportedTypes: ["markdown"],
     },
     multiSectionCards: {
         icon: AlignCenterVertical,
-        label: "Multi Section Cards",
+        label: "Custom 2",
         supportedTypes: ["markdown"],
     },
     questionnaire: {
@@ -173,7 +173,7 @@ const EnhancedContentRenderer = ({
     };
 
     return (
-        <Card className="w-full h-screen flex flex-col">
+        <Card className="w-full h-full flex flex-col">
             {/* Fixed header section */}
             <div className="flex-none border-b border-gray-200 dark:border-gray-700 p-2">
                 <div className="flex justify-between items-center">
@@ -209,8 +209,9 @@ const EnhancedContentRenderer = ({
             </div>
 
             {/* Scrollable content section */}
-            <div className={`flex-1 overflow-y-auto p-0 ${themeColors.container.background}`}>
+            <div className={`flex-1 h-full overflow-y-auto p-0 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 scrollbar-hide ${themeColors.container.background}`}>
                 {renderContent()}
+                <div className="h-10 pb-10"></div>
             </div>
         </Card>
     );

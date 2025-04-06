@@ -5,9 +5,8 @@ import {
 import { useAppSelector, useEntityTools } from "@/lib/redux";
 import { DataBrokerRecordWithKey, RecipeRecordWithKey } from "@/types";
 import { createNormalizer } from "@/utils/dataSchemaNormalizer";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { createRecipeTaskBrokers, createRecipeOverrides, createRecipeTaskDataList } from "./recipe-task-utils";
-import { CompiledRecipeEntry } from "@/hooks/run-recipe/types";
 
 export type BasicMessage = {
     type: "text" | "base64_image" | "blob" | "image_url" | "other" | string;
@@ -91,6 +90,15 @@ export interface RecipeTaskData {
     overrides: RecipeOverrides;
 }
 
+const pickBrokerFields = (broker) => ({
+    id: broker.id,
+    name: broker.name,
+    default_value: broker.defaultValue,
+    data_type: broker.dataType,
+    inputComponent: broker.inputComponent,
+    required: true,
+});
+
 export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, messages, processedSettings, recipeSelectors }) {
     const selectors = recipeSelectors;
     const recipeRecord = useAppSelector((state) => selectors.selectRecordWithKey(state, activeRecipeMatrxId)) as RecipeRecordWithKey;
@@ -102,7 +110,11 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
         brokerSelectors.selectRecordsWithKeys(state, uniqueBrokerRecordIds)
     ) as DataBrokerRecordWithKey[];
 
-    console.log("--- matchingBrokers", matchingBrokers);
+
+    const filteredBrokers = useMemo(() => {
+        return matchingBrokers.map(pickBrokerFields);
+    }, [matchingBrokers]);
+
 
     const compileRecipe = useCallback(() => {
         const messageList: BasicMessage[] = messages.map((message) => ({
@@ -116,11 +128,13 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
             any
         >[];
 
+
+        
         const compiledRecipe = {
             id: recipeRecord?.id,
             name: recipeRecord?.name,
             messages: messageList,
-            brokers: matchingBrokers,
+            brokers: filteredBrokers,
             settings: settingsList,
             matrxRecordId: activeRecipeMatrxId,
         } as CompiledRecipe;

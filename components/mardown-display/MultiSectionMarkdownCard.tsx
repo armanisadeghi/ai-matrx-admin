@@ -168,7 +168,7 @@ const MultiSectionMarkdownCard = ({
             {/* Section Title */}
             <h2
               className={`text-2xl font-bold ${themeColors.title.text}`}
-              >
+              > 
               {renderContent(section.title, "title")}
             </h2>
 
