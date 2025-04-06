@@ -4,7 +4,7 @@ import { useUpdateRecord } from "@/app/entities/hooks/crud/useUpdateRecord";
 import { EditorWithProviders } from "@/providers/rich-text-editor/withManagedEditor";
 import { Card } from "@/components/ui";
 import { MatrxRecordId, MessageTemplateProcessed } from "@/types";
-import MessageToolbar from "./MessageToolbar";
+import MessageToolbar, { DisplayOption } from "./MessageToolbar";
 import DebugPanel from "./AdminToolbar";
 import { BrokerMetaData, ChipData } from "@/types/editor.types";
 import useChipHandlers from "../hooks/brokers/useChipHandlers";
@@ -57,6 +57,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     const context = useEditorContext();
     const { updateRecord } = useUpdateRecord("messageTemplate");
     const [initialRenderHold, setInitialRenderHold] = useState(false);
+    const [currentDisplayOption, setCurrentDisplayOption] = useState<DisplayOption>("richText");
 
     const [isSaving, setIsSaving] = useState(false);
     const [lastSavedContent, setLastSavedContent] = useState("");
@@ -233,6 +234,10 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         setDebugVisible((prev) => !prev);
     }, []);
 
+    const handleDisplayOptionChange = useCallback((messageRecordId: MatrxRecordId, displayOption: DisplayOption) => {
+        setCurrentDisplayOption(displayOption);
+    }, []);
+
     return (
         <Card className="h-full p-0 overflow-hidden bg-background border-elevation2">
             <MessageToolbar
@@ -253,6 +258,8 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                 onDragDrop={onDragDrop}
                 debug={DEBUG_STATUS}
                 onDebugClick={toggleDebug}
+                onDisplayOptionChange={handleDisplayOptionChange}
+                currentDisplayOption={currentDisplayOption}
             />
             {debugVisible && <DebugPanel editorId={messageRecordId} message={message} />}
             <div className={`transition-all duration-200 ${isEditorHidden ? "h-0 overflow-hidden" : "h-[calc(100%-2rem)]"}`}>

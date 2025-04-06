@@ -366,6 +366,13 @@ export function processJoinedData({
     if (orderPositionField) {
         processedRecords = processedRecords.map((record) => {
             const orderValue = record[orderPositionField];
+            // const testRecordId = "37eec80e-a4b1-4347-a4e2-d1caa4b6e6f4";
+            // @ts-ignore (HEY TYPESCRIPT, FUCK YOU!) How many more fucking ifs do you need to get it in  yuour fucking head????????? Stick to Windows Microsoft! Python: please build a frontend framework for me!
+            // Side note... Build a fucking normal interface for git hub. I'm sick of git add ., git stash. Git fuck you! let me just fucking update my god damn code!
+            // Side note 2: Linux... Fuck you much more! (If you ruled thed world, we'd all be fucked!) grep? Really???
+            // if (record && record.id === testRecordId) {
+            //     console.log('--- orderValue', orderValue);
+            // }
             return {
                 ...record,
                 [orderPositionField]: orderValue,

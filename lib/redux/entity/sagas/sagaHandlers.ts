@@ -1317,7 +1317,9 @@ function* handleDirectUpdate<TEntity extends EntityKeys>({
     unifiedDatabaseObject,
 }: BaseSagaContext<TEntity> & {}) {
     const entityLogger = EntityLogger.createLoggerWithDefaults("handleUpdate", entityKey);
-    entityLogger.log("debug", "Starting update operation", action.payload);
+    const DEBUG_LEVEL = "debug";
+    entityLogger.log(DEBUG_LEVEL, "Starting update operation", action.payload);
+    entityLogger.log(DEBUG_LEVEL, "Unified Database Object:", unifiedDatabaseObject);
 
     let previousData: Record<string, any> | undefined;
     let recordKey: MatrxRecordId;
@@ -1329,15 +1331,48 @@ function* handleDirectUpdate<TEntity extends EntityKeys>({
         const previousData = yield select((state) => entitySelectors.selectRecordByKey(state, recordKey));
 
         const allUpdatedData = unifiedDatabaseObject.data as Record<string, any>;
+        entityLogger.log(DEBUG_LEVEL, "All updated data:", allUpdatedData);
 
         if (previousData) {
             const optimisticData = { ...previousData, ...allUpdatedData };
-            entityLogger.log("debug", "Optimistic update", optimisticData);
+            entityLogger.log(DEBUG_LEVEL, "Optimistic update", optimisticData);
 
             yield put(actions.upsertRecords([{ recordKey, record: optimisticData }]));
         }
 
+        const primaryKeysAndValues = unifiedDatabaseObject.primaryKeysAndValues;
+        entityLogger.log(DEBUG_LEVEL, "Primary keys and values:", primaryKeysAndValues);
+
+
+        let query = api.update(allUpdatedData);
+        Object.entries(primaryKeysAndValues).forEach(([key, value]) => {
+            query = query.eq(key, value);
+        });
+
+        entityLogger.log(DEBUG_LEVEL, "DB Query:", query);
+        const { data, error } = yield query.select().single();
+
+        if (error) {
+            entityLogger.log("error", "POSTGRES RESPONSDED WITH AN ERROR:", { error, data });
+            throw error;
+        }
+
+        entityLogger.log(DEBUG_LEVEL, "Database response", { error, data });
+
+
+        const payload = { entityName: entityKey, data };
+        const frontendResponse = yield select(selectFrontendConversion, payload);
+
+        entityLogger.log(DEBUG_LEVEL, "Frontend response", frontendResponse);
+
+        yield put(actions.updateRecordSuccess(frontendResponse));
+
+        yield call(handleUpdateQuickReference, entityKey, actions, frontendResponse, unifiedDatabaseObject);
+
+        entityLogger.log(DEBUG_LEVEL, "Unified Database Object:", unifiedDatabaseObject);
+
         const primaryKeyFields = unifiedDatabaseObject.databasePks;
+        entityLogger.log(DEBUG_LEVEL, "Primary key fields:", primaryKeyFields);
 
         const primaryKeyValues = primaryKeyFields.reduce((acc, key) => {
             if (previousData[key] !== undefined) {
@@ -1346,37 +1381,16 @@ function* handleDirectUpdate<TEntity extends EntityKeys>({
             return acc;
         }, {});
 
-        entityLogger.log("debug", "Primary key values:", primaryKeyValues);
 
-        let query = api.update(allUpdatedData);
-        Object.entries(primaryKeyValues).forEach(([key, value]) => {
-            query = query.eq(key, value);
-        });
+        entityLogger.log(DEBUG_LEVEL, "Primary key values:", primaryKeyValues);
 
-        entityLogger.log("debug", "DB Query:", query);
-        const { data, error } = yield query.select().single();
-
-        entityLogger.log("debug", "Database response", { error, data });
-
-        if (error) throw error;
-
-        const payload = { entityName: entityKey, data };
-        const frontendResponse = yield select(selectFrontendConversion, payload);
-
-        entityLogger.log("debug", "Frontend response", frontendResponse);
-
-        yield put(actions.updateRecordSuccess(frontendResponse));
-
-        yield call(handleUpdateQuickReference, entityKey, actions, frontendResponse, unifiedDatabaseObject);
-
-        entityLogger.log("debug", "Unified Database Object:", unifiedDatabaseObject);
 
         const quickReferenceRecord = {
             primaryKeyValues: primaryKeyValues,
             displayValue: frontendResponse[unifiedDatabaseObject?.frontendDisplayField],
             recordKey: recordKey,
         };
-        entityLogger.log("debug", "quickReferenceRecord:", quickReferenceRecord);
+        entityLogger.log(DEBUG_LEVEL, "quickReferenceRecord:", quickReferenceRecord);
 
         // Update history
         yield put(
@@ -1391,12 +1405,12 @@ function* handleDirectUpdate<TEntity extends EntityKeys>({
         // Invalidate cache
         yield put(actions.invalidateCache());
 
-        entityLogger.log("debug", "Final result", frontendResponse);
+        entityLogger.log(DEBUG_LEVEL, "Final result", frontendResponse);
     } catch (error: any) {
         entityLogger.log("error", "Update operation error", error);
 
         if (previousData) {
-            entityLogger.log("debug", "Reverting optimistic update");
+            entityLogger.log(DEBUG_LEVEL, "Reverting optimistic update");
             yield put(actions.upsertRecords([{ recordKey, record: previousData }]));
         }
 

@@ -26,6 +26,19 @@ export const updateReducers = <TEntity extends EntityKeys>(entityKey: TEntity, m
         ) => {
             entityLogger.log(DEBUG, "slice - directUpdateRecord", action.payload);
             setLoading(state, "DIRECT_UPDATE");
+            if (state.unsavedRecords[action.payload.matrxRecordId]) {
+                // update only the fiellds that are included in the action.payload.data
+                state.unsavedRecords[action.payload.matrxRecordId] = {
+                    ...state.unsavedRecords[action.payload.matrxRecordId],
+                    ...action.payload.data,
+                };
+            } else {
+                // create a new unsaved record
+                state.unsavedRecords[action.payload.matrxRecordId] = {
+                    ...action.payload.data,
+                } as Partial<EntityData<TEntity>>;
+            }
+
         },
 
         directUpdateRecordSuccess: (state: EntityState<TEntity>, action: PayloadAction<EntityData<TEntity>>) => {

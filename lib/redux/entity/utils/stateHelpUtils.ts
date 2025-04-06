@@ -336,7 +336,7 @@ export const removeActiveRecord = (state: EntityState<EntityKeys>) => {
         state.selection.lastActiveRecord = oldActiveRecord;
     }
     state.selection.activeRecord = null;
-    utilsLogger.log("info", "[REMOVE ACTIVE RECORD] Removed active record:", {
+    utilsLogger.log("debug", "[REMOVE ACTIVE RECORD] Removed active record:", {
         previousActive: oldActiveRecord,
         newLastActive: state.selection.lastActiveRecord,
     });
@@ -441,10 +441,10 @@ export const removeSelections = (state: EntityState<EntityKeys>) => {
     if (state.selection.selectedRecords.length > 0) {
         state.selection.lastSelected = state.selection.selectedRecords[0];
     }
-    console.log("removeSelections called", { state: state.selection });
+    utilsLogger.log("debug", "removeSelections called", { state: state.selection });
     state.selection.selectedRecords = [];
     state.selection.selectionMode = "none";
-    console.log("removeSelections calling removeActiveRecord");
+    utilsLogger.log("debug", "removeSelections calling removeActiveRecord");
     removeActiveRecord(state);
 };
 
@@ -454,7 +454,7 @@ export const handleSelectionForDeletedRecord = (state: EntityState<EntityKeys>, 
     }
     if (state.selection.activeRecord === recordKey) {
         removeActiveRecord(state);
-        console.log("handleSelectionForDeletedRecord called to delete", { recordKey });
+        utilsLogger.log("info", "handleSelectionForDeletedRecord called to delete", { recordKey });
     }
     removeFromUnsavedRecords(state, recordKey);
 };

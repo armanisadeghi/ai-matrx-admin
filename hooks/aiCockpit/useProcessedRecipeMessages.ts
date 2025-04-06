@@ -8,7 +8,7 @@ import {
 import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelationships';
 import { RelationshipProcessingHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { useDebounce } from '@uidotdev/usehooks';
-import { useMessageReordering } from '@/hooks/aiCockpit/useMessageReordering';
+import { useNewMessageReordering } from '@/hooks/aiCockpit/newMessageRecordering';
 
 type CoreMessage = {
     id?: string;
@@ -81,7 +81,7 @@ export function useProcessedRecipeMessages(recipeMessagesProcessingHook: Relatio
     const processedMessages = childRecords as MessageTemplateProcessed[];
 
 
-    const { handleDragDrop } = useMessageReordering(processedMessages, () => triggerProcessing());
+    const { handleDragDrop } = useNewMessageReordering(processedMessages, () => triggerProcessing());
 
     const addMessage = useCallback(
         (newMessage: NewMessageEntry, onComplete?: (success: boolean) => void) => {
