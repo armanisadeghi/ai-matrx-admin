@@ -10,6 +10,7 @@ import {
 import { ProviderState } from "./types/oauth";
 import { OAUTH_PROVIDERS } from "./providers/providers";
 import OAuthProvider from "./components/OAuthProvider";
+import TokenDisplay from "./components/TokenDisplay";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -196,6 +197,9 @@ export default function Home() {
           ))}
         </div>
 
+        {/* Token display component */}
+        <TokenDisplay providerStates={providerStates} />
+
         {/* Connected services summary */}
         {connectedCount > 0 && (
           <div className="mt-8">
@@ -220,7 +224,7 @@ export default function Home() {
               <div className="mt-4 text-sm text-gray-500">
                 <p>
                   Access tokens for all connected services are available in the
-                  browser console.
+                  browser console and in the Access Tokens section above.
                 </p>
               </div>
             </div>

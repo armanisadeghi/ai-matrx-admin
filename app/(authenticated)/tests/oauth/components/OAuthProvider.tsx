@@ -24,7 +24,7 @@ export default function OAuthProvider({
         <div className={`text-${config.color}`}>
           {config.iconSvg}
         </div>
-        <h2 className="text-xl font-semibold ml-2">{config.name}</h2>
+        <h2 className="text-xl font-semibold ml-2 text-gray-800">{config.name}</h2>
       </div>
 
       {state.error && (
