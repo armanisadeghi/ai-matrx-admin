@@ -47,20 +47,21 @@ export function* withConversion<TEntity extends EntityKeys>(
     action: PayloadAction<any>
 ) {
     const entityLogger = EntityLogger.createLoggerWithDefaults('WITH CONVERSION', entityKey);
-    entityLogger.log('debug', 'Full Action Payload', action.payload);
+    const logLevel = "debug";
+    entityLogger.log(logLevel, 'Full Action Payload', action.payload);
 
     try {
         const tableName: AnyEntityDatabaseTable = yield select(selectEntityDatabaseName, entityKey);
-        entityLogger.log('debug', 'Resolved table name', { tableName });
+        entityLogger.log(logLevel, 'Resolved table name', { tableName });
 
         const api = yield call(initializeDatabaseApi, tableName);
-        entityLogger.log('debug', 'Database API initialized');
+        entityLogger.log(logLevel, 'Database API initialized');
 
         const dbQueryOptions: QueryOptions<TEntity> = yield select(selectPayloadOptionsDatabaseConversion, {
             entityName: entityKey,
             options: action.payload?.options || {},
         });
-        entityLogger.log('debug', 'Query options selected', dbQueryOptions);
+        entityLogger.log(logLevel, 'Query options selected', dbQueryOptions);
 
         const context: BaseSagaContext<TEntity> = {
             entityKey,
@@ -126,14 +127,13 @@ export function* withFullConversion<TEntity extends EntityKeys>(
     try {
         const flexibleQueryOptions: FlexibleQueryOptions = {
             entityNameAnyFormat: entityKey,
-        };
+        } as FlexibleQueryOptions;
 
         entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options', flexibleQueryOptions);
 
         optionalActionKeys.forEach((key) => {
             if (key in payload && payload[key] !== undefined) {
-                // @ts-ignore
-                flexibleQueryOptions[key] = payload[key];
+                (flexibleQueryOptions as any)[key] = payload[key];
             }
         });
 
@@ -264,14 +264,13 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
     try {
         const flexibleQueryOptions: FlexibleQueryOptions = {
             entityNameAnyFormat: entityKey,
-        };
+        } as FlexibleQueryOptions;
 
         entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options', flexibleQueryOptions);
 
         optionalActionKeys.forEach((key) => {
             if (key in payload && payload[key] !== undefined) {
-                // @ts-ignore
-                flexibleQueryOptions[key] = payload[key];
+                (flexibleQueryOptions as any)[key] = payload[key];
             }
         });
 

@@ -80,13 +80,15 @@ export const useMessageReordering = (messages: MessageTemplateProcessed[], onCom
 
     const handleDragDrop = useCallback(
         (draggedId: MatrxRecordId, dropTargetId: MatrxRecordId) => {
+            console.log("--- handleDragDrop draggedId", draggedId, "dropTargetId", dropTargetId);
             const draggedIndex = messages.findIndex((message) => message.matrxRecordId === draggedId);
             const dropTargetIndex = messages.findIndex((message) => message.matrxRecordId === dropTargetId);
+            console.log("--- handleDragDrop draggedIndex", draggedIndex, "dropTargetIndex", dropTargetIndex);
 
             if (draggedIndex === -1 || dropTargetIndex === -1) return;
 
             const draggedMessage = messages[draggedIndex];
-
+            console.log("--- handleDragDrop draggedMessage", draggedMessage);
             updateOrder(draggedMessage, dropTargetIndex + 1);
             
             if (draggedIndex > dropTargetIndex) {

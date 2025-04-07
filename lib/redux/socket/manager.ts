@@ -4,7 +4,7 @@ import { logTaskStart, logFallbackResponse, logFallbackData, logTaskConfirmed, l
 import { eventChannel, EventChannel } from "redux-saga";
 import { SocketConnectionManager, SocketConfig } from "./core/connection-manager";
 
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 export class SocketManager {
   private static instance: SocketManager | null = null;

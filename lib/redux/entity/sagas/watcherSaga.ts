@@ -124,7 +124,7 @@ export function watchEntitySagas<TEntity extends EntityKeys>(entityKey: TEntity)
                     }
                 ),
                 takeEvery(actions.directUpdateRecord.type, function* (action: SagaAction<DirectUpdateRecordPayload>) {
-                    sagaLogger.log('info', 'Handling directUpdateRecord', action.payload);
+                    sagaLogger.log('debug', 'Handling directUpdateRecord', action.payload);
                     if (shouldSkip(actions.directUpdateRecord.type, action.payload)) return;
                     yield call(withFullConversion, handleDirectUpdate, entityKey, actions, action);
                     setCache(actions.directUpdateRecord.type, action.payload);

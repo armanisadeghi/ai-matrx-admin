@@ -225,7 +225,6 @@ export const useProviderChips = (
 
     const updateChipAndBroker = useCallback(
         (matrxRecordId: MatrxRecordId, updates: Partial<ChipData>) => {
-            console.log('-- updateChipAndBroker With:', matrxRecordId, updates);
             setEditors((prev) => {
                 const next = new Map(prev);
 

@@ -67,6 +67,7 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         }
 
         // Detect thinking blocks (<thinking> or <think>)
+        // Detect thinking blocks (<thinking> or <think>)
         if (trimmedLine === "<thinking>" || trimmedLine === "<think>") {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
@@ -75,15 +76,17 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             const thinkingContent: string[] = [];
             i++;
             let foundMarker = false;
+            let foundClosingTag = false;
 
+            // First pass: collect thinking content and check for marker/closing tag
+            const startIndex = i;
             while (i < lines.length) {
                 const currentTrimmedLine = lines[i].trim();
-
                 // Check for normal closing tag
                 if (currentTrimmedLine === "</thinking>" || currentTrimmedLine === "</think>") {
+                    foundClosingTag = true;
                     break;
                 }
-
                 // Check for our special marker
                 if (currentTrimmedLine.startsWith("### I have everything")) {
                     foundMarker = true;
@@ -91,7 +94,6 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                     i++;
                     break; // Exit immediately after marker
                 }
-
                 thinkingContent.push(lines[i]);
                 i++;
             }
@@ -101,15 +103,19 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                 content: thinkingContent.join("\n"),
             });
 
-            // Handle content after marker or no closing tag
-            if (foundMarker || i >= lines.length) {
+            // Handle different scenarios
+            if (foundClosingTag) {
+                // If we found a closing tag, use standard processing
+                i++; // Skip the closing tag
+            } else if (foundMarker) {
+                // Only use special marker handling if no closing tag was found
                 let hasSkippedEmptyLine = false;
                 while (i < lines.length) {
                     const remainingLine = lines[i].trim();
-                    // Skip closing tag if present
+                    // Skip closing tag if present (redundant check, but keeps code safer)
                     if (remainingLine === "</thinking>" || remainingLine === "</think>") {
                         i++;
-                        continue;
+                        break;
                     }
                     // Skip first empty line after marker if present
                     if (!hasSkippedEmptyLine && remainingLine === "") {
@@ -117,18 +123,12 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                         i++;
                         continue;
                     }
-                    currentText += lines[i] + "\n";
-                    i++;
+                    break; // Exit and let the main loop process the rest normally
                 }
-            } else {
-                i++; // Skip the closing tag
             }
             continue;
-        } // Detect table blocks - improved to handle empty cells
+        }
 
-
-
-        
         if (
             trimmedLine.startsWith("|") &&
             trimmedLine.endsWith("|") &&
