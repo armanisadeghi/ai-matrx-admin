@@ -21,13 +21,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
-import { FileManager } from "@/hooks/ai/chat/useFileManagement";
+import { FileManagerReturn } from "@/hooks/ai/chat/useFileManagement";
 
 interface AudioPlanDialogButtonProps {
   isEnabled: boolean;
   onClick: () => void;
   disabled?: boolean;
-  fileManager: FileManager;
+  fileManager: FileManagerReturn;
   conversationId: string;
 }
 
@@ -114,7 +114,6 @@ const AudioPlanDialogButton: React.FC<AudioPlanDialogButtonProps> = ({
                 onUploadStatusChange={fileManager.handleUploadStatusChange}
                 multiple={false}
                 useMiniUploader={true}
-                //   accept=".mp3,.wav,.m4a,.ogg"
               />
             </div>
             
