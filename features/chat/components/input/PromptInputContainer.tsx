@@ -62,6 +62,16 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
         [onContentChange, chatActions, dispatch]
     );
 
+
+    const handleAddSpecialContent = useCallback((contentToAdd: string) => {
+        if (content.trim() === "") {
+            setContent(contentToAdd);
+        } else {
+            setContent(content + "\n\n" + contentToAdd);
+        }
+    }, [content]);
+
+
     const handleFileUpload = useCallback(
         async (results: { url: string; type: string; details?: EnhancedFileDetails }[]) => {
             await fileManager.addFiles(results);
@@ -122,7 +132,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                 />
 
                 <div className="absolute bottom-0 left-0 right-0 rounded-3xl">
-                    <InputBottomControls isDisabled={localDisabled} onSendMessage={handleTriggerSubmit} fileManager={fileManager} />
+                    <InputBottomControls isDisabled={localDisabled} onSendMessage={handleTriggerSubmit} fileManager={fileManager} onAddSpecialContent={handleAddSpecialContent} />
                 </div>
             </div>
 
@@ -134,6 +144,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
                         onUploadComplete={handleFileUpload}
                         onUploadStatusChange={fileManager.handleUploadStatusChange}
                         multiple={true}
+                        useMiniUploader={false}
                     />
                 </div>
             )}

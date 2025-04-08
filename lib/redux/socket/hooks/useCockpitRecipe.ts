@@ -1,8 +1,7 @@
-import { useState, useRef } from 'react';
-import { useInitializeSocket } from '@/lib/redux/socket/useInitializeSocket';
-import { SocketManager } from '@/lib/redux/socket/manager';
-import { StreamingResponses, RecipeTaskData } from './types';
-
+import { useState, useRef } from "react";
+import { useInitializeSocket } from "@/lib/redux/socket/useInitializeSocket";
+import { SocketManager } from "@/lib/redux/socket/manager";
+import { StreamingResponses, RecipeTaskData } from "./types";
 
 export const useCockpitSocket = (getTasks: () => Promise<RecipeTaskData[]>) => {
     useInitializeSocket();
@@ -18,14 +17,14 @@ export const useCockpitSocket = (getTasks: () => Promise<RecipeTaskData[]>) => {
 
         const tasks = await getTasks();
         const payload = tasks.map((taskData) => ({
-            task: 'run_recipe',
+            task: "run_recipe",
             taskData,
         }));
 
-        socketManager.startStreamingTasks('simple_recipe', payload, (index, data) => {
+        socketManager.startStreamingTasks("simple_recipe", payload, (index, data) => {
             setStreamingResponses((prev) => ({
                 ...prev,
-                [index]: (prev[index] || '') + data,
+                [index]: (prev[index] || "") + data,
             }));
         });
     };

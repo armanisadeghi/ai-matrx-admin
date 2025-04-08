@@ -7,13 +7,10 @@ import { LuSearchCheck } from "react-icons/lu";
 import { MatrxRecordId } from "@/types";
 import ToggleButton from "@/components/matrx/toggles/ToggleButton";
 import ModelSelection from "@/features/chat/components/input/ModelSelection";
-import { ListTodo } from "lucide-react";
-import AIToolsSheet from "./AIToolsSheet";
 import { FaMicrophoneLines } from "react-icons/fa6";
 import { LuBrainCircuit } from "react-icons/lu";
 import { LuBrain } from "react-icons/lu";
 import { CgAttachment } from "react-icons/cg";
-import { MdOutlineChecklist } from "react-icons/md";
 import { MdOutlineQuestionMark } from "react-icons/md";
 import { BsPatchQuestion } from "react-icons/bs";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
@@ -22,22 +19,24 @@ import { FileManager } from "@/hooks/ai/chat/useFileManagement";
 import MobileInputBottomControls from "./mobile/MobileInputBottomControls";
 import { useIsMobile } from "@/hooks/use-mobile";
 import BrokerSheet from "./BrokerSheet";
+import AIToolsSheet from "./AIToolsSheet";
+import AudioPlanDialogButton from "@/features/chat/components/input/AudioPlanToggleButton";
 
 interface InputBottomControlsProps {
     isDisabled: boolean;
     onSendMessage: () => void;
     onToggleTools?: () => void;
     fileManager: FileManager;
+    onAddSpecialContent?: (content: string) => void;
 }
 
-const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, onSendMessage, onToggleTools, fileManager }) => {
+const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, onSendMessage, onToggleTools, fileManager, onAddSpecialContent }) => {
     const isMobile = useIsMobile();
     const dispatch = useAppDispatch();
-    const { chatActions, chatSelectors, messageKey } = useChatBasics();
+    const { chatActions, chatSelectors, messageKey, conversationId } = useChatBasics();
     const messageMetadata = useAppSelector(chatSelectors.activeMessageMetadata);
     const conversationMetadata = useAppSelector(chatSelectors.activeConversationMetadata);
     const models = useAppSelector(chatSelectors.aiModels);
-
     // Internal state management
     const [isListening, setIsListening] = useState<boolean>(false);
     const [isToolsSheetOpen, setIsToolsSheetOpen] = useState<boolean>(false);
@@ -55,7 +54,6 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
         enableBrokers: false,
     });
     const prevSettingsRef = useRef(settings);
-
     useEffect(() => {
         const changedSettings = Object.entries(settings).reduce((acc, [key, value]) => {
             if (prevSettingsRef.current[key] !== value) {
@@ -66,7 +64,6 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
         if (changedSettings.length > 0) {
             dispatch(chatActions.updateMultipleNestedFields({ updates: changedSettings }));
             prevSettingsRef.current = settings;
-
             if (changedSettings.some((setting) => setting.nestedKey === "thinkEnabled")) {
                 dispatch(chatActions.updateMode({ value: "thinking" }));
             }
@@ -78,7 +75,6 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
             }
         }
     }, [settings, dispatch, chatActions]);
-
     useEffect(() => {
         if (messageMetadata?.availableTools?.length > 0) {
             setSettings((prev) => ({ ...prev, toolsEnabled: true }));
@@ -86,12 +82,10 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
             setSettings((prev) => ({ ...prev, toolsEnabled: false }));
         }
     }, [isToolsSheetOpen]);
-
     // Update settings without rewriting all properties
     const updateSettings = useCallback((newSettings: Partial<typeof settings>) => {
         setSettings((prev) => ({ ...prev, ...newSettings }));
     }, []);
-
     useEffect(() => {
         if (!messageKey) return;
         if (messageMetadata?.files?.length > 0) {
@@ -100,45 +94,32 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
             setHasUploadedFiles(false);
         }
     }, [messageMetadata?.files, messageKey]);
-
     // Handler functions
     const handleToggleSearch = useCallback(() => {
         updateSettings({ searchEnabled: !settings.searchEnabled });
     }, [settings.searchEnabled, updateSettings]);
-
     const handleToggleTools = useCallback(() => {
         setIsToolsSheetOpen(!isToolsSheetOpen);
-    }, [settings.toolsEnabled, updateSettings, isToolsSheetOpen]);
-
+    }, [isToolsSheetOpen]);
     const handleToggleBrokers = useCallback(() => {
         setIsBrokerSheetOpen(!isBrokerSheetOpen);
-    }, [settings.enableBrokers, updateSettings, isBrokerSheetOpen]);
-
+    }, [isBrokerSheetOpen]);
     const handleToggleThink = useCallback(() => {
         updateSettings({ thinkEnabled: !settings.thinkEnabled });
     }, [settings.thinkEnabled, updateSettings]);
-
     const handleToggleResearch = useCallback(() => {
         updateSettings({ researchEnabled: !settings.researchEnabled });
     }, [settings.researchEnabled, updateSettings]);
-
     const handleToggleRecipes = useCallback(() => {
         updateSettings({ recipesEnabled: !settings.recipesEnabled });
     }, [settings.recipesEnabled, updateSettings]);
-
     const handleToggleAskQuestions = useCallback(() => {
         updateSettings({ enableAskQuestions: !settings.enableAskQuestions });
     }, [settings.enableAskQuestions, updateSettings]);
-
-    const handleTogglePlan = useCallback(() => {
-        updateSettings({ planEnabled: !settings.planEnabled });
-    }, [settings.planEnabled, updateSettings]);
-
     const handleToggleMicrophone = useCallback(() => {
         setIsListening(!isListening);
         updateSettings({ audioEnabled: !settings.audioEnabled });
     }, [isListening, settings.audioEnabled, updateSettings]);
-
     const handleModelSelect = useCallback(
         (modelKey: MatrxRecordId) => {
             dispatch(chatActions.updateModel({ value: modelKey }));
@@ -146,8 +127,17 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
         [dispatch, chatActions]
     );
 
-    const modelId = messageMetadata?.currentModel || conversationMetadata?.currentModel || "";
+    
+    const handleTogglePlan = useCallback(() => {
+        updateSettings({ planEnabled: !settings.planEnabled });
+        dispatch(chatActions.updateModel({ value: "7ad9fc2b-d910-4058-8a94-588ffa026695" }));
+        if (onAddSpecialContent) {
+            onAddSpecialContent("Please create a structured plan using this audio.");
+        }
+    }, [settings.planEnabled, updateSettings, onAddSpecialContent, fileManager.files]);
 
+
+    const modelId = messageMetadata?.currentModel || conversationMetadata?.currentModel || "";
     // Conditionally render mobile or desktop version
     if (isMobile) {
         return (
@@ -159,7 +149,6 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
             />
         );
     }
-
     // Desktop version
     return (
         <>
@@ -197,14 +186,13 @@ const InputBottomControls: React.FC<InputBottomControlsProps> = ({ isDisabled, o
                         enabledIcon={<LuBrainCircuit />}
                         tooltip="Enable Thinking"
                     />
-                    <ToggleButton
+                    {/* REPLACED: Original Plan Toggle Button with AudioPlanDialogButton */}
+                    <AudioPlanDialogButton
                         isEnabled={settings.planEnabled}
                         onClick={handleTogglePlan}
                         disabled={isDisabled}
-                        label=""
-                        defaultIcon={<MdOutlineChecklist />}
-                        enabledIcon={<ListTodo />}
-                        tooltip="Create Structured Plan"
+                        fileManager={fileManager}
+                        conversationId={conversationId}
                     />
                     <ToggleButton
                         isEnabled={settings.enableAskQuestions}

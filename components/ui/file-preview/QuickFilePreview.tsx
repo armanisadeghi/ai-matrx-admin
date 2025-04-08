@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
+import InteractiveFilePreview from "./InteractiveFilePreview";
 
 interface FilePreviewProps {
     files: { url: string; type: string; details?: EnhancedFileDetails }[];
@@ -11,6 +12,26 @@ interface FilePreviewProps {
 }
 
 const QuickFilePreview: React.FC<FilePreviewProps> = ({ files, previewIndex, previewPosition, getIconComponent, isPreviewable }) => {
+    // Determine if the file should use the new interactive preview
+    const shouldUseInteractivePreview = (file: { type: string; details?: EnhancedFileDetails }) => {
+        // If quickPreviewType exists in details, use that to determine if we should show the interactive preview
+        if (file.details?.quickPreviewType) {
+            const interactiveTypes = ["audio", "video", "document", "data", "archive", "advancedImage", "config", "code"];
+            return interactiveTypes.includes(file.details.quickPreviewType);
+        }
+        
+        // Fallback to type checking if no quickPreviewType
+        const interactiveFileTypes = ['audio', 'video', 'application/pdf'];
+        return interactiveFileTypes.some(type => 
+            file.type === type || file.type.startsWith(`${type}/`)
+        );
+    };
+    
+    // Check if file should use image preview
+    const shouldUseImagePreview = (file: { type: string; details?: EnhancedFileDetails }) => {
+        return isPreviewable(file) && file.details?.quickPreviewType === "image";
+    };
+
     return (
         <div id="preview-portal" className="fixed top-0 left-0 w-full h-0 overflow-visible pointer-events-none z-[9999]">
             <AnimatePresence>
@@ -30,7 +51,8 @@ const QuickFilePreview: React.FC<FilePreviewProps> = ({ files, previewIndex, pre
                         }}
                     >
                         <div className="bg-white dark:bg-zinc-800 p-2 rounded-lg border border-zinc-200 dark:border-zinc-700">
-                            {files[previewIndex] && isPreviewable(files[previewIndex]) ? (
+                            {/* Image preview */}
+                            {files[previewIndex] && shouldUseImagePreview(files[previewIndex]) ? (
                                 <div className="flex flex-col items-center">
                                     <div className="w-full h-32 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900 rounded overflow-hidden">
                                         <img
@@ -49,7 +71,16 @@ const QuickFilePreview: React.FC<FilePreviewProps> = ({ files, previewIndex, pre
                                         {files[previewIndex].details?.filename || "Image preview"}
                                     </p>
                                 </div>
-                            ) : (
+                            ) : 
+                            /* Interactive preview for audio, video, documents, etc. */
+                            shouldUseInteractivePreview(files[previewIndex]) ? (
+                                <InteractiveFilePreview 
+                                    fileDetails={files[previewIndex].details}
+                                    fileName={files[previewIndex].details?.filename || "Interactive File"}
+                                />
+                            ) : 
+                            /* Fallback for other files */
+                            (
                                 <div className="flex items-start p-1">
                                     <div className="flex-shrink-0 p-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg mr-3">
                                         {React.createElement(getIconComponent(files[previewIndex]), {

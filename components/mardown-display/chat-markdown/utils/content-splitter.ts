@@ -25,31 +25,51 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             continue;
         }
 
-        // Only process as code block if not inside markdown block
+        // Process code, transcript, and tasks blocks if not inside markdown block
         if (trimmedLine.startsWith("```") && !insideMarkdownBlock) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
             }
             const languageMatch = trimmedLine.match(/^```(\w*)/);
-            const language = languageMatch && languageMatch[1] ? languageMatch[1] : undefined;
-            const codeContent: string[] = [];
+            const languageOrType = languageMatch && languageMatch[1] ? languageMatch[1] : undefined;
+            const blockContent: string[] = [];
             i++; // Move past opening ```
             while (i < lines.length && !lines[i].trim().startsWith("```")) {
-                codeContent.push(lines[i]);
+                blockContent.push(lines[i]);
                 i++;
             }
-            blocks.push({
-                type: "code",
-                content: codeContent.join("\n"),
-                language,
-            });
+            const contentString = blockContent.join("\n");
+
+            // Determine block type based on languageOrType
+            if (languageOrType === "transcript") {
+                blocks.push({
+                    type: "transcript",
+                    content: contentString,
+                });
+            } else if (languageOrType === "tasks") {
+                blocks.push({
+                    type: "tasks",
+                    content: contentString,
+                });
+            } else if (languageOrType === "structured_info") {
+                blocks.push({
+                    type: "structured_info",
+                    content: contentString,
+                });
+            } else {
+                blocks.push({
+                    type: "code",
+                    content: contentString,
+                    language: languageOrType,
+                });
+            }
             i++; // Move past closing ```
             continue;
         }
 
         // Detect image markdown syntax (e.g., ![alt](url))
-        const imageMatch = trimmedLine.match(/^!$$ (.*?) $$$$ (https?:\/\/[^\s)]+) $$$/);
+        const imageMatch = trimmedLine.match(/^!$$ (.*?) $$$$ (https?:\/\/[^\s)]+) $$/);
         if (imageMatch) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
@@ -67,7 +87,6 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         }
 
         // Detect thinking blocks (<thinking> or <think>)
-        // Detect thinking blocks (<thinking> or <think>)
         if (trimmedLine === "<thinking>" || trimmedLine === "<think>") {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
@@ -78,21 +97,18 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             let foundMarker = false;
             let foundClosingTag = false;
 
-            // First pass: collect thinking content and check for marker/closing tag
             const startIndex = i;
             while (i < lines.length) {
                 const currentTrimmedLine = lines[i].trim();
-                // Check for normal closing tag
                 if (currentTrimmedLine === "</thinking>" || currentTrimmedLine === "</think>") {
                     foundClosingTag = true;
                     break;
                 }
-                // Check for our special marker
                 if (currentTrimmedLine.startsWith("### I have everything")) {
                     foundMarker = true;
                     thinkingContent.push(lines[i]);
                     i++;
-                    break; // Exit immediately after marker
+                    break;
                 }
                 thinkingContent.push(lines[i]);
                 i++;
@@ -103,38 +119,34 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
                 content: thinkingContent.join("\n"),
             });
 
-            // Handle different scenarios
             if (foundClosingTag) {
-                // If we found a closing tag, use standard processing
                 i++; // Skip the closing tag
             } else if (foundMarker) {
-                // Only use special marker handling if no closing tag was found
                 let hasSkippedEmptyLine = false;
                 while (i < lines.length) {
                     const remainingLine = lines[i].trim();
-                    // Skip closing tag if present (redundant check, but keeps code safer)
                     if (remainingLine === "</thinking>" || remainingLine === "</think>") {
                         i++;
                         break;
                     }
-                    // Skip first empty line after marker if present
                     if (!hasSkippedEmptyLine && remainingLine === "") {
                         hasSkippedEmptyLine = true;
                         i++;
                         continue;
                     }
-                    break; // Exit and let the main loop process the rest normally
+                    break;
                 }
             }
             continue;
         }
 
+        // Table detection
         if (
             trimmedLine.startsWith("|") &&
             trimmedLine.endsWith("|") &&
             trimmedLine.includes("|", 1) &&
             i + 1 < lines.length &&
-            lines[i + 1].trim().match(/^\|[-:\s|]+$/m) // Separator row with pipes
+            lines[i + 1].trim().match(/^\|[-:\s|]+$/m)
         ) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
@@ -145,12 +157,11 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             i++;
             tableContent.push(lines[i]); // Separator row
             i++;
-            // Continue while the line maintains table structure (starts and ends with |)
             while (
                 i < lines.length &&
                 lines[i].trim().startsWith("|") &&
                 lines[i].trim().endsWith("|") &&
-                lines[i].trim().includes("|", 1) // At least one internal pipe
+                lines[i].trim().includes("|", 1)
             ) {
                 tableContent.push(lines[i]);
                 i++;

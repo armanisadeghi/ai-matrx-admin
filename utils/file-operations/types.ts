@@ -149,6 +149,7 @@ export type FileTypeDetails = {
     icon: IconComponent;
     color?: string
     canPreview?: boolean;
+    quickPreviewType?: any;
 }
 
 

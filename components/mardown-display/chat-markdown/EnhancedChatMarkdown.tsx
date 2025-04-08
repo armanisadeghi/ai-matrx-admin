@@ -8,8 +8,11 @@ import ThinkingVisualization from "./ThinkingVisualization";
 import BasicMarkdownContent from "./BasicMarkdownContent";
 import FullScreenMarkdownEditor from "./FullScreenMarkdownEditor";
 import ImageBlock from "./ImageBlock";
+import TranscriptBlock from "@/components/mardown-display/blocks/transcripts/TranscriptBlock";
+import TasksBlock from "@/components/mardown-display/blocks/tasks/TasksBlock";
 import { MarkdownAnalysisData } from "./analyzer/types";
 import { splitContentIntoBlocks } from "./utils/content-splitter";
+import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -23,11 +26,11 @@ interface ChatMarkdownDisplayProps {
 }
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "image"; // Added "image"
+    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info";
     content: string;
     language?: string;
-    src?: string; // For images
-    alt?: string; // For images
+    src?: string;
+    alt?: string;
 }
 
 const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
@@ -43,7 +46,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
     const preprocessContent = (mdContent: string): string => {
-        const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s]+)\]/g;
+        const imageUrlRegex = /$$ Image URL: (https?:\/\/[^\s]+) $$/g;
         return mdContent.replace(imageUrlRegex, "![Image]($1)");
     };
 
@@ -62,9 +65,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         setIsEditorOpen(false);
     };
 
-    const [showThinking, setShowThinking] = useState(false);
-    
-
     const processedContent = preprocessContent(content);
     const blocks = splitContentIntoBlocks(processedContent);
 
@@ -73,7 +73,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
             case "image":
                 return <ImageBlock key={index} src={block.src!} alt={block.alt} />;
             case "thinking":
-                return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true}/>;
+                return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true} />;
             case "text":
                 return block.content ? (
                     <BasicMarkdownContent
@@ -102,6 +102,12 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     return null;
                 }
                 return <MarkdownTable key={index} data={{ ...tableData.markdown, normalizedData: tableData.data }} />;
+            case "transcript":
+                return <TranscriptBlock key={index} content={block.content} />;
+            case "tasks":
+                return <TasksBlock key={index} content={block.content} />;
+            case "structured_info":
+                return <StructuredPlanBlock key={index} content={block.content} />;
             default:
                 return null;
         }
