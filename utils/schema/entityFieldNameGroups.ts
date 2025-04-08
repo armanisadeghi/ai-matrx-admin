@@ -124,9 +124,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["recipeId", "version", "compiledRecipe", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead"]
 },
   conversation: {
-  nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic"],
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords"]
 },
   dataBroker: {
   nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent"],

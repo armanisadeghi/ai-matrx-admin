@@ -254,6 +254,8 @@ export type Conversation = {
     metadata?: Record<string, unknown>;
     label?: string;
     isPublic?: boolean;
+    description?: string;
+    keywords?: Record<string, unknown>;
 }
 
 export type DataBroker = {
