@@ -598,6 +598,17 @@ export type RegisteredFunction = {
     returnBroker?: string;
 }
 
+export type ScrapeCachePolicy = {
+    id: string;
+    rescrapeAfter: number;
+    staleAfter: number;
+    userId?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
 export type ScrapeConfiguration = {
     id: string;
     scrapeMode: string;
@@ -607,6 +618,36 @@ export type ScrapeConfiguration = {
     userId?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeCycleRun = {
+    id: string;
+    scrapeCycleTrackerId: string;
+    runNumber: number;
+    completedAt?: Date;
+    allowPattern?: string;
+    disallowPatterns?: Record<string, unknown>;
+    userId?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeCycleTracker = {
+    id: string;
+    targetUrl?: string;
+    pageName?: string;
+    scrapePathPatternCachePolicyId?: string;
+    scrapeJobId?: string;
+    lastRunAt?: Date;
+    nextRunAt?: Date;
+    isActive?: boolean;
+    userId?: string;
+    createdAt: Date;
+    updatedAt: Date;
     isPublic?: boolean;
     authenticatedRead?: boolean;
 }
@@ -673,6 +714,24 @@ export type ScrapeDomainSitemap = {
     authenticatedRead?: boolean;
 }
 
+export type ScrapeJob = {
+    id: string;
+    scrapeDomainId: string;
+    startUrls: string[];
+    scrapeStatus: string;
+    parseStatus: string;
+    attemptLimit: number;
+    startedAt?: Date;
+    finishedAt?: Date;
+    name?: string;
+    description?: string;
+    userId?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
 export type ScrapeOverride = {
     id: string;
     name: string;
@@ -698,12 +757,44 @@ export type ScrapeOverrideValue = {
     authenticatedRead?: boolean;
 }
 
+export type ScrapeParsedPage = {
+    id: string;
+    pageName: string;
+    validity: string;
+    remotePath?: string;
+    localPath?: string;
+    scrapePathPatternCachePolicyId?: string;
+    scrapeTaskId?: string;
+    scrapeTaskResponseId?: string;
+    scrapeCycleRunId?: string;
+    scrapeCycleTrackerId?: string;
+    scrapeConfigurationId?: string;
+    scrapePathPatternOverrideId?: string;
+    scrapedAt?: Date;
+    userId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
 export type ScrapePathPattern = {
     id: string;
     scrapeDomainId?: string;
     pathPattern?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapePathPatternCachePolicy = {
+    id: string;
+    scrapeCachePolicyId: string;
+    scrapePathPatternId: string;
+    userId?: string;
+    createdAt: Date;
+    updatedAt: Date;
     isPublic?: boolean;
     authenticatedRead?: boolean;
 }
@@ -719,6 +810,63 @@ export type ScrapePathPatternOverride = {
     updatedAt: Date;
     isPublic: boolean;
     authenticatedRead: boolean;
+}
+
+export type ScrapeQuickFailureLog = {
+    id: string;
+    scrapeDomainId?: string;
+    domainName?: string;
+    targetUrl: string;
+    failureReason?: string;
+    errorLog?: string;
+    userId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeTask = {
+    id: string;
+    targetUrl: string;
+    pageName: string;
+    scrapeDomainId?: string;
+    parentTask?: string;
+    attemptsLeft: number;
+    scrapeMode: string;
+    interactionConfig?: Record<string, unknown>;
+    scrapeJobId?: string;
+    priority?: number;
+    discoveredLinks?: Record<string, unknown>;
+    spawnedConcurrentTasks?: boolean;
+    scrapeCycleRunId?: string;
+    failureReason?: string;
+    scrapeStatus?: string;
+    parseStatus?: string;
+    cancelMessage?: string;
+    userId?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+}
+
+export type ScrapeTaskResponse = {
+    id: string;
+    scrapeTaskId: string;
+    failureReason?: string;
+    statusCode?: number;
+    contentPath: string;
+    contentSize?: number;
+    contentType?: string;
+    responseHeaders: Record<string, unknown>;
+    responseUrl: string;
+    errorLog?: string;
+    userId?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
 }
 
 export type Subcategory = {

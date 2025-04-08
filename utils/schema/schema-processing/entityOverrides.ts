@@ -956,7 +956,58 @@ const registeredFunctionEntityOverrides: EntityOverrides<'registeredFunction'> =
 
 
 
+const scrapeCachePolicyEntityOverrides: EntityOverrides<'scrapeCachePolicy'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const scrapeConfigurationEntityOverrides: EntityOverrides<'scrapeConfiguration'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const scrapeCycleRunEntityOverrides: EntityOverrides<'scrapeCycleRun'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const scrapeCycleTrackerEntityOverrides: EntityOverrides<'scrapeCycleTracker'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1075,6 +1126,23 @@ const scrapeDomainSitemapEntityOverrides: EntityOverrides<'scrapeDomainSitemap'>
 
 
 
+const scrapeJobEntityOverrides: EntityOverrides<'scrapeJob'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const scrapeOverrideEntityOverrides: EntityOverrides<'scrapeOverride'> = {
     schemaType: null,
     entityName: null,
@@ -1109,6 +1177,23 @@ const scrapeOverrideValueEntityOverrides: EntityOverrides<'scrapeOverrideValue'>
 
 
 
+const scrapeParsedPageEntityOverrides: EntityOverrides<'scrapeParsedPage'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const scrapePathPatternEntityOverrides: EntityOverrides<'scrapePathPattern'> = {
     schemaType: null,
     entityName: null,
@@ -1126,7 +1211,75 @@ const scrapePathPatternEntityOverrides: EntityOverrides<'scrapePathPattern'> = {
 
 
 
+const scrapePathPatternCachePolicyEntityOverrides: EntityOverrides<'scrapePathPatternCachePolicy'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const scrapePathPatternOverrideEntityOverrides: EntityOverrides<'scrapePathPatternOverride'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const scrapeQuickFailureLogEntityOverrides: EntityOverrides<'scrapeQuickFailureLog'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const scrapeTaskEntityOverrides: EntityOverrides<'scrapeTask'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const scrapeTaskResponseEntityOverrides: EntityOverrides<'scrapeTaskResponse'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1420,17 +1573,26 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     recipeProcessor: recipeProcessorEntityOverrides,
     recipeTool: recipeToolEntityOverrides,
     registeredFunction: registeredFunctionEntityOverrides,
+    scrapeCachePolicy: scrapeCachePolicyEntityOverrides,
     scrapeConfiguration: scrapeConfigurationEntityOverrides,
+    scrapeCycleRun: scrapeCycleRunEntityOverrides,
+    scrapeCycleTracker: scrapeCycleTrackerEntityOverrides,
     scrapeDomain: scrapeDomainEntityOverrides,
     scrapeDomainDisallowedNotes: scrapeDomainDisallowedNotesEntityOverrides,
     scrapeDomainNotes: scrapeDomainNotesEntityOverrides,
     scrapeDomainQuickScrapeSettings: scrapeDomainQuickScrapeSettingsEntityOverrides,
     scrapeDomainRobotsTxt: scrapeDomainRobotsTxtEntityOverrides,
     scrapeDomainSitemap: scrapeDomainSitemapEntityOverrides,
+    scrapeJob: scrapeJobEntityOverrides,
     scrapeOverride: scrapeOverrideEntityOverrides,
     scrapeOverrideValue: scrapeOverrideValueEntityOverrides,
+    scrapeParsedPage: scrapeParsedPageEntityOverrides,
     scrapePathPattern: scrapePathPatternEntityOverrides,
+    scrapePathPatternCachePolicy: scrapePathPatternCachePolicyEntityOverrides,
     scrapePathPatternOverride: scrapePathPatternOverrideEntityOverrides,
+    scrapeQuickFailureLog: scrapeQuickFailureLogEntityOverrides,
+    scrapeTask: scrapeTaskEntityOverrides,
+    scrapeTaskResponse: scrapeTaskResponseEntityOverrides,
     subcategory: subcategoryEntityOverrides,
     systemFunction: systemFunctionEntityOverrides,
     taskAssignments: taskAssignmentsEntityOverrides,

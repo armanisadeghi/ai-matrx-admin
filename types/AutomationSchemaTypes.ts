@@ -141,17 +141,26 @@ export type AutomationTableName =
     | 'recipeProcessor'
     | 'recipeTool'
     | 'registeredFunction'
+    | 'scrapeCachePolicy'
     | 'scrapeConfiguration'
+    | 'scrapeCycleRun'
+    | 'scrapeCycleTracker'
     | 'scrapeDomain'
     | 'scrapeDomainDisallowedNotes'
     | 'scrapeDomainNotes'
     | 'scrapeDomainQuickScrapeSettings'
     | 'scrapeDomainRobotsTxt'
     | 'scrapeDomainSitemap'
+    | 'scrapeJob'
     | 'scrapeOverride'
     | 'scrapeOverrideValue'
+    | 'scrapeParsedPage'
     | 'scrapePathPattern'
+    | 'scrapePathPatternCachePolicy'
     | 'scrapePathPatternOverride'
+    | 'scrapeQuickFailureLog'
+    | 'scrapeTask'
+    | 'scrapeTaskResponse'
     | 'subcategory'
     | 'systemFunction'
     | 'taskAssignments'
@@ -691,6 +700,15 @@ export type RegisteredFunctionData = Expand<EntityDataMixed<"registeredFunction"
 export type RegisteredFunctionState = EntityStateType<"registeredFunction">;
 export type RegisteredFunctionRecordMap = Record<"registeredFunctionRecordId", RegisteredFunctionData>;
 
+export type ScrapeCachePolicyType = AutomationEntity<"scrapeCachePolicy">;
+export type ScrapeCachePolicyDataRequired = Expand<EntityData<"scrapeCachePolicy">>;
+export type ScrapeCachePolicyDataOptional = Expand<EntityDataOptional<"scrapeCachePolicy">>;
+export type ScrapeCachePolicyRecordWithKey = Expand<EntityDataWithKey<"scrapeCachePolicy">>;
+export type ScrapeCachePolicyProcessed = Expand<ProcessedEntityData<"scrapeCachePolicy">>;
+export type ScrapeCachePolicyData = Expand<EntityDataMixed<"scrapeCachePolicy">>;
+export type ScrapeCachePolicyState = EntityStateType<"scrapeCachePolicy">;
+export type ScrapeCachePolicyRecordMap = Record<"scrapeCachePolicyRecordId", ScrapeCachePolicyData>;
+
 export type ScrapeConfigurationType = AutomationEntity<"scrapeConfiguration">;
 export type ScrapeConfigurationDataRequired = Expand<EntityData<"scrapeConfiguration">>;
 export type ScrapeConfigurationDataOptional = Expand<EntityDataOptional<"scrapeConfiguration">>;
@@ -699,6 +717,24 @@ export type ScrapeConfigurationProcessed = Expand<ProcessedEntityData<"scrapeCon
 export type ScrapeConfigurationData = Expand<EntityDataMixed<"scrapeConfiguration">>;
 export type ScrapeConfigurationState = EntityStateType<"scrapeConfiguration">;
 export type ScrapeConfigurationRecordMap = Record<"scrapeConfigurationRecordId", ScrapeConfigurationData>;
+
+export type ScrapeCycleRunType = AutomationEntity<"scrapeCycleRun">;
+export type ScrapeCycleRunDataRequired = Expand<EntityData<"scrapeCycleRun">>;
+export type ScrapeCycleRunDataOptional = Expand<EntityDataOptional<"scrapeCycleRun">>;
+export type ScrapeCycleRunRecordWithKey = Expand<EntityDataWithKey<"scrapeCycleRun">>;
+export type ScrapeCycleRunProcessed = Expand<ProcessedEntityData<"scrapeCycleRun">>;
+export type ScrapeCycleRunData = Expand<EntityDataMixed<"scrapeCycleRun">>;
+export type ScrapeCycleRunState = EntityStateType<"scrapeCycleRun">;
+export type ScrapeCycleRunRecordMap = Record<"scrapeCycleRunRecordId", ScrapeCycleRunData>;
+
+export type ScrapeCycleTrackerType = AutomationEntity<"scrapeCycleTracker">;
+export type ScrapeCycleTrackerDataRequired = Expand<EntityData<"scrapeCycleTracker">>;
+export type ScrapeCycleTrackerDataOptional = Expand<EntityDataOptional<"scrapeCycleTracker">>;
+export type ScrapeCycleTrackerRecordWithKey = Expand<EntityDataWithKey<"scrapeCycleTracker">>;
+export type ScrapeCycleTrackerProcessed = Expand<ProcessedEntityData<"scrapeCycleTracker">>;
+export type ScrapeCycleTrackerData = Expand<EntityDataMixed<"scrapeCycleTracker">>;
+export type ScrapeCycleTrackerState = EntityStateType<"scrapeCycleTracker">;
+export type ScrapeCycleTrackerRecordMap = Record<"scrapeCycleTrackerRecordId", ScrapeCycleTrackerData>;
 
 export type ScrapeDomainType = AutomationEntity<"scrapeDomain">;
 export type ScrapeDomainDataRequired = Expand<EntityData<"scrapeDomain">>;
@@ -754,6 +790,15 @@ export type ScrapeDomainSitemapData = Expand<EntityDataMixed<"scrapeDomainSitema
 export type ScrapeDomainSitemapState = EntityStateType<"scrapeDomainSitemap">;
 export type ScrapeDomainSitemapRecordMap = Record<"scrapeDomainSitemapRecordId", ScrapeDomainSitemapData>;
 
+export type ScrapeJobType = AutomationEntity<"scrapeJob">;
+export type ScrapeJobDataRequired = Expand<EntityData<"scrapeJob">>;
+export type ScrapeJobDataOptional = Expand<EntityDataOptional<"scrapeJob">>;
+export type ScrapeJobRecordWithKey = Expand<EntityDataWithKey<"scrapeJob">>;
+export type ScrapeJobProcessed = Expand<ProcessedEntityData<"scrapeJob">>;
+export type ScrapeJobData = Expand<EntityDataMixed<"scrapeJob">>;
+export type ScrapeJobState = EntityStateType<"scrapeJob">;
+export type ScrapeJobRecordMap = Record<"scrapeJobRecordId", ScrapeJobData>;
+
 export type ScrapeOverrideType = AutomationEntity<"scrapeOverride">;
 export type ScrapeOverrideDataRequired = Expand<EntityData<"scrapeOverride">>;
 export type ScrapeOverrideDataOptional = Expand<EntityDataOptional<"scrapeOverride">>;
@@ -772,6 +817,15 @@ export type ScrapeOverrideValueData = Expand<EntityDataMixed<"scrapeOverrideValu
 export type ScrapeOverrideValueState = EntityStateType<"scrapeOverrideValue">;
 export type ScrapeOverrideValueRecordMap = Record<"scrapeOverrideValueRecordId", ScrapeOverrideValueData>;
 
+export type ScrapeParsedPageType = AutomationEntity<"scrapeParsedPage">;
+export type ScrapeParsedPageDataRequired = Expand<EntityData<"scrapeParsedPage">>;
+export type ScrapeParsedPageDataOptional = Expand<EntityDataOptional<"scrapeParsedPage">>;
+export type ScrapeParsedPageRecordWithKey = Expand<EntityDataWithKey<"scrapeParsedPage">>;
+export type ScrapeParsedPageProcessed = Expand<ProcessedEntityData<"scrapeParsedPage">>;
+export type ScrapeParsedPageData = Expand<EntityDataMixed<"scrapeParsedPage">>;
+export type ScrapeParsedPageState = EntityStateType<"scrapeParsedPage">;
+export type ScrapeParsedPageRecordMap = Record<"scrapeParsedPageRecordId", ScrapeParsedPageData>;
+
 export type ScrapePathPatternType = AutomationEntity<"scrapePathPattern">;
 export type ScrapePathPatternDataRequired = Expand<EntityData<"scrapePathPattern">>;
 export type ScrapePathPatternDataOptional = Expand<EntityDataOptional<"scrapePathPattern">>;
@@ -781,6 +835,15 @@ export type ScrapePathPatternData = Expand<EntityDataMixed<"scrapePathPattern">>
 export type ScrapePathPatternState = EntityStateType<"scrapePathPattern">;
 export type ScrapePathPatternRecordMap = Record<"scrapePathPatternRecordId", ScrapePathPatternData>;
 
+export type ScrapePathPatternCachePolicyType = AutomationEntity<"scrapePathPatternCachePolicy">;
+export type ScrapePathPatternCachePolicyDataRequired = Expand<EntityData<"scrapePathPatternCachePolicy">>;
+export type ScrapePathPatternCachePolicyDataOptional = Expand<EntityDataOptional<"scrapePathPatternCachePolicy">>;
+export type ScrapePathPatternCachePolicyRecordWithKey = Expand<EntityDataWithKey<"scrapePathPatternCachePolicy">>;
+export type ScrapePathPatternCachePolicyProcessed = Expand<ProcessedEntityData<"scrapePathPatternCachePolicy">>;
+export type ScrapePathPatternCachePolicyData = Expand<EntityDataMixed<"scrapePathPatternCachePolicy">>;
+export type ScrapePathPatternCachePolicyState = EntityStateType<"scrapePathPatternCachePolicy">;
+export type ScrapePathPatternCachePolicyRecordMap = Record<"scrapePathPatternCachePolicyRecordId", ScrapePathPatternCachePolicyData>;
+
 export type ScrapePathPatternOverrideType = AutomationEntity<"scrapePathPatternOverride">;
 export type ScrapePathPatternOverrideDataRequired = Expand<EntityData<"scrapePathPatternOverride">>;
 export type ScrapePathPatternOverrideDataOptional = Expand<EntityDataOptional<"scrapePathPatternOverride">>;
@@ -789,6 +852,33 @@ export type ScrapePathPatternOverrideProcessed = Expand<ProcessedEntityData<"scr
 export type ScrapePathPatternOverrideData = Expand<EntityDataMixed<"scrapePathPatternOverride">>;
 export type ScrapePathPatternOverrideState = EntityStateType<"scrapePathPatternOverride">;
 export type ScrapePathPatternOverrideRecordMap = Record<"scrapePathPatternOverrideRecordId", ScrapePathPatternOverrideData>;
+
+export type ScrapeQuickFailureLogType = AutomationEntity<"scrapeQuickFailureLog">;
+export type ScrapeQuickFailureLogDataRequired = Expand<EntityData<"scrapeQuickFailureLog">>;
+export type ScrapeQuickFailureLogDataOptional = Expand<EntityDataOptional<"scrapeQuickFailureLog">>;
+export type ScrapeQuickFailureLogRecordWithKey = Expand<EntityDataWithKey<"scrapeQuickFailureLog">>;
+export type ScrapeQuickFailureLogProcessed = Expand<ProcessedEntityData<"scrapeQuickFailureLog">>;
+export type ScrapeQuickFailureLogData = Expand<EntityDataMixed<"scrapeQuickFailureLog">>;
+export type ScrapeQuickFailureLogState = EntityStateType<"scrapeQuickFailureLog">;
+export type ScrapeQuickFailureLogRecordMap = Record<"scrapeQuickFailureLogRecordId", ScrapeQuickFailureLogData>;
+
+export type ScrapeTaskType = AutomationEntity<"scrapeTask">;
+export type ScrapeTaskDataRequired = Expand<EntityData<"scrapeTask">>;
+export type ScrapeTaskDataOptional = Expand<EntityDataOptional<"scrapeTask">>;
+export type ScrapeTaskRecordWithKey = Expand<EntityDataWithKey<"scrapeTask">>;
+export type ScrapeTaskProcessed = Expand<ProcessedEntityData<"scrapeTask">>;
+export type ScrapeTaskData = Expand<EntityDataMixed<"scrapeTask">>;
+export type ScrapeTaskState = EntityStateType<"scrapeTask">;
+export type ScrapeTaskRecordMap = Record<"scrapeTaskRecordId", ScrapeTaskData>;
+
+export type ScrapeTaskResponseType = AutomationEntity<"scrapeTaskResponse">;
+export type ScrapeTaskResponseDataRequired = Expand<EntityData<"scrapeTaskResponse">>;
+export type ScrapeTaskResponseDataOptional = Expand<EntityDataOptional<"scrapeTaskResponse">>;
+export type ScrapeTaskResponseRecordWithKey = Expand<EntityDataWithKey<"scrapeTaskResponse">>;
+export type ScrapeTaskResponseProcessed = Expand<ProcessedEntityData<"scrapeTaskResponse">>;
+export type ScrapeTaskResponseData = Expand<EntityDataMixed<"scrapeTaskResponse">>;
+export type ScrapeTaskResponseState = EntityStateType<"scrapeTaskResponse">;
+export type ScrapeTaskResponseRecordMap = Record<"scrapeTaskResponseRecordId", ScrapeTaskResponseData>;
 
 export type SubcategoryType = AutomationEntity<"subcategory">;
 export type SubcategoryDataRequired = Expand<EntityData<"subcategory">>;

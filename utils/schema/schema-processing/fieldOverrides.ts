@@ -364,7 +364,13 @@ const recipeToolFieldOverrides: AllFieldOverrides = {};
 
 const registeredFunctionFieldOverrides: AllFieldOverrides = {};
 
+const scrapeCachePolicyFieldOverrides: AllFieldOverrides = {};
+
 const scrapeConfigurationFieldOverrides: AllFieldOverrides = {};
+
+const scrapeCycleRunFieldOverrides: AllFieldOverrides = {};
+
+const scrapeCycleTrackerFieldOverrides: AllFieldOverrides = {};
 
 const scrapeDomainFieldOverrides: AllFieldOverrides = {};
 
@@ -378,13 +384,25 @@ const scrapeDomainRobotsTxtFieldOverrides: AllFieldOverrides = {};
 
 const scrapeDomainSitemapFieldOverrides: AllFieldOverrides = {};
 
+const scrapeJobFieldOverrides: AllFieldOverrides = {};
+
 const scrapeOverrideFieldOverrides: AllFieldOverrides = {};
 
 const scrapeOverrideValueFieldOverrides: AllFieldOverrides = {};
 
+const scrapeParsedPageFieldOverrides: AllFieldOverrides = {};
+
 const scrapePathPatternFieldOverrides: AllFieldOverrides = {};
 
+const scrapePathPatternCachePolicyFieldOverrides: AllFieldOverrides = {};
+
 const scrapePathPatternOverrideFieldOverrides: AllFieldOverrides = {};
+
+const scrapeQuickFailureLogFieldOverrides: AllFieldOverrides = {};
+
+const scrapeTaskFieldOverrides: AllFieldOverrides = {};
+
+const scrapeTaskResponseFieldOverrides: AllFieldOverrides = {};
 
 const subcategoryFieldOverrides: AllFieldOverrides = {};
 
@@ -470,17 +488,26 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     recipeProcessor: recipeProcessorFieldOverrides,
     recipeTool: recipeToolFieldOverrides,
     registeredFunction: registeredFunctionFieldOverrides,
+    scrapeCachePolicy: scrapeCachePolicyFieldOverrides,
     scrapeConfiguration: scrapeConfigurationFieldOverrides,
+    scrapeCycleRun: scrapeCycleRunFieldOverrides,
+    scrapeCycleTracker: scrapeCycleTrackerFieldOverrides,
     scrapeDomain: scrapeDomainFieldOverrides,
     scrapeDomainDisallowedNotes: scrapeDomainDisallowedNotesFieldOverrides,
     scrapeDomainNotes: scrapeDomainNotesFieldOverrides,
     scrapeDomainQuickScrapeSettings: scrapeDomainQuickScrapeSettingsFieldOverrides,
     scrapeDomainRobotsTxt: scrapeDomainRobotsTxtFieldOverrides,
     scrapeDomainSitemap: scrapeDomainSitemapFieldOverrides,
+    scrapeJob: scrapeJobFieldOverrides,
     scrapeOverride: scrapeOverrideFieldOverrides,
     scrapeOverrideValue: scrapeOverrideValueFieldOverrides,
+    scrapeParsedPage: scrapeParsedPageFieldOverrides,
     scrapePathPattern: scrapePathPatternFieldOverrides,
+    scrapePathPatternCachePolicy: scrapePathPatternCachePolicyFieldOverrides,
     scrapePathPatternOverride: scrapePathPatternOverrideFieldOverrides,
+    scrapeQuickFailureLog: scrapeQuickFailureLogFieldOverrides,
+    scrapeTask: scrapeTaskFieldOverrides,
+    scrapeTaskResponse: scrapeTaskResponseFieldOverrides,
     subcategory: subcategoryFieldOverrides,
     systemFunction: systemFunctionFieldOverrides,
     taskAssignments: taskAssignmentsFieldOverrides,
