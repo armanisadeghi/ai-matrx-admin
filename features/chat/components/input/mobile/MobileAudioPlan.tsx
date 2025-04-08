@@ -14,6 +14,7 @@ interface MobileAudioPlanProps {
     onTogglePlan: () => void;
     onClose?: () => void;
     onBack?: () => void;
+    allowMultiple?: boolean;
 }
 
 const MobileAudioPlan: React.FC<MobileAudioPlanProps> = ({
@@ -22,6 +23,7 @@ const MobileAudioPlan: React.FC<MobileAudioPlanProps> = ({
     onTogglePlan,
     onClose,
     onBack,
+    allowMultiple = true,
 }) => {
     const chatSelectors = createChatSelectors();
     const files = chatSelectors.activeMessageFiles(useAppSelector(state => state));
@@ -77,7 +79,7 @@ const MobileAudioPlan: React.FC<MobileAudioPlanProps> = ({
                         path={`chat-attachments/conversation-${conversationId}`}
                         onUploadComplete={fileManager.addFiles}
                         onUploadStatusChange={fileManager.handleUploadStatusChange}
-                        multiple={false}
+                        multiple={allowMultiple}
                         useMiniUploader={true}
                     />
                 </div>

@@ -29,6 +29,7 @@ interface AudioPlanDialogButtonProps {
   disabled?: boolean;
   fileManager: FileManagerReturn;
   conversationId: string;
+  allowMultiple?: boolean;
 }
 
 const AudioPlanDialogButton: React.FC<AudioPlanDialogButtonProps> = ({
@@ -37,6 +38,7 @@ const AudioPlanDialogButton: React.FC<AudioPlanDialogButtonProps> = ({
   disabled = false,
   fileManager,
   conversationId,
+  allowMultiple = true,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
@@ -112,7 +114,7 @@ const AudioPlanDialogButton: React.FC<AudioPlanDialogButtonProps> = ({
                 path={`chat-attachments/conversation-${conversationId}`}
                 onUploadComplete={fileManager.addFiles}
                 onUploadStatusChange={fileManager.handleUploadStatusChange}
-                multiple={false}
+                multiple={allowMultiple}
                 useMiniUploader={true}
               />
             </div>

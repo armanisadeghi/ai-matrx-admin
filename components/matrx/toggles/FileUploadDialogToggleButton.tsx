@@ -35,7 +35,7 @@ const FileUploadDialogToggleButton: React.FC<FileUploadDialogToggleButtonProps> 
   cancelLabel = "Cancel",
   successButtonLabel = "Continue",
   fileManager,
-  allowMultiple = false,
+  allowMultiple = true,
   ...toggleButtonProps
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
