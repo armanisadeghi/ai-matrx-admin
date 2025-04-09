@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { useConversationPanel } from "@/features/chat/hooks/useConversationPanel";
 import ResponseColumn from "@/features/chat/components/response/ResponseColumn";
 import formatRelativeTime from "../utils/formatRelativeTime";
+import ConversationPreviewHeader from "./ConversationPreviewHeader";
 
 interface ConversationSearchOverlayProps {
     isOpen: boolean;
@@ -23,20 +24,19 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
         handleCoordinatedFetch,
         handleContextMenu,
     } = useConversationPanel();
-
     // Local state for the overlay
     const [selectedForPreview, setSelectedForPreview] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(false); // Start collapsed with larger preview area
     const [showContextMenu, setShowContextMenu] = useState(false);
     const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
     const [contextMenuConversationId, setContextMenuConversationId] = useState<string | null>(null);
-
+    
     // Refs
     const overlayContainerRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const contextMenuRef = useRef<HTMLDivElement>(null);
-
+    
     // Use a custom close handler that checks if we should prevent closing
     const handleClose = (e?: MouseEvent) => {
         // If we have a click event, check if it's inside the context menu
@@ -49,13 +49,12 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
         ) {
             return; // Don't close the overlay
         }
-
         // Only close if event is outside our overlay and not on a context menu
         if (!e || !overlayRef.current || !overlayRef.current.contains(e.target as Node)) {
             onClose();
         }
     };
-
+    
     // Custom click outside hook
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -67,23 +66,21 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                 handleClose(event);
             }
         };
-
         if (isOpen) {
             document.addEventListener("mousedown", handleClickOutside);
         }
-
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [isOpen, showContextMenu]);
-
+    
     // Focus the search input when overlay opens
     useEffect(() => {
         if (isOpen && searchInputRef.current) {
             searchInputRef.current.focus();
         }
     }, [isOpen]);
-
+    
     // Reset state when overlay closes
     useEffect(() => {
         if (!isOpen) {
@@ -93,7 +90,7 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
             setShowContextMenu(false);
         }
     }, [isOpen, setContentSearch, setLabelSearch]);
-
+    
     // Handle keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -107,16 +104,14 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                 }
             }
         };
-
         if (isOpen) {
             document.addEventListener("keydown", handleKeyDown);
         }
-
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, [isOpen, showContextMenu]);
-
+    
     // Close context menu when clicking outside, but don't close the overlay
     useEffect(() => {
         const handleContextMenuOutside = (event: MouseEvent) => {
@@ -128,65 +123,89 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                 setShowContextMenu(false);
             }
         };
-
         if (showContextMenu) {
             document.addEventListener("mousedown", handleContextMenuOutside);
         }
-
         return () => {
             document.removeEventListener("mousedown", handleContextMenuOutside);
         };
     }, [showContextMenu]);
-
+    
     // Handle selecting a conversation for preview
     const handlePreview = (convoId: string) => {
         setSelectedForPreview(convoId);
         handleCoordinatedFetch(convoId);
     };
-
+    
     // Handle navigating to a conversation
     const handleNavigate = (convoId: string) => {
         handleSelectConversation(convoId);
         onClose();
     };
-
+    
     // Handle context menu
     const handleLocalContextMenu = (e: React.MouseEvent, convoId: string) => {
         e.preventDefault();
         e.stopPropagation();
         const boundingRect = overlayContainerRef.current?.getBoundingClientRect() || { left: 0, top: 0 };
-
         // Adjust position relative to the overlay container
         const x = e.clientX;
         const y = e.clientY;
-
         // Check if the context menu would go off the right edge
         const rightEdgeDistance = window.innerWidth - x;
         const adjustedX = rightEdgeDistance < 200 ? x - (200 - rightEdgeDistance) : x;
-
         setContextMenuPosition({ x: adjustedX, y });
         setContextMenuConversationId(convoId);
         setShowContextMenu(true);
     };
-
+    
+    // Handle updating conversation metadata
+    const handleUpdateConversation = (id: string, updates: Partial<any>) => {
+        // Implement your update logic here
+        console.log(`Updating conversation ${id}:`, updates);
+        // This is where you would call your API or update local state
+        // For example:
+        // updateConversationMetadata(id, updates);
+    };
+    
     // Handle context menu actions
     const handleEdit = (id: string) => {
-        // Implement your edit logic here
-        console.log(`Editing conversation: ${id}`);
+        // Select the conversation for preview first if not already selected
+        if (selectedForPreview !== id) {
+            setSelectedForPreview(id);
+            handleCoordinatedFetch(id);
+            
+            // Wait for the conversation to be loaded and component to be mounted
+            setTimeout(() => {
+                // Use a custom event to trigger edit mode
+                const event = new CustomEvent('edit-conversation-metadata', { detail: { id } });
+                document.dispatchEvent(event);
+            }, 100);
+        } else {
+            // If already selected, just trigger edit mode immediately
+            const event = new CustomEvent('edit-conversation-metadata', { detail: { id } });
+            document.dispatchEvent(event);
+        }
+        
         setShowContextMenu(false);
     };
-
+    
     const handleDelete = (id: string) => {
         // Implement your delete logic here
         console.log(`Deleting conversation: ${id}`);
         setShowContextMenu(false);
     };
-
+    
     if (!isOpen) return null;
-
+    
     // Calculate if we have any results
     const hasResults = Object.values(groupedConversations).some((group) => group.length > 0);
-
+    
+    // Find the selected conversation
+    const selectedConversation = selectedForPreview 
+        ? Object.values(groupedConversations).flat().find(c => c.id === selectedForPreview) 
+        : null;
+    
     return (
         <div
             ref={overlayContainerRef}
@@ -211,7 +230,7 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                             <input
                                 ref={searchInputRef}
                                 type="text"
-                                placeholder="Search conversations..."
+                                placeholder="Search Labels..."
                                 value={labelSearch}
                                 onChange={(e) => setLabelSearch(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-850 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none border-none"
@@ -221,7 +240,7 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500 dark:text-zinc-400" />
                             <input
                                 type="text"
-                                placeholder="Search in content..."
+                                placeholder="Search description and keywords..."
                                 value={contentSearch}
                                 onChange={(e) => setContentSearch(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-850 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 focus:outline-none border-none"
@@ -249,7 +268,6 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                         {hasResults ? (
                             Object.entries(groupedConversations).map(([section, conversations]) => {
                                 if (conversations.length === 0) return null;
-
                                 return (
                                     <div key={section} className="mb-4">
                                         <div className="px-4 py-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 sticky top-0 bg-zinc-100 dark:bg-zinc-850 z-10">
@@ -260,7 +278,6 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                                                 const isPreviewSelected = selectedForPreview === convo.id;
                                                 // Only use updatedAt, never fall back to createdAt
                                                 const lastUpdated = convo.updatedAt;
-
                                                 return (
                                                     <div
                                                         key={convo.id}
@@ -319,7 +336,6 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                             </div>
                         )}
                     </div>
-
                     {/* Expansion/collapse toggle button positioned at the divider */}
                     <button
                         onClick={() => setExpanded(!expanded)}
@@ -332,7 +348,6 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                     >
                         {expanded ? <BsChevronDoubleLeft size={22} /> : <BsChevronDoubleRight size={22} />}
                     </button>
-
                     {/* Preview area */}
                     <div
                         className={clsx(
@@ -340,24 +355,21 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                             expanded ? "w-1/2" : "w-2/3"
                         )}
                     >
-                        {selectedForPreview ? (
-                            <div className="h-full flex flex-col">
-                                <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center">
-                                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                                        {Object.values(groupedConversations)
-                                            .flat()
-                                            .find((c) => c.id === selectedForPreview)?.label || "Preview"}
-                                    </h2>
-                                    <button
-                                        onClick={() => handleNavigate(selectedForPreview)}
-                                        className="px-4 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-850 text-zinc-900 dark:text-zinc-100 text-sm flex items-center"
-                                    >
-                                        <span>Open</span>
-                                        <ArrowRight size={14} className="ml-1" />
-                                    </button>
-                                </div>
+                        {selectedForPreview && selectedConversation ? (
+                            <div className="h-full flex flex-col">                                
+                                {/* Conversation Metadata Component */}
+                                {selectedConversation && (
+                                    <ConversationPreviewHeader 
+                                        key={selectedConversation.id}
+                                        conversation={selectedConversation}
+                                        editable={true}
+                                        onUpdate={handleUpdateConversation}
+                                        onNavigate={handleNavigate}
+                                    />
+                                )}
+                                
                                 <div className="flex-1 overflow-y-auto p-4">
-                                    <ResponseColumn />
+                                    <ResponseColumn isOverlay={true} />
                                 </div>
                             </div>
                         ) : (
@@ -371,7 +383,6 @@ export const ConversationSearchOverlay: React.FC<ConversationSearchOverlayProps>
                     </div>
                 </div>
             </div>
-
             {/* Context Menu */}
             {showContextMenu && (
                 <div

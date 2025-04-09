@@ -12,9 +12,10 @@ interface AssistantMessageProps {
     onScrollToBottom?: () => void;
     onContentUpdate?: (newContent: string) => void;
     markdownAnalysisData?: MarkdownAnalysisData;
+    isOverlay?: boolean;
 }
 
-const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamActive = false, onScrollToBottom, onContentUpdate, markdownAnalysisData }) => {
+const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamActive = false, onScrollToBottom, onContentUpdate, markdownAnalysisData, isOverlay = false }) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
@@ -85,7 +86,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamAc
                     messageId={message.id}
                 />
 
-                {!isStreamActive && (
+                {!isStreamActive && !isOverlay && (
                     <div className="flex items-center space-x-0">
                         <button
                             className={`p-1.5 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
