@@ -94,6 +94,21 @@ export function generateMockData(provider: string) {
           id: '12345678-1234-1234-1234-123456789012'
         }
       };
+    case 'twitter':
+      return {
+        access_token: 'AAAA...MOCK_TWITTER_TOKEN',
+        token_type: 'bearer',
+        expires_in: 7200,
+        refresh_token: 'RRRR...MOCK_REFRESH_TOKEN',
+        scope: 'tweet.read users.read offline.access',
+        user: {
+          id: '123456789',
+          name: 'Jane Smith',
+          username: 'janesmith',
+          profile_image_url: 'https://example.com/profile.jpg',
+          verified: true
+        }
+      };
     default:
       return {
         access_token: 'mock-token-for-' + provider,

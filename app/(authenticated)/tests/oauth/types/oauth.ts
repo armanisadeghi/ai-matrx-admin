@@ -46,6 +46,22 @@ export interface MicrosoftTokenResponse extends OAuthBaseResponse {
   user?: MicrosoftUser;
 }
 
+// Twitter-specific types
+export interface TwitterUser {
+  id: string;
+  name: string;
+  username: string;
+  profile_image_url?: string;
+  verified?: boolean;
+}
+
+export interface TwitterTokenResponse extends OAuthBaseResponse {
+  expires_in: number;
+  refresh_token?: string;
+  scope?: string;
+  user?: TwitterUser;
+}
+
 // Provider configuration for UI
 export interface OAuthProviderConfig {
   name: string;
