@@ -119,7 +119,8 @@ import {
     Tag,
     Key,
     Flag,
-    PieChart
+    PieChart,
+    Play
 } from "lucide-react";
 
 
@@ -345,7 +346,27 @@ export const allTools: Tool[] = [
         category: "Data",
         icon: <BarChart size={20} />,
     },
-
+    {
+        id: "data_sql_list_tables",
+        name: "List Database Tables",
+        description: "List all tables in the Supabase database to discover available data",
+        category: "Data",
+        icon: <Database size={20} />,
+    },
+    {
+        id: "data_sql_get_table_schema",
+        name: "Get Table Schema",
+        description: "View detailed structure of a specific database table including columns and data types",
+        category: "Data",
+        icon: <Table size={20} />,
+    },
+    {
+        id: "data_sql_execute_query",
+        name: "Execute SQL Query",
+        description: "Run SQL queries to insert, update, select, or delete data in the Supabase database",
+        category: "Data",
+        icon: <Play size={20} />,
+    },
     // Web Tools
     {
         id: "news",
