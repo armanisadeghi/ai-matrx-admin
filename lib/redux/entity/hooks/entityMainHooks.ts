@@ -4887,6 +4887,92 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
 
 
 
+type UseScrapeCachePolicyWithFetchReturn = {
+    scrapeCachePolicySelectors: EntitySelectors<"scrapeCachePolicy">;
+    scrapeCachePolicyActions: EntityActions<"scrapeCachePolicy">;
+    scrapeCachePolicyRecords: Record<MatrxRecordId, ScrapeCachePolicyData>;
+    scrapeCachePolicyUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeCachePolicyData>>;
+    scrapeCachePolicySelectedRecordIds: MatrxRecordId[];
+    scrapeCachePolicyIsLoading: boolean;
+    scrapeCachePolicyIsError: boolean;
+    scrapeCachePolicyQuickRefRecords: QuickReferenceRecord[];
+    addScrapeCachePolicyMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeCachePolicyMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeCachePolicyMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeCachePolicyMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeCachePolicyPkValue: (pkValue: string) => void;
+    addScrapeCachePolicyPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeCachePolicyPkValue: (pkValue: string) => void;
+    removeScrapeCachePolicyPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeCachePolicyMissingRecords: boolean;
+    setScrapeCachePolicyShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeCachePolicyFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeCachePolicyQuickRefs: () => void;
+    fetchScrapeCachePolicyOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeCachePolicyOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeCachePolicyAll: () => void;
+    fetchScrapeCachePolicyPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeCachePolicyWithFetch = (): UseScrapeCachePolicyWithFetchReturn => {
+    const {
+        selectors: scrapeCachePolicySelectors,
+        actions: scrapeCachePolicyActions,
+        allRecords: scrapeCachePolicyRecords,
+        unsavedRecords: scrapeCachePolicyUnsavedRecords,
+        selectedRecordIds: scrapeCachePolicySelectedRecordIds,
+        isLoading: scrapeCachePolicyIsLoading,
+        isError: scrapeCachePolicyIsError,
+        quickRefRecords: scrapeCachePolicyQuickRefRecords,
+        addMatrxId: addScrapeCachePolicyMatrxId,
+        addMatrxIds: addScrapeCachePolicyMatrxIds,
+        removeMatrxId: removeScrapeCachePolicyMatrxId,
+        removeMatrxIds: removeScrapeCachePolicyMatrxIds,
+        addPkValue: addScrapeCachePolicyPkValue,
+        addPkValues: addScrapeCachePolicyPkValues,
+        removePkValue: removeScrapeCachePolicyPkValue,
+        removePkValues: removeScrapeCachePolicyPkValues,
+        isMissingRecords: isScrapeCachePolicyMissingRecords,
+        setShouldFetch: setScrapeCachePolicyShouldFetch,
+        setFetchMode: setScrapeCachePolicyFetchMode,
+        fetchQuickRefs: fetchScrapeCachePolicyQuickRefs,
+        fetchOne: fetchScrapeCachePolicyOne,
+        fetchOneWithFkIfk: fetchScrapeCachePolicyOneWithFkIfk,
+        fetchAll: fetchScrapeCachePolicyAll,
+        fetchPaginated: fetchScrapeCachePolicyPaginated,
+
+    } = useEntityWithFetch("scrapeCachePolicy");
+
+    return {
+        scrapeCachePolicySelectors,
+        scrapeCachePolicyActions,
+        scrapeCachePolicyRecords,
+        scrapeCachePolicyUnsavedRecords,
+        scrapeCachePolicySelectedRecordIds,
+        scrapeCachePolicyIsLoading,
+        scrapeCachePolicyIsError,
+        scrapeCachePolicyQuickRefRecords,
+        addScrapeCachePolicyMatrxId,
+        addScrapeCachePolicyMatrxIds,
+        removeScrapeCachePolicyMatrxId,
+        removeScrapeCachePolicyMatrxIds,
+        addScrapeCachePolicyPkValue,
+        addScrapeCachePolicyPkValues,
+        removeScrapeCachePolicyPkValue,
+        removeScrapeCachePolicyPkValues,
+        isScrapeCachePolicyMissingRecords,
+        setScrapeCachePolicyShouldFetch,
+        setScrapeCachePolicyFetchMode,
+        fetchScrapeCachePolicyQuickRefs,
+        fetchScrapeCachePolicyOne,
+        fetchScrapeCachePolicyOneWithFkIfk,
+        fetchScrapeCachePolicyAll,
+        fetchScrapeCachePolicyPaginated,
+    };
+};
+
+
+
 type UseScrapeConfigurationWithFetchReturn = {
     scrapeConfigurationSelectors: EntitySelectors<"scrapeConfiguration">;
     scrapeConfigurationActions: EntityActions<"scrapeConfiguration">;
@@ -4968,6 +5054,178 @@ export const useScrapeConfigurationWithFetch = (): UseScrapeConfigurationWithFet
         fetchScrapeConfigurationOneWithFkIfk,
         fetchScrapeConfigurationAll,
         fetchScrapeConfigurationPaginated,
+    };
+};
+
+
+
+type UseScrapeCycleRunWithFetchReturn = {
+    scrapeCycleRunSelectors: EntitySelectors<"scrapeCycleRun">;
+    scrapeCycleRunActions: EntityActions<"scrapeCycleRun">;
+    scrapeCycleRunRecords: Record<MatrxRecordId, ScrapeCycleRunData>;
+    scrapeCycleRunUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeCycleRunData>>;
+    scrapeCycleRunSelectedRecordIds: MatrxRecordId[];
+    scrapeCycleRunIsLoading: boolean;
+    scrapeCycleRunIsError: boolean;
+    scrapeCycleRunQuickRefRecords: QuickReferenceRecord[];
+    addScrapeCycleRunMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeCycleRunMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeCycleRunMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeCycleRunMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeCycleRunPkValue: (pkValue: string) => void;
+    addScrapeCycleRunPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeCycleRunPkValue: (pkValue: string) => void;
+    removeScrapeCycleRunPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeCycleRunMissingRecords: boolean;
+    setScrapeCycleRunShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeCycleRunFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeCycleRunQuickRefs: () => void;
+    fetchScrapeCycleRunOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeCycleRunOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeCycleRunAll: () => void;
+    fetchScrapeCycleRunPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeCycleRunWithFetch = (): UseScrapeCycleRunWithFetchReturn => {
+    const {
+        selectors: scrapeCycleRunSelectors,
+        actions: scrapeCycleRunActions,
+        allRecords: scrapeCycleRunRecords,
+        unsavedRecords: scrapeCycleRunUnsavedRecords,
+        selectedRecordIds: scrapeCycleRunSelectedRecordIds,
+        isLoading: scrapeCycleRunIsLoading,
+        isError: scrapeCycleRunIsError,
+        quickRefRecords: scrapeCycleRunQuickRefRecords,
+        addMatrxId: addScrapeCycleRunMatrxId,
+        addMatrxIds: addScrapeCycleRunMatrxIds,
+        removeMatrxId: removeScrapeCycleRunMatrxId,
+        removeMatrxIds: removeScrapeCycleRunMatrxIds,
+        addPkValue: addScrapeCycleRunPkValue,
+        addPkValues: addScrapeCycleRunPkValues,
+        removePkValue: removeScrapeCycleRunPkValue,
+        removePkValues: removeScrapeCycleRunPkValues,
+        isMissingRecords: isScrapeCycleRunMissingRecords,
+        setShouldFetch: setScrapeCycleRunShouldFetch,
+        setFetchMode: setScrapeCycleRunFetchMode,
+        fetchQuickRefs: fetchScrapeCycleRunQuickRefs,
+        fetchOne: fetchScrapeCycleRunOne,
+        fetchOneWithFkIfk: fetchScrapeCycleRunOneWithFkIfk,
+        fetchAll: fetchScrapeCycleRunAll,
+        fetchPaginated: fetchScrapeCycleRunPaginated,
+
+    } = useEntityWithFetch("scrapeCycleRun");
+
+    return {
+        scrapeCycleRunSelectors,
+        scrapeCycleRunActions,
+        scrapeCycleRunRecords,
+        scrapeCycleRunUnsavedRecords,
+        scrapeCycleRunSelectedRecordIds,
+        scrapeCycleRunIsLoading,
+        scrapeCycleRunIsError,
+        scrapeCycleRunQuickRefRecords,
+        addScrapeCycleRunMatrxId,
+        addScrapeCycleRunMatrxIds,
+        removeScrapeCycleRunMatrxId,
+        removeScrapeCycleRunMatrxIds,
+        addScrapeCycleRunPkValue,
+        addScrapeCycleRunPkValues,
+        removeScrapeCycleRunPkValue,
+        removeScrapeCycleRunPkValues,
+        isScrapeCycleRunMissingRecords,
+        setScrapeCycleRunShouldFetch,
+        setScrapeCycleRunFetchMode,
+        fetchScrapeCycleRunQuickRefs,
+        fetchScrapeCycleRunOne,
+        fetchScrapeCycleRunOneWithFkIfk,
+        fetchScrapeCycleRunAll,
+        fetchScrapeCycleRunPaginated,
+    };
+};
+
+
+
+type UseScrapeCycleTrackerWithFetchReturn = {
+    scrapeCycleTrackerSelectors: EntitySelectors<"scrapeCycleTracker">;
+    scrapeCycleTrackerActions: EntityActions<"scrapeCycleTracker">;
+    scrapeCycleTrackerRecords: Record<MatrxRecordId, ScrapeCycleTrackerData>;
+    scrapeCycleTrackerUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeCycleTrackerData>>;
+    scrapeCycleTrackerSelectedRecordIds: MatrxRecordId[];
+    scrapeCycleTrackerIsLoading: boolean;
+    scrapeCycleTrackerIsError: boolean;
+    scrapeCycleTrackerQuickRefRecords: QuickReferenceRecord[];
+    addScrapeCycleTrackerMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeCycleTrackerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeCycleTrackerMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeCycleTrackerMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeCycleTrackerPkValue: (pkValue: string) => void;
+    addScrapeCycleTrackerPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeCycleTrackerPkValue: (pkValue: string) => void;
+    removeScrapeCycleTrackerPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeCycleTrackerMissingRecords: boolean;
+    setScrapeCycleTrackerShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeCycleTrackerFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeCycleTrackerQuickRefs: () => void;
+    fetchScrapeCycleTrackerOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeCycleTrackerOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeCycleTrackerAll: () => void;
+    fetchScrapeCycleTrackerPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeCycleTrackerWithFetch = (): UseScrapeCycleTrackerWithFetchReturn => {
+    const {
+        selectors: scrapeCycleTrackerSelectors,
+        actions: scrapeCycleTrackerActions,
+        allRecords: scrapeCycleTrackerRecords,
+        unsavedRecords: scrapeCycleTrackerUnsavedRecords,
+        selectedRecordIds: scrapeCycleTrackerSelectedRecordIds,
+        isLoading: scrapeCycleTrackerIsLoading,
+        isError: scrapeCycleTrackerIsError,
+        quickRefRecords: scrapeCycleTrackerQuickRefRecords,
+        addMatrxId: addScrapeCycleTrackerMatrxId,
+        addMatrxIds: addScrapeCycleTrackerMatrxIds,
+        removeMatrxId: removeScrapeCycleTrackerMatrxId,
+        removeMatrxIds: removeScrapeCycleTrackerMatrxIds,
+        addPkValue: addScrapeCycleTrackerPkValue,
+        addPkValues: addScrapeCycleTrackerPkValues,
+        removePkValue: removeScrapeCycleTrackerPkValue,
+        removePkValues: removeScrapeCycleTrackerPkValues,
+        isMissingRecords: isScrapeCycleTrackerMissingRecords,
+        setShouldFetch: setScrapeCycleTrackerShouldFetch,
+        setFetchMode: setScrapeCycleTrackerFetchMode,
+        fetchQuickRefs: fetchScrapeCycleTrackerQuickRefs,
+        fetchOne: fetchScrapeCycleTrackerOne,
+        fetchOneWithFkIfk: fetchScrapeCycleTrackerOneWithFkIfk,
+        fetchAll: fetchScrapeCycleTrackerAll,
+        fetchPaginated: fetchScrapeCycleTrackerPaginated,
+
+    } = useEntityWithFetch("scrapeCycleTracker");
+
+    return {
+        scrapeCycleTrackerSelectors,
+        scrapeCycleTrackerActions,
+        scrapeCycleTrackerRecords,
+        scrapeCycleTrackerUnsavedRecords,
+        scrapeCycleTrackerSelectedRecordIds,
+        scrapeCycleTrackerIsLoading,
+        scrapeCycleTrackerIsError,
+        scrapeCycleTrackerQuickRefRecords,
+        addScrapeCycleTrackerMatrxId,
+        addScrapeCycleTrackerMatrxIds,
+        removeScrapeCycleTrackerMatrxId,
+        removeScrapeCycleTrackerMatrxIds,
+        addScrapeCycleTrackerPkValue,
+        addScrapeCycleTrackerPkValues,
+        removeScrapeCycleTrackerPkValue,
+        removeScrapeCycleTrackerPkValues,
+        isScrapeCycleTrackerMissingRecords,
+        setScrapeCycleTrackerShouldFetch,
+        setScrapeCycleTrackerFetchMode,
+        fetchScrapeCycleTrackerQuickRefs,
+        fetchScrapeCycleTrackerOne,
+        fetchScrapeCycleTrackerOneWithFkIfk,
+        fetchScrapeCycleTrackerAll,
+        fetchScrapeCycleTrackerPaginated,
     };
 };
 
@@ -5489,6 +5747,92 @@ export const useScrapeDomainSitemapWithFetch = (): UseScrapeDomainSitemapWithFet
 
 
 
+type UseScrapeJobWithFetchReturn = {
+    scrapeJobSelectors: EntitySelectors<"scrapeJob">;
+    scrapeJobActions: EntityActions<"scrapeJob">;
+    scrapeJobRecords: Record<MatrxRecordId, ScrapeJobData>;
+    scrapeJobUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeJobData>>;
+    scrapeJobSelectedRecordIds: MatrxRecordId[];
+    scrapeJobIsLoading: boolean;
+    scrapeJobIsError: boolean;
+    scrapeJobQuickRefRecords: QuickReferenceRecord[];
+    addScrapeJobMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeJobMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeJobMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeJobMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeJobPkValue: (pkValue: string) => void;
+    addScrapeJobPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeJobPkValue: (pkValue: string) => void;
+    removeScrapeJobPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeJobMissingRecords: boolean;
+    setScrapeJobShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeJobFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeJobQuickRefs: () => void;
+    fetchScrapeJobOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeJobOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeJobAll: () => void;
+    fetchScrapeJobPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeJobWithFetch = (): UseScrapeJobWithFetchReturn => {
+    const {
+        selectors: scrapeJobSelectors,
+        actions: scrapeJobActions,
+        allRecords: scrapeJobRecords,
+        unsavedRecords: scrapeJobUnsavedRecords,
+        selectedRecordIds: scrapeJobSelectedRecordIds,
+        isLoading: scrapeJobIsLoading,
+        isError: scrapeJobIsError,
+        quickRefRecords: scrapeJobQuickRefRecords,
+        addMatrxId: addScrapeJobMatrxId,
+        addMatrxIds: addScrapeJobMatrxIds,
+        removeMatrxId: removeScrapeJobMatrxId,
+        removeMatrxIds: removeScrapeJobMatrxIds,
+        addPkValue: addScrapeJobPkValue,
+        addPkValues: addScrapeJobPkValues,
+        removePkValue: removeScrapeJobPkValue,
+        removePkValues: removeScrapeJobPkValues,
+        isMissingRecords: isScrapeJobMissingRecords,
+        setShouldFetch: setScrapeJobShouldFetch,
+        setFetchMode: setScrapeJobFetchMode,
+        fetchQuickRefs: fetchScrapeJobQuickRefs,
+        fetchOne: fetchScrapeJobOne,
+        fetchOneWithFkIfk: fetchScrapeJobOneWithFkIfk,
+        fetchAll: fetchScrapeJobAll,
+        fetchPaginated: fetchScrapeJobPaginated,
+
+    } = useEntityWithFetch("scrapeJob");
+
+    return {
+        scrapeJobSelectors,
+        scrapeJobActions,
+        scrapeJobRecords,
+        scrapeJobUnsavedRecords,
+        scrapeJobSelectedRecordIds,
+        scrapeJobIsLoading,
+        scrapeJobIsError,
+        scrapeJobQuickRefRecords,
+        addScrapeJobMatrxId,
+        addScrapeJobMatrxIds,
+        removeScrapeJobMatrxId,
+        removeScrapeJobMatrxIds,
+        addScrapeJobPkValue,
+        addScrapeJobPkValues,
+        removeScrapeJobPkValue,
+        removeScrapeJobPkValues,
+        isScrapeJobMissingRecords,
+        setScrapeJobShouldFetch,
+        setScrapeJobFetchMode,
+        fetchScrapeJobQuickRefs,
+        fetchScrapeJobOne,
+        fetchScrapeJobOneWithFkIfk,
+        fetchScrapeJobAll,
+        fetchScrapeJobPaginated,
+    };
+};
+
+
+
 type UseScrapeOverrideWithFetchReturn = {
     scrapeOverrideSelectors: EntitySelectors<"scrapeOverride">;
     scrapeOverrideActions: EntityActions<"scrapeOverride">;
@@ -5661,6 +6005,92 @@ export const useScrapeOverrideValueWithFetch = (): UseScrapeOverrideValueWithFet
 
 
 
+type UseScrapeParsedPageWithFetchReturn = {
+    scrapeParsedPageSelectors: EntitySelectors<"scrapeParsedPage">;
+    scrapeParsedPageActions: EntityActions<"scrapeParsedPage">;
+    scrapeParsedPageRecords: Record<MatrxRecordId, ScrapeParsedPageData>;
+    scrapeParsedPageUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeParsedPageData>>;
+    scrapeParsedPageSelectedRecordIds: MatrxRecordId[];
+    scrapeParsedPageIsLoading: boolean;
+    scrapeParsedPageIsError: boolean;
+    scrapeParsedPageQuickRefRecords: QuickReferenceRecord[];
+    addScrapeParsedPageMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeParsedPageMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeParsedPageMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeParsedPageMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeParsedPagePkValue: (pkValue: string) => void;
+    addScrapeParsedPagePkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeParsedPagePkValue: (pkValue: string) => void;
+    removeScrapeParsedPagePkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeParsedPageMissingRecords: boolean;
+    setScrapeParsedPageShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeParsedPageFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeParsedPageQuickRefs: () => void;
+    fetchScrapeParsedPageOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeParsedPageOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeParsedPageAll: () => void;
+    fetchScrapeParsedPagePaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeParsedPageWithFetch = (): UseScrapeParsedPageWithFetchReturn => {
+    const {
+        selectors: scrapeParsedPageSelectors,
+        actions: scrapeParsedPageActions,
+        allRecords: scrapeParsedPageRecords,
+        unsavedRecords: scrapeParsedPageUnsavedRecords,
+        selectedRecordIds: scrapeParsedPageSelectedRecordIds,
+        isLoading: scrapeParsedPageIsLoading,
+        isError: scrapeParsedPageIsError,
+        quickRefRecords: scrapeParsedPageQuickRefRecords,
+        addMatrxId: addScrapeParsedPageMatrxId,
+        addMatrxIds: addScrapeParsedPageMatrxIds,
+        removeMatrxId: removeScrapeParsedPageMatrxId,
+        removeMatrxIds: removeScrapeParsedPageMatrxIds,
+        addPkValue: addScrapeParsedPagePkValue,
+        addPkValues: addScrapeParsedPagePkValues,
+        removePkValue: removeScrapeParsedPagePkValue,
+        removePkValues: removeScrapeParsedPagePkValues,
+        isMissingRecords: isScrapeParsedPageMissingRecords,
+        setShouldFetch: setScrapeParsedPageShouldFetch,
+        setFetchMode: setScrapeParsedPageFetchMode,
+        fetchQuickRefs: fetchScrapeParsedPageQuickRefs,
+        fetchOne: fetchScrapeParsedPageOne,
+        fetchOneWithFkIfk: fetchScrapeParsedPageOneWithFkIfk,
+        fetchAll: fetchScrapeParsedPageAll,
+        fetchPaginated: fetchScrapeParsedPagePaginated,
+
+    } = useEntityWithFetch("scrapeParsedPage");
+
+    return {
+        scrapeParsedPageSelectors,
+        scrapeParsedPageActions,
+        scrapeParsedPageRecords,
+        scrapeParsedPageUnsavedRecords,
+        scrapeParsedPageSelectedRecordIds,
+        scrapeParsedPageIsLoading,
+        scrapeParsedPageIsError,
+        scrapeParsedPageQuickRefRecords,
+        addScrapeParsedPageMatrxId,
+        addScrapeParsedPageMatrxIds,
+        removeScrapeParsedPageMatrxId,
+        removeScrapeParsedPageMatrxIds,
+        addScrapeParsedPagePkValue,
+        addScrapeParsedPagePkValues,
+        removeScrapeParsedPagePkValue,
+        removeScrapeParsedPagePkValues,
+        isScrapeParsedPageMissingRecords,
+        setScrapeParsedPageShouldFetch,
+        setScrapeParsedPageFetchMode,
+        fetchScrapeParsedPageQuickRefs,
+        fetchScrapeParsedPageOne,
+        fetchScrapeParsedPageOneWithFkIfk,
+        fetchScrapeParsedPageAll,
+        fetchScrapeParsedPagePaginated,
+    };
+};
+
+
+
 type UseScrapePathPatternWithFetchReturn = {
     scrapePathPatternSelectors: EntitySelectors<"scrapePathPattern">;
     scrapePathPatternActions: EntityActions<"scrapePathPattern">;
@@ -5747,6 +6177,92 @@ export const useScrapePathPatternWithFetch = (): UseScrapePathPatternWithFetchRe
 
 
 
+type UseScrapePathPatternCachePolicyWithFetchReturn = {
+    scrapePathPatternCachePolicySelectors: EntitySelectors<"scrapePathPatternCachePolicy">;
+    scrapePathPatternCachePolicyActions: EntityActions<"scrapePathPatternCachePolicy">;
+    scrapePathPatternCachePolicyRecords: Record<MatrxRecordId, ScrapePathPatternCachePolicyData>;
+    scrapePathPatternCachePolicyUnsavedRecords: Record<MatrxRecordId, Partial<ScrapePathPatternCachePolicyData>>;
+    scrapePathPatternCachePolicySelectedRecordIds: MatrxRecordId[];
+    scrapePathPatternCachePolicyIsLoading: boolean;
+    scrapePathPatternCachePolicyIsError: boolean;
+    scrapePathPatternCachePolicyQuickRefRecords: QuickReferenceRecord[];
+    addScrapePathPatternCachePolicyMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapePathPatternCachePolicyMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapePathPatternCachePolicyMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapePathPatternCachePolicyMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapePathPatternCachePolicyPkValue: (pkValue: string) => void;
+    addScrapePathPatternCachePolicyPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapePathPatternCachePolicyPkValue: (pkValue: string) => void;
+    removeScrapePathPatternCachePolicyPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapePathPatternCachePolicyMissingRecords: boolean;
+    setScrapePathPatternCachePolicyShouldFetch: (shouldFetch: boolean) => void;
+    setScrapePathPatternCachePolicyFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapePathPatternCachePolicyQuickRefs: () => void;
+    fetchScrapePathPatternCachePolicyOne: (recordId: MatrxRecordId) => void;
+    fetchScrapePathPatternCachePolicyOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapePathPatternCachePolicyAll: () => void;
+    fetchScrapePathPatternCachePolicyPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapePathPatternCachePolicyWithFetch = (): UseScrapePathPatternCachePolicyWithFetchReturn => {
+    const {
+        selectors: scrapePathPatternCachePolicySelectors,
+        actions: scrapePathPatternCachePolicyActions,
+        allRecords: scrapePathPatternCachePolicyRecords,
+        unsavedRecords: scrapePathPatternCachePolicyUnsavedRecords,
+        selectedRecordIds: scrapePathPatternCachePolicySelectedRecordIds,
+        isLoading: scrapePathPatternCachePolicyIsLoading,
+        isError: scrapePathPatternCachePolicyIsError,
+        quickRefRecords: scrapePathPatternCachePolicyQuickRefRecords,
+        addMatrxId: addScrapePathPatternCachePolicyMatrxId,
+        addMatrxIds: addScrapePathPatternCachePolicyMatrxIds,
+        removeMatrxId: removeScrapePathPatternCachePolicyMatrxId,
+        removeMatrxIds: removeScrapePathPatternCachePolicyMatrxIds,
+        addPkValue: addScrapePathPatternCachePolicyPkValue,
+        addPkValues: addScrapePathPatternCachePolicyPkValues,
+        removePkValue: removeScrapePathPatternCachePolicyPkValue,
+        removePkValues: removeScrapePathPatternCachePolicyPkValues,
+        isMissingRecords: isScrapePathPatternCachePolicyMissingRecords,
+        setShouldFetch: setScrapePathPatternCachePolicyShouldFetch,
+        setFetchMode: setScrapePathPatternCachePolicyFetchMode,
+        fetchQuickRefs: fetchScrapePathPatternCachePolicyQuickRefs,
+        fetchOne: fetchScrapePathPatternCachePolicyOne,
+        fetchOneWithFkIfk: fetchScrapePathPatternCachePolicyOneWithFkIfk,
+        fetchAll: fetchScrapePathPatternCachePolicyAll,
+        fetchPaginated: fetchScrapePathPatternCachePolicyPaginated,
+
+    } = useEntityWithFetch("scrapePathPatternCachePolicy");
+
+    return {
+        scrapePathPatternCachePolicySelectors,
+        scrapePathPatternCachePolicyActions,
+        scrapePathPatternCachePolicyRecords,
+        scrapePathPatternCachePolicyUnsavedRecords,
+        scrapePathPatternCachePolicySelectedRecordIds,
+        scrapePathPatternCachePolicyIsLoading,
+        scrapePathPatternCachePolicyIsError,
+        scrapePathPatternCachePolicyQuickRefRecords,
+        addScrapePathPatternCachePolicyMatrxId,
+        addScrapePathPatternCachePolicyMatrxIds,
+        removeScrapePathPatternCachePolicyMatrxId,
+        removeScrapePathPatternCachePolicyMatrxIds,
+        addScrapePathPatternCachePolicyPkValue,
+        addScrapePathPatternCachePolicyPkValues,
+        removeScrapePathPatternCachePolicyPkValue,
+        removeScrapePathPatternCachePolicyPkValues,
+        isScrapePathPatternCachePolicyMissingRecords,
+        setScrapePathPatternCachePolicyShouldFetch,
+        setScrapePathPatternCachePolicyFetchMode,
+        fetchScrapePathPatternCachePolicyQuickRefs,
+        fetchScrapePathPatternCachePolicyOne,
+        fetchScrapePathPatternCachePolicyOneWithFkIfk,
+        fetchScrapePathPatternCachePolicyAll,
+        fetchScrapePathPatternCachePolicyPaginated,
+    };
+};
+
+
+
 type UseScrapePathPatternOverrideWithFetchReturn = {
     scrapePathPatternOverrideSelectors: EntitySelectors<"scrapePathPatternOverride">;
     scrapePathPatternOverrideActions: EntityActions<"scrapePathPatternOverride">;
@@ -5828,6 +6344,264 @@ export const useScrapePathPatternOverrideWithFetch = (): UseScrapePathPatternOve
         fetchScrapePathPatternOverrideOneWithFkIfk,
         fetchScrapePathPatternOverrideAll,
         fetchScrapePathPatternOverridePaginated,
+    };
+};
+
+
+
+type UseScrapeQuickFailureLogWithFetchReturn = {
+    scrapeQuickFailureLogSelectors: EntitySelectors<"scrapeQuickFailureLog">;
+    scrapeQuickFailureLogActions: EntityActions<"scrapeQuickFailureLog">;
+    scrapeQuickFailureLogRecords: Record<MatrxRecordId, ScrapeQuickFailureLogData>;
+    scrapeQuickFailureLogUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeQuickFailureLogData>>;
+    scrapeQuickFailureLogSelectedRecordIds: MatrxRecordId[];
+    scrapeQuickFailureLogIsLoading: boolean;
+    scrapeQuickFailureLogIsError: boolean;
+    scrapeQuickFailureLogQuickRefRecords: QuickReferenceRecord[];
+    addScrapeQuickFailureLogMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeQuickFailureLogMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeQuickFailureLogMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeQuickFailureLogMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeQuickFailureLogPkValue: (pkValue: string) => void;
+    addScrapeQuickFailureLogPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeQuickFailureLogPkValue: (pkValue: string) => void;
+    removeScrapeQuickFailureLogPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeQuickFailureLogMissingRecords: boolean;
+    setScrapeQuickFailureLogShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeQuickFailureLogFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeQuickFailureLogQuickRefs: () => void;
+    fetchScrapeQuickFailureLogOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeQuickFailureLogOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeQuickFailureLogAll: () => void;
+    fetchScrapeQuickFailureLogPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeQuickFailureLogWithFetch = (): UseScrapeQuickFailureLogWithFetchReturn => {
+    const {
+        selectors: scrapeQuickFailureLogSelectors,
+        actions: scrapeQuickFailureLogActions,
+        allRecords: scrapeQuickFailureLogRecords,
+        unsavedRecords: scrapeQuickFailureLogUnsavedRecords,
+        selectedRecordIds: scrapeQuickFailureLogSelectedRecordIds,
+        isLoading: scrapeQuickFailureLogIsLoading,
+        isError: scrapeQuickFailureLogIsError,
+        quickRefRecords: scrapeQuickFailureLogQuickRefRecords,
+        addMatrxId: addScrapeQuickFailureLogMatrxId,
+        addMatrxIds: addScrapeQuickFailureLogMatrxIds,
+        removeMatrxId: removeScrapeQuickFailureLogMatrxId,
+        removeMatrxIds: removeScrapeQuickFailureLogMatrxIds,
+        addPkValue: addScrapeQuickFailureLogPkValue,
+        addPkValues: addScrapeQuickFailureLogPkValues,
+        removePkValue: removeScrapeQuickFailureLogPkValue,
+        removePkValues: removeScrapeQuickFailureLogPkValues,
+        isMissingRecords: isScrapeQuickFailureLogMissingRecords,
+        setShouldFetch: setScrapeQuickFailureLogShouldFetch,
+        setFetchMode: setScrapeQuickFailureLogFetchMode,
+        fetchQuickRefs: fetchScrapeQuickFailureLogQuickRefs,
+        fetchOne: fetchScrapeQuickFailureLogOne,
+        fetchOneWithFkIfk: fetchScrapeQuickFailureLogOneWithFkIfk,
+        fetchAll: fetchScrapeQuickFailureLogAll,
+        fetchPaginated: fetchScrapeQuickFailureLogPaginated,
+
+    } = useEntityWithFetch("scrapeQuickFailureLog");
+
+    return {
+        scrapeQuickFailureLogSelectors,
+        scrapeQuickFailureLogActions,
+        scrapeQuickFailureLogRecords,
+        scrapeQuickFailureLogUnsavedRecords,
+        scrapeQuickFailureLogSelectedRecordIds,
+        scrapeQuickFailureLogIsLoading,
+        scrapeQuickFailureLogIsError,
+        scrapeQuickFailureLogQuickRefRecords,
+        addScrapeQuickFailureLogMatrxId,
+        addScrapeQuickFailureLogMatrxIds,
+        removeScrapeQuickFailureLogMatrxId,
+        removeScrapeQuickFailureLogMatrxIds,
+        addScrapeQuickFailureLogPkValue,
+        addScrapeQuickFailureLogPkValues,
+        removeScrapeQuickFailureLogPkValue,
+        removeScrapeQuickFailureLogPkValues,
+        isScrapeQuickFailureLogMissingRecords,
+        setScrapeQuickFailureLogShouldFetch,
+        setScrapeQuickFailureLogFetchMode,
+        fetchScrapeQuickFailureLogQuickRefs,
+        fetchScrapeQuickFailureLogOne,
+        fetchScrapeQuickFailureLogOneWithFkIfk,
+        fetchScrapeQuickFailureLogAll,
+        fetchScrapeQuickFailureLogPaginated,
+    };
+};
+
+
+
+type UseScrapeTaskWithFetchReturn = {
+    scrapeTaskSelectors: EntitySelectors<"scrapeTask">;
+    scrapeTaskActions: EntityActions<"scrapeTask">;
+    scrapeTaskRecords: Record<MatrxRecordId, ScrapeTaskData>;
+    scrapeTaskUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeTaskData>>;
+    scrapeTaskSelectedRecordIds: MatrxRecordId[];
+    scrapeTaskIsLoading: boolean;
+    scrapeTaskIsError: boolean;
+    scrapeTaskQuickRefRecords: QuickReferenceRecord[];
+    addScrapeTaskMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeTaskMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeTaskMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeTaskMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeTaskPkValue: (pkValue: string) => void;
+    addScrapeTaskPkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeTaskPkValue: (pkValue: string) => void;
+    removeScrapeTaskPkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeTaskMissingRecords: boolean;
+    setScrapeTaskShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeTaskFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeTaskQuickRefs: () => void;
+    fetchScrapeTaskOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeTaskOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeTaskAll: () => void;
+    fetchScrapeTaskPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeTaskWithFetch = (): UseScrapeTaskWithFetchReturn => {
+    const {
+        selectors: scrapeTaskSelectors,
+        actions: scrapeTaskActions,
+        allRecords: scrapeTaskRecords,
+        unsavedRecords: scrapeTaskUnsavedRecords,
+        selectedRecordIds: scrapeTaskSelectedRecordIds,
+        isLoading: scrapeTaskIsLoading,
+        isError: scrapeTaskIsError,
+        quickRefRecords: scrapeTaskQuickRefRecords,
+        addMatrxId: addScrapeTaskMatrxId,
+        addMatrxIds: addScrapeTaskMatrxIds,
+        removeMatrxId: removeScrapeTaskMatrxId,
+        removeMatrxIds: removeScrapeTaskMatrxIds,
+        addPkValue: addScrapeTaskPkValue,
+        addPkValues: addScrapeTaskPkValues,
+        removePkValue: removeScrapeTaskPkValue,
+        removePkValues: removeScrapeTaskPkValues,
+        isMissingRecords: isScrapeTaskMissingRecords,
+        setShouldFetch: setScrapeTaskShouldFetch,
+        setFetchMode: setScrapeTaskFetchMode,
+        fetchQuickRefs: fetchScrapeTaskQuickRefs,
+        fetchOne: fetchScrapeTaskOne,
+        fetchOneWithFkIfk: fetchScrapeTaskOneWithFkIfk,
+        fetchAll: fetchScrapeTaskAll,
+        fetchPaginated: fetchScrapeTaskPaginated,
+
+    } = useEntityWithFetch("scrapeTask");
+
+    return {
+        scrapeTaskSelectors,
+        scrapeTaskActions,
+        scrapeTaskRecords,
+        scrapeTaskUnsavedRecords,
+        scrapeTaskSelectedRecordIds,
+        scrapeTaskIsLoading,
+        scrapeTaskIsError,
+        scrapeTaskQuickRefRecords,
+        addScrapeTaskMatrxId,
+        addScrapeTaskMatrxIds,
+        removeScrapeTaskMatrxId,
+        removeScrapeTaskMatrxIds,
+        addScrapeTaskPkValue,
+        addScrapeTaskPkValues,
+        removeScrapeTaskPkValue,
+        removeScrapeTaskPkValues,
+        isScrapeTaskMissingRecords,
+        setScrapeTaskShouldFetch,
+        setScrapeTaskFetchMode,
+        fetchScrapeTaskQuickRefs,
+        fetchScrapeTaskOne,
+        fetchScrapeTaskOneWithFkIfk,
+        fetchScrapeTaskAll,
+        fetchScrapeTaskPaginated,
+    };
+};
+
+
+
+type UseScrapeTaskResponseWithFetchReturn = {
+    scrapeTaskResponseSelectors: EntitySelectors<"scrapeTaskResponse">;
+    scrapeTaskResponseActions: EntityActions<"scrapeTaskResponse">;
+    scrapeTaskResponseRecords: Record<MatrxRecordId, ScrapeTaskResponseData>;
+    scrapeTaskResponseUnsavedRecords: Record<MatrxRecordId, Partial<ScrapeTaskResponseData>>;
+    scrapeTaskResponseSelectedRecordIds: MatrxRecordId[];
+    scrapeTaskResponseIsLoading: boolean;
+    scrapeTaskResponseIsError: boolean;
+    scrapeTaskResponseQuickRefRecords: QuickReferenceRecord[];
+    addScrapeTaskResponseMatrxId: (recordId: MatrxRecordId) => void;
+    addScrapeTaskResponseMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeScrapeTaskResponseMatrxId: (recordId: MatrxRecordId) => void;
+    removeScrapeTaskResponseMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addScrapeTaskResponsePkValue: (pkValue: string) => void;
+    addScrapeTaskResponsePkValues: (pkValues: Record<string, unknown>) => void;
+    removeScrapeTaskResponsePkValue: (pkValue: string) => void;
+    removeScrapeTaskResponsePkValues: (pkValues: Record<string, unknown>) => void;
+    isScrapeTaskResponseMissingRecords: boolean;
+    setScrapeTaskResponseShouldFetch: (shouldFetch: boolean) => void;
+    setScrapeTaskResponseFetchMode: (fetchMode: FetchMode) => void;
+    fetchScrapeTaskResponseQuickRefs: () => void;
+    fetchScrapeTaskResponseOne: (recordId: MatrxRecordId) => void;
+    fetchScrapeTaskResponseOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchScrapeTaskResponseAll: () => void;
+    fetchScrapeTaskResponsePaginated: (page: number, pageSize: number) => void;
+};
+
+export const useScrapeTaskResponseWithFetch = (): UseScrapeTaskResponseWithFetchReturn => {
+    const {
+        selectors: scrapeTaskResponseSelectors,
+        actions: scrapeTaskResponseActions,
+        allRecords: scrapeTaskResponseRecords,
+        unsavedRecords: scrapeTaskResponseUnsavedRecords,
+        selectedRecordIds: scrapeTaskResponseSelectedRecordIds,
+        isLoading: scrapeTaskResponseIsLoading,
+        isError: scrapeTaskResponseIsError,
+        quickRefRecords: scrapeTaskResponseQuickRefRecords,
+        addMatrxId: addScrapeTaskResponseMatrxId,
+        addMatrxIds: addScrapeTaskResponseMatrxIds,
+        removeMatrxId: removeScrapeTaskResponseMatrxId,
+        removeMatrxIds: removeScrapeTaskResponseMatrxIds,
+        addPkValue: addScrapeTaskResponsePkValue,
+        addPkValues: addScrapeTaskResponsePkValues,
+        removePkValue: removeScrapeTaskResponsePkValue,
+        removePkValues: removeScrapeTaskResponsePkValues,
+        isMissingRecords: isScrapeTaskResponseMissingRecords,
+        setShouldFetch: setScrapeTaskResponseShouldFetch,
+        setFetchMode: setScrapeTaskResponseFetchMode,
+        fetchQuickRefs: fetchScrapeTaskResponseQuickRefs,
+        fetchOne: fetchScrapeTaskResponseOne,
+        fetchOneWithFkIfk: fetchScrapeTaskResponseOneWithFkIfk,
+        fetchAll: fetchScrapeTaskResponseAll,
+        fetchPaginated: fetchScrapeTaskResponsePaginated,
+
+    } = useEntityWithFetch("scrapeTaskResponse");
+
+    return {
+        scrapeTaskResponseSelectors,
+        scrapeTaskResponseActions,
+        scrapeTaskResponseRecords,
+        scrapeTaskResponseUnsavedRecords,
+        scrapeTaskResponseSelectedRecordIds,
+        scrapeTaskResponseIsLoading,
+        scrapeTaskResponseIsError,
+        scrapeTaskResponseQuickRefRecords,
+        addScrapeTaskResponseMatrxId,
+        addScrapeTaskResponseMatrxIds,
+        removeScrapeTaskResponseMatrxId,
+        removeScrapeTaskResponseMatrxIds,
+        addScrapeTaskResponsePkValue,
+        addScrapeTaskResponsePkValues,
+        removeScrapeTaskResponsePkValue,
+        removeScrapeTaskResponsePkValues,
+        isScrapeTaskResponseMissingRecords,
+        setScrapeTaskResponseShouldFetch,
+        setScrapeTaskResponseFetchMode,
+        fetchScrapeTaskResponseQuickRefs,
+        fetchScrapeTaskResponseOne,
+        fetchScrapeTaskResponseOneWithFkIfk,
+        fetchScrapeTaskResponseAll,
+        fetchScrapeTaskResponsePaginated,
     };
 };
 

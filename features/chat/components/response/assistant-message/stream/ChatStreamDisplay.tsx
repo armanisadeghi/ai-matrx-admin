@@ -182,7 +182,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         return parsedContent.contentSegments.map((segment, index) => (
             <React.Fragment key={index}>
                 {segment.isThinking ? (
-                    <ThinkingVisualization thinkingText={segment.content} showThinking={true} onToggleThinking={() => {}} />
+                    <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
                 ) : (
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
                         {segment.content}

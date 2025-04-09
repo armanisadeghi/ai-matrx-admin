@@ -27,7 +27,7 @@ export type localMessage = {
     markdownAnalysisData?: MarkdownAnalysisData;
 };
 
-const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localMessage; onScrollToBottom: () => void }) => {
+const MessageItem = React.memo(({ message, onScrollToBottom, isOverlay = false }: { message: localMessage; onScrollToBottom: () => void; isOverlay?: boolean }) => {
     const handleContentEdit = (newContent: string) => {
         console.log("newContent", newContent);
     };
@@ -37,7 +37,7 @@ const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localM
     }
 
     return message.role === "user" ? (
-        <UserMessage key={message.id} message={message} onScrollToBottom={onScrollToBottom} />
+        <UserMessage key={message.id} message={message} onScrollToBottom={onScrollToBottom} isOverlay={isOverlay} />
     ) : (
         <AssistantMessage
             key={message.id}
@@ -46,6 +46,7 @@ const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localM
             onScrollToBottom={onScrollToBottom}
             onContentUpdate={handleContentEdit}
             markdownAnalysisData={message.markdownAnalysisData || null}
+            isOverlay={isOverlay}
         />
     );
 });
@@ -53,7 +54,7 @@ const MessageItem = React.memo(({ message, onScrollToBottom }: { message: localM
 MessageItem.displayName = "MessageItem";
 
 
-const ResponseColumn: React.FC = () => {
+const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }) => {
     const [streamKey, setStreamKey] = useState<string>("stream-0");
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
     const { chatSelectors, eventName } = useChatBasics();
@@ -157,7 +158,7 @@ const ResponseColumn: React.FC = () => {
         <div className="w-full pt-0 pb-24 relative" ref={containerRef}>
             <div className="max-w-3xl mx-auto px-4 md:px-3 space-y-6 overflow-x-hidden">
                 {messagesToDisplay.map((message) => (
-                    <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} />
+                    <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} isOverlay={isOverlay} />
                 ))}
                 <AssistantStream
                     key={streamKey}

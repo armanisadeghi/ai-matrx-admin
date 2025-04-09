@@ -15,9 +15,10 @@ interface UserMessageProps {
     onMessageUpdate?: (id: string, content: string) => void;
     onSavePrompt?: (content: string) => void;
     onScrollToBottom?: () => void;
+    isOverlay?: boolean;
 }
 
-const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onSavePrompt, onScrollToBottom }) => {
+const UserMessage: React.FC<UserMessageProps> = ({ message, onMessageUpdate, onSavePrompt, onScrollToBottom, isOverlay = false }) => {
     const [isHovered, setIsHovered] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [editContent, setEditContent] = useState<string>(message.content);

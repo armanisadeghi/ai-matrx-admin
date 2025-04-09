@@ -418,6 +418,8 @@ export const createChatSelectors = () => {
 
     const files = createSelector([activeMessageMetadata], (metadata) => metadata?.files);
 
+    const activeMessageFiles = createSelector([activeMessageMetadata], (metadata) => metadata?.files);
+
     const currentMode = createSelector([activeConversationMetadata], (metadata) => metadata?.currentMode);
 
     return {
@@ -485,6 +487,7 @@ export const createChatSelectors = () => {
         availableTools,
         availableBrokers,
         files,
+        activeMessageFiles,
         currentMode,
         effectiveConversations,
         effectiveConversationsArray,

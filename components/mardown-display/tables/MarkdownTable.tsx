@@ -293,11 +293,21 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 </Button>
                 {isEditingEnabled ? (
                     <>
-                        <Button variant="outline" size="sm" onClick={handleSave} className="flex items-center gap-2 border-1 border-dashed border-green-500 rounded-xl">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleSave}
+                            className="flex items-center gap-2 border-1 border-dashed border-green-500 rounded-xl"
+                        >
                             <Save className="h-4 w-4" />
                             Save
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleCancel} className="flex items-center gap-2 border-1 border-dashed border-red-500 rounded-xl">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCancel}
+                            className="flex items-center gap-2 border-1 border-dashed border-red-500 rounded-xl"
+                        >
                             <X className="h-4 w-4" />
                             Cancel
                         </Button>

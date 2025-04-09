@@ -224,7 +224,19 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  scrapeCachePolicy: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   scrapeConfiguration: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeCycleRun: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeCycleTracker: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
@@ -252,6 +264,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  scrapeJob: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   scrapeOverride: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -260,11 +276,31 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  scrapeParsedPage: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   scrapePathPattern: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  scrapePathPatternCachePolicy: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   scrapePathPatternOverride: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeQuickFailureLog: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeTask: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  scrapeTaskResponse: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },

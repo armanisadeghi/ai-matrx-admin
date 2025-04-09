@@ -354,6 +354,100 @@ export const MultiFileUpload = (
     );
 };
 
+
+export const MiniFileUpload = ({
+    onChange,
+    multiple = false,
+    maxHeight = "200px",
+  } : {
+    onChange?: (files: File[]) => void;
+    multiple?: boolean;
+    maxHeight?: string;
+  }) => {
+    const [files, setFiles] = useState<File[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+  
+    const handleFileChange = (newFiles: File[]) => {
+      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      onChange && onChange(newFiles);
+    };
+  
+    const handleClick = () => {
+      fileInputRef.current?.click();
+    };
+  
+    const { getRootProps, isDragActive } = useDropzone({
+      multiple: multiple,
+      noClick: true,
+      onDrop: handleFileChange,
+      onDropRejected: (error) => {
+        console.log(error);
+      },
+    });
+  
+    return (
+      <div className="w-full" {...getRootProps()}>
+        <motion.div
+          onClick={handleClick}
+          whileHover={{ scale: 1.01 }}
+          className="p-4 block rounded-lg cursor-pointer w-full relative overflow-hidden border-3 border-dashed border-gray-300 dark:border-gray-500 rounded-3xl"
+        >
+          <input
+            ref={fileInputRef}
+            id="file-upload-handle"
+            type="file"
+            multiple={multiple}
+            onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
+            className="hidden"
+          />
+          
+          {/* Simplified upload interface */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center space-x-2">
+              <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-300" />
+              <p className="font-medium text-sm text-neutral-700 dark:text-neutral-300">
+                {isDragActive ? `Drop ${multiple ? 'files' : 'file'}` : `Upload ${multiple ? 'files' : 'file'}`}
+              </p>
+            </div>
+            
+            {!files.length && (
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                Drag or click to upload
+              </p>
+            )}
+  
+            {/* Files list with fixed height and scrolling */}
+            {files.length > 0 && (
+              <div 
+                className="w-full mt-3 overflow-y-auto"
+                style={{ maxHeight: maxHeight }}
+              >
+                {files.map((file, idx) => (
+                  <motion.div
+                    key={`file-${idx}`}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white dark:bg-neutral-800 p-2 mb-2 rounded-md shadow-sm text-xs"
+                  >
+                    <div className="flex justify-between items-center">
+                      <p className="truncate max-w-[150px] text-neutral-700 dark:text-neutral-300">
+                        {file.name}
+                      </p>
+                      <span className="text-neutral-500 dark:text-neutral-400 text-xs ml-2">
+                        {(file.size / (1024 * 1024)).toFixed(1)} MB
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    );
+  };
+  
+
 export const IconSpinner = ({ className = "" }) => {
     return (
       <svg 

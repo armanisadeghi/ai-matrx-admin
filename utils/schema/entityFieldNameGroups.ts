@@ -124,9 +124,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["recipeId", "version", "compiledRecipe", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead"]
 },
   conversation: {
-  nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic"],
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords"]
 },
   dataBroker: {
   nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent"],
@@ -293,10 +293,25 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "modulePath", "className", "description", "returnBroker"]
 },
+  scrapeCachePolicy: {
+  nativeFields: ["id", "rescrapeAfter", "staleAfter", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["rescrapeAfter", "staleAfter", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
   scrapeConfiguration: {
   nativeFields: ["id", "scrapeMode", "interactionSettingsId", "scrapePathPatternId", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["scrapeMode", "interactionSettingsId", "scrapePathPatternId", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeCycleRun: {
+  nativeFields: ["id", "scrapeCycleTrackerId", "runNumber", "completedAt", "allowPattern", "disallowPatterns", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeCycleTrackerId", "runNumber", "completedAt", "allowPattern", "disallowPatterns", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeCycleTracker: {
+  nativeFields: ["id", "targetUrl", "pageName", "scrapePathPatternCachePolicyId", "scrapeJobId", "lastRunAt", "nextRunAt", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["targetUrl", "pageName", "scrapePathPatternCachePolicyId", "scrapeJobId", "lastRunAt", "nextRunAt", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
   scrapeDomain: {
   nativeFields: ["id", "url", "commonName", "scrapeAllowed", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
@@ -328,6 +343,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["scrapeDomainId", "sitemap", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
+  scrapeJob: {
+  nativeFields: ["id", "scrapeDomainId", "startUrls", "scrapeStatus", "parseStatus", "attemptLimit", "startedAt", "finishedAt", "name", "description", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeDomainId", "startUrls", "scrapeStatus", "parseStatus", "attemptLimit", "startedAt", "finishedAt", "name", "description", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
   scrapeOverride: {
   nativeFields: ["id", "name", "configType", "selectorType", "matchType", "action", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
   primaryKeyFields: ["id"],
@@ -338,15 +358,40 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["value", "scrapeOverrideId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
+  scrapeParsedPage: {
+  nativeFields: ["id", "pageName", "validity", "remotePath", "localPath", "scrapePathPatternCachePolicyId", "scrapeTaskId", "scrapeTaskResponseId", "scrapeCycleRunId", "scrapeCycleTrackerId", "scrapeConfigurationId", "scrapePathPatternOverrideId", "scrapedAt", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["pageName", "validity", "remotePath", "localPath", "scrapePathPatternCachePolicyId", "scrapeTaskId", "scrapeTaskResponseId", "scrapeCycleRunId", "scrapeCycleTrackerId", "scrapeConfigurationId", "scrapePathPatternOverrideId", "scrapedAt", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
   scrapePathPattern: {
   nativeFields: ["id", "scrapeDomainId", "pathPattern", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["scrapeDomainId", "pathPattern", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
+  scrapePathPatternCachePolicy: {
+  nativeFields: ["id", "scrapeCachePolicyId", "scrapePathPatternId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeCachePolicyId", "scrapePathPatternId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
   scrapePathPatternOverride: {
   nativeFields: ["id", "name", "scrapePathPatternId", "scrapeOverrideId", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "scrapePathPatternId", "scrapeOverrideId", "isActive", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeQuickFailureLog: {
+  nativeFields: ["id", "scrapeDomainId", "domainName", "targetUrl", "failureReason", "errorLog", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeDomainId", "domainName", "targetUrl", "failureReason", "errorLog", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeTask: {
+  nativeFields: ["id", "targetUrl", "pageName", "scrapeDomainId", "parentTask", "attemptsLeft", "scrapeMode", "interactionConfig", "scrapeJobId", "priority", "discoveredLinks", "spawnedConcurrentTasks", "scrapeCycleRunId", "failureReason", "scrapeStatus", "parseStatus", "cancelMessage", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["targetUrl", "pageName", "scrapeDomainId", "parentTask", "attemptsLeft", "scrapeMode", "interactionConfig", "scrapeJobId", "priority", "discoveredLinks", "spawnedConcurrentTasks", "scrapeCycleRunId", "failureReason", "scrapeStatus", "parseStatus", "cancelMessage", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+},
+  scrapeTaskResponse: {
+  nativeFields: ["id", "scrapeTaskId", "failureReason", "statusCode", "contentPath", "contentSize", "contentType", "responseHeaders", "responseUrl", "errorLog", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["scrapeTaskId", "failureReason", "statusCode", "contentPath", "contentSize", "contentType", "responseHeaders", "responseUrl", "errorLog", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
   subcategory: {
   nativeFields: ["id", "categoryId", "name", "description", "slug", "icon", "features", "createdAt"],

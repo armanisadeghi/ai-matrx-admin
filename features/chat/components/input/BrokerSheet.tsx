@@ -7,7 +7,6 @@ import { allInformationBrokers, InformationBroker } from "./constants";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 
-
 interface BrokerSheetProps {
     isOpen: boolean;
     onClose: () => void;
@@ -27,12 +26,7 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onBrokerSele
     const [showCategories, setShowCategories] = useState(true);
     const dispatch = useAppDispatch();
 
-    
-    const {
-        chatActions,
-        chatSelectors,
-        messageKey,
-    } = useChatBasics();
+    const { chatActions, chatSelectors, messageKey } = useChatBasics();
 
     const availableBrokers = useAppSelector(chatSelectors.availableBrokers);
 
@@ -133,8 +127,6 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onBrokerSele
         </div>
     );
 
-
-    
     return (
         <FloatingSheet
             isOpen={isOpen}
@@ -253,7 +245,8 @@ const BrokerSheet: React.FC<BrokerSheetProps> = ({ isOpen, onClose, onBrokerSele
                                     >
                                         <h3 className="font-medium text-sm text-gray-900 dark:text-gray-100">{category}</h3>
                                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                                            {brokers.filter((broker) => selectedBrokers.includes(broker.id)).length} of {brokers.length} selected
+                                            {brokers.filter((broker) => selectedBrokers.includes(broker.id)).length} of {brokers.length}{" "}
+                                            selected
                                         </div>
                                     </div>
 
