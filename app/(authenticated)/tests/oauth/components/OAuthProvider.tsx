@@ -41,7 +41,7 @@ export default function OAuthProvider({
       ) : !state.isConnected ? (
         <div>
           <p className="mb-4 text-gray-600">
-            Connect to your {config.name} workspace to access data and services.
+            Connect to your {config.name} account to access data and services.
           </p>
           <div className="flex flex-col space-y-3">
             <button
@@ -110,6 +110,8 @@ function renderProviderData(provider: string, data: any) {
   switch (provider.toLowerCase()) {
     case 'slack':
       return renderSlackData(data);
+    case 'microsoft office':
+      return renderMicrosoftData(data);
     default:
       // Generic JSON display for unknown providers
       return (
@@ -177,6 +179,64 @@ function renderSlackData(data: any) {
                 </span>
               ))}
             </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function renderMicrosoftData(data: any) {
+  return (
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold mb-2">Microsoft Account Information</h3>
+      <div className="bg-gray-50 p-4 rounded-md">
+        {data.user && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-500 font-medium">Display Name</p>
+              <p>{data.user.displayName}</p>
+            </div>
+            
+            {data.user.mail && (
+              <div>
+                <p className="text-gray-500 font-medium">Email</p>
+                <p>{data.user.mail}</p>
+              </div>
+            )}
+            
+            <div>
+              <p className="text-gray-500 font-medium">User ID</p>
+              <p className="font-mono text-sm">{data.user.id}</p>
+            </div>
+            
+            <div>
+              <p className="text-gray-500 font-medium">Principal Name</p>
+              <p className="font-mono text-sm">{data.user.userPrincipalName}</p>
+            </div>
+          </div>
+        )}
+
+        {data.scope && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium mb-2">Scopes</p>
+            <div className="flex flex-wrap gap-2">
+              {data.scope.split(' ').map((scope: string, i: number) => (
+                <span
+                  key={i}
+                  className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                >
+                  {scope.trim()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {data.expires_in && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium">Token Expires In</p>
+            <p>{Math.floor(data.expires_in / 60)} minutes</p>
           </div>
         )}
       </div>

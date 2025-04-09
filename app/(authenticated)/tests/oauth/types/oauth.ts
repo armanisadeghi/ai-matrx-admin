@@ -28,6 +28,24 @@ export interface SlackTokenResponse extends OAuthBaseResponse {
   error?: string;
 }
 
+// Microsoft-specific types
+export interface MicrosoftUser {
+  displayName?: string;
+  givenName?: string;
+  surname?: string;
+  mail?: string;
+  userPrincipalName: string;
+  id: string;
+}
+
+export interface MicrosoftTokenResponse extends OAuthBaseResponse {
+  expires_in: number;
+  ext_expires_in?: number;
+  refresh_token?: string;
+  id_token?: string;
+  user?: MicrosoftUser;
+}
+
 // Provider configuration for UI
 export interface OAuthProviderConfig {
   name: string;
