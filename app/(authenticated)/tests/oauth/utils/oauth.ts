@@ -109,6 +109,21 @@ export function generateMockData(provider: string) {
           verified: true
         }
       };
+    case 'todoist':
+      return {
+        access_token: 'abcdef1234567890_MOCK_TODOIST_TOKEN',
+        token_type: 'bearer',
+        scope: 'data:read,data:read_write,data:delete,project:delete',
+        refresh_token: 'refresh_MOCK_TODOIST_TOKEN_12345',
+        expires_in: 7200,
+        user: {
+          id: '123456789',
+          name: 'Jane Doe',
+          email: 'jane.doe@example.com',
+          avatar_url: 'https://example.com/avatar.jpg',
+          premium: true
+        }
+      };
     default:
       return {
         access_token: 'mock-token-for-' + provider,

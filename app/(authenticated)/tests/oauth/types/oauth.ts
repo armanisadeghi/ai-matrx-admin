@@ -62,6 +62,24 @@ export interface TwitterTokenResponse extends OAuthBaseResponse {
   user?: TwitterUser;
 }
 
+// Todoist-specific types
+export interface TodoistUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url?: string;
+  premium?: boolean;
+}
+
+export interface TodoistTokenResponse extends OAuthBaseResponse {
+  access_token: string;
+  token_type: string;
+  refresh_token?: string;
+  expires_in?: number;
+  scope?: string;
+  user?: TodoistUser;
+}
+
 // Provider configuration for UI
 export interface OAuthProviderConfig {
   name: string;
