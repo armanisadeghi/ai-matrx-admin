@@ -73,35 +73,35 @@ import {
     Wind,
     Wrench,
     Waves,
-    Briefcase, 
-    Building, 
-    Users, 
-    User, 
-    MapPin, 
-    CloudRain, 
-    TrendingUp, 
-    Award, 
-    Bell, 
-    Sunrise, 
-    BookOpen, 
-    CreditCard, 
-    Folder, 
-    Heart, 
-    DollarSign, 
-    Target, 
-    List, 
-    Clipboard, 
-    Megaphone, 
-    Book, 
-    Shield, 
-    Truck, 
-    BarChart2, 
-    HelpCircle, 
-    Car, 
-    Bookmark, 
-    Smartphone, 
-    FileCode, 
-    Compass, 
+    Briefcase,
+    Building,
+    Users,
+    User,
+    MapPin,
+    CloudRain,
+    TrendingUp,
+    Award,
+    Bell,
+    Sunrise,
+    BookOpen,
+    CreditCard,
+    Folder,
+    Heart,
+    DollarSign,
+    Target,
+    List,
+    Clipboard,
+    Megaphone,
+    Book,
+    Shield,
+    Truck,
+    BarChart2,
+    HelpCircle,
+    Car,
+    Bookmark,
+    Smartphone,
+    FileCode,
+    Compass,
     MapPin as Location,
     Wifi,
     Anchor,
@@ -120,9 +120,8 @@ import {
     Key,
     Flag,
     PieChart,
-    Play
+    Play,
 } from "lucide-react";
-
 
 import { CubeIcon } from "@radix-ui/react-icons";
 import { GiPrism } from "react-icons/gi";
@@ -567,9 +566,6 @@ export const allTools: Tool[] = [
         icon: <Plane size={20} />,
     },
 ];
-
-
-
 
 export interface InformationBroker {
     id: string;
@@ -1396,7 +1392,7 @@ export const allInformationBrokers: InformationBroker[] = [
         category: "Business",
         icon: <Globe size={20} />,
     },
-    
+
     // 🧬 Miscellaneous Innovation
     {
         id: "personalityProfile",
@@ -1603,7 +1599,7 @@ export const allInformationBrokers: InformationBroker[] = [
         category: "Student",
         icon: <Briefcase size={20} />,
     },
-    
+
     // New Practical Additions
     {
         id: "courseRegistration",
@@ -1961,5 +1957,5 @@ export const allInformationBrokers: InformationBroker[] = [
         description: "Remote access to specialized software and virtual lab environments",
         category: "Student",
         icon: <Cpu size={20} />,
-    }
+    },
 ];

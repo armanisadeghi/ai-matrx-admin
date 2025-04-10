@@ -19,9 +19,9 @@ export const parseMarkdownChecklist = (markdownText: string): TaskItemType[] => 
       };
       result.push(currentSection);
     } 
-    // Top-level task item
-    else if (line.match(/^-\s+\[([ x])\]\s+/)) {
-      const match = line.match(/^-\s+\[([ x])\]\s+(?:\*\*(.*?)\*\*|(.*))/);
+    // Top-level task item (- or * followed by checkbox)
+    else if (line.match(/^[-*]\s+\[([ x])\]\s+/)) {
+      const match = line.match(/^[-*]\s+\[([ x])\]\s+(?:\*\*(.*?)\*\*|(.*))/);
       if (match) {
         const title = (match[2] || match[3] || '').trim();
         const item: TaskItemType = {
@@ -40,17 +40,20 @@ export const parseMarkdownChecklist = (markdownText: string): TaskItemType[] => 
         }
       }
     } 
-    // Indented sub-task
-    else if (line.match(/^\s{4}-\s+\[([ x])\]\s+/)) {
-      const match = line.match(/^\s{4}-\s+\[([ x])\]\s+(?:\*\*(.*?)\*\*|(.*))/);
+    // Indented sub-task (2+ spaces with - [ ] OR indented * [ ] OR 2+ spaces [ ])
+    else if (line.match(/^(?:\s{2,}-\s+\[([ x])\]|\s*\*\s+\[([ x])\]|\s{2,}\[([ x])\])\s+/)) {
+      const match = line.match(/^(?:\s{2,}-\s+\[([ x])\]|\s*\*\s+\[([ x])\]|\s{2,}\[([ x])\])\s+(?:\*\*(.*?)\*\*|(.*))/);
       if (match && result.length > 0) {
-        const title = (match[2] || match[3] || '').trim();
+        // match[1], match[2], match[3] are for the three checkbox patterns respectively
+        const checked = match[1] === 'x' || match[2] === 'x' || match[3] === 'x';
+        // match[4] is bold text, match[5] is regular text (shifted due to multiple patterns)
+        const title = (match[4] || match[5] || '').trim();
         const item: TaskItemType = {
           id: `subtask-${index}-${title.replace(/[^a-zA-Z0-9]/g, '-')}`,
           title,
           type: 'subtask',
-          bold: !!match[2],
-          checked: match[1] === 'x',
+          bold: !!match[4],
+          checked,
         };
         
         const lastTopLevelItem = insideSection && currentSection?.children && currentSection.children.length > 0
@@ -68,4 +71,3 @@ export const parseMarkdownChecklist = (markdownText: string): TaskItemType[] => 
   
   return result;
 };
-

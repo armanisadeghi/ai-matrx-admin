@@ -48,6 +48,10 @@
     "name": "dynamic-layouts"
   },
   {
+    "path": "/tests/fetch-test",
+    "name": "fetch-test"
+  },
+  {
     "path": "/tests/flashcard-app-tests",
     "name": "flashcard-app-tests"
   },
@@ -58,6 +62,14 @@
   {
     "path": "/tests/full-screen-demo",
     "name": "full-screen-demo"
+  },
+  {
+    "path": "/tests/google-apis",
+    "name": "google-apis"
+  },
+  {
+    "path": "/tests/integrations",
+    "name": "integrations"
   },
   {
     "path": "/tests/links",
@@ -88,6 +100,10 @@
     "name": "notes-app"
   },
   {
+    "path": "/tests/oauth",
+    "name": "oauth"
+  },
+  {
     "path": "/tests/openai-chat",
     "name": "openai-chat"
   },
@@ -114,6 +130,10 @@
   {
     "path": "/tests/selector-test",
     "name": "selector-test"
+  },
+  {
+    "path": "/tests/slack-apis",
+    "name": "slack-apis"
   },
   {
     "path": "/tests/socket-tests",
