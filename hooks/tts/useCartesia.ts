@@ -106,7 +106,7 @@ export function useCartesia(
                 playerRef.current.stop().catch(console.error);
             }
         };
-    }, [config]);
+    }, []);
 
     // Method to initialize Audio
     // This tricks the browser into activating the AudioContext through a user gesture

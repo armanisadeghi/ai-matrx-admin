@@ -3,7 +3,7 @@
 
 import React, {useState, useCallback, useEffect, useRef} from 'react';
 import {Button} from "@/components/ui/button";
-import Cartesia, {WebPlayer} from '@cartesia/cartesia-js';
+import { CartesiaClient, WebPlayer } from '@cartesia/cartesia-js';
 import {Play, Pause, RotateCcw, Square} from 'lucide-react';
 
 export interface AudioPlaybackState {
@@ -39,10 +39,10 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
     const [audioSource, setAudioSource] = useState<any>(null);
     const [isInitialized, setIsInitialized] = useState(false);
 
-    const cartesiaRef = useRef<Cartesia | null>(null);
+    const cartesiaRef = useRef<CartesiaClient | null>(null);
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
-    const progressIntervalRef = useRef<NodeJS.Timeout>();
+    const progressIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const cleanupRef = useRef(false);
 
     const cleanup = useCallback(() => {
@@ -66,7 +66,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
     // Initialize Cartesia and WebSocket once
     useEffect(() => {
         if (!isInitialized && apiKey && !cleanupRef.current) {
-            cartesiaRef.current = new Cartesia({apiKey});
+            cartesiaRef.current = new CartesiaClient({apiKey});
             websocketRef.current = cartesiaRef.current.tts.websocket({
                 container: "raw",
                 encoding: "pcm_f32le",
@@ -140,7 +140,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
             setPlaybackStatus('Buffering audio...');
 
             const response = await websocketRef.current.send({
-                model_id: "sonic-english",
+                modelId: "sonic-english",
                 voice: {
                     mode: "id",
                     id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
@@ -315,7 +315,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = (
                 </Button>
             </div>
             <div className="mt-2 text-sm text-muted-foreground">
-                Status: {isLoading ? 'Loading audio...' : playbackStatus}
+                Audio Status: {isLoading ? 'Loading audio...' : playbackStatus}
             </div>
         </div>
     );

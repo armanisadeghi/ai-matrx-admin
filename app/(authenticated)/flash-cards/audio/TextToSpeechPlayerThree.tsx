@@ -1,18 +1,11 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+"use client";
+
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { WebPlayer } from '@cartesia/cartesia-js';
-import { Play, Pause, RotateCcw } from 'lucide-react';
-import { Textarea } from '@/components/ui/textarea';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import cartesia from '@/lib/cartesia/client';
-import { availableVoices } from '@/lib/cartesia/voices';
-import { EmotionName, EmotionLevel, VoiceSpeed, AudioEncoding, Language } from '@/lib/cartesia/cartesia.types';
+import { CartesiaClient, WebPlayer } from "@cartesia/cartesia-js";
+import { Play, Pause, RotateCcw } from "lucide-react";
+import VoiceConfigSelects from "./VoiceConfigSelects";
+import { Textarea } from "@/components/ui";
 
 interface TextToSpeechPlayerProps {
     text: string;
@@ -20,29 +13,54 @@ interface TextToSpeechPlayerProps {
     onPlaybackEnd?: () => void;
 }
 
+export type TtsStatus =
+    | "initialLoad"
+    | "websocketConnected"
+    | "readyForAutoPlay"
+    | "connectedNoAutoPlay"
+    | "disconnected"
+    | "reconnected"
+    | "buffering"
+    | "playing"
+    | "paused"
+    | "finished"
+    | "error";
+
 const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay = false, onPlaybackEnd }) => {
+    const apiKey = process.env.NEXT_PUBLIC_CARTESIA_API_KEY;
     const [isPlaying, setIsPlaying] = useState(false);
-    const [playbackStatus, setPlaybackStatus] = useState('');
-    const [editableText, setEditableText] = useState(text);
+    const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
+    const [playbackStatus, setPlaybackStatus] = useState<TtsStatus>("initialLoad");
+    const cartesiaRef = useRef<CartesiaClient | null>(null);
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
     const sourceRef = useRef<any>(null);
+    const [editableText, setEditableText] = useState(text);
+    const [voiceId, setVoiceId] = useState("156fb8d2-335b-4950-9cb3-a2d33befec77");
+    const [emotion, setEmotion] = useState("positivity:high");
+    const [intensity, setIntensity] = useState("medium");
+    const [speed, setSpeed] = useState("normal");
+    const [encoding, setEncoding] = useState("pcm_f32le");
+    const [language, setLanguage] = useState("en");
 
-    const [selectedVoice, setSelectedVoice] = useState<string>("156fb8d2-335b-4950-9cb3-a2d33befec77");
-    const [selectedEmotion, setSelectedEmotion] = useState<EmotionName>(EmotionName.POSITIVITY);
-    const [selectedEmotionLevel, setSelectedEmotionLevel] = useState<EmotionLevel | "medium">("medium");
-    const [selectedSpeed, setSelectedSpeed] = useState<VoiceSpeed>(VoiceSpeed.NORMAL);
-    const [selectedEncoding, setSelectedEncoding] = useState<AudioEncoding>(AudioEncoding.PCM_F32LE);
-    const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.EN);
-
+    
     useEffect(() => {
-        websocketRef.current = cartesia.tts.websocket({
+        cartesiaRef.current = new CartesiaClient({ apiKey: apiKey || "" });
+        websocketRef.current = cartesiaRef.current.tts.websocket({
             container: "raw",
-            encoding: selectedEncoding,
-            sampleRate: 44100
+            encoding: "pcm_f32le",
+            sampleRate: 44100,
         });
+        playerRef.current = new WebPlayer({ bufferDuration: 0.25 });
 
-        playerRef.current = new WebPlayer({ bufferDuration: 1 });
+        try {
+            websocketRef.current.connect();
+        } catch (error) {
+            console.error(`Failed to connect to Cartesia: ${error}`);
+            throw error;
+        }
+        
+        setPlaybackStatus("websocketConnected");
 
         if (autoPlay) {
             handlePlay();
@@ -50,57 +68,73 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
 
         return () => {
             websocketRef.current?.disconnect();
+            setPlaybackStatus("disconnected");
         };
-    }, [autoPlay, selectedEncoding]);
+    }, [apiKey, autoPlay]);
 
     const handlePlay = useCallback(async () => {
-        if (!websocketRef.current || !playerRef.current) {
-            console.error("Cartesia WebSocket/Player is not initialized");
+        if (!apiKey || !websocketRef.current || !playerRef.current) {
+            console.error("Cartesia API key is not set or WebSocket/Player is not initialized");
+            setPlaybackStatus("error");
             return;
         }
 
-        const emotionControl = selectedEmotionLevel !== "medium"
-            ? `${selectedEmotion}:${selectedEmotionLevel}`
-            : selectedEmotion;
-
         try {
             setIsPlaying(true);
-            setPlaybackStatus('Connecting...');
-            await websocketRef.current.connect();
+            setPlaybackStatus("buffering");
 
-            setPlaybackStatus('Buffering audio...');
             const response = await websocketRef.current.send({
-                model_id: "sonic-english",
+                modelId: "sonic-english",
                 voice: {
                     mode: "id",
-                    id: selectedVoice,
+                    id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
                     __experimental_controls: {
-                        "speed": selectedSpeed,
-                        "emotion": [emotionControl],
+                        speed: speed,
+                        emotion: ["positivity:high", "curiosity"],
                     },
                 },
-                transcript: editableText
+                transcript: editableText,
             });
+
 
             sourceRef.current = response.source;
 
-            setPlaybackStatus('Playing audio...');
+            if (!sourceRef.current) {
+                console.error("Source reference is null or undefined.");
+                setPlaybackStatus("error");
+                return;
+            }
+
+            // Attach error and event listeners to the source and player to capture more details
+            sourceRef.current.on("error", (error: any) => {
+                console.error("Audio source error: ", error);
+            });
+
+            sourceRef.current.on("end", () => {
+                console.log("Audio source ended.");
+            });
+
+            setPlaybackStatus("playing");
+
             await playerRef.current.play(sourceRef.current);
-            setPlaybackStatus('Playback finished');
+
+            console.log("Audio is playing...");
+            setPlaybackStatus("finished");
+            setHasPlayedOnce(true); // Mark that we've played audio at least once
         } catch (error) {
             console.error("Error playing audio:", error);
-            setPlaybackStatus('Error occurred');
+            setPlaybackStatus("error");
         } finally {
             setIsPlaying(false);
             onPlaybackEnd?.();
         }
-    }, [editableText, onPlaybackEnd, selectedVoice, selectedEmotion, selectedEmotionLevel, selectedSpeed]);
+    }, [editableText, onPlaybackEnd, apiKey]);
 
     const handlePause = useCallback(async () => {
         if (playerRef.current) {
             await playerRef.current.pause();
             setIsPlaying(false);
-            setPlaybackStatus('Paused');
+            setPlaybackStatus("paused");
         }
     }, []);
 
@@ -108,134 +142,67 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
         if (playerRef.current) {
             await playerRef.current.resume();
             setIsPlaying(true);
-            setPlaybackStatus('Playing audio...');
+            setPlaybackStatus("playing");
         }
     }, []);
 
     const handleReplay = useCallback(async () => {
         if (playerRef.current && sourceRef.current) {
             setIsPlaying(true);
-            setPlaybackStatus('Playing audio...');
+            setPlaybackStatus("playing");
             await playerRef.current.play(sourceRef.current);
-            setPlaybackStatus('Playback finished');
+            setPlaybackStatus("finished");
             setIsPlaying(false);
         }
     }, []);
 
+    const isButtonDisabled = (action: string): boolean => {
+        switch (action) {
+            case "play":
+                return isPlaying;
+            case "pause":
+                return !isPlaying;
+            case "resume":
+                return playbackStatus !== "paused";
+            case "replay":
+                return !hasPlayedOnce || isPlaying;
+            default:
+                return false;
+        }
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="flex flex-col w-full">
             <Textarea
                 value={editableText}
                 onChange={(e) => setEditableText(e.target.value)}
                 placeholder="Enter text to speak..."
-                className="w-96 h-auto min-h-[10rem] max-w-3xl resize-none mb-4"
+                className="w-full resize-none mb-4 h-96"
             />
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-                <Select value={selectedVoice} onValueChange={(value: string) => setSelectedVoice(value)}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select voice" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {availableVoices.map((voice) => (
-                            <SelectItem key={voice.id} value={voice.id}>
-                                {voice.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                <Select value={selectedEmotion} onValueChange={(value: EmotionName) => setSelectedEmotion(value)}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select emotion" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.values(EmotionName).map((emotion) => (
-                            <SelectItem key={emotion} value={emotion}>
-                                {emotion}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                <Select
-                    value={selectedEmotionLevel}
-                    onValueChange={(value: EmotionLevel | "medium") => setSelectedEmotionLevel(value)}
-                >
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select intensity" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        {Object.values(EmotionLevel).filter(level => level !== "").map((level) => (
-                            <SelectItem key={level} value={level}>
-                                {level}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                <Select value={selectedSpeed} onValueChange={(value: VoiceSpeed) => setSelectedSpeed(value)}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select speed" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.values(VoiceSpeed).map((speed) => (
-                            <SelectItem key={speed} value={speed}>
-                                {speed}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                <Select value={selectedEncoding} onValueChange={(value: AudioEncoding) => setSelectedEncoding(value)}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select encoding" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.values(AudioEncoding).map((encoding) => (
-                            <SelectItem key={encoding} value={encoding}>
-                                {encoding}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                <Select value={selectedLanguage} onValueChange={(value: Language) => setSelectedLanguage(value)}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Object.values(Language).map((language) => (
-                            <SelectItem key={language} value={language}>
-                                {language}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="flex space-x-4 mt-4">
-                <Button onClick={handlePlay} disabled={isPlaying}>
-                    <Play className="mr-2 h-4 w-4"/> Play
+            <VoiceConfigSelects
+                isPlaying={isPlaying}
+                onVoiceChange={setVoiceId}
+                onEmotionChange={setEmotion}
+                onIntensityChange={setIntensity}
+                onSpeedChange={setSpeed}
+                onEncodingChange={setEncoding}
+                onLanguageChange={setLanguage}
+            />
+            <div className="flex space-x-4">
+                <Button onClick={handlePlay} disabled={isButtonDisabled("play")}>
+                    <Play className="mr-2 h-4 w-4" /> Play
                 </Button>
-
-                <Button onClick={handlePause} disabled={!isPlaying}>
-                    <Pause className="mr-2 h-4 w-4"/> Pause
+                <Button onClick={handlePause} disabled={isButtonDisabled("pause")}>
+                    <Pause className="mr-2 h-4 w-4" /> Pause
                 </Button>
-
-                <Button onClick={handleResume} disabled={isPlaying}>
-                    <Play className="mr-2 h-4 w-4"/> Resume
+                <Button onClick={handleResume} disabled={isButtonDisabled("resume")}>
+                    <Play className="mr-2 h-4 w-4" /> Resume
                 </Button>
-
-                <Button onClick={handleReplay}>
-                    <RotateCcw className="mr-2 h-4 w-4"/> Replay
+                <Button onClick={handleReplay} disabled={isButtonDisabled("replay")}>
+                    <RotateCcw className="mr-2 h-4 w-4" /> Replay
                 </Button>
             </div>
-
-            <div className="mt-2 text-sm">
-                Status: {playbackStatus}
-            </div>
+            <div className="mt-2 text-sm">New Playback Status: {playbackStatus}</div>
         </div>
     );
 };

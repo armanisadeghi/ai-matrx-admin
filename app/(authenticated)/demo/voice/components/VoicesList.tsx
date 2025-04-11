@@ -24,20 +24,17 @@ const VoicesList: React.FC = () => {
     const [selectedVoice, setSelectedVoice] = useState<AiVoice | null>(null);
 
     const availableVoices = getOneData('availableVoices') as AiVoice[] | undefined;
-    console.log("VoicesList: Available voices:", availableVoices);
 
     const loadVoices = useCallback(async () => {
         console.log("loadVoices function called");
         setLoading(true);
         try {
             const voicesData = await listVoices();
-            console.log("Fetched voices data:", voicesData);
             const filteredVoices = voicesData.map(({ id, name, description }) => ({
                 id,
                 name,
                 description,
             }));
-            console.log("Filtered voices:", filteredVoices);
             setOneData('availableVoices', filteredVoices);
         } catch (err) {
             console.error("Error in loadVoices:", err);
@@ -53,7 +50,6 @@ const VoicesList: React.FC = () => {
     }, [setLoading, setOneData, setError]);
 
     useEffect(() => {
-        console.log("VoicesList useEffect triggered. availableVoices:", availableVoices);
         if (!availableVoices || availableVoices.length < 3) {
             console.log("Fetching available voices");
             loadVoices();
@@ -85,7 +81,6 @@ const VoicesList: React.FC = () => {
         </div>;
     }
 
-    console.log("VoicesList rendering with availableVoices:", availableVoices);
 
     return (
         <TooltipProvider>

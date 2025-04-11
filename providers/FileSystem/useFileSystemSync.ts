@@ -18,6 +18,7 @@ import {
     getParentPath
 } from '@/utils/file-operations/utils';
 import {FileSystemDialogProvider} from '@/components/FileManager/Dialogs/FileSystemDialogProvider';
+import { SyncStatus } from './types';
 
 interface SyncHookProps {
     fileSystemManager: FileSystemManager;

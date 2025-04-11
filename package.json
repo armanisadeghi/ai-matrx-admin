@@ -21,7 +21,7 @@
         "@ai-sdk/mistral": "latest",
         "@ai-sdk/openai": "latest",
         "@anthropic-ai/sdk": "latest",
-        "@cartesia/cartesia-js": "latest",
+        "@cartesia/cartesia-js": "^2.2.0",
         "@cerebras/cerebras_cloud_sdk": "latest",
         "@deepgram/sdk": "latest",
         "@dnd-kit/core": "^6.3.1",

@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import Cartesia, { WebPlayer } from '@cartesia/cartesia-js';
+import { CartesiaClient, WebPlayer } from '@cartesia/cartesia-js';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 
 interface TextToSpeechPlayerProps {
@@ -15,13 +15,13 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
     const apiKey = process.env.NEXT_PUBLIC_CARTESIA_API_KEY;
     const [isPlaying, setIsPlaying] = useState(false);
     const [playbackStatus, setPlaybackStatus] = useState('');
-    const cartesiaRef = useRef<Cartesia | null>(null);
+    const cartesiaRef = useRef<CartesiaClient | null>(null);
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
     const sourceRef = useRef<any>(null);
 
     useEffect(() => {
-        cartesiaRef.current = new Cartesia({ apiKey: apiKey || '' });
+        cartesiaRef.current = new CartesiaClient({ apiKey: apiKey || '' });
         websocketRef.current = cartesiaRef.current.tts.websocket({
             container: "raw",
             encoding: "pcm_f32le",
@@ -52,7 +52,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
 
             setPlaybackStatus('Buffering audio...');
             const response = await websocketRef.current.send({
-                model_id: "sonic-english",
+                modelId: "sonic-english",
                 voice: {
                     mode: "id",
                     id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
@@ -127,7 +127,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
                 </Button>
             </div>
             <div className="mt-2 text-sm">
-                Status: {playbackStatus}
+                Playback Status: {playbackStatus}
             </div>
         </div>
     );

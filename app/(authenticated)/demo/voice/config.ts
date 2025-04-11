@@ -22,26 +22,14 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'TTS with Controls',
+        path: 'tts-with-controls',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Wake Word Debug',
-        path: 'wake-word-debug',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Wake Word Test',
-        path: 'wake-word-test',
+        title: 'Server Token',
+        path: 'server-token',
         relative: true,
         description: ''
     },
