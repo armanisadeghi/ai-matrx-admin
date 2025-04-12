@@ -102,14 +102,7 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
     authUrl: "https://api.login.yahoo.com/oauth2/request_auth",
     redirectUri: `${process.env.NEXT_PUBLIC_YAHOO_REDIRECT_URL}/app_callback/yahoo`,
     scopes: [
-      "email",
-      "mail-r",
-      "mail-w",
-      "calendar-r", 
-      "calendar-w",
-      "contacts-r",
-      "contacts-w",
-      "profile"
+      "openid",
     ],
     scopeDelimiter: " ",
     color: "fuchsia-600",
