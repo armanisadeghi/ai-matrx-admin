@@ -22,6 +22,10 @@ export interface SchemaField {
     DATA_TYPE: string | null;
     CONVERSION: string | null;
     REFERENCE: any;
+    ICON_NAME?: string;
+    COMPONENT?: string;
+    COMPONENT_PROPS?: Record<string, any>;
+    DESCRIPTION?: string;
     iconName?: string;
 }
 
@@ -831,3 +835,5 @@ export const SERVICES_DETAILS = {
         icon: "🕸️",
     },
 } as const;
+
+

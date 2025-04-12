@@ -20,7 +20,7 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
 @layer base {
     :root {
-        --background: 48 22% 100%;
+        --background: 240, 5%, 96%;
         --matrx-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white' opacity='0.17'/%3E%3C/svg%3E");
         --matrx-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' fill='white' opacity='0.15'/%3E%3C/svg%3E");
         --foreground: 240 10% 3.9%;
@@ -110,12 +110,12 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     }
 
     .dark {
-        --background: 0 0% 12%;
+        --background: 240, 7%, 16%;
         --matrix-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3' numOctaves='5' seed='15' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='.1'/%3E%3C/svg%3E");
         --matrx-old-card-background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' opacity='0.2'/%3E%3C/svg%3E");
         --matrx-card-background: url("/dark-turbulence-noise.svg");
         --foreground: 0 0% 98%;
-        --card: 0 0% 8%;
+        --card: 240, 6%, 10%;
         --card-foreground: 0 0% 98%;
         --popover: 222, 47%, 11%;
         --popover-foreground: 0 0% 98%;
@@ -131,7 +131,7 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --accent-foreground: 0 0% 98%;
         --destructive: 0 72% 60%;
         --destructive-foreground: 0 85.7% 97.3%;
-        --border: 240 3.7% 15.9%;
+        --border: 240, 5%, 26%;
         --input: 240 3.7% 15.9%;
         --ring: 240 4.9% 83.9%;
         --radius: 0.5rem;
