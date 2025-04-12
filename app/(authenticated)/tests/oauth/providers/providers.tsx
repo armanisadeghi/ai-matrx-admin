@@ -96,4 +96,36 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
       </svg>
     ),
   },
+  yahoo: {
+    name: "Yahoo",
+    clientId: process.env.NEXT_PUBLIC_YAHOO_CLIENT_ID,
+    authUrl: "https://api.login.yahoo.com/oauth2/request_auth",
+    redirectUri: `${process.env.NEXT_PUBLIC_YAHOO_REDIRECT_URL}/app_callback/yahoo`,
+    scopes: [
+      "email",
+      "mail-r",
+      "mail-w",
+      "calendar-r", 
+      "calendar-w",
+      "contacts-r",
+      "contacts-w",
+      "profile"
+    ],
+    scopeDelimiter: " ",
+    color: "fuchsia-600",
+    textColor: "white",
+    additionalParams: {
+      response_type: "code",
+      language: "en-us"
+    },
+    iconSvg: (
+      <svg
+        viewBox="0 0 24 24"
+        className="w-6 h-6 fill-current"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M11.993 4c.816 0 7.604.302 7.604 6.76 0 .25-.006 1.37-.365 1.37h-3.813c-.343 0-.365-.456-.365-.478.026-4.607-3.092-4.748-3.092-4.748-.132 0-3.118.133-3.118 4.748 0 .022-.022.478-.365.478H4.694c-.37 0-.377-1.12-.377-1.37C4.317 4.302 11.105 4 11.993 4zm-2.971 9.282c-.165 0-1.537 0-1.537 1.628v4.99c0 .112.052.1.14.1h2.785c.106 0 .139 0 .139-.113V15.13c0-.15.006-1.848-1.527-1.848zm5.942 0c-.165 0-1.537 0-1.537 1.628v4.99c0 .112.052.1.14.1h2.785c.106 0 .139 0 .139-.113V15.13c0-.15.006-1.848-1.527-1.848z" />
+      </svg>
+    ),
+  },
 };

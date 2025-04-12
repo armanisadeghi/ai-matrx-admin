@@ -124,6 +124,35 @@ export function generateMockData(provider: string) {
           premium: true
         }
       };
+    case 'yahoo':
+      return {
+        access_token: 'YAHOO_MOCK_ACCESS_TOKEN_12345abcdef',
+        token_type: 'bearer',
+        refresh_token: 'YAHOO_MOCK_REFRESH_TOKEN_abcdef12345',
+        expires_in: 3600,
+        xoauth_yahoo_guid: 'XYZ12345ABCDEF',
+        scope: 'email mail-r mail-w calendar-r calendar-w contacts-r contacts-w profile',
+        user: {
+          guid: 'XYZ12345ABCDEF',
+          familyName: 'Smith',
+          givenName: 'Alex',
+          nickname: 'alexsmith',
+          displayName: 'Alex Smith',
+          emails: [
+            {
+              handle: 'alex.smith@yahoo.com',
+              id: 'primary',
+              primary: true,
+              type: 'home'
+            },
+            {
+              handle: 'asmith.work@yahoo.com',
+              type: 'work'
+            }
+          ],
+          imageUrl: 'https://example.com/profile.jpg'
+        }
+      };
     default:
       return {
         access_token: 'mock-token-for-' + provider,

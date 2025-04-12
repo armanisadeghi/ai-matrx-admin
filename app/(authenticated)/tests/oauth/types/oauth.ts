@@ -80,6 +80,27 @@ export interface TodoistTokenResponse extends OAuthBaseResponse {
   user?: TodoistUser;
 }
 
+// Yahoo-specific types
+export interface YahooUser {
+  guid: string;
+  familyName: string;
+  givenName: string;
+  nickname?: string;
+  displayName?: string;
+  emails: { handle: string; id?: string; primary?: boolean; type?: string }[];
+  imageUrl?: string;
+}
+
+export interface YahooTokenResponse extends OAuthBaseResponse {
+  access_token: string;
+  token_type: string;
+  refresh_token: string;
+  expires_in: number;
+  xoauth_yahoo_guid: string;
+  scope?: string;
+  user?: YahooUser;
+}
+
 // Provider configuration for UI
 export interface OAuthProviderConfig {
   name: string;
