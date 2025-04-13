@@ -173,7 +173,7 @@ export function SocketHeader({ socketHook, isCompact = false }: SocketHeaderProp
                     ) : (
                         <>
                             <Switch checked={streamEnabled} onCheckedChange={setStreamEnabled} />
-                            <Label>Enable Streaming</Label>
+                            <Label>Streaming</Label>
                             <Button onClick={handleReset} disabled={namespace === "/UserSession" && !selectedServer} variant="ghost">
                                 <FiRefreshCw className="h-4 w-4" />
                                 Reset
@@ -203,6 +203,14 @@ export function SocketHeader({ socketHook, isCompact = false }: SocketHeaderProp
                                     size={isCompact ? "sm" : "default"}
                                 >
                                     Apply
+                                </Button>
+                                <Button 
+                                    onClick={handleReset} 
+                                    disabled={namespace === "/UserSession" && !selectedServer}
+                                    className={isCompact ? "h-7 text-xs px-2" : ""}
+                                    size={isCompact ? "sm" : "default"}
+                                >
+                                    Reset
                                 </Button>
                             </div>
                         ) : (

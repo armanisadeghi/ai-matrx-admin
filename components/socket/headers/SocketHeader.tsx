@@ -142,7 +142,7 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                 </div>
                 <div className="flex items-center space-x-4">
                     <Switch checked={streamEnabled} onCheckedChange={setStreamEnabled} />
-                    <Label>Enable Streaming</Label>
+                    <Label>Streaming</Label>
                     <Button onClick={handleReset} disabled={namespace === "/UserSession" && !selectedServer} variant="ghost">
                         <FiRefreshCw className="h-4 w-4" />
                         Reset
@@ -162,6 +162,10 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                             />
                             <Button onClick={handleCustomNamespaceSubmit} disabled={!customNamespaceValue}>
                                 Apply
+                            </Button>
+                            <Button onClick={handleReset} disabled={namespace === "/UserSession" && !selectedServer} variant="ghost">
+                                <FiRefreshCw className="h-4 w-4" />
+                                Reset
                             </Button>
                         </div>
                     ) : (

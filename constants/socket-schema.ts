@@ -2276,10 +2276,10 @@ export const SERVICE_TASKS = {
 
 
 export const AVAILABLE_NAMESPACES = {
-    UserSession: "User Session",
-    AdminSession: "Admin Session",
-    Direct: "No Namespace",
-    custom: "Custom Namespace",
+    "/UserSession": "User Session",
+    "/AdminSession": "Admin Session",
+    "/Direct": "No Namespace",
+    "/custom": "Custom Namespace",
 } as const;
 
 
