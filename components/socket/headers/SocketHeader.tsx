@@ -1,4 +1,3 @@
-// File: components/socket/SocketHeader.tsx
 import React, { useState, useEffect } from "react";
 import { Wifi, WifiOff, Shield, ShieldOff, Radio, CheckCircle, XCircle } from "lucide-react";
 import { Input, Label, Switch, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Button } from "@/components/ui";
@@ -16,7 +15,7 @@ interface StatusIndicatorProps {
 }
 
 const StatusIndicator = ({ isActive, label, icon }: StatusIndicatorProps) => (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-1">
         <div className={`${isActive ? "text-green-500" : "text-red-500"}`}>{isActive ? icon.active : icon.inactive}</div>
         <span className="text-sm text-muted-foreground">{label}</span>
     </div>
@@ -75,7 +74,9 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
             connectToServer(normalizedServer);
             setSelectedServer(normalizedServer);
         }
-    }; // Handle namespace override
+    };
+
+    // Handle namespace override
     const handleNamespaceChange = (value: string) => {
         if (value === "custom") {
             setCustomNamespace(true);
@@ -104,8 +105,8 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
     return (
         <div className="p-4 pb-6 space-y-4 bg-gray-200 dark:bg-gray-900 border-3 border-gray-300 dark:border-gray-600 rounded-3xl">
             <div className="flex flex-wrap gap-4 justify-between items-center">
-                <div className="flex space-x-4">
-                    <h3 className="text-lg font-bold pr-6">Matrx Admin Socket.IO Tester</h3>
+                <div className="flex space-x-3">
+                    <h3 className="text-lg font-bold pr-4">Matrx Admin Socket.IO Tester</h3>
                     <StatusIndicator
                         isActive={isConnected}
                         label="Connected"
@@ -149,17 +150,15 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-4 gap-3">
                 {/* Namespace Selection */}
-                <div className="space-y-2">
-                    <Label>Namespace</Label>
+                <div>
                     {customNamespace ? (
                         <div className="flex space-x-2">
                             <Input
                                 value={namespace}
                                 onChange={(e) => setCustomNamespaceValue(e.target.value)}
                                 placeholder="Enter namespace (e.g., /CustomNamespace)"
-                                className="mt-1"
                             />
                             <Button onClick={handleCustomNamespaceSubmit} disabled={!customNamespaceValue}>
                                 Apply
@@ -168,7 +167,7 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                     ) : (
                         <Select value={namespace} onValueChange={handleNamespaceChange}>
                             <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
-                                <SelectValue placeholder="Select namespace..." />
+                                <SelectValue placeholder="Select a namespace..." />
                             </SelectTrigger>
                             <SelectContent>
                                 {getAvailableNamespaces().map(({ value, label }, index) => (
@@ -192,11 +191,10 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                 </div>
 
                 {/* Server Selection */}
-                <div className="space-y-2">
-                    <Label>Server</Label>
+                <div>
                     <Select value={selectedServer || ""} onValueChange={handleServerChange}>
                         <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
-                            <SelectValue placeholder="Select server..." />
+                            <SelectValue placeholder="Select a server..." />
                         </SelectTrigger>
                         <SelectContent>
                             {availableServers.map((server, index) => (
@@ -213,8 +211,7 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                 </div>
 
                 {/* Service Selection */}
-                <div className="space-y-2">
-                    <Label>Service</Label>
+                <div>
                     <Select
                         value={service}
                         onValueChange={(value) => {
@@ -223,7 +220,7 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                         }}
                     >
                         <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
-                            <SelectValue placeholder="Select service..." />
+                            <SelectValue placeholder="Select a service..." />
                         </SelectTrigger>
                         <SelectContent>
                             {getAvailableServices().map(({ value, label }) => (
@@ -240,11 +237,10 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                 </div>
 
                 {/* Task Type Selection */}
-                <div className="space-y-2">
-                    <Label>Task Type</Label>
+                <div>
                     <Select value={taskType} onValueChange={setTaskType} disabled={!service}>
                         <SelectTrigger className="bg-gray-200 dark:bg-gray-900 border-1 border-gray-400 dark:border-gray-500 rounded-3xl">
-                            <SelectValue placeholder={service ? "Select task type..." : "Select service first"} />
+                            <SelectValue placeholder={service ? "Select a task type..." : "Select service first"} />
                         </SelectTrigger>
                         <SelectContent>
                             {getTasksForService(service).map(({ value, label }) => (
@@ -263,5 +259,3 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
         </div>
     );
 }
-
-export default SocketHeader;
