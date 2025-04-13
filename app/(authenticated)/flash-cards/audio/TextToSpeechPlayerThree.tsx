@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { CartesiaClient, WebPlayer } from "@cartesia/cartesia-js";
 import { Play, Pause, RotateCcw } from "lucide-react";
-import VoiceConfigSelects from "./VoiceConfigSelects";
+import VoiceConfigSelects from "@/components/audio/VoiceConfigSelects";
 import { Textarea } from "@/components/ui";
 
 interface TextToSpeechPlayerProps {
@@ -184,7 +184,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
                 onVoiceChange={setVoiceId}
                 onEmotionChange={setEmotion}
                 onIntensityChange={setIntensity}
-                onSpeedChange={setSpeed}
+                onSpeedChange={(speed: number) => setSpeed(speed.toString())}
                 onEncodingChange={setEncoding}
                 onLanguageChange={setLanguage}
             />

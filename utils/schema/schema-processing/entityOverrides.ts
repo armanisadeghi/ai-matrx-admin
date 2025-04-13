@@ -956,6 +956,23 @@ const registeredFunctionEntityOverrides: EntityOverrides<'registeredFunction'> =
 
 
 
+const scrapeBaseConfigEntityOverrides: EntityOverrides<'scrapeBaseConfig'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const scrapeCachePolicyEntityOverrides: EntityOverrides<'scrapeCachePolicy'> = {
     schemaType: null,
     entityName: null,
@@ -1573,6 +1590,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     recipeProcessor: recipeProcessorEntityOverrides,
     recipeTool: recipeToolEntityOverrides,
     registeredFunction: registeredFunctionEntityOverrides,
+    scrapeBaseConfig: scrapeBaseConfigEntityOverrides,
     scrapeCachePolicy: scrapeCachePolicyEntityOverrides,
     scrapeConfiguration: scrapeConfigurationEntityOverrides,
     scrapeCycleRun: scrapeCycleRunEntityOverrides,

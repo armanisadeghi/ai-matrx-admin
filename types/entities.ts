@@ -600,6 +600,14 @@ export type RegisteredFunction = {
     returnBroker?: string;
 }
 
+export type ScrapeBaseConfig = {
+    id: string;
+    selectorType: string;
+    exact?: Record<string, unknown>;
+    partial?: Record<string, unknown>;
+    regex?: Record<string, unknown>;
+}
+
 export type ScrapeCachePolicy = {
     id: string;
     rescrapeAfter: number;
