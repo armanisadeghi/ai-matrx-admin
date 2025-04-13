@@ -1,5 +1,6 @@
-import { createSlice, PayloadAction, Action } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, Action, createSelector } from "@reduxjs/toolkit";
 import { initializeSocket, startSocketTask, emitSocketMessage } from "./socketActions";
+import { RootState } from "@/lib/redux/store";
 
 export type SocketStatus = "pending" | "running" | "completed" | "failed";
 export type StreamingStatus = "inactive" | "streaming" | "completed" | "failed";
@@ -16,6 +17,10 @@ interface SocketState {
     sid: string | null;
     error: string | null;
     streamingTasks: Record<string, StreamingTask>;
+    currentServer: string | null;
+    fullUrl: string | null;
+    namespace: string;
+    isSwitchingServer: boolean;
 }
 
 interface SocketErrorAction extends Action {
@@ -39,6 +44,10 @@ const initialState: SocketState = {
     sid: null,
     error: null,
     streamingTasks: {},
+    currentServer: null,
+    fullUrl: null,
+    namespace: "/UserSession",
+    isSwitchingServer: false,
 };
 
 const socketSlice = createSlice({
@@ -76,6 +85,18 @@ const socketSlice = createSlice({
         clearStreamingTask: (state, action: PayloadAction<string>) => {
             delete state.streamingTasks[action.payload];
         },
+        setCurrentServer: (state, action: PayloadAction<string | null>) => {
+            state.currentServer = action.payload;
+        },
+        setFullUrl: (state, action: PayloadAction<string | null>) => {
+            state.fullUrl = action.payload;
+        },
+        setNamespace: (state, action: PayloadAction<string>) => {
+            state.namespace = action.payload;
+        },
+        setIsSwitchingServer: (state, action: PayloadAction<boolean>) => {
+            state.isSwitchingServer = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -85,6 +106,7 @@ const socketSlice = createSlice({
             })
             .addCase("socket/connected", (state) => {
                 state.status = "running";
+                state.isAuthenticated = true;
             })
             .addCase("socket/initialized", (state) => {
                 state.status = "running";
@@ -94,10 +116,12 @@ const socketSlice = createSlice({
                 state.isAuthenticated = false;
                 state.sid = null;
                 state.streamingTasks = {};
+                // Note: currentServer, fullUrl, namespace are preserved unless explicitly cleared
             })
             .addCase("socket/error", (state, action: SocketErrorAction) => {
                 state.status = "failed";
                 state.error = action.payload;
+                state.isAuthenticated = false;
             })
             .addCase(initializeSocket.pending, (state) => {
                 state.status = "pending";
@@ -105,10 +129,12 @@ const socketSlice = createSlice({
             })
             .addCase(initializeSocket.fulfilled, (state) => {
                 state.status = "running";
+                state.isAuthenticated = true;
             })
             .addCase(initializeSocket.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.error.message || "Initialization failed";
+                state.isAuthenticated = false;
             })
             .addCase(startSocketTask.fulfilled, (state, action) => {
                 const { eventName, isStreaming } = action.payload;
@@ -146,6 +172,58 @@ export const {
     startStreamingTask,
     endStreamingTask,
     clearStreamingTask,
+    setCurrentServer,
+    setFullUrl,
+    setNamespace,
+    setIsSwitchingServer,
 } = socketSlice.actions;
+
+// Selectors
+const selectSocketState = (state: RootState) => state.socket;
+
+export const selectSocketStatus = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.status
+);
+
+export const selectIsAuthenticated = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.isAuthenticated
+);
+
+export const selectSocketSid = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.sid
+);
+
+export const selectSocketError = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.error
+);
+
+export const selectStreamingTasks = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.streamingTasks
+);
+
+export const selectCurrentServer = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.currentServer
+);
+
+export const selectFullUrl = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.fullUrl
+);
+
+export const selectNamespace = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.namespace
+);
+
+export const selectIsSwitchingServer = createSelector(
+    [selectSocketState],
+    (socketState) => socketState.isSwitchingServer
+);
 
 export default socketSlice.reducer;

@@ -1,19 +1,18 @@
 // lib/redux/socket/useInitializeSocket.ts
 
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-
+import { useEffect } from "react";
 import {
-    socketInitialized,
     socketConnecting,
     socketConnected,
+    socketInitialized,
     socketDisconnected,
     socketError,
-} from '@/lib/redux/socket/actions';
-import { SocketManager } from '@/lib/redux/socket/manager';
+} from "@/lib/redux/features/socket/socketActions";
+import { SocketManager } from "@/lib/redux/socket/manager";
+import { useAppDispatch } from "@/lib/redux";
 
 export const useInitializeSocket = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         const socketManager = SocketManager.getInstance();
@@ -26,7 +25,7 @@ export const useInitializeSocket = () => {
                 dispatch(socketInitialized());
             })
             .catch((error) => {
-                console.error('useInitializeSocket - Socket connection error:', error);
+                console.error("useInitializeSocket - Socket connection error:", error);
                 dispatch(socketError(error.message));
             });
 

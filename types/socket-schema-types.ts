@@ -1,5 +1,31 @@
 // File: types/socket-schema-types.ts
 
+export interface ChatConfigs {
+    recipe_id: string;
+    version?: number;
+    user_id?: string;
+    prepare_for_next_call?: boolean;
+    save_new_conversation?: boolean;
+    include_classified_output?: boolean;
+    model_override?: string;
+    tools_override?: any[][];
+    allow_default_values?: boolean;
+    allow_removal_of_unmatched?: boolean;
+}
+
+export interface ChatConfig {
+    recipe_id: string;
+    version?: number;
+    user_id?: string;
+    prepare_for_next_call?: boolean;
+    save_new_conversation?: boolean;
+    include_classified_output?: boolean;
+    model_override?: string;
+    tools_override?: any[][];
+    allow_default_values?: boolean;
+    allow_removal_of_unmatched?: boolean;
+}
+
 export interface MessageObject {
     id?: string;
     conversation_id?: string;
@@ -21,6 +47,42 @@ export interface BrokerValues {
     id: string;
     value?: string;
     ready?: boolean;
+}
+
+export interface PrepareBatchRecipe {
+    chat_configs: ChatConfigs[];
+    broker_values?: BrokerValues[];
+    max_count?: number;
+}
+
+export interface RunBatchRecipe {
+    chat_configs: ChatConfigs[];
+    broker_values?: BrokerValues[];
+    max_count?: number;
+}
+
+export interface RunRecipeToChat {
+    chat_config: ChatConfig;
+    broker_values?: BrokerValues[];
+}
+
+export interface RunChatRecipe {
+    recipe_id: string;
+    version?: number;
+    broker_values?: BrokerValues[];
+    user_id?: string;
+    prepare_for_next_call?: boolean;
+    save_new_conversation?: boolean;
+    include_classified_output?: boolean;
+    model_override?: string;
+    tools_override?: any[][];
+    allow_default_values?: boolean;
+    allow_removal_of_unmatched?: boolean;
+}
+
+export interface GetNeededRecipeBrokers {
+    recipe_id: string;
+    version?: number;
 }
 
 export interface PrepConversation {
@@ -296,6 +358,25 @@ export interface ClassifyMarkdown {
     raw_markdown: string;
 }
 
+export interface RunChatRecipe {
+    recipe_id: string;
+    version?: number;
+    broker_values?: BrokerValues[];
+    user_id?: string;
+    prepare_for_next_call?: boolean;
+    save_new_conversation?: boolean;
+    include_classified_output?: boolean;
+    model_override?: string;
+    tools_override?: any[][];
+    allow_default_values?: boolean;
+    allow_removal_of_unmatched?: boolean;
+}
+
+export interface GetNeededRecipeBrokers {
+    recipe_id: string;
+    version?: number;
+}
+
 export interface GetCompiledRecipe {
     compiled_id: string;
 }
@@ -319,7 +400,7 @@ export interface RunCompiledRecipe {
 
 export interface RunRecipe {
     recipe_id: string;
-    broker_values: BrokerValues[];
+    broker_values?: BrokerValues[];
     overrides?: Overrides;
     stream: boolean;
 }

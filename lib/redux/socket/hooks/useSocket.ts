@@ -14,10 +14,18 @@ export interface SocketTask {
 }
 
 export const useSocket = () => {
-    // Use the consolidated socket connection hook
-    const { socketManager, isConnected, isAuthenticated } = useSocketConnection();
+    const {
+        socketManager,
+        isConnected,
+        isAuthenticated,
+        getAvailableServers,
+        connectToServer,
+        overrideNamespace,
+        clearServerOverride,
+        currentServer,
+        currentNamespace,
+    } = useSocketConnection();
 
-    const [namespace, setNamespace] = useState("UserSession");
     const [service, setService] = useState("");
     const [taskType, setTaskType] = useState("");
 
@@ -90,9 +98,7 @@ export const useSocket = () => {
                 const currentType = typeof response;
 
                 console.log("--> DEBUG: currentType", currentType);
-                console.log("--> DEBUG: response", response);
 
-                // Only log when the response type changes
                 if (lastResponseTypeRef.current !== currentType) {
                     console.log(`--> Received response of type: ${currentType}`);
                     lastResponseTypeRef.current = currentType;
@@ -134,12 +140,16 @@ export const useSocket = () => {
 
     return {
         // Core selection state
-        namespace,
-        setNamespace,
+        namespace: currentNamespace,
+        overrideNamespace,
         service,
         setService,
         taskType,
         setTaskType,
+        getAvailableServers,
+        connectToServer,
+        clearServerOverride,
+        currentServer,
         // Stream and connection state
         streamEnabled,
         setStreamEnabled,

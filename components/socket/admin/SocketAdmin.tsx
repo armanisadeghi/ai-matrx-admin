@@ -1,7 +1,8 @@
+// File: components/socket/SocketAdmin.tsx
 "use client";
 import { Card, CardContent } from "@/components/ui";
 import { useSocket } from "@/lib/redux/socket/hooks/useSocket";
-import { FIELD_OVERRIDES, SOCKET_TASKS } from "@/constants/socket-constants";
+import { FIELD_OVERRIDES } from "@/constants/socket-constants";
 import DynamicForm from "../form-builder/DynamicForm";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ import { SocketTaskBuilder } from "../SocketTaskBuilder";
 interface SocketAdminProps {
     className?: string;
 }
+
 export const SocketAdmin = ({ className }: SocketAdminProps) => {
     const socketHook = useSocket();
     const { taskType, tasks, setTaskData, handleSend } = socketHook;
@@ -48,9 +50,9 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                                         defaultOpen={taskIndex === 0}
                                     >
                                         <div className="space-y-6 pt-4">
-                                            {taskType && SOCKET_TASKS[taskType] ? (
+                                            {taskType ? (
                                                 <DynamicForm
-                                                    schema={SOCKET_TASKS[taskType]}
+                                                    taskType={taskType} // Pass taskType instead of schema
                                                     onChange={handleChange}
                                                     onSubmit={handleSubmit}
                                                     fieldOverrides={FIELD_OVERRIDES}

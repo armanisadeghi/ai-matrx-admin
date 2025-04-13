@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+// File: components/form-builder/FormField.tsx
+import React from "react";
 import { FancyInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FancyTextarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash, Link } from "lucide-react";
+import { Plus, Trash, File } from "lucide-react";
 import { formatLabel, formatPlaceholder } from "../utils/label-util";
 import { SchemaField } from "@/constants/socket-constants";
 import ArrayField from "./ArrayField";
@@ -69,18 +70,7 @@ const FormField: React.FC<FormFieldProps> = ({
                     onBlur={onBlur}
                 />
             );
-        }    
-
-        const handleRemoveItem = (index: number) => {
-            if (value.length <= 1) {
-                const updatedValue = [{}];
-                onChange(fullPath, updatedValue);
-            } else {
-                const updatedValue = value.filter((_, i) => i !== index);
-                onChange(fullPath, updatedValue);
-            }
-            onDeleteArrayItem?.(fullPath, index);
-        };
+        }
 
         return (
             <div className="w-full">
@@ -110,7 +100,11 @@ const FormField: React.FC<FormFieldProps> = ({
                                         variant="destructive"
                                         size="sm"
                                         className="absolute right-0 top-0 mt-2 mr-2"
-                                        onClick={() => handleRemoveItem(index)}
+                                        onClick={() => {
+                                            queueMicrotask(() => {
+                                                onDeleteArrayItem?.(fullPath, index);
+                                            });
+                                        }}
                                     >
                                         <Trash className="w-5 h-5 p-0" />
                                     </Button>
@@ -176,30 +170,36 @@ const FormField: React.FC<FormFieldProps> = ({
     );
 
     const override = getFieldOverride(fullPath);
-    const iconName = field.iconName || "File";
+    const iconName = field.iconName || field.ICON_NAME || "File";
     const Icon = (LucideIcons as any)[iconName] || LucideIcons.File;
+    const placeholder = field.DESCRIPTION || formatPlaceholder(fieldKey);
+
     const inputField = () => {
         if (field.DATA_TYPE === "boolean" || (field.DATA_TYPE === null && typeof field.DEFAULT === "boolean")) {
             return (
-                <Switch
-                    checked={!!value}
-                    onCheckedChange={(checked) => onChange(fullPath, checked)}
-                    onBlur={() => onBlur(fullPath, field, value)}
-                    {...(override?.props || {})}
-                />
+                <div className="flex items-center gap-2">
+                    <Switch
+                        checked={!!value}
+                        onCheckedChange={(checked) => onChange(fullPath, checked)}
+                        onBlur={() => onBlur(fullPath, field, value)}
+                        {...(override?.props || {})}
+                    />
+                    <Label className="col-span-1 text-sm pl-2 text-gray-500 dark:text-gray-400">{placeholder}</Label>
+                </div>
             );
         }
 
         if (field.DATA_TYPE === "object") {
             const stringValue = typeof value === "string" ? value : JSON.stringify(value, null, 2);
             return (
-                <div>
+                <div className="space-y-2">
+                    <Label className="col-span-1 text-sm text-gray-500 dark:text-gray-400">{placeholder}</Label>
                     <FancyTextarea
                         value={stringValue}
                         onChange={(e) => onChange(fullPath, e.target.value)}
                         onBlur={() => onBlur(fullPath, field, stringValue)}
                         className={`w-full font-mono text-sm bg-background border-input ${hasError ? "border-red-500" : ""} min-h-[200px]`}
-                        placeholder={`${formatPlaceholder(fieldKey)} as JSON`}
+                        placeholder={`${placeholder} as JSON`}
                         {...(override?.props || {})}
                     />
                     {notice && <span className="text-yellow-600 text-sm">{notice}</span>}
@@ -217,7 +217,7 @@ const FormField: React.FC<FormFieldProps> = ({
                             onChange={(e) => onChange(fullPath, e.target.value)}
                             onBlur={() => onBlur(fullPath, field, value)}
                             className={`w-full bg-background ${hasError ? "border-red-500" : ""}`}
-                            placeholder={formatPlaceholder(fieldKey)}
+                            placeholder={placeholder}
                             {...(override.props || {})}
                         />
                     );
@@ -240,7 +240,7 @@ const FormField: React.FC<FormFieldProps> = ({
                             onChange={(e) => onChange(fullPath, e.target.value)}
                             onBlur={() => onBlur(fullPath, field, value)}
                             className={`w-full bg-background ${hasError ? "border-red-500" : ""}`}
-                            placeholder={formatPlaceholder(fieldKey)}
+                            placeholder={placeholder}
                             {...(override.props || {})}
                         />
                     );
@@ -255,7 +255,7 @@ const FormField: React.FC<FormFieldProps> = ({
                 onChange={(e) => onChange(fullPath, e.target.value)}
                 onBlur={() => onBlur(fullPath, field, value)}
                 className={`w-full bg-background ${hasError ? "border-red-500" : ""}`}
-                placeholder={formatPlaceholder(fieldKey)}
+                placeholder={placeholder}
             />
         );
     };

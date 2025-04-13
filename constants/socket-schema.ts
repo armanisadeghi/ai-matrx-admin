@@ -1,5 +1,4 @@
 // File Location: constants/socket-schema.ts
-
 export interface SchemaField {
     REQUIRED: boolean;
     DEFAULT: any;
@@ -19,6 +18,180 @@ export interface Schema {
 }
 
 
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
+    },
+};
+
+export const CHAT_CONFIG_DEFINITION: Schema = {
+    recipe_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the ID of the recipe to be fetched, cached and ready for fast usage.",
+    },
+    version: {
+        REQUIRED: false,
+        DEFAULT: "latest",
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
+    },
+    user_id: {
+        REQUIRED: false,
+        DEFAULT: "socket_internal_user_id",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "",
+        DESCRIPTION: "",
+    },
+    prepare_for_next_call: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if the results should be saved as a new conversation.",
+    },
+    save_new_conversation: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if the results should be saved as a new conversation.",
+    },
+    include_classified_output: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if the classified output should be included in the response.",
+    },
+    model_override: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the ID of the AI Model or leave blank to use the default model.",
+    },
+    tools_override: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "arrayField",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "PocketKnife",
+        DESCRIPTION: "Enter a list of tool names to be used in the call, which will override the tools defined in the recipe.",
+    },
+    allow_default_values: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if the default values can be used for brokers which are not provided or are not ready.",
+    },
+    allow_removal_of_unmatched: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
+    },
+};
+
 export const MESSAGE_OBJECT_DEFINITION: Schema = {
     id: {
         REQUIRED: false,
@@ -30,7 +203,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
-        DESCRIPTION: "The message id.",
+        DESCRIPTION: "Enter the message id.",
     },
     conversation_id: {
         REQUIRED: false,
@@ -42,7 +215,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
-        DESCRIPTION: "The conversation id.",
+        DESCRIPTION: "Enter the conversation id.",
     },
     content: {
         REQUIRED: false,
@@ -54,7 +227,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         COMPONENT: "TextArea",
         COMPONENT_PROPS: {"rows": 10},
         ICON_NAME: "Text",
-        DESCRIPTION: "The message content.",
+        DESCRIPTION: "Enter the message content.",
     },
     role: {
         REQUIRED: false,
@@ -66,7 +239,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         COMPONENT: "Select",
         COMPONENT_PROPS: {"options": [{"label": "User", "value": "user"}, {"label": "Assistant", "value": "assistant"}, {"label": "System", "value": "system"}, {"label": "Tool", "value": "tool"}]},
         ICON_NAME: "User",
-        DESCRIPTION: "The message role. (user, assistant, system, tool)",
+        DESCRIPTION: "Enter the message role. (user, assistant, system, tool)",
     },
     type: {
         REQUIRED: false,
@@ -78,7 +251,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         COMPONENT: "Select",
         COMPONENT_PROPS: {"options": [{"label": "Text", "value": "text"}, {"label": "Tool Call", "value": "tool_call"}, {"label": "Mixed", "value": "mixed"}]},
         ICON_NAME: "Type",
-        DESCRIPTION: "The message type. (text, tool_call, mixed)",
+        DESCRIPTION: "Enter the message type. (text, tool_call, mixed)",
     },
     files: {
         REQUIRED: false,
@@ -106,57 +279,6 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
     },
 };
 
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "The name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the broker.",
-        ICON_NAME: "key",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "The value of the broker.",
-        ICON_NAME: "LetterText",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: true,
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
-    },
-};
-
 export const OVERRIDE_DEFINITION: Schema = {
     model_override: {
         REQUIRED: false,
@@ -167,8 +289,8 @@ export const OVERRIDE_DEFINITION: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the model to use.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the model to use.",
+        ICON_NAME: "Key",
     },
     processor_overrides: {
         REQUIRED: false,
@@ -196,6 +318,111 @@ export const OVERRIDE_DEFINITION: Schema = {
     },
 };
 
+export const PREPARE_BATCH_RECIPE: Schema = {
+    chat_configs: {
+        REQUIRED: true,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: CHAT_CONFIG_DEFINITION,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the chat configs to be used in the recipe.",
+    },
+    broker_values: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: "convert_broker_data",
+        REFERENCE: BROKER_DEFINITION,
+        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
+        ICON_NAME: "Parentheses",
+    },
+    max_count: {
+        REQUIRED: false,
+        DEFAULT: 3,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Sigma",
+        DESCRIPTION: "Enter the maximum number of chats to be created.",
+    },
+};
+
+export const RUN_BATCH_RECIPE: Schema = {
+    chat_configs: {
+        REQUIRED: true,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: CHAT_CONFIG_DEFINITION,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the chat configs to be used in the recipe.",
+    },
+    broker_values: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: "convert_broker_data",
+        REFERENCE: BROKER_DEFINITION,
+        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
+        ICON_NAME: "Parentheses",
+    },
+    max_count: {
+        REQUIRED: false,
+        DEFAULT: 3,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Sigma",
+        DESCRIPTION: "Enter the maximum number of chats to be created.",
+    },
+};
+
+export const RUN_RECIPE_TO_CHAT: Schema = {
+    chat_config: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: CHAT_CONFIG_DEFINITION,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the chat config to be used in the recipe.",
+    },
+    broker_values: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: "convert_broker_data",
+        REFERENCE: BROKER_DEFINITION,
+        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
+        ICON_NAME: "Parentheses",
+    },
+};
+
 export const PREP_CONVERSATION: Schema = {
     conversation_id: {
         REQUIRED: true,
@@ -207,7 +434,7 @@ export const PREP_CONVERSATION: Schema = {
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
-        DESCRIPTION: "The ID of the conversation to be fetched, cached and ready for fast usage.",
+        DESCRIPTION: "Enter the ID of the conversation to be fetched, cached and ready for fast usage.",
     },
 };
 
@@ -222,7 +449,7 @@ export const AI_CHAT: Schema = {
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
-        DESCRIPTION: "The conversation id.",
+        DESCRIPTION: "Enter the conversation id.",
     },
     message_object: {
         REQUIRED: true,
@@ -234,7 +461,7 @@ export const AI_CHAT: Schema = {
         COMPONENT: "relatedFieldsDisplay",
         COMPONENT_PROPS: {},
         ICON_NAME: "Messages",
-        DESCRIPTION: "The message object with message id, conversation id, content, role, type, and files.",
+        DESCRIPTION: "Enter the message object with message id, conversation id, content, role, type, and files.",
     },
 };
 
@@ -522,8 +749,8 @@ export const TRACK_CONTENT_GROUPING_RUN: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The content grouping run id to be tracked.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the content grouping run id to be tracked.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -537,8 +764,8 @@ export const CREATE_CONTENT_GROUPING_RUN: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The full site scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the full site scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
     content_grouping_config: {
         REQUIRED: false,
@@ -549,7 +776,7 @@ export const CREATE_CONTENT_GROUPING_RUN: Schema = {
         REFERENCE: null,
         COMPONENT: "JsonEditor",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The content grouping config to be used for the scrape.",
+        DESCRIPTION: "Enter the content grouping config to be used for the scrape.",
         ICON_NAME: "Bolt",
     },
 };
@@ -564,8 +791,8 @@ export const VIEW_PARSED_PAGE: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The parsed content id to be viewed.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the parsed content id to be viewed.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -579,8 +806,8 @@ export const GET_PARSED_PAGES: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The full site scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the full site scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
     cursor: {
         REQUIRED: false,
@@ -591,8 +818,8 @@ export const GET_PARSED_PAGES: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The cursor to be used for the scrape.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the cursor to be used for the scrape.",
+        ICON_NAME: "Key",
     },
     page_size: {
         REQUIRED: false,
@@ -603,8 +830,8 @@ export const GET_PARSED_PAGES: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The page size to be used for the scrape.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the page size to be used for the scrape.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -618,8 +845,8 @@ export const RESUME_FULL_SITE_SCRAPE_TASK: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The full site scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the full site scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -633,8 +860,8 @@ export const PAUSE_FULL_SITE_SCRAPE_TASK: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The full site scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the full site scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -648,8 +875,8 @@ export const CANCEL_FULL_SITE_SCRAPE_TASK: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The full site scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the full site scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -663,8 +890,8 @@ export const GET_FULL_SITE_SCRAPE_PROGRESS_DETAILED: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The full site scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the full site scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -678,8 +905,8 @@ export const GET_FULL_SITE_SCRAPE_PROGRESS: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The full site scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the full site scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -693,7 +920,7 @@ export const CREATE_FULL_SITE_SCRAPE_TASK: Schema = {
         REFERENCE: null,
         COMPONENT: "ArrayField",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The urls to be scraped.",
+        DESCRIPTION: "Enter the urls to be scraped.",
         ICON_NAME: "Link",
     },
 };
@@ -708,8 +935,8 @@ export const GET_SCRAPE_TASK_DETAILS: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -723,8 +950,8 @@ export const GET_SCRAPE_HISTORY_BY_TASK_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The scrape task id to be scraped.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the scrape task id to be scraped.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -738,7 +965,7 @@ export const GET_SCRAPE_HISTORY_BY_URL: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The url to be scraped.",
+        DESCRIPTION: "Enter the url to be scraped.",
         ICON_NAME: "Link",
     },
 };
@@ -753,7 +980,7 @@ export const PARSE_RESPONSES_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "ArrayField",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The scrape task ids to be parsed.",
+        DESCRIPTION: "Enter the scrape task ids to be parsed.",
         ICON_NAME: "ChartNetwork",
     },
     use_configs: {
@@ -777,8 +1004,8 @@ export const PARSE_RESPONSES_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The noise config id to be used for the scrape.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the noise config id to be used for the scrape.",
+        ICON_NAME: "Key",
     },
     filter_config_id: {
         REQUIRED: false,
@@ -789,8 +1016,8 @@ export const PARSE_RESPONSES_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The filter config id to be used for the scrape.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the filter config id to be used for the scrape.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -804,8 +1031,8 @@ export const PARSE_RESPONSE_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The scrape task id to be parsed.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the scrape task id to be parsed.",
+        ICON_NAME: "Key",
     },
     use_configs: {
         REQUIRED: false,
@@ -828,8 +1055,8 @@ export const PARSE_RESPONSE_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The noise config id to be used for the scrape.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the noise config id to be used for the scrape.",
+        ICON_NAME: "Key",
     },
     filter_config_id: {
         REQUIRED: false,
@@ -840,8 +1067,8 @@ export const PARSE_RESPONSE_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The filter config id to be used for the scrape.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the filter config id to be used for the scrape.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -855,7 +1082,7 @@ export const SCRAPE_PAGE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The url to be scraped.",
+        DESCRIPTION: "Enter the url to be scraped.",
         ICON_NAME: "Link",
     },
     use_mode: {
@@ -867,7 +1094,7 @@ export const SCRAPE_PAGE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The mode to be used for the scrape.",
+        DESCRIPTION: "Enter the mode to be used for the scrape.",
         ICON_NAME: "Blend",
     },
     interaction_settings_id: {
@@ -879,8 +1106,8 @@ export const SCRAPE_PAGE: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The interaction settings id to be used for the scrape.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the interaction settings id to be used for the scrape.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -894,7 +1121,7 @@ export const CREATE_SCRAPE_TASKS: Schema = {
         REFERENCE: null,
         COMPONENT: "ArrayField",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The urls to be scraped.",
+        DESCRIPTION: "Enter the urls to be scraped.",
         ICON_NAME: "Link",
     },
     use_configs: {
@@ -918,7 +1145,7 @@ export const CREATE_SCRAPE_TASKS: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The mode to be used for the scrape.",
+        DESCRIPTION: "Enter the mode to be used for the scrape.",
         ICON_NAME: "Blend",
     },
     interaction_settings_id: {
@@ -930,8 +1157,8 @@ export const CREATE_SCRAPE_TASKS: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The interaction settings id to be used for the scrape.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the interaction settings id to be used for the scrape.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -945,7 +1172,7 @@ export const QUICK_SCRAPE: Schema = {
         REFERENCE: null,
         COMPONENT: "ArrayField",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The urls to be scraped.",
+        DESCRIPTION: "Enter the urls to be scraped.",
         ICON_NAME: "Link",
     },
     get_anchors: {
@@ -972,8 +1199,8 @@ export const SAVE_INTERACTION_SETTINGS: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the interaction settings to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the interaction settings to be used for the domain.",
+        ICON_NAME: "Key",
     },
     new_interaction_settings: {
         REQUIRED: true,
@@ -984,8 +1211,8 @@ export const SAVE_INTERACTION_SETTINGS: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The new interaction settings to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the new interaction settings to be used for the domain.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -999,8 +1226,8 @@ export const SAVE_FILTER_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the filter config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the filter config to be used for the domain.",
+        ICON_NAME: "Key",
     },
     new_filter_config: {
         REQUIRED: true,
@@ -1011,8 +1238,8 @@ export const SAVE_FILTER_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The new filter config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the new filter config to be used for the domain.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1026,8 +1253,8 @@ export const SAVE_NOISE_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the noise config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the noise config to be used for the domain.",
+        ICON_NAME: "Key",
     },
     new_noise_config: {
         REQUIRED: true,
@@ -1038,8 +1265,8 @@ export const SAVE_NOISE_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The new noise config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the new noise config to be used for the domain.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1053,8 +1280,8 @@ export const CREATE_FILTER_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The name of the filter config to be created.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the name of the filter config to be created.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1068,8 +1295,8 @@ export const CREATE_NOISE_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The name of the noise config to be created.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the name of the noise config to be created.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1083,8 +1310,8 @@ export const GET_INTERACTION_SETTINGS_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the interaction settings to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the interaction settings to be used for the domain.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1101,8 +1328,8 @@ export const GET_FILTER_CONFIG_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the filter config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the filter config to be used for the domain.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1119,8 +1346,8 @@ export const GET_NOISE_CONFIG_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the noise config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the noise config to be used for the domain.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1134,8 +1361,8 @@ export const CREATE_INTERACTION_SETTINGS: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The name of the interaction settings to be created.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the name of the interaction settings to be created.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1149,8 +1376,8 @@ export const CREATE_DOMAIN: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The domain to be created.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the domain to be created.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1164,8 +1391,8 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the domain to update.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the domain to update.",
+        ICON_NAME: "Key",
     },
     path_pattern: {
         REQUIRED: true,
@@ -1176,8 +1403,8 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The path pattern to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the path pattern to be used for the domain.",
+        ICON_NAME: "Key",
     },
     noise_config_id: {
         REQUIRED: false,
@@ -1188,8 +1415,8 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the noise config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the noise config to be used for the domain.",
+        ICON_NAME: "Key",
     },
     filter_config_id: {
         REQUIRED: false,
@@ -1200,8 +1427,8 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the filter config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the filter config to be used for the domain.",
+        ICON_NAME: "Key",
     },
     plugin_ids: {
         REQUIRED: false,
@@ -1212,7 +1439,7 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "ArrayField",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The ids of the plugins to be used for the domain.",
+        DESCRIPTION: "Enter the ids of the plugins to be used for the domain.",
         ICON_NAME: "Blocks",
     },
     interaction_settings_id: {
@@ -1224,8 +1451,8 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the interaction settings to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the interaction settings to be used for the domain.",
+        ICON_NAME: "Key",
     },
     use_mode: {
         REQUIRED: false,
@@ -1236,8 +1463,8 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The mode to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the mode to be used for the domain.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1251,8 +1478,8 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the domain to create.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the domain to create.",
+        ICON_NAME: "Key",
     },
     path_pattern: {
         REQUIRED: true,
@@ -1263,8 +1490,8 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The path pattern to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the path pattern to be used for the domain.",
+        ICON_NAME: "Key",
     },
     noise_config_id: {
         REQUIRED: false,
@@ -1275,8 +1502,8 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the noise config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the noise config to be used for the domain.",
+        ICON_NAME: "Key",
     },
     filter_config_id: {
         REQUIRED: false,
@@ -1287,8 +1514,8 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the filter config to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the filter config to be used for the domain.",
+        ICON_NAME: "Key",
     },
     plugin_ids: {
         REQUIRED: false,
@@ -1299,7 +1526,7 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "ArrayField",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The ids of the plugins to be used for the domain.",
+        DESCRIPTION: "Enter the ids of the plugins to be used for the domain.",
         ICON_NAME: "Blocks",
     },
     interaction_settings_id: {
@@ -1311,8 +1538,8 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the interaction settings to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the interaction settings to be used for the domain.",
+        ICON_NAME: "Key",
     },
     use_mode: {
         REQUIRED: false,
@@ -1323,8 +1550,8 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The mode to be used for the domain.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the mode to be used for the domain.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1338,8 +1565,8 @@ export const GET_DOMAIN_CONFIG_BY_ID: Schema = {
         REFERENCE: null,
         COMPONENT: "NumberInput",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the domain to get.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the domain to get.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1356,8 +1583,8 @@ export const GET_ALL_PYTHON_CLASS_DOCSTRINGS: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1371,8 +1598,8 @@ export const GET_ALL_PYTHON_FUNCTION_DOCSTRINGS: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1386,8 +1613,8 @@ export const GET_ALL_PYTHON_COMMENTS: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1401,8 +1628,8 @@ export const GET_PYTHON_DICTS: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
     dict_variable_name: {
         REQUIRED: false,
@@ -1413,8 +1640,8 @@ export const GET_PYTHON_DICTS: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The variable name of the dictionary to be created.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the variable name of the dictionary to be created.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1428,8 +1655,8 @@ export const REMOVE_FIRST_AND_LAST_PARAGRAPH: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1443,8 +1670,8 @@ export const GET_SEGMENTS: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
     segment_type: {
         REQUIRED: true,
@@ -1455,8 +1682,8 @@ export const GET_SEGMENTS: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The type of segment to be extracted.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the type of segment to be extracted.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1470,8 +1697,8 @@ export const GET_SECTION_GROUPS: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
     section_group_type: {
         REQUIRED: true,
@@ -1482,8 +1709,8 @@ export const GET_SECTION_GROUPS: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The type of section group to be extracted.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the type of section group to be extracted.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1497,8 +1724,8 @@ export const GET_SECTION_BLOCKS: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
     section_type: {
         REQUIRED: true,
@@ -1509,8 +1736,8 @@ export const GET_SECTION_BLOCKS: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The type of section to be extracted.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the type of section to be extracted.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1524,8 +1751,8 @@ export const GET_ALL_CODE_BLOCKS: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
     remove_comments: {
         REQUIRED: false,
@@ -1551,8 +1778,8 @@ export const GET_CODE_BLOCKS_BY_LANGUAGE: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
     },
     language: {
         REQUIRED: true,
@@ -1563,8 +1790,8 @@ export const GET_CODE_BLOCKS_BY_LANGUAGE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The language of the code blocks to be extracted.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the language of the code blocks to be extracted.",
+        ICON_NAME: "Key",
     },
     remove_comments: {
         REQUIRED: false,
@@ -1590,8 +1817,170 @@ export const CLASSIFY_MARKDOWN: Schema = {
         REFERENCE: null,
         COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
-        DESCRIPTION: "The raw markdown to be classified.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
+    },
+};
+
+export const RUN_CHAT_RECIPE: Schema = {
+    recipe_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the ID of the recipe to be fetched, cached and ready for fast usage.",
+    },
+    version: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
+    },
+    broker_values: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: "convert_broker_data",
+        REFERENCE: BROKER_DEFINITION,
+        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
+        ICON_NAME: "Parentheses",
+    },
+    user_id: {
+        REQUIRED: false,
+        DEFAULT: "socket_internal_user_id",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "",
+        DESCRIPTION: "",
+    },
+    prepare_for_next_call: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if the results should be saved as a new conversation.",
+    },
+    save_new_conversation: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if the results should be saved as a new conversation.",
+    },
+    include_classified_output: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if the classified output should be included in the response.",
+    },
+    model_override: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the ID of the AI Model or leave blank to use the default model.",
+    },
+    tools_override: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "arrayField",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "PocketKnife",
+        DESCRIPTION: "Enter a list of tool names to be used in the call, which will override the tools defined in the recipe.",
+    },
+    allow_default_values: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if the default values can be used for brokers which are not provided or are not ready.",
+    },
+    allow_removal_of_unmatched: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
+    },
+};
+
+export const GET_NEEDED_RECIPE_BROKERS: Schema = {
+    recipe_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the ID of the recipe to be fetched, cached and ready for fast usage.",
+    },
+    version: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
     },
 };
 
@@ -1605,8 +1994,8 @@ export const GET_COMPILED_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the compiled recipe to get.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the compiled recipe to get.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1620,8 +2009,8 @@ export const GET_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the recipe to get.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the recipe to get.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1635,8 +2024,8 @@ export const ADD_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the recipe to add.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the recipe to add.",
+        ICON_NAME: "Key",
     },
     compiled_id: {
         REQUIRED: true,
@@ -1647,8 +2036,8 @@ export const ADD_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the compiled recipe to add.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the compiled recipe to add.",
+        ICON_NAME: "Key",
     },
     compiled_recipe: {
         REQUIRED: true,
@@ -1659,8 +2048,8 @@ export const ADD_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The compiled recipe to add.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the compiled recipe to add.",
+        ICON_NAME: "Key",
     },
 };
 
@@ -1674,8 +2063,8 @@ export const RUN_COMPILED_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the recipe to run.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the recipe to run.",
+        ICON_NAME: "Key",
     },
     compiled_id: {
         REQUIRED: true,
@@ -1686,8 +2075,8 @@ export const RUN_COMPILED_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the compiled recipe to run.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the compiled recipe to run.",
+        ICON_NAME: "Key",
     },
     compiled_recipe: {
         REQUIRED: true,
@@ -1698,8 +2087,8 @@ export const RUN_COMPILED_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The compiled recipe to run.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the compiled recipe to run.",
+        ICON_NAME: "Key",
     },
     stream: {
         REQUIRED: true,
@@ -1725,11 +2114,11 @@ export const RUN_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The id of the recipe to run.",
-        ICON_NAME: "key",
+        DESCRIPTION: "Enter the id of the recipe to run.",
+        ICON_NAME: "Key",
     },
     broker_values: {
-        REQUIRED: true,
+        REQUIRED: false,
         DEFAULT: [],
         VALIDATION: null,
         DATA_TYPE: "array",
@@ -1737,7 +2126,7 @@ export const RUN_RECIPE: Schema = {
         REFERENCE: BROKER_DEFINITION,
         COMPONENT: "relatedFieldsDisplay",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The broker values to be used in the recipe.",
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
     },
     overrides: {
@@ -1749,7 +2138,7 @@ export const RUN_RECIPE: Schema = {
         REFERENCE: OVERRIDE_DEFINITION,
         COMPONENT: "relatedFieldsDisplay",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The overrides to be applied. These will override the 'settings' for the recipe, if overrides are allowed for the recipe.",
+        DESCRIPTION: "Enter the overrides to be applied. These will override the 'settings' for the recipe, if overrides are allowed for the recipe.",
         ICON_NAME: "Parentheses",
     },
     stream: {
@@ -1777,7 +2166,7 @@ export const COCKPIT_INSTANT: Schema = {
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Not sure what this is for yet.",
-        ICON_NAME: "key",
+        ICON_NAME: "Key",
     },
     broker_values: {
         REQUIRED: true,
@@ -1788,7 +2177,7 @@ export const COCKPIT_INSTANT: Schema = {
         REFERENCE: BROKER_DEFINITION,
         COMPONENT: "relatedFieldsDisplay",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The broker values to be used in the recipe.",
+        DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
     },
     overrides: {
@@ -1800,7 +2189,7 @@ export const COCKPIT_INSTANT: Schema = {
         REFERENCE: OVERRIDE_DEFINITION,
         COMPONENT: "relatedFieldsDisplay",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "The overrides to be applied. These will override the 'settings' for the recipe, if overrides are allowed for the recipe.",
+        DESCRIPTION: "Enter the overrides to be applied. These will override the 'settings' for the recipe, if overrides are allowed for the recipe.",
         ICON_NAME: "Parentheses",
     },
 };
@@ -1812,6 +2201,8 @@ export const SERVICE_TASKS = {
         add_recipe: ADD_RECIPE,
         get_recipe: GET_RECIPE,
         get_compiled_recipe: GET_COMPILED_RECIPE,
+        get_needed_recipe_brokers: GET_NEEDED_RECIPE_BROKERS,
+        run_chat_recipe: RUN_CHAT_RECIPE,
     },
     markdown_service: {
         classify_markdown: CLASSIFY_MARKDOWN,
@@ -1873,5 +2264,68 @@ export const SERVICE_TASKS = {
     chat_service: {
         ai_chat: AI_CHAT,
         prep_conversation: PREP_CONVERSATION,
+        get_needed_recipe_brokers: GET_NEEDED_RECIPE_BROKERS,
+        run_chat_recipe: RUN_CHAT_RECIPE,
+    },
+    ai_chat_service: {
+        run_recipe_to_chat: RUN_RECIPE_TO_CHAT,
+        run_batch_recipe: RUN_BATCH_RECIPE,
+        prepare_batch_recipe: PREPARE_BATCH_RECIPE,
     },
 } as const;
+
+
+export const AVAILABLE_NAMESPACES = {
+    UserSession: "User Session",
+    AdminSession: "Admin Session",
+    Direct: "No Namespace",
+    custom: "Custom Namespace",
+} as const;
+
+
+
+
+export const SOCKET_TASKS: { [key: string]: Schema } = Object.entries(SERVICE_TASKS).reduce(
+    (acc, [_, serviceTasks]) => ({
+        ...acc,
+        ...serviceTasks,
+    }),
+    {}
+);
+
+const toTitleCase = (str: string): string => {
+    return str
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+};
+
+export const getAvailableServices = (): Array<{ value: string; label: string }> => {
+    return Object.keys(SERVICE_TASKS).map((key) => ({
+        value: key,
+        label: toTitleCase(key),
+    }));
+};
+
+export const TASK_OPTIONS = Object.entries(SERVICE_TASKS).reduce((acc, [service, tasks]) => {
+    acc[service] = Object.keys(tasks).map((task) => ({
+        value: task,
+        label: toTitleCase(task),
+    }));
+    return acc;
+}, {} as Record<string, Array<{ value: string; label: string }>>);
+
+export const getTasksForService = (service: string): Array<{ value: string; label: string }> => {
+    return TASK_OPTIONS[service] || [];
+};
+
+export const getAvailableNamespaces = (): Array<{ value: string; label: string }> => {
+    return Object.entries(AVAILABLE_NAMESPACES).map(([key, value]) => ({
+        value: key,
+        label: value,
+    }));
+};
+
+export const getTaskSchema = (taskName: string): Schema | undefined => {
+    return SOCKET_TASKS[taskName];
+};
