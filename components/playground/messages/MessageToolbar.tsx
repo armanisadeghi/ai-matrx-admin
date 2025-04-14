@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+// components\playground\messages\MessageToolbar.tsx
+
+import React, { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui";
 import {
     Image,
@@ -58,24 +60,22 @@ interface ActionButtonProps {
 
 // Updated ActionButton with tooltip
 const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => (
-    <TooltipProvider>
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                    onClick={onClick}
-                    aria-label={label}
-                >
-                    {icon}
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-                <p>{label}</p>
-            </TooltipContent>
-        </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+        <TooltipTrigger asChild>
+            <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                onClick={onClick}
+                aria-label={label}
+            >
+                {icon}
+            </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+            <p>{label}</p>
+        </TooltipContent>
+    </Tooltip>
 );
 
 // New display option button component
@@ -87,29 +87,27 @@ interface DisplayOptionButtonProps {
 }
 
 const DisplayOptionButton: React.FC<DisplayOptionButtonProps> = ({ onClick, icon, label, isActive }) => (
-    <TooltipProvider>
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button
-                    variant={isActive ? "default" : "ghost"}
-                    size="sm"
-                    className={`h-6 w-6 p-0 ${
-                        isActive
-                            ? "text-zinc-900 dark:text-zinc-100 bg-zinc-200 dark:bg-zinc-700 rounded-md"
-                            : "text-muted-foreground hover:text-foreground"
-                    }`}
-                    onClick={onClick}
-                    aria-label={label}
-                >
-                    {icon}
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-                <p>{label}</p>
-            </TooltipContent>
-        </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+        <TooltipTrigger asChild>
+            <Button
+                variant={isActive ? "default" : "ghost"}
+                size="sm"
+                className={isActive 
+                    ? "h-6 w-6 p-0 text-zinc-900 dark:text-zinc-100 bg-zinc-200 dark:bg-zinc-700 rounded-md" 
+                    : "h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                }
+                onClick={onClick}
+                aria-label={label}
+            >
+                {icon}
+            </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+            <p>{label}</p>
+        </TooltipContent>
+    </Tooltip>
 );
+
 
 const RoleSelector: React.FC<{
     role: string;
@@ -150,7 +148,7 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const user = useSelector((state: RootState) => state.user);
-    const isAdmin = ADMIN_USER_IDS.includes(user.id);
+    const isAdmin = useMemo(() => ADMIN_USER_IDS.includes(user.id), [user.id]);
 
     // Display options configuration
     const displayOptions = [

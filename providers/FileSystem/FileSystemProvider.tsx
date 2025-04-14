@@ -46,7 +46,7 @@ const useFileSystemProvider = () => {
     });
 
     const fileSystemManager = FileSystemManager.getInstance();
-    const toast = useToastManager('storage');
+    const toast = useToastManager('storage');   
 
     // Structure management with centralized state
     const structureUtils = useFileSystemStructure({

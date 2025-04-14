@@ -1,7 +1,7 @@
 // lib/cartesia/tts-service.ts
 
 import {useEffect, useRef, useCallback} from 'react';
-import Cartesia from "@cartesia/cartesia-js";
+import { CartesiaClient } from "@cartesia/cartesia-js";
 
 import {v4 as uuidv4} from 'uuid';
 import {Buffer} from 'buffer';
@@ -12,7 +12,7 @@ import {
 
 const CARTESIA_WEBSOCKET_URL = 'wss://api.cartesia.ai/tts/websocket';
 
-const cartesia = new Cartesia({
+const cartesia = new CartesiaClient({
     apiKey: process.env.NEXT_PUBLIC_CARTESIA_API_KEY,
 });
 
@@ -79,7 +79,7 @@ const CartesiaTTSService =
     ({
          apiKey,
          voiceId,
-         modelId = 'sonic-english',
+         modelId = 'sonic-turbo-2025-03-07',
          url = 'wss://api.cartesia.ai/tts/websocket',
          cartesiaVersion = '2024-06-10',
          params = {}

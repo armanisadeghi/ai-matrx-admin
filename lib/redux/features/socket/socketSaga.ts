@@ -1,3 +1,5 @@
+// lib/redux/features/socket/socketSaga.ts
+
 import { eventChannel, EventChannel } from "redux-saga";
 import { take, put, fork, call, select } from "redux-saga/effects";
 import { SocketManager } from "@/lib/redux/socket/manager";
@@ -7,6 +9,9 @@ import {
   setSocketError,
   startStreamingTask,
   endStreamingTask,
+  setFullUrl,
+  setCurrentServer,
+  setNamespace,
 } from "@/lib/redux/features/socket/socketSlice";
 import { appendStreamChunk, updateEventResult, setEventError } from "@/lib/redux/features/dynamicEvents/dynamicEventsSlice";
 import { RootState } from "@/lib/redux/store";
@@ -16,13 +21,19 @@ export function* socketSaga() {
 
   yield put(setSocketStatus("pending"));
   try {
-    yield call([socketManager, socketManager.connect]);
-    const socket = yield call([socketManager, socketManager.getSocket]);
-    yield put(setSocketSid(socket.id));
-    yield put(setSocketStatus("running"));
+      yield call([socketManager, socketManager.connect]);
+      const socket = yield call([socketManager, socketManager.getSocket]);
+      const serverUrl = socket.io.uri && socket.nsp ? socket.io.uri.replace(socket.nsp, "") : "unknown";
+      const fullUrl = socket.io.uri || "unknown";
+      const namespace = socket.nsp || "/UserSession";
+      yield put(setSocketSid(socket.id));
+      yield put(setSocketStatus("running"));
+      yield put(setCurrentServer(serverUrl));
+      yield put(setFullUrl(fullUrl));
+      yield put(setNamespace(namespace));
   } catch (error) {
-    yield put(setSocketError(error.message || "Socket connection failed"));
-    return;
+      yield put(setSocketError(error.message || "Socket connection failed"));
+      return;
   }
 
   const socketEventChannel: EventChannel<any> = yield call([socketManager, socketManager.createEventChannel]);

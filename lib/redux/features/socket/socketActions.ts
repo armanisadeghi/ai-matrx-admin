@@ -1,16 +1,25 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState } from '../../store';
-import { SocketManager } from '@/lib/redux/socket/manager';
-import { setSocketStatus, setIsAuthenticated, setSocketSid, setSocketError, endStreamingTask } from './socketSlice';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { RootState } from "../../store";
+import { SocketManager } from "@/lib/redux/socket/manager";
+import {
+    setSocketStatus,
+    setIsAuthenticated,
+    setSocketSid,
+    setSocketError,
+    endStreamingTask,
+    setCurrentServer,
+    setFullUrl,
+    setNamespace,
+} from "./socketSlice";
 
-export const socketConnecting = () => ({ type: 'socket/connecting' });
-export const socketConnected = () => ({ type: 'socket/connected' });
-export const socketInitialized = () => ({ type: 'socket/initialized' });
-export const socketDisconnected = () => ({ type: 'socket/disconnected' });
-export const socketError = (error: string) => ({ type: 'socket/error', payload: error });
+export const socketConnecting = () => ({ type: "socket/connecting" });
+export const socketConnected = () => ({ type: "socket/connected" });
+export const socketInitialized = () => ({ type: "socket/initialized" });
+export const socketDisconnected = () => ({ type: "socket/disconnected" });
+export const socketError = (error: string) => ({ type: "socket/error", payload: error });
 
 export const initializeSocket = createAsyncThunk(
-    'socket/initialize',
+    "socket/initialize",
     async (_, { dispatch }) => {
         const socketManager = SocketManager.getInstance();
 
@@ -19,21 +28,28 @@ export const initializeSocket = createAsyncThunk(
             await socketManager.connect();
             const socket = await socketManager.getSocket();
             if (!socket) {
-                throw new Error('Socket not available after connect');
+                throw new Error("Socket not available after connect");
             }
+            const serverUrl = socket.io.uri && socket.nsp ? socket.io.uri.replace(socket.nsp, "") : "unknown";
+            const fullUrl = socket.io.uri || "unknown";
+            const namespace = socket.nsp || "/UserSession";
             dispatch(setSocketSid(socket.id || null));
-            dispatch(setSocketStatus('running'));
+            dispatch(setSocketStatus("running"));
             dispatch(setIsAuthenticated(true));
+            dispatch(setCurrentServer(serverUrl));
+            dispatch(setFullUrl(fullUrl));
+            dispatch(setNamespace(namespace));
             dispatch(socketConnected());
             dispatch(socketInitialized());
         } catch (error) {
-            const errorMessage = (error as Error).message || 'Unknown socket initialization error';
+            const errorMessage = (error as Error).message || "Unknown socket initialization error";
             dispatch(setSocketError(errorMessage));
             dispatch(socketError(errorMessage));
             throw error;
         }
     }
 );
+
 
 export const startSocketTask = createAsyncThunk(
     'socket/startTask',

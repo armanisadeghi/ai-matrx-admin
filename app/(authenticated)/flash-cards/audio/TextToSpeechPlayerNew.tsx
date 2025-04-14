@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import Cartesia, { WebPlayer } from '@cartesia/cartesia-js';
+import { CartesiaClient, WebPlayer } from '@cartesia/cartesia-js';
 import { Play, Pause, RotateCcw } from 'lucide-react';
 
 interface TextToSpeechPlayerProps {
@@ -29,7 +29,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
     const [isPlaying, setIsPlaying] = useState(false);
     const [hasPlayedOnce, setHasPlayedOnce] = useState(false);
     const [playbackStatus, setPlaybackStatus] = useState<TtsStatus>('initialLoad');
-    const cartesiaRef = useRef<Cartesia | null>(null);
+    const cartesiaRef = useRef<CartesiaClient | null>(null);
     const websocketRef = useRef<any>(null);
     const playerRef = useRef<WebPlayer | null>(null);
     const sourceRef = useRef<any>(null);
@@ -41,7 +41,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
     };
 
     useEffect(() => {
-        cartesiaRef.current = new Cartesia({ apiKey: apiKey || '' });
+        cartesiaRef.current = new CartesiaClient({ apiKey: apiKey || '' });
         websocketRef.current = cartesiaRef.current.tts.websocket({
             container: "raw",
             encoding: "pcm_f32le",
@@ -77,7 +77,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
             console.log("Handle Play after current.connect()... TEXT: ", text);
 
             const response = await websocketRef.current.send({
-                model_id: "sonic-english",
+                modelId: "sonic-english",
                 voice: {
                     mode: "id",
                     id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
@@ -177,7 +177,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
         <div className="flex flex-col items-center">
             <div className="flex space-x-4">
                 <Button onClick={handlePlay} disabled={isButtonDisabled('play')}>
-                    <Play className="mr-2 h-4 w-4" /> Play
+                    <Play className="mr-2 h-4 w-4" /> Play new
                 </Button>
                 <Button onClick={handlePause} disabled={isButtonDisabled('pause')}>
                     <Pause className="mr-2 h-4 w-4" /> Pause
@@ -190,7 +190,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
                 </Button>
             </div>
             <div className="mt-2 text-sm">
-                Status: {playbackStatus}
+                New Playback Status: {playbackStatus}
             </div>
         </div>
     );

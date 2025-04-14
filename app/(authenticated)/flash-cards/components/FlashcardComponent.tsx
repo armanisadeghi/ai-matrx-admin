@@ -29,12 +29,12 @@ const FlashcardComponent: React.FC<{ dataSetId }> = ({ dataSetId }) => {
         allFlashcards,
         currentIndex,
         editingCard,
-        aiModalState: {
+        textModalState: {
             isAiAssistModalOpen,
             aiAssistModalMessage,
             aiAssistModalDefaultTab,
         },
-        aiModalActions: {
+        textModalActions: {
             closeAiAssistModal
         },
         handleAction,

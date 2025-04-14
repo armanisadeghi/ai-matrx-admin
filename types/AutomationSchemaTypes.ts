@@ -141,6 +141,7 @@ export type AutomationTableName =
     | 'recipeProcessor'
     | 'recipeTool'
     | 'registeredFunction'
+    | 'scrapeBaseConfig'
     | 'scrapeCachePolicy'
     | 'scrapeConfiguration'
     | 'scrapeCycleRun'
@@ -699,6 +700,15 @@ export type RegisteredFunctionProcessed = Expand<ProcessedEntityData<"registered
 export type RegisteredFunctionData = Expand<EntityDataMixed<"registeredFunction">>;
 export type RegisteredFunctionState = EntityStateType<"registeredFunction">;
 export type RegisteredFunctionRecordMap = Record<"registeredFunctionRecordId", RegisteredFunctionData>;
+
+export type ScrapeBaseConfigType = AutomationEntity<"scrapeBaseConfig">;
+export type ScrapeBaseConfigDataRequired = Expand<EntityData<"scrapeBaseConfig">>;
+export type ScrapeBaseConfigDataOptional = Expand<EntityDataOptional<"scrapeBaseConfig">>;
+export type ScrapeBaseConfigRecordWithKey = Expand<EntityDataWithKey<"scrapeBaseConfig">>;
+export type ScrapeBaseConfigProcessed = Expand<ProcessedEntityData<"scrapeBaseConfig">>;
+export type ScrapeBaseConfigData = Expand<EntityDataMixed<"scrapeBaseConfig">>;
+export type ScrapeBaseConfigState = EntityStateType<"scrapeBaseConfig">;
+export type ScrapeBaseConfigRecordMap = Record<"scrapeBaseConfigRecordId", ScrapeBaseConfigData>;
 
 export type ScrapeCachePolicyType = AutomationEntity<"scrapeCachePolicy">;
 export type ScrapeCachePolicyDataRequired = Expand<EntityData<"scrapeCachePolicy">>;

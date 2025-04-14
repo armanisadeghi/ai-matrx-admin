@@ -293,6 +293,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "modulePath", "className", "description", "returnBroker"]
 },
+  scrapeBaseConfig: {
+  nativeFields: ["id", "selectorType", "exact", "partial", "regex"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["selectorType", "exact", "partial", "regex"]
+},
   scrapeCachePolicy: {
   nativeFields: ["id", "rescrapeAfter", "staleAfter", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
   primaryKeyFields: ["id"],

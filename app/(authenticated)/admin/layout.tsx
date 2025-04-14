@@ -24,17 +24,6 @@ export default function Layout(
                 moduleName={MODULE_NAME}
                 className="sticky top-0 z-10"
             />
-            <MatrxDynamicPanel
-                initialPosition="left"
-                defaultExpanded={false}
-                expandButtonProps={{
-                    label: 'Email State',
-                }}
-            >
-                <EnhancedEntityAnalyzer
-                    selectedEntityKey={'emails'}
-                    defaultExpanded={false}/>
-            </MatrxDynamicPanel>
             <main className="flex-1">
                 {children}
             </main>

@@ -7,6 +7,8 @@ import { useAppSelector } from "@/lib/redux";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import AssistantStream from "@/features/chat/components/response/assistant-message/stream/AssistantStream";
 import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
+import useCartesiaControls, { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
+
 
 const INFO = true;
 const DEBUG = true;
@@ -27,7 +29,7 @@ export type localMessage = {
     markdownAnalysisData?: MarkdownAnalysisData;
 };
 
-const MessageItem = React.memo(({ message, onScrollToBottom, isOverlay = false }: { message: localMessage; onScrollToBottom: () => void; isOverlay?: boolean }) => {
+const MessageItem = React.memo(({ message, onScrollToBottom, isOverlay = false, audioControls }: { message: localMessage; onScrollToBottom: () => void; isOverlay?: boolean; audioControls: CartesiaControls }) => {
     const handleContentEdit = (newContent: string) => {
         console.log("newContent", newContent);
     };
@@ -47,6 +49,7 @@ const MessageItem = React.memo(({ message, onScrollToBottom, isOverlay = false }
             onContentUpdate={handleContentEdit}
             markdownAnalysisData={message.markdownAnalysisData || null}
             isOverlay={isOverlay}
+            audioControls={audioControls}
         />
     );
 });
@@ -64,8 +67,9 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     const bottomRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const isStreaming = useAppSelector(chatSelectors.isStreaming);
+    const audioControls = useCartesiaControls();
 
-    
+
     const handleScrollToBottom = () => {
         for (let i = 0; i < 3; i++) {
             setTimeout(() => {
@@ -158,7 +162,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
         <div className="w-full pt-0 pb-24 relative" ref={containerRef}>
             <div className="max-w-3xl mx-auto px-4 md:px-3 space-y-6 overflow-x-hidden">
                 {messagesToDisplay.map((message) => (
-                    <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} isOverlay={isOverlay} />
+                    <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} isOverlay={isOverlay} audioControls={audioControls} />
                 ))}
                 <AssistantStream
                     key={streamKey}

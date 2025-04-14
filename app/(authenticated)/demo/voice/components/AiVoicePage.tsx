@@ -30,7 +30,6 @@ const AiVoicePage: React.FC = () => {
         updateUserPreferences,
     } = useAiAudio();
 
-    console.log("AiVoicePage initial render - initiated:", initiated, "data:", data, "configs", configs, "user Preferences:", userPreferences)
 
     useEffect(() => {
         const initializeModule = async () => {
@@ -44,17 +43,14 @@ const AiVoicePage: React.FC = () => {
 
                     if (savedData) {
                         const parsedData = JSON.parse(savedData);
-                        console.log("Merging saved data with initial state:", parsedData);
                         updateData(parsedData);
                     }
                     if (savedConfigs) {
                         const parsedConfigs = JSON.parse(savedConfigs);
-                        console.log("Merging saved configs with initial state:", parsedConfigs);
                         updateConfigs(parsedConfigs);
                     }
                     if (savedPreferences) {
                         const parsedPreferences = JSON.parse(savedPreferences);
-                        console.log("Merging saved preferences with initial state:", parsedPreferences);
                         updateUserPreferences(parsedPreferences);
                     }
 

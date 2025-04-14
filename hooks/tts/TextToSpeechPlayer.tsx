@@ -52,7 +52,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
 
             setPlaybackStatus('Buffering audio...');
             const response = await websocketRef.current.send({
-                model_id: "sonic-english",
+                modelId: "sonic-english",
                 voice: {
                     mode: "id",
                     id: "156fb8d2-335b-4950-9cb3-a2d33befec77",
@@ -127,7 +127,7 @@ const TextToSpeechPlayer: React.FC<TextToSpeechPlayerProps> = ({ text, autoPlay 
                 </Button>
             </div>
             <div className="mt-2 text-sm">
-                Status: {playbackStatus}
+                Hook Status: {playbackStatus}
             </div>
         </div>
     );

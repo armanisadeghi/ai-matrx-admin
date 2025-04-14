@@ -33,9 +33,9 @@ export const SocketUser = ({ className }: SocketUserProps) => {
 
                     {/* Dynamic Form based on selected task */}
                     <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 p-4 shadow-sm">
-                        {taskType && SOCKET_TASKS[taskType] ? (
+                        {taskType ? (
                             <DynamicForm
-                                schema={SOCKET_TASKS[taskType]}
+                                taskType={taskType}
                                 onChange={handleChange}
                                 onSubmit={handleSubmit}
                                 fieldOverrides={FIELD_OVERRIDES}

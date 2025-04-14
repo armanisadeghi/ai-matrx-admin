@@ -1,12 +1,10 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Download, Copy, Eye, Edit, Save, X } from "lucide-react";
 import { useToastManager } from "@/hooks/useToastManager";
 import { THEMES } from "../themes";
-
 interface MarkdownTableProps {
     data: {
         headers: string[];
@@ -18,7 +16,6 @@ interface MarkdownTableProps {
     theme?: string;
     onSave?: (tableData: { headers: string[]; rows: string[][] }) => void;
 }
-
 const MarkdownTable: React.FC<MarkdownTableProps> = ({
     data,
     className = "",
@@ -33,36 +30,33 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     }>({
         headers: [],
         rows: [],
-        normalizedData: data.normalizedData,
+        normalizedData: data?.normalizedData, // Add optional chaining here
     });
     const [showNormalized, setShowNormalized] = useState(false);
     const [editMode, setEditMode] = useState<"none" | "header" | number>("none");
     const tableFontsize = fontSize;
     const toast = useToastManager();
     const tableTheme = THEMES[theme].table || THEMES.professional.table;
-
     useEffect(() => {
         // Use the raw data with Markdown intact
-        setTableData({
-            headers: data.headers,
-            rows: data.rows,
-            normalizedData: data.normalizedData,
-        });
+        if (data) { // Safely check if data exists
+            setTableData({
+                headers: data.headers || [], // Add fallbacks
+                rows: data.rows || [],
+                normalizedData: data.normalizedData, // normalizedData is already optional
+            });
+        }
     }, [data]);
-
     // Simple Markdown renderer for bold and italic
     const renderMarkdown = (text: string) => {
         let html = text
             .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>") // Bold with **
             .replace(/\*([^*]+)\*/g, "<em>$1</em>") // Italic with *
             .replace(/_([^_]+)_/g, "<em>$1</em>"); // Italic with _
-
         // Handle cases where bold and italic overlap (e.g., ***text***)
         html = html.replace(/<em><strong>([^<]+)<\/strong><\/em>/g, "<strong><em>$1</em></strong>");
-
         return <span dangerouslySetInnerHTML={{ __html: html }} />;
     };
-
     const copyTableToClipboard = async () => {
         try {
             const maxLengths = Array(tableData.headers.length).fill(0);
@@ -80,7 +74,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.error(err.message || "Failed to copy table");
         }
     };
-
     const copyJsonToClipboard = async () => {
         try {
             await navigator.clipboard.writeText(JSON.stringify(tableData.normalizedData, null, 2));
@@ -89,7 +82,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.error(err.message || "Failed to copy JSON");
         }
     };
-
     const downloadCSV = () => {
         try {
             const csvContent = [
@@ -121,7 +113,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.error(err.message || "Failed to download CSV");
         }
     };
-
     const toggleGlobalEditMode = () => {
         if (editMode !== "none") {
             onSave(tableData);
@@ -132,55 +123,49 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.info("Edit mode activated");
         }
     };
-
     const handleHeaderChange = (index: number, value: string) => {
         const newHeaders = [...tableData.headers];
         newHeaders[index] = value;
         setTableData({ ...tableData, headers: newHeaders });
     };
-
     const handleCellChange = (rowIndex: number, colIndex: number, value: string) => {
         const newRows = [...tableData.rows];
         newRows[rowIndex][colIndex] = value;
         setTableData({ ...tableData, rows: newRows });
     };
-
     const handleRowClick = (rowIndex: number) => {
         if (editMode === "none") return;
         onSave(tableData);
         setEditMode(rowIndex);
     };
-
     const handleHeaderClick = () => {
         if (editMode === "none") return;
         onSave(tableData);
         setEditMode("header");
     };
-
     const handleSave = () => {
         onSave(tableData);
         setEditMode("none");
         toast.success("Table data saved");
     };
-
     const handleCancel = () => {
-        setTableData({
-            headers: data.headers,
-            rows: data.rows,
-            normalizedData: data.normalizedData,
-        });
+        if (data) { // Safely check if data exists
+            setTableData({
+                headers: data.headers || [], // Add fallbacks
+                rows: data.rows || [],
+                normalizedData: data.normalizedData,
+            });
+        }
         setEditMode("none");
         toast.info("Edits cancelled");
     };
-
     const isEditingEnabled = editMode !== "none";
     const isEditingHeader = editMode === "header";
     const editingBorderStyle = "overflow-x-auto rounded-xl border-3 border-dashed border-red-500 rounded-xl";
     const normalBorderStyle = `overflow-x-auto rounded-xl border-3 ${tableTheme.border}`;
-
     return (
         <div className="w-full space-y-4 my-4">
-            {showNormalized ? (
+            {showNormalized && tableData.normalizedData ? ( // Check if normalizedData exists
                 <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto ">
                     {JSON.stringify(tableData.normalizedData, null, 2)}
                 </pre>
@@ -266,7 +251,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 </div>
             )}
             <div className="flex justify-end gap-2">
-                {tableData.normalizedData && (
+                {tableData.normalizedData && ( // Check if normalizedData exists
                     <Button
                         variant="outline"
                         size="sm"
@@ -277,7 +262,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         {showNormalized ? "Table" : "Data"}
                     </Button>
                 )}
-                {tableData.normalizedData && (
+                {tableData.normalizedData && ( // Check if normalizedData exists
                     <Button variant="outline" size="sm" onClick={copyJsonToClipboard} className="flex items-center gap-2">
                         <Copy className="h-4 w-4" />
                         Data
@@ -322,5 +307,4 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         </div>
     );
 };
-
 export default MarkdownTable;

@@ -30,8 +30,8 @@ importers:
         specifier: latest
         version: 0.39.0
       '@cartesia/cartesia-js':
-        specifier: latest
-        version: 2.1.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^2.2.0
+        version: 2.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@cerebras/cerebras_cloud_sdk':
         specifier: latest
         version: 1.26.0
@@ -1045,8 +1045,8 @@ packages:
   '@braintree/sanitize-url@7.1.1':
     resolution: {integrity: sha512-i1L7noDNxtFyL5DmZafWy1wRVhGehQmzZaz1HiN5e7iylJMSZR7ekOV7NsIqa5qBldlLrsKv4HbgFUVlQrz8Mw==}
 
-  '@cartesia/cartesia-js@2.1.10':
-    resolution: {integrity: sha512-sXWp6bVwuBMJvx6wBNyCGMke9K034v3p6frmG19zPk9IM5NrHKuhWV82qydmVL30OBRzDtkUckOHagkz2F1h/Q==}
+  '@cartesia/cartesia-js@2.2.0':
+    resolution: {integrity: sha512-EMiMn4b14P6ZhQkyYrJ4F6JwHDC/OKLW0rGv/p9zQCM/dVEhM8UekxKm9QM2qTMIDvT3wFQXrntGhR6k2t4SPg==}
 
   '@cerebras/cerebras_cloud_sdk@1.26.0':
     resolution: {integrity: sha512-etzQDJZMaFTtrDtcnYofSIaXuywF1lKi2Ut0u7z6Z2Z9DihUZC6OvXjzHqWa3nZbWbPoxg9GELYIp7sJZ1DPvA==}
@@ -12120,7 +12120,7 @@ snapshots:
 
   '@braintree/sanitize-url@7.1.1': {}
 
-  '@cartesia/cartesia-js@2.1.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+  '@cartesia/cartesia-js@2.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
     dependencies:
       emittery: 0.13.1
       form-data: 4.0.2

@@ -1,9 +1,11 @@
+// File: components/form-builder/DynamicForm.tsx
 "use client";
 
 import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Send, Copy } from "lucide-react";
 import { Schema, SchemaField } from "@/constants/socket-constants";
+import { getTaskSchema } from "@/constants/socket-schema"; // Import the new utility
 import FormField, { FieldOverrides } from "./FormField";
 import { useDynamicForm } from "./useDynamicForm";
 
@@ -22,51 +24,53 @@ const FormFields = React.memo(
     ({ schema, formData, errors, notices, onChange, onBlur, onDeleteArrayItem, fieldOverrides = {} }: FormFieldsProps) => {
         return (
             <div className="w-full space-y-4">
-                {Object.entries(schema).map(([key, field]) => (
-                    <FormField
-                        key={key}
-                        fieldKey={key}
-                        field={field}
-                        path=""
-                        value={formData[key] ?? field.DEFAULT}
-                        errors={errors}
-                        notices={notices}
-                        formData={formData}
-                        onChange={onChange}
-                        onBlur={onBlur}
-                        onDeleteArrayItem={onDeleteArrayItem}
-                        fieldOverrides={fieldOverrides}
-                    />
-                ))}
+                {Object.entries(schema)
+                    .filter(([_, field]) => !(typeof field.DEFAULT === "string" && field.DEFAULT.startsWith("socket_internal_")))
+                    .map(([key, field]) => (
+                        <FormField
+                            key={key}
+                            fieldKey={key}
+                            field={field}
+                            path=""
+                            value={formData[key] ?? field.DEFAULT}
+                            errors={errors}
+                            notices={notices}
+                            formData={formData}
+                            onChange={onChange}
+                            onBlur={onBlur}
+                            onDeleteArrayItem={onDeleteArrayItem}
+                            fieldOverrides={fieldOverrides}
+                        />
+                    ))}
             </div>
         );
     }
 );
 
+
 FormFields.displayName = "FormFields";
 
 interface DynamicFormProps {
-    schema: Schema;
+    taskType: string; // Replace schema with taskType
     onChange: (data: Record<string, any>) => void;
     initialData?: Record<string, any>;
     onSubmit: (data: Record<string, any>) => void;
     fieldOverrides?: FieldOverrides;
-    minimalSpace?: boolean; // Added new prop
+    minimalSpace?: boolean;
 }
 
 const DynamicForm: React.FC<DynamicFormProps> = ({
-    schema,
+    taskType,
     onChange,
     initialData = {},
     onSubmit,
     fieldOverrides = {},
-    minimalSpace = false, // Default to false
+    minimalSpace = false,
 }) => {
+    const schema = useMemo(() => getTaskSchema(taskType) || {}, [taskType]); // Fetch schema, default to empty object if undefined
+
     const { formData, errors, notices, handleChange, handleBlur, handleSubmit, handleReset, handleCopyToClipboard, handleDeleteArrayItem } =
         useDynamicForm(schema, onChange, initialData, onSubmit);
-
-        
-
 
     const actionButtons = useMemo(() => {
         if (minimalSpace) {
@@ -104,7 +108,6 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             );
         }
 
-        // Original button layout
         return (
             <div className="mt-3 flex justify-end gap-4">
                 <Button
@@ -138,16 +141,20 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 
     return (
         <div className="w-full bg-slate-100 dark:bg-slate-800 p-4 pb-2 rounded">
-            <FormFields
-                schema={schema}
-                formData={formData}
-                errors={errors}
-                notices={notices}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                onDeleteArrayItem={handleDeleteArrayItem}
-                fieldOverrides={fieldOverrides}
-            />
+            {Object.keys(schema).length > 0 ? (
+                <FormFields
+                    schema={schema}
+                    formData={formData}
+                    errors={errors}
+                    notices={notices}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    onDeleteArrayItem={handleDeleteArrayItem}
+                    fieldOverrides={fieldOverrides}
+                />
+            ) : (
+                <div className="text-gray-500 dark:text-gray-400 text-center py-4">No schema available for the selected task</div>
+            )}
             {actionButtons}
         </div>
     );

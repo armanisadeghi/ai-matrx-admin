@@ -224,6 +224,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  scrapeBaseConfig: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   scrapeCachePolicy: {
     frontendFields: ['id'],
     databaseColumns: ['id'],

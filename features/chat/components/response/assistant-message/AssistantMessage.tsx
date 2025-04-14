@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, RefreshCw, Edit, Share2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, Edit, Share2 } from "lucide-react";
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "../ResponseColumn";
+import { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
+import { parseMarkdownToText } from "@/hooks/tts/simple/parse-markdown-for-speech";
 
 interface AssistantMessageProps {
     message: localMessage;
@@ -13,18 +15,41 @@ interface AssistantMessageProps {
     onContentUpdate?: (newContent: string) => void;
     markdownAnalysisData?: MarkdownAnalysisData;
     isOverlay?: boolean;
+    audioControls?: CartesiaControls;
 }
 
-const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamActive = false, onScrollToBottom, onContentUpdate, markdownAnalysisData, isOverlay = false }) => {
+const AssistantMessage: React.FC<AssistantMessageProps> = ({ 
+    message, 
+    isStreamActive = false, 
+    onScrollToBottom, 
+    onContentUpdate, 
+    markdownAnalysisData, 
+    isOverlay = false, 
+    audioControls 
+}) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [isDisliked, setIsDisliked] = useState(false);
-    const [isSpeaking, setIsSpeaking] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const content = message.content;
-
-
+    
+    const {
+        connectionState,
+        playerState,
+        speak,
+        pause,
+        resume,
+        toggle,
+        stop,
+        handleScriptChange,
+    } = audioControls || {};
+    
+    // Check if audio is currently playing this message
+    const isPlaying = playerState === "playing";
+    const isPaused = playerState === "paused";
+    const isAudioReady = connectionState === "ready";
+    
     const handleCopy = async () => {
         try {
             await navigator.clipboard.writeText(content);
@@ -34,43 +59,54 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamAc
             console.error("Failed to copy: ", err);
         }
     };
-
+    
     const handleLike = () => {
         setIsLiked(!isLiked);
         if (isDisliked) setIsDisliked(false);
     };
-
+    
     const handleDislike = () => {
         setIsDisliked(!isDisliked);
         if (isLiked) setIsLiked(false);
     };
-
-    const handleSpeak = () => {
-        setIsSpeaking(!isSpeaking);
+    
+    const handleSpeakToggle = () => {
+        if (!audioControls) return;
+        
+        if (isPlaying) {
+            // If playing, pause it
+            pause();
+        } else if (isPaused) {
+            // If paused, resume it
+            resume();
+        } else {
+            const cleanContent = parseMarkdownToText(content);
+            handleScriptChange(cleanContent);
+            speak(cleanContent);
+        }
     };
-
+    
     const toggleOptionsMenu = () => {
         setShowOptions(!showOptions);
     };
-
+    
     const handleEditClick = () => {
         if (onContentUpdate) {
-            // Only allow editing if the callback is provided
             setIsEditorOpen(true);
         } else {
             console.warn("Edit clicked but no onContentUpdate handler provided.");
         }
     };
-
+    
     const handleSaveEdit = (newContent: string) => {
         if (onContentUpdate) {
-            onContentUpdate(newContent); // Call the parent's update function
+            onContentUpdate(newContent);
         }
-        setIsEditorOpen(false); // Close the modal
+        setIsEditorOpen(false);
     };
-
+    
     const handleCancelEdit = () => {
-        setIsEditorOpen(false); // Close the modal
+        setIsEditorOpen(false);
     };
 
     return (
@@ -85,7 +121,6 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamAc
                     analysisData={markdownAnalysisData}
                     messageId={message.id}
                 />
-
                 {!isStreamActive && !isOverlay && (
                     <div className="flex items-center space-x-0">
                         <button
@@ -117,12 +152,13 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({ message, isStreamAc
                         </button>
                         <button
                             className={`p-1.5 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
-                                isSpeaking ? "text-purple-500 dark:text-purple-400" : "text-gray-600 dark:text-gray-400"
+                                isPlaying || isPaused ? "text-purple-500 dark:text-purple-400" : "text-gray-600 dark:text-gray-400"
                             }`}
-                            onClick={handleSpeak}
-                            aria-label="Read message aloud"
+                            onClick={handleSpeakToggle}
+                            disabled={!audioControls || !isAudioReady}
+                            aria-label={isPlaying ? "Pause message" : "Read message aloud"}
                         >
-                            <Volume2 size={16} />
+                            {isPlaying ? <Pause size={16} /> : <Volume2 size={16} />}
                         </button>
                         <button
                             className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-zinc-300 dark:hover:bg-zinc-700"

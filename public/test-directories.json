@@ -68,6 +68,10 @@
     "name": "google-apis"
   },
   {
+    "path": "/tests/integrations",
+    "name": "integrations"
+  },
+  {
     "path": "/tests/links",
     "name": "links"
   },
@@ -96,8 +100,8 @@
     "name": "notes-app"
   },
   {
-    "path": "/tests/notion-apis",
-    "name": "notion-apis"
+    "path": "/tests/oauth",
+    "name": "oauth"
   },
   {
     "path": "/tests/openai-chat",
@@ -126,6 +130,10 @@
   {
     "path": "/tests/selector-test",
     "name": "selector-test"
+  },
+  {
+    "path": "/tests/slack-apis",
+    "name": "slack-apis"
   },
   {
     "path": "/tests/socket-tests",

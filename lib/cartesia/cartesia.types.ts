@@ -11,7 +11,7 @@ export enum EmotionName {
     CURIOSITY = "curiosity",
 }
 
-export type Intensity = "lowest" | "low" | "high" | "highest" | ""; // there is no medium. It's represented by an empty string
+export type Intensity = "lowest" | "low" | "high" | "highest" | "";
 
 export enum EmotionLevel {
     LOWEST = "lowest",
@@ -87,7 +87,9 @@ export interface OutputFormat {
 export enum ModelId {
     SonicEnglish = "sonic-english",
     SonicMultilingual = "sonic-multilingual",
-    // Custom models can be added here if needed
+    SonicMultiLingualLatest = "sonic-2024-12-12",
+    SonicTurbo = "sonic-turbo-2025-03-07",
+    Sonic2 = "sonic-2-2025-03-07",
 }
 
 export interface TTSRequestBody {
@@ -103,7 +105,7 @@ export interface TTSRequestBody {
 // Type for Publish Payload (WebSocket request body)
 interface PublishPayload {
     context_id: string;
-    model_id: string;
+    modelId: string;
     transcript: string;
     voice: {
         mode: VoiceMode;
@@ -121,7 +123,7 @@ interface PublishPayload {
 }
 
 export type StreamRequest = {
-    model_id: string;
+    modelId: string;
     transcript: string;
     voice: VoiceOptions;
     output_format?: {
@@ -143,6 +145,9 @@ enum VoiceMode {
 }
 
 
+
+
+
 interface ClientOptions {
     apiKey?: string | (() => Promise<string>);
     baseUrl?: string;
@@ -154,7 +159,6 @@ export type ConnectionEventData = {
     open: never;
     close: never;
 };
-
 
 type StreamOptions = {
     timeout?: number;
@@ -179,6 +183,7 @@ interface VoiceToMix {
     embedding?: number[];
     weight: number;
 }
+
 
 interface MixVoicesOptions {
     voices: VoiceToMix[];
