@@ -24,7 +24,7 @@ export default function OAuthProvider({
         <div className={`text-${config.color}`}>
           {config.iconSvg}
         </div>
-        <h2 className="text-xl font-semibold ml-2">{config.name}</h2>
+        <h2 className="text-xl font-semibold ml-2 text-gray-800">{config.name}</h2>
       </div>
 
       {state.error && (
@@ -41,7 +41,7 @@ export default function OAuthProvider({
       ) : !state.isConnected ? (
         <div>
           <p className="mb-4 text-gray-600">
-            Connect to your {config.name} workspace to access data and services.
+            Connect to your {config.name} account to access data and services.
           </p>
           <div className="flex flex-col space-y-3">
             <button
@@ -110,6 +110,14 @@ function renderProviderData(provider: string, data: any) {
   switch (provider.toLowerCase()) {
     case 'slack':
       return renderSlackData(data);
+    case 'microsoft office':
+      return renderMicrosoftData(data);
+    case 'twitter (x)':
+      return renderTwitterData(data);
+    case 'todoist':
+      return renderTodoistData(data);
+    case 'yahoo':
+      return renderYahooData(data);
     default:
       // Generic JSON display for unknown providers
       return (
@@ -177,6 +185,258 @@ function renderSlackData(data: any) {
                 </span>
               ))}
             </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function renderYahooData(data: any) {
+  return (
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold mb-2">Yahoo Account Information</h3>
+      <div className="bg-gray-50 p-4 rounded-md">
+        {data.user && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-500 font-medium">Name</p>
+              <p>{data.user.displayName || `${data.user.givenName} ${data.user.familyName}`}</p>
+            </div>
+            
+            {data.user.nickname && (
+              <div>
+                <p className="text-gray-500 font-medium">Nickname</p>
+                <p>{data.user.nickname}</p>
+              </div>
+            )}
+            
+            <div>
+              <p className="text-gray-500 font-medium">Yahoo ID</p>
+              <p className="font-mono text-sm">{data.user.guid || data.xoauth_yahoo_guid}</p>
+            </div>
+            
+            {data.user.emails && data.user.emails.length > 0 && (
+              <div>
+                <p className="text-gray-500 font-medium">Primary Email</p>
+                <p>{data.user.emails.find((email: any) => email.primary)?.handle || data.user.emails[0].handle}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {data.user && data.user.emails && data.user.emails.length > 1 && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium mb-2">Additional Emails</p>
+            <div className="flex flex-col space-y-1">
+              {data.user.emails.filter((email: any, idx: number) => idx > 0 || !email.primary).map((email: any, i: number) => (
+                <div key={i} className="flex items-center">
+                  <span className="text-sm">{email.handle}</span>
+                  {email.type && (
+                    <span className="ml-2 bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded">
+                      {email.type}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {data.scope && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium mb-2">Scopes</p>
+            <div className="flex flex-wrap gap-2">
+              {data.scope.split(' ').map((scope: string, i: number) => (
+                <span
+                  key={i}
+                  className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                >
+                  {scope.trim()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {data.expires_in && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium">Token Expires In</p>
+            <p>{Math.floor(data.expires_in / 60)} minutes</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function renderMicrosoftData(data: any) {
+  return (
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold mb-2">Microsoft Account Information</h3>
+      <div className="bg-gray-50 p-4 rounded-md">
+        {data.user && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-500 font-medium">Display Name</p>
+              <p>{data.user.displayName}</p>
+            </div>
+            
+            {data.user.mail && (
+              <div>
+                <p className="text-gray-500 font-medium">Email</p>
+                <p>{data.user.mail}</p>
+              </div>
+            )}
+            
+            <div>
+              <p className="text-gray-500 font-medium">User ID</p>
+              <p className="font-mono text-sm">{data.user.id}</p>
+            </div>
+            
+            <div>
+              <p className="text-gray-500 font-medium">Principal Name</p>
+              <p className="font-mono text-sm">{data.user.userPrincipalName}</p>
+            </div>
+          </div>
+        )}
+
+        {data.scope && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium mb-2">Scopes</p>
+            <div className="flex flex-wrap gap-2">
+              {data.scope.split(' ').map((scope: string, i: number) => (
+                <span
+                  key={i}
+                  className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                >
+                  {scope.trim()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {data.expires_in && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium">Token Expires In</p>
+            <p>{Math.floor(data.expires_in / 60)} minutes</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function renderTwitterData(data: any) {
+  return (
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold mb-2">Twitter Account Information</h3>
+      <div className="bg-gray-50 p-4 rounded-md">
+        {data.user && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-500 font-medium">Name</p>
+              <p>{data.user.name}</p>
+            </div>
+            
+            <div>
+              <p className="text-gray-500 font-medium">Username</p>
+              <p>@{data.user.username}</p>
+            </div>
+            
+            <div>
+              <p className="text-gray-500 font-medium">User ID</p>
+              <p className="font-mono text-sm">{data.user.id}</p>
+            </div>
+            
+            {data.user.verified !== undefined && (
+              <div>
+                <p className="text-gray-500 font-medium">Verified</p>
+                <p>{data.user.verified ? 'Yes' : 'No'}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {data.scope && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium mb-2">Scopes</p>
+            <div className="flex flex-wrap gap-2">
+              {data.scope.split(' ').map((scope: string, i: number) => (
+                <span
+                  key={i}
+                  className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                >
+                  {scope.trim()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {data.expires_in && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium">Token Expires In</p>
+            <p>{Math.floor(data.expires_in / 60)} minutes</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function renderTodoistData(data: any) {
+  return (
+    <div className="mb-4">
+      <h3 className="text-lg font-semibold mb-2">Todoist Account Information</h3>
+      <div className="bg-gray-50 p-4 rounded-md">
+        {data.user && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-500 font-medium">Name</p>
+              <p>{data.user.name}</p>
+            </div>
+            
+            <div>
+              <p className="text-gray-500 font-medium">Email</p>
+              <p>{data.user.email}</p>
+            </div>
+            
+            <div>
+              <p className="text-gray-500 font-medium">User ID</p>
+              <p className="font-mono text-sm">{data.user.id}</p>
+            </div>
+            
+            {data.user.premium !== undefined && (
+              <div>
+                <p className="text-gray-500 font-medium">Premium Status</p>
+                <p>{data.user.premium ? 'Premium' : 'Free'}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {data.scope && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium mb-2">Scopes</p>
+            <div className="flex flex-wrap gap-2">
+              {data.scope.split(',').map((scope: string, i: number) => (
+                <span
+                  key={i}
+                  className="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded"
+                >
+                  {scope.trim()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {data.expires_in && (
+          <div className="mt-4">
+            <p className="text-gray-500 font-medium">Token Expires In</p>
+            <p>{Math.floor(data.expires_in / 60)} minutes</p>
           </div>
         )}
       </div>

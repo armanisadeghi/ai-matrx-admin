@@ -33,7 +33,7 @@ export const BROKER_DEFINITION: Schema = {
     },
     id: {
         REQUIRED: true,
-        DEFAULT: null,
+        DEFAULT: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
         VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,
@@ -45,7 +45,7 @@ export const BROKER_DEFINITION: Schema = {
     },
     value: {
         REQUIRED: false,
-        DEFAULT: null,
+        DEFAULT: "My app helps people do their taxes",
         VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,
@@ -72,7 +72,7 @@ export const BROKER_DEFINITION: Schema = {
 export const CHAT_CONFIG_DEFINITION: Schema = {
     recipe_id: {
         REQUIRED: true,
-        DEFAULT: null,
+        DEFAULT: "e2049ce6-c340-4ff7-987e-deb24a977853",
         VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,
@@ -144,7 +144,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
     },
     model_override: {
         REQUIRED: false,
-        DEFAULT: null,
+        DEFAULT: "10168527-4d6b-456f-ab07-a889223ba3a9",
         VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,

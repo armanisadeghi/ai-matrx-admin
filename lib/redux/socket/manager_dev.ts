@@ -119,7 +119,40 @@ export class SocketManager {
         });
     }
 
-    async startTask(eventName: string, data: any, callback: (response: any) => void): Promise<string> {
+    async startTask(eventName: string, data: any, callback: (response: any) => void): Promise<string[]> {
+        const socket = await this.getSocket();
+        if (!socket) return [];
+        const sid = socket.id || "pending";
+
+        if (INFO_MODE) {
+            logTaskStart(eventName, data, sid);
+        }
+        let eventNames: string[] = [];
+
+        socket.emit(eventName, data, (response: { response_listener_events?: string[] }) => {
+            if (response?.response_listener_events) {
+                eventNames = response.response_listener_events;
+
+                console.log("--> DEBUG: eventNames", eventNames);
+                
+                eventNames.forEach((eventName: string) => {
+                    this.addDynamicEventListener(eventName, (response: any) => {
+                        
+                        console.log("--> DEBUG: response", response);
+                        
+                        this.updateStreamingStatus(eventName, response);
+                        callback(response.data);
+                    });
+                });
+            }
+        });
+
+        return eventNames;
+    }
+
+
+
+    async startTaskOld(eventName: string, data: any, callback: (response: any) => void): Promise<string> {
         const socket = await this.getSocket();
         if (!socket) return "";
         const sid = socket.id || "pending";
@@ -176,8 +209,9 @@ export class SocketManager {
             const eventName = await this.startTask(event, singleTaskPayload, (response) => {
                 if (response?.data) onStreamUpdate(index, response.data);
                 else if (typeof response === "string") onStreamUpdate(index, response);
+                console.log(response);
             });
-            eventNames.push(eventName);
+            eventNames.push(...eventName); // Possible breaking change made here
         }
         return eventNames;
     }
@@ -233,13 +267,14 @@ export class SocketManager {
         }
         const wrappedListener = (data: any) => {
             this.updateStreamingStatus(eventName, data);
-            console.log(data);
+            console.log(`[SOCKET MANAGER] Received data for event ${eventName}:`, data); // Enhanced log
             listener(data);
         };
         this.socket.on(eventName, wrappedListener);
         this.dynamicEventListeners.set(eventName, wrappedListener);
         return () => this.removeDynamicEventListener(eventName);
     }
+
 
     removeDynamicEventListener(eventName: string) {
         if (!this.socket) return;

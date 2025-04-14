@@ -104,6 +104,7 @@ export const useSocket = () => {
 
         socketManager.startTask(service, payload, (response) => {
             try {
+                console.log("--> DEBUG: response", response);
                 const currentType = typeof response;
 
                 console.log("--> DEBUG: currentType", currentType);
