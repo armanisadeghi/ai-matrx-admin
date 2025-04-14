@@ -93,6 +93,15 @@ export const useSocket = () => {
             taskData: task.taskData,
         }));
 
+        const payloadCustomEvent = tasks.map((task, customEventIndex) => ({
+            task: task.task,
+            index: task.index,
+            stream: task.stream,
+            taskData: task.taskData,
+            customEventIndex: customEventIndex,
+        }));
+
+
         socketManager.startTask(service, payload, (response) => {
             try {
                 const currentType = typeof response;
