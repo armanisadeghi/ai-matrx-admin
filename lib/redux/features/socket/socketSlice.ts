@@ -139,7 +139,7 @@ const socketSlice = createSlice({
             .addCase(startSocketTask.fulfilled, (state, action) => {
                 const { eventName, isStreaming } = action.payload;
                 if (isStreaming) {
-                    state.streamingTasks[eventName] = {
+                    (state.streamingTasks as Record<string, StreamingTask>)[String(eventName)] = {
                         status: "streaming",
                         startedAt: Date.now(),
                     };
