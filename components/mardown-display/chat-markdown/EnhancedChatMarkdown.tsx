@@ -13,6 +13,7 @@ import TasksBlock from "@/components/mardown-display/blocks/tasks/TasksBlock";
 import { MarkdownAnalysisData } from "./analyzer/types";
 import { splitContentIntoBlocks } from "./utils/content-splitter";
 import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
+import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -82,6 +83,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         isStreamActive={isStreamActive}
                         onEditRequest={onContentChange ? handleOpenEditor : undefined}
                         messageId={messageId}
+                        showCopyButton={false}
                     />
                 ) : null;
             case "code":
@@ -128,6 +130,8 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
+            <InlineCopyButton content={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
+
             <FullScreenMarkdownEditor
                 isOpen={isEditorOpen}
                 initialContent={content}

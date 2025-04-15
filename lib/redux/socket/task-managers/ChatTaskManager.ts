@@ -20,12 +20,10 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
     private activeEventName: string | null = null;
     private isStreaming = false;
 
-
     constructor(private dispatch?: AppDispatch) {
         super("chat_service", "ai_chat");
     }
 
-    
     private createTaskData(conversationId: string, message: Message, overrides?: ChatOverrides): AiChatTaskData {
         const taskData = new AiChatTaskData(conversationId, 0).setMessage(message);
         if (overrides?.modelOverride) taskData.setModelOverride(overrides.modelOverride);
@@ -55,10 +53,16 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
         const { conversationId, message, overrides } = params;
         const taskData = this.createTaskData(conversationId, message, overrides);
         this.setIsStreaming();
-        const eventName = await this.streamTask(taskData);
+        const eventNames = await this.streamTask(taskData); // Expect string[] | null
+        const eventName = Array.isArray(eventNames) && eventNames.length ? eventNames[0] : "";
         this.activeEventName = eventName;
-        this.setSocketEventName(eventName);        
-        return eventName;
+        if (eventName) {
+            this.setSocketEventName(eventName);
+        } else {
+            this.setIsNotStreaming(); // Reset streaming state if no event name
+            console.warn(`[${this.constructor.name}] No event name received, component should retry`);
+        }
+        return eventName; // Empty string signals retry
     }
 
     async subscribeToChat(options: StreamOptions<ChatOverrides> = {}): Promise<() => void> {

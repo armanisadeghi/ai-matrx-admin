@@ -5,7 +5,7 @@ import { eventChannel, EventChannel } from "redux-saga";
 import { SocketConnectionManager, SocketConfig } from "./core/connection-manager";
 
 const DEBUG_MODE = false;
-const INFO_MODE = true;
+const INFO_MODE = false;
 
 export class SocketManager {
     private static instance: SocketManager | null = null;
@@ -119,7 +119,67 @@ export class SocketManager {
         });
     }
 
-    async startTask(eventName: string, data: any, callback: (response: any) => void): Promise<string> {
+    async startTask(eventName: string, data: any, callback: (response: any) => void): Promise<string[]> {
+        const socket = await this.getSocket();
+        if (!socket) return [];
+        const sid = socket.id || "pending";
+    
+        if (INFO_MODE) {
+            logTaskStart(eventName, data, sid);
+        }
+        let eventNames: string[] = [];
+    
+        socket.emit(eventName, data, (response: { response_listener_events?: string[] }) => {
+            if (response?.response_listener_events) {
+                eventNames = response.response_listener_events;
+    
+                if (DEBUG_MODE) console.log("--> DEBUG: eventNames", eventNames);
+    
+                eventNames.forEach((eventName: string) => {
+                    // Define the listener logic to reuse for both original and additional events
+                    const listenerLogic = (response: any) => {
+                        if (DEBUG_MODE) console.log("--> DEBUG: response for event", eventName, response);
+    
+                        // Handle string responses (most common, e.g., streaming chunks)
+                        if (typeof response === "string") {
+                            this.updateStreamingStatus(eventName, response);
+                            callback(response);
+                            return;
+                        }
+    
+                        // Handle data responses (common, e.g., object results)
+                        if (response?.data) {
+                            this.updateStreamingStatus(eventName, response);
+                            // Pass data directly (parsed, not stringified)
+                            callback(response.data);
+                            return;
+                        }
+    
+                        // Handle action responses (rare, e.g., add_event)
+                        if (response?.action === "add_event" && response?.event_name) {
+                            // Add a new dynamic listener
+                            if (DEBUG_MODE) console.log(`[SOCKET MANAGER] Adding listener for new event: ${response.event_name}`);
+                            eventNames.push(response.event_name);
+                            this.addDynamicEventListener(response.event_name, listenerLogic);
+                            this.updateStreamingStatus(eventName, response);
+                            return;
+                        }
+    
+                        // Log unexpected responses but still update streaming status
+                        if (DEBUG_MODE) console.warn(`[SOCKET MANAGER] Unexpected response for event ${eventName}:`, response);
+                        this.updateStreamingStatus(eventName, response);
+                    };
+    
+                    // Add the initial dynamic listener
+                    this.addDynamicEventListener(eventName, listenerLogic);
+                });
+            }
+        });
+    
+        return eventNames;
+    }
+
+    async startTaskOld(eventName: string, data: any, callback: (response: any) => void): Promise<string> {
         const socket = await this.getSocket();
         if (!socket) return "";
         const sid = socket.id || "pending";
@@ -176,8 +236,9 @@ export class SocketManager {
             const eventName = await this.startTask(event, singleTaskPayload, (response) => {
                 if (response?.data) onStreamUpdate(index, response.data);
                 else if (typeof response === "string") onStreamUpdate(index, response);
+                if (DEBUG_MODE) console.log(response);
             });
-            eventNames.push(eventName);
+            eventNames.push(...eventName); // Possible breaking change made here
         }
         return eventNames;
     }
@@ -196,6 +257,22 @@ export class SocketManager {
     }
 
     async createTask(eventName: string, data: any): Promise<string[]> {
+        const socket = await this.getSocket();
+        if (!socket) return [];
+    
+        // Normalize data to array for emission
+        const tasks = Array.isArray(data) ? data : [data];
+    
+        // Use startTask with the array to get event names
+        const eventNames = await this.startTask(eventName, tasks, (response) => {
+            let DEBUG_MODE = true;
+            if (DEBUG_MODE) console.log(`[createTask] Response for ${eventName}:`, response);
+        });
+    
+        return eventNames;
+    }
+
+    async createTaskOld(eventName: string, data: any): Promise<string[]> {
         const socket = await this.getSocket();
         if (!socket) return [];
         return new Promise((resolve) => {
@@ -228,18 +305,19 @@ export class SocketManager {
     addDynamicEventListener(eventName: string, listener: (data: any) => void): () => void {
         if (!this.socket) return () => {};
         if (this.dynamicEventListeners.has(eventName)) {
-            console.log(`[SOCKET MANAGER] Listener already exists for event: ${eventName}`);
+            if (DEBUG_MODE) console.log(`[SOCKET MANAGER] Listener already exists for event: ${eventName}`);
             return () => {};
         }
         const wrappedListener = (data: any) => {
             this.updateStreamingStatus(eventName, data);
-            console.log(data);
+            if (DEBUG_MODE) console.log(`[SOCKET MANAGER] Received data for event ${eventName}:`, data); // Enhanced log
             listener(data);
         };
         this.socket.on(eventName, wrappedListener);
         this.dynamicEventListeners.set(eventName, wrappedListener);
         return () => this.removeDynamicEventListener(eventName);
     }
+
 
     removeDynamicEventListener(eventName: string) {
         if (!this.socket) return;

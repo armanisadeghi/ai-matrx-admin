@@ -1,7 +1,5 @@
 // components\playground\messages\MessageToolbar.tsx
-
-import React, { useState, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui";
+import React, { useState, useEffect } from "react";
 import {
     Image,
     Link,
@@ -11,8 +9,6 @@ import {
     Minimize2,
     LetterText,
     Radiation,
-    SquareRadical,
-    Bug,
     Eye,
     SquareAsterisk,
     Code,
@@ -20,13 +16,11 @@ import {
     FileText,
 } from "lucide-react";
 import { RiMarkdownFill } from "react-icons/ri";
-
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MatrxRecordId } from "@/types";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ADMIN_USER_IDS } from "@/components/admin/controls/AdminIndicatorWrapper";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
+import { ADMIN_USER_IDS } from "@/components/admin/controls/AdminIndicatorWrapper";
 
 export type DisplayOption = "brokerEditor" | "textChat" | "richText" | "markdown";
 
@@ -52,68 +46,36 @@ export interface MessageToolbarProps {
     currentDisplayOption?: DisplayOption;
 }
 
-interface ActionButtonProps {
-    onClick: () => void;
-    icon: React.ReactNode;
-    label: string;
-}
-
-// Updated ActionButton with tooltip
-const ActionButton: React.FC<ActionButtonProps> = ({ onClick, icon, label }) => (
-    <Tooltip>
-        <TooltipTrigger asChild>
-            <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                onClick={onClick}
-                aria-label={label}
-            >
-                {icon}
-            </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-            <p>{label}</p>
-        </TooltipContent>
-    </Tooltip>
+// Super simple action button without tooltip
+const ActionIcon = ({ onClick, icon, label }) => (
+    <span 
+        onClick={onClick}
+        className="inline-flex h-6 w-6 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer transition-colors"
+        aria-label={label}
+        title={label}
+    >
+        {icon}
+    </span>
 );
 
-// New display option button component
-interface DisplayOptionButtonProps {
-    onClick: () => void;
-    icon: React.ReactNode;
-    label: string;
-    isActive: boolean;
-}
-
-const DisplayOptionButton: React.FC<DisplayOptionButtonProps> = ({ onClick, icon, label, isActive }) => (
-    <Tooltip>
-        <TooltipTrigger asChild>
-            <Button
-                variant={isActive ? "default" : "ghost"}
-                size="sm"
-                className={isActive 
-                    ? "h-6 w-6 p-0 text-zinc-900 dark:text-zinc-100 bg-zinc-200 dark:bg-zinc-700 rounded-md" 
-                    : "h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                }
-                onClick={onClick}
-                aria-label={label}
-            >
-                {icon}
-            </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-            <p>{label}</p>
-        </TooltipContent>
-    </Tooltip>
+// Super simple display option icon without tooltip
+const DisplayIcon = ({ onClick, icon, label, isActive }) => (
+    <span 
+        onClick={onClick}
+        className={
+            isActive
+                ? "inline-flex h-6 w-6 items-center justify-center rounded-md p-0 text-zinc-900 dark:text-zinc-100 bg-zinc-200 dark:bg-zinc-700 cursor-pointer transition-colors"
+                : "inline-flex h-6 w-6 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer transition-colors"
+        }
+        aria-label={label}
+        title={label}
+    >
+        {icon}
+    </span>
 );
 
-
-const RoleSelector: React.FC<{
-    role: string;
-    messageRecordId: MatrxRecordId;
-    onRoleChange: (messageRecordId: MatrxRecordId, newRole: string) => void;
-}> = ({ role, messageRecordId, onRoleChange }) => (
+// Simple role selector without complex state
+const RoleSelector = ({ role, messageRecordId, onRoleChange }) => (
     <DropdownMenu>
         <DropdownMenuTrigger className="text-sm text-muted-foreground hover:text-foreground">{role.toUpperCase()}</DropdownMenuTrigger>
         <DropdownMenuContent className="bg-elevation2 bg-opacity-100">
@@ -124,7 +86,7 @@ const RoleSelector: React.FC<{
     </DropdownMenu>
 );
 
-const MessageToolbar: React.FC<MessageToolbarProps> = ({
+const MessageToolbar = ({
     messageRecordId,
     role,
     isCollapsed,
@@ -148,9 +110,20 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const user = useSelector((state: RootState) => state.user);
-    const isAdmin = useMemo(() => ADMIN_USER_IDS.includes(user.id), [user.id]);
-
-    // Display options configuration
+    const isAdmin = ADMIN_USER_IDS.includes(user.id);
+    const [initialCooldownComplete, setInitialCooldownComplete] = useState(false);
+    
+    // Set up the initial cooldown timer
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setInitialCooldownComplete(true);
+        }, 5000);
+        
+        // Clean up the timer if the component unmounts
+        return () => clearTimeout(timer);
+    }, []);
+    
+    // Display options - defined inline to avoid any memoization issues
     const displayOptions = [
         {
             value: "brokerEditor",
@@ -173,7 +146,8 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
             icon: <RiMarkdownFill className="h-4 w-4" />,
         },
     ];
-
+    
+    // Define actions - defined inline to avoid any memoization issues
     const actions = [
         {
             label: "Delete Message",
@@ -221,53 +195,53 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
             onClick: () => onShowNames(messageRecordId),
         },
     ];
+    
+        // if (isAdmin && debug && initialCooldownComplete) {
+    //     actions.push(
+    //         {
+    //             label: "Visible Encoded Text",
+    //             icon: <SquareRadical className="h-4 w-4" />,
+    //             onClick: () => onShowEncoded(messageRecordId),
+    //         },
+    //         {
+    //             label: "Debug",
+    //             icon: <Bug className="h-4 w-4" />,
+    //             onClick: () => onDebugClick?.(messageRecordId),
+    //         }
+    //     );
+    // }
 
-    if (isAdmin) {
-        actions.push({
-            label: "Visible Encoded Text",
-            icon: <SquareRadical className="h-4 w-4" />,
-            onClick: () => onShowEncoded(messageRecordId),
-        });
-    }
-    if (isAdmin && debug) {
-        actions.push({
-            label: "Debug",
-            icon: <Bug className="h-4 w-4" />,
-            onClick: () => onDebugClick?.(messageRecordId),
-        });
-    }
-
-    const handleDragStart = (e: React.DragEvent) => {
+    // Basic drag and drop handlers
+    const handleDragStart = (e) => {
         e.dataTransfer.setData("text/plain", messageRecordId.toString());
         e.dataTransfer.effectAllowed = "move";
         setIsDragging(true);
     };
-
+    
     const handleDragEnd = () => {
         setIsDragging(false);
     };
-
-    const handleDragOver = (e: React.DragEvent) => {
+    
+    const handleDragOver = (e) => {
         e.preventDefault();
         if (!isDragging) {
             setIsDragOver(true);
         }
     };
-
+    
     const handleDragLeave = () => {
         setIsDragOver(false);
     };
-
-    const handleDrop = (e: React.DragEvent) => {
+    
+    const handleDrop = (e) => {
         e.preventDefault();
         setIsDragOver(false);
         const draggedId = e.dataTransfer.getData("text/plain");
         if (draggedId !== messageRecordId.toString()) {
-            const draggedMatrxId = draggedId as MatrxRecordId;
-            onDragDrop(draggedMatrxId, messageRecordId);
+            onDragDrop(draggedId as MatrxRecordId, messageRecordId);
         }
     };
-
+    
     return (
         <div
             draggable
@@ -282,11 +256,11 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
         >
             <div className="flex items-center gap-1">
                 <RoleSelector role={role} messageRecordId={messageRecordId} onRoleChange={onRoleChange} />
-
-                {/* New display option buttons */}
+                
+                {/* Display option icons */}
                 <div className="ml-2 flex gap-1 border-l pl-2">
                     {displayOptions.map((option) => (
-                        <DisplayOptionButton
+                        <DisplayIcon
                             key={option.value}
                             onClick={() => onDisplayOptionChange(messageRecordId, option.value as DisplayOption)}
                             icon={option.icon}
@@ -296,10 +270,15 @@ const MessageToolbar: React.FC<MessageToolbarProps> = ({
                     ))}
                 </div>
             </div>
-
+            
             <div className="flex gap-1">
                 {actions.map((action) => (
-                    <ActionButton key={action.label} onClick={action.onClick} icon={action.icon} label={action.label} />
+                    <ActionIcon 
+                        key={action.label} 
+                        onClick={action.onClick} 
+                        icon={action.icon} 
+                        label={action.label} 
+                    />
                 ))}
             </div>
         </div>

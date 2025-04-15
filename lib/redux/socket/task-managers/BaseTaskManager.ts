@@ -15,112 +15,113 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
     protected socketManager: SocketManager;
     protected readonly SERVICE: string;
     protected readonly TASK: string;
-    private listenerSet: boolean = false;
-    private isClientSide: boolean = typeof window !== "undefined";
+    private listenerSet: Set<string> = new Set(); // Track subscribed event names
 
     constructor(serviceName: string, taskName: string) {
         this.socketManager = SocketManager.getInstance();
         this.SERVICE = serviceName;
         this.TASK = taskName;
-        if (this.isClientSide) {
-            this.socketManager.connect().catch((err) => {
-                console.error(`[${this.constructor.name}] Failed to connect socket:`, err);
-            });
-        }
+        this.socketManager.connect().catch((err) => {
+            console.error(`[${this.constructor.name}] Failed to connect socket:`, err);
+        });
     }
 
-    private async getEventName(task: any): Promise<string> {
-        if (!this.isClientSide) {
-            return `${this.TASK}_${task.index}`;
-        }
-        const socket = await this.socketManager.getSocket();
-        const sid = socket ? socket.id : "pending";
-        return `${sid}_${this.TASK}_${task.index}`;
-    }
-
-    async sendTasks(tasks: TData[]): Promise<string[]> {
-        if (!this.isClientSide) {
-            return tasks.map((task) => `${this.TASK}_${task.getTask().index || 0}`);
-        }
-        const taskArray = tasks.map((task) => task.getTask());
+    private async getEventNames(task: any): Promise<string[] | null> {
+        const taskData = { ...task, task: this.TASK };
         try {
-            return await this.socketManager.createTask(this.SERVICE, taskArray);
+            const eventNames = await this.socketManager.createTask(this.SERVICE, [taskData]); // Always send as array
+            if (!eventNames.length) {
+                console.warn(`[${this.constructor.name}] Server returned no event names`);
+                return null;
+            }
+            return eventNames;
+        } catch (error) {
+            console.error(`[${this.constructor.name}] Failed to get event names:`, error);
+            return null; // Return null for retry
+        }
+    }
+
+    async sendTasks(tasks: TData[]): Promise<string[] | null> {
+        const taskArray = tasks.map((task) => ({ ...task.getTask(), task: this.TASK }));
+        try {
+            const eventNames = await this.socketManager.createTask(this.SERVICE, taskArray); // Always send as array
+            if (!eventNames.length) {
+                console.warn(`[${this.constructor.name}] Server returned no event names`);
+                return null;
+            }
+            return eventNames;
         } catch (error) {
             console.error(`[${this.constructor.name}] Failed to send tasks:`, error);
-            return [];
+            return null; // Return null for retry
         }
     }
 
-    async sendTask(task: TData): Promise<string> {
-        const [eventName] = await this.sendTasks([task]);
-        return eventName;
+    async sendTask(task: TData): Promise<string[] | null> {
+        return this.sendTasks([task]); // Always wrap single task in array
     }
 
-    async streamTask(task: TData): Promise<string> {
-        const taskObj = task.getTask();
-        const eventName = await this.getEventName(taskObj);
-        if (this.isClientSide) {
-            this.sendTask(task).catch((err) => {
-                console.error(`[${this.constructor.name}] Failed to stream task:`, err);
-            });
-        }
-        return eventName;
+    async streamTask(task: TData): Promise<string[] | null> {
+        return this.sendTask(task); // Delegates to sendTasks, ensuring array
     }
 
     async subscribeToResponses(taskIndex: number, options: StreamOptions<TOverrides> = {}): Promise<() => void> {
-        if (!this.isClientSide) {
+        const task = { index: taskIndex };
+        const eventNames = await this.getEventNames(task);
+
+        if (!eventNames) {
+            console.warn(`[${this.constructor.name}] No event names for subscription, skipping`);
             return () => {};
         }
-        if (this.listenerSet) {
-            throw new Error("Listener already set for this task manager instance");
+
+        const newEventNames = eventNames.filter((name) => !this.listenerSet.has(name));
+        if (!newEventNames.length && this.listenerSet.size > 0) {
+            console.warn(`[${this.constructor.name}] Listeners already set for this task`);
+            return () => {};
         }
 
-        const socket = await this.socketManager.getSocket();
-        const sid = socket ? socket.id : "pending";
-        const eventName = `${sid}_${this.TASK}_${taskIndex}`;
         let fullText = "";
+        const unsubscribers: Array<() => void> = [];
 
-        const unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
-            // if (response?.info) {
-            //     options.onInfo?.(response.info.status, response.info.message, response.info.data);
-            //     return;
-            // }
-
-            if (response?.end === true || response?.end === "true" || response?.end === "True") {
-                options.onComplete?.(fullText);
-                fullText = "";
-                return;
-            }
-
-            if (response?.data !== undefined) {
-                const data = response.data;
-                if (data?.status === "fatal_error") {
-                    options.onError?.(data.message, true);
+        newEventNames.forEach((eventName) => {
+            const unsubscribe = this.socketManager.subscribeToEvent(eventName, (response: any) => {
+                if (response?.end === true || response?.end === "true" || response?.end === "True") {
+                    options.onComplete?.(fullText);
                     fullText = "";
                     return;
-                } else if (data?.status === "non_fatal_error") {
-                    options.onError?.(data.message, false);
-                    return;
-                } else if (data?.info) {
-                    options.onInfo?.(data.info.status, data.info.message, data.info.data);
-                    return;
                 }
 
-                const chunk = typeof data === "string" || data === null ? data : null;
-                if (chunk !== null) {
-                    fullText += chunk;
-                    options.onUpdate?.(chunk, fullText);
+                if (response?.data !== undefined) {
+                    const data = response.data;
+                    if (data?.status === "fatal_error") {
+                        options.onError?.(data.message, true);
+                        fullText = "";
+                        return;
+                    } else if (data?.status === "non_fatal_error") {
+                        options.onError?.(data.message, false);
+                        return;
+                    } else if (data?.info) {
+                        options.onInfo?.(data.info.status, data.info.message, data.info.data);
+                        return;
+                    }
+
+                    const chunk = typeof data === "string" || data === null ? data : null;
+                    if (chunk !== null) {
+                        fullText += chunk;
+                        options.onUpdate?.(chunk, fullText);
+                    }
+                } else if (typeof response === "string") {
+                    fullText += response;
+                    options.onUpdate?.(response, fullText);
                 }
-            } else if (typeof response === "string") {
-                fullText += response;
-                options.onUpdate?.(response, fullText);
-            }
+            });
+
+            this.listenerSet.add(eventName);
+            unsubscribers.push(unsubscribe);
         });
 
-        this.listenerSet = true;
         return () => {
-            unsubscribe();
-            this.listenerSet = false;
+            unsubscribers.forEach((unsub) => unsub());
+            newEventNames.forEach((name) => this.listenerSet.delete(name));
         };
     }
 

@@ -10,7 +10,6 @@ const formatRelativeTime = (timestamp: string | Date | undefined): string => {
         // Check if it looks like an ISO-ish string that just needs the Z
         if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(timestamp)) {
            dateInput = timestamp + 'Z';
-           console.log("dateInput", dateInput);
         } else {
             // If it's not in the expected format, parse as is, but it might be unreliable
             dateInput = timestamp;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { PanelGroup, Panel, PanelResizeHandle, ImperativePanelGroupHandle, ImperativePanelHandle } from "react-resizable-panels";
 import { Button } from "@/components/ui";
 import { Plus } from "lucide-react";
@@ -11,13 +11,15 @@ import { CockpitControls } from "../types";
 import { generateMessage } from "./prompts";
 import { AddMessagePayload } from "../hooks/messages/useAddMessage";
 import EmptyMessagesCard from "./EmptyMessagesCard";
+import { useDebounce } from "@uidotdev/usehooks";
+
 
 interface MessagesContainerProps {
     cockpitControls: CockpitControls;
 }
 
 function MessagesContainer({ cockpitControls: playgroundControls }: MessagesContainerProps) {
-    const { messages, deleteMessage, addMessage, handleDragDrop, registerComponentSave } = playgroundControls.aiCockpitHook;
+    const { messages, deleteMessage, addMessage, handleDragDrop, registerComponentSave, recipeMessageIsLoading } = playgroundControls.aiCockpitHook;
 
     const [collapsedPanels, setCollapsedPanels] = useState<Set<MatrxRecordId>>(new Set());
     const [hiddenEditors, setHiddenEditors] = useState<Set<MatrxRecordId>>(new Set());
@@ -27,6 +29,13 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState<DialogType>("delete");
     const [activeEditorId, setActiveEditorId] = useState<MatrxRecordId | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    
+    const messagesLoading = useDebounce(recipeMessageIsLoading, 1000);
+
+    useEffect(() => {
+        setIsLoading(messagesLoading);
+    }, [messagesLoading]);
 
     const addNewSection = useCallback(() => {
         const getNextRole = (currentRole: AddMessagePayload["role"]): AddMessagePayload["role"] => {
@@ -147,7 +156,7 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
                                             ref={(ref: ImperativePanelHandle | null) => registerPanelRef(message.matrxRecordId, ref)}
                                             id={message.matrxRecordId}
                                             defaultSize={isLastPanel ? remainingSize : 10}
-                                            minSize={10}
+                                            minSize={30}
                                             maxSize={100}
                                             collapsible={true}
                                             collapsedSize={3}
@@ -183,6 +192,7 @@ function MessagesContainer({ cockpitControls: playgroundControls }: MessagesCont
                             onError={(error) => {
                                 console.error("Error adding template messages:", error);
                             }}
+                            disabled={isLoading}
                         />
                     </Panel>
                 )}

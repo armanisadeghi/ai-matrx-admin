@@ -12,7 +12,7 @@ import { useTheme } from "@/styles/themes/ThemeProvider";
 import EditorLoading from '../text-block/editorLoading';
 import MarkdownAnalyzer from './analyzer/MarkdownAnalyzer';
 import { MarkdownAnalysisData } from './analyzer/types';
-
+import { MarkdownCopyButton } from '@/components/matrx/buttons/MarkdownCopyButton';
 
 // Import the Toast UI Editor dark theme CSS
 import '@toast-ui/editor/dist/toastui-editor.css';
@@ -248,6 +248,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                 </Tabs>
 
                 <DialogFooter className="border-t p-4 flex justify-end flex-shrink-0">
+                    <MarkdownCopyButton content={editedContent} />
                     <Button variant="outline" onClick={onCancel}>Cancel</Button>
                     <Button onClick={handleSave}>
                         <Save className="h-4 w-4 mr-2" />

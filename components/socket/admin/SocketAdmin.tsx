@@ -10,6 +10,8 @@ import { SocketHeader } from "@/components/socket/headers/SocketHeader";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
 import SocketDebugPanel from "../SocketDebugPanel";
 import { SocketTaskBuilder } from "../SocketTaskBuilder";
+import { useState } from "react";
+
 
 interface SocketAdminProps {
     className?: string;
@@ -18,6 +20,7 @@ interface SocketAdminProps {
 export const SocketAdmin = ({ className }: SocketAdminProps) => {
     const socketHook = useSocket();
     const { taskType, tasks, setTaskData, handleSend } = socketHook;
+    const [testMode, setTestMode] = useState(false);
 
     const handleChange = (data: any) => {
         setTaskData(data);
@@ -32,12 +35,16 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
         setTaskData(config);
     };
 
+    const handleTestModeChange = (testMode: boolean) => {
+        setTestMode(testMode);
+    };
+
     return (
         <div className={cn("w-full h-full py-4 px-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-2xl", className)}>
             <Card className="bg-gray-100 dark:bg-gray-800 rounded-2xl">
                 <CardContent className="space-y-8">
                     <div className="space-y-6">
-                        <SocketHeader socketHook={socketHook} />
+                        <SocketHeader socketHook={socketHook} testMode={testMode} onTestModeChange={handleTestModeChange} />
                         <div className="space-y-6">
                             {tasks.map((task, taskIndex) => (
                                 <div
@@ -52,10 +59,11 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                                         <div className="space-y-6 pt-4">
                                             {taskType ? (
                                                 <DynamicForm
-                                                    taskType={taskType} // Pass taskType instead of schema
+                                                    taskType={taskType}
                                                     onChange={handleChange}
                                                     onSubmit={handleSubmit}
                                                     fieldOverrides={FIELD_OVERRIDES}
+                                                    testMode={testMode}
                                                 />
                                             ) : (
                                                 <div className="text-gray-500 dark:text-gray-400 text-center py-4">

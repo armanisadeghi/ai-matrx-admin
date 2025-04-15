@@ -7,9 +7,10 @@ import { AdvancedTooltip } from "./Tooltip";
 import { cn } from "@/utils";
 
 type Item = {
-  icon: React.ElementType;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>> | React.ReactNode;
   label: string;
   value: string;
+  key?: string;
 };
 
 type SelectWithIconDisplayProps = {
@@ -125,11 +126,10 @@ const SelectWithIconDisplay = forwardRef<HTMLElement, SelectWithIconDisplayProps
               const isSelected = selectedItems.find(
                 (i) => i.value === item.value
               );
-              const Icon = item.icon;
 
               return (
                 <button
-                  key={item.value}
+                  key={item.key || item.value}
                   onClick={() => toggleItem(item)}
                   disabled={disabled}
                   className="w-full px-3 py-2 text-left text-sm
@@ -137,7 +137,10 @@ const SelectWithIconDisplay = forwardRef<HTMLElement, SelectWithIconDisplayProps
                            first:rounded-t-md last:rounded-b-md"
                 >
                   <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 opacity-70" />
+                    {typeof item.icon === 'function' ? 
+                      React.createElement(item.icon, { className: "w-4 h-4 opacity-70" }) :
+                      item.icon
+                    }
                     <span className="truncate">{item.label}</span>
                   </div>
                   {isSelected && <Check className="w-4 h-4 opacity-70" />}
@@ -152,9 +155,7 @@ const SelectWithIconDisplay = forwardRef<HTMLElement, SelectWithIconDisplayProps
       {/* Selected Items Display */}
       {selectedItems.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {selectedItems.map((item) => {
-            const Icon = item.icon;
-            return (
+          {selectedItems.map((item) => (
               <AdvancedTooltip
                 key={item.value}
                 text={`Click to Remove ${item.label}`}
@@ -169,7 +170,10 @@ const SelectWithIconDisplay = forwardRef<HTMLElement, SelectWithIconDisplayProps
                   )}
                   aria-label={`Remove ${item.label}`}
                 >
-                  <Icon className="w-5 h-5 group-hover:text-destructive transition-colors" />
+                  {typeof item.icon === 'function' ? 
+                    React.createElement(item.icon, { className: "w-5 h-5 group-hover:text-destructive transition-colors" }) :
+                    item.icon
+                  }
                   <div
                     className="absolute inset-0 flex items-center justify-center 
                              opacity-0 group-hover:opacity-100 transition-opacity"
@@ -178,8 +182,7 @@ const SelectWithIconDisplay = forwardRef<HTMLElement, SelectWithIconDisplayProps
                   </div>
                 </button>
               </AdvancedTooltip>
-            );
-          })}
+          ))}
         </div>
       )}
     </div>

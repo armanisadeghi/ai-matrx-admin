@@ -54,7 +54,7 @@
         "app/(authenticated)/demo/component-demo/json-again/grok",
         "components/socket/form-builder/DynamicFormBackUp.tsx",
         "features/scraper/utils/json-path-navigation-util.ts"
-    ],
+, "components/matrx/buttons/InlineCopyButtonGoogle.tsx"    ],
     "exclude": ["node_modules", "_armani", "_dev"],
     "ts-node": {
         "require": ["tsconfig-paths/register"],

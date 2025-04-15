@@ -119,7 +119,7 @@ export default function ComponentEditor() {
                     </div>
                 </div>
 
-                {/* Main Content Area */}
+                {/* Main Content Area */}   
                 <div className="w-3/4 flex flex-col overflow-hidden">
                     {/* Page Title */}
                     <div className="p-8 border-b shrink-0">

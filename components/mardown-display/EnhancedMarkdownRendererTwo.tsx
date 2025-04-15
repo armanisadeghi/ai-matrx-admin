@@ -12,6 +12,7 @@ import JsonDisplay from "./JsonDisplay";
 import MarkdownRenderer from "./MarkdownRenderer";
 import QuestionnaireRenderer from "./QuestionnaireRenderer";
 
+
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
 
 const VIEW_MODES = {
@@ -77,7 +78,7 @@ const EnhancedContentRendererTwo = ({
     role = "assistant",
     className = "",
     theme = "pinkBlue" as DisplayTheme,
-    mode,
+    mode = "rendered",
     onModeChange = (mode: string) => {},
     onThemeChange = (theme: DisplayTheme) => {},
 }: EnhancedContentRendererProps) => {
@@ -116,6 +117,9 @@ const EnhancedContentRendererTwo = ({
     };
 
     const themeColors = THEMES[currentTheme];
+
+    console.log("Mode", mode);
+    console.log("activeMode", activeMode);
 
     const renderContent = () => {
         switch (activeMode) {
@@ -157,6 +161,7 @@ const EnhancedContentRendererTwo = ({
             case "parsedAsJson":
                 return <JsonDisplay content={content} parseFunction={parseMarkdownContent} />;
             case "rendered":
+                console.log("rendered");
             default:
                 return (
                     <div
@@ -164,6 +169,7 @@ const EnhancedContentRendererTwo = ({
                     >
                         <MarkdownRenderer content={content} type="message" role="assistant" fontSize={fontSize} />
                     </div>
+
                 );
         }
     };

@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Send, Copy } from "lucide-react";
 import { Schema, SchemaField } from "@/constants/socket-constants";
-import { getTaskSchema } from "@/constants/socket-schema"; // Import the new utility
+import { getTaskSchema } from "@/constants/socket-schema";
 import FormField, { FieldOverrides } from "./FormField";
 import { useDynamicForm } from "./useDynamicForm";
 
@@ -18,10 +18,11 @@ interface FormFieldsProps {
     onBlur: (key: string, field: SchemaField, value: any) => void;
     onDeleteArrayItem?: (key: string, index: number) => void;
     fieldOverrides?: FieldOverrides;
+    testMode?: boolean;
 }
 
 const FormFields = React.memo(
-    ({ schema, formData, errors, notices, onChange, onBlur, onDeleteArrayItem, fieldOverrides = {} }: FormFieldsProps) => {
+    ({ schema, formData, errors, notices, onChange, onBlur, onDeleteArrayItem, fieldOverrides = {}, testMode = false }: FormFieldsProps) => {
         return (
             <div className="w-full space-y-4">
                 {Object.entries(schema)
@@ -40,6 +41,7 @@ const FormFields = React.memo(
                             onBlur={onBlur}
                             onDeleteArrayItem={onDeleteArrayItem}
                             fieldOverrides={fieldOverrides}
+                            testMode={testMode}
                         />
                     ))}
             </div>
@@ -51,12 +53,13 @@ const FormFields = React.memo(
 FormFields.displayName = "FormFields";
 
 interface DynamicFormProps {
-    taskType: string; // Replace schema with taskType
+    taskType: string;
     onChange: (data: Record<string, any>) => void;
     initialData?: Record<string, any>;
     onSubmit: (data: Record<string, any>) => void;
     fieldOverrides?: FieldOverrides;
     minimalSpace?: boolean;
+    testMode?: boolean;
 }
 
 const DynamicForm: React.FC<DynamicFormProps> = ({
@@ -66,8 +69,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     onSubmit,
     fieldOverrides = {},
     minimalSpace = false,
+    testMode = false,
 }) => {
-    const schema = useMemo(() => getTaskSchema(taskType) || {}, [taskType]); // Fetch schema, default to empty object if undefined
+    const schema = useMemo(() => getTaskSchema(taskType) || {}, [taskType]);
 
     const { formData, errors, notices, handleChange, handleBlur, handleSubmit, handleReset, handleCopyToClipboard, handleDeleteArrayItem } =
         useDynamicForm(schema, onChange, initialData, onSubmit);
@@ -151,6 +155,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                     onBlur={handleBlur}
                     onDeleteArrayItem={handleDeleteArrayItem}
                     fieldOverrides={fieldOverrides}
+                    testMode={testMode}
                 />
             ) : (
                 <div className="text-gray-500 dark:text-gray-400 text-center py-4">No schema available for the selected task</div>

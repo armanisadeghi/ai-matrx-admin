@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useRef, useEffect } from "react";
 import { useSocketConnection } from "../useSocketConnection";
 
@@ -28,12 +29,9 @@ export const useSocket = () => {
 
     const [service, setService] = useState("");
     const [taskType, setTaskType] = useState("");
-
-    // Stream and response state
     const [streamEnabled, setStreamEnabled] = useState(true);
     const [isResponseActive, setIsResponseActive] = useState(false);
 
-    // Task data state
     const [tasks, setTasks] = useState<SocketTask[]>([
         {
             task: "",
@@ -43,15 +41,12 @@ export const useSocket = () => {
         },
     ]);
 
-    // Response state
     const [streamingResponse, setStreamingResponse] = useState("");
     const [responses, setResponses] = useState<any[]>([]);
     const responseRef = useRef<HTMLDivElement | null>(null);
     const lastResponseTypeRef = useRef<string | null>(null);
 
-    // Update tasks when streamEnabled changes
     useEffect(() => {
-        console.log("--> DEBUG: streamEnabled", streamEnabled);
         setTasks((tasks) =>
             tasks.map((task) => ({
                 ...task,
@@ -61,7 +56,6 @@ export const useSocket = () => {
     }, [streamEnabled]);
 
     const setTaskData = (taskData: TaskData | TaskData[]) => {
-        console.log("--> DEBUG: setTaskData", taskData);
         const taskArray = Array.isArray(taskData) ? taskData : [taskData];
         setTasks(
             taskArray.map((data, index) => ({
@@ -75,9 +69,6 @@ export const useSocket = () => {
 
     const handleSend = () => {
         if (!service || !taskType) {
-            console.log("current service", service);
-            console.log("current taskType", taskType);
-            console.error("Service and task type must be selected");
             return;
         }
 
@@ -101,25 +92,17 @@ export const useSocket = () => {
             customEventIndex: customEventIndex,
         }));
 
-
         socketManager.startTask(service, payload, (response) => {
             try {
-                console.log("--> DEBUG: response", response);
                 const currentType = typeof response;
 
-                console.log("--> DEBUG: currentType", currentType);
-
                 if (lastResponseTypeRef.current !== currentType) {
-                    console.log(`--> Received response of type: ${currentType}`);
                     lastResponseTypeRef.current = currentType;
                 }
 
-                // Case 1: String chunks (typically from LLM streams)
                 if (currentType === "string") {
                     setStreamingResponse((prev) => prev + response);
-                }
-                // Case 2: Object (e.g., results from scrape)
-                else if (currentType === "object") {
+                } else if (currentType === "object") {
                     setResponses((prev) => [...prev, response]);
 
                     try {

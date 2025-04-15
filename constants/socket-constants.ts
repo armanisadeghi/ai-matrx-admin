@@ -26,7 +26,9 @@ export interface SchemaField {
     COMPONENT?: string;
     COMPONENT_PROPS?: Record<string, any>;
     DESCRIPTION?: string;
-    iconName?: string;
+    TEST_VALUE?: any;
+    
+    iconName?: string; // Deprecated
 }
 
 export interface Schema {
