@@ -32,7 +32,7 @@ import { conversationReducer } from "./features/aiChats/conversationSlice";
 import { messagesReducer } from "./features/aiChats/messagesSlice";
 import { newMessageReducer } from "./features/aiChats/newMessageSlice";
 import chatDisplayReducer from "./features/aiChats/chatDisplaySlice";
-
+import streamingReducer from "./socket/streamingSlice";
 
 
 
@@ -113,5 +113,6 @@ export const createRootReducer = (initialState: InitialReduxState) => {
     messages: messagesReducer,
     newMessage: newMessageReducer,
     chatDisplay: chatDisplayReducer,
+    streaming: streamingReducer,
   });
 };

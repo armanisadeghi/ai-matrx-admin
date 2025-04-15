@@ -64,8 +64,11 @@ export function useNewChat() {
                 const message = result.messageData.data;
 
                 const eventName = await chatManager.streamMessage({ conversationId, message });
+                console.log("-> useNewChat submitChatMessage eventName", eventName);
                 if (eventName) {
+                    chatActions.setSocketEventName({ eventName });
                     chatActions.setIsStreaming();
+                    router.push(`${pathname}/${conversationId}`);
                 }
 
                 if (DEBUG) console.log("SUBMIT MESSAGE eventName:", eventName);

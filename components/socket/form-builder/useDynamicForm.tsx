@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Schema, SchemaField } from "@/constants/socket-constants";
 import { formatJsonForClipboard } from "../utils/json-utils";
 export type FormErrors = Record<string, boolean>;
@@ -12,7 +12,7 @@ export const useDynamicForm = (
     initialData: Record<string, any> = {},
     onSubmit: (data: Record<string, any>) => void
 ) => {
-
+    const didInitializeRef = useRef(false);
 
     const getInitialFormData = useCallback(() => {
         // Helper function to recursively apply defaults to nested objects and arrays
@@ -76,10 +76,17 @@ export const useDynamicForm = (
     const [errors, setErrors] = useState<FormErrors>({});
     const [notices, setNotices] = useState<FormNotices>({});
 
-    // Notify parent of initial data with defaults
+    // Defer the initial notification to parent
     useEffect(() => {
-        onChange(formData);
-    }, []); // Only run once on mount
+        if (!didInitializeRef.current) {
+            didInitializeRef.current = true;
+            
+            // Use requestAnimationFrame to ensure this runs after the render cycle
+            requestAnimationFrame(() => {
+                onChange(formData);
+            });
+        }
+    }, [formData, onChange]);
 
     const cleanObjectData = useCallback((value: any): any => {
         if (typeof value === "string") {
@@ -119,7 +126,15 @@ export const useDynamicForm = (
                 }
 
                 current[path[path.length - 1]] = value;
-                onChange(newData);
+                
+                // Only call onChange if we're past initialization
+                // This prevents state updates during render
+                if (didInitializeRef.current) {
+                    requestAnimationFrame(() => {
+                        onChange(newData);
+                    });
+                }
+                
                 return newData;
             });
 
@@ -172,13 +187,17 @@ export const useDynamicForm = (
     }, [formData, schema, onSubmit, cleanObjectData]);
 
     const handleReset = useCallback(() => {
-        const defaultData = Object.fromEntries(Object.entries(schema).map(([key, field]) => [key, field.DEFAULT]));
-
+        const defaultData = getInitialFormData();
         setFormData(defaultData);
         setErrors({});
         setNotices({});
-        onChange(defaultData);
-    }, [schema, onChange]);
+        
+        // Safe way to notify parent
+        requestAnimationFrame(() => {
+            onChange(defaultData);
+        });
+    }, [getInitialFormData, onChange]);
+    
     const handleCopyToClipboard = useCallback(() => {
         const textToCopy = formatJsonForClipboard(formData);
         navigator.clipboard
@@ -193,21 +212,34 @@ export const useDynamicForm = (
         (key: string, index: number) => {
             setFormData((prev) => {
                 const newData = { ...prev };
-                const array = newData[key];
-
-                if (Array.isArray(array)) {
-                    const updatedArray = array.filter((_, i) => i !== index);
-                    newData[key] = updatedArray;
-                    onChange(newData);
+                const path = key.split(/\.|\[|\]/).filter(Boolean);
+                let current = newData;
+                
+                // Navigate to the appropriate nested object
+                for (let i = 0; i < path.length; i++) {
+                    if (!current[path[i]]) break;
+                    current = current[path[i]];
+                }
+                
+                if (Array.isArray(current)) {
+                    const updatedArray = current.filter((_, i) => i !== index);
+                    current.splice(0, current.length, ...updatedArray);
+                    
+                    // Only notify parent if we're initialized
+                    if (didInitializeRef.current) {
+                        requestAnimationFrame(() => {
+                            onChange(newData);
+                        });
+                    }
+                    
                     return newData;
                 }
-
+                
                 return prev;
             });
         },
         [onChange]
     );
-
 
     return {
         formData,

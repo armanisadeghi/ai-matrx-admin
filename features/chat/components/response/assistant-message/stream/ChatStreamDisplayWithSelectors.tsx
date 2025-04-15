@@ -6,13 +6,12 @@ import { cn } from "@/styles/themes/utils";
 import StreamingCode from "@/features/chat/components/response/assistant-message/stream/StreamingCode";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
 import StreamingTable from "@/features/chat/components/response/assistant-message/stream/StreamingTable";
+import { SocketManager } from "@/lib/redux/socket/manager";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { useAppDispatch } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
-import { selectStreamText, selectStreamData, selectIsStreaming, selectStreamEnd } from "@/lib/redux/socket/streamingSlice";
-import { RootState } from "@/lib/redux/store";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
@@ -71,15 +70,10 @@ interface ChatStreamDisplayProps {
 const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className }) => {
     const dispatch = useAppDispatch();
     const [content, setContent] = useState<string>("");
+    const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">("connecting");
+    const socketManager = useMemo(() => SocketManager.getInstance(), []);
     const chatActions = getChatActionsWithThunks();
-    const streamText = useAppSelector((state: RootState) => selectStreamText(state, eventName));
-    const streamData = useAppSelector((state: RootState) => selectStreamData(state, eventName));
-    const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
-    const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
-
-    const handleNewTextContent = (textContent: string) => {
-        setContent(textContent);
-    };
+    const latestDataContent = useRef<any>(null);
 
     const handleStreamEnd = () => {
         console.log("[CHAT STREAM DISPLAY] Stream ended");
@@ -98,22 +92,9 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     };
 
     useEffect(() => {
-        handleNewTextContent(streamText);
-    }, [streamText]);
-
-
-    useEffect(() => {
-        if (streamData) {
-            handleNewDataContent(streamData);
-        }
-    }, [streamData]);
-
-    useEffect(() => {
-        if (isStreamEnded) {
-            handleStreamEnd();
-        }
-    }, [isStreamEnded]);
-
+        console.log("-> ChatStreamDisplay eventName changed:", eventName);
+    }, [eventName]);
+    
     const containerStyles = useMemo(
         () =>
             cn(
@@ -123,13 +104,14 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
             ),
         [className]
     );
-
+    
+    // Memoize these operations to prevent recalculation on every render
     const parsedContent = useMemo(() => {
         const tableData = parseMarkdownTable(content);
         const contentSegments = parseTaggedContent(content);
         return { tableData, contentSegments };
     }, [content]);
-
+    
     const componentsWithTable = useMemo(
         () => ({
             ...components,
@@ -147,12 +129,125 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         }),
         [parsedContent.tableData]
     );
-
+    
+    const handleNewTextContent = (textContent: string) => {
+        setContent((prev) => prev + textContent);
+        latestDataContent.current = textContent;
+    };
+    
+    useEffect(() => {
+        let unsubscribe: () => void;
+        let isMounted = true;
+        
+        const setupSocket = async () => {
+            console.log("[CHAT STREAM DISPLAY] Setting up socket connection for event:", eventName);
+            
+            if (!eventName) {
+                console.log("[CHAT STREAM DISPLAY] No event name provided, skipping socket setup");
+                return;
+            }
+            
+            try {
+                // Log the beginning of the connection process
+                console.log("[CHAT STREAM DISPLAY] Connecting to socket...");
+                await socketManager.connect();
+                
+                // Log that we're trying to get the socket
+                console.log("[CHAT STREAM DISPLAY] Getting socket instance...");
+                const socket = await socketManager.getSocket();
+                
+                if (!socket || !isMounted) {
+                    console.error("[CHAT STREAM DISPLAY] Socket unavailable or component unmounted");
+                    if (isMounted) {
+                        setConnectionStatus("error");
+                        setContent("Error: Unable to connect to streaming service");
+                    }
+                    return;
+                }
+                
+                console.log(`[CHAT STREAM DISPLAY] Successfully connected, socket ID: ${socket.id}`);
+                setConnectionStatus("connected");
+                
+                // Log that we're about to subscribe to the event
+                console.log(`[CHAT STREAM DISPLAY] Subscribing to event: ${eventName}`);
+                
+                // Subscribe to the event and store the unsubscribe function
+                unsubscribe = socketManager.subscribeToEvent(eventName, (data: any) => {
+                    console.log(`[CHAT STREAM DISPLAY] Received data for event ${eventName}:`, data);
+                    
+                    // If it's text content (string)
+                    if (typeof data === "string") {
+                        console.log(`[CHAT STREAM DISPLAY] Processing string data: "${data.substring(0, 50)}${data.length > 50 ? '...' : ''}"`);
+                        handleNewTextContent(data);
+                    }
+                    
+                    // If it's an object with data property
+                    const dataContent = data?.data;
+                    if (dataContent !== undefined) {
+                        console.log(`[CHAT STREAM DISPLAY] Processing data content:`, dataContent);
+                        const newContent = typeof dataContent === "string" 
+                            ? dataContent 
+                            : JSON.stringify(dataContent);
+                        
+                        setContent((prev) => prev + newContent);
+                        latestDataContent.current = dataContent;
+                    }
+                    
+                    // Check if it's an end signal
+                    const isEnd = data?.end === true || data?.end === "true" || data?.end === "True";
+                    if (isEnd) {
+                        console.log("[CHAT STREAM DISPLAY] Stream ended");
+                        dispatch(chatActions.setIsNotStreaming());
+                        dispatch(chatActions.fetchMessagesForActiveConversation());
+                    }
+                    
+                    // Log analysis data
+                    if (typeof dataContent === "object" && dataContent !== null) {
+                        console.log("[CHAT STREAM DISPLAY] Analysis data received:", JSON.stringify(dataContent, null, 2));
+                    }
+                });
+                
+                console.log(`[CHAT STREAM DISPLAY] Successfully subscribed to event: ${eventName}`);
+                
+            } catch (error) {
+                console.error("[CHAT STREAM DISPLAY] Socket setup failed:", error);
+                if (isMounted) {
+                    setConnectionStatus("error");
+                    setContent("Error: Failed to initialize streaming");
+                }
+            }
+        };
+        
+        setupSocket();
+        
+        // Cleanup function
+        return () => {
+            console.log(`[CHAT STREAM DISPLAY] Cleaning up subscription for event: ${eventName}`);
+            isMounted = false;
+            if (unsubscribe) {
+                console.log(`[CHAT STREAM DISPLAY] Unsubscribing from event: ${eventName}`);
+                unsubscribe();
+            }
+        };
+    }, [eventName, socketManager, dispatch, chatActions]);
+    
+    // Simple content rendering function
     const renderContent = () => {
-        if (!isStreaming) {
+        if (connectionStatus === "connecting") {
             return null;
         }
-
+        
+        if (connectionStatus === "error") {
+            return (
+                <div className="text-red-500">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
+                        {content}
+                    </ReactMarkdown>
+                </div>
+            );
+        }
+        
+        // Render all content segments
         return parsedContent.contentSegments.map((segment, index) => (
             <React.Fragment key={index}>
                 {segment.isThinking ? (
@@ -165,9 +260,14 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
             </React.Fragment>
         ));
     };
-
+    
+    // Show debug information in development
+    useEffect(() => {
+        console.log(`[CHAT STREAM DISPLAY] Current state - Event: ${eventName}, Status: ${connectionStatus}, Content length: ${content.length}`);
+    }, [eventName, connectionStatus, content]);
+    
     if (content.length < 2) return null;
-
+    
     return (
         <div className="mb-3 w-full text-left">
             <div className={containerStyles}>

@@ -18,59 +18,6 @@ export interface Schema {
 }
 
 
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the id of the broker.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value of the broker.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: "true",
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
-    },
-};
-
 export const CHAT_CONFIG_DEFINITION: Schema = {
     recipe_id: {
         REQUIRED: true,
@@ -193,6 +140,59 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
+    },
+};
+
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: "true",
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
     },
 };
 
@@ -319,6 +319,21 @@ export const OVERRIDE_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Some additional overrides may be provided for processing.",
         ICON_NAME: "Parentheses",
+    },
+};
+
+export const CONVERT_RECIPE_TO_CHAT: Schema = {
+    chat_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the ID of the chat to be converted to a recipe.",
     },
 };
 
@@ -1947,7 +1962,7 @@ export const CLASSIFY_MARKDOWN: Schema = {
 };
 
 export const MIC_CHECK: Schema = {
-    message: {
+    mic_check_message: {
         REQUIRED: true,
         DEFAULT: null,
         VALIDATION: null,
@@ -2231,7 +2246,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
     },
     stream: {
         REQUIRED: true,
-        DEFAULT: null,
+        DEFAULT: true,
         VALIDATION: null,
         DATA_TYPE: "boolean",
         CONVERSION: null,
@@ -2282,7 +2297,7 @@ export const RUN_RECIPE: Schema = {
     },
     stream: {
         REQUIRED: true,
-        DEFAULT: null,
+        DEFAULT: true,
         VALIDATION: null,
         DATA_TYPE: "boolean",
         CONVERSION: null,
@@ -2419,6 +2434,10 @@ export const SERVICE_TASKS = {
     },
     sample_service: {
         sample_service: SAMPLE_SERVICE,
+    },
+    simple_recipe: {
+        run_recipe: RUN_RECIPE,
+        convert_recipe_to_chat: CONVERT_RECIPE_TO_CHAT,
     },
 } as const;
 

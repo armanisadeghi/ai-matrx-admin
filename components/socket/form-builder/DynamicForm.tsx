@@ -1,4 +1,4 @@
-// File: components/form-builder/DynamicForm.tsx
+// File: components/socket/form-builder/DynamicForm.tsx
 "use client";
 
 import React, { useMemo } from "react";
@@ -22,33 +22,48 @@ interface FormFieldsProps {
 }
 
 const FormFields = React.memo(
-    ({ schema, formData, errors, notices, onChange, onBlur, onDeleteArrayItem, fieldOverrides = {}, testMode = false }: FormFieldsProps) => {
+    ({
+        schema,
+        formData,
+        errors,
+        notices,
+        onChange,
+        onBlur,
+        onDeleteArrayItem,
+        fieldOverrides = {},
+        testMode = false,
+    }: FormFieldsProps) => {
+        // Ensure we're using React.useMemo for any calculated values inside a memo component
+        const visibleFields = React.useMemo(() => {
+            return Object.entries(schema).filter(
+                ([_, field]) => !(typeof field.DEFAULT === "string" && field.DEFAULT.startsWith("socket_internal_"))
+            );
+        }, [schema]);
+
         return (
             <div className="w-full space-y-4">
-                {Object.entries(schema)
-                    .filter(([_, field]) => !(typeof field.DEFAULT === "string" && field.DEFAULT.startsWith("socket_internal_")))
-                    .map(([key, field]) => (
-                        <FormField
-                            key={key}
-                            fieldKey={key}
-                            field={field}
-                            path=""
-                            value={formData[key] ?? field.DEFAULT}
-                            errors={errors}
-                            notices={notices}
-                            formData={formData}
-                            onChange={onChange}
-                            onBlur={onBlur}
-                            onDeleteArrayItem={onDeleteArrayItem}
-                            fieldOverrides={fieldOverrides}
-                            testMode={testMode}
-                        />
-                    ))}
+                {visibleFields.map(([key, field]) => (
+                    <FormField
+                        key={key}
+                        fieldKey={key}
+                        field={field}
+                        path=""
+                        // Safely access the value with proper fallback
+                        value={formData[key] !== undefined ? formData[key] : field.DEFAULT}
+                        errors={errors}
+                        notices={notices}
+                        formData={formData}
+                        onChange={onChange}
+                        onBlur={onBlur}
+                        onDeleteArrayItem={onDeleteArrayItem}
+                        fieldOverrides={fieldOverrides}
+                        testMode={testMode}
+                    />
+                ))}
             </div>
         );
     }
 );
-
 
 FormFields.displayName = "FormFields";
 

@@ -43,7 +43,7 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
         console.log("📣 ~ streamMessage ~ params:", JSON.stringify({ conversationId, message, overrides }, null, 2));
         const taskData = this.createTaskData(conversationId, message, overrides);
         console.log("📣 ~ streamMessage ~ taskData:", JSON.stringify(taskData, null, 2));
-        const eventName = await this.streamTask(taskData);
+        const eventName = await this.streamTask(taskData)[0]
         console.log("✅ ~ streamMessage ~ eventName:", eventName);
         this.setSocketEventName({ eventName });
 

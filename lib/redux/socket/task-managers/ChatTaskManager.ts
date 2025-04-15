@@ -15,10 +15,9 @@ interface streamMessageParams {
     overrides?: ChatOverrides;
 }
 
+
 export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrides> {
     private chatActions = getChatActionsWithThunks();
-    private activeEventName: string | null = null;
-    private isStreaming = false;
 
     constructor(private dispatch?: AppDispatch) {
         super("chat_service", "ai_chat");
@@ -43,7 +42,7 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
         }
     }
 
-    private setIsNotStreaming(): void {
+    setIsNotStreaming(): void {
         if (this.dispatch && this.chatActions) {
             this.dispatch(this.chatActions.setIsNotStreaming());
         }
@@ -53,16 +52,13 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
         const { conversationId, message, overrides } = params;
         const taskData = this.createTaskData(conversationId, message, overrides);
         this.setIsStreaming();
-        const eventNames = await this.streamTask(taskData); // Expect string[] | null
-        const eventName = Array.isArray(eventNames) && eventNames.length ? eventNames[0] : "";
-        this.activeEventName = eventName;
-        if (eventName) {
-            this.setSocketEventName(eventName);
-        } else {
-            this.setIsNotStreaming(); // Reset streaming state if no event name
-            console.warn(`[${this.constructor.name}] No event name received, component should retry`);
+        const eventNames = await this.streamTask(taskData);
+        if (eventNames && eventNames.length) {
+            const eventName = eventNames[0];
+            this.setSocketEventName(eventName);        
+            return eventName;
         }
-        return eventName; // Empty string signals retry
+        return "";
     }
 
     async subscribeToChat(options: StreamOptions<ChatOverrides> = {}): Promise<() => void> {
@@ -70,3 +66,6 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
         return unsubscribe;
     }
 }
+
+
+// response_listener_event

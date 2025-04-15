@@ -36,9 +36,12 @@ export const makeStore = (initialState: any) => {
   const store = configureStore({
     reducer: rootReducer,
     preloadedState: initialState,
+
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
-        serializableCheck,
+      serializableCheck: false,
+      immutableCheck: false,
+      actionCreatorCheck: false,
       }).concat(
         sagaMiddleware,
         loggerMiddleware,

@@ -4,10 +4,12 @@ import React, { useState, useEffect, useRef } from "react";
 import UserMessage from "@/features/chat/components/response/user-message/UserMessage";
 import AssistantMessage from "@/features/chat/components/response/assistant-message/AssistantMessage";
 import { useAppSelector } from "@/lib/redux";
-import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import AssistantStream from "@/features/chat/components/response/assistant-message/stream/AssistantStream";
 import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import useCartesiaControls, { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
+import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
+import { RootState } from "@/lib/redux/store";
+import { selectIsStreaming, selectStreamEnd } from "@/lib/redux/socket/streamingSlice";
 
 
 const INFO = true;
@@ -60,14 +62,22 @@ MessageItem.displayName = "MessageItem";
 const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }) => {
     const [streamKey, setStreamKey] = useState<string>("stream-0");
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
-    const { chatSelectors, eventName } = useChatBasics();
+
+    const chatSelectors = createChatSelectors();
+    const eventName = useAppSelector(chatSelectors.conversationSocketEventName)
     const messagesToDisplay = useAppSelector(chatSelectors.messageRelationFilteredRecords);
     const messageCount = messagesToDisplay.length;
 
     const bottomRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const isStreaming = useAppSelector(chatSelectors.isStreaming);
     const audioControls = useCartesiaControls();
+    const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
+    const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
+
+
+    useEffect(() => {
+        console.log("-> ResponseColumn isStreamEnded", isStreamEnded);
+    }, [isStreamEnded]);
 
 
     const handleScrollToBottom = () => {

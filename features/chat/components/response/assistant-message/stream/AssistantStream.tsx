@@ -13,6 +13,11 @@ const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName, handleVisi
     const containerRef = useRef<HTMLDivElement>(null);
     const [isInvisible, setIsInvisible] = useState(false);
 
+
+    useEffect(() => {
+        console.log("-> AssistantStream eventName", eventName);
+    }, [eventName]);
+
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {

@@ -1,3 +1,4 @@
+// File: lib/redux/socket/hooks/useSocket.ts
 "use client";
 
 import { useState, useRef, useEffect } from "react";

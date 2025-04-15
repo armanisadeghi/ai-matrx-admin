@@ -82,7 +82,8 @@ const FormField: React.FC<FormFieldProps> = ({
     // If in testMode and TEST_VALUE is defined, use that instead
     React.useEffect(() => {
         if (testMode && field.TEST_VALUE !== undefined && value !== field.TEST_VALUE) {
-            queueMicrotask(() => {
+            // Use a microtask to ensure this is outside the current render cycle
+            Promise.resolve().then(() => {
                 onChange(fullPath, field.TEST_VALUE);
             });
         }
@@ -190,11 +191,9 @@ const FormField: React.FC<FormFieldProps> = ({
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => {
-                                                        queueMicrotask(() => {
-                                                            const newFiles = [...value];
-                                                            newFiles.splice(index, 1);
-                                                            onChange(fullPath, newFiles);
-                                                        });
+                                                        const newFiles = [...value];
+                                                        newFiles.splice(index, 1);
+                                                        onChange(fullPath, newFiles);
                                                     }}
                                                 >
                                                     <Trash className="w-4 h-4" />
@@ -211,10 +210,8 @@ const FormField: React.FC<FormFieldProps> = ({
                                     onClick={() => {
                                         // This would typically open a file dialog
                                         // For now, let's just add a placeholder file
-                                        queueMicrotask(() => {
-                                            const newFiles = [...(Array.isArray(value) ? value : []), `file-${Date.now()}.txt`];
-                                            onChange(fullPath, newFiles);
-                                        });
+                                        const newFiles = [...(Array.isArray(value) ? value : []), `file-${Date.now()}.txt`];
+                                        onChange(fullPath, newFiles);
                                     }}
                                     {...componentProps}
                                 >
@@ -271,9 +268,7 @@ const FormField: React.FC<FormFieldProps> = ({
                                         size="sm"
                                         className="absolute right-0 top-0 mt-2 mr-2"
                                         onClick={() => {
-                                            queueMicrotask(() => {
-                                                onDeleteArrayItem?.(fullPath, index);
-                                            });
+                                            onDeleteArrayItem?.(fullPath, index);
                                         }}
                                     >
                                         <Trash className="w-5 h-5 p-0" />
@@ -284,9 +279,7 @@ const FormField: React.FC<FormFieldProps> = ({
                             <Button
                                 onClick={() => {
                                     const newArray = [...value, {}];
-                                    queueMicrotask(() => {
-                                        onChange(fullPath, newArray);
-                                    });
+                                    onChange(fullPath, newArray);
                                 }}
                                 variant="outline"
                                 className="border-gray-500 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 rounded-lg"
@@ -359,9 +352,7 @@ const FormField: React.FC<FormFieldProps> = ({
                             <Switch
                                 checked={!!value}
                                 onCheckedChange={(checked) => {
-                                    queueMicrotask(() => {
-                                        onChange(fullPath, checked);
-                                    });
+                                    onChange(fullPath, checked);
                                 }}
                                 onBlur={() => onBlur(fullPath, field, value)}
                                 {...componentProps}
@@ -379,9 +370,7 @@ const FormField: React.FC<FormFieldProps> = ({
                             <Checkbox
                                 checked={!!value}
                                 onCheckedChange={(checked) => {
-                                    queueMicrotask(() => {
-                                        onChange(fullPath, checked);
-                                    });
+                                    onChange(fullPath, checked);
                                 }}
                                 onBlur={() => onBlur(fullPath, field, value)}
                                 {...componentProps}
@@ -415,10 +404,8 @@ const FormField: React.FC<FormFieldProps> = ({
                         <Slider
                             value={[sliderValue]} // Wrap in array as the component expects
                             onValueChange={(val) => {
-                                queueMicrotask(() => {
-                                    // Extract the first value from the array
-                                    onChange(fullPath, val[0]);
-                                });
+                                // Extract the first value from the array
+                                onChange(fullPath, val[0]);
                             }}
                             onValueCommit={(val) => onBlur(fullPath, field, val[0])}
                             min={componentProps.min || 0}
@@ -439,9 +426,7 @@ const FormField: React.FC<FormFieldProps> = ({
                         <Select
                             value={value || ""}
                             onValueChange={(val) => {
-                                queueMicrotask(() => {
-                                    onChange(fullPath, val);
-                                });
+                                onChange(fullPath, val);
                             }}
                             onOpenChange={() => {
                                 if (value) onBlur(fullPath, field, value);
@@ -477,10 +462,8 @@ const FormField: React.FC<FormFieldProps> = ({
                         <RadioGroup
                             value={value || ""}
                             onValueChange={(val) => {
-                                queueMicrotask(() => {
-                                    onChange(fullPath, val);
-                                    onBlur(fullPath, field, val);
-                                });
+                                onChange(fullPath, val);
+                                onBlur(fullPath, field, val);
                             }}
                             className="space-y-1"
                         >
@@ -514,9 +497,7 @@ const FormField: React.FC<FormFieldProps> = ({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => {
-                                            queueMicrotask(() => {
-                                                onChange(fullPath, "");
-                                            });
+                                            onChange(fullPath, "");
                                         }}
                                     >
                                         <Trash className="w-4 h-4" />
@@ -533,9 +514,7 @@ const FormField: React.FC<FormFieldProps> = ({
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
                                         if (file) {
-                                            queueMicrotask(() => {
-                                                onChange(fullPath, file);
-                                            });
+                                            onChange(fullPath, file);
                                         }
                                     }}
                                     {...componentProps}
@@ -578,10 +557,7 @@ const FormField: React.FC<FormFieldProps> = ({
                         <textarea
                             value={jsonValue}
                             onChange={(e) => {
-                                // Update the value immediately on change
-                                queueMicrotask(() => {
-                                    onChange(fullPath, e.target.value);
-                                });
+                                onChange(fullPath, e.target.value);
                             }}
                             onBlur={(e) => {
                                 // Try to format JSON on blur
@@ -590,9 +566,7 @@ const FormField: React.FC<FormFieldProps> = ({
                                         const parsedJson = JSON.parse(e.target.value);
                                         const formattedJson = JSON.stringify(parsedJson, null, 2);
                                         if (formattedJson !== e.target.value) {
-                                            queueMicrotask(() => {
-                                                onChange(fullPath, formattedJson);
-                                            });
+                                            onChange(fullPath, formattedJson);
                                         }
                                     }
                                     onBlur(fullPath, field, e.target.value);
@@ -620,9 +594,7 @@ const FormField: React.FC<FormFieldProps> = ({
                         <FancyTextarea
                             value={value || ""}
                             onChange={(e) => {
-                                queueMicrotask(() => {
-                                    onChange(fullPath, e.target.value);
-                                });
+                                onChange(fullPath, e.target.value);
                             }}
                             onBlur={() => onBlur(fullPath, field, value)}
                             className={cn("w-full bg-background", hasError ? "border-red-500" : "", componentProps.className || "")}
@@ -643,9 +615,7 @@ const FormField: React.FC<FormFieldProps> = ({
                             prefix={<Icon className="w-4 h-4" />}
                             value={value || ""}
                             onChange={(e) => {
-                                queueMicrotask(() => {
-                                    onChange(fullPath, e.target.value);
-                                });
+                                onChange(fullPath, e.target.value);
                             }}
                             onBlur={() => onBlur(fullPath, field, value)}
                             className={cn("w-full bg-background", hasError ? "border-red-500" : "", componentProps.className || "")}

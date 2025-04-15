@@ -15,21 +15,24 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
     protected socketManager: SocketManager;
     protected readonly SERVICE: string;
     protected readonly TASK: string;
-    private listenerSet: Set<string> = new Set(); // Track subscribed event names
+    private listenerSet: Set<string> = new Set();
+    private isClientSide: boolean = typeof window !== "undefined";
 
     constructor(serviceName: string, taskName: string) {
         this.socketManager = SocketManager.getInstance();
         this.SERVICE = serviceName;
         this.TASK = taskName;
-        this.socketManager.connect().catch((err) => {
-            console.error(`[${this.constructor.name}] Failed to connect socket:`, err);
-        });
+        if (this.isClientSide) {
+            this.socketManager.connect().catch((err) => {
+                console.error(`[${this.constructor.name}] Failed to connect socket:`, err);
+            });
+        }
     }
 
     private async getEventNames(task: any): Promise<string[] | null> {
         const taskData = { ...task, task: this.TASK };
         try {
-            const eventNames = await this.socketManager.createTask(this.SERVICE, [taskData]); // Always send as array
+            const eventNames = await this.socketManager.createTask(this.SERVICE, [taskData]);
             if (!eventNames.length) {
                 console.warn(`[${this.constructor.name}] Server returned no event names`);
                 return null;
@@ -37,14 +40,19 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
             return eventNames;
         } catch (error) {
             console.error(`[${this.constructor.name}] Failed to get event names:`, error);
-            return null; // Return null for retry
+            return null;
         }
     }
 
     async sendTasks(tasks: TData[]): Promise<string[] | null> {
+        if (!this.isClientSide) {
+            console.warn(`[${this.constructor.name}] Tasks cannot be sent server-side`);
+            return null;
+        }
+        
         const taskArray = tasks.map((task) => ({ ...task.getTask(), task: this.TASK }));
         try {
-            const eventNames = await this.socketManager.createTask(this.SERVICE, taskArray); // Always send as array
+            const eventNames = await this.socketManager.createTask(this.SERVICE, taskArray);
             if (!eventNames.length) {
                 console.warn(`[${this.constructor.name}] Server returned no event names`);
                 return null;
@@ -52,16 +60,17 @@ export class BaseTaskManager<TData extends TaskData, TOverrides = any> {
             return eventNames;
         } catch (error) {
             console.error(`[${this.constructor.name}] Failed to send tasks:`, error);
-            return null; // Return null for retry
+            return null;
         }
     }
 
     async sendTask(task: TData): Promise<string[] | null> {
-        return this.sendTasks([task]); // Always wrap single task in array
+        console.log("-> BaseTaskManager sendTask task", task);
+        return this.sendTasks([task]);
     }
 
     async streamTask(task: TData): Promise<string[] | null> {
-        return this.sendTask(task); // Delegates to sendTasks, ensuring array
+        return this.sendTasks([task]);
     }
 
     async subscribeToResponses(taskIndex: number, options: StreamOptions<TOverrides> = {}): Promise<() => void> {
