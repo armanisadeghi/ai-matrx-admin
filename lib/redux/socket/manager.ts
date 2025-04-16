@@ -266,7 +266,6 @@ export class SocketManager {
             const taskData = tasks[index];
             const singleTaskPayload = [{ ...taskData, index, stream: true }];
             const eventNames = await this.startTask(event, singleTaskPayload, (response) => {
-                console.log("-> SocketManager startStreamingTasks response", response);
                 if (response?.data) onStreamUpdate(index, response.data);
                 else if (typeof response === "string") onStreamUpdate(index, response);
                 if (DEBUG_MODE) console.log(response);

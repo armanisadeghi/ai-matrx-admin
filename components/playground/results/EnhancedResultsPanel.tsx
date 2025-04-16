@@ -71,7 +71,7 @@ export function EnhancedResultsPanel({
     ];
 
     const renderContent = () => (
-        <div className="h-full">
+        <div className="h-full bg-background">
             <EnhancedContentRenderer
                 content={streamingText}
                 type="message"

@@ -12,6 +12,7 @@ import { BrokerMetaData } from '@/types/editor.types';
 import MetadataDialog from './components/MetadataDialog';
 import _ from 'lodash';
 import { ChipHandlers } from './utils/enhancedChipUtils';
+import { handleEditorPaste } from './utils/setEditorUtils';
 
 export interface RichTextEditorProps extends WithRefsProps {
     onChange?: (content: string) => void;
@@ -104,19 +105,23 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ componentId, onChange, 
         initializeEditor();
     }, [isProcessing, componentId, initialContent, context.setEditorInitialized, setContent]);
 
+    // const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    //     e.preventDefault();
+    //     const text = e.clipboardData.getData('text/plain');
+    //     if (text) {
+    //         const selection = window.getSelection();
+    //         if (selection && selection.rangeCount > 0) {
+    //             const range = selection.getRangeAt(0);
+    //             range.deleteContents();
+    //             range.insertNode(document.createTextNode(text));
+    //         }
+    //         updateContentAndMetadata();
+    //     }
+    // };
     const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        const text = e.clipboardData.getData('text/plain');
-        if (text) {
-            const selection = window.getSelection();
-            if (selection && selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(document.createTextNode(text));
-            }
-            updateContentAndMetadata();
-        }
+        handleEditorPaste(e.nativeEvent, editorRef, updateContentAndMetadata);
     };
+
 
     const handleMouseUp = () => {
         if (editorRef.current) {

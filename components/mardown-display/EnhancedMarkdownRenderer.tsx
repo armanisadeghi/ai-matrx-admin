@@ -12,6 +12,8 @@ import MultiSectionMarkdownCard from "./MultiSectionMarkdownCard";
 import JsonDisplay from "./JsonDisplay";
 import MarkdownRenderer from "./MarkdownRenderer";
 import QuestionnaireRenderer from './QuestionnaireRenderer';
+import CandidateProfileBlock from "./blocks/candidate-profiles/CandidateProfileBlock";
+import { User } from "lucide-react";
 
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
 
@@ -69,6 +71,11 @@ const VIEW_MODES = {
         icon: FileText,
         label: "Structured",
         supportedTypes: ["json"],
+    },
+    candidateProfile: {
+        icon: User,
+        label: "Profile",
+        supportedTypes: ["candidateProfile"],
     },
 };
 
@@ -154,6 +161,12 @@ const EnhancedContentRenderer = ({
                 return <QuestionnaireRenderer data={parsedContent} theme={currentTheme}/>;
             case "structured":
                 return <JsonDisplay content={content} parseFunction={separatedMarkdownParser} />;
+            case "candidateProfile":
+                return (
+                    <div className="flex items-center justify-start p-3 pt-0 w-full">
+                        <CandidateProfileBlock content={content} />
+                    </div>
+                );
 
             case "parsedAsJson":
                 return <JsonDisplay content={content} parseFunction={parseMarkdownContent} />;
@@ -209,7 +222,7 @@ const EnhancedContentRenderer = ({
             </div>
 
             {/* Scrollable content section */}
-            <div className={`flex-1 h-full overflow-y-auto p-0 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 scrollbar-hide ${themeColors.container.background}`}>
+            <div className={`flex-1 h-full w-full overflow-y-auto p-0 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 scrollbar-hide bg-background`}>
                 {renderContent()}
                 <div className="h-10 pb-10"></div>
             </div>

@@ -469,30 +469,21 @@ const TaskChecklist = ({
 
     return (
         <TooltipProvider>
-            <Card className="w-full bg-transparent">
+            <Card className="w-full bg-transparent border-none p-0">
                 <CardHeader className="pb-2">
-                    {!hideTitle && checklist.length > 0 && checklist[0].type === "section" && (
-                        <CardTitle>
-                            <div className="flex justify-between items-center">
-                                <span>{checklist[0].title}</span>
-                                <div className="flex items-center space-x-2 text-sm font-normal">
-                                    <span>Hide completed</span>
-                                    <Switch checked={hideCompleted} onCheckedChange={setHideCompleted} />
-                                </div>
-                            </div>
-                        </CardTitle>
-                    )}
-
                     <div className="space-y-4 mt-2">
                         <div className="flex items-center justify-between">
                             <div className="text-sm text-muted-foreground">
-                                Main tasks: {progress.completedTasks} of {progress.totalTasks}
+                                Main: {progress.completedTasks} of {progress.totalTasks}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                                All items: {progress.completedItems} of {progress.totalItems} ({progress.totalPercentage}%)
+                                All: {progress.completedItems} of {progress.totalItems} ({progress.totalPercentage}%)
+                            </div>
+                            <div className="flex justify-end items-center space-x-2 text-sm text-muted-foreground">
+                                <span>Hide completed</span>
+                                <Switch checked={hideCompleted} onCheckedChange={setHideCompleted} />
                             </div>
                         </div>
-
                         <Progress value={progress.totalPercentage} className="h-2" />
                     </div>
                 </CardHeader>
