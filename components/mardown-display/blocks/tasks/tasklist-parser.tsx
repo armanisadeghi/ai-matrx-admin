@@ -6,7 +6,7 @@ export const parseMarkdownChecklist = (markdownText: string): TaskItemType[] => 
   const result: TaskItemType[] = [];
   let currentSection: TaskItemType | null = null;
   let insideSection = false;
-  
+
   lines.forEach((line, index) => {
     // Section header (##)
     if (line.startsWith('##')) {
@@ -20,19 +20,23 @@ export const parseMarkdownChecklist = (markdownText: string): TaskItemType[] => 
       result.push(currentSection);
     } 
     // Top-level task item (- or * followed by checkbox)
-    else if (line.match(/^[-*]\s+\[([ x])\]\s+/)) {
-      const match = line.match(/^[-*]\s+\[([ x])\]\s+(?:\*\*(.*?)\*\*|(.*))/);
+    else if (line.match(/^[-*]\s+\[([ x])\]/)) {
+      // Match checkbox and capture all text after it
+      const match = line.match(/^[-*]\s+\[([ x])\]\s+(.+)/);
       if (match) {
-        const title = (match[2] || match[3] || '').trim();
+        const rawTitle = match[2].trim();
+        // Check if title contains bold markers
+        const boldMatch = rawTitle.match(/^\*\*(.*?)\*\*(.*)?$/);
+        const title = boldMatch ? `${boldMatch[1]}${boldMatch[2] || ''}`.trim() : rawTitle;
         const item: TaskItemType = {
           id: `task-${index}-${title.replace(/[^a-zA-Z0-9]/g, '-')}`,
           title,
           type: 'task',
-          bold: !!match[2],
+          bold: !!boldMatch,
           checked: match[1] === 'x',
           children: []
         };
-        
+
         if (insideSection && currentSection) {
           currentSection.children?.push(item);
         } else {
@@ -42,24 +46,25 @@ export const parseMarkdownChecklist = (markdownText: string): TaskItemType[] => 
     } 
     // Indented sub-task (2+ spaces with - [ ] OR indented * [ ] OR 2+ spaces [ ])
     else if (line.match(/^(?:\s{2,}-\s+\[([ x])\]|\s*\*\s+\[([ x])\]|\s{2,}\[([ x])\])\s+/)) {
-      const match = line.match(/^(?:\s{2,}-\s+\[([ x])\]|\s*\*\s+\[([ x])\]|\s{2,}\[([ x])\])\s+(?:\*\*(.*?)\*\*|(.*))/);
+      const match = line.match(/^(?:\s{2,}-\s+\[([ x])\]|\s*\*\s+\[([ x])\]|\s{2,}\[([ x])\])\s+(.+)/);
       if (match && result.length > 0) {
-        // match[1], match[2], match[3] are for the three checkbox patterns respectively
+        const rawTitle = (match[4] || '').trim();
+        // Check if title contains bold markers
+        const boldMatch = rawTitle.match(/^\*\*(.*?)\*\*(.*)?$/);
+        const title = boldMatch ? `${boldMatch[1]}${boldMatch[2] || ''}`.trim() : rawTitle;
         const checked = match[1] === 'x' || match[2] === 'x' || match[3] === 'x';
-        // match[4] is bold text, match[5] is regular text (shifted due to multiple patterns)
-        const title = (match[4] || match[5] || '').trim();
         const item: TaskItemType = {
           id: `subtask-${index}-${title.replace(/[^a-zA-Z0-9]/g, '-')}`,
           title,
           type: 'subtask',
-          bold: !!match[4],
+          bold: !!boldMatch,
           checked,
         };
-        
+
         const lastTopLevelItem = insideSection && currentSection?.children && currentSection.children.length > 0
           ? currentSection.children[currentSection.children.length - 1]
           : result[result.length - 1];
-          
+
         if (lastTopLevelItem && lastTopLevelItem.children) {
           lastTopLevelItem.children.push(item);
         } else if (lastTopLevelItem) {
@@ -68,6 +73,8 @@ export const parseMarkdownChecklist = (markdownText: string): TaskItemType[] => 
       }
     }
   });
-  
+
+  console.log("result", JSON.stringify(result, null, 2));
+
   return result;
 };
