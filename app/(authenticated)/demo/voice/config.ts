@@ -10,8 +10,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Voice Assistant CDN',
+        path: 'voice-assistant-cdn',
         relative: true,
         description: ''
     },

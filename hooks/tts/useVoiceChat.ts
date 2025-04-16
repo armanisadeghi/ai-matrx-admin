@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { usePlayer } from "@/hooks/tts/usePlayer";
+import { usePlayerSafe } from "./usePlayerSafe";
 import { useMicVAD, utils } from "@ricky0123/vad-react";
 import { nanoid } from 'nanoid';
 import { processAiRequest } from "@/actions/ai-actions/assistant-modular";
@@ -15,7 +15,6 @@ import {
     ServersideMessage, AiCallParams, ResponseType, AvailableAssistants, PartialBroker, Assistant
 } from "@/types/voice/voiceAssistantTypes";
 import {assistantOptions, getAssistant} from "@/constants/voice-assistants";
-import { usePlayerSafe } from "./usePlayerSafe";
 
 const DEFAULT_AI_REQUEST = {
     apiName: 'groq' as ApiName,
@@ -129,8 +128,8 @@ export const useVoiceChat = () => {
         minSpeechFrames: 4,
         redemptionFrames: 8,
         preSpeechPadFrames: 1,
-        baseAssetPath: "/",
-        onnxWASMBasePath: "/",
+        baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/",
+        onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/",
     });
 
     // Load conversations from localStorage

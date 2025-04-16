@@ -74,7 +74,7 @@
         "@remirror/pm": "latest",
         "@remirror/react": "latest",
         "@ricky0123/vad-react": "0.0.27",
-        "@ricky0123/vad-web": "0.0.21",
+        "@ricky0123/vad-web": "0.0.22",
         "@stream-io/node-sdk": "latest",
         "@stream-io/video-react-sdk": "latest",
         "@supabase/ssr": "latest",
