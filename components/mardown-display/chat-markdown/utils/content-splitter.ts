@@ -69,13 +69,26 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         }
 
         // Detect image markdown syntax (e.g., ![alt](url))
-        const imageMatch = trimmedLine.match(/^!$$ (.*?) $$$$ (https?:\/\/[^\s)]+) $$/);
+        const imageMatch =
+            trimmedLine.match(/^!\[(.*?)\]\((https?:\/\/[^\s)]+)\)/) || trimmedLine.match(/\[Image URL: (https?:\/\/[^\s\]]+)\]/);
+
         if (imageMatch) {
             if (currentText.trim()) {
                 blocks.push({ type: "text", content: currentText.trimEnd() });
                 currentText = "";
             }
-            const [, alt, src] = imageMatch;
+
+            let src, alt;
+
+            if (imageMatch[0].startsWith("![")) {
+                // Standard markdown format: ![alt](url)
+                [, alt, src] = imageMatch;
+            } else {
+                // [Image URL: url] format
+                src = imageMatch[1];
+                alt = "Image";
+            }
+
             blocks.push({
                 type: "image",
                 content: trimmedLine,

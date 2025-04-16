@@ -47,10 +47,11 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
     const preprocessContent = (mdContent: string): string => {
-        const imageUrlRegex = /$$ Image URL: (https?:\/\/[^\s]+) $$/g;
+        // Match the format [Image URL: https://example.com/image.png]
+        const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
         return mdContent.replace(imageUrlRegex, "![Image]($1)");
     };
-
+    
     const handleOpenEditor = () => {
         if (isStreamActive) return;
         setIsEditorOpen(true);

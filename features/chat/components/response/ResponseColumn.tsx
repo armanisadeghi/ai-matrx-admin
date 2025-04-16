@@ -74,12 +74,6 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
     const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
 
-
-    useEffect(() => {
-        console.log("-> ResponseColumn isStreamEnded", isStreamEnded);
-    }, [isStreamEnded]);
-
-
     const handleScrollToBottom = () => {
         for (let i = 0; i < 3; i++) {
             setTimeout(() => {

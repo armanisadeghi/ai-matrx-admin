@@ -1,5 +1,5 @@
 "use client";
-import React, { memo, useState, useEffect, useMemo, useRef } from "react";
+import React, { memo, useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
@@ -60,7 +60,23 @@ const components = {
             {children}
         </pre>
     ),
-    table: ({ node, ...props }: any) => <StreamingTable data={props.tableData} />,
+    // --- TABLE RENDERERS ---
+    table: ({ children, ...props }) => (
+        <StreamingTable {...props}>{children}</StreamingTable>
+    ),
+    thead: ({ children, ...props }) => <thead {...props}>{children}</thead>,
+    tbody: ({ children, ...props }) => <tbody {...props}>{children}</tbody>,
+    tr: ({ children, ...props }) => <tr {...props}>{children}</tr>,
+    th: ({ children, ...props }) => (
+        <th className="px-4 py-2 text-left font-semibold text-bold text-gray-900 dark:text-gray-100" {...props}>
+            {children}
+        </th>
+    ),
+    td: ({ children, ...props }) => (
+        <td className="px-4 py-2" {...props}>
+            {children}
+        </td>
+    ),
 };
 
 interface ChatStreamDisplayProps {
@@ -88,10 +104,8 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     };
 
     const handleNewDataContent = (dataContent: any) => {
-        console.log("[CHAT STREAM DISPLAY] New data content received:", dataContent);
         const isEnd = dataContent?.end === true || dataContent?.end === "true" || dataContent?.end === "True";
         if (isEnd) {
-            console.log("[CHAT STREAM DISPLAY] Stream ended");
             dispatch(chatActions.setIsNotStreaming());
             dispatch(chatActions.fetchMessagesForActiveConversation());
         }
@@ -100,7 +114,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     useEffect(() => {
         handleNewTextContent(streamText);
     }, [streamText]);
-
 
     useEffect(() => {
         if (streamData) {
@@ -125,28 +138,11 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     );
 
     const parsedContent = useMemo(() => {
+        // You can keep this if you use it elsewhere, but it's not needed for table rendering anymore
         const tableData = parseMarkdownTable(content);
         const contentSegments = parseTaggedContent(content);
         return { tableData, contentSegments };
     }, [content]);
-
-    const componentsWithTable = useMemo(
-        () => ({
-            ...components,
-            table: () => {
-                if (!parsedContent.tableData?.markdown) return null;
-                return (
-                    <StreamingTable
-                        data={{
-                            headers: parsedContent.tableData.markdown.headers,
-                            rows: parsedContent.tableData.markdown.rows,
-                        }}
-                    />
-                );
-            },
-        }),
-        [parsedContent.tableData]
-    );
 
     const renderContent = () => {
         if (!isStreaming) {
@@ -158,7 +154,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                 {segment.isThinking ? (
                     <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
                 ) : (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
                         {segment.content}
                     </ReactMarkdown>
                 )}
