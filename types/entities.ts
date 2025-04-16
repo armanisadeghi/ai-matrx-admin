@@ -606,6 +606,10 @@ export type ScrapeBaseConfig = {
     exact?: Record<string, unknown>;
     partial?: Record<string, unknown>;
     regex?: Record<string, unknown>;
+    createdAt: Date;
+    updatedAt: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
 }
 
 export type ScrapeCachePolicy = {
@@ -786,6 +790,7 @@ export type ScrapeParsedPage = {
     updatedAt?: Date;
     isPublic?: boolean;
     authenticatedRead?: boolean;
+    expiresAt?: Date;
 }
 
 export type ScrapePathPattern = {

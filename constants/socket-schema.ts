@@ -18,6 +18,59 @@ export interface Schema {
 }
 
 
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: "true",
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
+    },
+};
+
 export const CHAT_CONFIG_DEFINITION: Schema = {
     recipe_id: {
         REQUIRED: true,
@@ -140,59 +193,6 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
-    },
-};
-
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the id of the broker.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value of the broker.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: "true",
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
     },
 };
 
@@ -1305,7 +1305,7 @@ export const QUICK_SCRAPE: Schema = {
     urls: {
         REQUIRED: true,
         DEFAULT: null,
-        VALIDATION: "validate_scrape_urls",
+        VALIDATION: null,
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
@@ -1313,18 +1313,6 @@ export const QUICK_SCRAPE: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the urls to be scraped.",
         ICON_NAME: "Link",
-    },
-    get_anchors: {
-        REQUIRED: false,
-        DEFAULT: false,
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Switch",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether to get anchors.",
-        ICON_NAME: "Check",
     },
 };
 
@@ -2409,6 +2397,9 @@ export const SERVICE_TASKS = {
         create_content_grouping_run: CREATE_CONTENT_GROUPING_RUN,
         track_content_grouping_run: TRACK_CONTENT_GROUPING_RUN,
         mic_check: MIC_CHECK,
+    },
+    scraper_service_v2: {
+        quick_scrape: QUICK_SCRAPE,
     },
     california_worker_compensation_service: {
         create_wc_claim: CREATE_WC_CLAIM,

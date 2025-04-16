@@ -11,7 +11,6 @@ import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSel
 import { RootState } from "@/lib/redux/store";
 import { selectIsStreaming, selectStreamEnd } from "@/lib/redux/socket/streamingSlice";
 
-
 const INFO = true;
 const DEBUG = true;
 const VERBOSE = false;
@@ -31,40 +30,51 @@ export type localMessage = {
     markdownAnalysisData?: MarkdownAnalysisData;
 };
 
-const MessageItem = React.memo(({ message, onScrollToBottom, isOverlay = false, audioControls }: { message: localMessage; onScrollToBottom: () => void; isOverlay?: boolean; audioControls: CartesiaControls }) => {
-    const handleContentEdit = (newContent: string) => {
-        console.log("newContent", newContent);
-    };
+const MessageItem = React.memo(
+    ({
+        message,
+        onScrollToBottom,
+        isOverlay = false,
+        audioControls,
+    }: {
+        message: localMessage;
+        onScrollToBottom: () => void;
+        isOverlay?: boolean;
+        audioControls: CartesiaControls;
+    }) => {
+        const handleContentEdit = (newContent: string) => {
+            console.log("newContent", newContent);
+        };
 
-    if (VERBOSE && message.role === "assistant") {
-        console.log("Message Item", message.id, JSON.stringify(message.markdownAnalysisData));
+        if (VERBOSE && message.role === "assistant") {
+            console.log("Message Item", message.id, JSON.stringify(message.markdownAnalysisData));
+        }
+
+        return message.role === "user" ? (
+            <UserMessage key={message.id} message={message} onScrollToBottom={onScrollToBottom} isOverlay={isOverlay} />
+        ) : (
+            <AssistantMessage
+                key={message.id}
+                message={message}
+                isStreamActive={false}
+                onScrollToBottom={onScrollToBottom}
+                onContentUpdate={handleContentEdit}
+                markdownAnalysisData={message.markdownAnalysisData || null}
+                isOverlay={isOverlay}
+                audioControls={audioControls}
+            />
+        );
     }
-
-    return message.role === "user" ? (
-        <UserMessage key={message.id} message={message} onScrollToBottom={onScrollToBottom} isOverlay={isOverlay} />
-    ) : (
-        <AssistantMessage
-            key={message.id}
-            message={message}
-            isStreamActive={false}
-            onScrollToBottom={onScrollToBottom}
-            onContentUpdate={handleContentEdit}
-            markdownAnalysisData={message.markdownAnalysisData || null}
-            isOverlay={isOverlay}
-            audioControls={audioControls}
-        />
-    );
-});
+);
 
 MessageItem.displayName = "MessageItem";
-
 
 const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }) => {
     const [streamKey, setStreamKey] = useState<string>("stream-0");
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
 
     const chatSelectors = createChatSelectors();
-    const eventName = useAppSelector(chatSelectors.conversationSocketEventName)
+    const eventName = useAppSelector(chatSelectors.conversationSocketEventName);
     const messagesToDisplay = useAppSelector(chatSelectors.messageRelationFilteredRecords);
     const messageCount = messagesToDisplay.length;
 
@@ -122,23 +132,23 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
 
         // Handle key events (arrow up, page up)
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'Home') {
+            if (e.key === "ArrowUp" || e.key === "PageUp" || e.key === "Home") {
                 setAutoScrollEnabled(false);
             }
         };
 
         // Add all event listeners
-        document.addEventListener('wheel', handleWheel, { passive: true });
-        document.addEventListener('touchstart', handleTouchStart, { passive: true });
-        document.addEventListener('touchmove', handleTouchMove, { passive: true });
-        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener("wheel", handleWheel, { passive: true });
+        document.addEventListener("touchstart", handleTouchStart, { passive: true });
+        document.addEventListener("touchmove", handleTouchMove, { passive: true });
+        document.addEventListener("keydown", handleKeyDown);
 
         return () => {
             // Remove all event listeners on cleanup
-            document.removeEventListener('wheel', handleWheel);
-            document.removeEventListener('touchstart', handleTouchStart);
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener("wheel", handleWheel);
+            document.removeEventListener("touchstart", handleTouchStart);
+            document.removeEventListener("touchmove", handleTouchMove);
+            document.removeEventListener("keydown", handleKeyDown);
         };
     }, []);
 
@@ -166,7 +176,13 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
         <div className="w-full pt-0 pb-24 relative" ref={containerRef}>
             <div className="max-w-3xl mx-auto px-4 md:px-3 space-y-6 overflow-x-hidden">
                 {messagesToDisplay.map((message) => (
-                    <MessageItem key={message.id} message={message} onScrollToBottom={handleScrollToBottom} isOverlay={isOverlay} audioControls={audioControls} />
+                    <MessageItem
+                        key={message.id}
+                        message={message}
+                        onScrollToBottom={handleScrollToBottom}
+                        isOverlay={isOverlay}
+                        audioControls={audioControls}
+                    />
                 ))}
                 <AssistantStream
                     key={streamKey}

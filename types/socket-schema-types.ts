@@ -179,6 +179,10 @@ export interface CreateWcClaim {
     applicant_name: string;
 }
 
+export interface QuickScrape {
+    urls: any[][];
+}
+
 export interface MicCheck {
     mic_check_message: string;
 }
