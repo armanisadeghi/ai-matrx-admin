@@ -15,7 +15,7 @@ import {
     ServersideMessage, AiCallParams, ResponseType, AvailableAssistants, PartialBroker, Assistant
 } from "@/types/voice/voiceAssistantTypes";
 import {assistantOptions, getAssistant} from "@/constants/voice-assistants";
-
+import { usePlayerSafe } from "./usePlayerSafe";
 
 const DEFAULT_AI_REQUEST = {
     apiName: 'groq' as ApiName,
@@ -66,7 +66,7 @@ export const useVoiceChat = () => {
         isActive: false
     });
 
-    const player = usePlayer();
+    const player = usePlayerSafe();
 
     // Update activity timing when process state changes
     const updateActivityTiming = useCallback((isUserActivity: boolean) => {
@@ -351,5 +351,6 @@ export const useVoiceChat = () => {
         responseType,
         setResponseType,
         isLoading,
+        player,
     };
 };
