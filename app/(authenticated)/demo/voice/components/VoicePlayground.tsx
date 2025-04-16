@@ -1,44 +1,36 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useCartesia } from '@/hooks/tts/useCartesia';
-import { availableVoices } from '@/lib/cartesia/voices';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Loader2, RefreshCw, Play, Pause, Square } from 'lucide-react';
-import {
-    Emotion,
-    EmotionName,
-    EmotionLevel,
-    VoiceSpeed,
-    Language,
-    ModelId,
-    VoiceOptions
-} from '@/lib/cartesia/cartesia.types';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useCartesia } from "@/hooks/tts/useCartesia";
+import { availableVoices } from "@/lib/cartesia/voices";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Loader2, RefreshCw, Play, Pause, Square } from "lucide-react";
+import { Emotion, EmotionName, EmotionLevel, VoiceSpeed, Language, ModelId, VoiceOptions } from "@/lib/cartesia/cartesia.types";
 
-const emotions: Emotion[] = ['anger', 'sadness', 'positivity', 'curiosity', 'surprise'];
+const emotions: Emotion[] = ["anger", "sadness", "positivity", "curiosity", "surprise"];
 
 const languageNames: Record<Language, string> = {
-    [Language.EN]: 'English',
-    [Language.DE]: 'German',
-    [Language.ES]: 'Spanish',
-    [Language.FR]: 'French',
-    [Language.JA]: 'Japanese',
-    [Language.PT]: 'Portuguese',
-    [Language.ZH]: 'Chinese',
-    [Language.HI]: 'Hindi',
-    [Language.IT]: 'Italian',
-    [Language.KO]: 'Korean',
-    [Language.NL]: 'Dutch',
-    [Language.PL]: 'Polish',
-    [Language.RU]: 'Russian',
-    [Language.SV]: 'Swedish',
-    [Language.TR]: 'Turkish',
+    [Language.EN]: "English",
+    [Language.DE]: "German",
+    [Language.ES]: "Spanish",
+    [Language.FR]: "French",
+    [Language.JA]: "Japanese",
+    [Language.PT]: "Portuguese",
+    [Language.ZH]: "Chinese",
+    [Language.HI]: "Hindi",
+    [Language.IT]: "Italian",
+    [Language.KO]: "Korean",
+    [Language.NL]: "Dutch",
+    [Language.PL]: "Polish",
+    [Language.RU]: "Russian",
+    [Language.SV]: "Swedish",
+    [Language.TR]: "Turkish",
 };
 
 interface EmotionControl {
@@ -48,19 +40,24 @@ interface EmotionControl {
 
 export default function PlaygroundPage() {
     const { sendMessage, isConnected, error, pausePlayback, resumePlayback, stopPlayback, updateConfigs } = useCartesia();
-    const [text, setText] = useState("Hi. This is A.I. Matrix, and I'm really happy to have you here. Take a look around the Playground and try the cool emotions controls!");
-    const [voice, setVoice] = useState(availableVoices[0]?.id || '');
+    const [text, setText] = useState(
+        "Hi. This is A.I. Matrix, and I'm really happy to have you here. Take a look around the Playground and try the cool emotions controls!"
+    );
+    const [voice, setVoice] = useState(availableVoices[0]?.id || "");
     const [language, setLanguage] = useState<Language>(Language.EN);
     const [speed, setSpeed] = useState<VoiceSpeed>(VoiceSpeed.NORMAL);
     const [emotionControls, setEmotionControls] = useState<Record<Emotion, EmotionControl>>(
-        emotions.reduce((acc, emotion) => ({ ...acc, [emotion]: { active: false, intensity: EmotionLevel.MEDIUM } }), {} as Record<Emotion, EmotionControl>)
+        emotions.reduce(
+            (acc, emotion) => ({ ...acc, [emotion]: { active: false, intensity: EmotionLevel.MEDIUM } }),
+            {} as Record<Emotion, EmotionControl>
+        )
     );
     const [isPlaying, setIsPlaying] = useState(false);
 
     useEffect(() => {
-        const voiceOptions: VoiceOptions = { mode: 'id', id: voice };
+        const voiceOptions: VoiceOptions = { mode: "id", id: voice };
 
-        updateConfigs({ voice: voiceOptions, language, });
+        updateConfigs({ voice: voiceOptions, language });
     }, [voice, language, updateConfigs]);
 
     const handleSendMessage = async () => {
@@ -68,10 +65,10 @@ export default function PlaygroundPage() {
             .filter(([, control]) => control.active)
             .map(([emotion, control]) => ({
                 emotion: emotion as EmotionName,
-                intensity: control.intensity
+                intensity: control.intensity,
             }));
 
-        const voiceOptions: VoiceOptions = { mode: 'id', id: voice };
+        const voiceOptions: VoiceOptions = { mode: "id", id: voice };
 
         try {
             await sendMessage(text, speed, voiceOptions, activeEmotions);
@@ -81,10 +78,10 @@ export default function PlaygroundPage() {
         }
     };
 
-    const handleEmotionChange = (emotion: Emotion, field: 'active' | 'intensity', value: boolean | EmotionLevel) => {
-        setEmotionControls(prev => ({
+    const handleEmotionChange = (emotion: Emotion, field: "active" | "intensity", value: boolean | EmotionLevel) => {
+        setEmotionControls((prev) => ({
             ...prev,
-            [emotion]: { ...prev[emotion], [field]: value }
+            [emotion]: { ...prev[emotion], [field]: value },
         }));
     };
 
@@ -111,7 +108,9 @@ export default function PlaygroundPage() {
         >
             <div className="space-y-4">
                 <div>
-                    <Label htmlFor="text" className="sr-only">Text to Speak</Label>
+                    <Label htmlFor="text" className="sr-only">
+                        Text to Speak
+                    </Label>
                     <Input id="text" value={text} onChange={(e) => setText(e.target.value)} placeholder="Enter text to speak..." />
                 </div>
 
@@ -125,7 +124,9 @@ export default function PlaygroundPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     {availableVoices.map((v) => (
-                                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                                        <SelectItem key={v.id} value={v.id}>
+                                            {v.name}
+                                        </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -145,7 +146,9 @@ export default function PlaygroundPage() {
                             </SelectTrigger>
                             <SelectContent>
                                 {Object.entries(languageNames).map(([key, value]) => (
-                                    <SelectItem key={key} value={key as Language}>{value}</SelectItem>
+                                    <SelectItem key={key} value={key as Language}>
+                                        {value}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -158,7 +161,9 @@ export default function PlaygroundPage() {
                             </SelectTrigger>
                             <SelectContent>
                                 {Object.entries(VoiceSpeed).map(([key, value]) => (
-                                    <SelectItem key={key} value={value}>{key}</SelectItem>
+                                    <SelectItem key={key} value={value}>
+                                        {key}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -172,17 +177,21 @@ export default function PlaygroundPage() {
                             <Checkbox
                                 id={`${emotion}-checkbox`}
                                 checked={emotionControls[emotion].active}
-                                onCheckedChange={(checked) => handleEmotionChange(emotion, 'active', checked as boolean)}
+                                onCheckedChange={(checked) => handleEmotionChange(emotion, "active", checked as boolean)}
                             />
-                            <Label htmlFor={`${emotion}-checkbox`} className="w-24">{emotion}</Label>
+                            <Label htmlFor={`${emotion}-checkbox`} className="w-24">
+                                {emotion}
+                            </Label>
                             <Slider
                                 value={[Object.values(EmotionLevel).indexOf(emotionControls[emotion].intensity)]}
-                                onValueChange={([value]) => handleEmotionChange(emotion, 'intensity', Object.values(EmotionLevel)[value] as EmotionLevel)}
+                                onValueChange={([value]) =>
+                                    handleEmotionChange(emotion, "intensity", Object.values(EmotionLevel)[value] as EmotionLevel)
+                                }
                                 min={0}
                                 max={4}
                                 step={1}
                                 disabled={!emotionControls[emotion].active}
-                                className="w-32"
+                                className={`w-64 ${!emotionControls[emotion].active ? "opacity-30" : ""}`}
                             />
                         </div>
                     ))}
@@ -198,7 +207,7 @@ export default function PlaygroundPage() {
                         </Button>
                     </div>
                     <Button onClick={handleSendMessage} disabled={!isConnected || !text}>
-                        {isConnected ? 'Speak' : <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isConnected ? "Speak" : <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     </Button>
                 </div>
 

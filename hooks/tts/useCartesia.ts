@@ -52,7 +52,7 @@ export function useCartesia(
         container = OutputContainer.Raw,
         encoding = AudioEncoding.PCM_F32LE,
         sampleRate = 44100,
-        modelId = ModelId.SonicEnglish,
+        modelId = ModelId.Sonic2,
         voice = {mode: "id", id: "a0e99841-438c-4a64-b679-ae501e7d6091"},
         language = Language.EN,
         bufferDuration = 1,

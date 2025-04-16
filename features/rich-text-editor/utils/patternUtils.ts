@@ -1,5 +1,3 @@
-import { MatrxRecordId } from "@/types";
-
 // Pattern definitions
 export const MATRX_PATTERN = /<<<MATRX_START>>>(.*?)<<<MATRX_END>>>/gs;
 export const DEFAULT_VALUE_PATTERN = /<DEFAULT_VALUE>(.*?)<DEFAULT_VALUE_END>/gs;

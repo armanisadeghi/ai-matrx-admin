@@ -3,7 +3,6 @@
 import { logTaskStart } from "./manager-debug";
 import { eventChannel, EventChannel } from "redux-saga";
 import { SocketConnectionManager, SocketConfig } from "./core/connection-manager";
-import { addStreamData, addStreamText, endStream } from "./streamingSlice";
 import { 
     startStream,
     updateStreamText,

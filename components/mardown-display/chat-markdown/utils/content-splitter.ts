@@ -6,6 +6,31 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     const lines = mdContent.split(/\r?\n/);
     let insideMarkdownBlock = false;
 
+    // List of special tags to handle
+    const specialTags = ["info", "task", "database", "private", "plan", "event", "tool"];
+
+    // Function to handle special tags
+    const handleSpecialTags = (tag: string, startIndex: number, lines: string[]): { content: string; newIndex: number } => {
+        const content: string[] = [];
+        let i = startIndex;
+        const closingTag = `</${tag}>`;
+
+        while (i < lines.length) {
+            const currentTrimmedLine = lines[i].trim();
+            if (currentTrimmedLine === closingTag) {
+                i++; // Skip the closing tag
+                break;
+            }
+            content.push(lines[i]);
+            i++;
+        }
+
+        return {
+            content: content.join("\n"),
+            newIndex: i,
+        };
+    };
+
     let i = 0;
     while (i < lines.length) {
         const line = lines[i];
@@ -99,6 +124,22 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             continue;
         }
 
+        // Detect special tags (info, task, database, private, plan, event, tool)
+        const specialTagMatch = specialTags.find((tag) => trimmedLine === `<${tag}>`);
+        if (specialTagMatch) {
+            if (currentText.trim()) {
+                blocks.push({ type: "text", content: currentText.trimEnd() });
+                currentText = "";
+            }
+            const { content, newIndex } = handleSpecialTags(specialTagMatch, i + 1, lines);
+            blocks.push({
+                type: specialTagMatch,
+                content,
+            });
+            i = newIndex;
+            continue;
+        }
+
         // Detect thinking blocks (<thinking> or <think>)
         if (trimmedLine === "<thinking>" || trimmedLine === "<think>") {
             if (currentText.trim()) {
@@ -110,7 +151,6 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
             let foundMarker = false;
             let foundClosingTag = false;
 
-            const startIndex = i;
             while (i < lines.length) {
                 const currentTrimmedLine = lines[i].trim();
                 if (currentTrimmedLine === "</thinking>" || currentTrimmedLine === "</think>") {

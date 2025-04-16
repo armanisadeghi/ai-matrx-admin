@@ -3,7 +3,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
-import { CheckIcon, ClipboardIcon, PencilIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import { useState } from "react";
 import { LinkComponent } from "./parts/LinkComponent";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";

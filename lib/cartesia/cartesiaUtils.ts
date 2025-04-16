@@ -1,5 +1,17 @@
 // Function to list all voices
 import cartesia from "@/lib/cartesia/client";
+import {
+    OutputContainer,
+    AudioEncoding,
+    ModelId,
+    VoiceOptions,
+    Language,
+    VoiceSpeed,
+    Emotion,
+    Intensity,
+    EmotionName,
+    EmotionLevel
+} from '@/lib/cartesia/cartesia.types';
 
 export const listVoices = async () => {
     try {
@@ -22,13 +34,32 @@ export const getVoice = async (voiceId: string) => {
     }
 };
 
+interface CloneVoiceOptions {
+    name: string;
+    description?: string;
+    mode?: "similarity" | "stability";
+    language?: Language;
+    enhance?: boolean;
+    transcript?: string;
+}
+
 // Function to clone a aiAudio from a file (takes a File or Blob object as input)
-export const cloneVoiceFromFile = async (file: File | Blob) => {
+export const cloneVoiceFromFile = async (
+    file: File | Blob, 
+    options: CloneVoiceOptions
+) => {
     try {
-        const clonedVoiceEmbedding = await cartesia.voices.clone({
-            mode: "clip",
-            clip: file,
-        });
+        const clonedVoiceEmbedding = await cartesia.voices.clone(
+            file as File,
+            {
+                name: options.name,
+                description: options.description,
+                mode: options.mode || "similarity",
+                language: options.language || Language.EN,
+                enhance: options.enhance !== undefined ? options.enhance : false,
+                ...(options.transcript && { transcript: options.transcript })
+            }
+        );
         return clonedVoiceEmbedding;
     } catch (error) {
         console.error("Error cloning aiAudio from file:", error);

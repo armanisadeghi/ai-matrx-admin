@@ -85,26 +85,24 @@ const AiVoicePage: React.FC = () => {
         return <div>Error: {error}</div>;
     }
 
-    console.log("AiVoicePage rendering with data:", data);
-
     return (
         <div className="container mx-auto py-8 bg-background text-foreground">
-            <h1 className="text-4xl font-bold mb-6">Cartesia Voice Testing</h1>
+            <h1 className="text-4xl font-bold mb-6">Matrx Voice Testing</h1>
             <Tabs defaultValue="voices" className="w-full">
                 <TabsList className="mb-6">
-                    <TabsTrigger value="voices">Available Voices</TabsTrigger>
-                    <TabsTrigger value="actions">Voice Actions</TabsTrigger>
+                    <TabsTrigger value="voices">Matrx Voices</TabsTrigger>
+                    <TabsTrigger value="actions">Create Custom Voices</TabsTrigger>
                     <TabsTrigger value="playground">Voice Playground</TabsTrigger>
                 </TabsList>
                 <TabsContent value="voices">
                     <div className="bg-card rounded-lg shadow-lg p-6">
-                        <h2 className="text-2xl font-semibold mb-4">Available Voices</h2>
+                        <h2 className="text-2xl font-semibold mb-4">Available Matrx Voices</h2>
                         <VoicesList />
                     </div>
                 </TabsContent>
                 <TabsContent value="actions">
                     <div className="bg-card rounded-lg shadow-lg p-6">
-                        <h2 className="text-2xl font-semibold mb-4">Voice Actions</h2>
+                        <h2 className="text-2xl font-semibold mb-4">Custom Voice Creation</h2>
                         <VoiceActions />
                     </div>
                 </TabsContent>

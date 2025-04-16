@@ -27,7 +27,7 @@ interface ChatMarkdownDisplayProps {
 }
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info";
+    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | string;
     content: string;
     language?: string;
     src?: string;
@@ -76,17 +76,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 return <ImageBlock key={index} src={block.src!} alt={block.alt} />;
             case "thinking":
                 return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true} />;
-            case "text":
-                return block.content ? (
-                    <BasicMarkdownContent
-                        key={index}
-                        content={block.content}
-                        isStreamActive={isStreamActive}
-                        onEditRequest={onContentChange ? handleOpenEditor : undefined}
-                        messageId={messageId}
-                        showCopyButton={false}
-                    />
-                ) : null;
             case "code":
                 return (
                     <CodeBlock
@@ -111,8 +100,36 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 return <TasksBlock key={index} content={block.content} />;
             case "structured_info":
                 return <StructuredPlanBlock key={index} content={block.content} />;
+            case "text":
+            case "info":
+            case "task":
+            case "database":
+            case "private":
+            case "plan":
+            case "event":
+            case "tool":
+                return block.content ? (
+                    <BasicMarkdownContent
+                        key={index}
+                        content={block.content}
+                        isStreamActive={isStreamActive}
+                        onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                        messageId={messageId}
+                        showCopyButton={false}
+                    />
+                ) : null;
             default:
-                return null;
+                // Default to rendering as markdown for unrecognized block types
+                return block.content ? (
+                    <BasicMarkdownContent
+                        key={index}
+                        content={block.content}
+                        isStreamActive={isStreamActive}
+                        onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                        messageId={messageId}
+                        showCopyButton={false}
+                    />
+                ) : null;
         }
     };
 
