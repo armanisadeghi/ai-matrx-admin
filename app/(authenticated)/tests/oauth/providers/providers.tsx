@@ -7,7 +7,7 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
     clientId: process.env.NEXT_PUBLIC_SLACK_CLIENT_ID,
     authUrl: "https://slack.com/oauth/v2/authorize",
     redirectUri: `${process.env.NEXT_PUBLIC_SLACK_REDIRECT_URL}/app_callback/slack`,
-    scopes: ["chat:write", "channels:read", "team:read", "users:read"],
+    scopes: ["app_mentions:read", "channels:read", "chat:write", "commands", "files:read", "files:write", "users:read", "groups:read"],
     scopeDelimiter: ",",
     color: "purple-600",
     textColor: "white",
