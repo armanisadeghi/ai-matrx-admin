@@ -1,13 +1,14 @@
 // lib\redux\socket\hooks\task-socket-hooks\useScraperSocket.ts
 
 "use client";
-import { SOCKET_TASKS } from "@/constants/socket-constants";
+
+import { getTaskSchema } from "@/constants/socket-schema";
 import { useSocket, TaskData } from "@/lib/redux/socket/hooks/useSocket";
 import { useEffect, useCallback, useMemo } from "react";
 
 export const useScraperSocket = () => {
     const socketHook = useSocket();
-    const { setNamespace, setService, setTaskType, setTaskData, handleSend, handleClear } = socketHook;
+    const { setNamespace, setService, setTaskType, taskType, setTaskData, handleSend, handleClear } = socketHook;
     
     // Run only once on mount, no dependencies
     useEffect(() => {
@@ -17,7 +18,7 @@ export const useScraperSocket = () => {
     }, []); // Empty dependencies is correct here as we want this to run once
     
     // Memoize the schema to prevent it from causing rerenders
-    const taskSchema = useMemo(() => SOCKET_TASKS.quick_scrape, []);
+    const taskSchema = getTaskSchema(taskType);
     
     // Memoize handlers to prevent them from being recreated on rerender
     const handleChange = useCallback((data: TaskData): void => {

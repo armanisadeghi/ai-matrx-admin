@@ -22,7 +22,6 @@ const ChatCollapsibleWrapper: React.FC<ChatCollapsibleWrapperProps> = ({
     className = "",
 }) => {
     const [isOpen, setIsOpen] = useState(initialOpen);
-    const { toast } = useToast();
 
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open);

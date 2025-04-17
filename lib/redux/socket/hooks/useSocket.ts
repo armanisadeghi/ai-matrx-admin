@@ -136,6 +136,7 @@ export const useSocket = () => {
         // Core selection state
         namespace: currentNamespace,
         overrideNamespace,
+        setNamespace: overrideNamespace,
         service,
         setService,
         taskType,

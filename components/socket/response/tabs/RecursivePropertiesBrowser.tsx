@@ -100,7 +100,6 @@ const RecursivePropertiesBrowser = ({
         type: 'primitive'
       }];
     }
-
     if (typeof obj !== 'object') {
       return [{
         key: parentPath.split('.').pop() || '',
@@ -111,10 +110,8 @@ const RecursivePropertiesBrowser = ({
         type: 'primitive'
       }];
     }
-
     const properties: Property[] = [];
     const isArray = Array.isArray(obj);
-
     // First add the parent object/array itself
     if (parentPath) {
       properties.push({
@@ -127,12 +124,10 @@ const RecursivePropertiesBrowser = ({
         type: isArray ? 'array' : 'object'
       });
     }
-
     // If this path is not expanded, return only the parent
     if (parentPath && !expandedPaths[parentPath]) {
       return properties;
     }
-
     // Otherwise, add all children
     Object.entries(obj).forEach(([key, value]) => {
       const currentPath = parentPath ? `${parentPath}.${key}` : key;
@@ -151,7 +146,6 @@ const RecursivePropertiesBrowser = ({
         });
       }
     });
-
     return properties;
   };
 
@@ -162,21 +156,21 @@ const RecursivePropertiesBrowser = ({
   const renderPrimitiveValue = (prop: Property, idx: number) => (
     <div 
       key={`${prop.path}-${idx}`} 
-      className="flex items-center py-1 border-b border-gray-400 dark:border-gray-500 last:border-b-0 w-full"
+      className="flex items-center py-2 border-b border-gray-400 dark:border-gray-500 last:border-b-0 w-full"
       style={{ paddingLeft: `${prop.depth * 12}px` }}
     >
-      {/* Property Name - keeps a fixed width */}
-      <div className="flex items-center w-[15%] min-w-20 max-w-32 shrink-0 mr-2">
+      {/* Property Name - smaller fixed width */}
+      <div className="flex items-center w-1/5 min-w-20 shrink-0 mr-3">
         <span className="text-xs font-medium truncate" title={prop.key}>
           {prop.key}
         </span>
       </div>
       
       {/* Value Field - takes up remaining space */}
-      <div className="flex-1 flex items-center w-[80%]">
+      <div className="flex-grow overflow-hidden">
         {displayModes[prop.path] ? (
           <Textarea
-            className="text-xs font-mono h-16 resize-none w-full"
+            className="text-xs font-mono h-24 resize-y w-full"
             value={
               typeof prop.value === "object"
                 ? safeStringify(prop.value)
@@ -186,7 +180,7 @@ const RecursivePropertiesBrowser = ({
           />
         ) : (
           <Input
-            className="text-xs h-6 font-mono w-full"
+            className="text-xs h-8 font-mono w-full"
             value={
               typeof prop.value === "object"
                 ? safeStringify(prop.value)
@@ -198,9 +192,9 @@ const RecursivePropertiesBrowser = ({
       </div>
       
       {/* Action Buttons - fixed width */}
-      <div className="flex items-center shrink-0 ml-2 w-[5%] min-w-fit">
+      <div className="flex items-center shrink-0 ml-3 justify-end">
         <CopyButton
-          className="mr-1"
+          className="mr-2"
           content={
             typeof prop.value === "object"
               ? safeStringify(prop.value)
@@ -210,10 +204,10 @@ const RecursivePropertiesBrowser = ({
         <Button
           variant="outline"
           size="sm"
-          className="h-5 px-1 text-xs"
+          className="h-6 px-2 text-xs whitespace-nowrap"
           onClick={() => toggleDisplayMode(prop.path)}
         >
-          {displayModes[prop.path] ? "▲" : "▼"}
+          {displayModes[prop.path] ? "Collapse" : "Expand"}
         </Button>
       </div>
     </div>
@@ -223,14 +217,14 @@ const RecursivePropertiesBrowser = ({
   const renderObjectParent = (prop: Property, idx: number) => (
     <div 
       key={`${prop.path}-${idx}`} 
-      className="flex items-center py-1 border-b border-gray-400 dark:border-gray-500 last:border-b-0 w-full"
+      className="flex items-center py-2 border-b border-gray-400 dark:border-gray-500 last:border-b-0 w-full"
       style={{ paddingLeft: `${prop.depth * 12}px` }}
     >
-      <div className="flex items-center w-2/3">
+      <div className="flex items-center flex-grow">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-4 w-4 p-0 mr-1 text-xs" 
+          className="h-6 w-6 p-0 mr-2 text-xs flex items-center justify-center" 
           onClick={() => toggleExpand(prop.path)}
         >
           {expandedPaths[prop.path] ? '▼' : '►'}
@@ -248,7 +242,7 @@ const RecursivePropertiesBrowser = ({
           )}
         </span>
       </div>
-      <div className="ml-auto shrink-0">
+      <div className="shrink-0">
         <CopyButton
           content={safeStringify(prop.value)}
         />
@@ -257,8 +251,8 @@ const RecursivePropertiesBrowser = ({
   );
 
   return (
-    <TabsContent value="properties">
-      <div className="flex justify-between items-center mb-1">
+    <TabsContent value="properties" className="w-full">
+      <div className="flex justify-between items-center mb-3 w-full">
         <div className="flex items-center">
           <Label className="mr-2 text-xs">Select Object:</Label>
           <select
@@ -273,11 +267,11 @@ const RecursivePropertiesBrowser = ({
             ))}
           </select>
         </div>
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0"
+            className="h-7 w-7 p-0 flex items-center justify-center"
             title="Expand All"
             onClick={() => expandAll(true)}
           >
@@ -286,7 +280,7 @@ const RecursivePropertiesBrowser = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 mr-1"
+            className="h-7 w-7 p-0 flex items-center justify-center"
             title="Collapse All"
             onClick={() => expandAll(false)}
           >
@@ -295,9 +289,9 @@ const RecursivePropertiesBrowser = ({
           <CopyButton content={safeStringify(selectedObject)} label="Copy All" />
         </div>
       </div>
-      <ScrollArea className="w-full rounded-md border border-gray-400 dark:border-gray-500 p-2 h-96">
+      <ScrollArea className="w-full rounded-md border border-gray-400 dark:border-gray-500 p-3 h-96">
         {objectProperties.length > 0 ? (
-          <div className="space-y-0">
+          <div className="space-y-1 w-full">
             {objectProperties.map((prop, idx) => 
               prop.hasChildren 
                 ? renderObjectParent(prop, idx) 
@@ -305,7 +299,7 @@ const RecursivePropertiesBrowser = ({
             )}
           </div>
         ) : (
-          <div className="text-center p-2 text-gray-500 italic">No properties to display</div>
+          <div className="text-center p-4 text-gray-500 italic">No properties to display</div>
         )}
       </ScrollArea>
     </TabsContent>

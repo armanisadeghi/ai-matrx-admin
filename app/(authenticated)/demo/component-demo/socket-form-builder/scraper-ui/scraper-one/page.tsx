@@ -7,13 +7,16 @@ import SocketDebugPanel from "@/components/socket/SocketDebugPanel";
 import ScraperResultsComponent from "@/features/scraper/ScraperResultsComponent";
 import { useScraperSocket } from "@/lib/redux/socket/hooks/task-socket-hooks/useScraperSocket";
 import { ChevronUp, ChevronDown, RefreshCw } from "lucide-react";
+import { getTaskSchema } from "@/constants/socket-schema";
 
 const DEBUG_MODE = true;
 
 export default function Page() {
     const { socketHook, taskSchema, handleChange, handleSubmit } = useScraperSocket();
     const [controlsExpanded, setControlsExpanded] = useState(true);
-    const { isResponseActive, tasks } = socketHook;
+    const { isResponseActive, tasks, taskType } = socketHook;
+
+
 
     // Auto-collapse controls when response becomes active
     useEffect(() => {
@@ -33,7 +36,7 @@ export default function Page() {
                 <div className="p-4">
                     <CompactSocketHeader socketHook={socketHook} defaultService="scrape_service" defaultTask="quick_scrape" />
                     <div className="mt-4">
-                        <DynamicForm schema={taskSchema} onChange={handleChange} onSubmit={handleSubmit} minimalSpace={true} />
+                        <DynamicForm taskType={taskType} onChange={handleChange} onSubmit={handleSubmit} minimalSpace={true} />
                     </div>
                 </div>
             </div>
