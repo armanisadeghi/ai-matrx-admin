@@ -2,7 +2,7 @@
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from "@/components/ui/context-menu";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Briefcase, MapPin, DollarSign, Calendar, MoreHorizontal, Edit, Trash, Plus, Trophy } from "lucide-react";
+import { Briefcase, MapPin, DollarSign, Calendar, MoreHorizontal, Edit, Trash, Plus, Trophy, ChevronUp, ChevronDown } from "lucide-react";
 import ExperienceItem from "./ExperienceItem";
 import ProfileItem from "./ProfileItem";
 import { ProfileSectionType, ExperienceItemType, ProfileItemType } from "../parseMarkdownProfile";
@@ -72,13 +72,20 @@ const ProfileSection = ({
         <div className="space-y-5 mb-6">
           <div className="flex items-center justify-between border-b pb-2">
             <div
-              className="flex items-center space-x-3 cursor-pointer"
+              className="flex items-center space-x-3 cursor-pointer group"
               onClick={() => toggleSection(section.id)}
             >
               <div className="text-primary">
                 {getSectionIcon(section.title)}
               </div>
               <h3 className="text-lg font-semibold">{section.title}</h3>
+              <div className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {expandedSections[section.id] ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
             </div>
             
             {editable && (

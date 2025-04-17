@@ -322,6 +322,93 @@ export const OVERRIDE_DEFINITION: Schema = {
     },
 };
 
+export const GET_ALL_LOGS: Schema = {
+    filename: {
+        REQUIRED: false,
+        DEFAULT: "application logs",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"value": "application logs", "label": "Application Logs"}, {"value": "daphne logs", "label": "Daphne Logs"}]},
+        ICON_NAME: "Document",
+        DESCRIPTION: "The log file to read all lines from (Application Logs or Daphne Logs).",
+    },
+};
+
+export const GET_LOG_FILES: Schema = {
+};
+
+export const STOP_TAIL_LOGS: Schema = {
+};
+
+export const TAIL_LOGS: Schema = {
+    filename: {
+        REQUIRED: false,
+        DEFAULT: "application logs",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"value": "application logs", "label": "Application Logs"}, {"value": "daphne logs", "label": "Daphne Logs"}]},
+        ICON_NAME: "Document",
+        DESCRIPTION: "The log file to tail (Application Logs or Daphne Logs).",
+    },
+    interval: {
+        REQUIRED: false,
+        DEFAULT: 1.0,
+        VALIDATION: null,
+        DATA_TYPE: "float",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Clock",
+        DESCRIPTION: "The interval (in seconds) between checks for new log lines.",
+    },
+};
+
+export const READ_LOGS: Schema = {
+    filename: {
+        REQUIRED: false,
+        DEFAULT: "application logs",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"value": "application logs", "label": "Application Logs"}, {"value": "daphne logs", "label": "Daphne Logs"}]},
+        ICON_NAME: "Document",
+        DESCRIPTION: "The log file to read (Application Logs or Daphne Logs).",
+    },
+    lines: {
+        REQUIRED: false,
+        DEFAULT: 100,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Number",
+        DESCRIPTION: "The number of lines to read from the log file (0 for all).",
+    },
+    search: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Search",
+        DESCRIPTION: "A search term to filter log lines (case-insensitive).",
+    },
+};
+
 export const CONVERT_RECIPE_TO_CHAT: Schema = {
     chat_id: {
         REQUIRED: true,
@@ -2429,6 +2516,13 @@ export const SERVICE_TASKS = {
     simple_recipe: {
         run_recipe: RUN_RECIPE,
         convert_recipe_to_chat: CONVERT_RECIPE_TO_CHAT,
+    },
+    log_service: {
+        read_logs: READ_LOGS,
+        tail_logs: TAIL_LOGS,
+        stop_tail_logs: STOP_TAIL_LOGS,
+        get_log_files: GET_LOG_FILES,
+        get_all_logs: GET_ALL_LOGS,
     },
 } as const;
 
