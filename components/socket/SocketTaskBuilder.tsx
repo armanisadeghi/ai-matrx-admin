@@ -19,7 +19,6 @@ export const SocketTaskBuilder: React.FC<SocketConfigBuilderProps> = ({
 
   // Handle configuration changes from the ConfigBuilder
   const handleConfigChange = (config: any) => {
-    console.log("Config changed:", config);
     setCurrentConfig(config);
     if (onConfigChange) {
       onConfigChange(config);
@@ -28,7 +27,6 @@ export const SocketTaskBuilder: React.FC<SocketConfigBuilderProps> = ({
 
   // Handle setting the data
   const handleSetData = () => {
-    console.log("Setting data:", currentConfig);
     setTaskData(currentConfig);
   };
 

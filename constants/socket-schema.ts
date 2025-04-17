@@ -10,7 +10,7 @@ export interface SchemaField {
     COMPONENT?: string;
     COMPONENT_PROPS?: Record<string, any>;
     DESCRIPTION?: string;
-    iconName?: string;
+    TEST_VALUE?: any;
 }
 
 export interface Schema {
@@ -42,6 +42,7 @@ export const BROKER_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the broker.",
         ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
     },
     value: {
         REQUIRED: false,
@@ -54,10 +55,11 @@ export const BROKER_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the value of the broker.",
         ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
     },
     ready: {
         REQUIRED: false,
-        DEFAULT: true,
+        DEFAULT: "true",
         VALIDATION: null,
         DATA_TYPE: "boolean",
         CONVERSION: null,
@@ -80,6 +82,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
         DESCRIPTION: "Enter the ID of the recipe to be fetched, cached and ready for fast usage.",
     },
     version: {
@@ -113,7 +116,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Checkbox",
+        COMPONENT: "Switch",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if the results should be saved as a new conversation.",
@@ -125,7 +128,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Checkbox",
+        COMPONENT: "Switch",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if the results should be saved as a new conversation.",
@@ -152,6 +155,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         COMPONENT: "Input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
+        TEST_VALUE: "10168527-4d6b-456f-ab07-a889223ba3a9",
         DESCRIPTION: "Enter the ID of the AI Model or leave blank to use the default model.",
     },
     tools_override: {
@@ -173,7 +177,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Checkbox",
+        COMPONENT: "Switch",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if the default values can be used for brokers which are not provided or are not ready.",
@@ -315,6 +319,141 @@ export const OVERRIDE_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Some additional overrides may be provided for processing.",
         ICON_NAME: "Parentheses",
+    },
+};
+
+export const CONVERT_RECIPE_TO_CHAT: Schema = {
+    chat_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Key",
+        DESCRIPTION: "Enter the ID of the chat to be converted to a recipe.",
+    },
+};
+
+export const SAMPLE_SERVICE: Schema = {
+    slider_field: {
+        REQUIRED: false,
+        DEFAULT: 50,
+        VALIDATION: null,
+        DATA_TYPE: "number",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Slider",
+        COMPONENT_PROPS: {"min": 0, "max": 100, "step": 1, "range": "False"},
+        ICON_NAME: "Sliders",
+        DESCRIPTION: "Adjust the value between 0 and 100",
+        TEST_VALUE: 75,
+    },
+    select_field: {
+        REQUIRED: true,
+        DEFAULT: "option2",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"label": "Option 1", "value": "option1"}, {"label": "Option 2", "value": "option2"}, {"label": "Option 3", "value": "option3"}]},
+        ICON_NAME: "List",
+        DESCRIPTION: "Select an option from the dropdown",
+        TEST_VALUE: "option3",
+    },
+    radio_field: {
+        REQUIRED: true,
+        DEFAULT: "radio1",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "RadioGroup",
+        COMPONENT_PROPS: {"options": [{"label": "Radio Option 1", "value": "radio1"}, {"label": "Radio Option 2", "value": "radio2"}, {"label": "Radio Option 3", "value": "radio3"}], "orientation": "vertical"},
+        ICON_NAME: "Radio",
+        DESCRIPTION: "Choose one of the options",
+        TEST_VALUE: "radio2",
+    },
+    file_field: {
+        REQUIRED: false,
+        DEFAULT: "",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "FileUpload",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "File",
+        DESCRIPTION: "Upload a document (PDF, DOCX, or TXT)",
+        TEST_VALUE: "sample-document.pdf",
+    },
+    files_field: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "MultiFileUpload",
+        COMPONENT_PROPS: {"accept": "image/*", "maxfiles": 5, "maxsize": 2000000},
+        ICON_NAME: "Files",
+        DESCRIPTION: "Upload up to 5 images (max 2MB each)",
+        TEST_VALUE: ["image1.jpg", "image2.png"],
+    },
+    json_field: {
+        REQUIRED: false,
+        DEFAULT: {"key": "value"},
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "JsonEditor",
+        COMPONENT_PROPS: {"spellCheck": "False"},
+        ICON_NAME: "Code",
+        DESCRIPTION: "Edit JSON configuration",
+        TEST_VALUE: {"test": "data", "nested": {"value": 123}},
+    },
+    switch_field: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {"size": "default"},
+        ICON_NAME: "ToggleLeft",
+        DESCRIPTION: "Enable or disable this feature",
+        TEST_VALUE: false,
+    },
+    checkbox_field: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Checkbox",
+        COMPONENT_PROPS: {"indeterminate": "False"},
+        ICON_NAME: "CheckSquare",
+        DESCRIPTION: "Agree to the terms and conditions",
+        TEST_VALUE: true,
+    },
+    textarea_field: {
+        REQUIRED: false,
+        DEFAULT: "",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Textarea",
+        COMPONENT_PROPS: {"rows": 6, "maxLength": 500, "placeholder": "Enter your detailed description here...", "resize": "vertical"},
+        ICON_NAME: "FileText",
+        DESCRIPTION: "Provide a detailed description (max 500 characters)",
+        TEST_VALUE: "This is a sample text that would be used in test mode.",
     },
 };
 
@@ -1166,7 +1305,7 @@ export const QUICK_SCRAPE: Schema = {
     urls: {
         REQUIRED: true,
         DEFAULT: null,
-        VALIDATION: "validate_scrape_urls",
+        VALIDATION: null,
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
@@ -1174,18 +1313,6 @@ export const QUICK_SCRAPE: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the urls to be scraped.",
         ICON_NAME: "Link",
-    },
-    get_anchors: {
-        REQUIRED: false,
-        DEFAULT: false,
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Switch",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether to get anchors.",
-        ICON_NAME: "Check",
     },
 };
 
@@ -1822,6 +1949,21 @@ export const CLASSIFY_MARKDOWN: Schema = {
     },
 };
 
+export const MIC_CHECK: Schema = {
+    mic_check_message: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Check",
+        DESCRIPTION: "Enter any message and the same message will be streamed back to you as a test of the mic.",
+    },
+};
+
 export const RUN_CHAT_RECIPE: Schema = {
     recipe_id: {
         REQUIRED: true,
@@ -1878,9 +2020,9 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Checkbox",
+        COMPONENT: "Switch",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
+        ICON_NAME: "FastForward ",
         DESCRIPTION: "Determines if the results should be saved as a new conversation.",
     },
     save_new_conversation: {
@@ -1890,9 +2032,9 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Checkbox",
+        COMPONENT: "Switch",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
+        ICON_NAME: "Save",
         DESCRIPTION: "Determines if the results should be saved as a new conversation.",
     },
     include_classified_output: {
@@ -1904,7 +2046,7 @@ export const RUN_CHAT_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Checkbox",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
+        ICON_NAME: "Shapes",
         DESCRIPTION: "Determines if the classified output should be included in the response.",
     },
     model_override: {
@@ -1940,7 +2082,7 @@ export const RUN_CHAT_RECIPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Checkbox",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
+        ICON_NAME: "SwatchBook",
         DESCRIPTION: "Determines if the default values can be used for brokers which are not provided or are not ready.",
     },
     allow_removal_of_unmatched: {
@@ -1950,9 +2092,9 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Checkbox",
+        COMPONENT: "Switch",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
+        ICON_NAME: "BadgeX",
         DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
     },
 };
@@ -2092,7 +2234,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
     },
     stream: {
         REQUIRED: true,
-        DEFAULT: null,
+        DEFAULT: true,
         VALIDATION: null,
         DATA_TYPE: "boolean",
         CONVERSION: null,
@@ -2143,7 +2285,7 @@ export const RUN_RECIPE: Schema = {
     },
     stream: {
         REQUIRED: true,
-        DEFAULT: null,
+        DEFAULT: true,
         VALIDATION: null,
         DATA_TYPE: "boolean",
         CONVERSION: null,
@@ -2203,6 +2345,7 @@ export const SERVICE_TASKS = {
         get_compiled_recipe: GET_COMPILED_RECIPE,
         get_needed_recipe_brokers: GET_NEEDED_RECIPE_BROKERS,
         run_chat_recipe: RUN_CHAT_RECIPE,
+        mic_check: MIC_CHECK,
     },
     markdown_service: {
         classify_markdown: CLASSIFY_MARKDOWN,
@@ -2216,6 +2359,7 @@ export const SERVICE_TASKS = {
         get_all_python_comments: GET_ALL_PYTHON_COMMENTS,
         get_all_python_function_docstrings: GET_ALL_PYTHON_FUNCTION_DOCSTRINGS,
         get_all_python_class_docstrings: GET_ALL_PYTHON_CLASS_DOCSTRINGS,
+        mic_check: MIC_CHECK,
     },
     scraper_service: {
         get_domains: GET_DOMAINS,
@@ -2252,6 +2396,10 @@ export const SERVICE_TASKS = {
         view_parsed_page: VIEW_PARSED_PAGE,
         create_content_grouping_run: CREATE_CONTENT_GROUPING_RUN,
         track_content_grouping_run: TRACK_CONTENT_GROUPING_RUN,
+        mic_check: MIC_CHECK,
+    },
+    scraper_service_v2: {
+        quick_scrape: QUICK_SCRAPE,
     },
     california_worker_compensation_service: {
         create_wc_claim: CREATE_WC_CLAIM,
@@ -2260,17 +2408,27 @@ export const SERVICE_TASKS = {
         calculate_wc_ratings: CALCULATE_WC_RATINGS,
         edit_wc_claim: EDIT_WC_CLAIM,
         edit_wc_injury: EDIT_WC_INJURY,
+        mic_check: MIC_CHECK,
     },
     chat_service: {
         ai_chat: AI_CHAT,
         prep_conversation: PREP_CONVERSATION,
         get_needed_recipe_brokers: GET_NEEDED_RECIPE_BROKERS,
         run_chat_recipe: RUN_CHAT_RECIPE,
+        mic_check: MIC_CHECK,
     },
     ai_chat_service: {
         run_recipe_to_chat: RUN_RECIPE_TO_CHAT,
         run_batch_recipe: RUN_BATCH_RECIPE,
         prepare_batch_recipe: PREPARE_BATCH_RECIPE,
+        mic_check: MIC_CHECK,
+    },
+    sample_service: {
+        sample_service: SAMPLE_SERVICE,
+    },
+    simple_recipe: {
+        run_recipe: RUN_RECIPE,
+        convert_recipe_to_chat: CONVERT_RECIPE_TO_CHAT,
     },
 } as const;
 

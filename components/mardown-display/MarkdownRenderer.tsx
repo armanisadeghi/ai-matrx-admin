@@ -6,7 +6,7 @@ import { cn } from "@/styles/themes/utils";
 import CodeBlock from "./code/CodeBlock";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
 import MarkdownTable from "./tables/MarkdownTable";
-import { InlineCopyButton } from "@/components/ui";
+import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), {
     ssr: false,
@@ -109,7 +109,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
     };
 
     const containerStyles = cn(
-        "font-sans text-base antialiased leading-relaxed tracking-wide",
+        "font-sans text-base antialiased leading-relaxed tracking-wide h-full w-full",
         type === "flashcard"
             ? "text-left mb-4 text-white"
             : `inline-block p-3 rounded-lg w-full ${
@@ -123,8 +123,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
     return (
         <div className={`${type === "message" ? "mb-4 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
             <div className={containerStyles + " relative"}>
-                <InlineCopyButton content={content} position="top-right" className="mt-1 mr-1" />
-                <div className="text-base leading-relaxed tracking-wide">
+                <InlineCopyButton content={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
+                <div className="text-base leading-relaxed tracking-wide h-full w-full">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
                         {content}
                     </ReactMarkdown>

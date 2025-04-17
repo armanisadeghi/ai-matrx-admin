@@ -14,7 +14,7 @@ function MessagesDisplay({messages}: { messages: Message[] }) {
     }, [messages]);
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 pt-3">
             <AnimatePresence mode="popLayout">
                 {messages.map((message) => (
                     <motion.div
@@ -29,10 +29,10 @@ function MessagesDisplay({messages}: { messages: Message[] }) {
                     >
                         <motion.div
                             layout
-                            className={`max-w-[80%] p-4 rounded-lg ${
+                            className={`max-w-[80%] p-2 rounded-lg ${
                                 message.role === 'user'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
+                                ? 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-50'
+                                : 'bg-muted text-muted-foreground'
                             }`}
                         >
                             {message.role === 'assistant' ? (
@@ -43,15 +43,6 @@ function MessagesDisplay({messages}: { messages: Message[] }) {
                             ) : (
                                  <p className="whitespace-pre-wrap">{message.content}</p>
                              )}
-
-                            <div className="flex items-center justify-between text-xs opacity-50 mt-1">
-                                <time dateTime={new Date(message.timestamp).toISOString()}>
-                                    {new Date(message.timestamp).toLocaleTimeString()}
-                                </time>
-                                {message.latency && (
-                                    <span className="ml-2">{message.latency}ms</span>
-                                )}
-                            </div>
                         </motion.div>
                     </motion.div>
                 ))}

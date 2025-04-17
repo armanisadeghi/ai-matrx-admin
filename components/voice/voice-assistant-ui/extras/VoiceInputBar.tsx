@@ -1,6 +1,5 @@
 'use client';
-
-import React, { useRef, ChangeEvent } from "react";
+import React, { useRef, ChangeEvent, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Mic, MicOff, Send, Brain, Power, Volume2, Upload, Database, Settings2 } from "lucide-react";
 import { useVoiceChat } from "@/hooks/tts/useVoiceChat";
@@ -17,15 +16,7 @@ import {
 import {
     DropdownMenu,
     DropdownMenuTrigger,
-    DropdownMenuContent,
-    DropdownMenuSub,
-    DropdownMenuSubTrigger,
-    DropdownMenuPortal,
-    DropdownMenuSubContent,
-    DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { mockUserData, categories } from '@/constants/mockData';
-import { Badge } from "@/components/ui/badge";
 import { AI_PROVIDERS } from '@/constants/aiProviders';
 import { AiSettingsModal } from './AiSettingsModal';
 import { ApiName } from "@/types/voice/voiceAssistantTypes";
@@ -44,12 +35,13 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
         apiName,
         setApiName,
         aiCallParams,
-        setAiCallParams
+        setAiCallParams,
+        player  // This is now the modified usePlayer hook that exposes audioContextInitialized
     } = voiceChatHook;
-
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
     const isReady = !vad.loading && !vad.errored;
-
+    
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
@@ -59,21 +51,28 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
             handleSubmit();
         }
     };
-
+    
     const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             console.log('File selected:', file);
         }
     };
-
+    
     const insertData = (content: string) => {
         setInput(prev => {
             const cursorPosition = (document.activeElement as HTMLTextAreaElement)?.selectionStart || prev.length;
             return prev.slice(0, cursorPosition) + content + prev.slice(cursorPosition);
         });
     };
-
+    
+    // Try to initialize the AudioContext when the component mounts
+    useEffect(() => {
+        // We'll only attempt to initialize once when component mounts
+        // But won't force it - the user will still need to click the speaker icon
+        console.log("VoiceInputBar mounted, AudioContext state:", player.audioContextInitialized);
+    }, [player.audioContextInitialized]);
+    
     return (
         <div className="absolute bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t">
             <div className="max-w-[95%] w-[1400px] mx-auto px-4 py-3 flex items-start gap-4">
@@ -110,27 +109,26 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
                         </SelectContent>
                     </Select>
                 </div>
-
+                
                 {/* Main Input Area */}
                 <div className="flex-1 relative">
                     <TextareaAutosize
                         minRows={3}
                         maxRows={8}
-                        className="w-full pr-32 pl-4 py-3 rounded-lg bg-background border focus:ring-2
+                        className="w-full pr-24 pl-4 py-3 rounded-lg bg-background border focus:ring-2
                                  focus:ring-primary text-sm resize-none"
                         placeholder={vad.listening ? "Listening... or type your message" : "Type your message"}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyDown}
                     />
-
+                    
                     {/* Floating Action Buttons */}
                     <div className="absolute top-2 right-2 flex items-center gap-2">
                         <AiSettingsModal
                             params={aiCallParams}
                             onParamsChange={setAiCallParams}
                         />
-
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenu>
@@ -147,7 +145,6 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
                             </TooltipTrigger>
                             <TooltipContent>Insert saved data</TooltipContent>
                         </Tooltip>
-
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <motion.button
@@ -165,7 +162,6 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
                             </TooltipTrigger>
                             <TooltipContent>Send message (Enter)</TooltipContent>
                         </Tooltip>
-
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <motion.button
@@ -182,7 +178,6 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
                             </TooltipTrigger>
                             <TooltipContent>Toggle voice input</TooltipContent>
                         </Tooltip>
-
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <motion.button
@@ -198,31 +193,51 @@ const VoiceInputBar = ({ voiceChatHook }: VoiceInputBarProps) => {
                         </Tooltip>
                     </div>
                 </div>
-
-                {/* Status Indicators */}
-                <div className="flex flex-col gap-2 pt-2">
+                
+                {/* Status Indicators - Rearranged in a 2x2 grid */}
+                <div className="grid grid-cols-2 gap-2 pt-2 min-w-[40px]">
                     <div className={`transition-colors ${isReady ? 'text-primary' : 'text-muted'}`}>
-                        <Power className="w-3.5 h-3.5"/>
+                        <Power className="w-4 h-4"/>
                     </div>
                     <div className={`transition-colors ${
                         (vad.listening || processState.recording) ? 'text-destructive animate-pulse' : 'text-muted'
                     }`}>
-                        <Mic className="w-3.5 h-3.5"/>
+                        <Mic className="w-4 h-4"/>
                     </div>
-                    <div className={`transition-colors ${
+                    <div className={`transition-colors text-blue-500 dark:text-blue-400 ${
                         (processState.processing || processState.transcribing || processState.generating)
-                        ? 'text-amber-500 animate-pulse'
-                        : 'text-muted'
+                        ? 'animate-pulse'
+                        : ''
                     }`}>
-                        <Brain className="w-3.5 h-3.5"/>
+                        <Brain className="w-4 h-4"/>
                     </div>
-                    <div className={`transition-colors ${
-                        processState.speaking ? 'text-primary animate-pulse' : 'text-muted'
-                    }`}>
-                        <Volume2 className="w-3.5 h-3.5"/>
+                    <div className="relative">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <motion.button
+                                    type="button"
+                                    className={`transition-colors ${
+                                        processState.speaking 
+                                            ? 'text-green-500 dark:text-green-400 animate-pulse' 
+                                            : player.audioContextInitialized
+                                                ? 'text-green-500 dark:text-green-400'
+                                                : 'text-green-500 dark:text-green-400 hover:opacity-80'
+                                    }`}
+                                    onClick={player.initializeAudioContext}
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    <Volume2 className="w-4 h-4"/>
+                                </motion.button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {player.audioContextInitialized 
+                                    ? "Audio initialized" 
+                                    : "Click to initialize audio (required for playback)"}
+                            </TooltipContent>
+                        </Tooltip>
                     </div>
                 </div>
-
+                
                 <input
                     type="file"
                     ref={fileInputRef}

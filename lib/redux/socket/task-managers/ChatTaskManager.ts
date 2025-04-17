@@ -15,17 +15,14 @@ interface streamMessageParams {
     overrides?: ChatOverrides;
 }
 
+
 export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrides> {
     private chatActions = getChatActionsWithThunks();
-    private activeEventName: string | null = null;
-    private isStreaming = false;
-
 
     constructor(private dispatch?: AppDispatch) {
         super("chat_service", "ai_chat");
     }
 
-    
     private createTaskData(conversationId: string, message: Message, overrides?: ChatOverrides): AiChatTaskData {
         const taskData = new AiChatTaskData(conversationId, 0).setMessage(message);
         if (overrides?.modelOverride) taskData.setModelOverride(overrides.modelOverride);
@@ -45,7 +42,7 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
         }
     }
 
-    private setIsNotStreaming(): void {
+    setIsNotStreaming(): void {
         if (this.dispatch && this.chatActions) {
             this.dispatch(this.chatActions.setIsNotStreaming());
         }
@@ -55,10 +52,13 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
         const { conversationId, message, overrides } = params;
         const taskData = this.createTaskData(conversationId, message, overrides);
         this.setIsStreaming();
-        const eventName = await this.streamTask(taskData);
-        this.activeEventName = eventName;
-        this.setSocketEventName(eventName);        
-        return eventName;
+        const eventNames = await this.streamTask(taskData);
+        if (eventNames && eventNames.length) {
+            const eventName = eventNames[0];
+            this.setSocketEventName(eventName);        
+            return eventName;
+        }
+        return "";
     }
 
     async subscribeToChat(options: StreamOptions<ChatOverrides> = {}): Promise<() => void> {
@@ -66,3 +66,6 @@ export class ChatTaskManager extends BaseTaskManager<AiChatTaskData, ChatOverrid
         return unsubscribe;
     }
 }
+
+
+// response_listener_event

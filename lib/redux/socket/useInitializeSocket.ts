@@ -10,13 +10,19 @@ import {
 } from "@/lib/redux/features/socket/socketActions";
 import { SocketManager } from "@/lib/redux/socket/manager";
 import { useAppDispatch } from "@/lib/redux";
+import { getChatActionsWithThunks } from "../entity/custom-actions/chatActions";
 
 export const useInitializeSocket = () => {
     const dispatch = useAppDispatch();
+    const chatActions = getChatActionsWithThunks();
 
     useEffect(() => {
         const socketManager = SocketManager.getInstance();
+        
+        socketManager.setDispatch(dispatch);
+        socketManager.setChatActions(chatActions);
 
+        
         dispatch(socketConnecting());
         socketManager
             .connect()

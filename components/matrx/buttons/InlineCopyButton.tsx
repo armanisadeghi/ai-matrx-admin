@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { Copy, CheckCircle2 } from 'lucide-react';
 
@@ -44,7 +43,6 @@ const formatJsonForClipboard = (data: any): string => {
     }
     return cleaned;
   };
-
   // Clean the data first, then stringify without extra escapes
   const cleanedData = cleanObject(data);
   return JSON.stringify(cleanedData, null, 2);
@@ -105,7 +103,13 @@ export const InlineCopyButton = ({
         textToCopy = typeof content === 'string' ? content : JSON.stringify(content);
       }
       
-      await navigator.clipboard.writeText(textToCopy);
+      // Use the ClipboardItem API with plain text format to ensure no styling is copied
+      // This is the key change to prevent color copying
+      const clipboardItem = new ClipboardItem({
+        'text/plain': new Blob([textToCopy], { type: 'text/plain' })
+      });
+      
+      await navigator.clipboard.write([clipboardItem]);
       setCopied(true);
       onCopySuccess?.();
       
@@ -113,8 +117,20 @@ export const InlineCopyButton = ({
         setCopied(false);
       }, successDuration);
     } catch (err) {
-      console.error("Failed to copy:", err);
-      onCopyError?.(err);
+      // Fall back to the older writeText method if ClipboardItem is not supported
+      try {
+        const textToCopy = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+        await navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+        onCopySuccess?.();
+        
+        setTimeout(() => {
+          setCopied(false);
+        }, successDuration);
+      } catch (fallbackErr) {
+        console.error("Failed to copy:", fallbackErr);
+        onCopyError?.(fallbackErr);
+      }
     }
   };
 

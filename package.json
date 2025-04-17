@@ -3,7 +3,7 @@
     "version": "0.2.0",
     "private": true,
     "scripts": {
-        "dev": "next dev",
+        "dev": "set NODE_OPTIONS=--dns-result-order=ipv4first && next dev",
         "build": "ts-node scripts/generate-manifest.ts && bash scripts/fix-encoding.sh && next build",
         "start": "next start",
         "lint": "next lint",
@@ -74,7 +74,7 @@
         "@remirror/pm": "latest",
         "@remirror/react": "latest",
         "@ricky0123/vad-react": "0.0.27",
-        "@ricky0123/vad-web": "0.0.21",
+        "@ricky0123/vad-web": "0.0.22",
         "@stream-io/node-sdk": "latest",
         "@stream-io/video-react-sdk": "latest",
         "@supabase/ssr": "latest",

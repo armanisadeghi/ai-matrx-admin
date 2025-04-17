@@ -1,17 +1,18 @@
 "use client";
-import React, { memo, useState, useEffect, useMemo, useRef } from "react";
+import React, { memo, useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
 import StreamingCode from "@/features/chat/components/response/assistant-message/stream/StreamingCode";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
 import StreamingTable from "@/features/chat/components/response/assistant-message/stream/StreamingTable";
-import { SocketManager } from "@/lib/redux/socket/manager";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
-import { useAppDispatch } from "@/lib/redux";
+import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
+import { selectStreamText, selectStreamData, selectIsStreaming, selectStreamEnd } from "@/lib/redux/socket/streamingSlice";
+import { RootState } from "@/lib/redux/store";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
@@ -59,7 +60,23 @@ const components = {
             {children}
         </pre>
     ),
-    table: ({ node, ...props }: any) => <StreamingTable data={props.tableData} />,
+    // --- TABLE RENDERERS ---
+    table: ({ children, ...props }) => (
+        <StreamingTable {...props}>{children}</StreamingTable>
+    ),
+    thead: ({ children, ...props }) => <thead {...props}>{children}</thead>,
+    tbody: ({ children, ...props }) => <tbody {...props}>{children}</tbody>,
+    tr: ({ children, ...props }) => <tr {...props}>{children}</tr>,
+    th: ({ children, ...props }) => (
+        <th className="px-4 py-2 text-left font-semibold text-bold text-gray-900 dark:text-gray-100" {...props}>
+            {children}
+        </th>
+    ),
+    td: ({ children, ...props }) => (
+        <td className="px-4 py-2" {...props}>
+            {children}
+        </td>
+    ),
 };
 
 interface ChatStreamDisplayProps {
@@ -70,10 +87,45 @@ interface ChatStreamDisplayProps {
 const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className }) => {
     const dispatch = useAppDispatch();
     const [content, setContent] = useState<string>("");
-    const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "error">("connecting");
-    const socketManager = useMemo(() => SocketManager.getInstance(), []);
     const chatActions = getChatActionsWithThunks();
-    const latestDataContent = useRef<any>(null);
+    const streamText = useAppSelector((state: RootState) => selectStreamText(state, eventName));
+    const streamData = useAppSelector((state: RootState) => selectStreamData(state, eventName));
+    const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
+    const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
+
+    const handleNewTextContent = (textContent: string) => {
+        setContent(textContent);
+    };
+
+    const handleStreamEnd = () => {
+        console.log("[CHAT STREAM DISPLAY] Stream ended");
+        dispatch(chatActions.setIsNotStreaming());
+        dispatch(chatActions.fetchMessagesForActiveConversation());
+    };
+
+    const handleNewDataContent = (dataContent: any) => {
+        const isEnd = dataContent?.end === true || dataContent?.end === "true" || dataContent?.end === "True";
+        if (isEnd) {
+            dispatch(chatActions.setIsNotStreaming());
+            dispatch(chatActions.fetchMessagesForActiveConversation());
+        }
+    };
+
+    useEffect(() => {
+        handleNewTextContent(streamText);
+    }, [streamText]);
+
+    useEffect(() => {
+        if (streamData) {
+            handleNewDataContent(streamData);
+        }
+    }, [streamData]);
+
+    useEffect(() => {
+        if (isStreamEnded) {
+            handleStreamEnd();
+        }
+    }, [isStreamEnded]);
 
     const containerStyles = useMemo(
         () =>
@@ -85,106 +137,24 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         [className]
     );
 
-    // Memoize these operations to prevent recalculation on every render
     const parsedContent = useMemo(() => {
+        // You can keep this if you use it elsewhere, but it's not needed for table rendering anymore
         const tableData = parseMarkdownTable(content);
         const contentSegments = parseTaggedContent(content);
         return { tableData, contentSegments };
     }, [content]);
 
-    const componentsWithTable = useMemo(
-        () => ({
-            ...components,
-            table: () => {
-                if (!parsedContent.tableData?.markdown) return null;
-                return <StreamingTable data={{ 
-                    headers: parsedContent.tableData.markdown.headers, 
-                    rows: parsedContent.tableData.markdown.rows 
-                }} />;
-            },
-        }),
-        [parsedContent.tableData]
-    );
-
-    useEffect(() => {
-        let unsubscribe: () => void;
-        let isMounted = true;
-
-        const setupSocket = async () => {
-            try {
-                await socketManager.connect();
-                const socket = await socketManager.getSocket();
-
-                if (!socket || !isMounted) {
-                    if (isMounted) {
-                        setConnectionStatus("error");
-                        setContent("Error: Unable to connect to streaming service");
-                    }
-                    return;
-                }
-
-                setConnectionStatus("connected");
-
-                unsubscribe = socketManager.subscribeToEvent(eventName, (data: any) => {
-                    const dataContent = data?.data || "";
-                    const newContent = typeof dataContent === "string" ? dataContent : JSON.stringify(dataContent);
-
-                    setContent((prev) => prev + newContent);
-                    latestDataContent.current = dataContent;
-
-                    const isEnd = data?.end === true || data?.end === "true" || data?.end === "True";
-                    if (isEnd) {
-                        console.log("[CHAT STREAM DISPLAY] Stream ended");
-                        dispatch(chatActions.setIsNotStreaming());
-                        dispatch(chatActions.fetchMessagesForActiveConversation());
-                    }
-
-                    if (typeof dataContent === "object" && dataContent !== null) {
-                        console.log("[CHAT STREAM DISPLAY] Analysis data received:", JSON.stringify(dataContent, null, 2));
-                    }
-                });
-            } catch (error) {
-                console.error("[CHAT STREAM DISPLAY] Socket setup failed:", error);
-                if (isMounted) {
-                    setConnectionStatus("error");
-                    setContent("Error: Failed to initialize streaming");
-                }
-            }
-        };
-
-        setupSocket();
-
-        return () => {
-            isMounted = false;
-            if (unsubscribe) {
-                unsubscribe();
-            }
-        };
-    }, [eventName, socketManager, dispatch, chatActions]);
-
-    // Simple content rendering function
     const renderContent = () => {
-        if (connectionStatus === "connecting") {
+        if (!isStreaming) {
             return null;
         }
 
-        if (connectionStatus === "error") {
-            return (
-                <div className="text-red-500">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
-                        {content}
-                    </ReactMarkdown>
-                </div>
-            );
-        }
-
-        // Render all content segments
         return parsedContent.contentSegments.map((segment, index) => (
             <React.Fragment key={index}>
                 {segment.isThinking ? (
                     <ThinkingVisualization thinkingText={segment.content} showThinking={true} />
                 ) : (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={componentsWithTable}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
                         {segment.content}
                     </ReactMarkdown>
                 )}

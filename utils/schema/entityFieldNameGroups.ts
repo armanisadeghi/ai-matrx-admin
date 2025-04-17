@@ -294,9 +294,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["name", "modulePath", "className", "description", "returnBroker"]
 },
   scrapeBaseConfig: {
-  nativeFields: ["id", "selectorType", "exact", "partial", "regex"],
+  nativeFields: ["id", "selectorType", "exact", "partial", "regex", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["selectorType", "exact", "partial", "regex"]
+  nativeFieldsNoPk: ["selectorType", "exact", "partial", "regex", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
   scrapeCachePolicy: {
   nativeFields: ["id", "rescrapeAfter", "staleAfter", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
@@ -364,9 +364,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["value", "scrapeOverrideId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
 },
   scrapeParsedPage: {
-  nativeFields: ["id", "pageName", "validity", "remotePath", "localPath", "scrapePathPatternCachePolicyId", "scrapeTaskId", "scrapeTaskResponseId", "scrapeCycleRunId", "scrapeCycleTrackerId", "scrapeConfigurationId", "scrapePathPatternOverrideId", "scrapedAt", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],
+  nativeFields: ["id", "pageName", "validity", "remotePath", "localPath", "scrapePathPatternCachePolicyId", "scrapeTaskId", "scrapeTaskResponseId", "scrapeCycleRunId", "scrapeCycleTrackerId", "scrapeConfigurationId", "scrapePathPatternOverrideId", "scrapedAt", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead", "expiresAt"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["pageName", "validity", "remotePath", "localPath", "scrapePathPatternCachePolicyId", "scrapeTaskId", "scrapeTaskResponseId", "scrapeCycleRunId", "scrapeCycleTrackerId", "scrapeConfigurationId", "scrapePathPatternOverrideId", "scrapedAt", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead"]
+  nativeFieldsNoPk: ["pageName", "validity", "remotePath", "localPath", "scrapePathPatternCachePolicyId", "scrapeTaskId", "scrapeTaskResponseId", "scrapeCycleRunId", "scrapeCycleTrackerId", "scrapeConfigurationId", "scrapePathPatternOverrideId", "scrapedAt", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead", "expiresAt"]
 },
   scrapePathPattern: {
   nativeFields: ["id", "scrapeDomainId", "pathPattern", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],

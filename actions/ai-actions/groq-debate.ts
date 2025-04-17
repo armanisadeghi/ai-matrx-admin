@@ -65,7 +65,7 @@ export async function processDebate(formData: FormData) {
             'X-API-Key': process.env.CARTESIA_API_KEY!,
         },
         body: JSON.stringify({
-            model_id: 'sonic-english',
+            modelId: 'sonic-2-2025-03-07',
             transcript: response,
             voice: {
                 mode: 'id',
@@ -105,7 +105,7 @@ async function getTranscript(input: string | File): Promise<string | null> {
     try {
         const { text } = await groq.audio.transcriptions.create({
             file: input,
-            model: 'whisper-large-v3',
+            model: 'distil-whisper-large-v3-en',
         });
 
         return text.trim() || null;

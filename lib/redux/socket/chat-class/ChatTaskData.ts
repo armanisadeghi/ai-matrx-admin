@@ -1,6 +1,8 @@
 // lib/redux/socket/chat-task-data.ts
 import { SocketManager } from "../manager";
 import { ChatMode, Message, MessageMetadata } from "@/types/chat/chat.types";
+import { v4 as uuidv4 } from 'uuid';
+
 
 interface MessageObject {
     id?: string;
@@ -31,6 +33,7 @@ export class AiChatTaskData {
     private message: any;
     private modelOverride: string;
     private modeOverride: ChatMode;
+    private responseListenerEvent: string;
     private index: number;
     private socketManager: SocketManager;
 
@@ -60,6 +63,11 @@ export class AiChatTaskData {
 
     setModeOverride(modeOverride: ChatMode): this {
         this.modeOverride = modeOverride;
+        return this;
+    }
+
+    setResponseListenerEvents(responseListenerEvent: string | null = null): this {
+        this.responseListenerEvent = responseListenerEvent || uuidv4();
         return this;
     }
 

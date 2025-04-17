@@ -49,6 +49,33 @@ export interface BrokerValues {
     ready?: boolean;
 }
 
+export interface ConvertRecipeToChat {
+    chat_id: string;
+}
+
+export interface RunRecipe {
+    recipe_id: string;
+    broker_values?: BrokerValues[];
+    overrides?: Overrides;
+    stream: boolean;
+}
+
+export interface SampleService {
+    slider_field?: any;
+    select_field: string;
+    radio_field: string;
+    file_field?: string;
+    files_field?: any[][];
+    json_field?: Record<string, any>;
+    switch_field?: boolean;
+    checkbox_field?: boolean;
+    textarea_field?: string;
+}
+
+export interface MicCheck {
+    mic_check_message: string;
+}
+
 export interface PrepareBatchRecipe {
     chat_configs: ChatConfigs[];
     broker_values?: BrokerValues[];
@@ -64,6 +91,10 @@ export interface RunBatchRecipe {
 export interface RunRecipeToChat {
     chat_config: ChatConfig;
     broker_values?: BrokerValues[];
+}
+
+export interface MicCheck {
+    mic_check_message: string;
 }
 
 export interface RunChatRecipe {
@@ -92,6 +123,10 @@ export interface PrepConversation {
 export interface AiChat {
     conversation_id: string;
     message_object: MessageObject;
+}
+
+export interface MicCheck {
+    mic_check_message: string;
 }
 
 export interface EditWcInjury {
@@ -142,6 +177,14 @@ export interface CreateWcClaim {
     occupational_code: number;
     weekly_earnings?: number;
     applicant_name: string;
+}
+
+export interface QuickScrape {
+    urls: any[][];
+}
+
+export interface MicCheck {
+    mic_check_message: string;
 }
 
 export interface TrackContentGroupingRun {
@@ -307,6 +350,10 @@ export interface GetDomainConfigById {
 export interface GetDomains {
 }
 
+export interface MicCheck {
+    mic_check_message: string;
+}
+
 export interface GetAllPythonClassDocstrings {
     raw_markdown: string;
 }
@@ -356,6 +403,10 @@ export interface GetCodeBlocksByLanguage {
 
 export interface ClassifyMarkdown {
     raw_markdown: string;
+}
+
+export interface MicCheck {
+    mic_check_message: string;
 }
 
 export interface RunChatRecipe {

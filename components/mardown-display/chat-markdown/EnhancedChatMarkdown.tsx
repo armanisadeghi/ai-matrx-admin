@@ -13,6 +13,7 @@ import TasksBlock from "@/components/mardown-display/blocks/tasks/TasksBlock";
 import { MarkdownAnalysisData } from "./analyzer/types";
 import { splitContentIntoBlocks } from "./utils/content-splitter";
 import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
+import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -26,7 +27,7 @@ interface ChatMarkdownDisplayProps {
 }
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info";
+    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | string;
     content: string;
     language?: string;
     src?: string;
@@ -46,10 +47,11 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     const [isEditorOpen, setIsEditorOpen] = useState(false);
 
     const preprocessContent = (mdContent: string): string => {
-        const imageUrlRegex = /$$ Image URL: (https?:\/\/[^\s]+) $$/g;
+        // Match the format [Image URL: https://example.com/image.png]
+        const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
         return mdContent.replace(imageUrlRegex, "![Image]($1)");
     };
-
+    
     const handleOpenEditor = () => {
         if (isStreamActive) return;
         setIsEditorOpen(true);
@@ -74,16 +76,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 return <ImageBlock key={index} src={block.src!} alt={block.alt} />;
             case "thinking":
                 return <ThinkingVisualization key={index} thinkingText={block.content} showThinking={true} />;
-            case "text":
-                return block.content ? (
-                    <BasicMarkdownContent
-                        key={index}
-                        content={block.content}
-                        isStreamActive={isStreamActive}
-                        onEditRequest={onContentChange ? handleOpenEditor : undefined}
-                        messageId={messageId}
-                    />
-                ) : null;
             case "code":
                 return (
                     <CodeBlock
@@ -108,8 +100,36 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 return <TasksBlock key={index} content={block.content} />;
             case "structured_info":
                 return <StructuredPlanBlock key={index} content={block.content} />;
+            case "text":
+            case "info":
+            case "task":
+            case "database":
+            case "private":
+            case "plan":
+            case "event":
+            case "tool":
+                return block.content ? (
+                    <BasicMarkdownContent
+                        key={index}
+                        content={block.content}
+                        isStreamActive={isStreamActive}
+                        onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                        messageId={messageId}
+                        showCopyButton={false}
+                    />
+                ) : null;
             default:
-                return null;
+                // Default to rendering as markdown for unrecognized block types
+                return block.content ? (
+                    <BasicMarkdownContent
+                        key={index}
+                        content={block.content}
+                        isStreamActive={isStreamActive}
+                        onEditRequest={onContentChange ? handleOpenEditor : undefined}
+                        messageId={messageId}
+                        showCopyButton={false}
+                    />
+                ) : null;
         }
     };
 
@@ -128,6 +148,8 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
+            <InlineCopyButton content={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
+
             <FullScreenMarkdownEditor
                 isOpen={isEditorOpen}
                 initialContent={content}

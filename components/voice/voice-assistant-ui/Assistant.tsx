@@ -60,8 +60,8 @@ export default function Home() {
         minSpeechFrames: 4,
         redemptionFrames: 8,
         preSpeechPadFrames: 1,
-        baseAssetPath: "/",
-        onnxWASMBasePath: "/",
+        baseAssetPath: "https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/",
+        onnxWASMBasePath: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/",
     });
 
     useEffect(() => {

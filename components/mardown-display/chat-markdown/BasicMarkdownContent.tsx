@@ -3,9 +3,10 @@ import React from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
-import { CheckIcon, ClipboardIcon, PencilIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import { useState } from "react";
 import { LinkComponent } from "./parts/LinkComponent";
+import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
@@ -14,9 +15,10 @@ interface BasicMarkdownContentProps {
     isStreamActive?: boolean;
     onEditRequest?: () => void;
     messageId?: string;
+    showCopyButton?: boolean;
 }
 
-export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ content, isStreamActive, onEditRequest, messageId }) => {
+export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ content, isStreamActive, onEditRequest, messageId, showCopyButton = true }) => {
     const [isHovering, setIsHovering] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
 
@@ -143,10 +145,8 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
             </ReactMarkdown>
             {/* Edit button now triggers onEditRequest */}
             {isHovering && !isStreamActive && (
-                <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button onClick={handleCopy} className="p-1 text-gray-500 hover:text-gray-700 rounded-md" title="Copy to clipboard">
-                        {copySuccess ? <CheckIcon className="w-4 h-4" /> : <ClipboardIcon className="w-4 h-4" />}
-                    </button>
+                <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">  
+                    {showCopyButton && <InlineCopyButton content={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>}
                     {/* Only show Edit button if onEditRequest is provided */}
                     {onEditRequest && (
                         <button onClick={handleEdit} className="p-1 text-gray-500 hover:text-gray-700 rounded-md ml-1" title="Edit content">

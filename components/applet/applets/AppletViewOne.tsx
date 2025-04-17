@@ -8,6 +8,7 @@ import { AppletHeroSections, AppletHeroSectionType } from "@/components/applet/r
 import { APPLET_THEMES, AppletTheme, AppletThemeName } from "@/components/brokers/main-layouts/applet-themes";
 import { DisplayTheme } from "@/components/mardown-display/themes";
 import EnhancedContentRendererTwo from "@/components/mardown-display/EnhancedMarkdownRendererTwo";
+import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 
 const fontSize = 16;
 const className = "";
@@ -45,11 +46,9 @@ type AppletRecord = {
 const layoutOption = {
     "976c56e5-263c-4815-b2ec-e6d1be04003a": "rendered",
     "da794450-9b3e-46ae-a68a-ff33cb0ab1f0": "multiSectionCards",
-    "2057969c-1b22-4b47-b406-2692045466b4": "rendered",
+    "2057969c-1b22-4b47-b406-2692045466b4": "enhancedChat",
     "4b752655-290c-47e3-a0db-6c5795cc5aa5": "rendered",
 };
-
-
 
 export const AppletViewOne = ({ appletId }: AppletViewOneProps) => {
     const [loading, setLoading] = useState(true);
@@ -68,10 +67,10 @@ export const AppletViewOne = ({ appletId }: AppletViewOneProps) => {
     const appletRecordData = appletRecord as AppletRecord;
 
     const allThemes = useMemo(() => APPLET_THEMES, []);
-    const appletThemeName = 'professional'
+    const appletThemeName = "professional";
     const appletTheme = allThemes[appletThemeName] as AppletTheme;
 
-    const layout = layoutOption[appletId] || "rendered";
+    const layout = layoutOption[appletId] || "enhancedChat";
 
     const appletHeroName = appletRecordData?.heroSection || "BASIC";
 
@@ -81,7 +80,7 @@ export const AppletViewOne = ({ appletId }: AppletViewOneProps) => {
     const content = streamingResponses[0] || "";
 
     return (
-        <div className="w-full h-full bg-gray-200 dark:bg-gray-900">
+        <div className="w-full h-full bg-gray-200 dark:bg-gray-800">
             <AppletHeroComponent
                 title={appletRecordData?.name}
                 description={appletRecordData?.description}
@@ -97,15 +96,24 @@ export const AppletViewOne = ({ appletId }: AppletViewOneProps) => {
                     recipeActionText={appletRecordData?.ctaText}
                     theme={appletTheme}
                 />
-                <EnhancedContentRendererTwo
-                    content={content}
-                    type="message"
-                    role="assistant"
-                    fontSize={fontSize}
-                    className={className}
-                    mode={layout}
-                    theme={appletThemeName as DisplayTheme}
-                />
+                {layout === "enhancedChat" ? (
+                    <EnhancedChatMarkdown
+                        content={content}
+                        type="message"
+                        role="assistant"
+                        className="bg-transparent dark:bg-transparent"
+                    />
+                ) : (
+                    <EnhancedContentRendererTwo
+                        content={content}
+                        type="message"
+                        role="assistant"
+                        fontSize={fontSize}
+                        className={className}
+                        mode={layout}
+                        theme={appletThemeName as DisplayTheme}
+                    />
+                )}
             </div>
         </div>
     );

@@ -1,15 +1,9 @@
 
 // Define logging functions at the top of the file, after imports
-export const logTaskStart = (eventName: string, data: any, sid: string) => {
-    const taskName = data[0]?.task || "unknown_task";
-    const taskIndex = data[0]?.index || 0;
-    const fallbackEventName = `${sid}_${taskName}_${taskIndex}`;
-
-    console.log("\n----------- [SOCKET MANAGER] STARTING TASK: ", eventName, "-------------\n");
-    console.log("Task name:", taskName);
-    console.log("Task index:", taskIndex);
-    console.log("Fallback event name:", fallbackEventName);
-    console.log("Data:", data);
+export const logTaskStart = (serviceName: string, data: any, sid: string) => {
+    console.log("\n----------- [SOCKET MANAGER] STARTING TASK: ", serviceName, "-------------\n");
+    console.log("Service name:", serviceName);
+    console.log("Data:", JSON.stringify(data, null, 2));
     console.log("--------------------------------");
 };
 

@@ -102,25 +102,6 @@ export interface TTSRequestBody {
 }
 
 
-// Type for Publish Payload (WebSocket request body)
-interface PublishPayload {
-    context_id: string;
-    modelId: string;
-    transcript: string;
-    voice: {
-        mode: VoiceMode;
-        __experimental_controls?: {
-            speed?: VoiceSpeed;
-            emotion?: (EmotionName | `${EmotionName}:${EmotionLevel}`)[];
-        };
-        id?: string; // Only if mode is ID
-        embedding?: number[]; // Only if mode is EMBEDDING
-    };
-    output_format: OutputFormat;
-    duration?: number;
-    language?: Language;
-    add_timestamps?: boolean;
-}
 
 export type StreamRequest = {
     modelId: string;
@@ -139,20 +120,6 @@ export type StreamRequest = {
 };
 
 
-enum VoiceMode {
-    ID = "id",
-    EMBEDDING = "embedding",
-}
-
-
-
-
-
-interface ClientOptions {
-    apiKey?: string | (() => Promise<string>);
-    baseUrl?: string;
-}
-
 export type Sentinel = null;
 export type Chunk = string | Sentinel;
 export type ConnectionEventData = {
@@ -160,34 +127,6 @@ export type ConnectionEventData = {
     close: never;
 };
 
-type StreamOptions = {
-    timeout?: number;
-};
-type WebSocketBaseResponse = {
-    context_id: string;
-    status_code: number;
-    done: boolean;
-};
-type CloneOptions = {
-    mode: "url";
-    link: string;
-    enhance?: boolean;
-} | {
-    mode: "clip";
-    clip: Blob;
-    enhance?: boolean;
-};
-
-interface VoiceToMix {
-    id?: string;
-    embedding?: number[];
-    weight: number;
-}
-
-
-interface MixVoicesOptions {
-    voices: VoiceToMix[];
-}
 
 type Voice = {
     id: string;
@@ -199,97 +138,3 @@ type Voice = {
     created_at: string;
     language: string;
 };
-type CreateVoice =
-    Pick<Voice, "name" | "description" | "embedding">
-    & Partial<Omit<Voice, "name" | "description" | "embedding">>;
-type UpdateVoice = Partial<Pick<Voice, "name" | "description" | "embedding">>;
-type CloneResponse = {
-    embedding: number[];
-};
-type MixVoicesResponse = {
-    embedding: number[];
-};
-
-
-function formatEmotionControl(emotion: Emotion, intensity: Intensity): string {
-    return intensity ? `${emotion}:${intensity}` : emotion;
-}
-
-
-
-
-// // Type for WebSocket Response
-// export interface WebSocketResponse {
-//     type?: string;
-//     done?: boolean;
-//     status_code?: number;
-//     step_time?: number;
-//     context_id?: string;
-//     data?: string;
-//     word_timestamps?: WordTimestamp;
-// }
-
-
-/*
-const samplePayload = {
-    "context_id": "happy-monkeys-fly",
-    "model_id": "sonic-english",
-    "transcript": "Hello, world! I'\''m generating audio on Cartesia.",
-    "duration": 180,
-    "voice": {
-        "mode": "id",
-        "id": "a0e99841-438c-4a64-b679-ae501e7d6091",
-        "__experimental_controls": {
-            "speed": "normal",
-            "emotion": ["positivity:highest", "curiosity"]
-        }
-    },
-    "output_format": {
-        "container": "raw",
-        "encoding": "pcm_s16le",
-        "sample_rate": 8000
-    },
-    "language": "en",
-    "add_timestamps": false
-}
-
-const sampleCancelPayload = {
-    "context_id": "happy-monkeys-fly",
-    "cancel": true,
-}
-
-const sampleResponse = {
-    "status_code": 206,
-    "done": false,
-    "type": "chunk",
-    "data": "aSDinaTvuI8gbWludGxpZnk=",
-    "step_time": 123,
-    "context_id": "happy-monkeys-fly"
-}
-
-const sampleWebsocketResponse = {
-    "status_code": 206,
-    "done": false,
-    "context_id": "happy-monkeys-fly",
-    "type": "timestamps",
-    "word_timestamps": {
-        "words": ["Hello"],
-        "start": [0.0],
-        "end": [1.0]
-    }
-}
-
-const sampleStreamingParts = [
-    {"transcript": "Hello, Sonic!", "continue": true, "context_id": "happy-monkeys-fly"},
-    {"transcript": " I'm streaming ", "continue": true, "context_id": "happy-monkeys-fly"},
-    {"transcript": "inputs.", "continue": false, "context_id": "happy-monkeys-fly"},
-]
-
-const sampleStreamingPartsUnknownEnd = [
-    {"transcript": "Hello, Sonic!", "continue": true, "context_id": "happy-monkeys-fly"},
-    {"transcript": " I'm streaming ", "continue": true, "context_id": "happy-monkeys-fly"},
-    {"transcript": "inputs.", "continue": true, "context_id": "happy-monkeys-fly"},
-    {"transcript": "", "continue": false, "context_id": "happy-monkeys-fly"},
-]
-
-*/

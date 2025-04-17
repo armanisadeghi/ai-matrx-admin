@@ -10,7 +10,7 @@ import { parseMarkdownToText } from "@/hooks/tts/simple/parse-markdown-for-speec
 
 interface AssistantMessageProps {
     message: localMessage;
-    isStreamActive: boolean;
+    isStreamActive?: boolean;
     onScrollToBottom?: () => void;
     onContentUpdate?: (newContent: string) => void;
     markdownAnalysisData?: MarkdownAnalysisData;

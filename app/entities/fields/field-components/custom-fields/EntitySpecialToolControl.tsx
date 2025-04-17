@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import MultiSwitchToggle from '@/components/matrx/MultiSwitchToggle';
 import SelectWithIconDisplay from '@/components/matrx/SelectWithIconDisplay';
-import {
-    MessageSquare, Braces, Image, DatabaseZap, Volume2,
-    Video, Files, Search, Code, FileSearch, Cloud,
-    Newspaper, Calendar, ListTodo, Mail, Calculator,
-    Globe2, Database, Bot, Settings, Music, Book,
-} from 'lucide-react';
+import { allTools } from '@/features/chat/components/input/constants';
+
+interface Tool {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    icon: React.ReactNode;
+}
 
 // Predefined configurations
 export const TOOL_CONTROL_PRESETS = {
@@ -16,23 +19,7 @@ export const TOOL_CONTROL_PRESETS = {
         { label: 'Tool Assist', value: 'toolAssist' },
     ],
     
-    aiTools: [
-        { icon: Search, label: 'Web Search', value: 'web-search' },
-        { icon: Code, label: 'Code Execution', value: 'code-exec' },
-        { icon: FileSearch, label: 'File Search', value: 'file-search' },
-        { icon: Image, label: 'Image Generation', value: 'image-gen' },
-        { icon: Cloud, label: 'Weather', value: 'weather' },
-        { icon: Newspaper, label: 'News', value: 'news' },
-        { icon: Calendar, label: 'Calendar', value: 'calendar' },
-        { icon: ListTodo, label: 'Tasks', value: 'tasks' },
-        { icon: Mail, label: 'Email', value: 'email' },
-        { icon: MessageSquare, label: 'Chat', value: 'chat' },
-        { icon: Calculator, label: 'Calculator', value: 'calculator' },
-        { icon: Globe2, label: 'Translation', value: 'translation' },
-        { icon: Database, label: 'Knowledge Base', value: 'knowledge-base' },
-        { icon: Bot, label: 'AI Assistant', value: 'ai-assistant' },
-        { icon: FileSearch, label: 'Document Analysis', value: 'doc-analysis' },
-    ],
+    aiTools: allTools
     // Add more preset configurations as needed
 } as const;
 
@@ -53,7 +40,6 @@ interface EntitySpecialToolControlProps {
 const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialToolControlProps>(
     ({ value, onChange, disabled, className, dynamicFieldInfo }, ref) => {
         const componentProps = dynamicFieldInfo?.componentProps || {};
-
         // Get configurations from presets using string names
         const primaryControlOptions = (() => {
             const presetName = componentProps?.primaryControlOptions;
@@ -66,7 +52,13 @@ const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialT
         const toolOptions = (() => {
             const presetName = componentProps?.toolOptions;
             if (typeof presetName === 'string' && presetName in TOOL_CONTROL_PRESETS) {
-                return TOOL_CONTROL_PRESETS[presetName];
+                // Map tools to the format expected by SelectWithIconDisplay
+                return TOOL_CONTROL_PRESETS[presetName].map(tool => ({
+                    icon: tool.icon,
+                    label: tool.name,
+                    value: tool.id,
+                    id: tool.id,
+                }));
             }
             return []; // Default to empty if not found
         })();
@@ -74,7 +66,7 @@ const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialT
         // Initialize or use existing value
         const currentValue = value || {
             primaryOption: primaryControlOptions[0]?.value,
-            ...Object.fromEntries(toolOptions.map((tool) => [tool.value, false])),
+            selectedToolIds: [], // Only store the IDs
         };
 
         // Check if tools should be disabled
@@ -82,38 +74,32 @@ const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialT
 
         // Handle primary option change
         const handlePrimaryOptionChange = (newPrimaryOption: string) => {
+            // Only update primary option and clear selectedToolIds if needed
             const newValue = {
-                ...currentValue,
                 primaryOption: newPrimaryOption,
+                selectedToolIds: isOffValue(newPrimaryOption) ? [] : currentValue.selectedToolIds,
             };
-
-            // Clear tool selections if switching to off
-            if (isOffValue(newPrimaryOption)) {
-                toolOptions.forEach(tool => {
-                    newValue[tool.value] = false;
-                });
-            }
-
+            
             onChange(newValue);
         };
 
         // Handle tools selection change
         const handleToolsChange = (selectedTools: Array<any>) => {
             if (isToolsDisabled) return; // Prevent changes if disabled
-
-            const newToolState = Object.fromEntries(toolOptions.map((tool) => [tool.value, false]));
-            selectedTools.forEach((tool) => {
-                newToolState[tool.value] = true;
-            });
-
+            
+            // Only update the selectedToolIds array
+            const selectedToolIds = selectedTools.map(tool => tool.value);
+            
             onChange({
-                ...currentValue,
-                ...newToolState,
+                primaryOption: currentValue.primaryOption,
+                selectedToolIds,
             });
         };
 
-        // Convert current boolean tool states back to array for SelectWithIconDisplay
-        const selectedTools = toolOptions.filter((tool) => currentValue[tool.value]);
+        // Get the selected tools by matching IDs
+        const selectedTools = toolOptions.filter((tool) => 
+            currentValue.selectedToolIds && currentValue.selectedToolIds.includes(tool.value)
+        );
 
         return (
             <div ref={ref} className={`space-y-4 ${className}`}>
@@ -141,11 +127,17 @@ const EntitySpecialToolControl = React.forwardRef<HTMLDivElement, EntitySpecialT
                         />
                     </div>
                 </div>
+                
+                {/* Optional: Display the selected tool IDs for debugging */}
+                {/*
+                <div className="mt-2 text-xs text-gray-500">
+                    Selected Tool IDs: {JSON.stringify(currentValue.selectedToolIds || [])}
+                </div>
+                */}
             </div>
         );
     }
 );
 
 EntitySpecialToolControl.displayName = 'EntitySpecialToolControl';
-
 export default React.memo(EntitySpecialToolControl);

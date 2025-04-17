@@ -23,9 +23,11 @@ const StatusIndicator = ({ isActive, label, icon }: StatusIndicatorProps) => (
 
 interface SocketHeaderProps {
     socketHook: SocketHook;
+    testMode: boolean;
+    onTestModeChange: (testMode: boolean) => void;
 }
 
-export function SocketHeader({ socketHook }: SocketHeaderProps) {
+export function SocketHeader({ socketHook, testMode, onTestModeChange }: SocketHeaderProps) {
     const {
         namespace,
         service,
@@ -143,6 +145,8 @@ export function SocketHeader({ socketHook }: SocketHeaderProps) {
                 <div className="flex items-center space-x-4">
                     <Switch checked={streamEnabled} onCheckedChange={setStreamEnabled} />
                     <Label>Streaming</Label>
+                    <Switch checked={testMode} onCheckedChange={onTestModeChange} />
+                    <Label>Test Mode</Label>
                     <Button onClick={handleReset} disabled={namespace === "/UserSession" && !selectedServer} variant="ghost">
                         <FiRefreshCw className="h-4 w-4" />
                         Reset

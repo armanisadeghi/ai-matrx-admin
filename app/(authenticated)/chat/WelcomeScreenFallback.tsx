@@ -1,6 +1,6 @@
 function WelcomeScreenFallback() {
     return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8">
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8 w-full h-full">
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-medium mb-2 text-gray-800 dark:text-gray-100 glow-text glow-text-blue glow-sweep">
                     Chat. Reimagined.
@@ -24,7 +24,7 @@ function WelcomeScreenFallback() {
 // Creating a nicer loading spinner fallback for Suspense
 export function WelcomeScreenFallbackBasic() {
     return (
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8">
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 md:px-8 w-full h-full">
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-medium mb-2 text-gray-800 dark:text-gray-100">Chat. Reimagined.</h1>
                 <p className="text-xl text-gray-600 dark:text-gray-400">Artificial Intelligence with Matrx Superpowers.</p>

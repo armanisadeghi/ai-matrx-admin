@@ -65,10 +65,15 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant, size, asChild = false, ...props }, ref) => {
+        // Fix: Type-check and ensure variant and size are valid options
+        // This prevents infinite loops when invalid values are passed
+        const validVariant = variant && typeof variant === 'string' ? variant : 'default';
+        const validSize = size && typeof size === 'string' ? size : 'default';
+        
         const Comp = asChild ? Slot : "button"
         return (
             <Comp
-                className={cn(buttonVariants({ variant, size }), className)}
+                className={cn(buttonVariants({ variant: validVariant, size: validSize }), className)}
                 ref={ref}
                 {...props}
             />

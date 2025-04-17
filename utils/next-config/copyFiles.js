@@ -1,4 +1,3 @@
-// utils/next-config/copyFiles.js.ts
 const fs = require('fs').promises;
 const path = require('path');
 
@@ -18,7 +17,8 @@ async function copyFiles() {
             }
         }
 
-        // Copy required files
+        // Comment out the copying of VAD files since we're loading from CDN
+        /*
         await Promise.all([
             fs.copyFile(
                 "node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js",
@@ -33,8 +33,10 @@ async function copyFiles() {
                 "public/silero_vad_v5.onnx"
             ),
         ]);
+        */
 
-        // Copy all WASM and MJS files
+        // Comment out the copying of ONNX Runtime WASM files since we're loading from CDN
+        /*
         const wasmFiles = (await fs.readdir("node_modules/onnxruntime-web/dist/"))
             .filter(file => file.endsWith('.wasm') || file.endsWith('.mjs'));
 
@@ -46,9 +48,10 @@ async function copyFiles() {
                 )
             )
         );
+        */
 
     } catch (error) {
-        console.error('Error copying VAD files:', error);
+        console.error('Error in copyFiles:', error);
     }
 }
 

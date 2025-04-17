@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Radar } from "lucide-react";
 import { cn } from '@/utils';
 import { useAddMessage } from '@/components/playground/hooks/messages/useAddMessage';
@@ -10,19 +10,35 @@ interface EmptyMessagesCardProps {
     onError?: (error: Error) => void;
     onClose?: () => void;
     className?: string;
+    disabled?: boolean;
 }
 
 export const EmptyMessagesCard: React.FC<EmptyMessagesCardProps> = ({
     onSuccess,
     onError,
     onClose,
-    className
+    className,
+    disabled = true
 }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [initialCooldownComplete, setInitialCooldownComplete] = useState(false);
     const { addMessage } = useAddMessage({ onSuccess, onError });
 
+    // Set up the initial 2-second cooldown timer
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setInitialCooldownComplete(true);
+        }, 2000);
+        
+        // Clean up the timer if the component unmounts
+        return () => clearTimeout(timer);
+    }, []);
+
     const handleAddTemplateMessages = async () => {
+        // Check both the prop disabled and our cooldown state
+        if (disabled || !initialCooldownComplete) return;
+        
         setIsCreating(true);
         try {
             await addMessage(DEFAULT_MESSAGES.SYSTEM);
@@ -35,6 +51,9 @@ export const EmptyMessagesCard: React.FC<EmptyMessagesCardProps> = ({
             setIsCreating(false);
         }
     };
+
+    // Calculate the effective disabled state based on both the prop and the cooldown
+    const isEffectivelyDisabled = disabled || !initialCooldownComplete || isCreating;
 
     if (isCompleted) {
         return (
@@ -68,11 +87,11 @@ export const EmptyMessagesCard: React.FC<EmptyMessagesCardProps> = ({
 
     return (
         <div 
-            onClick={!isCreating ? handleAddTemplateMessages : undefined}
+            onClick={!isEffectivelyDisabled ? handleAddTemplateMessages : undefined}
             className={cn(
-                "mt-10 cursor-pointer transition-all duration-300",
+                "mt-10 transition-all duration-300",
                 "group hover:opacity-90",
-                isCreating && "pointer-events-none opacity-70"
+                isEffectivelyDisabled ? "pointer-events-none opacity-50" : "cursor-pointer"
             )}
         >
             <MatrxGradientCard
@@ -92,7 +111,7 @@ export const EmptyMessagesCard: React.FC<EmptyMessagesCardProps> = ({
                         className="text-secondary group-hover:scale-105 transition-transform" 
                     />
                     <span className="font-medium text-center">
-                        {isCreating ? 'Adding Messages...' : 'CLICK TO GET STARTED'}
+                        {isCreating ? 'Adding Messages...' : initialCooldownComplete ? 'CLICK TO GET STARTED' : 'Loading...'}
                     </span>
                 </div>
             </MatrxGradientCard>

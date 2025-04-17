@@ -13,6 +13,13 @@ interface ProcessedLine {
     isEmpty: boolean;
 }
 
+interface ChipStructureResult {
+    insertionWrapper: HTMLSpanElement;
+    chipWrapper: HTMLSpanElement;
+    chip: HTMLSpanElement;
+    anchorNode: Text;
+}
+
 export const processContentLines = (content: string): ProcessedLine[] => {
     // First, protect all chip content
     const chips: { start: number; end: number; content: string }[] = [];
@@ -161,13 +168,6 @@ export const createTextOnlyLine = (text: string, isFirstLine: boolean): HTMLElem
     return container;
 };
 
-interface ChipStructureResult {
-    insertionWrapper: HTMLSpanElement;
-    chipWrapper: HTMLSpanElement;
-    chip: HTMLSpanElement;
-    anchorNode: Text;
-}
-
 export const createChipLine = (
     segments: LineSegment[],
     isFirstLine: boolean,
@@ -188,4 +188,55 @@ export const createChipLine = (
 
     container.appendChild(span);
     return container;
+};
+
+export const handleEditorPaste = (
+    event: ClipboardEvent,
+    editorRef: React.RefObject<HTMLDivElement>,
+    updateContentAndMetadata: () => void
+): void => {
+    event.preventDefault();
+    const text = event.clipboardData?.getData('text/plain') ?? '';
+    if (!text && !event.clipboardData?.getData('text/html')) return;
+
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const lines = text.split(/\r\n|\r|\n/);
+    const processedLines = lines.map((lineContent, index) => {
+        const isEmpty = lineContent.trim() === '';
+        return {
+            isEmpty,
+            isFirstLine: index === 0,
+            segments: isEmpty ? [] : [{ type: 'text', content: lineContent }]
+        };
+    });
+
+    const fragment = document.createDocumentFragment();
+
+    processedLines.forEach((line, index) => {
+        let lineElement: HTMLElement;
+
+        if (line.isEmpty) {
+            lineElement = createEmptyLine(line.isFirstLine);
+        } else {
+            lineElement = createTextOnlyLine(line.segments.map(segment => segment.content).join(''), line.isFirstLine);
+        }
+
+        fragment.appendChild(lineElement);
+        
+    });
+
+    range.insertNode(fragment);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    updateContentAndMetadata();
 };

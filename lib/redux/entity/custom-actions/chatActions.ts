@@ -811,6 +811,8 @@ export const getChatActionsWithThunks = () => {
                     value: params.value,
                 })
             );
+            dispatch(messageActions.updateFieldSmart({ keyOrId, field: "type", value: "mixed" })); // NEWLY ADDED! Might break things!
+            console.log("--> Warning! New feature. [CHAT ACTIONS THUNK] updated files is changing the message type to mixed");
         },
 
         setSocketEventName: (params: { eventName: string }) => (dispatch: AppDispatch) => {
