@@ -13,7 +13,9 @@ import {
   FileText, 
   FileSpreadsheet, 
   FileDown,
-  ChevronDown 
+  ChevronDown,
+  Database,
+  ExternalLink 
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +26,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToastManager } from "@/hooks/useToastManager";
 import { THEMES } from "../themes";
+import SaveTableModal from "./SaveTableModal";
+import ViewTableModal from "./ViewTableModal";
+
+interface SavedTableInfo {
+  table_id: string;
+  table_name: string;
+  row_count: string;
+  field_count: string;
+}
 
 interface MarkdownTableProps {
     data: {
@@ -60,6 +71,9 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const tableFontsize = fontSize;
     const toast = useToastManager();
     const tableTheme = THEMES[theme].table || THEMES.professional.table;
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [savedTableInfo, setSavedTableInfo] = useState<SavedTableInfo | null>(null);
 
     useEffect(() => {
         // Use the raw data with Markdown intact
@@ -250,6 +264,44 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const editingBorderStyle = "overflow-x-auto rounded-xl border-3 border-dashed border-red-500 rounded-xl";
     const normalBorderStyle = `overflow-x-auto rounded-xl border-3 ${tableTheme.border}`;
 
+    // Handle save table completion
+    const handleSaveComplete = (tableInfo: SavedTableInfo) => {
+        setSavedTableInfo(tableInfo);
+        setShowSaveModal(false);
+        setShowViewModal(true);
+    };
+
+    // Render either a Save or View button based on whether the table is already saved
+    const renderTableActionButton = () => {
+        if (!tableData.normalizedData) return null;
+        
+        if (savedTableInfo) {
+            return (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowViewModal(true)}
+                    className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
+                >
+                    <ExternalLink className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    View Saved Table
+                </Button>
+            );
+        } else {
+            return (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSaveModal(true)}
+                    className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
+                >
+                    <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    Save
+                </Button>
+            );
+        }
+    };
+
     return (
         <div className="w-full space-y-4 my-4">
             {showNormalized && tableData.normalizedData ? (
@@ -354,17 +406,20 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => setShowNormalized(!showNormalized)}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
                     >
                         <Eye className="h-4 w-4" />
                         {showNormalized ? "Table" : "Data"}
                     </Button>
                 )}
                 
+                {/* Render either Save or View button */}
+                {renderTableActionButton()}
+                
                 {/* Export dropdown menu replacing individual buttons */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30">
                             <Download className="h-4 w-4" />
                             Export
                             <ChevronDown className="h-4 w-4 ml-1" />
@@ -430,12 +485,31 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         </Button>
                     </>
                 ) : (
-                    <Button variant="outline" size="sm" onClick={toggleGlobalEditMode} className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={toggleGlobalEditMode} className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30">
                         <Edit className="h-4 w-4" />
                         Edit
                     </Button>
                 )}
             </div>
+            
+            {/* Save Modal */}
+            {showSaveModal && (
+                <SaveTableModal
+                    isOpen={showSaveModal}
+                    onClose={() => setShowSaveModal(false)}
+                    onSaveComplete={handleSaveComplete}
+                    tableData={tableData.normalizedData}
+                />
+            )}
+            
+            {/* View Modal */}
+            {showViewModal && savedTableInfo && (
+                <ViewTableModal
+                    isOpen={showViewModal}
+                    onClose={() => setShowViewModal(false)}
+                    tableInfo={savedTableInfo}
+                />
+            )}
         </div>
     );
 };

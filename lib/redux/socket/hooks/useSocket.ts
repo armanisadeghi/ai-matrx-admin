@@ -56,8 +56,17 @@ export const useSocket = () => {
         );
     }, [streamEnabled]);
 
+
+    const setServiceAndTaskType = (service: string, taskType: string) => {
+        setService(service);
+        setTaskType(taskType);
+        console.log("-> service", service);
+        console.log("-> taskType", taskType);
+    };
+
     const setTaskData = (taskData: TaskData | TaskData[]) => {
         const taskArray = Array.isArray(taskData) ? taskData : [taskData];
+        console.log("-> taskArray", taskArray);
         setTasks(
             taskArray.map((data, index) => ({
                 task: taskType,
@@ -84,6 +93,8 @@ export const useSocket = () => {
             stream: task.stream,
             taskData: task.taskData,
         }));
+
+        console.log("-> payload", payload);
 
         const payloadCustomEvent = tasks.map((task, customEventIndex) => ({
             task: task.task,
@@ -161,6 +172,8 @@ export const useSocket = () => {
         // Action handlers
         handleSend,
         handleClear,
+
+        setServiceAndTaskType,
     };
 };
 

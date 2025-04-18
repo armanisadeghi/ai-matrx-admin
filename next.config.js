@@ -37,6 +37,10 @@ const nextConfig = {
                 protocol: "https",
                 hostname: "**",
             },
+            {
+                protocol: "https",
+                hostname: "api.microlink.io",
+            },
         ],
     },
     webpack: (config, { isServer, dev }) => {
