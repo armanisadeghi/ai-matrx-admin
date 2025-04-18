@@ -1347,6 +1347,40 @@ const systemFunctionEntityOverrides: EntityOverrides<'systemFunction'> = {
 
 
 
+const tableDataEntityOverrides: EntityOverrides<'tableData'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const tableFieldsEntityOverrides: EntityOverrides<'tableFields'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const taskAssignmentsEntityOverrides: EntityOverrides<'taskAssignments'> = {
     schemaType: null,
     entityName: null,
@@ -1450,6 +1484,23 @@ const transformerEntityOverrides: EntityOverrides<'transformer'> = {
 
 
 const userPreferencesEntityOverrides: EntityOverrides<'userPreferences'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const userTablesEntityOverrides: EntityOverrides<'userTables'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1613,6 +1664,8 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     scrapeTaskResponse: scrapeTaskResponseEntityOverrides,
     subcategory: subcategoryEntityOverrides,
     systemFunction: systemFunctionEntityOverrides,
+    tableData: tableDataEntityOverrides,
+    tableFields: tableFieldsEntityOverrides,
     taskAssignments: taskAssignmentsEntityOverrides,
     taskAttachments: taskAttachmentsEntityOverrides,
     taskComments: taskCommentsEntityOverrides,
@@ -1620,6 +1673,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     tool: toolEntityOverrides,
     transformer: transformerEntityOverrides,
     userPreferences: userPreferencesEntityOverrides,
+    userTables: userTablesEntityOverrides,
     wcClaim: wcClaimEntityOverrides,
     wcImpairmentDefinition: wcImpairmentDefinitionEntityOverrides,
     wcInjury: wcInjuryEntityOverrides,

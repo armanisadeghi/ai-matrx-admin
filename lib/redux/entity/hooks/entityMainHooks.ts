@@ -6865,6 +6865,178 @@ export const useSystemFunctionWithFetch = (): UseSystemFunctionWithFetchReturn =
 
 
 
+type UseTableDataWithFetchReturn = {
+    tableDataSelectors: EntitySelectors<"tableData">;
+    tableDataActions: EntityActions<"tableData">;
+    tableDataRecords: Record<MatrxRecordId, TableDataData>;
+    tableDataUnsavedRecords: Record<MatrxRecordId, Partial<TableDataData>>;
+    tableDataSelectedRecordIds: MatrxRecordId[];
+    tableDataIsLoading: boolean;
+    tableDataIsError: boolean;
+    tableDataQuickRefRecords: QuickReferenceRecord[];
+    addTableDataMatrxId: (recordId: MatrxRecordId) => void;
+    addTableDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeTableDataMatrxId: (recordId: MatrxRecordId) => void;
+    removeTableDataMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addTableDataPkValue: (pkValue: string) => void;
+    addTableDataPkValues: (pkValues: Record<string, unknown>) => void;
+    removeTableDataPkValue: (pkValue: string) => void;
+    removeTableDataPkValues: (pkValues: Record<string, unknown>) => void;
+    isTableDataMissingRecords: boolean;
+    setTableDataShouldFetch: (shouldFetch: boolean) => void;
+    setTableDataFetchMode: (fetchMode: FetchMode) => void;
+    fetchTableDataQuickRefs: () => void;
+    fetchTableDataOne: (recordId: MatrxRecordId) => void;
+    fetchTableDataOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchTableDataAll: () => void;
+    fetchTableDataPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useTableDataWithFetch = (): UseTableDataWithFetchReturn => {
+    const {
+        selectors: tableDataSelectors,
+        actions: tableDataActions,
+        allRecords: tableDataRecords,
+        unsavedRecords: tableDataUnsavedRecords,
+        selectedRecordIds: tableDataSelectedRecordIds,
+        isLoading: tableDataIsLoading,
+        isError: tableDataIsError,
+        quickRefRecords: tableDataQuickRefRecords,
+        addMatrxId: addTableDataMatrxId,
+        addMatrxIds: addTableDataMatrxIds,
+        removeMatrxId: removeTableDataMatrxId,
+        removeMatrxIds: removeTableDataMatrxIds,
+        addPkValue: addTableDataPkValue,
+        addPkValues: addTableDataPkValues,
+        removePkValue: removeTableDataPkValue,
+        removePkValues: removeTableDataPkValues,
+        isMissingRecords: isTableDataMissingRecords,
+        setShouldFetch: setTableDataShouldFetch,
+        setFetchMode: setTableDataFetchMode,
+        fetchQuickRefs: fetchTableDataQuickRefs,
+        fetchOne: fetchTableDataOne,
+        fetchOneWithFkIfk: fetchTableDataOneWithFkIfk,
+        fetchAll: fetchTableDataAll,
+        fetchPaginated: fetchTableDataPaginated,
+
+    } = useEntityWithFetch("tableData");
+
+    return {
+        tableDataSelectors,
+        tableDataActions,
+        tableDataRecords,
+        tableDataUnsavedRecords,
+        tableDataSelectedRecordIds,
+        tableDataIsLoading,
+        tableDataIsError,
+        tableDataQuickRefRecords,
+        addTableDataMatrxId,
+        addTableDataMatrxIds,
+        removeTableDataMatrxId,
+        removeTableDataMatrxIds,
+        addTableDataPkValue,
+        addTableDataPkValues,
+        removeTableDataPkValue,
+        removeTableDataPkValues,
+        isTableDataMissingRecords,
+        setTableDataShouldFetch,
+        setTableDataFetchMode,
+        fetchTableDataQuickRefs,
+        fetchTableDataOne,
+        fetchTableDataOneWithFkIfk,
+        fetchTableDataAll,
+        fetchTableDataPaginated,
+    };
+};
+
+
+
+type UseTableFieldsWithFetchReturn = {
+    tableFieldsSelectors: EntitySelectors<"tableFields">;
+    tableFieldsActions: EntityActions<"tableFields">;
+    tableFieldsRecords: Record<MatrxRecordId, TableFieldsData>;
+    tableFieldsUnsavedRecords: Record<MatrxRecordId, Partial<TableFieldsData>>;
+    tableFieldsSelectedRecordIds: MatrxRecordId[];
+    tableFieldsIsLoading: boolean;
+    tableFieldsIsError: boolean;
+    tableFieldsQuickRefRecords: QuickReferenceRecord[];
+    addTableFieldsMatrxId: (recordId: MatrxRecordId) => void;
+    addTableFieldsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeTableFieldsMatrxId: (recordId: MatrxRecordId) => void;
+    removeTableFieldsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addTableFieldsPkValue: (pkValue: string) => void;
+    addTableFieldsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeTableFieldsPkValue: (pkValue: string) => void;
+    removeTableFieldsPkValues: (pkValues: Record<string, unknown>) => void;
+    isTableFieldsMissingRecords: boolean;
+    setTableFieldsShouldFetch: (shouldFetch: boolean) => void;
+    setTableFieldsFetchMode: (fetchMode: FetchMode) => void;
+    fetchTableFieldsQuickRefs: () => void;
+    fetchTableFieldsOne: (recordId: MatrxRecordId) => void;
+    fetchTableFieldsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchTableFieldsAll: () => void;
+    fetchTableFieldsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useTableFieldsWithFetch = (): UseTableFieldsWithFetchReturn => {
+    const {
+        selectors: tableFieldsSelectors,
+        actions: tableFieldsActions,
+        allRecords: tableFieldsRecords,
+        unsavedRecords: tableFieldsUnsavedRecords,
+        selectedRecordIds: tableFieldsSelectedRecordIds,
+        isLoading: tableFieldsIsLoading,
+        isError: tableFieldsIsError,
+        quickRefRecords: tableFieldsQuickRefRecords,
+        addMatrxId: addTableFieldsMatrxId,
+        addMatrxIds: addTableFieldsMatrxIds,
+        removeMatrxId: removeTableFieldsMatrxId,
+        removeMatrxIds: removeTableFieldsMatrxIds,
+        addPkValue: addTableFieldsPkValue,
+        addPkValues: addTableFieldsPkValues,
+        removePkValue: removeTableFieldsPkValue,
+        removePkValues: removeTableFieldsPkValues,
+        isMissingRecords: isTableFieldsMissingRecords,
+        setShouldFetch: setTableFieldsShouldFetch,
+        setFetchMode: setTableFieldsFetchMode,
+        fetchQuickRefs: fetchTableFieldsQuickRefs,
+        fetchOne: fetchTableFieldsOne,
+        fetchOneWithFkIfk: fetchTableFieldsOneWithFkIfk,
+        fetchAll: fetchTableFieldsAll,
+        fetchPaginated: fetchTableFieldsPaginated,
+
+    } = useEntityWithFetch("tableFields");
+
+    return {
+        tableFieldsSelectors,
+        tableFieldsActions,
+        tableFieldsRecords,
+        tableFieldsUnsavedRecords,
+        tableFieldsSelectedRecordIds,
+        tableFieldsIsLoading,
+        tableFieldsIsError,
+        tableFieldsQuickRefRecords,
+        addTableFieldsMatrxId,
+        addTableFieldsMatrxIds,
+        removeTableFieldsMatrxId,
+        removeTableFieldsMatrxIds,
+        addTableFieldsPkValue,
+        addTableFieldsPkValues,
+        removeTableFieldsPkValue,
+        removeTableFieldsPkValues,
+        isTableFieldsMissingRecords,
+        setTableFieldsShouldFetch,
+        setTableFieldsFetchMode,
+        fetchTableFieldsQuickRefs,
+        fetchTableFieldsOne,
+        fetchTableFieldsOneWithFkIfk,
+        fetchTableFieldsAll,
+        fetchTableFieldsPaginated,
+    };
+};
+
+
+
 type UseTaskAssignmentsWithFetchReturn = {
     taskAssignmentsSelectors: EntitySelectors<"taskAssignments">;
     taskAssignmentsActions: EntityActions<"taskAssignments">;
@@ -7462,6 +7634,92 @@ export const useUserPreferencesWithFetch = (): UseUserPreferencesWithFetchReturn
         fetchUserPreferencesOneWithFkIfk,
         fetchUserPreferencesAll,
         fetchUserPreferencesPaginated,
+    };
+};
+
+
+
+type UseUserTablesWithFetchReturn = {
+    userTablesSelectors: EntitySelectors<"userTables">;
+    userTablesActions: EntityActions<"userTables">;
+    userTablesRecords: Record<MatrxRecordId, UserTablesData>;
+    userTablesUnsavedRecords: Record<MatrxRecordId, Partial<UserTablesData>>;
+    userTablesSelectedRecordIds: MatrxRecordId[];
+    userTablesIsLoading: boolean;
+    userTablesIsError: boolean;
+    userTablesQuickRefRecords: QuickReferenceRecord[];
+    addUserTablesMatrxId: (recordId: MatrxRecordId) => void;
+    addUserTablesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserTablesMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserTablesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserTablesPkValue: (pkValue: string) => void;
+    addUserTablesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserTablesPkValue: (pkValue: string) => void;
+    removeUserTablesPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserTablesMissingRecords: boolean;
+    setUserTablesShouldFetch: (shouldFetch: boolean) => void;
+    setUserTablesFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserTablesQuickRefs: () => void;
+    fetchUserTablesOne: (recordId: MatrxRecordId) => void;
+    fetchUserTablesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserTablesAll: () => void;
+    fetchUserTablesPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useUserTablesWithFetch = (): UseUserTablesWithFetchReturn => {
+    const {
+        selectors: userTablesSelectors,
+        actions: userTablesActions,
+        allRecords: userTablesRecords,
+        unsavedRecords: userTablesUnsavedRecords,
+        selectedRecordIds: userTablesSelectedRecordIds,
+        isLoading: userTablesIsLoading,
+        isError: userTablesIsError,
+        quickRefRecords: userTablesQuickRefRecords,
+        addMatrxId: addUserTablesMatrxId,
+        addMatrxIds: addUserTablesMatrxIds,
+        removeMatrxId: removeUserTablesMatrxId,
+        removeMatrxIds: removeUserTablesMatrxIds,
+        addPkValue: addUserTablesPkValue,
+        addPkValues: addUserTablesPkValues,
+        removePkValue: removeUserTablesPkValue,
+        removePkValues: removeUserTablesPkValues,
+        isMissingRecords: isUserTablesMissingRecords,
+        setShouldFetch: setUserTablesShouldFetch,
+        setFetchMode: setUserTablesFetchMode,
+        fetchQuickRefs: fetchUserTablesQuickRefs,
+        fetchOne: fetchUserTablesOne,
+        fetchOneWithFkIfk: fetchUserTablesOneWithFkIfk,
+        fetchAll: fetchUserTablesAll,
+        fetchPaginated: fetchUserTablesPaginated,
+
+    } = useEntityWithFetch("userTables");
+
+    return {
+        userTablesSelectors,
+        userTablesActions,
+        userTablesRecords,
+        userTablesUnsavedRecords,
+        userTablesSelectedRecordIds,
+        userTablesIsLoading,
+        userTablesIsError,
+        userTablesQuickRefRecords,
+        addUserTablesMatrxId,
+        addUserTablesMatrxIds,
+        removeUserTablesMatrxId,
+        removeUserTablesMatrxIds,
+        addUserTablesPkValue,
+        addUserTablesPkValues,
+        removeUserTablesPkValue,
+        removeUserTablesPkValues,
+        isUserTablesMissingRecords,
+        setUserTablesShouldFetch,
+        setUserTablesFetchMode,
+        fetchUserTablesQuickRefs,
+        fetchUserTablesOne,
+        fetchUserTablesOneWithFkIfk,
+        fetchUserTablesAll,
+        fetchUserTablesPaginated,
     };
 };
 

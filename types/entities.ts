@@ -905,6 +905,34 @@ export type SystemFunction = {
     rfId: string;
 }
 
+export type TableData = {
+    id: string;
+    tableId: string;
+    data: Record<string, unknown>;
+    userId: string;
+    isPublic: boolean;
+    authenticatedRead: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export type TableFields = {
+    id: string;
+    tableId: string;
+    fieldName: string;
+    displayName: string;
+    dataType: "array" | "boolean" | "date" | "datetime" | "integer" | "json" | "number" | "string" | undefined;
+    fieldOrder: number;
+    isRequired: boolean;
+    defaultValue?: Record<string, unknown>;
+    validationRules?: Record<string, unknown>;
+    userId: string;
+    isPublic: boolean;
+    authenticatedRead: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export type TaskAssignments = {
     id: string;
     taskId?: string;
@@ -966,6 +994,18 @@ export type Transformer = {
 export type UserPreferences = {
     userId: string;
     preferences: Record<string, unknown>;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export type UserTables = {
+    id: string;
+    tableName: string;
+    description?: string;
+    version: number;
+    userId: string;
+    isPublic: boolean;
+    authenticatedRead: boolean;
     createdAt: Date;
     updatedAt: Date;
 }

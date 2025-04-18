@@ -366,6 +366,13 @@ export const allTools: Tool[] = [
         category: "Data",
         icon: <Play size={20} />,
     },
+    {
+        id: "create_user_generated_table_data",
+        name: "Create User Generated Table Data",
+        description: "Converts any data from AI-Generated Tables into a table that will be accessible to you and saved to your personal database. This data can also be used as a Data Broker in the system.",
+        category: "Data",
+        icon: <Table size={20} />,
+    },
     // Web Tools
     {
         id: "news",

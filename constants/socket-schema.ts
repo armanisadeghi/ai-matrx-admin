@@ -18,59 +18,6 @@ export interface Schema {
 }
 
 
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the id of the broker.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value of the broker.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: "true",
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
-    },
-};
-
 export const CHAT_CONFIG_DEFINITION: Schema = {
     recipe_id: {
         REQUIRED: true,
@@ -193,6 +140,59 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
+    },
+};
+
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: "true",
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
     },
 };
 
@@ -319,6 +319,93 @@ export const OVERRIDE_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Some additional overrides may be provided for processing.",
         ICON_NAME: "Parentheses",
+    },
+};
+
+export const GET_ALL_LOGS: Schema = {
+    filename: {
+        REQUIRED: false,
+        DEFAULT: "application logs",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"value": "application logs", "label": "Application Logs"}, {"value": "daphne logs", "label": "Daphne Logs"}, {"value": "local logs", "label": "Local Logs"}]},
+        ICON_NAME: "Document",
+        DESCRIPTION: "The log file to read all lines from (Application Logs, Daphne Logs, or Local Logs).",
+    },
+};
+
+export const GET_LOG_FILES: Schema = {
+};
+
+export const STOP_TAIL_LOGS: Schema = {
+};
+
+export const TAIL_LOGS: Schema = {
+    filename: {
+        REQUIRED: false,
+        DEFAULT: "application logs",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"value": "application logs", "label": "Application Logs"}, {"value": "daphne logs", "label": "Daphne Logs"}, {"value": "local logs", "label": "Local Logs"}]},
+        ICON_NAME: "Document",
+        DESCRIPTION: "The log file to tail (Application Logs, Daphne Logs, or Local Logs).",
+    },
+    interval: {
+        REQUIRED: false,
+        DEFAULT: 1.0,
+        VALIDATION: null,
+        DATA_TYPE: "float",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Clock",
+        DESCRIPTION: "The interval (in seconds) between checks for new log lines.",
+    },
+};
+
+export const READ_LOGS: Schema = {
+    filename: {
+        REQUIRED: false,
+        DEFAULT: "application logs",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"value": "application logs", "label": "Application Logs"}, {"value": "daphne logs", "label": "Daphne Logs"}, {"value": "local logs", "label": "Local Logs"}]},
+        ICON_NAME: "Document",
+        DESCRIPTION: "The log file to read (Application Logs, Daphne Logs, or Local Logs).",
+    },
+    lines: {
+        REQUIRED: false,
+        DEFAULT: 100,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Number",
+        DESCRIPTION: "The number of lines to read from the log file (0 for all).",
+    },
+    search: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Search",
+        DESCRIPTION: "A search term to filter log lines (case-insensitive).",
     },
 };
 
@@ -454,6 +541,45 @@ export const SAMPLE_SERVICE: Schema = {
         ICON_NAME: "FileText",
         DESCRIPTION: "Provide a detailed description (max 500 characters)",
         TEST_VALUE: "This is a sample text that would be used in test mode.",
+    },
+};
+
+export const CONVERT_NORMALIZED_DATA_TO_USER_DATA: Schema = {
+    data: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "JsonEditor",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Grid2x2Plus",
+        DESCRIPTION: "Enter a JSON object with normalized keys and values.",
+    },
+    table_name: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Baseline",
+        DESCRIPTION: "Enter the name of the table to be created.",
+    },
+    table_description: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Text",
+        DESCRIPTION: "Enter the description of the table to be created.",
     },
 };
 
@@ -875,6 +1001,81 @@ export const CREATE_WC_CLAIM: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+    },
+};
+
+export const SEARCH_AND_SCRAPE: Schema = {
+    keywords: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "ArrayField",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the keywords to search for.",
+        ICON_NAME: "WholeWord",
+    },
+    country_code: {
+        REQUIRED: false,
+        DEFAULT: "all",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"label": "Argentina", "value": "AR"}, {"label": "Australia", "value": "AU"}, {"label": "Austria", "value": "AT"}, {"label": "Belgium", "value": "BE"}, {"label": "Brazil", "value": "BR"}, {"label": "Canada", "value": "CA"}, {"label": "Chile", "value": "CL"}, {"label": "Denmark", "value": "DK"}, {"label": "Finland", "value": "FI"}, {"label": "France", "value": "FR"}, {"label": "Germany", "value": "DE"}, {"label": "Hong Kong", "value": "HK"}, {"label": "India", "value": "IN"}, {"label": "Indonesia", "value": "ID"}, {"label": "Italy", "value": "IT"}, {"label": "Japan", "value": "JP"}, {"label": "Korea", "value": "KR"}, {"label": "Malaysia", "value": "MY"}, {"label": "Mexico", "value": "MX"}, {"label": "Netherlands", "value": "NL"}, {"label": "New Zealand", "value": "NZ"}, {"label": "Norway", "value": "NO"}, {"label": "Peoples Republic of China", "value": "CN"}, {"label": "Poland", "value": "PL"}, {"label": "Portugal", "value": "PT"}, {"label": "Republic of the Philippines", "value": "PH"}, {"label": "Russia", "value": "RU"}, {"label": "Saudi Arabia", "value": "SA"}, {"label": "South Africa", "value": "ZA"}, {"label": "Spain", "value": "ES"}, {"label": "Sweden", "value": "SE"}, {"label": "Switzerland", "value": "CH"}, {"label": "Taiwan", "value": "TW"}, {"label": "Turkey", "value": "TR"}, {"label": "United Kingdom", "value": "GB"}, {"label": "United States", "value": "US"}, {"label": "All Regions", "value": "ALL"}]},
+        DESCRIPTION: "Enter the country code to get search results for.",
+        ICON_NAME: "Flag",
+    },
+    total_results_per_keyword: {
+        REQUIRED: false,
+        DEFAULT: 10,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Slider",
+        COMPONENT_PROPS: {"min": 10, "max": 30, "step": 1, "range": "False"},
+        DESCRIPTION: "Enter the number of results per keyword to get.",
+        ICON_NAME: "SlidersHorizontal",
+    },
+    search_type: {
+        REQUIRED: false,
+        DEFAULT: "all",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "RadioGroup",
+        COMPONENT_PROPS: {"options": [{"label": "All", "value": "all"}, {"label": "Web", "value": "web"}, {"label": "News", "value": "news"}], "orientation": "vertical"},
+        DESCRIPTION: "Kind of search type to scrape, 'web', 'news', or 'all'.",
+        ICON_NAME: "Rss",
+    },
+    clean_output: {
+        REQUIRED: true,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Clean text formatting.",
+        ICON_NAME: "Eraser",
+    },
+    get_raw_json_content: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get raw json content with results.",
+        ICON_NAME: "Braces",
     },
 };
 
@@ -1313,6 +1514,30 @@ export const QUICK_SCRAPE: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the urls to be scraped.",
         ICON_NAME: "Link",
+    },
+    clean_output: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Clean text formatting.",
+        ICON_NAME: "Eraser",
+    },
+    get_raw_json_content: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get raw json content with results.",
+        ICON_NAME: "Braces",
     },
 };
 
@@ -1895,6 +2120,21 @@ export const GET_ALL_CODE_BLOCKS: Schema = {
     },
 };
 
+export const GET_STRUCTURED_DATA: Schema = {
+    raw_markdown: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "textarea",
+        COMPONENT_PROPS: {"rows": 10},
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
+    },
+};
+
 export const GET_CODE_BLOCKS_BY_LANGUAGE: Schema = {
     raw_markdown: {
         REQUIRED: true,
@@ -2350,6 +2590,7 @@ export const SERVICE_TASKS = {
     markdown_service: {
         classify_markdown: CLASSIFY_MARKDOWN,
         get_code_blocks_by_language: GET_CODE_BLOCKS_BY_LANGUAGE,
+        get_structured_data: GET_STRUCTURED_DATA,
         get_all_code_blocks: GET_ALL_CODE_BLOCKS,
         get_section_blocks: GET_SECTION_BLOCKS,
         get_section_groups: GET_SECTION_GROUPS,
@@ -2400,6 +2641,8 @@ export const SERVICE_TASKS = {
     },
     scraper_service_v2: {
         quick_scrape: QUICK_SCRAPE,
+        search_and_scrape: SEARCH_AND_SCRAPE,
+        mic_check: MIC_CHECK,
     },
     california_worker_compensation_service: {
         create_wc_claim: CREATE_WC_CLAIM,
@@ -2421,6 +2664,7 @@ export const SERVICE_TASKS = {
         run_recipe_to_chat: RUN_RECIPE_TO_CHAT,
         run_batch_recipe: RUN_BATCH_RECIPE,
         prepare_batch_recipe: PREPARE_BATCH_RECIPE,
+        convert_normalized_data_to_user_data: CONVERT_NORMALIZED_DATA_TO_USER_DATA,
         mic_check: MIC_CHECK,
     },
     sample_service: {
@@ -2429,6 +2673,13 @@ export const SERVICE_TASKS = {
     simple_recipe: {
         run_recipe: RUN_RECIPE,
         convert_recipe_to_chat: CONVERT_RECIPE_TO_CHAT,
+    },
+    log_service: {
+        read_logs: READ_LOGS,
+        tail_logs: TAIL_LOGS,
+        stop_tail_logs: STOP_TAIL_LOGS,
+        get_log_files: GET_LOG_FILES,
+        get_all_logs: GET_ALL_LOGS,
     },
 } as const;
 

@@ -93,7 +93,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     console.warn("Skipping invalid or empty table:", block.content);
                     return null;
                 }
-                return <MarkdownTable key={index} data={{ ...tableData.markdown, normalizedData: tableData.data }} />;
+                return <MarkdownTable key={index} data={{ ...tableData.markdown, normalizedData: tableData.data }} content={block.content} />;
             case "transcript":
                 return <TranscriptBlock key={index} content={block.content} />;
             case "tasks":
