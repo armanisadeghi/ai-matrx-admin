@@ -2,9 +2,29 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Download, Copy, Eye, Edit, Save, X } from "lucide-react";
+import { 
+  Download, 
+  Copy, 
+  Eye, 
+  Edit, 
+  Save, 
+  X, 
+  FileJson, 
+  FileText, 
+  FileSpreadsheet, 
+  FileDown,
+  ChevronDown 
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
 import { useToastManager } from "@/hooks/useToastManager";
 import { THEMES } from "../themes";
+
 interface MarkdownTableProps {
     data: {
         headers: string[];
@@ -15,13 +35,16 @@ interface MarkdownTableProps {
     fontSize?: number;
     theme?: string;
     onSave?: (tableData: { headers: string[]; rows: string[][] }) => void;
+    content?: string;
 }
+
 const MarkdownTable: React.FC<MarkdownTableProps> = ({
     data,
     className = "",
     fontSize = 16,
     theme = "professional",
     onSave = () => {},
+    content = "",
 }) => {
     const [tableData, setTableData] = useState<{
         headers: string[];
@@ -30,23 +53,25 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     }>({
         headers: [],
         rows: [],
-        normalizedData: data?.normalizedData, // Add optional chaining here
+        normalizedData: data?.normalizedData,
     });
     const [showNormalized, setShowNormalized] = useState(false);
     const [editMode, setEditMode] = useState<"none" | "header" | number>("none");
     const tableFontsize = fontSize;
     const toast = useToastManager();
     const tableTheme = THEMES[theme].table || THEMES.professional.table;
+
     useEffect(() => {
         // Use the raw data with Markdown intact
-        if (data) { // Safely check if data exists
+        if (data) {
             setTableData({
-                headers: data.headers || [], // Add fallbacks
+                headers: data.headers || [],
                 rows: data.rows || [],
-                normalizedData: data.normalizedData, // normalizedData is already optional
+                normalizedData: data.normalizedData,
             });
         }
     }, [data]);
+
     // Simple Markdown renderer for bold and italic
     const renderMarkdown = (text: string) => {
         let html = text
@@ -57,6 +82,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         html = html.replace(/<em><strong>([^<]+)<\/strong><\/em>/g, "<strong><em>$1</em></strong>");
         return <span dangerouslySetInnerHTML={{ __html: html }} />;
     };
+
     const copyTableToClipboard = async () => {
         try {
             const maxLengths = Array(tableData.headers.length).fill(0);
@@ -74,6 +100,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.error(err.message || "Failed to copy table");
         }
     };
+
     const copyJsonToClipboard = async () => {
         try {
             await navigator.clipboard.writeText(JSON.stringify(tableData.normalizedData, null, 2));
@@ -82,6 +109,21 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.error(err.message || "Failed to copy JSON");
         }
     };
+
+    const copyMarkdownToClipboard = async () => {
+        try {
+            if (content) {
+                await navigator.clipboard.writeText(content);
+                toast.success("Markdown copied to clipboard");
+            } else {
+                // Fallback if content isn't provided
+                copyTableToClipboard();
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Failed to copy markdown");
+        }
+    };
+
     const downloadCSV = () => {
         try {
             const csvContent = [
@@ -113,6 +155,43 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.error(err.message || "Failed to download CSV");
         }
     };
+
+    const downloadMarkdown = () => {
+        try {
+            const markdownContent = content || '';
+            const fileName = tableData.headers && tableData.headers[0] 
+                ? `${tableData.headers[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md` 
+                : 'table_data.md';
+            
+            const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            toast.success("Markdown file downloaded", {
+                action: {
+                    label: "Download Again",
+                    onClick: () => {
+                        const newLink = document.createElement('a');
+                        newLink.href = url;
+                        newLink.download = fileName;
+                        document.body.appendChild(newLink);
+                        newLink.click();
+                        document.body.removeChild(newLink);
+                    },
+                    className: "font-medium",
+                },
+            });
+        } catch (err: any) {
+            toast.error(err.message || "Failed to download Markdown");
+        }
+    };
+    
     const toggleGlobalEditMode = () => {
         if (editMode !== "none") {
             onSave(tableData);
@@ -123,35 +202,41 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.info("Edit mode activated");
         }
     };
+
     const handleHeaderChange = (index: number, value: string) => {
         const newHeaders = [...tableData.headers];
         newHeaders[index] = value;
         setTableData({ ...tableData, headers: newHeaders });
     };
+
     const handleCellChange = (rowIndex: number, colIndex: number, value: string) => {
         const newRows = [...tableData.rows];
         newRows[rowIndex][colIndex] = value;
         setTableData({ ...tableData, rows: newRows });
     };
+
     const handleRowClick = (rowIndex: number) => {
         if (editMode === "none") return;
         onSave(tableData);
         setEditMode(rowIndex);
     };
+
     const handleHeaderClick = () => {
         if (editMode === "none") return;
         onSave(tableData);
         setEditMode("header");
     };
+
     const handleSave = () => {
         onSave(tableData);
         setEditMode("none");
         toast.success("Table data saved");
     };
+
     const handleCancel = () => {
-        if (data) { // Safely check if data exists
+        if (data) {
             setTableData({
-                headers: data.headers || [], // Add fallbacks
+                headers: data.headers || [],
                 rows: data.rows || [],
                 normalizedData: data.normalizedData,
             });
@@ -159,16 +244,29 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         setEditMode("none");
         toast.info("Edits cancelled");
     };
+
     const isEditingEnabled = editMode !== "none";
     const isEditingHeader = editMode === "header";
     const editingBorderStyle = "overflow-x-auto rounded-xl border-3 border-dashed border-red-500 rounded-xl";
     const normalBorderStyle = `overflow-x-auto rounded-xl border-3 ${tableTheme.border}`;
+
     return (
         <div className="w-full space-y-4 my-4">
-            {showNormalized && tableData.normalizedData ? ( // Check if normalizedData exists
-                <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto ">
-                    {JSON.stringify(tableData.normalizedData, null, 2)}
-                </pre>
+            {showNormalized && tableData.normalizedData ? (
+                <div className="relative">
+                    <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto">
+                        {JSON.stringify(tableData.normalizedData, null, 2)}
+                    </pre>
+                    <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setShowNormalized(false)}
+                        className="absolute top-2 right-2 opacity-90 hover:opacity-100 flex items-center gap-1 shadow-md"
+                    >
+                        <Eye className="h-4 w-4" />
+                        <span>View Table</span>
+                    </Button>
+                </div>
             ) : (
                 <div className={cn(isEditingEnabled ? editingBorderStyle : normalBorderStyle)}>
                     <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${tableFontsize}px` }}>
@@ -251,7 +349,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 </div>
             )}
             <div className="flex justify-end gap-2">
-                {tableData.normalizedData && ( // Check if normalizedData exists
+                {tableData.normalizedData && (
                     <Button
                         variant="outline"
                         size="sm"
@@ -262,20 +360,54 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         {showNormalized ? "Table" : "Data"}
                     </Button>
                 )}
-                {tableData.normalizedData && ( // Check if normalizedData exists
-                    <Button variant="outline" size="sm" onClick={copyJsonToClipboard} className="flex items-center gap-2">
-                        <Copy className="h-4 w-4" />
-                        Data
-                    </Button>
-                )}
-                <Button variant="outline" size="sm" onClick={downloadCSV} className="flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    CSV
-                </Button>
-                <Button variant="outline" size="sm" onClick={copyTableToClipboard} className="flex items-center gap-2">
-                    <Copy className="h-4 w-4" />
-                    Text
-                </Button>
+                
+                {/* Export dropdown menu replacing individual buttons */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="flex items-center gap-2">
+                            <Download className="h-4 w-4" />
+                            Export
+                            <ChevronDown className="h-4 w-4 ml-1" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64">
+                        {/* Copy section */}
+                        <DropdownMenuItem onClick={copyTableToClipboard} className="flex items-center gap-2 cursor-pointer">
+                            <FileText className="h-4 w-4 text-green-500" />
+                            <span>Copy as Text</span>
+                        </DropdownMenuItem>
+                        
+                        {content && (
+                            <DropdownMenuItem onClick={copyMarkdownToClipboard} className="flex items-center gap-2 cursor-pointer">
+                                <FileDown className="h-4 w-4 text-purple-500" />
+                                <span>Copy as Markdown</span>
+                            </DropdownMenuItem>
+                        )}
+                        
+                        {tableData.normalizedData && (
+                            <DropdownMenuItem onClick={copyJsonToClipboard} className="flex items-center gap-2 cursor-pointer">
+                                <FileJson className="h-4 w-4 text-blue-500" />
+                                <span>Copy as JSON</span>
+                            </DropdownMenuItem>
+                        )}
+                        
+                        <DropdownMenuSeparator />
+                        
+                        {/* Download section */}
+                        <DropdownMenuItem onClick={downloadCSV} className="flex items-center gap-2 cursor-pointer">
+                            <FileSpreadsheet className="h-4 w-4 text-orange-500" />
+                            <span>Download as CSV</span>
+                        </DropdownMenuItem>
+                        
+                        {content && (
+                            <DropdownMenuItem onClick={downloadMarkdown} className="flex items-center gap-2 cursor-pointer">
+                                <FileDown className="h-4 w-4 text-indigo-500" />
+                                <span>Download as Markdown</span>
+                            </DropdownMenuItem>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                
                 {isEditingEnabled ? (
                     <>
                         <Button
@@ -307,4 +439,5 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         </div>
     );
 };
+
 export default MarkdownTable;

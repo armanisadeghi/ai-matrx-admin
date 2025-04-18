@@ -544,6 +544,21 @@ export const SAMPLE_SERVICE: Schema = {
     },
 };
 
+export const CONVERT_NORMALIZED_DATA_TO_USER_DATA: Schema = {
+    data: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "JsonEditor",
+        COMPONENT_PROPS: {},
+        ICON_NAME: "Grid2x2Plus",
+        DESCRIPTION: "Enter the ID of the chat to be converted to a recipe.",
+    },
+};
+
 export const PREPARE_BATCH_RECIPE: Schema = {
     chat_configs: {
         REQUIRED: true,
@@ -2625,6 +2640,7 @@ export const SERVICE_TASKS = {
         run_recipe_to_chat: RUN_RECIPE_TO_CHAT,
         run_batch_recipe: RUN_BATCH_RECIPE,
         prepare_batch_recipe: PREPARE_BATCH_RECIPE,
+        convert_normalized_data_to_user_data: CONVERT_NORMALIZED_DATA_TO_USER_DATA,
         mic_check: MIC_CHECK,
     },
     sample_service: {
