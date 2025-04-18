@@ -45,6 +45,7 @@ export default function Home() {
 
     // Handle error from OAuth provider
     if (error) {
+      console.error(`Authentication error for ${provider}:`, error);
       setProviderStates((current) => ({
         ...current,
         [provider]: {
@@ -61,6 +62,7 @@ export default function Home() {
 
     // Handle successful authorization code
     if (code) {
+      console.log(`Received ${provider} authorization code, processing...`);
       handleAuthCode(provider, code);
 
       // Clean up URL parameters
@@ -70,6 +72,8 @@ export default function Home() {
 
   // Handle the authorization code
   const handleAuthCode = async (provider: string, code: string) => {
+    console.log(`Starting token exchange for ${provider}`);
+    
     // Update loading state
     setProviderStates((current) => ({
       ...current,
@@ -84,6 +88,8 @@ export default function Home() {
       // Exchange the code for a token
       const data = await exchangeCodeForToken(provider, code);
 
+      console.log(`Successfully connected to ${provider}`);
+      
       // Update state with token and data
       setProviderStates((current) => ({
         ...current,
@@ -104,6 +110,8 @@ export default function Home() {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred";
 
+      console.error(`Error during ${provider} token exchange:`, errorMessage);
+      
       setProviderStates((current) => ({
         ...current,
         [provider]: {
@@ -117,6 +125,8 @@ export default function Home() {
 
   // Start OAuth flow for a provider
   const handleConnect = (provider: string) => {
+    console.log(`Initiating connection to ${provider}`);
+    
     // Update loading state
     setProviderStates((current) => ({
       ...current,
@@ -134,6 +144,7 @@ export default function Home() {
 
   // Load mock data for a provider
   const handleShowMockData = (provider: string) => {
+    console.log(`Loading mock data for ${provider}`);
     const mockData = generateMockData(provider);
 
     setProviderStates((current) => ({
@@ -153,6 +164,8 @@ export default function Home() {
 
   // Disconnect a provider
   const handleDisconnect = (provider: string) => {
+    console.log(`Disconnecting from ${provider}`);
+    
     setProviderStates((current) => ({
       ...current,
       [provider]: {

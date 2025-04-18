@@ -11,6 +11,12 @@ export const OAUTH_PROVIDERS: Record<string, OAuthProviderConfig> = {
     scopeDelimiter: ",",
     color: "purple-600",
     textColor: "white",
+    additionalParams: {
+      // Response type is required for Slack OAuth v2
+      response_type: "code",
+      // You can optionally add a user_scope parameter if you need user tokens as well
+      // user_scope: "identity.basic,identity.email"
+    },
     iconSvg: (
       <svg
         viewBox="0 0 24 24"

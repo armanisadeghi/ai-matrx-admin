@@ -14,15 +14,19 @@ interface ProviderConfig {
 // Provider configurations
 const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
   slack: {
-    clientId: process.env.SLACK_CLIENT_ID,
+    clientId: process.env.SLACK_CLIENT_ID, // Server-side env variable
     clientSecret: process.env.SLACK_CLIENT_SECRET,
     tokenUrl: 'https://slack.com/api/oauth.v2.access',
     redirectUri: `${process.env.SLACK_REDIRECT_URL}/app_callback/slack`,
     bodyFormat: 'form',
+    headers: {
+      'Accept': 'application/json',
+    },
     processResponseData: (data) => {
       if (!data.ok) {
         throw new Error(data.error || 'Slack API error');
       }
+      console.log('Slack app installed successfully:', data);
       return data;
     }
   },
@@ -38,8 +42,11 @@ export async function POST(
     const body = await request.json();
     const { code } = body;
 
+    console.log(`Processing ${provider} OAuth code exchange`);
+
     // Validate request
     if (!code) {
+      console.error('Missing authorization code');
       return NextResponse.json(
         { error: 'Authorization code is required' },
         { status: 400 }
@@ -48,6 +55,7 @@ export async function POST(
 
     // Check if provider is supported
     if (!PROVIDER_CONFIGS[provider]) {
+      console.error(`Unsupported provider: ${provider}`);
       return NextResponse.json(
         { error: `Unsupported provider: ${provider}` },
         { status: 400 }
@@ -59,8 +67,11 @@ export async function POST(
 
     // Validate provider configuration
     if (!clientId || !clientSecret) {
+      console.error(`${provider} client credentials are not configured`);
       throw new Error(`${provider} client credentials are not configured`);
     }
+
+    console.log(`Exchanging code for ${provider} token...`);
 
     // Prepare request headers
     const requestHeaders: Record<string, string> = {
@@ -81,13 +92,14 @@ export async function POST(
         grant_type: 'authorization_code'
       });
     } else {
-      requestBody = new URLSearchParams({
+      const params = new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
         code,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code'
       });
+      requestBody = params.toString();
     }
 
     // Exchange the code for a token
@@ -97,9 +109,14 @@ export async function POST(
       body: requestBody
     });
 
+    // Log response status
+    console.log(`${provider} token exchange response status:`, response.status);
+
     // Handle response errors
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`${provider} token exchange failed:`, errorText);
+      
       let errorMessage;
       try {
         const errorData = JSON.parse(errorText);
@@ -113,6 +130,7 @@ export async function POST(
 
     // Parse and process response data
     let responseData = await response.json();
+    console.log(`${provider} token exchange successful`);
     
     // Apply provider-specific response processing if needed
     if (processResponseData) {
@@ -120,6 +138,7 @@ export async function POST(
         responseData = processResponseData(responseData);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error processing response';
+        console.error(`${provider} response processing error:`, errorMessage);
         return NextResponse.json({ error: errorMessage }, { status: 400 });
       }
     }
@@ -133,6 +152,7 @@ export async function POST(
   }
 }
 
+// This handles the initial redirect from Slack
 export async function GET(
   request: NextRequest,
   { params }: { params: { provider: string } }
@@ -141,6 +161,8 @@ export async function GET(
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const error = url.searchParams.get('error');
+
+  console.log(`Received ${provider} OAuth callback`, { code: code ? 'present' : 'missing', error });
 
   if (error) {
     // Redirect to the home page with the error
