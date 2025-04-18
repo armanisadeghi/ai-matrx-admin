@@ -18,6 +18,59 @@ export interface Schema {
 }
 
 
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: "true",
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
+    },
+};
+
 export const CHAT_CONFIG_DEFINITION: Schema = {
     recipe_id: {
         REQUIRED: true,
@@ -140,59 +193,6 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
-    },
-};
-
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the id of the broker.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value of the broker.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: "true",
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
     },
 };
 
@@ -965,6 +965,81 @@ export const CREATE_WC_CLAIM: Schema = {
     },
 };
 
+export const SEARCH_AND_SCRAPE: Schema = {
+    keywords: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "ArrayField",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the keywords to search for.",
+        ICON_NAME: "whole-word",
+    },
+    country_code: {
+        REQUIRED: false,
+        DEFAULT: "all",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the country code to get search results for.",
+        ICON_NAME: "flag",
+    },
+    total_results_per_keyword: {
+        REQUIRED: false,
+        DEFAULT: 5,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the number of results per keyword to get.",
+        ICON_NAME: "flag",
+    },
+    search_type: {
+        REQUIRED: false,
+        DEFAULT: "all",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Kind of search type to scrape, 'web', 'news', or 'all'.",
+        ICON_NAME: "rss",
+    },
+    clean_output: {
+        REQUIRED: true,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Clean text formatting.",
+        ICON_NAME: "eraser",
+    },
+    get_raw_json_content: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get raw json content with results.",
+        ICON_NAME: "braces",
+    },
+};
+
 export const TRACK_CONTENT_GROUPING_RUN: Schema = {
     content_grouping_run_id: {
         REQUIRED: true,
@@ -1400,6 +1475,30 @@ export const QUICK_SCRAPE: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the urls to be scraped.",
         ICON_NAME: "Link",
+    },
+    clean_output: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Clean text formatting.",
+        ICON_NAME: "eraser",
+    },
+    get_raw_json_content: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get raw json content with results.",
+        ICON_NAME: "braces",
     },
 };
 
@@ -1982,6 +2081,21 @@ export const GET_ALL_CODE_BLOCKS: Schema = {
     },
 };
 
+export const GET_STRUCTURED_DATA: Schema = {
+    raw_markdown: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "textarea",
+        COMPONENT_PROPS: {"rows": 10},
+        DESCRIPTION: "Enter the raw markdown to be classified.",
+        ICON_NAME: "Key",
+    },
+};
+
 export const GET_CODE_BLOCKS_BY_LANGUAGE: Schema = {
     raw_markdown: {
         REQUIRED: true,
@@ -2437,6 +2551,7 @@ export const SERVICE_TASKS = {
     markdown_service: {
         classify_markdown: CLASSIFY_MARKDOWN,
         get_code_blocks_by_language: GET_CODE_BLOCKS_BY_LANGUAGE,
+        get_structured_data: GET_STRUCTURED_DATA,
         get_all_code_blocks: GET_ALL_CODE_BLOCKS,
         get_section_blocks: GET_SECTION_BLOCKS,
         get_section_groups: GET_SECTION_GROUPS,
@@ -2487,6 +2602,8 @@ export const SERVICE_TASKS = {
     },
     scraper_service_v2: {
         quick_scrape: QUICK_SCRAPE,
+        search_and_scrape: SEARCH_AND_SCRAPE,
+        mic_check: MIC_CHECK,
     },
     california_worker_compensation_service: {
         create_wc_claim: CREATE_WC_CLAIM,
