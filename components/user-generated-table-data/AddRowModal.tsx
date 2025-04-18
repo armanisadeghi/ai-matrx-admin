@@ -58,11 +58,18 @@ export default function AddRowModal({ tableId, isOpen, onClose, onSuccess }: Add
         if (error) throw error;
         if (!data.success) throw new Error(data.error || 'Failed to load table fields');
         
-        setFields(data.fields);
+        // Filter out any ID fields that should be auto-generated
+        const filteredFields = data.fields.filter((field: TableField) => {
+          const fieldNameLower = field.field_name.toLowerCase();
+          // Skip fields named exactly 'id' or ending with '_id'
+          return fieldNameLower !== 'id' && !fieldNameLower.endsWith('_id');
+        });
+        
+        setFields(filteredFields);
         
         // Initialize row data with default values
         const initialData: Record<string, any> = {};
-        data.fields.forEach((field: TableField) => {
+        filteredFields.forEach((field: TableField) => {
           initialData[field.field_name] = field.default_value !== null ? field.default_value : null;
         });
         
@@ -90,7 +97,7 @@ export default function AddRowModal({ tableId, isOpen, onClose, onSuccess }: Add
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
+    // Validate required fields (excluding any ID fields)
     const missingFields = fields
       .filter(field => field.is_required && (rowData[field.field_name] === null || rowData[field.field_name] === undefined))
       .map(field => field.display_name);
@@ -103,6 +110,11 @@ export default function AddRowModal({ tableId, isOpen, onClose, onSuccess }: Add
     try {
       setLoading(true);
       setError(null);
+      
+      console.log("Adding row with data:", {
+        p_table_id: tableId,
+        p_data: rowData
+      });
       
       // Call the RPC function
       const { data, error } = await supabase.rpc('add_data_row_to_user_table', {

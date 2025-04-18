@@ -108,11 +108,11 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   };
   
   // Load table data
-  const loadTableData = async (page = 1, pageLimit = limit, sort = sortField, direction = sortDirection, search = searchTerm) => {
+  const loadTableData = async (page = 1, pageLimit = limit, sort = sortField, direction = sortDirection, search = searchTerm, forceReload = false) => {
     setLoading(true);
     try {
       // First load table metadata and fields
-      if (!tableInfo || !fields.length) {
+      if (!tableInfo || !fields.length || forceReload) {
         const { data: tableData, error: tableError } = await supabase
           .rpc('get_user_table_complete', { p_table_id: tableId });
           
@@ -265,7 +265,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
         tableId={tableId}
         tableInfo={tableInfo}
         fields={fields}
-        loadTableData={() => loadTableData(currentPage, limit)}
+        loadTableData={(forceReload) => loadTableData(currentPage, limit, sortField, sortDirection, searchTerm, forceReload)}
         selectedRowId={selectedRowId}
         selectedRowData={selectedRowData}
         

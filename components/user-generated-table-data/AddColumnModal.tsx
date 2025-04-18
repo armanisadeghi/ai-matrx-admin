@@ -117,6 +117,7 @@ export default function AddColumnModal({ tableId, isOpen, onClose, onSuccess }: 
       setIsRequired(false);
       setDefaultValue('');
       
+      // Call the onSuccess callback first, then close the modal
       onSuccess();
       onClose();
     } catch (err) {

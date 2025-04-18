@@ -14,7 +14,7 @@ interface TableToolbarProps {
   tableId: string;
   tableInfo: any;
   fields: any[];
-  loadTableData: () => void;
+  loadTableData: (forceReload?: boolean) => void;
   selectedRowId: string | null;
   selectedRowData: Record<string, any> | null;
   
@@ -154,7 +154,7 @@ export default function TableToolbar({
         tableId={tableId}
         isOpen={showAddColumnModal}
         onClose={() => setShowAddColumnModal(false)}
-        onSuccess={() => loadTableData()}
+        onSuccess={() => loadTableData(true)}
       />
       <AddRowModal
         tableId={tableId}
