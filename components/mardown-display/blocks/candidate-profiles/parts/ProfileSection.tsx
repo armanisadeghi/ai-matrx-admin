@@ -66,24 +66,32 @@ const ProfileSection = ({
     }
   };
 
+  const handleSectionClick = (e: React.MouseEvent) => {
+    // Don't toggle if clicking on the dropdown menu
+    if ((e.target as HTMLElement).closest('.dropdown-trigger')) {
+      return;
+    }
+    toggleSection(section.id);
+  };
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>
         <div className="space-y-5 mb-6">
-          <div className="flex items-center justify-between border-b pb-2">
-            <div
-              className="flex items-center space-x-3 cursor-pointer group"
-              onClick={() => toggleSection(section.id)}
-            >
+          <div 
+            className="flex items-center justify-between border-b pb-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors rounded-md group cursor-pointer"
+            onClick={handleSectionClick}
+          >
+            <div className="flex items-center space-x-3 py-1 px-2 w-full">
               <div className="text-primary">
                 {getSectionIcon(section.title)}
               </div>
               <h3 className="text-lg font-semibold">{section.title}</h3>
-              <div className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="ml-1">
                 {expandedSections[section.id] ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  <ChevronUp className="h-4 w-4 text-muted-foreground opacity-100 group-hover:opacity-100" />
                 ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  <ChevronDown className="h-4 w-4 text-muted-foreground opacity-70 group-hover:opacity-100" />
                 )}
               </div>
             </div>
@@ -91,7 +99,12 @@ const ProfileSection = ({
             {editable && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 ml-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 ml-2 dropdown-trigger"
+                    onClick={(e) => e.stopPropagation()} // Prevent section toggle
+                  >
                     <MoreHorizontal className="h-4 w-4" />
                     <span className="sr-only">Actions</span>
                   </Button>
@@ -137,14 +150,12 @@ const ProfileSection = ({
               </DropdownMenu>
             )}
           </div>
-
           {expandedSections[section.id] && (
             <div className="pl-2 space-y-5">
               {/* Section content */}
               {section.content && (
                 <p className="text-sm text-muted-foreground mb-4">{renderContent(section.content)}</p>
               )}
-
               {/* Experience type sections with companies and roles */}
               {section.type === "experience" &&
                 section.experiences &&
@@ -160,7 +171,6 @@ const ProfileSection = ({
                     renderContent={renderContent}
                   />
                 ))}
-
               {/* Regular items for other section types */}
               {section.type !== "experience" &&
                 section.items &&
@@ -178,7 +188,6 @@ const ProfileSection = ({
           )}
         </div>
       </ContextMenuTrigger>
-
       <ContextMenuContent className="w-52">
         <ContextMenuItem onClick={() => openEditModal("section", section)}>
           <Edit className="h-4 w-4 mr-2" /> Edit Section

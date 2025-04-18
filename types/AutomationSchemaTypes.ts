@@ -164,6 +164,8 @@ export type AutomationTableName =
     | 'scrapeTaskResponse'
     | 'subcategory'
     | 'systemFunction'
+    | 'tableData'
+    | 'tableFields'
     | 'taskAssignments'
     | 'taskAttachments'
     | 'taskComments'
@@ -171,6 +173,7 @@ export type AutomationTableName =
     | 'tool'
     | 'transformer'
     | 'userPreferences'
+    | 'userTables'
     | 'wcClaim'
     | 'wcImpairmentDefinition'
     | 'wcInjury'
@@ -908,6 +911,24 @@ export type SystemFunctionData = Expand<EntityDataMixed<"systemFunction">>;
 export type SystemFunctionState = EntityStateType<"systemFunction">;
 export type SystemFunctionRecordMap = Record<"systemFunctionRecordId", SystemFunctionData>;
 
+export type TableDataType = AutomationEntity<"tableData">;
+export type TableDataDataRequired = Expand<EntityData<"tableData">>;
+export type TableDataDataOptional = Expand<EntityDataOptional<"tableData">>;
+export type TableDataRecordWithKey = Expand<EntityDataWithKey<"tableData">>;
+export type TableDataProcessed = Expand<ProcessedEntityData<"tableData">>;
+export type TableDataData = Expand<EntityDataMixed<"tableData">>;
+export type TableDataState = EntityStateType<"tableData">;
+export type TableDataRecordMap = Record<"tableDataRecordId", TableDataData>;
+
+export type TableFieldsType = AutomationEntity<"tableFields">;
+export type TableFieldsDataRequired = Expand<EntityData<"tableFields">>;
+export type TableFieldsDataOptional = Expand<EntityDataOptional<"tableFields">>;
+export type TableFieldsRecordWithKey = Expand<EntityDataWithKey<"tableFields">>;
+export type TableFieldsProcessed = Expand<ProcessedEntityData<"tableFields">>;
+export type TableFieldsData = Expand<EntityDataMixed<"tableFields">>;
+export type TableFieldsState = EntityStateType<"tableFields">;
+export type TableFieldsRecordMap = Record<"tableFieldsRecordId", TableFieldsData>;
+
 export type TaskAssignmentsType = AutomationEntity<"taskAssignments">;
 export type TaskAssignmentsDataRequired = Expand<EntityData<"taskAssignments">>;
 export type TaskAssignmentsDataOptional = Expand<EntityDataOptional<"taskAssignments">>;
@@ -970,6 +991,15 @@ export type UserPreferencesProcessed = Expand<ProcessedEntityData<"userPreferenc
 export type UserPreferencesData = Expand<EntityDataMixed<"userPreferences">>;
 export type UserPreferencesState = EntityStateType<"userPreferences">;
 export type UserPreferencesRecordMap = Record<"userPreferencesRecordId", UserPreferencesData>;
+
+export type UserTablesType = AutomationEntity<"userTables">;
+export type UserTablesDataRequired = Expand<EntityData<"userTables">>;
+export type UserTablesDataOptional = Expand<EntityDataOptional<"userTables">>;
+export type UserTablesRecordWithKey = Expand<EntityDataWithKey<"userTables">>;
+export type UserTablesProcessed = Expand<ProcessedEntityData<"userTables">>;
+export type UserTablesData = Expand<EntityDataMixed<"userTables">>;
+export type UserTablesState = EntityStateType<"userTables">;
+export type UserTablesRecordMap = Record<"userTablesRecordId", UserTablesData>;
 
 export type WcClaimType = AutomationEntity<"wcClaim">;
 export type WcClaimDataRequired = Expand<EntityData<"wcClaim">>;

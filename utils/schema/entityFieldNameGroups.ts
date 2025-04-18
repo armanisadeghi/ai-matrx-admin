@@ -408,6 +408,16 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "description", "sample", "inputParams", "outputOptions", "rfId"]
 },
+  tableData: {
+  nativeFields: ["id", "tableId", "data", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["tableId", "data", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt"]
+},
+  tableFields: {
+  nativeFields: ["id", "tableId", "fieldName", "displayName", "dataType", "fieldOrder", "isRequired", "defaultValue", "validationRules", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["tableId", "fieldName", "displayName", "dataType", "fieldOrder", "isRequired", "defaultValue", "validationRules", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt"]
+},
   taskAssignments: {
   nativeFields: ["id", "taskId", "userId", "assignedBy", "assignedAt"],
   primaryKeyFields: ["id"],
@@ -442,6 +452,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["userId", "preferences", "createdAt", "updatedAt"],
   primaryKeyFields: ["userId"],
   nativeFieldsNoPk: ["preferences", "createdAt", "updatedAt"]
+},
+  userTables: {
+  nativeFields: ["id", "tableName", "description", "version", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["tableName", "description", "version", "userId", "isPublic", "authenticatedRead", "createdAt", "updatedAt"]
 },
   wcClaim: {
   nativeFields: ["id", "createdAt", "applicantName", "personId", "dateOfBirth", "dateOfInjury", "ageAtDoi", "occupationalCode", "weeklyEarnings"],

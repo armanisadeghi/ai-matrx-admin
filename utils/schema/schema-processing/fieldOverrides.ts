@@ -410,6 +410,10 @@ const subcategoryFieldOverrides: AllFieldOverrides = {};
 
 const systemFunctionFieldOverrides: AllFieldOverrides = {};
 
+const tableDataFieldOverrides: AllFieldOverrides = {};
+
+const tableFieldsFieldOverrides: AllFieldOverrides = {};
+
 const taskAssignmentsFieldOverrides: AllFieldOverrides = {};
 
 const taskAttachmentsFieldOverrides: AllFieldOverrides = {};
@@ -423,6 +427,8 @@ const toolFieldOverrides: AllFieldOverrides = {};
 const transformerFieldOverrides: AllFieldOverrides = {};
 
 const userPreferencesFieldOverrides: AllFieldOverrides = {};
+
+const userTablesFieldOverrides: AllFieldOverrides = {};
 
 const wcClaimFieldOverrides: AllFieldOverrides = {};
 
@@ -513,6 +519,8 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     scrapeTaskResponse: scrapeTaskResponseFieldOverrides,
     subcategory: subcategoryFieldOverrides,
     systemFunction: systemFunctionFieldOverrides,
+    tableData: tableDataFieldOverrides,
+    tableFields: tableFieldsFieldOverrides,
     taskAssignments: taskAssignmentsFieldOverrides,
     taskAttachments: taskAttachmentsFieldOverrides,
     taskComments: taskCommentsFieldOverrides,
@@ -520,6 +528,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     tool: toolFieldOverrides,
     transformer: transformerFieldOverrides,
     userPreferences: userPreferencesFieldOverrides,
+    userTables: userTablesFieldOverrides,
     wcClaim: wcClaimFieldOverrides,
     wcImpairmentDefinition: wcImpairmentDefinitionFieldOverrides,
     wcInjury: wcInjuryFieldOverrides,

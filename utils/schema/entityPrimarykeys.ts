@@ -316,6 +316,14 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  tableData: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  tableFields: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   taskAssignments: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -343,6 +351,10 @@ export const primaryKeys = {
   userPreferences: {
     frontendFields: ['user_id'],
     databaseColumns: ['userId'],
+  },
+  userTables: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
   },
   wcClaim: {
     frontendFields: ['id'],
