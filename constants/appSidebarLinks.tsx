@@ -75,6 +75,11 @@ export const primaryLinks = [
         icon: <BsChatRight className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+        label: "Tables",
+        href: "/data",
+        icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
         label: "Component Editor",
         href: "/brokers/component-editor",
         icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
