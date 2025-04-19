@@ -11,8 +11,10 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
-import { selectStreamText, selectStreamData, selectIsStreaming, selectStreamEnd } from "@/lib/redux/socket/streamingSlice";
+import { selectStreamText, selectStreamData, selectIsStreaming, selectStreamEnd, selectStreamError } from "@/lib/redux/socket/streamingSlice";
 import { RootState } from "@/lib/redux/store";
+import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
+import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
@@ -86,20 +88,31 @@ interface ChatStreamDisplayProps {
 
 const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className }) => {
     const dispatch = useAppDispatch();
-    const [content, setContent] = useState<string>("");
     const chatActions = getChatActionsWithThunks();
-    const streamText = useAppSelector((state: RootState) => selectStreamText(state, eventName));
+    const chatSelectors = createChatSelectors();
+    const content = useAppSelector((state: RootState) => selectStreamText(state, eventName));
     const streamData = useAppSelector((state: RootState) => selectStreamData(state, eventName));
     const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
     const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
+    const streamError = useAppSelector((state: RootState) => selectStreamError(state, eventName));
+    const [isFirstChunkReceived, setIsFirstChunkReceived] = useState(false);
+    const settings = useAppSelector(chatSelectors.activeMessageSettings);
+    const shouldShowLoader = useAppSelector(chatSelectors.shouldShowLoader);
+    const activeMessageStatus = useAppSelector(chatSelectors.activeMessageStatus);
 
-    const handleNewTextContent = (textContent: string) => {
-        setContent(textContent);
-    };
+    useEffect(() => {
+        if (isFirstChunkReceived) return;
+        if (content.length > 0) {
+            setIsFirstChunkReceived(true);
+            dispatch(chatActions.updateMessageStatus({ status: "firstChunkReceived" }));
+        }
+    }, [content]);
 
+    
     const handleStreamEnd = () => {
-        console.log("[CHAT STREAM DISPLAY] Stream ended");
+        console.log("===> [CHAT STREAM DISPLAY] Stream ended");
         dispatch(chatActions.setIsNotStreaming());
+        dispatch(chatActions.updateMessageStatus({ status: "completed" }));
         dispatch(chatActions.fetchMessagesForActiveConversation());
     };
 
@@ -112,8 +125,15 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     };
 
     useEffect(() => {
-        handleNewTextContent(streamText);
-    }, [streamText]);
+        if (streamError) {
+            dispatch(chatActions.updateMessageStatus({ status: "error" }));
+            console.log("===> [CHAT STREAM DISPLAY] Stream error");
+        }
+    }, [streamError]);
+
+    // useEffect(() => {
+    //     handleNewTextContent(streamText);
+    // }, [streamText]);
 
     useEffect(() => {
         if (streamData) {
@@ -162,7 +182,23 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         ));
     };
 
-    if (content.length < 2) return null;
+    // Show the loader based on the official shouldShowLoader logic, but only if we don't have content yet
+    const shouldDisplayLoader = shouldShowLoader && content.length < 2 && isStreaming;
+
+    if (content.length < 2) {
+        // Return loading indicator if the official shouldShowLoader logic says we should and we're streaming
+        if (shouldDisplayLoader) {
+            return (
+                <div className="mb-3 w-full text-left">
+                    <div className="inline-block p-3 rounded-lg bg-inherit">
+                        <ControlledLoadingIndicator settings={settings} />
+                    </div>
+                </div>
+            );
+        }
+        // Return null if we're not supposed to show the loader
+        return null;
+    }
 
     return (
         <div className="mb-3 w-full text-left">

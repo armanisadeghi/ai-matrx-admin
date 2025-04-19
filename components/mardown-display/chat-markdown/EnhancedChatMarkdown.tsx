@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/styles/themes/utils";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
 import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
@@ -45,6 +45,12 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     messageId,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [currentContent, setCurrentContent] = useState(content);
+    
+    // Update internal content when prop changes
+    useEffect(() => {
+        setCurrentContent(content);
+    }, [content]);
 
     const preprocessContent = (mdContent: string): string => {
         // Match the format [Image URL: https://example.com/image.png]
@@ -63,11 +69,36 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
 
     const handleSaveEdit = (newContent: string) => {
         console.log("Saving edited content:", newContent);
+        setCurrentContent(newContent);
         onContentChange?.(newContent);
         setIsEditorOpen(false);
     };
 
-    const processedContent = preprocessContent(content);
+    // Handler for code changes within CodeBlock components
+    const handleCodeChange = (newCode: string, originalCode: string) => {
+        // Replace the original code with new code in the full content
+        const updatedContent = currentContent.replace(originalCode, newCode);
+        setCurrentContent(updatedContent);
+        onContentChange?.(updatedContent);
+    };
+
+    // Handler for table changes
+    const handleTableChange = (updatedTableMarkdown: string, originalBlockContent: string) => {
+        // We need to find the original table in the markdown and replace it
+        if (onContentChange) {
+            try {
+                // This is a simplified approach - in a real implementation, you might need more sophisticated
+                // parsing to correctly locate and replace the table in the full markdown content
+                const updatedContent = currentContent.replace(originalBlockContent, updatedTableMarkdown);
+                setCurrentContent(updatedContent);
+                onContentChange(updatedContent);
+            } catch (error) {
+                console.error("Error updating table content:", error);
+            }
+        }
+    };
+
+    const processedContent = preprocessContent(currentContent);
     const blocks = splitContentIntoBlocks(processedContent);
 
     const renderBlock = (block: ContentBlock, index: number) => {
@@ -84,7 +115,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                         language={block.language}
                         fontSize={16}
                         className="my-3"
-                        onCodeChange={(newCode) => console.log("Code updated:", newCode)}
+                        onCodeChange={(newCode) => handleCodeChange(newCode, block.content)}
                     />
                 );
             case "table":
@@ -93,7 +124,14 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                     console.warn("Skipping invalid or empty table:", block.content);
                     return null;
                 }
-                return <MarkdownTable key={index} data={{ ...tableData.markdown, normalizedData: tableData.data }} content={block.content} />;
+                return (
+                    <MarkdownTable 
+                        key={index} 
+                        data={{ ...tableData.markdown, normalizedData: tableData.data }} 
+                        content={block.content}
+                        onContentChange={onContentChange ? (updatedTable) => handleTableChange(updatedTable, block.content) : undefined}
+                    />
+                );
             case "transcript":
                 return <TranscriptBlock key={index} content={block.content} />;
             case "tasks":
@@ -148,11 +186,11 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
-            <InlineCopyButton content={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
+            <InlineCopyButton content={currentContent} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
 
             <FullScreenMarkdownEditor
                 isOpen={isEditorOpen}
-                initialContent={content}
+                initialContent={currentContent}
                 onSave={handleSaveEdit}
                 onCancel={handleCancelEdit}
                 analysisData={analysisData}

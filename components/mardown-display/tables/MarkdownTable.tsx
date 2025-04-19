@@ -47,6 +47,7 @@ interface MarkdownTableProps {
     theme?: string;
     onSave?: (tableData: { headers: string[]; rows: string[][] }) => void;
     content?: string;
+    onContentChange?: (updatedMarkdown: string) => void;
 }
 
 const MarkdownTable: React.FC<MarkdownTableProps> = ({
@@ -56,6 +57,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     theme = "professional",
     onSave = () => {},
     content = "",
+    onContentChange,
 }) => {
     const [tableData, setTableData] = useState<{
         headers: string[];
@@ -97,17 +99,33 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         return <span dangerouslySetInnerHTML={{ __html: html }} />;
     };
 
+    // Helper function to generate markdown table from current state
+    const generateMarkdownTable = () => {
+        const maxLengths = Array(tableData.headers.length).fill(0);
+        [tableData.headers, ...tableData.rows].forEach((row) => {
+            row.forEach((cell, i) => {
+                maxLengths[i] = Math.max(maxLengths[i], cell.length);
+            });
+        });
+        const formatRow = (row: string[]) => "| " + row.map((cell, i) => cell.padEnd(maxLengths[i])).join(" | ") + " |";
+        const separator = "|-" + maxLengths.map((len) => "-".repeat(len)).join("-|-") + "-|";
+        return [formatRow(tableData.headers), separator, ...tableData.rows.map((row) => formatRow(row))].join("\n");
+    };
+
+    // Function to notify parent of content changes
+    const notifyContentChange = () => {
+        if (onContentChange && content) {
+            // If we have the original content string, we need to replace the table portion
+            // This is a simplified approach - in a real implementation, you might need more sophisticated
+            // parsing to correctly locate and replace the table in the markdown
+            const updatedMarkdown = generateMarkdownTable();
+            onContentChange(updatedMarkdown);
+        }
+    };
+
     const copyTableToClipboard = async () => {
         try {
-            const maxLengths = Array(tableData.headers.length).fill(0);
-            [tableData.headers, ...tableData.rows].forEach((row) => {
-                row.forEach((cell, i) => {
-                    maxLengths[i] = Math.max(maxLengths[i], cell.length);
-                });
-            });
-            const formatRow = (row: string[]) => "| " + row.map((cell, i) => cell.padEnd(maxLengths[i])).join(" | ") + " |";
-            const separator = "|-" + maxLengths.map((len) => "-".repeat(len)).join("-|-") + "-|";
-            const formattedTable = [formatRow(tableData.headers), separator, ...tableData.rows.map((row) => formatRow(row))].join("\n");
+            const formattedTable = generateMarkdownTable();
             await navigator.clipboard.writeText(formattedTable);
             toast.success("Table copied to clipboard");
         } catch (err: any) {
@@ -211,6 +229,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             onSave(tableData);
             setEditMode("none");
             toast.info("Edit mode deactivated");
+            notifyContentChange();
         } else {
             setEditMode("header");
             toast.info("Edit mode activated");
@@ -245,6 +264,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         onSave(tableData);
         setEditMode("none");
         toast.success("Table data saved");
+        notifyContentChange();
     };
 
     const handleCancel = () => {

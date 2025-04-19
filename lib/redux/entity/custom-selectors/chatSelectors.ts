@@ -19,6 +19,7 @@ import {
     MessageRecordWithKey,
 } from "@/types/AutomationSchemaTypes";
 import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
+import { InputControlsSettings } from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 
 const trace = "ENTITY SELECTORS";
 
@@ -366,6 +367,8 @@ export const createChatSelectors = () => {
 
     const conversationIsNew = createSelector([conversationCustomData], (customData): boolean => customData?.isNewChat !== false);
 
+    const isDebugMode = createSelector([conversationCustomData], (customData): boolean => Boolean(customData?.isDebugMode));
+
     const messageCustomData = createSelector([selectMessageEntity], (entity): Record<string, unknown> | undefined => entity?.customData);
     const aiModelCustomData = createSelector([selectAiModelEntity], (entity): Record<string, unknown> | undefined => entity?.customData);
 
@@ -403,6 +406,58 @@ export const createChatSelectors = () => {
     );
 
     const activeMessageMetadata = createSelector([activeMessage], (message) => message?.metadata);
+    const activeMessageStatus = createSelector([activeMessageMetadata], (metadata) => metadata?.status);
+    const shouldShowLoader = createSelector([activeMessageStatus], (status) => status !== "completed" && status !== "error" && status !== "pending" && status !== undefined);
+
+
+    const activeMessageSettings = createSelector(
+        [activeMessageMetadata],
+        (metadata): InputControlsSettings => {
+
+            const settings: InputControlsSettings = {
+            searchEnabled: false,
+            toolsEnabled: false,
+            thinkEnabled: false,
+            researchEnabled: false,
+            recipesEnabled: false,
+            planEnabled: false,
+            audioEnabled: false,
+            enableAskQuestions: false,
+            enableBrokers: false
+          };
+          
+          // If no metadata, return default settings (all false)
+          if (!metadata) {
+            return settings;
+          }
+          
+          // Process straightforward settings
+          // Only set to true if explicitly true in metadata
+          if (metadata.toolsEnabled === true) settings.toolsEnabled = true;
+          if (metadata.searchEnabled === true) settings.searchEnabled = true;
+          if (metadata.thinkEnabled === true) settings.thinkEnabled = true;
+          if (metadata.enableAskQuestions === true) settings.enableAskQuestions = true;
+          if (metadata.enableBrokers === true) settings.enableBrokers = true;
+          if (metadata.audioEnabled === true) settings.audioEnabled = true;
+          if (metadata.planEnabled === true) settings.planEnabled = true;
+          
+          // Process files - if we have any files, enable research
+          if (metadata.files && Array.isArray(metadata.files) && metadata.files.length > 0) {
+            settings.researchEnabled = true;
+          }
+          
+          // Add any additional computed settings here
+          // For example, if you want to enable recipes based on other metadata
+          if (metadata.recipesEnabled === true) {
+            settings.recipesEnabled = true;
+          }
+          
+          // Return the computed settings
+          return settings;
+        }
+      );  
+
+
     const activeConversationMetadata = createSelector([activeConversation], (conversation) => conversation?.metadata);
 
     const availableTools = createSelector([activeMessageMetadata], (metadata) => metadata?.availableTools);
@@ -497,6 +552,13 @@ export const createChatSelectors = () => {
         isLastMessageAssistant,
         isStreaming,
         selectMarkdownAnalysisData,
+
+        // New selectors
+        activeMessageSettings,
+        activeMessageStatus,
+        shouldShowLoader,
+
+        isDebugMode,
     };
 };
 

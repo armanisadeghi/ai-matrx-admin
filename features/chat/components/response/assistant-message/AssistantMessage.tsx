@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, Edit, Share2 } from "lucide-react";
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
-import { localMessage } from "../ResponseColumn";
+import { localMessage } from "@/features/chat/components/response/MessageItem";
 import { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
 import { parseMarkdownToText } from "@/hooks/tts/simple/parse-markdown-for-speech";
 
@@ -32,6 +32,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     const [isDisliked, setIsDisliked] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
     const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [isAppearing, setIsAppearing] = useState(true);    
     const content = message.content;
     
     const {
@@ -49,6 +50,15 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     const isPlaying = playerState === "playing";
     const isPaused = playerState === "paused";
     const isAudioReady = connectionState === "ready";
+    
+    // Add effect to control fade-in animation
+    useEffect(() => {
+        // After component mounts, set isAppearing to false (removing the opacity-0)
+        const timer = setTimeout(() => {
+            setIsAppearing(false);
+        }, 50);
+        return () => clearTimeout(timer);
+    }, []);
     
     const handleCopy = async () => {
         try {
@@ -109,8 +119,15 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
         setIsEditorOpen(false);
     };
 
+    // Handler for EnhancedChatMarkdown content changes
+    const handleMarkdownContentChange = (newContent: string) => {
+        if (onContentUpdate) {
+            onContentUpdate(newContent);
+        }
+    };
+
     return (
-        <div className="flex">
+        <div className={`flex ${isAppearing ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}>
             <div className="max-w-full w-full relative">
                 <EnhancedChatMarkdown
                     content={content}
@@ -120,6 +137,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                     isStreamActive={isStreamActive}
                     analysisData={markdownAnalysisData}
                     messageId={message.id}
+                    onContentChange={handleMarkdownContentChange}
                 />
                 {!isStreamActive && !isOverlay && (
                     <div className="flex items-center space-x-0">

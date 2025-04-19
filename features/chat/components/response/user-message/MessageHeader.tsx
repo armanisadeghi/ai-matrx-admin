@@ -95,7 +95,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
           ) : (
             <ArrowDown size={16} className={isEditing ? "opacity-40" : ""} />
           )}
-          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             Scroll to bottom
           </span>
         </button>
@@ -111,7 +111,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
           ) : (
             <Save size={16} className={isEditing ? "opacity-40" : ""} />
           )}
-          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             Save as prompt
           </span>
         </button>
@@ -127,7 +127,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
           ) : (
             <Copy size={16} className={isEditing ? "opacity-40" : ""} />
           )}
-          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             Copy to clipboard
           </span>
         </button>
@@ -138,7 +138,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
           aria-label={isEditing ? "Cancel edit" : "Edit message"}
         >
           {isEditing ? <X size={16} /> : <Edit2 size={16} />}
-          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+          <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-zinc-800 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
             {isEditing ? "Cancel edit" : "Edit message"}
           </span>
         </button>

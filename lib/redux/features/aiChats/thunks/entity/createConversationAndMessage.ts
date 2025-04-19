@@ -122,6 +122,7 @@ export const saveConversationAndMessage = createAppThunk<
         ];
 
         const chatActions = getChatActionsWithThunks();
+        dispatch(chatActions.updateMessageStatus({ status: "processing" }));
 
         const results = await dispatch(saveRecordsInOrder(payloads)).unwrap();
 

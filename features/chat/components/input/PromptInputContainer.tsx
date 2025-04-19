@@ -91,6 +91,7 @@ const PromptInputContainer: React.FC<PromptInputContainerProps> = ({
         }
 
         dispatch(chatActions.updateMessageContent({ value: content }));
+        dispatch(chatActions.updateMessageStatus({ status: "submitted" }));
         setContent("");
 
         try {
