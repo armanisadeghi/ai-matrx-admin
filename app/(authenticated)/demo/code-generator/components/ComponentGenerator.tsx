@@ -1,10 +1,12 @@
+// File Location: app/(authenticated)/demo/code-generator/components/ComponentGenerator.tsx
+
 'use client';
+
 import DynamicComponentRenderer from './DynamicComponentRenderer';
 import React, { useState, useEffect } from 'react'; 
 import AIAssistant from './AIAssistant';
 import CodeEditor from './CodeEditor';
 import ComponentManager from './ComponentManager';
-
 
 // Main application component that orchestrates everything
 const ComponentGenerator = () => {
@@ -13,31 +15,169 @@ const ComponentGenerator = () => {
   const [currentComponentName, setCurrentComponentName] = useState('');
   const [aiSuggestion, setAiSuggestion] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-
+  
   // Example initial code to help users get started
   const initialCode = `
 // You can use React hooks and Tailwind CSS here
-function MyComponent() {
-  const [count, setCount] = React.useState(0);
+import { useState, useEffect } from "react";
+
+function EnhancedCounter() {
+  const [count, setCount] = useState(0);
+  const [incrementAmount, setIncrementAmount] = useState(1);
+  const [theme, setTheme] = useState("blue");
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState([]);
+  
+  // Update history when count changes
+  useEffect(() => {
+    if (count !== 0) {
+      setHistory(prev => [...prev, count]);
+    }
+  }, [count]);
+  
+  // Handle count increment
+  const handleIncrement = () => {
+    setCount(count + incrementAmount);
+  };
+  
+  // Handle count decrement
+  const handleDecrement = () => {
+    setCount(count - incrementAmount);
+  };
+  
+  // Reset counter
+  const handleReset = () => {
+    setCount(0);
+    setHistory([]);
+  };
+  
+  // Toggle history display
+  const toggleHistory = () => {
+    setShowHistory(!showHistory);
+  };
+  
+  // Change theme
+  const toggleTheme = () => {
+    setTheme(theme === "blue" ? "purple" : "blue");
+  };
+  
+  // Theme-based styles
+  const themeColors = {
+    blue: {
+      bg: "bg-blue-100 dark:bg-blue-900",
+      button: "bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700",
+      highlight: "text-blue-700 dark:text-blue-300"
+    },
+    purple: {
+      bg: "bg-purple-100 dark:bg-purple-900",
+      button: "bg-purple-500 dark:bg-purple-600 hover:bg-purple-600 dark:hover:bg-purple-700",
+      highlight: "text-purple-700 dark:text-purple-300"
+    }
+  };
   
   return (
-    <div className="p-4 bg-blue-100 dark:bg-blue-900 rounded-lg">
-      <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">Hello from My Component!</h2>
-      <p className="mb-2 text-gray-700 dark:text-gray-300">You clicked the button {count} times</p>
-      <button 
-        className="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors"
-        onClick={() => setCount(count + 1)}
-      >
-        Click me
-      </button>
+    <div className={\`p-6 \${themeColors[theme].bg} rounded-lg shadow-md transition-all duration-300 max-w-md\`}>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+          Enhanced Counter
+        </h2>
+        <button 
+          onClick={toggleTheme}
+          className={\`px-3 py-1 \${themeColors[theme].button} text-white rounded-full text-sm\`}
+        >
+          Switch Theme
+        </button>
+      </div>
+      
+      <div className="mb-6 text-center">
+        <span className={\`text-5xl font-bold \${themeColors[theme].highlight}\`}>
+          {count}
+        </span>
+      </div>
+      
+      <div className="flex justify-between gap-2 mb-4">
+        <button 
+          className={\`px-4 py-2 \${themeColors[theme].button} text-white rounded flex-1 flex items-center justify-center\`}
+          onClick={handleDecrement}
+        >
+          <span className="text-xl">-</span>
+        </button>
+        
+        <button 
+          className={\`px-4 py-2 \${themeColors[theme].button} text-white rounded flex-1 flex items-center justify-center\`}
+          onClick={handleIncrement}
+        >
+          <span className="text-xl">+</span>
+        </button>
+      </div>
+      
+      <div className="mb-4">
+        <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm">
+          Increment/Decrement Amount:
+        </label>
+        <input 
+          type="range" 
+          min="1" 
+          max="10" 
+          value={incrementAmount} 
+          onChange={(e) => setIncrementAmount(parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <span>1</span>
+          <span>{incrementAmount}</span>
+          <span>10</span>
+        </div>
+      </div>
+      
+      <div className="flex justify-between gap-2 mb-4">
+        <button 
+          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors flex-1"
+          onClick={handleReset}
+        >
+          Reset
+        </button>
+        
+        <button 
+          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors flex-1"
+          onClick={toggleHistory}
+        >
+          {showHistory ? "Hide" : "Show"} History
+        </button>
+      </div>
+      
+      {showHistory && (
+        <div className="mt-4 p-3 bg-white dark:bg-gray-800 rounded-lg">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Count History:
+          </h3>
+          {history.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {history.map((value, index) => (
+                <span 
+                  key={index} 
+                  className={\`px-2 py-1 text-xs text-white rounded \${themeColors[theme].button}\`}
+                >
+                  {value}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+              No history yet. Try changing the count!
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-// This component will be rendered in the preview
-render(<MyComponent />);
-  `.trim();
 
+// This component will be rendered in the preview
+render(<EnhancedCounter />);
+  `.trim();
+  
   useEffect(() => {
     // Initialize with example code
     if (!code) {
@@ -59,12 +199,12 @@ render(<MyComponent />);
     
     loadSavedComponents();
   }, []);
-
+  
   // Reset code to initial example
   const resetCode = () => {
     setCode(initialCode);
   };
-
+  
   // Simulate AI code generation (in real app, this would call your AI service)
   const generateWithAI = async (prompt) => {
     setIsGenerating(true);
@@ -76,8 +216,10 @@ render(<MyComponent />);
     let suggestion = '';
     if (prompt.includes('counter')) {
       suggestion = `
+import { useState } from "react";
+
 function CounterComponent() {
-  const [count, setCount] = React.useState(0);
+  const [count, setCount] = useState(0);
   
   return (
     <div className="p-6 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-md">
@@ -101,13 +243,16 @@ function CounterComponent() {
   );
 }
 
+// This component will be rendered in the preview
 render(<CounterComponent />);
       `;
     } else if (prompt.includes('form')) {
       suggestion = `
+import { useState } from "react";
+
 function FormComponent() {
-  const [formData, setFormData] = React.useState({ name: '', email: '' });
-  const [submitted, setSubmitted] = React.useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '' });
+  const [submitted, setSubmitted] = useState(false);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -172,10 +317,14 @@ function FormComponent() {
   );
 }
 
+
+// This component will be rendered in the preview
 render(<FormComponent />);
       `;
     } else {
       suggestion = `
+import { useState } from "react";
+
 function CustomComponent() {
   return (
     <div className="p-6 bg-gradient-to-r from-purple-400 to-pink-500 dark:from-purple-600 dark:to-pink-700 rounded-xl text-white shadow-lg">
@@ -186,6 +335,8 @@ function CustomComponent() {
   );
 }
 
+
+// This component will be rendered in the preview
 render(<CustomComponent />);
       `;
     }
@@ -193,20 +344,19 @@ render(<CustomComponent />);
     setAiSuggestion(suggestion);
     setIsGenerating(false);
   };
-
+  
   // Apply AI suggestion to editor
   const applySuggestion = () => {
     setCode(aiSuggestion);
     setAiSuggestion('');
   };
-
+  
   // Save current component to database
   const saveComponent = async () => {
     if (!currentComponentName.trim()) {
       alert('Please enter a name for your component');
       return;
     }
-
     // In a real app, you would save to your database
     // For demo purposes, we'll use localStorage
     const newComponent = {
@@ -227,20 +377,20 @@ render(<CustomComponent />);
       alert('Failed to save component');
     }
   };
-
+  
   // Load a saved component into the editor
   const loadComponent = (component) => {
     setCode(component.code);
     setCurrentComponentName(component.name);
   };
-
+  
   // Delete a saved component
   const deleteComponent = (id) => {
     const updatedComponents = savedComponents.filter(comp => comp.id !== id);
     setSavedComponents(updatedComponents);
     localStorage.setItem('savedComponents', JSON.stringify(updatedComponents));
   };
-
+  
   return (
     <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-800">
       <header className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-800 text-white p-4">
@@ -295,6 +445,3 @@ render(<CustomComponent />);
 
 // Export the main component for use in the app
 export default ComponentGenerator;
-
-// Also export the DynamicComponentRenderer so it can be used independently
-export { DynamicComponentRenderer };

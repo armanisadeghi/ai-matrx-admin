@@ -11,6 +11,7 @@ import { SocketManager } from "@/lib/redux/socket/manager";
 import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
 import { Loader2, X, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 
 interface SaveTableResponse {
   table_id: string;
@@ -40,11 +41,40 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveResponse, setSaveResponse] = useState<SaveTableResponse | null>(null);
   const [stage, setStage] = useState<"form" | "saving" | "result">("form");
+  const [isLoading, setIsLoading] = useState(false);
   
   const socketManager = SocketManager.getInstance();
   const toast = useToastManager();
   const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const responseReceivedRef = useRef(false);
+
+  // Define loading states based on table complexity
+  const getLoadingStates = () => {
+    const rowCount = Array.isArray(tableData) ? tableData.length : 10;
+    const baseMessages = [
+      { text: "Initializing table structure..." },
+      { text: "Analyzing data patterns..." },
+      { text: "Optimizing columns and rows..." },
+      { text: "Creating database entries..." },
+      { text: "Generating table metadata..." },
+      { text: "Setting up data relationships..." },
+      { text: "Finalizing table creation..." },
+      { text: "Almost there! Preparing your table..." }
+    ];
+    
+    // For larger tables, add more detailed steps
+    if (rowCount > 20) {
+      baseMessages.splice(3, 0, { text: "Processing data records..." });
+      baseMessages.splice(5, 0, { text: "Validating data integrity..." });
+    }
+    
+    if (rowCount > 50) {
+      baseMessages.splice(2, 0, { text: "Optimizing for large dataset..." });
+      baseMessages.splice(7, 0, { text: "Running performance checks..." });
+    }
+    
+    return baseMessages;
+  };
 
   // Clear safety timeout on unmount
   useEffect(() => {
@@ -68,6 +98,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           setTableDescription("");
         }
         setIsSaving(false);
+        setIsLoading(false);
       }, 300);
       
       return () => clearTimeout(timeout);
@@ -88,6 +119,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
 
     setIsSaving(true);
     setStage("saving");
+    setIsLoading(true);
     console.log("Starting direct socket save process");
 
     try {
@@ -125,6 +157,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
             setSaveResponse(response);
             setStage("result");
             setIsSaving(false);
+            setIsLoading(false);
             
             // Clear safety timeout
             if (safetyTimeoutRef.current) {
@@ -148,6 +181,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
             toast.error(`Failed to save table: ${response.error}`);
             setStage("form");
             setIsSaving(false);
+            setIsLoading(false);
             return;
           }
           
@@ -169,6 +203,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
             setSaveResponse(tableData);
             setStage("result");
             setIsSaving(false);
+            setIsLoading(false);
             
             // Clear safety timeout
             if (safetyTimeoutRef.current) {
@@ -191,23 +226,25 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
       
       // Set a safety timeout to prevent the spinner from running forever
       safetyTimeoutRef.current = setTimeout(() => {
-        console.log("Safety timeout reached after 10 seconds");
+        console.log("Safety timeout reached after 20 seconds");
         console.log("Got any response?", responseReceivedRef.current);
         
         if (stage === "saving") {
           setStage("form");
           setIsSaving(false);
+          setIsLoading(false);
           toast.info("Table creation is still processing in the background");
         }
         
         safetyTimeoutRef.current = null;
-      }, 10000);
+      }, 20000); // Extend timeout to 20 seconds for larger tables
       
     } catch (error) {
       console.error("Error in save process:", error);
       toast.error("Failed to save table data");
       setStage("form");
       setIsSaving(false);
+      setIsLoading(false);
       
       // Clear the safety timeout on error
       if (safetyTimeoutRef.current) {
@@ -271,19 +308,8 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
     </div>
   );
 
-  const renderSavingContent = () => (
-    <div className="py-8 flex flex-col items-center justify-center gap-4">
-      <div className="relative w-16 h-16">
-        <Loader2 className="w-16 h-16 animate-spin text-blue-500 dark:text-blue-400" />
-      </div>
-      <div className="text-center">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Creating your table</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          This may take a few moments...
-        </p>
-      </div>
-    </div>
-  );
+  // No longer needed - replaced by MultiStepLoader
+  const renderSavingContent = () => null;
 
   const renderResultContent = () => saveResponse && (
     <div className="py-0">
@@ -300,7 +326,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
   const renderDialogContent = () => {
     switch (stage) {
       case "saving":
-        return renderSavingContent();
+        return null; // Content is replaced by the MultiStepLoader
       case "result":
         return renderResultContent();
       default:
@@ -315,6 +341,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           <Button
             variant="outline"
             onClick={() => {
+              setIsLoading(false);
               toast.info("Save operation is continuing in the background");
               onClose();
             }}
@@ -367,44 +394,55 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
   };
 
   return (
-    <Dialog 
-      open={isOpen} 
-      onOpenChange={(open) => {
-        if (!open) {
-          if (stage === "saving") {
-            toast.info("Save operation is continuing in the background");
+    <>
+      <Dialog 
+        open={isOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            if (stage === "saving") {
+              setIsLoading(false);
+              toast.info("Save operation is continuing in the background");
+            }
+            onClose();
           }
-          onClose();
-        }
-      }}
-    >
-      <DialogContent className={cn(
-        "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden",
-        stage === "result" 
-          ? "max-w-[95vw] w-[95vw] h-[90vh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl" 
-          : "sm:max-w-[425px] p-6"
-      )}>
-        <DialogHeader className={cn(
-          "flex flex-row items-center justify-between",
-          stage === "result" ? "mb-1" : "mb-2"
+        }}
+      >
+        <DialogContent className={cn(
+          "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden",
+          stage === "result" 
+            ? "max-w-[95vw] w-[95vw] h-[90vh] p-3 border-3 border-gray-200 dark:border-gray-700 rounded-3xl" 
+            : "sm:max-w-[425px] p-6"
         )}>
-          <DialogTitle className="text-xl font-semibold">
-            {stage === "saving" ? "Creating Table" : 
-             stage === "result" ? "" : 
-             "Save Table"}
-          </DialogTitle>
-        </DialogHeader>
-        
-        {renderDialogContent()}
-        
-        <DialogFooter className={cn(
-          "flex items-center gap-2",
-          stage === "result" ? "mt-2 pt-2" : "mt-4"
-        )}>
-          {renderDialogFooter()}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogHeader className={cn(
+            "flex flex-row items-center justify-between",
+            stage === "result" ? "mb-1" : "mb-2"
+          )}>
+            <DialogTitle className="text-xl font-semibold">
+              {stage === "saving" ? "Creating Table" : 
+               stage === "result" ? "" : 
+               "Save Table"}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {renderDialogContent()}
+          
+          <DialogFooter className={cn(
+            "flex items-center gap-2",
+            stage === "result" ? "mt-2 pt-2" : "mt-4"
+          )}>
+            {renderDialogFooter()}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Multi-step loader outside the dialog */}
+      <MultiStepLoader 
+        loadingStates={getLoadingStates()} 
+        loading={isLoading} 
+        duration={600} 
+        loop={false}
+      />
+    </>
   );
 };
 

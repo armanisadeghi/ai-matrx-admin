@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LiveProvider, LiveEditor, LiveError, LivePreview } from 'react-live';
+// https://claude.ai/chat/605ded88-310b-4fd3-a022-afade12bba77
 
 const AIComponentGenerator = () => {
   const [code, setCode] = useState('');
