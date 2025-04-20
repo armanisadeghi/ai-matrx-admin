@@ -32,14 +32,12 @@ interface ToolbarButtonProps {
 
 // Create a memoized version of the ToolbarButton to break render cycles
 const ToolbarButton = memo<ToolbarButtonProps>(({ onClick, icon, title }) => (
-  <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
         <StableButton onClick={onClick} icon={icon} />
       </TooltipTrigger>
       <TooltipContent>{title}</TooltipContent>
     </Tooltip>
-  </TooltipProvider>
 ));
 
 ToolbarButton.displayName = 'ToolbarButton';
