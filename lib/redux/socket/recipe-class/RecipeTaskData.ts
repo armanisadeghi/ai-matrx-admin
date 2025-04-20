@@ -1,5 +1,5 @@
 // lib/redux/socket/recipe-task-data.ts
-import { SocketManager } from "../manager";
+import { SocketManager } from "../SocketManager";
 
 interface BrokerValues {
     name?: string | null;

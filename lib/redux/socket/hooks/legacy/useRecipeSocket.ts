@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useInitializeSocket } from '@/lib/redux/socket/useInitializeSocket';
-import { SocketManager } from '@/lib/redux/socket/manager';
+import { SocketManager } from '@/lib/redux/socket/SocketManager';
 import { RECIPE_DATABASE } from "../../constants/recipe-data";
 
 

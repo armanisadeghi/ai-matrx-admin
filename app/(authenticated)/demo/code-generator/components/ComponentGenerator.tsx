@@ -172,11 +172,7 @@ function EnhancedCounter() {
     </div>
   );
 }
-
-
-// This component will be rendered in the preview
-render(<EnhancedCounter />);
-  `.trim();
+`.trim();
   
   useEffect(() => {
     // Initialize with example code
@@ -242,10 +238,7 @@ function CounterComponent() {
     </div>
   );
 }
-
-// This component will be rendered in the preview
-render(<CounterComponent />);
-      `;
+        `;
     } else if (prompt.includes('form')) {
       suggestion = `
 import { useState } from "react";
@@ -316,10 +309,6 @@ function FormComponent() {
     </div>
   );
 }
-
-
-// This component will be rendered in the preview
-render(<FormComponent />);
       `;
     } else {
       suggestion = `
@@ -334,10 +323,6 @@ function CustomComponent() {
     </div>
   );
 }
-
-
-// This component will be rendered in the preview
-render(<CustomComponent />);
       `;
     }
     
@@ -393,11 +378,8 @@ render(<CustomComponent />);
   
   return (
     <div className="flex flex-col h-screen bg-gray-100 dark:bg-gray-800">
-      <header className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-800 text-white p-4">
+      <header className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-800 text-white p-3">
         <h1 className="text-2xl font-bold">AI-Powered React Component Generator</h1>
-        <p className="text-sm opacity-80">
-          Create, test, and save custom React components with AI assistance
-        </p>
       </header>
       
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
@@ -429,14 +411,8 @@ render(<CustomComponent />);
           />
         </div>
         
-        {/* Right Panel: Preview */}
-        <div className="w-full md:w-1/2 flex flex-col">
-          <div className="bg-gray-100 dark:bg-gray-800 p-2 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="font-semibold text-gray-700 dark:text-gray-200">Live Preview</h2>
-          </div>
-          <div className="flex-1 p-4 overflow-auto bg-white dark:bg-gray-900">
+        <div className="h-full w-full md:w-1/2 flex flex-col">
             <DynamicComponentRenderer code={code} />
-          </div>
         </div>
       </div>
     </div>

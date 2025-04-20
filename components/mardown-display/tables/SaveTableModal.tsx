@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToastManager } from "@/hooks/useToastManager";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
 import { Loader2, X, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useInitializeSocket } from "@/lib/redux/socket/useInitializeSocket";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import { StreamingResponses } from "./types";
 
 export const useSimpleSocketTask = ({ eventName, taskName, tasksList }) => {

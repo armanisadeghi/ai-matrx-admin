@@ -1,5 +1,5 @@
 // lib/redux/socket/recipe-task-manager.ts
-import { SocketManager } from "../manager";
+import { SocketManager } from "../SocketManager";
 import { RecipeTaskData } from "./RecipeTaskData";
 
 export class RecipeTaskManager {

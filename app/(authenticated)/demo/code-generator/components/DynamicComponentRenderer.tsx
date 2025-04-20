@@ -1,28 +1,13 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import { LiveProvider, LiveError, LivePreview } from 'react-live';
-
-// Import your design system components
 import * as UIComponents from '@/components/ui';
-
-// Import socket manager
-import { SocketManager } from "@/lib/redux/socket/manager";
-
-// Import Redux hooks
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-
-// Import Supabase client
 import { supabase } from '@/utils/supabase/client';
-
-// Import Next.js navigation
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-// Import icons
 import * as LucideIcons from 'lucide-react';
 
-// Import other common utilities
 import axios from 'axios';
 import * as _ from 'lodash';
 import * as dateFns from 'date-fns';
@@ -101,7 +86,7 @@ const DynamicComponentRenderer = ({ code, containerClassName = '' }) => {
           <pre className="whitespace-pre-wrap text-sm">{error}</pre>
         </div>
       ) : processedCode ? (
-        <LiveProvider code={processedCode} scope={scope} noInline={true}>
+        <LiveProvider code={processedCode} scope={scope} noInline={false}>
           <div className="live-preview-wrapper bg-white dark:bg-gray-900 p-4 rounded-md border border-gray-200 dark:border-gray-700">
             <LiveError className="p-3 mb-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md text-red-700 dark:text-red-300 text-sm" />
             <LivePreview />
@@ -140,14 +125,21 @@ function processComponentCode(code) {
     processedCode = processedCode.replace(commentMatch[0], '');
   }
   
-  // Clean up any empty lines that might be left
+  // Remove any render() calls from the code to avoid conflicts
+  processedCode = processedCode.replace(/render\s*\(<.+>\);?/g, '');
+  
+  // Trim extra whitespace that might be left
   processedCode = processedCode.replace(/^\s*\n/gm, '');
   
-  // Validate the component structure
-  if (!processedCode.includes('render(<')) {
-    throw new Error("Component code must include 'render(<Component />)' at the end");
-  }
+  // Extract the component name (assuming the first function definition is our component)
+  const functionNameMatch = processedCode.match(/function\s+([A-Za-z0-9_]+)/);
+  const componentName = functionNameMatch ? functionNameMatch[1] : null;
   
+  if (!componentName) {
+    throw new Error("Could not find a component function in the code");
+  }
+
+  // We're switching to inline mode (noInline={false}) which means we don't need to call render() ourselves
   return processedCode;
 }
 

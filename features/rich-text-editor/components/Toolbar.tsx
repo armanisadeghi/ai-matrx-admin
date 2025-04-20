@@ -1,9 +1,8 @@
-// Toolbar.tsx
-import React from 'react';
+// Modified Toolbar.tsx - Import the memoized ToolbarButton
+import React, { useMemo } from 'react';
 import { Bold, Italic, Underline, Type, Palette } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ToolbarButton, ToolbarDivider } from '@/components/ui/StableButton';
 import { ChipButtons } from './ChipButtons';
 import { TextStyle } from '@/types/editor.types';
 import { useEditorContext } from '@/providers/rich-text-editor/Provider';
@@ -43,61 +42,80 @@ export const TOOLBAR_CONFIG: ToolbarConfig = {
 };
 
 interface ToolbarProps {
-    editorId: string; // Add editorId to props
+    editorId: string;
     onApplyStyle: (style: TextStyle) => void;
     onInsertChip: () => void;
     onConvertToChip: () => void;
 }
 
-const ToolbarButton: React.FC<{
-    onClick: () => void;
-    icon: React.ReactNode;
-    title: string;
-}> = ({ onClick, icon, title }) => (
-    <TooltipProvider>
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={onClick}
-                    className='h-8 w-8 p-0 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                >
-                    <span className='w-4 h-4 text-neutral-950 dark:text-neutral-50'>{icon}</span>
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent>{title}</TooltipContent>
-        </Tooltip>
-    </TooltipProvider>
-);
-
-const ToolbarDivider: React.FC = () => <div className='w-px h-6 bg-neutral-300 dark:bg-neutral-600' />;
-
-const Toolbar: React.FC<ToolbarProps> = ({ editorId, onApplyStyle, onInsertChip, onConvertToChip }) => {
+const Toolbar = React.memo(({ editorId, onApplyStyle, onInsertChip, onConvertToChip }: ToolbarProps) => {
     const context = useEditorContext();
     const editorState = context.getEditorState(editorId);
 
-    const handleStyleChange = (style: TextStyle) => {
+    // Memoize the style change handler to prevent recreation on each render
+    const handleStyleChange = useMemo(() => (style: TextStyle) => {
         onApplyStyle(style);
-    };
+    }, [onApplyStyle]);
+
+    // Memoize button event handlers
+    const handleBoldClick = useMemo(() => () => handleStyleChange({ command: 'bold' }), [handleStyleChange]);
+    const handleItalicClick = useMemo(() => () => handleStyleChange({ command: 'italic' }), [handleStyleChange]);
+    const handleUnderlineClick = useMemo(() => () => handleStyleChange({ command: 'underline' }), [handleStyleChange]);
+
+    // Memoize the SelectContent components
+    const fontSizeItems = useMemo(() => (
+        TOOLBAR_CONFIG.fontSizes.map((size) => (
+            <SelectItem key={size.value} value={size.value}>
+                {size.label}
+            </SelectItem>
+        ))
+    ), []);
+
+    const textColorItems = useMemo(() => (
+        TOOLBAR_CONFIG.colors.text.map((color) => (
+            <SelectItem key={color.value} value={color.value}>
+                {color.label}
+            </SelectItem>
+        ))
+    ), []);
+
+    const bgColorItems = useMemo(() => (
+        TOOLBAR_CONFIG.colors.background.map((color) => (
+            <SelectItem key={color.value} value={color.value}>
+                {color.label}
+            </SelectItem>
+        ))
+    ), []);
+
+    // Memoize the select change handlers
+    const handleFontSizeChange = useMemo(() => (value: string) => {
+        handleStyleChange({ command: 'fontSize', value });
+    }, [handleStyleChange]);
+
+    const handleTextColorChange = useMemo(() => (value: string) => {
+        handleStyleChange({ command: 'foreColor', value });
+    }, [handleStyleChange]);
+
+    const handleBgColorChange = useMemo(() => (value: string) => {
+        handleStyleChange({ command: 'hiliteColor', value });
+    }, [handleStyleChange]);
 
     return (
         <div className='flex items-center gap-2 p-2 border-b border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900'>
-            {/* Rest of the JSX remains the same */}
             {/* Basic Formatting */}
             <div className='flex items-center gap-1'>
                 <ToolbarButton
-                    onClick={() => handleStyleChange({ command: 'bold' })}
+                    onClick={handleBoldClick}
                     icon={<Bold size={16} />}
                     title='Bold'
                 />
                 <ToolbarButton
-                    onClick={() => handleStyleChange({ command: 'italic' })}
+                    onClick={handleItalicClick}
                     icon={<Italic size={16} />}
                     title='Italic'
                 />
                 <ToolbarButton
-                    onClick={() => handleStyleChange({ command: 'underline' })}
+                    onClick={handleUnderlineClick}
                     icon={<Underline size={16} />}
                     title='Underline'
                 />
@@ -111,26 +129,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ editorId, onApplyStyle, onInsertChip,
                     size={16}
                     className='text-neutral-950 dark:text-neutral-50'
                 />
-                <Select
-                    onValueChange={(value) =>
-                        handleStyleChange({
-                            command: 'fontSize',
-                            value,
-                        })
-                    }
-                >
+                <Select onValueChange={handleFontSizeChange}>
                     <SelectTrigger className='h-8 w-24 bg-transparent dark:bg-neutral-800'>
                         <SelectValue placeholder='Size' />
                     </SelectTrigger>
                     <SelectContent>
-                        {TOOLBAR_CONFIG.fontSizes.map((size) => (
-                            <SelectItem
-                                key={size.value}
-                                value={size.value}
-                            >
-                                {size.label}
-                            </SelectItem>
-                        ))}
+                        {fontSizeItems}
                     </SelectContent>
                 </Select>
             </div>
@@ -145,26 +149,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ editorId, onApplyStyle, onInsertChip,
                         size={16}
                         className='text-neutral-950 dark:text-neutral-50'
                     />
-                    <Select
-                        onValueChange={(value) =>
-                            handleStyleChange({
-                                command: 'foreColor',
-                                value,
-                            })
-                        }
-                    >
+                    <Select onValueChange={handleTextColorChange}>
                         <SelectTrigger className='h-8 w-24 bg-transparent dark:bg-neutral-800'>
                             <SelectValue placeholder='Color' />
                         </SelectTrigger>
                         <SelectContent>
-                            {TOOLBAR_CONFIG.colors.text.map((color) => (
-                                <SelectItem
-                                    key={color.value}
-                                    value={color.value}
-                                >
-                                    {color.label}
-                                </SelectItem>
-                            ))}
+                            {textColorItems}
                         </SelectContent>
                     </Select>
                 </div>
@@ -175,26 +165,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ editorId, onApplyStyle, onInsertChip,
                         size={16}
                         className='text-neutral-950 dark:text-neutral-50'
                     />
-                    <Select
-                        onValueChange={(value) =>
-                            handleStyleChange({
-                                command: 'hiliteColor',
-                                value,
-                            })
-                        }
-                    >
+                    <Select onValueChange={handleBgColorChange}>
                         <SelectTrigger className='h-8 w-24 bg-transparent dark:bg-neutral-800'>
                             <SelectValue placeholder='Background' />
                         </SelectTrigger>
                         <SelectContent>
-                            {TOOLBAR_CONFIG.colors.background.map((color) => (
-                                <SelectItem
-                                    key={color.value}
-                                    value={color.value}
-                                >
-                                    {color.label}
-                                </SelectItem>
-                            ))}
+                            {bgColorItems}
                         </SelectContent>
                     </Select>
                 </div>
@@ -209,6 +185,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ editorId, onApplyStyle, onInsertChip,
             />
         </div>
     );
-};
+});
+
+Toolbar.displayName = 'Toolbar';
 
 export default Toolbar;

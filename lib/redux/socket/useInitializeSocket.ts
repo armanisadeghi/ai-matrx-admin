@@ -8,7 +8,7 @@ import {
     socketDisconnected,
     socketError,
 } from "@/lib/redux/features/socket/socketActions";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import { useAppDispatch } from "@/lib/redux";
 import { getChatActionsWithThunks } from "../entity/custom-actions/chatActions";
 

@@ -1,4 +1,4 @@
-import { SocketManager } from "../manager";
+import { SocketManager } from "../SocketManager";
 
 interface BaseTask {
     task: string;

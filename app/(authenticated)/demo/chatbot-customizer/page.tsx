@@ -153,38 +153,38 @@ export default function AIExperienceCustomizer() {
   const Slider = ({ value, onChange, label, min = 0, max = 100, leftLabel = "Less", rightLabel = "More" }) => (
     <div className="mb-4">
       <div className="flex justify-between items-center mb-1">
-        <label className="text-sm font-medium text-gray-700">{label}</label>
-        <span className="text-xs font-medium px-2 py-1 bg-blue-100 text-blue-800 rounded-full">{value}%</span>
+        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
+        <span className="text-xs font-medium px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 rounded-full">{value}%</span>
       </div>
       <div className="flex items-center space-x-2">
-        <span className="text-xs text-gray-500">{leftLabel}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{leftLabel}</span>
         <input
           type="range"
           min={min}
           max={max}
           value={value}
           onChange={(e) => onChange(parseInt(e.target.value))}
-          className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+          className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
         />
-        <span className="text-xs text-gray-500">{rightLabel}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{rightLabel}</span>
       </div>
     </div>
   );
 
   const Toggle = ({ checked, onChange, label, icon }) => (
-    <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50">
+    <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
       <div className="flex items-center">
-        {icon && <span className="mr-2 text-gray-600">{icon}</span>}
-        <span className="text-sm font-medium text-gray-700">{label}</span>
+        {icon && <span className="mr-2 text-gray-600 dark:text-gray-400">{icon}</span>}
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
       </div>
       <button
         onClick={onChange}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-          checked ? 'bg-blue-600' : 'bg-gray-200'
+          checked ? 'bg-blue-600 dark:bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
         }`}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+          className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-gray-100 transition-transform ${
             checked ? 'translate-x-6' : 'translate-x-1'
           }`}
         />
@@ -201,10 +201,10 @@ export default function AIExperienceCustomizer() {
     };
     
     return (
-      <div className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 ${sizeClasses[size]} ${className}`}>
-        <div className="flex items-center mb-4 pb-2 border-b border-gray-100">
-          <span className="p-1.5 rounded-lg bg-blue-50 text-blue-600 mr-2">{icon}</span>
-          <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+      <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-shadow p-5 ${sizeClasses[size]} ${className}`}>
+        <div className="flex items-center mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
+          <span className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 mr-2">{icon}</span>
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{title}</h2>
         </div>
         {children}
       </div>
@@ -228,12 +228,12 @@ export default function AIExperienceCustomizer() {
             onClick={() => onChange('communication', 'personality', option.id)}
             className={`p-3 border rounded-xl text-left transition-all ${
               selected === option.id
-                ? 'border-blue-500 bg-blue-50 shadow-sm'
-                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                ? 'border-blue-500 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-sm'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
             }`}
           >
-            <div className="font-medium mb-1">{option.label}</div>
-            <div className="text-xs text-gray-500">{option.description}</div>
+            <div className="font-medium mb-1 text-gray-800 dark:text-gray-200">{option.label}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{option.description}</div>
           </button>
         ))}
       </div>
@@ -258,8 +258,8 @@ export default function AIExperienceCustomizer() {
             onClick={() => onChange('communication', 'tone', option.id)}
             className={`px-3 py-1.5 border rounded-full text-sm transition-all ${
               selected === option.id
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                ? 'border-blue-500 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                : 'border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
             }`}
           >
             {option.label}
@@ -271,16 +271,16 @@ export default function AIExperienceCustomizer() {
   
   // Render the UI
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800">
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+    <div className="flex flex-col h-full bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-100">
+      <header className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
-            <Wand2 className="h-7 w-7 text-blue-600 mr-2" />
-            <h1 className="text-xl font-bold text-gray-900">Customize Your AI Experience</h1>
+            <Wand2 className="h-7 w-7 text-blue-600 dark:text-blue-500 mr-2" />
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Customize Your AI Experience</h1>
           </div>
           <button
             onClick={handleSave}
-            className="flex items-center px-4 py-2 bg-blue-600 rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 rounded-lg text-sm font-medium text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
           >
             <Save className="h-4 w-4 mr-2" />
             Save My Experience
@@ -288,10 +288,10 @@ export default function AIExperienceCustomizer() {
         </div>
       </header>
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 overflow-y-auto h-full">
         <div className="max-w-7xl mx-auto">
           {/* Main Feature Card */}
-          <div className="mb-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+          <div className="mb-8 bg-gradient-to-r from-blue-500 to-indigo-600 dark:from-blue-600 dark:to-indigo-800 rounded-2xl p-6 text-white shadow-lg">
             <div className="flex items-center mb-4">
               <Sparkles className="h-8 w-8 mr-3" />
               <h2 className="text-2xl font-bold">Create Your Perfect AI Assistant</h2>
@@ -329,7 +329,7 @@ export default function AIExperienceCustomizer() {
           {/* Top Personality Section */}
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <Bot className="h-5 w-5 mr-2 text-blue-600" />
+              <Bot className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-500" />
               Personality & Style
             </h2>
             
@@ -339,7 +339,7 @@ export default function AIExperienceCustomizer() {
               size="large"
               className="mb-4"
             >
-              <p className="text-sm text-gray-600 mb-4">How would you like your AI assistant to behave?</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">How would you like your AI assistant to behave?</p>
               <PersonalityCard 
                 selected={communication.personality} 
                 onChange={handleSelectChange} 
@@ -348,7 +348,7 @@ export default function AIExperienceCustomizer() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Card title="Conversation Tone" icon={<MessageSquare className="h-5 w-5" />}>
-                <p className="text-sm text-gray-600 mb-3">Select your preferred tone:</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Select your preferred tone:</p>
                 <ToneCard 
                   selected={communication.tone} 
                   onChange={handleSelectChange}
@@ -416,7 +416,7 @@ export default function AIExperienceCustomizer() {
           {/* Knowledge & Capabilities */}
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <Brain className="h-5 w-5 mr-2 text-purple-600" />
+              <Brain className="h-5 w-5 mr-2 text-purple-600 dark:text-purple-500" />
               Intelligence & Capabilities
             </h2>
             
@@ -449,7 +449,7 @@ export default function AIExperienceCustomizer() {
                     checked={knowledge.memory}
                     onChange={() => handleToggleChange('knowledge', 'memory')}
                   />
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                     When enabled, your AI will remember important information from previous conversations.
                   </p>
                 </div>
@@ -462,7 +462,7 @@ export default function AIExperienceCustomizer() {
               size="large"
               className="mb-4"
             >
-              <p className="text-sm text-gray-600 mb-3">Select topics where you'd like enhanced knowledge:</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">Select topics where you'd like enhanced knowledge:</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                 {expertiseOptions.map((option) => (
                   <button
@@ -470,12 +470,12 @@ export default function AIExperienceCustomizer() {
                     onClick={() => handleExpertiseChange(option.id)}
                     className={`py-2 px-3 text-sm border rounded-lg flex items-center ${
                       knowledge.expertise.includes(option.id)
-                        ? 'border-purple-500 bg-purple-50 text-purple-700'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        ? 'border-purple-500 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                     }`}
                   >
                     {knowledge.expertise.includes(option.id) && (
-                      <span className="mr-1.5 text-purple-600">✓</span>
+                      <span className="mr-1.5 text-purple-600 dark:text-purple-400">✓</span>
                     )}
                     {option.label}
                   </button>
@@ -487,7 +487,7 @@ export default function AIExperienceCustomizer() {
           {/* Output Format & Preferences */}
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <PanelTop className="h-5 w-5 mr-2 text-green-600" />
+              <PanelTop className="h-5 w-5 mr-2 text-green-600 dark:text-green-500" />
               Output Format & Preferences
             </h2>
             
@@ -531,7 +531,7 @@ export default function AIExperienceCustomizer() {
                   />
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Theme</label>
                   <div className="grid grid-cols-3 gap-2">
                     {['light', 'dark', 'system'].map((theme) => (
                       <button
@@ -539,8 +539,8 @@ export default function AIExperienceCustomizer() {
                         onClick={() => handleSelectChange('appearance', 'theme', theme)}
                         className={`p-2 border rounded-md capitalize ${
                           appearance.theme === theme
-                            ? 'border-green-500 bg-green-50 text-green-700'
-                            : 'border-gray-300 hover:bg-gray-50'
+                            ? 'border-green-500 dark:border-green-600 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                            : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
                         }`}
                       >
                         {theme}
@@ -556,60 +556,60 @@ export default function AIExperienceCustomizer() {
           <section className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold flex items-center">
-                <UserCircle className="h-5 w-5 mr-2 text-gray-600" />
+                <UserCircle className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-400" />
                 Personal Details (Optional)
               </h2>
-              <button className="text-sm text-blue-600 hover:text-blue-800">
+              <button className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-500 dark:hover:text-blue-400">
                 Why share this info?
               </button>
             </div>
             
             <Card title="Personal Information" icon={<UserCircle className="h-5 w-5" />} size="large">
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 Add personal details to make your AI experience more relevant. All information is optional and private.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
                   <input
                     type="text"
                     name="name"
                     value={personalInfo.name}
                     onChange={handlePersonalInfoChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                     placeholder="Your name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">City/Location</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City/Location</label>
                   <input
                     type="text"
                     name="city"
                     value={personalInfo.city}
                     onChange={handlePersonalInfoChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                     placeholder="Where you live"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Occupation</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Occupation</label>
                   <input
                     type="text"
                     name="occupation"
                     value={personalInfo.occupation}
                     onChange={handlePersonalInfoChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                     placeholder="Your job or role"
                   />
                 </div>
                 <div className="md:col-span-3">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Primary Interests</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary Interests</label>
                   <input
                     type="text"
                     name="interests"
                     value={personalInfo.interests}
                     onChange={handlePersonalInfoChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                     placeholder="Topics you're interested in (e.g., cooking, technology, travel)"
                   />
                 </div>

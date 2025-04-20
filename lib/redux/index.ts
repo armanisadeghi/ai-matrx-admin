@@ -85,7 +85,7 @@ export * from './notes/notesSlice';
 export * from './slices/testRoutesSlice';
 export * from './slices/userPreferencesSlice';
 export * from './slices/userSlice';
-export * from './socket/manager';
+export * from './socket/SocketManager';
 export * from './socket/socketMiddleware';
 export * from './socket/useInitializeSocket';
 export * from './socket/constants/recipe-data';

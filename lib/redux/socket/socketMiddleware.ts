@@ -2,7 +2,7 @@
 
 import { Middleware } from '@reduxjs/toolkit';
 import { UnknownAction } from 'redux';
-import { SocketManager } from '@/lib/redux/socket/manager';
+import { SocketManager } from '@/lib/redux/socket/SocketManager';
 
 export const socketMiddleware: Middleware = (storeAPI) => (next) => (action: UnknownAction) => {
     const socketManager = SocketManager.getInstance();

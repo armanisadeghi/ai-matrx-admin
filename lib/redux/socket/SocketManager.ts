@@ -1,6 +1,5 @@
 "use client";
 
-import { logTaskStart } from "./manager-debug";
 import { eventChannel, EventChannel } from "redux-saga";
 import { SocketConnectionManager, SocketConfig } from "./core/connection-manager";
 import { 
@@ -163,7 +162,7 @@ export class SocketManager {
         if (!socket) return [];
         const sid = socket.id || "pending";
         if (DEBUG_MODE) {
-            logTaskStart(serviceName, data, sid);
+            console.log(`[SOCKET MANAGER] Starting task: ${serviceName} with data: ${JSON.stringify(data)}`);
         }
         return new Promise((resolve) => {
             socket.emit(serviceName, data, (response: { response_listener_events?: string[] }) => {

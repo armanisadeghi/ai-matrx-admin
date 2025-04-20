@@ -8,7 +8,7 @@ import {
     socketDisconnected,
     socketError,
 } from "@/lib/redux/features/socket/socketActions";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import { SocketConfig } from "@/lib/redux/socket/core/connection-manager";
 import {
     setFullUrl,

@@ -2,7 +2,6 @@
 
 import { useRefManager } from '@/lib/refs';
 import React, { useRef, useEffect, useState } from 'react';
-import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
 import Toolbar from '@/features/rich-text-editor/components/Toolbar';
 import { TextStyle } from '@/types/editor.types';
 import ChipSearchUtility from '@/features/rich-text-editor/components/ChipSearchUtility';
