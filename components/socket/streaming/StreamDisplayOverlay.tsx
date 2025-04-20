@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, ReactNode, isValidElement, cloneElement, ReactElement, MouseEvent } from "react";
 import { Maximize2, Minimize2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,6 +13,7 @@ interface StreamDisplayOverlayProps {
   children: ReactElement<FullscreenableComponent> | ReactNode;
   className?: string;
   triggerClassName?: string;
+  expandIconClassName?: string;
 }
 
 const StreamDisplayOverlay = ({
@@ -21,6 +21,7 @@ const StreamDisplayOverlay = ({
   children,
   className = "",
   triggerClassName = "",
+  expandIconClassName = ""
 }: StreamDisplayOverlayProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -46,7 +47,6 @@ const StreamDisplayOverlay = ({
     ) {
       return;
     }
-
     setIsFullscreen(true);
     // Prevent body scrolling when in fullscreen
     document.body.style.overflow = "hidden";
@@ -65,7 +65,6 @@ const StreamDisplayOverlay = ({
         exitFullscreen();
       }
     };
-
     window.addEventListener("keydown", handleEscKey);
     return () => window.removeEventListener("keydown", handleEscKey);
   }, [isFullscreen]);
@@ -96,7 +95,10 @@ const StreamDisplayOverlay = ({
         {isFullscreenableElement(children) 
           ? cloneElement(children, { isFullscreen: false }) 
           : children}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className={cn(
+          "absolute opacity-0 group-hover:opacity-100 transition-opacity",
+          expandIconClassName || "top-2 right-2"
+        )}>
           <button
             onClick={handleFullscreenButtonClick}
             className="p-1 rounded-md bg-gray-200/80 dark:bg-gray-700/80 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
@@ -111,9 +113,9 @@ const StreamDisplayOverlay = ({
 
       {/* Fullscreen Overlay */}
       {isFullscreen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
           {/* Header */}
-          <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
+          <div className="flex justify-between items-center p-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm flex-shrink-0">
             <h2 className="text-lg font-medium text-gray-800 dark:text-gray-200">
               {title}
             </h2>
@@ -137,9 +139,9 @@ const StreamDisplayOverlay = ({
             </div>
           </div>
           
-          {/* Content */}
+          {/* Content - This is the key change! */}
           <div className={cn(
-            "flex-1 p-6 overflow-auto",
+            "flex-1 min-h-0",  // Changed this to ensure proper flex behavior
             className
           )}>
             {isFullscreenableElement(children) 
@@ -152,4 +154,4 @@ const StreamDisplayOverlay = ({
   );
 };
 
-export default StreamDisplayOverlay; 
+export default StreamDisplayOverlay;

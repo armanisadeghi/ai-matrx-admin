@@ -93,14 +93,14 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                     </div>
                 </CardContent>
             </Card>
-            <div className="mt-8 px-2">
-                <SocketAccordionResponse socketHook={socketHook} />
-            </div>
-
             {/* Stream Monitor Panel */}
             <div className="mt-8">
                 <SocketStreamMonitor socketHook={socketHook} />
             </div>
+            <div className="mt-8 px-2">
+                <SocketAccordionResponse socketHook={socketHook} />
+            </div>
+
 
             {/* Debug Panel */}
             <div className="mt-8 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 shadow-sm">

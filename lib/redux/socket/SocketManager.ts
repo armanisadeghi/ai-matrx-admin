@@ -14,14 +14,15 @@ import {
     handleStreamEvent
 } from './streamingActions';
 
-const DEBUG_MODE = false;
-const INFO_MODE = false;
+const DEBUG = false;
+const INFO = false;
 
 export class SocketManager {
     private static instance: SocketManager | null = null;
     private socket: any | null = null;
     private dynamicEventListeners: Map<string, Array<{ listener: (data: any) => void; wrapper: (data: any) => void }>> = new Map();
     private streamingStatus: Map<string, boolean> = new Map();
+    private activeEventNames: Set<string> = new Set();
     private connectionManager: SocketConnectionManager = SocketConnectionManager.getInstance();
     private isClientSide: boolean = typeof window !== "undefined";
     private dispatch: ((action: any) => void) | null = null;
@@ -45,7 +46,7 @@ export class SocketManager {
 
     async connect(config?: SocketConfig): Promise<void> {
         if (!this.isClientSide) {
-            if (INFO_MODE) console.log("[SOCKET MANAGER] Skipping connection on server-side");
+            if (INFO) console.log("[SOCKET MANAGER] Skipping connection on server-side");
             return;
         }
 
@@ -76,7 +77,7 @@ export class SocketManager {
 
     async getSocket(): Promise<any> {
         if (!this.isClientSide) {
-            if (INFO_MODE) console.log("[SOCKET MANAGER] Socket unavailable on server-side");
+            if (INFO) console.log("[SOCKET MANAGER] Socket unavailable on server-side");
             return null;
         }
         await this.connect();
@@ -101,10 +102,25 @@ export class SocketManager {
 
     private registerEventHandlers() {
         this.socket.on("connect", () => {
-            if (INFO_MODE) console.log("[SOCKET MANAGER] Connected");
+            if (INFO) console.log("[SOCKET MANAGER] Connected");
         });
         this.socket.on("disconnect", () => {
-            if (INFO_MODE) console.log("[SOCKET MANAGER] Disconnected");
+            if (INFO) console.log("[SOCKET MANAGER] Disconnected");
+        });
+        
+        // Simple global error handler that forwards errors to all active events
+        this.socket.on("global_error", (errorData: any) => {
+            if (DEBUG) console.log("[SOCKET MANAGER] Global error received:", errorData);
+            this.propagateToAllActiveEvents(errorData);
+        });
+    }
+    
+    // Simply propagate any error data to all active events
+    private propagateToAllActiveEvents(errorData: any) {
+        if (!this.dispatch) return;
+        
+        this.activeEventNames.forEach(eventId => {
+            this.dispatch!(updateStreamError(eventId, errorData));
         });
     }
 
@@ -146,22 +162,21 @@ export class SocketManager {
         if (!socket) return [];
 
         const tasks = Array.isArray(data) ? data : [data];
-        if (DEBUG_MODE) console.log("-> SocketManager createTask tasks", JSON.stringify(tasks, null, 2));
+        if (DEBUG) console.log("-> SocketManager createTask tasks", JSON.stringify(tasks, null, 2));
 
         const eventNames = await this.startTask(serviceName, tasks, (response) => {
-            if (DEBUG_MODE) console.log(`[createTask] Response for service ${serviceName}:`, response);
+            if (DEBUG) console.log(`[createTask] Response for service ${serviceName}:`, response);
         });
-        if (DEBUG_MODE) console.log("-> SocketManager createTask eventNames", eventNames);
+        if (DEBUG) console.log("-> SocketManager createTask eventNames", eventNames);
 
         return eventNames;
     }
 
-    // Updated startTask method with all response types handled
     async startTask(serviceName: string, data: any, callback: (response: any) => void): Promise<string[]> {
         const socket = await this.getSocket();
         if (!socket) return [];
         const sid = socket.id || "pending";
-        if (DEBUG_MODE) {
+        if (DEBUG) {
             console.log(`[SOCKET MANAGER] Starting task: ${serviceName} with data: ${JSON.stringify(data)}`);
         }
         return new Promise((resolve) => {
@@ -169,11 +184,14 @@ export class SocketManager {
                 let eventNames: string[] = [];
                 if (response?.response_listener_events) {
                     eventNames = response.response_listener_events;
-                    if (DEBUG_MODE) console.log("--> SocketManager startTask eventNames", eventNames);
+                    if (DEBUG) console.log("--> SocketManager startTask eventNames", eventNames);
                     
                     // Initialize streams in Redux for each event
                     if (this.dispatch) {
                         eventNames.forEach((eventName) => {
+                            // Track active events
+                            this.activeEventNames.add(eventName);
+                            
                             // Using the new action creator instead of direct dispatch
                             this.dispatch(startStream(eventName));
                         });
@@ -181,14 +199,12 @@ export class SocketManager {
                     
                     eventNames.forEach((eventName: string) => {
                         const listenerLogic = (response: any) => {
-                            if (DEBUG_MODE) console.log("--> SocketManager startTask response for event", eventName, response);
+                            if (DEBUG) console.log("--> SocketManager startTask response for event", eventName, response);
                             
                             if (this.dispatch) {
                                 if (typeof response === "string") {
-
                                     this.dispatch(updateStreamText(eventName, response));
                                 } else {
-
                                     if (response?.data !== undefined) {
                                         this.dispatch(updateStreamData(eventName, response.data));
                                     }
@@ -204,6 +220,9 @@ export class SocketManager {
                                     
                                     const isEnd = response?.end === true || response?.end === "true" || response?.end === "True";
                                     if (isEnd) {
+                                        // Remove from active events when stream ends
+                                        this.activeEventNames.delete(eventName);
+                                        
                                         this.dispatch(markStreamEnd(eventName, true));
                                         this.dispatch(completeStream(eventName));
                                     }
@@ -234,8 +253,10 @@ export class SocketManager {
                                 return;
                             }
                             if (response?.action === "add_event" && response?.event_name) {
-                                if (DEBUG_MODE) console.log(`[SOCKET MANAGER] Adding listener for new event: ${response.event_name}`);
+                                if (DEBUG) console.log(`[SOCKET MANAGER] Adding listener for new event: ${response.event_name}`);
                                 eventNames.push(response.event_name);
+                                // Track this new event too
+                                this.activeEventNames.add(response.event_name);
                                 this.addDynamicEventListener(response.event_name, listenerLogic);
                                 this.updateStreamingStatus(eventName, response);
                                 return;
@@ -253,7 +274,7 @@ export class SocketManager {
                                 callback(response.error);
                                 return;
                             }
-                            if (DEBUG_MODE) console.warn(`[SOCKET MANAGER] Unexpected response for event ${eventName}:`, response);
+                            if (DEBUG) console.warn(`[SOCKET MANAGER] Unexpected response for event ${eventName}:`, response);
                             this.updateStreamingStatus(eventName, response);
                         };
                         this.addDynamicEventListener(eventName, listenerLogic);
@@ -268,14 +289,14 @@ export class SocketManager {
         const socket = await this.getSocket();
         if (!socket) return [];
         const eventNames: string[] = [];
-        let DEBUG_MODE = true;
+        let DEBUG = true;
         for (let index = 0; index < tasks.length; index++) {
             const taskData = tasks[index];
             const singleTaskPayload = [{ ...taskData, index, stream: true }];
             const eventNames = await this.startTask(event, singleTaskPayload, (response) => {
                 if (response?.data) onStreamUpdate(index, response.data);
                 else if (typeof response === "string") onStreamUpdate(index, response);
-                if (DEBUG_MODE) console.log(response);
+                if (DEBUG) console.log(response);
             });
             eventNames.push(...eventNames);
         }
@@ -340,6 +361,8 @@ export class SocketManager {
             this.socket.off(eventName);
             this.dynamicEventListeners.delete(eventName);
             this.streamingStatus.delete(eventName);
+            // Remove from active events tracking
+            this.activeEventNames.delete(eventName);
         }
     }
 
@@ -352,14 +375,16 @@ export class SocketManager {
 
         this.dynamicEventListeners.clear();
         this.streamingStatus.clear();
+        // Clear active events tracking
+        this.activeEventNames.clear();
 
-        if (DEBUG_MODE) console.log(`[SOCKET MANAGER] Cleaned up all dynamic listeners`);
+        if (DEBUG) console.log(`[SOCKET MANAGER] Cleaned up all dynamic listeners`);
     }
 
     async emit(eventName: string, data: any, callback?: (response: any) => void): Promise<void> {
         const socket = await this.getSocket();
         if (!socket) {
-            if (DEBUG_MODE) console.warn("[SOCKET MANAGER] Cannot emit: No socket available");
+            if (DEBUG) console.warn("[SOCKET MANAGER] Cannot emit: No socket available");
             return;
         }
 
@@ -368,7 +393,7 @@ export class SocketManager {
             return;
         }
 
-        if (DEBUG_MODE) {
+        if (DEBUG) {
             console.log(`[SOCKET MANAGER] Emitting event: ${eventName}`, data);
         }
 

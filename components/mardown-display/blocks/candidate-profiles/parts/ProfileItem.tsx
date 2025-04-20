@@ -1,4 +1,4 @@
-// ProfileItem.jsx
+// ProfileItem.tsx
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash } from "lucide-react";
