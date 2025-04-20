@@ -186,10 +186,10 @@ export class SocketManager {
                             
                             if (this.dispatch) {
                                 if (typeof response === "string") {
-                                    // Using action creator for text updates
+
                                     this.dispatch(updateStreamText(eventName, response));
                                 } else {
-                                    // Using appropriate action creators for different response types
+
                                     if (response?.data !== undefined) {
                                         this.dispatch(updateStreamData(eventName, response.data));
                                     }
@@ -203,13 +203,21 @@ export class SocketManager {
                                         this.dispatch(updateStreamError(eventName, response.error));
                                     }
                                     
-                                    // Handle end flag
                                     const isEnd = response?.end === true || response?.end === "true" || response?.end === "True";
                                     if (isEnd) {
                                         this.dispatch(markStreamEnd(eventName, true));
                                         this.dispatch(completeStream(eventName));
                                     }
-                                    
+
+                                    // Python needs to have these exact types of emit events
+
+                                    // _send_chunk(text)
+                                    // _send_data(data)
+                                    // _send_message(message)
+                                    // _send_info(info)
+                                    // _send_error(error)
+                                    // _send_end(end)
+
                                     // Alternative: use the convenience function to handle all properties at once
                                     // this.dispatch(handleStreamEvent(eventName, response));
                                 }
