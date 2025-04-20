@@ -21,11 +21,13 @@ export const DebugInfo: React.FC<{
                     Should Show Loader:{" "}
                     <span className={shouldShowLoader ? "text-green-500" : "text-red-500"}>{shouldShowLoader ? "true" : "false"}</span>
                 </div>
-                <div>Debug Is Stream Ended: {isStreamEnded ? "true" : "false"}</div>
-                <div>Debug Is Stream Error: {isStreamError ? "true" : "false"}</div>
-                <div>Debug Stream Key: {streamKey}</div>
-                <div>Debug Event Name: {eventName}</div>
-                <div>Debug Settings: {JSON.stringify(settings, null, 2)}</div>
+                <div>Is Stream Ended: {isStreamEnded ? "true" : "false"}</div>
+                <div>Is Stream Error: {isStreamError ? "true" : "false"}</div>
+                <div>Stream Key: {streamKey}</div>
+                <div>Event Name:</div>
+                <div> - {eventName}</div>
+                <div>Settings:</div>
+                <div> - {JSON.stringify(settings, null, 2)}</div>
             </div>
         </div>
     );

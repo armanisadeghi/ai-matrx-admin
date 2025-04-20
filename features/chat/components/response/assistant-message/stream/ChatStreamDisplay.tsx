@@ -11,7 +11,14 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
-import { selectStreamText, selectStreamData, selectIsStreaming, selectStreamEnd, selectStreamError } from "@/lib/redux/socket/streamingSlice";
+import {
+    selectStreamText,
+    selectStreamData,
+    selectIsStreaming,
+    selectStreamEnd,
+    selectStreamError,
+    selectFirstChunkReceived,
+} from "@/lib/redux/socket/streamingSlice";
 import { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
@@ -63,9 +70,7 @@ const components = {
         </pre>
     ),
     // --- TABLE RENDERERS ---
-    table: ({ children, ...props }) => (
-        <StreamingTable {...props}>{children}</StreamingTable>
-    ),
+    table: ({ children, ...props }) => <StreamingTable {...props}>{children}</StreamingTable>,
     thead: ({ children, ...props }) => <thead {...props}>{children}</thead>,
     tbody: ({ children, ...props }) => <tbody {...props}>{children}</tbody>,
     tr: ({ children, ...props }) => <tr {...props}>{children}</tr>,
@@ -93,22 +98,12 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     const content = useAppSelector((state: RootState) => selectStreamText(state, eventName));
     const streamData = useAppSelector((state: RootState) => selectStreamData(state, eventName));
     const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
+    const firstChunkReceived = useAppSelector((state: RootState) => selectFirstChunkReceived(state, eventName));
     const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
     const streamError = useAppSelector((state: RootState) => selectStreamError(state, eventName));
-    const [isFirstChunkReceived, setIsFirstChunkReceived] = useState(false);
     const settings = useAppSelector(chatSelectors.activeMessageSettings);
     const shouldShowLoader = useAppSelector(chatSelectors.shouldShowLoader);
-    const activeMessageStatus = useAppSelector(chatSelectors.activeMessageStatus);
 
-    useEffect(() => {
-        if (isFirstChunkReceived) return;
-        if (content.length > 0) {
-            setIsFirstChunkReceived(true);
-            dispatch(chatActions.updateMessageStatus({ status: "firstChunkReceived" }));
-        }
-    }, [content]);
-
-    
     const handleStreamEnd = () => {
         console.log("===> [CHAT STREAM DISPLAY] Stream ended");
         dispatch(chatActions.setIsNotStreaming());
@@ -131,9 +126,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         }
     }, [streamError]);
 
-    // useEffect(() => {
-    //     handleNewTextContent(streamText);
-    // }, [streamText]);
 
     useEffect(() => {
         if (streamData) {
@@ -158,7 +150,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     );
 
     const parsedContent = useMemo(() => {
-        // You can keep this if you use it elsewhere, but it's not needed for table rendering anymore
         const tableData = parseMarkdownTable(content);
         const contentSegments = parseTaggedContent(content);
         return { tableData, contentSegments };
@@ -182,12 +173,8 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         ));
     };
 
-    // Show the loader based on the official shouldShowLoader logic, but only if we don't have content yet
-    const shouldDisplayLoader = shouldShowLoader && content.length < 2 && isStreaming;
-
     if (content.length < 2) {
-        // Return loading indicator if the official shouldShowLoader logic says we should and we're streaming
-        if (shouldDisplayLoader) {
+        if (!firstChunkReceived && isStreaming) {
             return (
                 <div className="mb-3 w-full text-left">
                     <div className="inline-block p-3 rounded-lg bg-inherit">
@@ -196,7 +183,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
                 </div>
             );
         }
-        // Return null if we're not supposed to show the loader
         return null;
     }
 

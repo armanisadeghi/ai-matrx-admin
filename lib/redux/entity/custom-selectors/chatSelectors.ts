@@ -407,7 +407,7 @@ export const createChatSelectors = () => {
 
     const activeMessageMetadata = createSelector([activeMessage], (message) => message?.metadata);
     const activeMessageStatus = createSelector([activeMessageMetadata], (metadata) => metadata?.status);
-    const shouldShowLoader = createSelector([activeMessageStatus], (status) => status !== "completed" && status !== "error" && status !== "pending" && status !== undefined);
+    const shouldShowLoader = createSelector([activeMessageStatus], (status) => status == "submitted" || status == "processing" || status == "firstChunkReceived");
 
 
     const activeMessageSettings = createSelector(
@@ -423,7 +423,10 @@ export const createChatSelectors = () => {
             planEnabled: false,
             audioEnabled: false,
             enableAskQuestions: false,
-            enableBrokers: false
+            enableBrokers: false,
+            hasFiles: false,
+            generateImages: false,
+            generateVideos: false
           };
           
           // If no metadata, return default settings (all false)
@@ -440,10 +443,20 @@ export const createChatSelectors = () => {
           if (metadata.enableBrokers === true) settings.enableBrokers = true;
           if (metadata.audioEnabled === true) settings.audioEnabled = true;
           if (metadata.planEnabled === true) settings.planEnabled = true;
+          if (metadata.researchEnabled === true) settings.researchEnabled = true;
+          if (metadata.recipesEnabled === true) settings.recipesEnabled = true;
           
           // Process files - if we have any files, enable research
           if (metadata.files && Array.isArray(metadata.files) && metadata.files.length > 0) {
-            settings.researchEnabled = true;
+            settings.hasFiles = true;
+          }
+
+          if (metadata.currentMode === "images") {
+            settings.generateImages = true;
+          }
+
+          if (metadata.currentMode === "videos") {
+            settings.generateVideos = true;
           }
           
           // Add any additional computed settings here

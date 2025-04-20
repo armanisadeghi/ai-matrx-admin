@@ -11,6 +11,7 @@ interface StreamData {
     error: string;
     end: boolean;
     isStreaming: boolean;
+    firstChunkReceived: boolean;
 }
 
 interface StreamingState {
@@ -24,7 +25,8 @@ const initialStreamData: StreamData = {
     info: "",
     error: "",
     end: false,
-    isStreaming: false
+    isStreaming: false,
+    firstChunkReceived: false
 };
 
 const initialState: StreamingState = {};
@@ -47,6 +49,9 @@ const streamingSlice = createSlice({
             const { eventId, text } = action.payload;
             if (!state[eventId]) {
                 state[eventId] = { ...initialStreamData, isStreaming: true };
+            }
+            if (text.length > 0) {
+                state[eventId].firstChunkReceived = true;
             }
             state[eventId].text += text;
         },
@@ -169,6 +174,11 @@ export const selectIsStreaming = createSelector(
     (streamData) => streamData.isStreaming
 );
 
+export const selectFirstChunkReceived = createSelector(
+    [selectStreamingForEvent],
+    (streamData) => streamData.firstChunkReceived
+);
+
 // Create a combined selector for all stream info
 export const selectAllStreamInfo = createSelector(
     [selectStreamingForEvent],
@@ -179,7 +189,8 @@ export const selectAllStreamInfo = createSelector(
         info: streamData.info,
         error: streamData.error,
         end: streamData.end,
-        isStreaming: streamData.isStreaming
+        isStreaming: streamData.isStreaming,
+        firstChunkReceived: streamData.firstChunkReceived
     })
 );
 
@@ -191,6 +202,7 @@ export const selectStreamTextContent = createSelector(
         message: streamData.message,
         info: streamData.info,
         error: streamData.error,
-        isStreaming: streamData.isStreaming
+        isStreaming: streamData.isStreaming,
+        firstChunkReceived: streamData.firstChunkReceived
     })
 );
