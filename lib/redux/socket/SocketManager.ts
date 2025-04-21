@@ -209,6 +209,7 @@ export class SocketManager {
                                         this.dispatch(updateStreamData(eventName, response.data));
                                     }
                                     if (response?.message !== undefined) {
+                                        console.warn("This feature is deprecated, use 'info' instead");
                                         this.dispatch(updateStreamMessage(eventName, response.message));
                                     }
                                     if (response?.info !== undefined) {

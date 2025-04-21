@@ -2,13 +2,32 @@
 import { createSlice, PayloadAction, createSelector } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 
+
+// //     Exact Python Error Object
+//     error_type: str,
+//     message: str,
+//     user_visible_message: Optional[str] = None,
+//     code: Optional[str] = None,
+//     details: Optional[Dict[str, Any]] = None,
+// ):
+
+
+export type StreamError = {
+    error_type: string;
+    message: string;
+    user_visible_message: string;
+    code: string;
+    details: any;
+}
+
+
 // Define the state structure
 interface StreamData {
     text: string;
     data: any[];
     message: string;
     info: string;
-    error: string;
+    error: StreamError;
     end: boolean;
     isStreaming: boolean;
     firstChunkReceived: boolean;
@@ -23,7 +42,13 @@ const initialStreamData: StreamData = {
     data: [],
     message: "",
     info: "",
-    error: "",
+    error: {
+        error_type: "",
+        message: "",
+        user_visible_message: "",
+        code: "",
+        details: {}
+    },
     end: false,
     isStreaming: false,
     firstChunkReceived: false
@@ -84,7 +109,7 @@ const streamingSlice = createSlice({
         },
         
         // Set error
-        setStreamError: (state, action: PayloadAction<{ eventId: string; error: string }>) => {
+        setStreamError: (state, action: PayloadAction<{ eventId: string; error: StreamError }>) => {
             const { eventId, error } = action.payload;
             if (!state[eventId]) {
                 state[eventId] = { ...initialStreamData, isStreaming: true };

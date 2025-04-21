@@ -22,7 +22,7 @@ import {
 import { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
-
+import ErrorCard from "./ErrorCard";
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 const components = {
@@ -122,7 +122,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     useEffect(() => {
         if (streamError) {
             dispatch(chatActions.updateMessageStatus({ status: "error" }));
-            console.log("===> [CHAT STREAM DISPLAY] Stream error");
+            console.log("===> [CHAT STREAM DISPLAY] Stream error", streamError);
         }
     }, [streamError]);
 
@@ -185,6 +185,7 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         }
         return null;
     }
+
 
     return (
         <div className="mb-3 w-full text-left">

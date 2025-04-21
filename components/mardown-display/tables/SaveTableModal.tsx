@@ -43,6 +43,9 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
   const [stage, setStage] = useState<"form" | "saving" | "result">("form");
   const [isLoading, setIsLoading] = useState(false);
   
+
+  console.log(JSON.stringify(tableData, null, 2));
+
   const socketManager = SocketManager.getInstance();
   const toast = useToastManager();
   const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);

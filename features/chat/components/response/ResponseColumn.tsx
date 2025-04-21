@@ -9,6 +9,7 @@ import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSel
 import { RootState } from "@/lib/redux/store";
 import { selectIsStreaming, selectStreamEnd, selectStreamError } from "@/lib/redux/socket/streamingSlice";
 import { DebugInfo } from "./DebugInfo";
+import ErrorCard from "./assistant-message/stream/ErrorCard";
 
 const INFO = true;
 const DEBUG = true;
@@ -31,10 +32,13 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     const audioControls = useCartesiaControls();
     const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
     const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
-    const isStreamError = useAppSelector((state: RootState) => selectStreamError(state, eventName));
+    const streamError = useAppSelector((state: RootState) => selectStreamError(state, eventName));
     const activeMessageStatus = useAppSelector((state: RootState) => chatSelectors.activeMessageStatus(state));
     const shouldShowLoader = useAppSelector((state: RootState) => chatSelectors.shouldShowLoader(state));
     const isDebugMode = useAppSelector((state: RootState) => chatSelectors.isDebugMode(state));
+
+    const isStreamError = streamError !== null;
+    const hasUserVisibleMessage = streamError?.user_visible_message !== null && streamError?.user_visible_message.length > 5;
 
     const handleScrollToBottom = () => {
         for (let i = 0; i < 3; i++) {
@@ -124,6 +128,15 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
         }
     }, [isStreaming]);
 
+    const handleRetry = () => {
+        console.log("===> [RESPONSE COLUMN] Retrying");
+    };
+
+
+    const handleClose = () => {
+        console.log("===> [RESPONSE COLUMN] Closing");
+    };
+
     return (
         <div className="w-full pt-0 pb-24 relative" ref={containerRef}>
             <div className="max-w-3xl mx-auto px-4 md:px-3 space-y-6 overflow-x-hidden">
@@ -143,6 +156,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                         isStreaming={isStreaming}
                         isStreamEnded={isStreamEnded}
                         isStreamError={isStreamError}
+                        streamError={streamError}
                         streamKey={streamKey}
                         eventName={eventName}
                         settings={settings}
@@ -154,6 +168,8 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                     handleVisibility={handleAutoScrollToBottom}
                     scrollToBottom={handleScrollToBottom}
                 />
+                {hasUserVisibleMessage && <ErrorCard message={streamError.user_visible_message} onRetry={handleRetry} onClose={handleClose}  />}
+
                 <div ref={bottomRef} style={{ height: "1px" }} />
             </div>
         </div>
