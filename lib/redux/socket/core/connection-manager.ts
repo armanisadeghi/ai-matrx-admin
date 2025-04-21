@@ -79,6 +79,7 @@ export class SocketConnectionManager {
 
         // Check if current user is an admin
         const isAdmin = await this.isUserAdmin();
+        console.log("[SOCKET] Is admin:", isAdmin);
 
         // For non-production or admin users, check if local server is available
         if (!isProduction || isAdmin) {
@@ -97,11 +98,12 @@ export class SocketConnectionManager {
     }
 
     private async isUserAdmin(): Promise<boolean> {
-        if (!this.isClientSide) return false;
+        // if (!this.isClientSide) return false;
         
         try {
             const session = await supabase.auth.getSession();
             const userId = session.data.session?.user?.id;
+            console.log("[SOCKET] User ID:", userId);
             
             if (!userId) return false;
             
