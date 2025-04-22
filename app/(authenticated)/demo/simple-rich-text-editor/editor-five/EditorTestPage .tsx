@@ -1,8 +1,7 @@
 'use client';
 
 import { useRefManager } from '@/lib/refs';
-import React, { useRef, useEffect, useState } from 'react';
-import RichTextEditor from '@/features/rich-text-editor/RichTextEditor';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import Toolbar from '@/features/rich-text-editor/components/Toolbar';
 import { TextStyle } from '@/types/editor.types';
 import ChipSearchUtility from '@/features/rich-text-editor/components/ChipSearchUtility';
@@ -51,16 +50,20 @@ const EditorTestPage: React.FC<EditorTestPageProps> = ({ editorId, initialConten
         editorRef.current?.focus();
     };
 
+
+    const ToolBar = useMemo(() => {
+        return <Toolbar
+            onApplyStyle={handleApplyStyle}
+            onInsertChip={handleInsertChip}
+            onConvertToChip={handleConvertToChip}
+        />
+    }, []);
+
     return (
         <div ref={containerRef} className='flex w-full gap-4'>
             <div className='flex-1 space-y-4'>
                 <div className='border border-gray-300 dark:border-gray-700 rounded-lg'>
-                    <Toolbar
-                        editorId={editorId}
-                        onApplyStyle={handleApplyStyle}
-                        onInsertChip={handleInsertChip}
-                        onConvertToChip={handleConvertToChip}
-                    />
+                    {ToolBar}
                     <EditorWithProviders
                         id={editorId}
                         className='w-full border border-gray-300 dark:border-gray-700 rounded-md'

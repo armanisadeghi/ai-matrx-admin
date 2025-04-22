@@ -2,7 +2,7 @@
 
 import { eventChannel, EventChannel } from "redux-saga";
 import { take, put, fork, call, select } from "redux-saga/effects";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import {
   setSocketStatus,
   setSocketSid,

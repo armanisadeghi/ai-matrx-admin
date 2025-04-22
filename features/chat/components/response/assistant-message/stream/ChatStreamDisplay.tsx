@@ -11,9 +11,18 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
-import { selectStreamText, selectStreamData, selectIsStreaming, selectStreamEnd } from "@/lib/redux/socket/streamingSlice";
+import {
+    selectStreamText,
+    selectStreamData,
+    selectIsStreaming,
+    selectStreamEnd,
+    selectStreamError,
+    selectFirstChunkReceived,
+} from "@/lib/redux/socket/streamingSlice";
 import { RootState } from "@/lib/redux/store";
-
+import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
+import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
+import ErrorCard from "./ErrorCard";
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 const components = {
@@ -61,9 +70,7 @@ const components = {
         </pre>
     ),
     // --- TABLE RENDERERS ---
-    table: ({ children, ...props }) => (
-        <StreamingTable {...props}>{children}</StreamingTable>
-    ),
+    table: ({ children, ...props }) => <StreamingTable {...props}>{children}</StreamingTable>,
     thead: ({ children, ...props }) => <thead {...props}>{children}</thead>,
     tbody: ({ children, ...props }) => <tbody {...props}>{children}</tbody>,
     tr: ({ children, ...props }) => <tr {...props}>{children}</tr>,
@@ -86,20 +93,21 @@ interface ChatStreamDisplayProps {
 
 const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, className }) => {
     const dispatch = useAppDispatch();
-    const [content, setContent] = useState<string>("");
     const chatActions = getChatActionsWithThunks();
-    const streamText = useAppSelector((state: RootState) => selectStreamText(state, eventName));
+    const chatSelectors = createChatSelectors();
+    const content = useAppSelector((state: RootState) => selectStreamText(state, eventName));
     const streamData = useAppSelector((state: RootState) => selectStreamData(state, eventName));
     const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
+    const firstChunkReceived = useAppSelector((state: RootState) => selectFirstChunkReceived(state, eventName));
     const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
-
-    const handleNewTextContent = (textContent: string) => {
-        setContent(textContent);
-    };
+    const streamError = useAppSelector((state: RootState) => selectStreamError(state, eventName));
+    const settings = useAppSelector(chatSelectors.activeMessageSettings);
+    const shouldShowLoader = useAppSelector(chatSelectors.shouldShowLoader);
 
     const handleStreamEnd = () => {
-        console.log("[CHAT STREAM DISPLAY] Stream ended");
+        console.log("===> [CHAT STREAM DISPLAY] Stream ended");
         dispatch(chatActions.setIsNotStreaming());
+        dispatch(chatActions.updateMessageStatus({ status: "completed" }));
         dispatch(chatActions.fetchMessagesForActiveConversation());
     };
 
@@ -112,8 +120,12 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     };
 
     useEffect(() => {
-        handleNewTextContent(streamText);
-    }, [streamText]);
+        if (streamError) {
+            dispatch(chatActions.updateMessageStatus({ status: "error" }));
+            console.log("===> [CHAT STREAM DISPLAY] Stream error", streamError);
+        }
+    }, [streamError]);
+
 
     useEffect(() => {
         if (streamData) {
@@ -138,7 +150,6 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
     );
 
     const parsedContent = useMemo(() => {
-        // You can keep this if you use it elsewhere, but it's not needed for table rendering anymore
         const tableData = parseMarkdownTable(content);
         const contentSegments = parseTaggedContent(content);
         return { tableData, contentSegments };
@@ -162,7 +173,19 @@ const ChatStreamDisplay: React.FC<ChatStreamDisplayProps> = memo(({ eventName, c
         ));
     };
 
-    if (content.length < 2) return null;
+    if (content.length < 2) {
+        if (!firstChunkReceived && isStreaming) {
+            return (
+                <div className="mb-3 w-full text-left">
+                    <div className="inline-block p-3 rounded-lg bg-inherit">
+                        <ControlledLoadingIndicator settings={settings} />
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    }
+
 
     return (
         <div className="mb-3 w-full text-left">

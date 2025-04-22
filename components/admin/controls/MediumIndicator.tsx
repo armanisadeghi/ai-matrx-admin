@@ -4,6 +4,10 @@ import { ChevronRight, ChevronDown, Move, User, Server, Wifi, WifiOff, Shield, S
 import { PiPathFill } from "react-icons/pi";
 import { usePathname } from "next/navigation";
 import { getAvailableNamespaces } from "@/constants/socket-schema";
+import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
+import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
+
 
 interface User {
   id: string;
@@ -67,6 +71,14 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
   const serverDropdownRef = useRef<HTMLDivElement>(null);
   const namespaceButtonRef = useRef<HTMLDivElement>(null);
   const namespaceDropdownRef = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
+  const chatActions = getChatActionsWithThunks();
+  const chatSelectors = createChatSelectors();
+  const isDebugMode = useAppSelector(chatSelectors.isDebugMode);
+
+  const handleToggleDebugMode = () => {
+    dispatch(chatActions.setChatDebugMode({ isDebugMode: !isDebugMode }));
+  }
 
   const handleContainerMouseDown = (e: React.MouseEvent) => {
     // Only trigger drag if clicking on the container itself, not its children
@@ -237,6 +249,15 @@ const MediumIndicator: React.FC<MediumIndicatorProps> = ({
             }}
             tooltip={isAuthenticated ? "Authenticated" : "Not Authenticated"}
           />
+          <button
+            onClick={handleToggleDebugMode}
+            className={`ml-2 px-2 py-0.5 text-xs rounded ${
+              isDebugMode ? "bg-green-600 text-white" : "bg-slate-600 text-slate-300"
+            }`}
+            title="Toggle Debug Mode"
+          >
+            {isDebugMode ? "Debug: ON" : "Debug: OFF"}
+          </button>
         </div>
         <div className="flex items-center space-x-2">
           <button 

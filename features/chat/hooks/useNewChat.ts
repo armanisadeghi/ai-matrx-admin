@@ -56,15 +56,12 @@ export function useNewChat() {
 
             const result = await dispatch(chatActions.saveConversationAndMessage({})).unwrap();
 
-            if (VERBOSE) console.log("🚀 ~ submitChatMessage ~ result:", JSON.stringify(result, null, 2));
-
             if (result && result.success) {
                 const conversation = result.conversationData.data;
                 const conversationId = conversation.id;
                 const message = result.messageData.data;
 
                 const eventName = await chatManager.streamMessage({ conversationId, message });
-                console.log("-> useNewChat submitChatMessage eventName", eventName);
                 if (eventName) {
                     chatActions.setSocketEventName({ eventName });
                     chatActions.setIsStreaming();

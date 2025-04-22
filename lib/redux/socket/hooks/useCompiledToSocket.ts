@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { useInitializeSocket } from "@/lib/redux/socket/useInitializeSocket";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import { StreamingResponses } from "./types";
 import { CompiledRecipeEntry } from "@/hooks/run-recipe/types";
 import { createEnhancedRecipePayload } from "@/components/playground/hooks/recipes/recipe-task-utils";

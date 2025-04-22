@@ -1,4 +1,4 @@
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 
 export interface TaskData {
     getTask(): any;

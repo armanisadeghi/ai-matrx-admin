@@ -225,7 +225,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
   );
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-2">
       {/* Table header with optional selector */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

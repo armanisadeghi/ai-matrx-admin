@@ -177,6 +177,26 @@ export const animations = {
                 opacity: "0.3",
             },
         },
+        pulseWave: {
+            '0%': { opacity: '0.3', transform: 'scale(0.8)' },
+            '50%': { opacity: '1', transform: 'scale(1)' },
+            '100%': { opacity: '0.3', transform: 'scale(0.8)' },
+          },
+          progressSpin: {
+            '0%': { strokeDashoffset: '88' },
+            '100%': { strokeDashoffset: '0' },
+          },
+          bounce: {
+            '0%, 100%': { transform: 'translateY(0)' },
+            '50%': { transform: 'translateY(-5px)' },
+          },
+          textFade: {
+            '0%': { opacity: '0', transform: 'translateY(5px)' },
+            '10%': { opacity: '1', transform: 'translateY(0)' },
+            '23%': { opacity: '1', transform: 'translateY(0)' },
+            '33%': { opacity: '0', transform: 'translateY(-5px)' },
+            '100%': { opacity: '0' },
+          },  
     },
     animation: {
         "accordion-down": "accordion-down 0.4s ease-out",
@@ -206,5 +226,11 @@ export const animations = {
         "pulse-line": "pulse-line 3s ease-in-out infinite",
         sparkle: "sparkle 1.5s ease-in-out infinite",
         "thinking-text": "thinking-text 2.5s ease-in-out infinite",
+
+        // New animations
+        'pulse-wave': 'pulseWave 1.5s infinite ease-in-out',
+        'progress-spin': 'progressSpin 3s infinite linear',
+        'bounce': 'bounce 1s infinite ease-in-out',
+        'text-fade': 'textFade 12s infinite',
     },
 };

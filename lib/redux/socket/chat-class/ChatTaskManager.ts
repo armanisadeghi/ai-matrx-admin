@@ -1,4 +1,4 @@
-import { SocketManager } from "../manager";
+import { SocketManager } from "../SocketManager";
 import { AiChatTaskData } from "./ChatTaskData";
 import { Message, ChatMode } from "@/types/chat/chat.types";
 

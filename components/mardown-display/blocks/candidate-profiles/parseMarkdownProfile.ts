@@ -59,14 +59,17 @@ export const parseMarkdownProfile = (markdown: string): CandidateProfileType => 
             continue;
         }
         
-        // Parse candidate name
-        if (trimmedLine.startsWith('### Candidate Profile:')) {
-            const nameParts = trimmedLine.replace('### Candidate Profile:', '').trim().split('[');
-            profile.name = nameParts[0].trim();
+        // Parse candidate name with flexible hashtag and optional colon
+        const candidateMatch = trimmedLine.match(/^(#{1,2})\s*Candidate Profile\s*:?\s*(.+)$/);
+        if (candidateMatch) {
+            // Extract the name and remove bold markers if present
+            let name = candidateMatch[2].trim().split('[')[0].trim();
+            // Remove ** from start and end if they exist
+            name = name.replace(/^\*\*(.+?)\*\*$/, '$1').trim();
+            profile.name = name;
             lineIndex++;
             continue;
-        }
-        
+        }        
         // Parse subtitle (first non-header line after the title)
         if (profile.name && !profile.subtitle && !trimmedLine.startsWith('###') && !trimmedLine.startsWith('---')) {
             profile.subtitle = trimmedLine;

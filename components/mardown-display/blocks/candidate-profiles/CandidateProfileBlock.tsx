@@ -36,3 +36,5 @@ const CandidateProfileBlock: React.FC<CandidateProfileBlockProps> = ({ content }
 };
 
 export default CandidateProfileBlock;
+
+

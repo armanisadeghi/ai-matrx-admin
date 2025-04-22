@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import UserMessage from "@/features/chat/components/response/user-message/UserMessage";
 import AssistantMessage from "@/features/chat/components/response/assistant-message/AssistantMessage";
 import { useFetchConversationMessages } from "@/features/chat/hooks/unused/useFetchConversationMessages";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import { createConversationSelectors } from "@/lib/redux/entity/selectors";
 import { useAppSelector } from "@/lib/redux";
 

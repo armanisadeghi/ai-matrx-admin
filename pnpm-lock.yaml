@@ -105,7 +105,7 @@ importers:
         specifier: latest
         version: 2.1.6(@types/react-dom@19.0.4(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-hover-card':
-        specifier: latest
+        specifier: ^1.1.6
         version: 1.1.6(@types/react-dom@19.0.4(@types/react@19.0.12))(@types/react@19.0.12)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@radix-ui/react-icons':
         specifier: latest
@@ -356,6 +356,9 @@ importers:
       moment:
         specifier: latest
         version: 2.30.1
+      motion:
+        specifier: ^12.7.4
+        version: 12.7.4(@emotion/is-prop-valid@1.3.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next:
         specifier: latest
         version: 15.2.4(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -392,6 +395,9 @@ importers:
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
+      qss:
+        specifier: ^3.0.0
+        version: 3.0.0
       re-resizable:
         specifier: ^6.11.2
         version: 6.11.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -440,6 +446,9 @@ importers:
       react-katex:
         specifier: latest
         version: 3.0.1(prop-types@15.8.1)(react@19.1.0)
+      react-live:
+        specifier: ^4.1.8
+        version: 4.1.8(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.0.12)(react@19.1.0)
@@ -7118,6 +7127,20 @@ packages:
       react-dom:
         optional: true
 
+  framer-motion@12.7.4:
+    resolution: {integrity: sha512-jX0bPsTmU0oPZTYz/dVyD0dmOyEOEJvdn0TaZBE5I8g2GvVnnQnW9f65cJnoVfUkY3WZWNXGXnPbVA9YnaIfVA==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   framesync@6.1.2:
     resolution: {integrity: sha512-jBTqhX6KaQVDyus8muwZbBeGGP0XgujBRbQ7gM7BRdS3CadCZIHiawyzYLnafYcvZIh5j8WE7cxZKFn7dXhu9g==}
 
@@ -8675,11 +8698,31 @@ packages:
   motion-dom@12.6.3:
     resolution: {integrity: sha512-gRY08RjcnzgFYLemUZ1lo/e9RkBxR+6d4BRvoeZDSeArG4XQXERSPapKl3LNQRu22Sndjf1h+iavgY0O4NrYqA==}
 
+  motion-dom@12.7.4:
+    resolution: {integrity: sha512-1ZUHAoSUMMxP6jPqyxlk9XUfb6NxMsnWPnH2YGhrOhTURLcXWbETi6eemoKb60Pe32NVJYduL4B62VQSO5Jq8Q==}
+
   motion-utils@11.18.1:
     resolution: {integrity: sha512-49Kt+HKjtbJKLtgO/LKj9Ld+6vw9BjH5d9sc40R/kVyH8GLAXgT42M2NnuPcJNuA3s9ZfZBUcwIgpmZWGEE+hA==}
 
   motion-utils@12.6.3:
     resolution: {integrity: sha512-R/b3Ia2VxtTNZ4LTEO5pKYau1OUNHOuUfxuP0WFCTDYdHkeTBR9UtxR1cc8mDmKr8PEhmmfnTKGz3rSMjNRoRg==}
+
+  motion-utils@12.7.2:
+    resolution: {integrity: sha512-XhZwqctxyJs89oX00zn3OGCuIIpVevbTa+u82usWBC6pSHUd2AoNWiYa7Du8tJxJy9TFbZ82pcn5t7NOm1PHAw==}
+
+  motion@12.7.4:
+    resolution: {integrity: sha512-MBGrMbYageHw4iZJn+pGTr7abq5n53jCxYkhFC1It3vYukQPRWg5zij46MnwYGpLR8KG465MLHSASXot9edYOw==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   move-concurrently@1.0.1:
     resolution: {integrity: sha512-hdrFxZOycD/g6A6SoI2bB5NA/5NEqD0569+S47WZhPvm46sD50ZHdYaFmnua5lndde9rCHGjmfK7Z8BuCt/PcQ==}
@@ -9444,6 +9487,10 @@ packages:
     resolution: {integrity: sha512-YWWTjgABSKcvs/nWBi9PycY/JiPJqOD4JA6o9Sej2AtvSGarXxKC3OQSk4pAarbdQlKAh5D4FCQkJNkW+GAn3w==}
     engines: {node: '>=0.6'}
 
+  qss@3.0.0:
+    resolution: {integrity: sha512-ZHoCB3M/3Voev64zhLLUOKDtaEdJ/lymsJJ7R3KBusVZ2ovNiIB7XOq3Xh6V1a8O+Vho+g2B5YElq9zW7D8aQw==}
+    engines: {node: '>=4'}
+
   quansync@0.2.10:
     resolution: {integrity: sha512-t41VRkMYbkHyCYmOvx/6URnN80H7k4X0lLdBMGsz+maAwrJQYB1djpV6vHrQIBE0WBSGqhtEHrK9U3DWWH8v7A==}
 
@@ -9872,6 +9919,13 @@ packages:
 
   react-lifecycles-compat@3.0.4:
     resolution: {integrity: sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==}
+
+  react-live@4.1.8:
+    resolution: {integrity: sha512-B2SgNqwPuS2ekqj4lcxi5TibEcjWkdVyYykBEUBshPAPDQ527x2zPEZg560n8egNtAjUpwXFQm7pcXV65aAYmg==}
+    engines: {node: '>= 0.12.0', npm: '>= 2.0.0'}
+    peerDependencies:
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
 
   react-markdown@10.1.0:
     resolution: {integrity: sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ==}
@@ -11261,6 +11315,11 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  use-editable@2.3.3:
+    resolution: {integrity: sha512-7wVD2JbfAFJ3DK0vITvXBdpd9JAz5BcKAAolsnLBuBn6UDDwBGuCIAGvR3yA2BNKm578vAMVHFCWaOcA+BhhiA==}
+    peerDependencies:
+      react: '>= 16.8.0'
 
   use-isomorphic-layout-effect@1.2.0:
     resolution: {integrity: sha512-q6ayo8DWoPZT0VdG4u3D3uxcgONP3Mevx2i2b0434cwWBoL+aelL1DzkXI6w3PhTZzUeR2kaVlZn70iCiseP6w==}
@@ -20807,6 +20866,16 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
+  framer-motion@12.7.4(@emotion/is-prop-valid@1.3.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      motion-dom: 12.7.4
+      motion-utils: 12.7.2
+      tslib: 2.8.1
+    optionalDependencies:
+      '@emotion/is-prop-valid': 1.3.1
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+
   framesync@6.1.2:
     dependencies:
       tslib: 2.4.0
@@ -23065,9 +23134,24 @@ snapshots:
     dependencies:
       motion-utils: 12.6.3
 
+  motion-dom@12.7.4:
+    dependencies:
+      motion-utils: 12.7.2
+
   motion-utils@11.18.1: {}
 
   motion-utils@12.6.3: {}
+
+  motion-utils@12.7.2: {}
+
+  motion@12.7.4(@emotion/is-prop-valid@1.3.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      framer-motion: 12.7.4(@emotion/is-prop-valid@1.3.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      tslib: 2.8.1
+    optionalDependencies:
+      '@emotion/is-prop-valid': 1.3.1
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   move-concurrently@1.0.1:
     dependencies:
@@ -23961,6 +24045,8 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
+  qss@3.0.0: {}
+
   quansync@0.2.10: {}
 
   query-string@9.1.1:
@@ -24505,6 +24591,14 @@ snapshots:
       - supports-color
 
   react-lifecycles-compat@3.0.4: {}
+
+  react-live@4.1.8(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      prism-react-renderer: 2.4.1(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+      sucrase: 3.35.0
+      use-editable: 2.3.3(react@19.1.0)
 
   react-markdown@10.1.0(@types/react@19.0.12)(react@19.1.0):
     dependencies:
@@ -26254,6 +26348,10 @@ snapshots:
       react: 19.1.0
     optionalDependencies:
       '@types/react': 19.0.12
+
+  use-editable@2.3.3(react@19.1.0):
+    dependencies:
+      react: 19.1.0
 
   use-isomorphic-layout-effect@1.2.0(@types/react@19.0.12)(react@19.1.0):
     dependencies:

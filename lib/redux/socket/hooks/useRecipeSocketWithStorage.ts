@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useInitializeSocket } from "../useInitializeSocket";
-import { SocketManager } from "../manager";
+import { SocketManager } from "../SocketManager";
 import { useRef } from "react";
 import { RecipeTaskData, StreamingResponses } from "./types";
 

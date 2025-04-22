@@ -10,6 +10,7 @@ import { fetchRelatedRecordsThunk } from "../thunks/fetchRelatedRecordsThunk";
 import { createMessageForConversation, saveMessageThunk } from "@/lib/redux/features/aiChats/thunks/entity/createMessageThunk";
 import { fetchRelatedMessagesThunk } from "../../features/aiChats/thunks/entity/fetchRelatedMessagesThunk";
 
+export type MessageStatusOptions = "pending" | "submitted" | "processing" | "firstChunkReceived" | "completed" | "error";
 
 export type RuntimeFilter = {
     field: string;
@@ -500,6 +501,14 @@ export const getChatActionsWithThunks = () => {
                 const msgKeyOrId = params.messageTempId ?? getState().entities["message"].selection.activeRecord;
                 if (!convKeyOrId || !msgKeyOrId) return;
 
+                dispatch(
+                    messageActions.updateNestedFieldSmart({
+                        keyOrId: msgKeyOrId,
+                        field: "metadata",
+                        nestedKey: "status",
+                        value: "submitted",
+                    })
+                );
                 return dispatch(saveConversationAndMessage({ conversationTempId: convKeyOrId, messageTempId: msgKeyOrId }));
             },
 
@@ -614,7 +623,7 @@ export const getChatActionsWithThunks = () => {
                 );
             },
 
-            updateSelectedRecipe:
+        updateSelectedRecipe:
             (params: { conversationkeyOrId?: string; messagekeyOrId?: string; recipeId: string }) =>
             (dispatch: AppDispatch, getState: () => RootState) => {
                 const convKeyOrId = params.conversationkeyOrId ?? getState().entities["conversation"].selection.activeRecord;
@@ -638,7 +647,6 @@ export const getChatActionsWithThunks = () => {
                 );
             },
 
-
         updateTechStack:
             (params: { conversationkeyOrId?: string; messagekeyOrId?: string; libraries: string[] }) =>
             (dispatch: AppDispatch, getState: () => RootState) => {
@@ -659,6 +667,20 @@ export const getChatActionsWithThunks = () => {
                         field: "metadata",
                         nestedKey: "techStack",
                         value: params.libraries,
+                    })
+                );
+            },
+
+        updateMessageStatus:
+            (params: { messagekeyOrId?: string; status: MessageStatusOptions }) => (dispatch: AppDispatch, getState: () => RootState) => {
+                const msgKeyOrId = params.messagekeyOrId ?? getState().entities["message"].selection.activeRecord;
+                if (!msgKeyOrId) return;
+                dispatch(
+                    messageActions.updateNestedFieldSmart({
+                        keyOrId: msgKeyOrId,
+                        field: "metadata",
+                        nestedKey: "status",
+                        value: params.status,
                     })
                 );
             },
@@ -711,7 +733,7 @@ export const getChatActionsWithThunks = () => {
                 );
             },
 
-            updateAvailableBrokers:
+        updateAvailableBrokers:
             (params: { conversationkeyOrId?: string; messagekeyOrId?: string; value: string[] }) =>
             (dispatch: AppDispatch, getState: () => RootState) => {
                 const convKeyOrId = params.conversationkeyOrId ?? getState().entities["conversation"].selection.activeRecord;
@@ -734,8 +756,6 @@ export const getChatActionsWithThunks = () => {
                     })
                 );
             },
-
-
 
         updateModAssistantContext:
             (params: { conversationkeyOrId?: string; messagekeyOrId?: string; value: string }) =>
@@ -811,8 +831,10 @@ export const getChatActionsWithThunks = () => {
                     value: params.value,
                 })
             );
-            dispatch(messageActions.updateFieldSmart({ keyOrId, field: "type", value: "mixed" })); // NEWLY ADDED! Might break things!
-            console.log("--> Warning! New feature. [CHAT ACTIONS THUNK] updated files is changing the message type to mixed");
+            if (params.value.length > 0) {
+                dispatch(messageActions.updateFieldSmart({ keyOrId, field: "type", value: "mixed" })); // NEWLY ADDED! Might break things!
+                console.log("--> Warning! New feature. [CHAT ACTIONS THUNK] updated files is changing the message type to mixed");
+            }
         },
 
         setSocketEventName: (params: { eventName: string }) => (dispatch: AppDispatch) => {
@@ -824,6 +846,10 @@ export const getChatActionsWithThunks = () => {
             console.log("[CHAT ACTIONS THUNK] setting isStreaming");
             dispatch(conversationActions.updateCustomDataSmart({ customData: { isStreaming: true } }));
             dispatch(messageActions.updateCustomDataSmart({ customData: { isStreaming: true } }));
+        },
+
+        setChatDebugMode: (params: { isDebugMode: boolean }) => (dispatch: AppDispatch) => {
+            dispatch(conversationActions.updateCustomDataSmart({ customData: { isDebugMode: params.isDebugMode } }));
         },
 
         setIsNotStreaming: () => (dispatch: AppDispatch) => {

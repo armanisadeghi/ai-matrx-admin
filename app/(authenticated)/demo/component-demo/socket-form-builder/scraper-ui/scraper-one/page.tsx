@@ -16,8 +16,6 @@ export default function Page() {
     const [controlsExpanded, setControlsExpanded] = useState(true);
     const { isResponseActive, tasks, taskType } = socketHook;
 
-
-
     // Auto-collapse controls when response becomes active
     useEffect(() => {
         if (isResponseActive) {

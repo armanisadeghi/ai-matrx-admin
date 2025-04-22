@@ -11,9 +11,10 @@ interface CopyButtonProps {
     content: string;
     label?: string;
     className?: string;
+    size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "icon" | "roundIcon";
 }
 
-export const CopyButton = ({ content, label, className }: CopyButtonProps) => {
+export const CopyButton = ({ content, label, className, size="sm" }: CopyButtonProps) => {
     const [copied, setCopied] = useState(false);
 
     const handleCopy = async () => {
@@ -29,7 +30,7 @@ export const CopyButton = ({ content, label, className }: CopyButtonProps) => {
     return (
         <Button 
             variant="ghost" 
-            size="sm" 
+            size={size} 
             className={`px-2 h-7 flex items-center gap-1 ${className}`} 
             onClick={handleCopy}
             title={label || "Copy to clipboard"}

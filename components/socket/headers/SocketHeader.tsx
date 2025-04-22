@@ -56,6 +56,15 @@ export function SocketHeader({ socketHook, testMode, onTestModeChange }: SocketH
         const fetchServers = async () => {
             const servers = await getAvailableServers();
             const normalizedServers = [...new Set((servers as string[]).map((server) => server.trim().toLowerCase()))];
+            console.log("[SOCKET] InitialAvailable servers:", normalizedServers);
+
+            // Always ensure "http://localhost:8000" is included
+            if (!normalizedServers.includes("http://localhost:8000")) {
+                normalizedServers.push("http://localhost:8000");
+            }
+
+            console.log("[SOCKET] Final Available servers:", normalizedServers);
+
             setAvailableServers(normalizedServers);
         };
         fetchServers();

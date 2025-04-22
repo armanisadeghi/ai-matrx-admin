@@ -8,7 +8,7 @@ import {
     socketDisconnected,
     socketError,
 } from "@/lib/redux/features/socket/socketActions";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import { SocketConfig } from "@/lib/redux/socket/core/connection-manager";
 import {
     setFullUrl,
@@ -49,6 +49,16 @@ const notifyListeners = () => {
 
 // Singleton instance
 let hookInstance: { [key: string]: any } | null = null;
+
+
+const ADMIN_USER_IDS = [
+    "4cf62e4e-2679-484f-b652-034e697418df",
+    "8f7f17ba-935b-4967-8105-7c6b554f41f1",
+    "6555aa73-c647-4ecf-8a96-b60e315b6b18",
+];
+
+
+
 
 export const useSocketConnection = () => {
     const dispatch = useDispatch();

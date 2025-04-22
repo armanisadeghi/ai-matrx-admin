@@ -1,4 +1,4 @@
-// File: components/socket/SocketAdmin.tsx
+// File: components/socket/admin/SocketAdmin.tsx
 "use client";
 import { Card, CardContent } from "@/components/ui";
 import { useSocket } from "@/lib/redux/socket/hooks/useSocket";
@@ -11,7 +11,7 @@ import { SocketAccordionResponse } from "@/components/socket/response/SocketAcco
 import SocketDebugPanel from "../SocketDebugPanel";
 import { SocketTaskBuilder } from "../SocketTaskBuilder";
 import { useState } from "react";
-
+import SocketStreamMonitor from "../streaming/SocketStreamMonitor";
 
 interface SocketAdminProps {
     className?: string;
@@ -93,9 +93,14 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                     </div>
                 </CardContent>
             </Card>
+            {/* Stream Monitor Panel */}
+            <div className="mt-8">
+                <SocketStreamMonitor socketHook={socketHook} />
+            </div>
             <div className="mt-8 px-2">
                 <SocketAccordionResponse socketHook={socketHook} />
             </div>
+
 
             {/* Debug Panel */}
             <div className="mt-8 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 shadow-sm">

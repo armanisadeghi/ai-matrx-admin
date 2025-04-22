@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { FetchRecordsPayload, RootState, useAppDispatch, useEntityTools } from "@/lib/redux";
 import { useSelector } from "react-redux";
 import { MessageRecordWithKey } from "@/types";
-import { SocketManager } from "@/lib/redux/socket/manager";
+import { SocketManager } from "@/lib/redux/socket/SocketManager";
 
 interface UseFetchConversationMessagesProps {
     conversationId: string | undefined;

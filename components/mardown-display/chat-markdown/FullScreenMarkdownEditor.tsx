@@ -82,12 +82,26 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
         });
     }, []);
 
+    // Update the edited content whenever initialContent changes or editor is opened
     useEffect(() => {
         if (isOpen) {
             setEditedContent(initialContent);
             setActiveTab("write");
+            
+            // If the editor is already open and initialContent changes, update the TUI editor
+            if (activeTab === "rich" && editorRef.current) {
+                try {
+                    const instance = editorRef.current.getInstance();
+                    const currentMarkdownInTui = instance.getMarkdown();
+                    if (currentMarkdownInTui !== initialContent) {
+                        instance.setMarkdown(initialContent, false);
+                    }
+                } catch (e) {
+                    console.error("Error updating TUI editor with new initialContent:", e);
+                }
+            }
         }
-    }, [isOpen, initialContent]);
+    }, [isOpen, initialContent, activeTab]);
 
     const handleTuiChange = useCallback(() => {
         if (editorRef.current && activeTab === "rich") {
@@ -232,7 +246,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                             {isOpen && isClient && (
                                 <TuiEditor
                                     ref={editorRef}
-                                    key={`${initialContent}-${mode}`}
+                                    key={`${activeTab}-${mode}-${isOpen}`}
                                     initialValue={editedContent}
                                     initialEditType="wysiwyg"
                                     previewStyle="tab"

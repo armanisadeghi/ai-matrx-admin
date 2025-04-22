@@ -2,7 +2,6 @@
 import React, { useState, ReactNode } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 
 interface ChatCollapsibleWrapperProps {
     icon: ReactNode;

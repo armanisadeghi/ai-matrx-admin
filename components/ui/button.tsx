@@ -18,6 +18,34 @@ export type ButtonSize =
     | "m"  // Keeping legacy sizes for backward compatibility
     | "l";
 
+// Valid variants as a const array for runtime checking
+const VALID_VARIANTS = [
+    "default",
+    "primary",
+    "destructive",
+    "success",
+    "outline",
+    "secondary",
+    "ghost",
+    "link"
+] as const;
+
+// Valid sizes as a const array for runtime checking
+const VALID_SIZES = [
+    "default",
+    "xs",
+    "sm",
+    "md",
+    "lg",
+    "xl",
+    "2xl",
+    "3xl",
+    "icon",
+    "roundIcon",
+    "m",
+    "l"
+] as const;
+
 const buttonVariants = cva(
     "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
     {
@@ -63,17 +91,31 @@ export interface ButtonProps
     className?: string
 }
 
+// Helper function to validate variant/size against allowed values
+function isValidOption<T extends string>(value: unknown, validOptions: readonly T[]): value is T {
+    return typeof value === 'string' && validOptions.includes(value as T);
+}
+
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className, variant, size, asChild = false, ...props }, ref) => {
-        // Fix: Type-check and ensure variant and size are valid options
+        // Properly validate variant and size to ensure they are valid options
         // This prevents infinite loops when invalid values are passed
-        const validVariant = variant && typeof variant === 'string' ? variant : 'default';
-        const validSize = size && typeof size === 'string' ? size : 'default';
+        const validVariant = isValidOption(variant, VALID_VARIANTS) ? variant : 'default';
+        const validSize = isValidOption(size, VALID_SIZES) ? size : 'default';
         
         const Comp = asChild ? Slot : "button"
+
+        // Use React.useMemo to prevent unnecessary recalculations of class names
+        const buttonClassName = React.useMemo(() => {
+            return cn(buttonVariants({ 
+                variant: validVariant, 
+                size: validSize 
+            }), className);
+        }, [validVariant, validSize, className]);
+        
         return (
             <Comp
-                className={cn(buttonVariants({ variant: validVariant, size: validSize }), className)}
+                className={buttonClassName}
                 ref={ref}
                 {...props}
             />

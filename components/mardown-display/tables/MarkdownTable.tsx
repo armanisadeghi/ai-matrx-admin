@@ -13,7 +13,9 @@ import {
   FileText, 
   FileSpreadsheet, 
   FileDown,
-  ChevronDown 
+  ChevronDown,
+  Database,
+  ExternalLink 
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +26,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToastManager } from "@/hooks/useToastManager";
 import { THEMES } from "../themes";
+import SaveTableModal from "./SaveTableModal";
+import ViewTableModal from "./ViewTableModal";
+
+interface SavedTableInfo {
+  table_id: string;
+  table_name: string;
+  row_count: string;
+  field_count: string;
+}
 
 interface MarkdownTableProps {
     data: {
@@ -36,6 +47,7 @@ interface MarkdownTableProps {
     theme?: string;
     onSave?: (tableData: { headers: string[]; rows: string[][] }) => void;
     content?: string;
+    onContentChange?: (updatedMarkdown: string) => void;
 }
 
 const MarkdownTable: React.FC<MarkdownTableProps> = ({
@@ -45,6 +57,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     theme = "professional",
     onSave = () => {},
     content = "",
+    onContentChange,
 }) => {
     const [tableData, setTableData] = useState<{
         headers: string[];
@@ -60,6 +73,9 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const tableFontsize = fontSize;
     const toast = useToastManager();
     const tableTheme = THEMES[theme].table || THEMES.professional.table;
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [savedTableInfo, setSavedTableInfo] = useState<SavedTableInfo | null>(null);
 
     useEffect(() => {
         // Use the raw data with Markdown intact
@@ -83,17 +99,33 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         return <span dangerouslySetInnerHTML={{ __html: html }} />;
     };
 
+    // Helper function to generate markdown table from current state
+    const generateMarkdownTable = () => {
+        const maxLengths = Array(tableData.headers.length).fill(0);
+        [tableData.headers, ...tableData.rows].forEach((row) => {
+            row.forEach((cell, i) => {
+                maxLengths[i] = Math.max(maxLengths[i], cell.length);
+            });
+        });
+        const formatRow = (row: string[]) => "| " + row.map((cell, i) => cell.padEnd(maxLengths[i])).join(" | ") + " |";
+        const separator = "|-" + maxLengths.map((len) => "-".repeat(len)).join("-|-") + "-|";
+        return [formatRow(tableData.headers), separator, ...tableData.rows.map((row) => formatRow(row))].join("\n");
+    };
+
+    // Function to notify parent of content changes
+    const notifyContentChange = () => {
+        if (onContentChange && content) {
+            // If we have the original content string, we need to replace the table portion
+            // This is a simplified approach - in a real implementation, you might need more sophisticated
+            // parsing to correctly locate and replace the table in the markdown
+            const updatedMarkdown = generateMarkdownTable();
+            onContentChange(updatedMarkdown);
+        }
+    };
+
     const copyTableToClipboard = async () => {
         try {
-            const maxLengths = Array(tableData.headers.length).fill(0);
-            [tableData.headers, ...tableData.rows].forEach((row) => {
-                row.forEach((cell, i) => {
-                    maxLengths[i] = Math.max(maxLengths[i], cell.length);
-                });
-            });
-            const formatRow = (row: string[]) => "| " + row.map((cell, i) => cell.padEnd(maxLengths[i])).join(" | ") + " |";
-            const separator = "|-" + maxLengths.map((len) => "-".repeat(len)).join("-|-") + "-|";
-            const formattedTable = [formatRow(tableData.headers), separator, ...tableData.rows.map((row) => formatRow(row))].join("\n");
+            const formattedTable = generateMarkdownTable();
             await navigator.clipboard.writeText(formattedTable);
             toast.success("Table copied to clipboard");
         } catch (err: any) {
@@ -197,6 +229,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             onSave(tableData);
             setEditMode("none");
             toast.info("Edit mode deactivated");
+            notifyContentChange();
         } else {
             setEditMode("header");
             toast.info("Edit mode activated");
@@ -231,6 +264,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         onSave(tableData);
         setEditMode("none");
         toast.success("Table data saved");
+        notifyContentChange();
     };
 
     const handleCancel = () => {
@@ -249,6 +283,44 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const isEditingHeader = editMode === "header";
     const editingBorderStyle = "overflow-x-auto rounded-xl border-3 border-dashed border-red-500 rounded-xl";
     const normalBorderStyle = `overflow-x-auto rounded-xl border-3 ${tableTheme.border}`;
+
+    // Handle save table completion
+    const handleSaveComplete = (tableInfo: SavedTableInfo) => {
+        setSavedTableInfo(tableInfo);
+        setShowSaveModal(false);
+        setShowViewModal(true);
+    };
+
+    // Render either a Save or View button based on whether the table is already saved
+    const renderTableActionButton = () => {
+        if (!tableData.normalizedData) return null;
+        
+        if (savedTableInfo) {
+            return (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowViewModal(true)}
+                    className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
+                >
+                    <ExternalLink className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    View Saved Table
+                </Button>
+            );
+        } else {
+            return (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSaveModal(true)}
+                    className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
+                >
+                    <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    Save
+                </Button>
+            );
+        }
+    };
 
     return (
         <div className="w-full space-y-4 my-4">
@@ -354,17 +426,20 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => setShowNormalized(!showNormalized)}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
                     >
                         <Eye className="h-4 w-4" />
                         {showNormalized ? "Table" : "Data"}
                     </Button>
                 )}
                 
+                {/* Render either Save or View button */}
+                {renderTableActionButton()}
+                
                 {/* Export dropdown menu replacing individual buttons */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30">
                             <Download className="h-4 w-4" />
                             Export
                             <ChevronDown className="h-4 w-4 ml-1" />
@@ -430,12 +505,31 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         </Button>
                     </>
                 ) : (
-                    <Button variant="outline" size="sm" onClick={toggleGlobalEditMode} className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={toggleGlobalEditMode} className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30">
                         <Edit className="h-4 w-4" />
                         Edit
                     </Button>
                 )}
             </div>
+            
+            {/* Save Modal */}
+            {showSaveModal && (
+                <SaveTableModal
+                    isOpen={showSaveModal}
+                    onClose={() => setShowSaveModal(false)}
+                    onSaveComplete={handleSaveComplete}
+                    tableData={tableData.normalizedData}
+                />
+            )}
+            
+            {/* View Modal */}
+            {showViewModal && savedTableInfo && (
+                <ViewTableModal
+                    isOpen={showViewModal}
+                    onClose={() => setShowViewModal(false)}
+                    tableInfo={savedTableInfo}
+                />
+            )}
         </div>
     );
 };

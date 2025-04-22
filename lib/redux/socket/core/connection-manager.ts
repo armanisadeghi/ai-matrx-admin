@@ -10,6 +10,13 @@ export interface SocketConfig {
     transports?: ("polling" | "websocket")[];
 }
 
+// List of admin user IDs who can access local server in production
+const ADMIN_USER_IDS = [
+    "4cf62e4e-2679-484f-b652-034e697418df",
+    "8f7f17ba-935b-4967-8105-7c6b554f41f1",
+    "6555aa73-c647-4ecf-8a96-b60e315b6b18",
+];
+
 export class SocketConnectionManager {
     private static instance: SocketConnectionManager;
     private sockets: Map<string, Socket> = new Map();
@@ -65,15 +72,46 @@ export class SocketConnectionManager {
             urls.push(overrideUrl);
         }
 
-        if (!isProduction && this.isClientSide) {
+        // Always add production URL first in production environment
+        if (isProduction) {
+            urls.push(this.DEFAULT_PRODUCTION_URL);
+        }
+
+        // Check if current user is an admin
+        const isAdmin = await this.isUserAdmin();
+        console.log("[SOCKET] Is admin:", isAdmin);
+
+        // For non-production or admin users, check if local server is available
+        if (!isProduction || isAdmin) {
             const isLocalAvailable = await this.isLocalServerAvailable();
             if (isLocalAvailable) {
                 urls.push(this.DEFAULT_LOCAL_URL);
             }
         }
 
-        urls.push(this.DEFAULT_PRODUCTION_URL);
+        // If in non-production and we haven't added production URL yet, add it as fallback
+        if (!isProduction && !urls.includes(this.DEFAULT_PRODUCTION_URL)) {
+            urls.push(this.DEFAULT_PRODUCTION_URL);
+        }
+
         return urls;
+    }
+
+    private async isUserAdmin(): Promise<boolean> {
+        // if (!this.isClientSide) return false;
+        
+        try {
+            const session = await supabase.auth.getSession();
+            const userId = session.data.session?.user?.id;
+            console.log("[SOCKET] User ID:", userId);
+            
+            if (!userId) return false;
+            
+            return ADMIN_USER_IDS.includes(userId);
+        } catch (error) {
+            console.error("[SOCKET] Error checking admin status:", error);
+            return false;
+        }
     }
 
     private async isLocalServerAvailable(): Promise<boolean> {
