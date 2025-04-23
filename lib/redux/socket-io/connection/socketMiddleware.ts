@@ -25,7 +25,7 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
       const { connectionId, url: urlChange } = action.payload;
       socketManager.disconnect(connectionId);
       dispatch(setConnection({
-        id: connectionId,
+        connectionId: connectionId,
         socket: null,
         url: urlChange,
         namespace: getState().socketConnections.connections[connectionId]?.namespace || '/UserSession',
@@ -36,6 +36,10 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
         if (socket) {
           dispatch(setSocket({ connectionId, socket }));
           dispatch(setConnectionStatus({ connectionId, status: 'connected' }));
+          
+          const isAuthenticated = socketManager.isAuthenticated(connectionId);
+          dispatch(setIsAuthenticated({ connectionId, isAuthenticated }));
+          
           setupSocketListeners(socket, store, connectionId);
         }
       });
@@ -45,7 +49,7 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
       const { connectionId: nsConnectionId, namespace: namespaceChange } = action.payload;
       socketManager.disconnect(nsConnectionId);
       dispatch(setConnection({
-        id: nsConnectionId,
+        connectionId: nsConnectionId,
         socket: null,
         url: getState().socketConnections.connections[nsConnectionId]?.url || 'https://server.app.matrxserver.com',
         namespace: namespaceChange,
@@ -56,6 +60,10 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
         if (socket) {
           dispatch(setSocket({ connectionId: nsConnectionId, socket }));
           dispatch(setConnectionStatus({ connectionId: nsConnectionId, status: 'connected' }));
+          
+          const isAuthenticated = socketManager.isAuthenticated(nsConnectionId);
+          dispatch(setIsAuthenticated({ connectionId: nsConnectionId, isAuthenticated }));
+          
           setupSocketListeners(socket, store, nsConnectionId);
         }
       });
@@ -65,6 +73,7 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
       socketManager.disconnect(action.payload);
       dispatch(setConnectionStatus({ connectionId: action.payload, status: 'disconnected' }));
       dispatch(setSocket({ connectionId: action.payload, socket: null }));
+      dispatch(setIsAuthenticated({ connectionId: action.payload, isAuthenticated: false }));
       break;
 
     case 'socketConnections/reconnectConnection':
@@ -83,9 +92,14 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
         if (socket) {
           dispatch(setSocket({ connectionId: connId, socket }));
           dispatch(setConnectionStatus({ connectionId: connId, status: 'connected' }));
+          
+          const isAuthenticated = socketManager.isAuthenticated(connId);
+          dispatch(setIsAuthenticated({ connectionId: connId, isAuthenticated }));
+          
           setupSocketListeners(socket, store, connId);
         } else {
           dispatch(setConnectionStatus({ connectionId: connId, status: 'error' }));
+          dispatch(setIsAuthenticated({ connectionId: connId, isAuthenticated: false }));
         }
       });
       break;
@@ -101,20 +115,24 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
       break;
 
     case 'socketConnections/addConnection':
-      const { id, url: newUrl, namespace: newNamespace } = action.payload;
+      const { connectionId: addConnectionId, url: newUrl, namespace: newNamespace } = action.payload;
       dispatch(setConnection({
-        id,
+        connectionId: addConnectionId,
         socket: null,
         url: newUrl,
         namespace: newNamespace,
         connectionStatus: 'disconnected',
         isAuthenticated: false,
       }));
-      socketManager.getSocket(id, newUrl, newNamespace).then((socket: Socket | null) => {
+      socketManager.getSocket(addConnectionId, newUrl, newNamespace).then((socket: Socket | null) => {
         if (socket) {
-          dispatch(setSocket({ connectionId: id, socket }));
-          dispatch(setConnectionStatus({ connectionId: id, status: 'connected' }));
-          setupSocketListeners(socket, store, id);
+          dispatch(setSocket({ connectionId: addConnectionId, socket }));
+          dispatch(setConnectionStatus({ connectionId: addConnectionId, status: 'connected' }));
+          
+          const isAuthenticated = socketManager.isAuthenticated(addConnectionId);
+          dispatch(setIsAuthenticated({ connectionId: addConnectionId, isAuthenticated }));
+          
+          setupSocketListeners(socket, store, addConnectionId);
         }
       });
       break;
@@ -129,11 +147,26 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
 
 function setupSocketListeners(socket: Socket, store: MiddlewareAPI<AppDispatch, RootState>, connectionId: string) {
   const { dispatch } = store;
+  const socketManager = SocketConnectionManager.getInstance();
 
   socket.on('connect', () => {
     dispatch(setConnectionStatus({ connectionId, status: 'connected' }));
-    dispatch(setIsAuthenticated({ connectionId, isAuthenticated: true }));
+    
+    // Update authentication status based on the socket manager's authentication status
+    // When we connect with a token, we're authenticated immediately
+    const isAuth = socketManager.isAuthenticated(connectionId);
+    dispatch(setIsAuthenticated({ connectionId, isAuthenticated: isAuth }));
+    
     setupGlobalErrorListener(socket, store, connectionId);
+  });
+
+  // Handle authentication events
+  socket.on('authenticated', () => {
+    dispatch(setIsAuthenticated({ connectionId, isAuthenticated: true }));
+  });
+
+  socket.on('unauthorized', () => {
+    dispatch(setIsAuthenticated({ connectionId, isAuthenticated: false }));
   });
 
   socket.on('disconnect', () => {

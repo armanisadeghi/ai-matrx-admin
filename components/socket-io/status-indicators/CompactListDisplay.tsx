@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useAppSelector } from "@/lib/redux";
-import { selectTaskListenerIds } from "@/lib/redux/socket-io/selectors";
+
+
 
 interface CompactListDisplayProps {
   items: string[];
@@ -89,34 +89,15 @@ export const CompactListDisplay = ({
   );
 };
 
-// Pre-built component for task listener IDs
-export const TaskListenerIdsDisplay = ({ taskId }: { taskId: string }) => {
-  const listenerIds = useAppSelector(state => selectTaskListenerIds(state, taskId));
-  
-  return (
-    <CompactListDisplay
-      items={listenerIds}
-      label="Listener IDs"
-      displayCount={1}
-      isCopyable={true}
-    />
-  );
-};
 
-// Helper to create tooltips - used for hovering over the list
-export const Tooltip = ({ 
-  children, 
-  content 
-}: { 
-  children: React.ReactNode, 
-  content: React.ReactNode 
-}) => {
-  return (
-    <div className="group relative inline-block">
-      {children}
-      <div className="absolute z-10 invisible group-hover:visible bg-gray-900 text-white text-sm rounded p-2 -mt-2 left-full ml-2 min-w-max">
-        {content}
-      </div>
-    </div>
-  );
+
+export const Tooltip = ({ children, content }: { children: React.ReactNode; content: React.ReactNode }) => {
+    return (
+        <div className="group relative inline-block">
+            {children}
+            <div className="absolute z-10 invisible group-hover:visible bg-gray-900 text-white text-sm rounded p-2 -mt-2 left-full ml-2 min-w-max">
+                {content}
+            </div>
+        </div>
+    );
 };

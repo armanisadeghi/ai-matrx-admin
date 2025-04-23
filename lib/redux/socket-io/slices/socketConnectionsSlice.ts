@@ -1,23 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '@/lib/redux/store';
 import { SocketConnectionManager, PredefinedConnection } from '../connection/socketConnectionManager';
+import { ConnectionForm, socketConnectionStatus } from '../socket.types';
+import { SocketConnection } from '../socket.types';
 
-export type socketConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
-
-export interface SocketConnection {
-  id: string;
-  socket: any | null;
-  url: string;
-  namespace: string;
-  connectionStatus: socketConnectionStatus;
-  isAuthenticated: boolean;
-}
-
-export interface ConnectionForm {
-  url: string;
-  namespace: string;
-  selectedPredefined: string;
-}
 
 interface SocketState {
   connections: Record<string, SocketConnection>;
@@ -31,7 +16,7 @@ interface SocketState {
 const initialState: SocketState = {
   connections: {
     primary: {
-      id: 'primary',
+      connectionId: 'primary',
       socket: null,
       url: SocketConnectionManager.DEFAULT_URL,
       namespace: SocketConnectionManager.DEFAULT_NAMESPACE,
@@ -55,7 +40,7 @@ const socketConnectionsSlice = createSlice({
   initialState,
   reducers: {
     setConnection: (state, action: PayloadAction<SocketConnection>) => {
-      state.connections[action.payload.id] = action.payload;
+      state.connections[action.payload.connectionId] = action.payload;
     },
     removeConnection: (state, action: PayloadAction<string>) => {
       if (action.payload !== state.primaryConnectionId) {
@@ -129,11 +114,11 @@ const socketConnectionsSlice = createSlice({
     },
     addConnection: (
       state,
-      action: PayloadAction<{ id: string; url: string; namespace: string }>
+      action: PayloadAction<{ connectionId: string; url: string; namespace: string }>
     ) => {
-      const { id, url, namespace } = action.payload;
-      state.connections[id] = {
-        id,
+      const { connectionId, url, namespace } = action.payload;
+      state.connections[connectionId] = {
+        connectionId,
         socket: null,
         url,
         namespace,
@@ -197,20 +182,5 @@ export const {
   selectPredefinedConnection,
 } = socketConnectionsSlice.actions;
 
-// Selectors
-export const selectConnectionById = (state: RootState, connectionId: string) =>
-  state.socketConnections.connections[connectionId];
-export const selectPrimaryConnectionId = (state: RootState) =>
-  state.socketConnections.primaryConnectionId;
-export const selectPrimaryConnection = (state: RootState) =>
-  state.socketConnections.connections[state.socketConnections.primaryConnectionId];
-export const selectAuthToken = (state: RootState) => state.socketConnections.authToken;
-export const selectIsAdmin = (state: RootState) => state.socketConnections.isAdmin;
-export const selectAllConnections = (state: RootState) =>
-  Object.values(state.socketConnections.connections);
-export const selectPredefinedConnections = (state: RootState) =>
-  state.socketConnections.predefinedConnections;
-export const selectConnectionForm = (state: RootState) =>
-  state.socketConnections.connectionForm;
 
 export default socketConnectionsSlice.reducer;

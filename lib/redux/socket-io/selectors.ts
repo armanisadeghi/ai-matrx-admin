@@ -1,12 +1,31 @@
-'use client';
+"use client";
 
-import { RootState } from '../store';
-import { ResponsesState, ResponseState } from './slices/socketResponseSlice';
-import { Task } from './slices/socketTasksSlice';
-
+import { createSelector } from "@reduxjs/toolkit";
+import { RootState } from "../store";
+import { ResponsesState, ResponseState } from "./socket.types";
+import { SocketTask } from "./socket.types";
 
 // ==================== Connection Selectors ====================
+// Simple property access selectors
+export const selectConnectionById = (state: RootState, connectionId: string) => 
+  state.socketConnections.connections[connectionId] || null;
 
+export const selectPrimaryConnectionId = (state: RootState) => 
+  state.socketConnections.primaryConnectionId || "";
+
+export const selectAuthToken = (state: RootState) => 
+  state.socketConnections.authToken;
+
+export const selectIsAdmin = (state: RootState) => 
+  state.socketConnections.isAdmin;
+
+export const selectPredefinedConnections = (state: RootState) => 
+  state.socketConnections.predefinedConnections;
+
+export const selectConnectionForm = (state: RootState) => 
+  state.socketConnections.connectionForm;
+
+// Connection selectors with parameter and derived state
 export const selectSocket = (state: RootState, connectionId?: string) => {
   const effectiveConnectionId = connectionId || state.socketConnections.primaryConnectionId;
   return state.socketConnections.connections[effectiveConnectionId]?.socket;
@@ -29,7 +48,7 @@ export const selectConnectionStatus = (state: RootState, connectionId?: string) 
 
 export const selectIsConnected = (state: RootState, connectionId?: string) => {
   const effectiveConnectionId = connectionId || state.socketConnections.primaryConnectionId;
-  return state.socketConnections.connections[effectiveConnectionId]?.connectionStatus === 'connected';
+  return state.socketConnections.connections[effectiveConnectionId]?.connectionStatus === "connected";
 };
 
 export const selectIsAuthenticated = (state: RootState, connectionId?: string) => {
@@ -37,173 +56,180 @@ export const selectIsAuthenticated = (state: RootState, connectionId?: string) =
   return state.socketConnections.connections[effectiveConnectionId]?.isAuthenticated;
 };
 
-export const selectConnectionById = (state: RootState, connectionId: string) =>
-  state.socketConnections.connections[connectionId] || null;
+// Memoized connection selectors
+export const selectPrimaryConnection = createSelector(
+  (state: RootState) => state.socketConnections.connections,
+  (state: RootState) => state.socketConnections.primaryConnectionId,
+  (connections, primaryId) => connections[primaryId] || null
+);
 
-export const selectPrimaryConnectionId = (state: RootState) =>
-  state.socketConnections.primaryConnectionId || '';
-
-export const selectPrimaryConnection = (state: RootState) =>
-  state.socketConnections.connections[state.socketConnections.primaryConnectionId] || null;
-
-export const selectAuthToken = (state: RootState) => state.socketConnections.authToken;
-
-export const selectIsAdmin = (state: RootState) => state.socketConnections.isAdmin;
-
-
-
+export const selectAllConnections = createSelector(
+  (state: RootState) => state.socketConnections.connections,
+  (connections) => Object.values(connections)
+);
 
 // ==================== Task Selectors ====================
-export const selectListenerIdsByTaskId = (state: RootState, taskId: string) =>
-  state.socketTasks.tasks[taskId]?.listenerIds || [];
+// Simple task property access selectors
+export const selectAllTasks = (state: RootState): Record<string, SocketTask> => 
+  state.socketTasks.tasks as Record<string, SocketTask>;
 
-export const selectTasksByConnectionId = (state: RootState, connectionId: string) =>
-  Object.values(state.socketTasks.tasks).filter((task: Task) => task.connectionId === connectionId);
-
-
-export const selectAllTasks = (state: RootState): Record<string, Task> => 
-  state.socketTasks.tasks as Record<string, Task>;
-
-export const selectTaskById = (state: RootState, taskId: string): Task | undefined => 
-  (state.socketTasks.tasks as Record<string, Task>)[taskId];
-
-export const selectTasksByStatus = (state: RootState, status: string): Task[] =>
-  Object.values(state.socketTasks.tasks as Record<string, Task>).filter((task) => task.status === status);
-
-export const selectTaskDataById = (state: RootState, taskId: string): Record<string, any> => {
-  const task = (state.socketTasks.tasks as Record<string, Task>)[taskId];
-  return task?.taskData || {};
-}
-
-export const selectTaskValidationState = (state: RootState, taskId: string) => {
-  const task = (state.socketTasks.tasks as Record<string, Task>)[taskId];
-  return {
-    isValid: task?.isValid || false,
-    validationErrors: task?.validationErrors || [],
-  };
-}
+export const selectTaskById = (state: RootState, taskId: string): SocketTask | undefined =>
+  (state.socketTasks.tasks as Record<string, SocketTask>)[taskId];
 
 export const selectTaskStatus = (state: RootState, taskId: string): string => {
-  const task = (state.socketTasks.tasks as Record<string, Task>)[taskId];
-  return task?.status || 'not_found';
-}
+  const task = (state.socketTasks.tasks as Record<string, SocketTask>)[taskId];
+  return task?.status || "not_found";
+};
+
+export const selectListenerIdsByTaskId = (state: RootState, taskId: string) => 
+  state.socketTasks.tasks[taskId]?.listenerIds || [];
 
 export const selectTaskListenerIds = (state: RootState, taskId: string): string[] => {
-  const task = (state.socketTasks.tasks as Record<string, Task>)[taskId];
+  const task = (state.socketTasks.tasks as Record<string, SocketTask>)[taskId];
   return task?.listenerIds || [];
-}
+};
 
-export const selectTaskByListenerId = (state: RootState, listenerId: string): Task | undefined =>
-  Object.values(state.socketTasks.tasks as Record<string, Task>).find((task) => task.listenerIds.includes(listenerId));
+// Memoized task selectors
+export const selectTaskDataById = createSelector(
+  [(state: RootState) => state.socketTasks.tasks, (_, taskId: string) => taskId],
+  (tasks, taskId) => {
+    const task = tasks[taskId] as SocketTask;
+    return task?.taskData || {};
+  }
+);
 
+export const selectTaskValidationState = createSelector(
+  [(state: RootState) => state.socketTasks.tasks, (_, taskId: string) => taskId],
+  (tasks, taskId) => {
+    const task = tasks[taskId] as SocketTask;
+    return {
+      isValid: task?.isValid || false,
+      validationErrors: task?.validationErrors || [],
+    };
+  }
+);
 
+export const selectTasksByConnectionId = createSelector(
+  [(state: RootState) => state.socketTasks.tasks, (_, connectionId: string) => connectionId],
+  (tasks, connectionId) => Object.values(tasks).filter((task: SocketTask) => task.connectionId === connectionId)
+);
+
+export const selectTasksByStatus = createSelector(
+  [(state: RootState) => state.socketTasks.tasks, (_, status: string) => status],
+  (tasks, status) => Object.values(tasks).filter((task) => task.status === status)
+);
+
+export const selectTaskByListenerId = createSelector(
+  [(state: RootState) => state.socketTasks.tasks, (_, listenerId: string) => listenerId],
+  (tasks, listenerId) => Object.values(tasks).find((task) => task.listenerIds.includes(listenerId))
+);
 
 // ==================== Response Selectors ====================
+// Simple response property access selectors
 export const selectAllResponses = (state: RootState) => state.socketResponse;
 
 export const selectResponseById = (listenerId: string) => (state: RootState): ResponseState | undefined =>
   state.socketResponse[listenerId] as ResponseState | undefined;
 
-export const selectResponseText = (listenerId: string) => (state: RootState) =>
-  state.socketResponse[listenerId]?.text || '';
+export const selectResponseText = (listenerId: string) => (state: RootState) => 
+  state.socketResponse[listenerId]?.text || "";
 
-export const selectResponseData = (listenerId: string) => (state: RootState) =>
+export const selectResponseData = (listenerId: string) => (state: RootState) => 
   state.socketResponse[listenerId]?.data || [];
 
-export const selectResponseInfo = (listenerId: string) => (state: RootState) =>
+export const selectResponseInfo = (listenerId: string) => (state: RootState) => 
   state.socketResponse[listenerId]?.info || [];
 
-export const selectResponseErrors = (listenerId: string) => (state: RootState) =>
+export const selectResponseErrors = (listenerId: string) => (state: RootState) => 
   state.socketResponse[listenerId]?.errors || [];
 
-export const selectResponseEnded = (listenerId: string) => (state: RootState) =>
+export const selectResponseEnded = (listenerId: string) => (state: RootState) => 
   state.socketResponse[listenerId]?.ended || false;
 
 export const selectHasResponseErrors = (listenerId: string) => (state: RootState) =>
   (state.socketResponse[listenerId]?.errors.length || 0) > 0;
 
-export const selectResponsesByTaskId = (state: RootState, taskId: string): ResponsesState => {
-  const responses: ResponsesState = {};
-  Object.entries(state.socketResponse).forEach(([listenerId, response]) => {
-    if ((response as ResponseState).taskId === taskId) {
-      responses[listenerId] = response as ResponseState;
-    }
-  });
-  return responses;
-};
+// Memoized response selectors
+export const selectResponsesByTaskId = createSelector(
+  [(state: RootState) => state.socketResponse, (_, taskId: string) => taskId],
+  (responses, taskId) => {
+    const taskResponses: ResponsesState = {};
+    Object.entries(responses).forEach(([listenerId, response]) => {
+      if ((response as ResponseState).taskId === taskId) {
+        taskResponses[listenerId] = response as ResponseState;
+      }
+    });
+    return taskResponses;
+  }
+);
 
 // ==================== Combined Task-Response Selectors ====================
-export const selectTaskResponsesByTaskId = (taskId: string) => (state: RootState) => {
-  const listenerIds = selectTaskListenerIds(state, taskId);
-  return listenerIds.map((id) => ({
+export const selectTaskResponsesByTaskId = (taskId: string) => createSelector(
+  (state: RootState) => selectTaskListenerIds(state, taskId),
+  (state: RootState) => state.socketResponse,
+  (listenerIds, responses) => listenerIds.map((id) => ({
     listenerId: id,
-    response: selectResponseById(id)(state),
-  }));
-};
+    response: responses[id] as ResponseState,
+  }))
+);
 
-export const selectPrimaryResponseForTask = (taskId: string) => (state: RootState) => {
-  const listenerIds = selectTaskListenerIds(state, taskId);
-  if (listenerIds.length === 0) return null;
-  return selectResponseById(listenerIds[0])(state);
-};
+export const selectPrimaryResponseForTask = (taskId: string) => createSelector(
+  (state: RootState) => selectTaskListenerIds(state, taskId),
+  (state: RootState) => state.socketResponse,
+  (listenerIds, responses) => {
+    if (listenerIds.length === 0) return null;
+    return responses[listenerIds[0]] as ResponseState;
+  }
+);
 
-export const selectTaskResults = (taskId: string) => (state: RootState) => {
-  const listenerIds = selectTaskListenerIds(state, taskId);
-  if (listenerIds.length === 0) return { text: '', data: [], info: [], errors: [], ended: false };
-
-  if (listenerIds.length === 1) {
-    return (
-      selectResponseById(listenerIds[0])(state) || {
-        text: '',
-        data: [],
-        info: [],
-        errors: [],
-        ended: false,
-      }
+export const selectTaskResults = (taskId: string) => createSelector(
+  (state: RootState) => selectTaskListenerIds(state, taskId),
+  (state: RootState) => state.socketResponse,
+  (listenerIds, responses) => {
+    if (listenerIds.length === 0) return { text: "", data: [], info: [], errors: [], ended: false };
+    if (listenerIds.length === 1) {
+      return responses[listenerIds[0]] || { text: "", data: [], info: [], errors: [], ended: false };
+    }
+    return listenerIds.reduce(
+      (combined, listenerId) => {
+        const response = responses[listenerId] as ResponseState;
+        if (!response) return combined;
+        return {
+          text: combined.text + response.text,
+          data: [...combined.data, ...response.data],
+          info: [...combined.info, ...response.info],
+          errors: [...combined.errors, ...response.errors],
+          ended: combined.ended && response.ended,
+        };
+      },
+      { text: "", data: [], info: [], errors: [], ended: true }
     );
   }
+);
 
-  return listenerIds.reduce(
-    (combined, listenerId) => {
-      const response = selectResponseById(listenerId)(state);
-      if (!response) return combined;
-
-      return {
-        text: combined.text + response.text,
-        data: [...combined.data, ...response.data],
-        info: [...combined.info, ...response.info],
-        errors: [...combined.errors, ...response.errors],
-        ended: combined.ended && response.ended,
-      };
-    },
-    { text: '', data: [], info: [], errors: [], ended: true }
-  );
-};
-
-export const selectIsTaskComplete = (taskId: string) => (state: RootState) => {
-  const task = selectTaskById(state, taskId);
-  if (!task) return false;
-
-  const listenerIds = task.listenerIds;
-  if (listenerIds.length === 0) return false;
-
-  return listenerIds.every((id) => selectResponseEnded(id)(state));
-};
-
-export const selectTaskError = (taskId: string) => (state: RootState) => {
-  const task = selectTaskById(state, taskId);
-  if (!task) return null;
-
-  if (task.status === 'error' && task.validationErrors.length > 0) {
-    return task.validationErrors[0];
+export const selectIsTaskComplete = (taskId: string) => createSelector(
+  (state: RootState) => selectTaskById(state, taskId),
+  (state: RootState) => state.socketResponse,
+  (task, responses) => {
+    if (!task) return false;
+    const listenerIds = task.listenerIds;
+    if (listenerIds.length === 0) return false;
+    return listenerIds.every((id) => responses[id]?.ended || false);
   }
+);
 
-  const listenerIds = task.listenerIds;
-  for (const id of listenerIds) {
-    const errors = selectResponseErrors(id)(state);
-    if (errors.length > 0) return errors[0];
+export const selectTaskError = (taskId: string) => createSelector(
+  (state: RootState) => selectTaskById(state, taskId),
+  (state: RootState) => state.socketResponse,
+  (task, responses) => {
+    if (!task) return null;
+    if (task.status === "error" && task.validationErrors.length > 0) {
+      return task.validationErrors[0];
+    }
+    for (const id of task.listenerIds) {
+      const errors = responses[id]?.errors || [];
+      if (errors.length > 0) return errors[0];
+    }
+    return null;
   }
-
-  return null;
-};
-
+);

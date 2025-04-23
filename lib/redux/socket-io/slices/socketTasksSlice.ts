@@ -1,22 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "../../store";
 import { getTaskSchema } from "@/constants/socket-schema";
 import { v4 as uuidv4 } from "uuid";
+import { SocketTask } from "../socket.types";
 
-export interface Task {
-  id: string;
-  service: string;
-  taskName: string;
-  taskData: Record<string, any>;
-  isValid: boolean;
-  validationErrors: string[];
-  status: "building" | "ready" | "submitted" | "completed" | "error";
-  listenerIds: string[];
-  connectionId?: string;
-}
 
 interface TasksState {
-  tasks: Record<string, Task>;
+  tasks: Record<string, SocketTask>;
 }
 
 const initialState: TasksState = {
@@ -53,18 +42,18 @@ const socketTasksSlice = createSlice({
     initializeTask: (
       state,
       action: PayloadAction<{
-        id?: string;
+        taskId?: string;
         service: string;
         taskName: string;
         connectionId?: string;
       }>
     ) => {
-      const { id = uuidv4(), service, taskName, connectionId } = action.payload;
+      const { taskId = uuidv4(), service, taskName, connectionId } = action.payload;
 
       // Only create if doesn't exist
-      if (!state.tasks[id]) {
-        state.tasks[id] = {
-          id,
+      if (!state.tasks[taskId]) {
+        state.tasks[taskId] = {
+          taskId,
           service,
           taskName,
           taskData: {},
@@ -317,7 +306,7 @@ const socketTasksSlice = createSlice({
       state,
       action: PayloadAction<{
         taskId: string;
-        status: Task["status"];
+        status: SocketTask["status"];
       }>
     ) => {
       const { taskId, status } = action.payload;

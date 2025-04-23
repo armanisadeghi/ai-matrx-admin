@@ -1,29 +1,27 @@
 'use client';
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch } from '@/lib/redux/store';
 import {
   disconnectConnection,
   reconnectConnection,
   deleteConnection,
   setPrimaryConnection,
-  selectIsAdmin,
-  selectPrimaryConnectionId,
-  SocketConnection,
 } from '@/lib/redux/socket-io/slices/socketConnectionsSlice';
+import { SocketConnection } from '@/lib/redux/socket-io/socket.types';
+
 import { Badge } from '@/components/ui/badge';
 import { IconButton } from '@/components/ui/icon-button';
 import { Trash2, Plug, PlugZap, Star } from 'lucide-react';
-
+import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { selectIsAdmin, selectPrimaryConnectionId } from '@/lib/redux/socket-io/selectors';
 interface ConnectionItemProps {
   connection: SocketConnection;
 }
 
 const ConnectionItem: React.FC<ConnectionItemProps> = ({ connection }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const isAdmin = useSelector(selectIsAdmin);
-  const primaryConnectionId = useSelector(selectPrimaryConnectionId);
-  const isPrimaryConnection = connection.id === primaryConnectionId;
+  const dispatch = useAppDispatch();
+  const isAdmin = useAppSelector(selectIsAdmin);
+  const primaryConnectionId = useAppSelector(selectPrimaryConnectionId);
+  const isPrimaryConnection = connection.connectionId === primaryConnectionId;
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -39,21 +37,21 @@ const ConnectionItem: React.FC<ConnectionItemProps> = ({ connection }) => {
   };
 
   const handleDisconnect = () => {
-    dispatch(disconnectConnection(connection.id));
+    dispatch(disconnectConnection(connection.connectionId));
   };
 
   const handleReconnect = () => {
-    dispatch(reconnectConnection(connection.id));
+    dispatch(reconnectConnection(connection.connectionId));
   };
 
   const handleDelete = () => {
-    if (connection.id !== primaryConnectionId) {
-      dispatch(deleteConnection(connection.id));
+    if (connection.connectionId !== primaryConnectionId) {
+      dispatch(deleteConnection(connection.connectionId));
     }
   };
 
   const handleSetPrimary = () => {
-    dispatch(setPrimaryConnection(connection.id));
+    dispatch(setPrimaryConnection(connection.connectionId));
   };
 
   return (

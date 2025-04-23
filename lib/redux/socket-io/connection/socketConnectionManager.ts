@@ -17,6 +17,7 @@ export class SocketConnectionManager {
   private connectionAttempts: Map<string, number> = new Map();
   private maxConnectionAttempts: number = 5;
   private connectionDetails: Map<string, { url: string; namespace: string }> = new Map();
+  private authenticationStatus: Map<string, boolean> = new Map();
 
   private readonly adminIds = [
     "4cf62e4e-2679-484f-b652-034e697418df",
@@ -44,9 +45,9 @@ export class SocketConnectionManager {
 
   public static getPredefinedConnections(): PredefinedConnection[] {
     return [
-      { name: 'Production', url: SocketConnectionManager.DEFAULT_URL, namespace: SocketConnectionManager.DEFAULT_NAMESPACE },
+      { name: 'Production (User Session)', url: SocketConnectionManager.DEFAULT_URL, namespace: SocketConnectionManager.DEFAULT_NAMESPACE },
+      { name: 'Localhost (User Session)', url: SocketConnectionManager.LOCAL_URL, namespace: SocketConnectionManager.DEFAULT_NAMESPACE },
       { name: 'GPU Server', url: SocketConnectionManager.GPU_SERVER_URL, namespace: SocketConnectionManager.DEFAULT_NAMESPACE },
-      { name: 'Localhost', url: SocketConnectionManager.LOCAL_URL, namespace: SocketConnectionManager.DEFAULT_NAMESPACE },
     ];
   }
 
@@ -63,6 +64,15 @@ export class SocketConnectionManager {
       console.log("[SOCKET] Error getting auth token, will retry");
       return null;
     }
+  }
+
+  public isAuthenticated(connectionId: string): boolean {
+    // If we have a socket and it's connected, check if we successfully authenticated
+    const socket = this.sockets.get(connectionId);
+    if (socket && socket.connected) {
+      return this.authenticationStatus.get(connectionId) || false;
+    }
+    return false;
   }
 
   public async getSocket(connectionId: string, url: string, namespace: string): Promise<any> {
@@ -107,16 +117,39 @@ export class SocketConnectionManager {
         timeout: 20000,
       });
 
+      // Set initial auth status to false
+      this.authenticationStatus.set(connectionId, false);
+
       socket.on("connect", () => {
         console.log(`[SOCKET] Connection ${connectionId} connected successfully`);
         this.sockets.set(connectionId, socket);
         this.connectionAttempts.set(connectionId, 0);
         this.connectionPromises.delete(connectionId);
+
+        // When connected with a token, we are authenticated
+        // Set authentication status to true as we're using a token
+        if (this.authToken) {
+          this.authenticationStatus.set(connectionId, true);
+          console.log(`[SOCKET] Connection ${connectionId} authenticated with token`);
+        }
+
         resolve(socket);
+      });
+
+      // Listen for auth related events
+      socket.on("authenticated", () => {
+        console.log(`[SOCKET] Connection ${connectionId} explicitly authenticated`);
+        this.authenticationStatus.set(connectionId, true);
+      });
+
+      socket.on("unauthorized", () => {
+        console.log(`[SOCKET] Connection ${connectionId} unauthorized - token rejected`);
+        this.authenticationStatus.set(connectionId, false);
       });
 
       socket.on("connect_error", (error) => {
         console.log(`[SOCKET] Connection ${connectionId} attempt failed:`, error.message);
+        this.authenticationStatus.set(connectionId, false);
         const attempts = (this.connectionAttempts.get(connectionId) || 0) + 1;
         this.connectionAttempts.set(connectionId, attempts);
 
@@ -131,6 +164,7 @@ export class SocketConnectionManager {
 
       socket.on("disconnect", () => {
         console.log(`[SOCKET] Connection ${connectionId} disconnected`);
+        this.authenticationStatus.set(connectionId, false);
       });
     });
   }
@@ -189,6 +223,7 @@ export class SocketConnectionManager {
       this.sockets.delete(connectionId);
       this.connectionPromises.delete(connectionId);
       this.connectionAttempts.delete(connectionId);
+      this.authenticationStatus.set(connectionId, false);
       // Keep connection details in case we need to reconnect
     }
   }
@@ -214,6 +249,7 @@ export class SocketConnectionManager {
     this.disconnect(connectionId);
     // Then remove the connection details
     this.connectionDetails.delete(connectionId);
+    this.authenticationStatus.delete(connectionId);
   }
 
   public getUrl(connectionId: string): string {
@@ -224,10 +260,15 @@ export class SocketConnectionManager {
     return this.connectionDetails.get(connectionId)?.namespace || SocketConnectionManager.DEFAULT_NAMESPACE;
   }
 
-  public getConnections(): { id: string; url: string; namespace: string }[] {
-    const connections: { id: string; url: string; namespace: string }[] = [];
-    this.connectionDetails.forEach((details, id) => {
-      connections.push({ id, url: details.url, namespace: details.namespace });
+  public getConnections(): { connectionId: string; url: string; namespace: string; isAuthenticated: boolean }[] {
+    const connections: { connectionId: string; url: string; namespace: string; isAuthenticated: boolean }[] = [];
+    this.connectionDetails.forEach((details, connectionId) => {
+      connections.push({ 
+        connectionId, 
+        url: details.url, 
+        namespace: details.namespace,
+        isAuthenticated: this.isAuthenticated(connectionId)
+      });
     });
     return connections;
   }

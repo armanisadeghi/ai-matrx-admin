@@ -1,18 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { SocketErrorObject } from '../socket.types';
+import { ResponsesState, SocketErrorObject } from '../socket.types';
 
-export interface ResponseState {
-  text: string;
-  data: any[];
-  info: any[];
-  errors: SocketErrorObject[];
-  ended: boolean;
-  taskId: string;
-}
-
-export interface ResponsesState {
-  [listenerId: string]: ResponseState;
-}
 
 const initialState: ResponsesState = {};
 

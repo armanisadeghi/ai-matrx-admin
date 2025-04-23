@@ -1,11 +1,12 @@
 'use client';
+
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { selectAllConnections } from '@/lib/redux/socket-io/slices/socketConnectionsSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import ConnectionItem from './ConnectionItem';
+import { selectAllConnections } from '@/lib/redux/socket-io/selectors';
 
 const ConnectionList: React.FC = () => {
-  const connections = useSelector(selectAllConnections);
+  const connections = useAppSelector(selectAllConnections);
 
   if (connections.length === 0) {
     return null;
@@ -14,7 +15,7 @@ const ConnectionList: React.FC = () => {
   return (
     <div className="space-y-1.5">
       {connections.map(connection => (
-        <ConnectionItem key={connection.id} connection={connection} />
+        <ConnectionItem key={connection.connectionId} connection={connection} />
       ))}
     </div>
   );

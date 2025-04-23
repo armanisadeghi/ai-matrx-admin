@@ -44,7 +44,7 @@ const TaskComponent: React.FC = () => {
   const isConnected = useAppSelector((state: RootState) => selectIsConnected(state, selectedConnectionId));
   const currentUrl = useAppSelector((state: RootState) => selectSocketUrl(state, selectedConnectionId));
   const currentNamespace = useAppSelector((state: RootState) => selectNamespace(state, selectedConnectionId));
-  
+
   const connections = useAppSelector((state: RootState) =>
     Object.values(state.socketConnections.connections)
   );
@@ -102,7 +102,7 @@ const TaskComponent: React.FC = () => {
   const handleConnectionChange = (connectionId: string) => {
     setSelectedConnectionId(connectionId);
     // Update Redux state to reflect the selected connection
-    const connection = connections.find((conn) => conn.id === connectionId);
+    const connection = connections.find((conn) => conn.connectionId === connectionId);
     if (connection) {
       dispatch(
         changeConnectionUrl({ connectionId, url: connection.url })
@@ -139,11 +139,11 @@ const TaskComponent: React.FC = () => {
                 <SelectContent>
                   {connections.map((conn) => (
                     <SelectItem
-                      key={conn.id}
-                      value={conn.id}
+                      key={conn.connectionId}
+                      value={conn.connectionId}
                       className="bg-zinc-200 dark:bg-zinc-900 hover:bg-zinc-300 dark:hover:bg-zinc-800 cursor-pointer"
                     >
-                      {conn.id} ({conn.url}{conn.namespace})
+                      {conn.connectionId} ({conn.url}{conn.namespace})
                     </SelectItem>
                   ))}
                 </SelectContent>

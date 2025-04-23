@@ -1,4 +1,3 @@
-import { AppThunk } from "../store";
 import { v4 as uuidv4 } from "uuid";
 import {
   initializeTask,
@@ -24,13 +23,13 @@ import { getTaskSchema } from "@/constants/socket-schema";
 
 // Create a new task with minimal data
 export const createTask =
-  (service: string, taskName: string, initialData?: Record<string, any>, connectionId?: string): AppThunk<string> =>
+  (service: string, taskName: string, initialData?: Record<string, any>, connectionId?: string) =>
   (dispatch) => {
     const taskId = uuidv4();
 
     dispatch(
       initializeTask({
-        id: taskId,
+        taskId: taskId,
         service,
         taskName,
         connectionId,
@@ -55,7 +54,7 @@ export const createTask =
 
 // Update a field in a task
 export const updateTask =
-  (taskId: string, field: string, value: any): AppThunk =>
+  (taskId: string, field: string, value: any) =>
   (dispatch) => {
     dispatch(
       updateTaskField({
@@ -68,7 +67,7 @@ export const updateTask =
 
 // Update a nested field in a task
 export const updateNestedTask =
-  (taskId: string, parentField: string, path: string, value: any): AppThunk =>
+  (taskId: string, parentField: string, path: string, value: any) =>
   (dispatch) => {
     dispatch(
       updateNestedTaskField({
@@ -82,7 +81,7 @@ export const updateNestedTask =
 
 // Add an item to an array field
 export const addItemToTaskArray =
-  (taskId: string, field: string, item: any): AppThunk =>
+  (taskId: string, field: string, item: any) =>
   (dispatch) => {
     dispatch(
       addToArrayField({
@@ -95,7 +94,7 @@ export const addItemToTaskArray =
 
 // Set an entire array field
 export const setTaskArray =
-  (taskId: string, field: string, items: any[]): AppThunk =>
+  (taskId: string, field: string, items: any[]) =>
   (dispatch) => {
     dispatch(
       setArrayField({
@@ -108,7 +107,7 @@ export const setTaskArray =
 
 // Update an item in an array field
 export const updateTaskArrayItem =
-  (taskId: string, field: string, index: number, item: any): AppThunk =>
+  (taskId: string, field: string, index: number, item: any) =>
   (dispatch) => {
     dispatch(
       updateArrayItem({
@@ -173,7 +172,7 @@ const validateTaskData = (taskName: string, taskData: Record<string, any>) => {
 
 // Submit a task to the server
 export const submitTask =
-  (taskId: string, connectionId?: string): AppThunk<Promise<string[]>> =>
+  (taskId: string, connectionId?: string) =>
   async (dispatch, getState) => {
     const state = getState();
     const socket = selectSocket(state, connectionId);
@@ -191,7 +190,7 @@ export const submitTask =
 
     const task = selectTaskById(state, taskId);
     if (!task) {
-      console.error(`Task with ID ${taskId} not found`);
+      console.error(`Task with taskId ${taskId} not found`);
       return [];
     }
 
@@ -266,8 +265,8 @@ export const submitTask =
                     socket.off(eventName, listener);
 
                     // Check if all responses for this task are ended
-                    const allResponsesEnded = eventNames.every((id) => {
-                      const response = state.socketResponse[id];
+                    const allResponsesEnded = eventNames.every((taskId) => {
+                      const response = state.socketResponse[taskId];
                       return response?.ended === true;
                     });
 
@@ -297,9 +296,9 @@ export const submitTask =
     }
   };
 
-// Create and submit a task in one step (for backward compatibility)
+// Create and submit a task in one step
 export const startTask =
-  (service: string, taskName: string, taskData: Record<string, any>, connectionId?: string): AppThunk<Promise<string[]>> =>
+  (service: string, taskName: string, taskData: Record<string, any>, connectionId?: string) =>
   async (dispatch) => {
     const taskId = dispatch(createTask(service, taskName, taskData, connectionId));
     return dispatch(submitTask(taskId, connectionId));

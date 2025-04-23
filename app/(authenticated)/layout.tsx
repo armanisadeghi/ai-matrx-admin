@@ -10,7 +10,7 @@ import { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
-import SocketInitializer from "./SocketInitializer";
+import SocketInitializer from "@/lib/redux/socket-io/SocketInitializer";
 // import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
 
 const schemaSystem = initializeSchemaSystem();

@@ -29,7 +29,7 @@ export function useSocketInit() {
         // Update Redux state with connection details
         dispatch(
           setConnection({
-            id: connectionId,
+            connectionId,
             socket,
             url: socketManager.getUrl(connectionId),
             namespace: socketManager.getNamespace(connectionId),

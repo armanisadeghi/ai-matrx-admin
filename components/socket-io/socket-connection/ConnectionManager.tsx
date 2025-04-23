@@ -3,9 +3,9 @@ import React from 'react';
 import ConnectionForm from './ConnectionForm';
 import ConnectionList from './ConnectionList';
 import AccordionWrapper from '@/components/matrx/matrx-collapsible/AccordionWrapper';
-import { useSelector } from 'react-redux';
-import { selectAllConnections } from '@/lib/redux/socket-io/slices/socketConnectionsSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { cn } from '@/lib/utils';
+import { selectAllConnections } from '@/lib/redux/socket-io/selectors';
 
 export interface ConnectionManagerProps {
   className?: string;
@@ -26,7 +26,7 @@ const ConnectionManager: React.FC<ConnectionManagerProps> = ({
   maxHeight,
   disableAccordion = false,
 }) => {
-  const connections = useSelector(selectAllConnections);
+  const connections = useAppSelector(selectAllConnections);
   const connectionCount = connections.length;
   const displayTitle = title || `Socket Connections (${connectionCount})`;
 

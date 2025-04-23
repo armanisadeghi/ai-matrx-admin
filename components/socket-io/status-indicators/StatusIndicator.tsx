@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+'use client';
+
+import React, { useState } from 'react';
 import { useAppSelector } from "@/lib/redux";
 import { 
   Check, X, AlertCircle, Clock, Play, Box, Copy, 
@@ -15,19 +17,42 @@ import {
 } from "@/lib/redux/socket-io/selectors";
 
 // The original StatusIndicator for binary states
-interface StatusIndicatorProps {
+interface BinaryStatusIndicatorProps {
   goodStatus: boolean;
   label: string;
   goodIcon: React.ReactNode;
   badIcon: React.ReactNode;
 }
 
-const StatusIndicator = ({ goodStatus, label, goodIcon, badIcon }: StatusIndicatorProps) => (
+const BinaryStatusIndicator = ({ goodStatus, label, goodIcon, badIcon }: BinaryStatusIndicatorProps) => (
   <div className="flex items-center space-x-1">
     <div className={`${goodStatus ? "text-green-500" : "text-red-500"}`}>
       {goodStatus ? goodIcon : badIcon}
     </div>
     <span className="text-sm text-muted-foreground">{label}</span>
+  </div>
+);
+
+// New status indicator that uses isActive API
+export interface StatusIndicatorProps {
+  isActive: boolean;
+  label: string;
+  icon: {
+    active: React.ReactNode;
+    inactive: React.ReactNode;
+  };
+  className?: string;
+}
+
+export const StatusIndicator = ({ 
+  isActive, 
+  label, 
+  icon,
+  className = ''
+}: StatusIndicatorProps) => (
+  <div className={`flex items-center space-x-1 ${className}`}>
+    <span className="mr-1">{isActive ? icon.active : icon.inactive}</span>
+    <span className="text-sm">{label}</span>
   </div>
 );
 
@@ -119,34 +144,12 @@ export const TruncatedList = ({ items, maxDisplay = 2, label }: TruncatedListPro
   );
 };
 
-// Example implementation for socket task status
-export const SocketTaskStatusMultiState = ({ taskId }: { taskId: string }) => {
-  const status = useAppSelector(state => selectTaskStatus(state, taskId));
-  
-  const statusOptions: StatusOption[] = [
-    { value: "ready", label: "Ready", icon: <Check size={16} />, color: "text-green-500" },
-    { value: "error", label: "Error", icon: <X size={16} />, color: "text-red-500" },
-    { value: "submitted", label: "Submitted", icon: <Clock size={16} />, color: "text-blue-500" },
-    { value: "building", label: "Building", icon: <Play size={16} />, color: "text-yellow-500" },
-    { value: "completed", label: "Completed", icon: <Check size={16} />, color: "text-green-500" },
-    { value: "not_found", label: "Not Found", icon: <AlertCircle size={16} />, color: "text-gray-500" }
-  ];
-
-  return <MultiStateStatus currentStatus={status} options={statusOptions} label="Task Status" />;
-};
-
-// Example implementation for task listener IDs
-export const TaskListenerIdsList = ({ taskId }: { taskId: string }) => {
-  const listenerIds = useAppSelector(state => selectTaskListenerIds(state, taskId));
-  
-  return <TruncatedList items={listenerIds} label="Listener IDs" maxDisplay={2} />;
-};
 
 // Original implementations from your code
 export const SocketConnectionStatusIndicator = () => {
   const isConnected = useAppSelector(selectIsConnected);
   return (
-    <StatusIndicator 
+    <BinaryStatusIndicator 
       goodStatus={isConnected} 
       label="Socket Connection" 
       goodIcon={<Check size={16} />} 
@@ -158,7 +161,7 @@ export const SocketConnectionStatusIndicator = () => {
 export const SocketTaskValidationStatusIndicator = ({ taskId }: { taskId: string }) => {
   const { isValid, validationErrors } = useAppSelector(state => selectTaskValidationState(state, taskId));
   return (
-    <StatusIndicator 
+    <BinaryStatusIndicator 
       goodStatus={isValid} 
       label="Task Validation" 
       goodIcon={<Check size={16} />} 
@@ -185,7 +188,7 @@ export const StreamErrorIndicator = ({ listenerId }: { listenerId: string }) => 
   const hasErrors = useAppSelector(state => selectHasResponseErrors(listenerId)(state));
   
   return (
-    <StatusIndicator 
+    <BinaryStatusIndicator 
       goodStatus={!hasErrors} 
       label="Stream Status" 
       goodIcon={<Check size={16} />} 
@@ -193,3 +196,5 @@ export const StreamErrorIndicator = ({ listenerId }: { listenerId: string }) => 
     />
   );
 };
+
+
