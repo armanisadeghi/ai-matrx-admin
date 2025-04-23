@@ -2,6 +2,12 @@
 import { supabase } from "@/utils/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 
+export interface PredefinedConnection {
+  name: string;
+  url: string;
+  namespace: string;
+}
+
 export class SocketConnectionManager {
   private static instance: SocketConnectionManager | null = null;
   private sockets: Map<string, any> = new Map();
@@ -18,10 +24,10 @@ export class SocketConnectionManager {
     "6555aa73-c647-4ecf-8a96-b60e315b6b18",
   ];
 
-  private readonly DEFAULT_URL = "https://server.app.matrxserver.com";
-  private readonly GPU_SERVER_URL = "https://gpu.app.matrxserver.com";
-  private readonly LOCAL_URL = "http://localhost:8000";
-  private readonly DEFAULT_NAMESPACE = "/UserSession";
+  public static readonly DEFAULT_URL = "https://server.app.matrxserver.com";
+  public static readonly GPU_SERVER_URL = "https://gpu.app.matrxserver.com";
+  public static readonly LOCAL_URL = "http://localhost:8000";
+  public static readonly DEFAULT_NAMESPACE = "/UserSession";
 
   private constructor() {
     if (this.isClientSide) {
@@ -34,6 +40,14 @@ export class SocketConnectionManager {
       SocketConnectionManager.instance = new SocketConnectionManager();
     }
     return SocketConnectionManager.instance;
+  }
+
+  public static getPredefinedConnections(): PredefinedConnection[] {
+    return [
+      { name: 'Production', url: SocketConnectionManager.DEFAULT_URL, namespace: SocketConnectionManager.DEFAULT_NAMESPACE },
+      { name: 'GPU Server', url: SocketConnectionManager.GPU_SERVER_URL, namespace: SocketConnectionManager.DEFAULT_NAMESPACE },
+      { name: 'Localhost', url: SocketConnectionManager.LOCAL_URL, namespace: SocketConnectionManager.DEFAULT_NAMESPACE },
+    ];
   }
 
   public async getAuthToken(): Promise<string | null> {
@@ -137,7 +151,7 @@ export class SocketConnectionManager {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 500);
-      const response = await fetch(`${this.LOCAL_URL}/`, {
+      const response = await fetch(`${SocketConnectionManager.LOCAL_URL}/`, {
         method: "HEAD",
         signal: controller.signal,
       });
@@ -150,9 +164,9 @@ export class SocketConnectionManager {
 
   public async initializePrimaryConnection(): Promise<string> {
     const isAdmin = await this.isAdmin();
-    const url = isAdmin && (await this.isLocalServerAvailable()) ? this.LOCAL_URL : this.DEFAULT_URL;
+    const url = isAdmin && (await this.isLocalServerAvailable()) ? SocketConnectionManager.LOCAL_URL : SocketConnectionManager.DEFAULT_URL;
     const connectionId = "primary";
-    await this.getSocket(connectionId, url, this.DEFAULT_NAMESPACE);
+    await this.getSocket(connectionId, url, SocketConnectionManager.DEFAULT_NAMESPACE);
     return connectionId;
   }
 
@@ -175,16 +189,39 @@ export class SocketConnectionManager {
       this.sockets.delete(connectionId);
       this.connectionPromises.delete(connectionId);
       this.connectionAttempts.delete(connectionId);
-      this.connectionDetails.delete(connectionId);
+      // Keep connection details in case we need to reconnect
     }
   }
 
+  public async reconnect(connectionId: string): Promise<any> {
+    // Check if we have details for this connection
+    const details = this.connectionDetails.get(connectionId);
+    if (!details) {
+      console.log(`[SOCKET] Cannot reconnect, no details found for connection ${connectionId}`);
+      return null;
+    }
+
+    // Reset connection attempts for this connection
+    this.connectionAttempts.set(connectionId, 0);
+    
+    // Establish a new connection
+    console.log(`[SOCKET] Attempting to reconnect ${connectionId} to ${details.url}${details.namespace}`);
+    return this.getSocket(connectionId, details.url, details.namespace);
+  }
+
+  public deleteConnection(connectionId: string): void {
+    // First disconnect if connected
+    this.disconnect(connectionId);
+    // Then remove the connection details
+    this.connectionDetails.delete(connectionId);
+  }
+
   public getUrl(connectionId: string): string {
-    return this.connectionDetails.get(connectionId)?.url || this.DEFAULT_URL;
+    return this.connectionDetails.get(connectionId)?.url || SocketConnectionManager.DEFAULT_URL;
   }
 
   public getNamespace(connectionId: string): string {
-    return this.connectionDetails.get(connectionId)?.namespace || this.DEFAULT_NAMESPACE;
+    return this.connectionDetails.get(connectionId)?.namespace || SocketConnectionManager.DEFAULT_NAMESPACE;
   }
 
   public getConnections(): { id: string; url: string; namespace: string }[] {

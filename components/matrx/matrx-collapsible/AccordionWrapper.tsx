@@ -5,6 +5,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 interface AccordionWrapperProps {
     children: ReactNode;
@@ -12,6 +13,7 @@ interface AccordionWrapperProps {
     value: string;
     rightElement?: ReactNode;
     defaultOpen?: boolean;
+    className?: string;
 }
 
 const AccordionWrapper = ({
@@ -19,13 +21,14 @@ const AccordionWrapper = ({
     title,
     value,
     rightElement,
-    defaultOpen = false
+    defaultOpen = false,
+    className,
 }: AccordionWrapperProps) => {
     return (
         <Accordion
             type="single"
             collapsible
-            className="w-full"
+            className={cn("w-full", className)}
             defaultValue={defaultOpen ? value : undefined}
         >
             <AccordionItem value={value}>

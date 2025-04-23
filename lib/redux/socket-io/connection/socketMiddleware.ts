@@ -67,6 +67,39 @@ export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, R
       dispatch(setSocket({ connectionId: action.payload, socket: null }));
       break;
 
+    case 'socketConnections/reconnectConnection':
+      const connId = action.payload;
+      // Mark as connecting first
+      dispatch(setConnectionStatus({ connectionId: connId, status: 'connecting' }));
+      
+      // Get connection details from state
+      const connection = getState().socketConnections.connections[connId];
+      if (!connection) {
+        return next(action);
+      }
+      
+      // Attempt to reconnect using stored details
+      socketManager.reconnect(connId).then((socket: Socket | null) => {
+        if (socket) {
+          dispatch(setSocket({ connectionId: connId, socket }));
+          dispatch(setConnectionStatus({ connectionId: connId, status: 'connected' }));
+          setupSocketListeners(socket, store, connId);
+        } else {
+          dispatch(setConnectionStatus({ connectionId: connId, status: 'error' }));
+        }
+      });
+      break;
+
+    case 'socketConnections/deleteConnection':
+      const deleteConnId = action.payload;
+      // Cannot delete primary connection
+      if (deleteConnId === getState().socketConnections.primaryConnectionId) {
+        return next(action);
+      }
+      // Disconnect first if connected
+      socketManager.deleteConnection(deleteConnId);
+      break;
+
     case 'socketConnections/addConnection':
       const { id, url: newUrl, namespace: newNamespace } = action.payload;
       dispatch(setConnection({

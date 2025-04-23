@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '@/lib/redux/store';
+import { SocketConnectionManager, PredefinedConnection } from '../connection/socketConnectionManager';
 
 export type socketConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
@@ -12,11 +13,19 @@ export interface SocketConnection {
   isAuthenticated: boolean;
 }
 
+export interface ConnectionForm {
+  url: string;
+  namespace: string;
+  selectedPredefined: string;
+}
+
 interface SocketState {
   connections: Record<string, SocketConnection>;
   primaryConnectionId: string;
   authToken: string | null;
   isAdmin: boolean;
+  predefinedConnections: PredefinedConnection[];
+  connectionForm: ConnectionForm;
 }
 
 const initialState: SocketState = {
@@ -24,8 +33,8 @@ const initialState: SocketState = {
     primary: {
       id: 'primary',
       socket: null,
-      url: 'https://server.app.matrxserver.com',
-      namespace: '/UserSession',
+      url: SocketConnectionManager.DEFAULT_URL,
+      namespace: SocketConnectionManager.DEFAULT_NAMESPACE,
       connectionStatus: 'disconnected',
       isAuthenticated: false,
     },
@@ -33,6 +42,12 @@ const initialState: SocketState = {
   primaryConnectionId: 'primary',
   authToken: null,
   isAdmin: false,
+  predefinedConnections: SocketConnectionManager.getPredefinedConnections(),
+  connectionForm: {
+    url: '',
+    namespace: SocketConnectionManager.DEFAULT_NAMESPACE,
+    selectedPredefined: '',
+  },
 };
 
 const socketConnectionsSlice = createSlice({
@@ -90,7 +105,28 @@ const socketConnectionsSlice = createSlice({
       state,
       action: PayloadAction<{ connectionId: string; namespace: string }>
     ) => {},
-    disconnectConnection: (state, action: PayloadAction<string>) => {},
+    disconnectConnection: (state, action: PayloadAction<string>) => {
+      const conn = state.connections[action.payload];
+      if (conn) {
+        conn.connectionStatus = 'disconnected';
+        conn.socket = null;
+        conn.isAuthenticated = false;
+      }
+    },
+    reconnectConnection: (state, action: PayloadAction<string>) => {
+      // The actual reconnection happens in the middleware/saga/thunk,
+      // here we just update the status to connecting
+      const conn = state.connections[action.payload];
+      if (conn) {
+        conn.connectionStatus = 'connecting';
+      }
+    },
+    deleteConnection: (state, action: PayloadAction<string>) => {
+      // Don't allow deleting the primary connection
+      if (action.payload !== state.primaryConnectionId) {
+        delete state.connections[action.payload];
+      }
+    },
     addConnection: (
       state,
       action: PayloadAction<{ id: string; url: string; namespace: string }>
@@ -104,6 +140,39 @@ const socketConnectionsSlice = createSlice({
         connectionStatus: 'disconnected',
         isAuthenticated: false,
       };
+      // Reset form after adding
+      state.connectionForm = {
+        url: '',
+        namespace: SocketConnectionManager.DEFAULT_NAMESPACE,
+        selectedPredefined: '',
+      };
+    },
+    // New form actions
+    updateFormUrl: (state, action: PayloadAction<string>) => {
+      state.connectionForm.url = action.payload;
+    },
+    updateFormNamespace: (state, action: PayloadAction<string>) => {
+      state.connectionForm.namespace = action.payload;
+    },
+    selectPredefinedConnection: (state, action: PayloadAction<string>) => {
+      state.connectionForm.selectedPredefined = action.payload;
+      
+      // If it's a custom value, just clear the URL
+      if (action.payload === 'custom') {
+        state.connectionForm.url = '';
+        state.connectionForm.namespace = SocketConnectionManager.DEFAULT_NAMESPACE;
+        return;
+      }
+      
+      // Otherwise find the matching predefined connection
+      const predefined = state.predefinedConnections.find(
+        conn => conn.name === action.payload
+      );
+      
+      if (predefined) {
+        state.connectionForm.url = predefined.url;
+        state.connectionForm.namespace = predefined.namespace;
+      }
     },
   },
 });
@@ -120,7 +189,12 @@ export const {
   changeConnectionUrl,
   changeNamespace,
   disconnectConnection,
+  reconnectConnection,
+  deleteConnection,
   addConnection,
+  updateFormUrl,
+  updateFormNamespace,
+  selectPredefinedConnection,
 } = socketConnectionsSlice.actions;
 
 // Selectors
@@ -134,5 +208,9 @@ export const selectAuthToken = (state: RootState) => state.socketConnections.aut
 export const selectIsAdmin = (state: RootState) => state.socketConnections.isAdmin;
 export const selectAllConnections = (state: RootState) =>
   Object.values(state.socketConnections.connections);
+export const selectPredefinedConnections = (state: RootState) =>
+  state.socketConnections.predefinedConnections;
+export const selectConnectionForm = (state: RootState) =>
+  state.socketConnections.connectionForm;
 
 export default socketConnectionsSlice.reducer;

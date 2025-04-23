@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { SocketErrorObject } from '../socket.types';
 
-interface ResponseState {
+export interface ResponseState {
   text: string;
   data: any[];
   info: any[];

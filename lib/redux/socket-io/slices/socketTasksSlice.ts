@@ -12,7 +12,7 @@ export interface Task {
   validationErrors: string[];
   status: "building" | "ready" | "submitted" | "completed" | "error";
   listenerIds: string[];
-  connectionId?: string; // Tracks the connection used for this task
+  connectionId?: string;
 }
 
 interface TasksState {
@@ -414,22 +414,5 @@ export const {
   resetTaskData,
 } = socketTasksSlice.actions;
 
-// Selectors
-export const selectAllTasks = (state: RootState) => state.socketTasks.tasks;
-export const selectTaskById = (state: RootState, taskId: string) => state.socketTasks.tasks[taskId];
-export const selectTasksByStatus = (state: RootState, status: Task["status"]) =>
-  Object.values(state.socketTasks.tasks).filter((task: Task) => task.status === status);
-export const selectListenerIdsByTaskId = (state: RootState, taskId: string) =>
-  state.socketTasks.tasks[taskId]?.listenerIds || [];
-export const selectTaskByListenerId = (state: RootState, listenerId: string) =>
-  Object.values(state.socketTasks.tasks).find((task: Task) => task.listenerIds.includes(listenerId));
-export const selectTaskDataById = (state: RootState, taskId: string) =>
-  state.socketTasks.tasks[taskId]?.taskData || {};
-export const selectTaskValidationState = (state: RootState, taskId: string) => ({
-  isValid: state.socketTasks.tasks[taskId]?.isValid || false,
-  validationErrors: state.socketTasks.tasks[taskId]?.validationErrors || [],
-});
-export const selectTasksByConnectionId = (state: RootState, connectionId: string) =>
-  Object.values(state.socketTasks.tasks).filter((task: Task) => task.connectionId === connectionId);
 
 export default socketTasksSlice.reducer;
