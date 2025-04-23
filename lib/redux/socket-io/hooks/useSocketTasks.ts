@@ -9,7 +9,7 @@ import {
   updateTaskArrayItem,
   submitTask,
   startTask,
-} from './socketThunks';
+} from '../socketThunks';
 import {
   selectTaskById,
   selectTaskDataById,
@@ -20,9 +20,9 @@ import {
   selectTaskResults,
   selectIsTaskComplete,
   selectTaskError,
-} from './selectors';
-import { RootState } from '../store';
-import { useAppDispatch } from '../hooks';
+} from '../selectors';
+import { RootState } from '../../store';
+import { useAppDispatch } from '../../hooks';
 
 // Hook for creating and managing tasks
 export const useSocketTask = (taskId?: string, connectionId?: string) => {

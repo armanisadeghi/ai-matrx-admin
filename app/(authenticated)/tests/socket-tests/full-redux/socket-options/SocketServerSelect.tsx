@@ -2,8 +2,10 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '@/lib/redux/store';
-import { changeSocketUrl } from '@/lib/redux/socket-io/slices/socketConnectionsSlice';
 import { selectSocketUrl, selectConnectionStatus } from '@/lib/redux/socket-io/selectors';
+import { changeConnectionUrl } from '@/lib/redux/socket-io/slices/socketConnectionsSlice';
+
+
 
 const SocketServerSelect: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -11,7 +13,9 @@ const SocketServerSelect: React.FC = () => {
   const connectionStatus = useSelector(selectConnectionStatus);
   
   const handleSocketUrlChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch(changeSocketUrl(e.target.value));
+    const url = e.target.value;
+    const connectionId = `connection-${url}`;
+    dispatch(changeConnectionUrl({ connectionId: connectionId, url: url }));
   };
 
   return (

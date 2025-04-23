@@ -10,8 +10,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Connection Test',
+        path: 'connection-test',
         relative: true,
         description: ''
     },

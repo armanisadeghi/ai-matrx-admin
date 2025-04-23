@@ -98,6 +98,7 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         messages: messagesReducer,
         newMessage: newMessageReducer,
         chatDisplay: chatDisplayReducer,
+        
         socketConnections: socketConnectionReducer,
         socketResponse: socketResponseReducer,
         socketTasks: socketTasksReducer,

@@ -30,22 +30,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const TaskComponent: React.FC = () => {
   const dispatch = useAppDispatch();
-
-  // Selectors for Redux state
-  const isConnected = useAppSelector((state: RootState) => selectIsConnected(state, selectedConnectionId));
-  const currentUrl = useAppSelector((state: RootState) => selectSocketUrl(state, selectedConnectionId));
-  const currentNamespace = useAppSelector((state: RootState) => selectNamespace(state, selectedConnectionId));
   const primaryConnectionId = useAppSelector((state: RootState) => selectPrimaryConnectionId(state));
-  const connections = useAppSelector((state: RootState) =>
-    Object.values(state.socketConnections.connections)
-  );
+
+  const [selectedConnectionId, setSelectedConnectionId] = useState<string>(primaryConnectionId);
 
   // Local state
   const [service, setService] = useState<string>("");
   const [taskName, setTaskName] = useState<string>("");
   const [taskId, setTaskId] = useState<string | null>(null);
   const [useAdvancedFields, setUseAdvancedFields] = useState<boolean>(false);
-  const [selectedConnectionId, setSelectedConnectionId] = useState<string>(primaryConnectionId);
+
+  // Selectors for Redux state
+  const isConnected = useAppSelector((state: RootState) => selectIsConnected(state, selectedConnectionId));
+  const currentUrl = useAppSelector((state: RootState) => selectSocketUrl(state, selectedConnectionId));
+  const currentNamespace = useAppSelector((state: RootState) => selectNamespace(state, selectedConnectionId));
+  
+  const connections = useAppSelector((state: RootState) =>
+    Object.values(state.socketConnections.connections)
+  );
+
 
   // Log state changes for debugging
   useEffect(() => {

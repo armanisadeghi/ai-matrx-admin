@@ -4,13 +4,13 @@ import { v4 as uuidv4 } from "uuid";
 
 export class SocketConnectionManager {
   private static instance: SocketConnectionManager | null = null;
-  private sockets: Map<string, any> = new Map(); // Map of connection ID to socket instance
-  private connectionPromises: Map<string, Promise<any>> = new Map(); // Map of connection ID to connection promise
+  private sockets: Map<string, any> = new Map();
+  private connectionPromises: Map<string, Promise<any>> = new Map();
   private isClientSide: boolean = typeof window !== "undefined";
   private authToken: string | null = null;
   private connectionAttempts: Map<string, number> = new Map();
   private maxConnectionAttempts: number = 5;
-  private connectionDetails: Map<string, { url: string; namespace: string }> = new Map(); // Store URL and namespace per connection
+  private connectionDetails: Map<string, { url: string; namespace: string }> = new Map();
 
   private readonly adminIds = [
     "4cf62e4e-2679-484f-b652-034e697418df",
@@ -24,7 +24,6 @@ export class SocketConnectionManager {
   private readonly DEFAULT_NAMESPACE = "/UserSession";
 
   private constructor() {
-    // Initialize keep-alive mechanism
     if (this.isClientSide) {
       this.startKeepAlive();
     }
@@ -53,20 +52,16 @@ export class SocketConnectionManager {
   }
 
   public async getSocket(connectionId: string, url: string, namespace: string): Promise<any> {
-    // Return existing socket if available
     if (this.sockets.has(connectionId)) {
       return this.sockets.get(connectionId);
     }
 
-    // Return existing connection promise if in progress
     if (this.connectionPromises.has(connectionId)) {
       return this.connectionPromises.get(connectionId);
     }
 
-    // Store connection details
     this.connectionDetails.set(connectionId, { url, namespace });
 
-    // Create connection promise
     const connectionPromise = this.establishConnection(connectionId, url, namespace);
     this.connectionPromises.set(connectionId, connectionPromise);
     return connectionPromise;
@@ -169,7 +164,6 @@ export class SocketConnectionManager {
 
   public setPrimaryConnection(connectionId: string): void {
     if (this.sockets.has(connectionId)) {
-      // Logic to update primary connection can be expanded if needed
       console.log(`[SOCKET] Set primary connection to ${connectionId}`);
     }
   }
@@ -193,17 +187,25 @@ export class SocketConnectionManager {
     return this.connectionDetails.get(connectionId)?.namespace || this.DEFAULT_NAMESPACE;
   }
 
+  public getConnections(): { id: string; url: string; namespace: string }[] {
+    const connections: { id: string; url: string; namespace: string }[] = [];
+    this.connectionDetails.forEach((details, id) => {
+      connections.push({ id, url: details.url, namespace: details.namespace });
+    });
+    return connections;
+  }
+
   private startKeepAlive(): void {
     setInterval(async () => {
       if (this.authToken && this.isClientSide) {
         try {
-          await supabase.auth.getSession(); // Refresh session
+          await supabase.auth.getSession();
           console.log("[SOCKET] Session keep-alive successful");
         } catch (error) {
           console.log("[SOCKET] Session keep-alive failed, attempting to refresh token");
           this.authToken = await this.getAuthToken();
         }
       }
-    }, 5 * 60 * 1000); // Ping every 5 minutes to keep session alive
+    }, 5 * 60 * 1000);
   }
 }

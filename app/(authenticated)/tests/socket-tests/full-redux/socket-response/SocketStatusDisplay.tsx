@@ -1,9 +1,9 @@
 import { useSelector } from "react-redux";
 import { memo } from "react";
-import { selectStreamEnded } from '@/lib/redux/socket-io/selectors';
+import { selectResponseEnded } from '@/lib/redux/socket-io/selectors';
 
 const SocketStatusDisplay = memo(({ eventName }: { eventName: string }) => {
-    const ended = useSelector(selectStreamEnded(eventName));
+    const ended = useSelector(selectResponseEnded(eventName));
     return (
       <div className="text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-md p-3">
         <span className="font-medium">Status:</span>

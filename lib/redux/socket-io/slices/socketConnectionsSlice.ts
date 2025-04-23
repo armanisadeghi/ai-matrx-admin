@@ -1,22 +1,22 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '@/lib/redux/store';
 
 export type socketConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
-
 export interface SocketConnection {
-  id: string; // Unique identifier for the connection (e.g., 'primary', 'localhost', or dynamic UUID)
-  socket: any | null; // Socket.io instance
-  url: string; // Connection URL
-  namespace: string; // Namespace (e.g., '/UserSession')
+  id: string;
+  socket: any | null;
+  url: string;
+  namespace: string;
   connectionStatus: socketConnectionStatus;
-  isAuthenticated: boolean; // Per-connection authentication status
+  isAuthenticated: boolean;
 }
 
 interface SocketState {
-  connections: Record<string, SocketConnection>; // Map of connection ID to connection details
-  primaryConnectionId: string; // ID of the primary connection
-  authToken: string | null; // Session-wide auth token
-  isAdmin: boolean; // Session-wide admin status
+  connections: Record<string, SocketConnection>;
+  primaryConnectionId: string;
+  authToken: string | null;
+  isAdmin: boolean;
 }
 
 const initialState: SocketState = {
@@ -39,30 +39,25 @@ const socketConnectionsSlice = createSlice({
   name: 'socketConnections',
   initialState,
   reducers: {
-    // Set or update a connection
     setConnection: (state, action: PayloadAction<SocketConnection>) => {
       state.connections[action.payload.id] = action.payload;
     },
-    // Remove a connection
     removeConnection: (state, action: PayloadAction<string>) => {
       if (action.payload !== state.primaryConnectionId) {
         delete state.connections[action.payload];
       }
     },
-    // Set primary connection
     setPrimaryConnection: (state, action: PayloadAction<string>) => {
       if (state.connections[action.payload]) {
         state.primaryConnectionId = action.payload;
       }
     },
-    // Update socket for a connection
     setSocket: (state, action: PayloadAction<{ connectionId: string; socket: any }>) => {
       const conn = state.connections[action.payload.connectionId];
       if (conn) {
         conn.socket = action.payload.socket;
       }
     },
-    // Update connection status
     setConnectionStatus: (
       state,
       action: PayloadAction<{
@@ -75,15 +70,12 @@ const socketConnectionsSlice = createSlice({
         conn.connectionStatus = action.payload.status;
       }
     },
-    // Set auth token (session-wide)
     setAuthToken: (state, action: PayloadAction<string | null>) => {
       state.authToken = action.payload;
     },
-    // Set admin status (session-wide)
     setIsAdmin: (state, action: PayloadAction<boolean>) => {
       state.isAdmin = action.payload;
     },
-    // Set authentication status for a connection
     setIsAuthenticated: (
       state,
       action: PayloadAction<{ connectionId: string; isAuthenticated: boolean }>
@@ -93,20 +85,26 @@ const socketConnectionsSlice = createSlice({
         conn.isAuthenticated = action.payload.isAuthenticated;
       }
     },
-    // Action to trigger URL change
     changeConnectionUrl: (state, action: PayloadAction<{ connectionId: string; url: string }>) => {},
-    // Action to trigger namespace change
     changeNamespace: (
       state,
       action: PayloadAction<{ connectionId: string; namespace: string }>
     ) => {},
-    // Action to disconnect a specific connection
     disconnectConnection: (state, action: PayloadAction<string>) => {},
-    // Action to add a new connection
     addConnection: (
       state,
       action: PayloadAction<{ id: string; url: string; namespace: string }>
-    ) => {},
+    ) => {
+      const { id, url, namespace } = action.payload;
+      state.connections[id] = {
+        id,
+        socket: null,
+        url,
+        namespace,
+        connectionStatus: 'disconnected',
+        isAuthenticated: false,
+      };
+    },
   },
 });
 
@@ -125,5 +123,16 @@ export const {
   addConnection,
 } = socketConnectionsSlice.actions;
 
+// Selectors
+export const selectConnectionById = (state: RootState, connectionId: string) =>
+  state.socketConnections.connections[connectionId];
+export const selectPrimaryConnectionId = (state: RootState) =>
+  state.socketConnections.primaryConnectionId;
+export const selectPrimaryConnection = (state: RootState) =>
+  state.socketConnections.connections[state.socketConnections.primaryConnectionId];
+export const selectAuthToken = (state: RootState) => state.socketConnections.authToken;
+export const selectIsAdmin = (state: RootState) => state.socketConnections.isAdmin;
+export const selectAllConnections = (state: RootState) =>
+  Object.values(state.socketConnections.connections);
 
 export default socketConnectionsSlice.reducer;

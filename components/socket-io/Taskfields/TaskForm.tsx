@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/lib/redux/store';
 import { TaskField } from './TaskField';
 import { getTaskSchema } from '@/constants/socket-schema';
-import { useSocketTask } from '@/lib/redux/socket-io/hooks';
+import { useSocketTask } from '@/lib/redux/socket-io/hooks/useSocketTasks';
 
 interface TaskFormProps {
   taskId: string;

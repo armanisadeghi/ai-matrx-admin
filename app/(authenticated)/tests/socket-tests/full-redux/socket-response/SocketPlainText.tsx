@@ -1,9 +1,9 @@
 import { memo } from "react";
 import { useSelector } from "react-redux";
-import { selectStreamText } from '@/lib/redux/socket-io/selectors';
+import { selectResponseText } from '@/lib/redux/socket-io/selectors';
 
 const SocketPlainTextDisplay = memo(({ eventName }: { eventName: string }) => {
-    const text = useSelector(selectStreamText(eventName));
+    const text = useSelector(selectResponseText(eventName));
     return (
       <div className="text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-md p-3">
         <span className="font-medium">Text:</span>

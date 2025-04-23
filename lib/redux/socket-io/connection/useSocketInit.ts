@@ -1,5 +1,6 @@
+'use client';
+
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { SocketConnectionManager } from './socketConnectionManager';
 import {
   setConnection,
@@ -8,9 +9,11 @@ import {
   setAuthToken,
   setIsAdmin,
 } from '../slices/socketConnectionsSlice';
+import { useAppDispatch } from '@/lib/redux/hooks';
+
 
 export function useSocketInit() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const socketManager = SocketConnectionManager.getInstance();

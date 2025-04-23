@@ -1,6 +1,6 @@
 // Example: Socket Task Builder Component
 import React, { useEffect } from "react";
-import { useSocketTask } from "@/lib/redux/socket-io/hooks";
+import { useSocketTask } from "@/lib/redux/socket-io/hooks/useSocketTasks";
 import { TaskField } from "@/components/socket-io/Taskfields/TaskField";
 import { TaskForm } from "@/components/socket-io/Taskfields/TaskForm";
 import { SocketHeaderFull } from "../headers/SocketHeaderFull";

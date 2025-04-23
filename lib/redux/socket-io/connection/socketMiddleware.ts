@@ -1,5 +1,6 @@
-import { Middleware } from 'redux';
+import { Middleware, MiddlewareAPI } from 'redux';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { Socket } from 'socket.io-client';
 import { SocketConnectionManager } from './socketConnectionManager';
 import { 
   setConnection, 
@@ -8,29 +9,30 @@ import {
   setIsAuthenticated,
 } from '../slices/socketConnectionsSlice';
 import { updateErrorResponse } from '../slices/socketResponseSlice';
+import { AppDispatch, RootState } from '@/lib/redux/store';
 
 interface SocketAction {
   type: string;
   payload?: any;
 }
 
-export const socketMiddleware: Middleware = store => next => (action: SocketAction) => {
+export const socketMiddleware: Middleware = (store: MiddlewareAPI<AppDispatch, RootState>) => (next) => (action: SocketAction) => {
   const socketManager = SocketConnectionManager.getInstance();
-  const { dispatch } = store;
+  const { dispatch, getState } = store;
 
   switch (action.type) {
     case 'socketConnections/changeConnectionUrl':
-      const { connectionId, url } = action.payload;
+      const { connectionId, url: urlChange } = action.payload;
       socketManager.disconnect(connectionId);
       dispatch(setConnection({
         id: connectionId,
         socket: null,
-        url,
-        namespace: store.getState().socketConnections.connections[connectionId]?.namespace || '/UserSession',
+        url: urlChange,
+        namespace: getState().socketConnections.connections[connectionId]?.namespace || '/UserSession',
         connectionStatus: 'disconnected',
         isAuthenticated: false,
       }));
-      socketManager.getSocket(connectionId, url, store.getState().socketConnections.connections[connectionId]?.namespace).then(socket => {
+      socketManager.getSocket(connectionId, urlChange, getState().socketConnections.connections[connectionId]?.namespace || '/UserSession').then((socket: Socket | null) => {
         if (socket) {
           dispatch(setSocket({ connectionId, socket }));
           dispatch(setConnectionStatus({ connectionId, status: 'connected' }));
@@ -40,17 +42,17 @@ export const socketMiddleware: Middleware = store => next => (action: SocketActi
       break;
 
     case 'socketConnections/changeNamespace':
-      const { connectionId: nsConnectionId, namespace } = action.payload;
+      const { connectionId: nsConnectionId, namespace: namespaceChange } = action.payload;
       socketManager.disconnect(nsConnectionId);
       dispatch(setConnection({
         id: nsConnectionId,
         socket: null,
-        url: store.getState().socketConnections.connections[nsConnectionId]?.url,
-        namespace,
+        url: getState().socketConnections.connections[nsConnectionId]?.url || 'https://server.app.matrxserver.com',
+        namespace: namespaceChange,
         connectionStatus: 'disconnected',
         isAuthenticated: false,
       }));
-      socketManager.getSocket(nsConnectionId, store.getState().socketConnections.connections[nsConnectionId]?.url, namespace).then(socket => {
+      socketManager.getSocket(nsConnectionId, getState().socketConnections.connections[nsConnectionId]?.url || 'https://server.app.matrxserver.com', namespaceChange).then((socket: Socket | null) => {
         if (socket) {
           dispatch(setSocket({ connectionId: nsConnectionId, socket }));
           dispatch(setConnectionStatus({ connectionId: nsConnectionId, status: 'connected' }));
@@ -75,7 +77,7 @@ export const socketMiddleware: Middleware = store => next => (action: SocketActi
         connectionStatus: 'disconnected',
         isAuthenticated: false,
       }));
-      socketManager.getSocket(id, newUrl, newNamespace).then(socket => {
+      socketManager.getSocket(id, newUrl, newNamespace).then((socket: Socket | null) => {
         if (socket) {
           dispatch(setSocket({ connectionId: id, socket }));
           dispatch(setConnectionStatus({ connectionId: id, status: 'connected' }));
@@ -83,12 +85,16 @@ export const socketMiddleware: Middleware = store => next => (action: SocketActi
         }
       });
       break;
+
+    case 'socketConnections/setPrimaryConnection':
+      socketManager.setPrimaryConnection(action.payload);
+      break;
   }
 
   return next(action);
 };
 
-function setupSocketListeners(socket, store, connectionId: string) {
+function setupSocketListeners(socket: Socket, store: MiddlewareAPI<AppDispatch, RootState>, connectionId: string) {
   const { dispatch } = store;
 
   socket.on('connect', () => {
@@ -108,15 +114,15 @@ function setupSocketListeners(socket, store, connectionId: string) {
   });
 }
 
-function setupGlobalErrorListener(socket, store, connectionId: string) {
+function setupGlobalErrorListener(socket: Socket, store: MiddlewareAPI<AppDispatch, RootState>, connectionId: string) {
   const { dispatch, getState } = store;
   socket.off('global_error');
   socket.on('global_error', (errorData) => {
     const errorMessage = typeof errorData === 'string' 
       ? errorData 
       : errorData?.message || errorData?.error || 'Unknown global error';
-    const streams = getState().socketResponse;
-    const activeListenerIds = Object.keys(streams);
+    const responses = getState().socketResponse;
+    const activeListenerIds = Object.keys(responses);
     if (activeListenerIds.length > 0) {
       activeListenerIds.forEach(listenerId => {
         dispatch(updateErrorResponse({ 
@@ -131,7 +137,7 @@ function setupGlobalErrorListener(socket, store, connectionId: string) {
         }));
       });
     } else {
-      console.warn(`[SOCKET] Global error received for connection ${connectionId} but no active streams`);
+      console.warn(`[SOCKET] Global error received for connection ${connectionId} but no active responses`);
     }
   });
 }
