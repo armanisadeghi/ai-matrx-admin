@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { InitialReduxState } from "@/types/reduxTypes";
-import { SocketProvider } from "@/providers/SocketProvider";
+// import { SocketProvider } from "@/providers/SocketProvider";
 import { RefProvider } from "@/lib/refs";
 import { RecoilRoot } from "recoil";
 import { ToastProvider } from "@/providers";
@@ -56,7 +56,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                     <ThemeProvider defaultTheme="dark" enableSystem={false}>
                         <PersistentComponentProvider>
                             <EntityProvider>
-                                <SocketProvider>
+                                {/* <SocketProvider> */}
                                     <DialogProvider>
                                         <ContextMenuProvider>
                                             <ChipMenuProvider>
@@ -91,7 +91,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                             </ChipMenuProvider>
                                         </ContextMenuProvider>
                                     </DialogProvider>
-                                </SocketProvider>
+                                {/* </SocketProvider> */}
                             </EntityProvider>
                         </PersistentComponentProvider>
                     </ThemeProvider>

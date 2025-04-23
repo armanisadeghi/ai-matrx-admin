@@ -9,8 +9,9 @@ import { generateClientGlobalCache, initializeSchemaSystem } from "@/utils/schem
 import { InitialReduxState } from "@/types/reduxTypes";
 import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
-import { setGlobalUserId } from "@/lib/globalState";
-import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
+import { setGlobalUserIdAndToken } from "@/lib/globalState";
+import SocketInitializer from "./SocketInitializer";
+// import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -46,13 +47,11 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     if (!user) {
         return redirect("/login");
     }
-    const userData = mapUserData(user);
-    setGlobalUserId(userData.id);
-    console.log("Active User Id:", userData.id);
 
-    // Replace getTestDirectories with fetching from JSON
-    // const testDirectories = await fetchTestDirectories();
-    // use an empty array for now
+    const session = await supabase.auth.getSession();
+    const accessToken = session.data.session?.access_token;
+    const userData = mapUserData(user, accessToken);
+    setGlobalUserIdAndToken(userData.id, accessToken);
     const testDirectories = [];
 
     const { data: preferences, error } = await supabase.from("user_preferences").select("preferences").eq("user_id", userData.id).single();
@@ -68,10 +67,11 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
 
     return (
         <Providers initialReduxState={initialReduxState}>
+            <SocketInitializer />
             <LayoutWithSidebar {...layoutProps}>
                 <NavigationLoader />
                 {children}
-                <AdminIndicatorWrapper />
+                {/* <AdminIndicatorWrapper /> */}
             </LayoutWithSidebar>
         </Providers>
     );

@@ -18,6 +18,59 @@ export interface Schema {
 }
 
 
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: "true",
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
+    },
+};
+
 export const CHAT_CONFIG_DEFINITION: Schema = {
     recipe_id: {
         REQUIRED: true,
@@ -140,59 +193,6 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
-    },
-};
-
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the id of the broker.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value of the broker.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: "true",
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
     },
 };
 
@@ -1055,6 +1055,45 @@ export const SEARCH_AND_SCRAPE: Schema = {
     },
     clean_output: {
         REQUIRED: true,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Clean text formatting.",
+        ICON_NAME: "Eraser",
+    },
+    get_raw_json_content: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get raw json content with results.",
+        ICON_NAME: "Braces",
+    },
+};
+
+export const QUICK_SCRAPE_STREAM: Schema = {
+    urls: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "ArrayField",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the urls to be scraped.",
+        ICON_NAME: "Link",
+    },
+    clean_output: {
+        REQUIRED: false,
         DEFAULT: false,
         VALIDATION: null,
         DATA_TYPE: "boolean",
@@ -2191,8 +2230,8 @@ export const CLASSIFY_MARKDOWN: Schema = {
 
 export const MIC_CHECK: Schema = {
     mic_check_message: {
-        REQUIRED: true,
-        DEFAULT: null,
+        REQUIRED: false,
+        DEFAULT: "This is the scraper speaking",
         VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,
@@ -2641,6 +2680,7 @@ export const SERVICE_TASKS = {
     },
     scraper_service_v2: {
         quick_scrape: QUICK_SCRAPE,
+        quick_scrape_stream: QUICK_SCRAPE_STREAM,
         search_and_scrape: SEARCH_AND_SCRAPE,
         mic_check: MIC_CHECK,
     },
@@ -2737,4 +2777,41 @@ export const getAvailableNamespaces = (): Array<{ value: string; label: string }
 
 export const getTaskSchema = (taskName: string): Schema | undefined => {
     return SOCKET_TASKS[taskName];
+};
+
+export const getFieldDefinition = (taskName: string, fieldPath: string, traverseNested: boolean = true): SchemaField | undefined => {
+    const taskSchema = getTaskSchema(taskName);
+    if (!taskSchema) {
+        return undefined;
+    }
+
+    // Split the field path into parts (e.g., "broker_values.name" -> ["broker_values", "name"])
+    const pathParts = fieldPath.split(".");
+
+    // If not traversing nested fields, return the root field directly
+    if (!traverseNested || pathParts.length === 1) {
+        return taskSchema[pathParts[0]];
+    }
+
+    // Traverse the path for nested fields
+    let currentSchema: Schema = taskSchema;
+    let currentField: SchemaField | undefined;
+
+    for (let i = 0; i < pathParts.length; i++) {
+        const part = pathParts[i];
+        currentField = currentSchema[part];
+        if (!currentField) {
+            return undefined; // Field not found
+        }
+
+        // If there's a REFERENCE and more parts to process, switch to the referenced schema
+        if (currentField.REFERENCE && i < pathParts.length - 1) {
+            if (!currentField.REFERENCE || typeof currentField.REFERENCE !== "object") {
+                return undefined; // Invalid REFERENCE
+            }
+            currentSchema = currentField.REFERENCE as Schema;
+        }
+    }
+
+    return currentField;
 };

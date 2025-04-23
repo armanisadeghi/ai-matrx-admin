@@ -1,5 +1,4 @@
 // File: utils/userDataMapper.ts
-
 export interface AppMetadata {
     provider: string | null;
     providers: string[];
@@ -36,12 +35,20 @@ export interface UserData {
     appMetadata: AppMetadata;
     userMetadata: UserMetadata;
     identities: IdentityData[];
+    isAdmin: boolean;
+    accessToken: string | null;
 }
 
-
-export function mapUserData(user: any): UserData {
+const ADMIN_USER_IDS = [
+    "4cf62e4e-2679-484f-b652-034e697418df",
+    "8f7f17ba-935b-4967-8105-7c6b554f41f1",
+    "6555aa73-c647-4ecf-8a96-b60e315b6b18",
+];
+  
+export function mapUserData(user: any, accessToken?: any): UserData {
+    const userId = user?.id || null;    
     return {
-        id: user?.id || null,
+        id: userId,
         email: user?.email || null,
         phone: user?.phone || null,
         emailConfirmedAt: user?.email_confirmed_at || null,
@@ -70,6 +77,32 @@ export function mapUserData(user: any): UserData {
             sub: identity?.identity_data?.sub || null,
             name: identity?.identity_data?.name || null,
         })) || [],
+        isAdmin: userId ? ADMIN_USER_IDS.includes(userId) : false,
+        accessToken: accessToken || null,
     };
 }
 
+// Selectors
+export const selectUser = (state: any) => state.user;
+
+export const selectDisplayName = (state: any) => {
+  const user = state.user;
+  return user.userMetadata.name || 
+         user.userMetadata.fullName || 
+         (user.email ? user.email.split('@')[0] : null) || 
+         "User";
+};
+
+export const selectProfilePhoto = (state: any) => {
+  const user = state.user;
+  return user.userMetadata.picture || null;
+};
+
+export const selectIsAdmin = (state: any) => {
+  const user = state.user;
+  return user.isAdmin || false;
+};
+
+export const selectAccessToken = (state: any) => {
+  return state.user.accessToken || null;
+};

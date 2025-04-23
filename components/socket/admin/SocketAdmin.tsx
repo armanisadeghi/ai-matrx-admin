@@ -2,7 +2,6 @@
 "use client";
 import { Card, CardContent } from "@/components/ui";
 import { useSocket } from "@/lib/redux/socket/hooks/useSocket";
-import { FIELD_OVERRIDES } from "@/constants/socket-constants";
 import DynamicForm from "../form-builder/DynamicForm";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
 import { cn } from "@/lib/utils";
@@ -62,7 +61,6 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                                                     taskType={taskType}
                                                     onChange={handleChange}
                                                     onSubmit={handleSubmit}
-                                                    fieldOverrides={FIELD_OVERRIDES}
                                                     testMode={testMode}
                                                 />
                                             ) : (

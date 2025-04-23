@@ -16,16 +16,16 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Task Field Demo',
+        path: 'task-field-demo',
         relative: true,
-        description: ''
+        description: 'This uses fields which are directly connected to the socket schema and redux.'
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Original Full Redux Test',
+        path: 'full-redux',
         relative: true,
-        description: ''
+        description: 'This has now been replaced by the Task Field Demo.'
     },
     {
         title: 'Very Simple Chat Socket Test',

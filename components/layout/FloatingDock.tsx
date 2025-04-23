@@ -7,6 +7,7 @@ import { FaBrain, FaImage, FaDatabase } from "react-icons/fa";
 import { SiGooglechat } from "react-icons/si";
 import { AiFillAudio } from "react-icons/ai";
 import { MdOutlineVideoChat } from "react-icons/md";
+import { BACKGROUND_PATTERN } from "@/constants/chat";
 
 export function MatrixFloatingMenu() {
     const links = [
@@ -54,8 +55,8 @@ export function MatrixFloatingMenu() {
         },
     ];
     return (
-        <div className="flex items-center justify-center w-auto mt-[1rem]">
-            <FloatingDock items={links} />
+        <div className="flex items-center justify-center w-auto mt-[1rem] bg-zinc-100 dark:bg-zinc-850" style={{ backgroundImage: BACKGROUND_PATTERN }}>
+            <FloatingDock items={links} desktopClassName="bg-zinc-100 dark:bg-zinc-850" mobileClassName="bg-zinc-100 dark:bg-zinc-850" />
         </div>
     );
 }
