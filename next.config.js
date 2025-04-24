@@ -85,6 +85,9 @@ const nextConfig = {
         STREAM_SECRET_KEY: process.env.STREAM_SECRET_KEY,
         STREAM_API_KEY: process.env.STREAM_API_KEY,
         GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+        SLACK_CLIENT_ID: process.env.SLACK_CLIENT_ID,
+        SLACK_CLIENT_SECRET: process.env.SLACK_CLIENT_SECRET,
+        SLACK_REDIRECT_URL: process.env.SLACK_REDIRECT_URL,
     },
 };
 

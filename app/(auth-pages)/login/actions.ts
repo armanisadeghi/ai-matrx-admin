@@ -6,8 +6,6 @@ import { createClient } from "@/utils/supabase/server";
 
 const baseUrl = process.env.NODE_ENV === "development" ? "http://localhost:3000" : "http://aimatrx.com";
 
-
-
 export async function login(formData: FormData) {
     const supabase = await createClient();
     // type-casting here for convenience
