@@ -2779,6 +2779,46 @@ export const getTaskSchema = (taskName: string): Schema | undefined => {
     return SOCKET_TASKS[taskName];
 };
 
+export const initializeTaskDataWithDefaults = (taskName: string): Record<string, any> => {
+    const taskSchema = getTaskSchema(taskName);
+    if (!taskSchema) {
+        return {};
+    }
+
+    const taskData: Record<string, any> = {};
+
+    Object.entries(taskSchema).forEach(([fieldName, fieldSpec]) => {
+        if (fieldSpec.DEFAULT !== undefined) {
+            taskData[fieldName] = fieldSpec.DEFAULT;
+        }
+    });
+
+    return taskData;
+};
+
+export const validateTaskData = (taskName: string, taskData: Record<string, any>): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    const schema = getTaskSchema(taskName);
+
+    if (!schema) {
+        return { isValid: false, errors: [`No schema found for task '${taskName}'`] };
+    }
+
+    Object.entries(schema).forEach(([fieldName, fieldSpec]) => {
+        const providedValue = taskData[fieldName];
+        const isProvided = providedValue !== undefined && providedValue !== null;
+
+        if (fieldSpec.REQUIRED && !isProvided) {
+            errors.push(`Field '${fieldName}' is required but was not provided.`);
+        }
+    });
+
+    return {
+        isValid: errors.length === 0,
+        errors,
+    };
+};
+
 export const getFieldDefinition = (taskName: string, fieldPath: string, traverseNested: boolean = true): SchemaField | undefined => {
     const taskSchema = getTaskSchema(taskName);
     if (!taskSchema) {
@@ -2814,4 +2854,37 @@ export const getFieldDefinition = (taskName: string, fieldPath: string, traverse
     }
 
     return currentField;
+};
+
+export const getAllFieldPaths = (taskName: string): string[] => {
+    const taskSchema = getTaskSchema(taskName);
+    if (!taskSchema) {
+        return [];
+    }
+
+    const fieldPaths: string[] = [];
+
+    const traverseSchema = (schema: Schema, prefix: string = "") => {
+        Object.entries(schema).forEach(([fieldName, fieldSpec]) => {
+            const currentPath = prefix ? `${prefix}.${fieldName}` : fieldName;
+
+            // Add the current field path
+            fieldPaths.push(currentPath);
+
+            // Handle nested objects via REFERENCE
+            if (fieldSpec.REFERENCE && typeof fieldSpec.REFERENCE === "object") {
+                if (fieldSpec.DATA_TYPE === "array") {
+                    // For arrays, append [index] to the path and traverse the referenced schema
+                    const arrayItemPath = `${currentPath}[index]`;
+                    traverseSchema(fieldSpec.REFERENCE as Schema, arrayItemPath);
+                } else {
+                    // For non-array objects, traverse the referenced schema directly
+                    traverseSchema(fieldSpec.REFERENCE as Schema, currentPath);
+                }
+            }
+        });
+    };
+
+    traverseSchema(taskSchema);
+    return fieldPaths;
 };

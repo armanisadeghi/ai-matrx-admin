@@ -5,14 +5,12 @@ import { Textarea } from '@/components/ui';
 
 interface TaskFieldJsonEditorProps {
   taskId: string;
-  taskName: string;
   fieldPath: string;
   className?: string;
 }
 
 export const TaskFieldJsonEditor: React.FC<TaskFieldJsonEditorProps> = ({
   taskId,
-  taskName,
   fieldPath,
   className = '',
 }) => {
@@ -23,7 +21,7 @@ export const TaskFieldJsonEditor: React.FC<TaskFieldJsonEditorProps> = ({
     isRequired,
     description,
     validationState
-  } = useTaskField(taskId, taskName, fieldPath);
+  } = useTaskField(taskId, fieldPath);
 
   // Convert to string for editing
   const [jsonString, setJsonString] = useState(() => {

@@ -5,7 +5,6 @@ import { Input } from '@/components/ui';
 
 interface TaskFieldInputProps {
   taskId: string;
-  taskName: string;
   fieldPath: string;
   className?: string;
   placeholder?: string;
@@ -13,7 +12,6 @@ interface TaskFieldInputProps {
 
 export const TaskFieldInput: React.FC<TaskFieldInputProps> = ({
   taskId,
-  taskName,
   fieldPath,
   className = '',
   placeholder = '',
@@ -26,7 +24,7 @@ export const TaskFieldInput: React.FC<TaskFieldInputProps> = ({
     description,
     componentProps,
     validationState
-  } = useTaskField(taskId, taskName, fieldPath);
+  } = useTaskField(taskId, fieldPath);
 
   // Use the component props from schema or override with props
   const inputProps = {

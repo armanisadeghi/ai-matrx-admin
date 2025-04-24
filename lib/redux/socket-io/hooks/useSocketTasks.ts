@@ -9,7 +9,7 @@ import {
   updateTaskArrayItem,
   submitTask,
   startTask,
-} from '../socketThunks';
+} from '../thunks/socketThunks';
 import {
   selectTaskById,
   selectTaskDataById,

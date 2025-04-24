@@ -6,14 +6,12 @@ import { Label } from '@/components/ui/label';
 
 interface TaskFieldSwitchProps {
   taskId: string;
-  taskName: string;
   fieldPath: string;
   className?: string;
 }
 
 export const TaskFieldSwitch: React.FC<TaskFieldSwitchProps> = ({
   taskId,
-  taskName,
   fieldPath,
   className = '',
 }) => {
@@ -25,7 +23,7 @@ export const TaskFieldSwitch: React.FC<TaskFieldSwitchProps> = ({
     description,
     componentProps,
     validationState
-  } = useTaskField(taskId, taskName, fieldPath);
+  } = useTaskField(taskId, fieldPath);
 
   // Convert value to boolean
   const boolValue = value === true || value === 'true';

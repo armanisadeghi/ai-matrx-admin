@@ -6,7 +6,6 @@ import { TaskFieldTextArea } from './TaskFieldTextArea';
 import { TaskFieldSelect } from './TaskFieldSelect';
 import { TaskFieldSwitch } from './TaskFieldSwitch';
 import { TaskFieldJsonEditor } from './TaskFieldJsonEditor';
-
 import { TaskFieldArrayWrapper } from './TaskFieldArrayWrapper';
 import { TaskFieldBrokerValues } from './custom/TaskFieldBrokerValues';
 
@@ -35,7 +34,7 @@ export const TaskField: React.FC<TaskFieldProps> = ({
     iconName,
     description,
     isRequired,
-  } = useTaskField(taskId, taskName, fieldPath);
+  } = useTaskField(taskId, fieldPath);
 
   const fieldLabel = label || description || fieldPath;
   
@@ -50,7 +49,6 @@ export const TaskField: React.FC<TaskFieldProps> = ({
         return (
           <TaskFieldInput 
             taskId={taskId} 
-            taskName={taskName} 
             fieldPath={fieldPath} 
             className={className}
           />
@@ -60,7 +58,6 @@ export const TaskField: React.FC<TaskFieldProps> = ({
         return (
           <TaskFieldTextArea 
             taskId={taskId} 
-            taskName={taskName} 
             fieldPath={fieldPath} 
             className={className}
           />
@@ -70,7 +67,6 @@ export const TaskField: React.FC<TaskFieldProps> = ({
         return (
           <TaskFieldSelect 
             taskId={taskId} 
-            taskName={taskName} 
             fieldPath={fieldPath} 
             className={className}
           />
@@ -80,7 +76,6 @@ export const TaskField: React.FC<TaskFieldProps> = ({
         return (
           <TaskFieldSwitch 
             taskId={taskId} 
-            taskName={taskName} 
             fieldPath={fieldPath} 
             className={className}
           />
@@ -90,7 +85,6 @@ export const TaskField: React.FC<TaskFieldProps> = ({
         return (
           <TaskFieldJsonEditor 
             taskId={taskId} 
-            taskName={taskName} 
             fieldPath={fieldPath} 
             className={className}
           />
@@ -102,7 +96,6 @@ export const TaskField: React.FC<TaskFieldProps> = ({
         return (
           <TaskFieldInput 
             taskId={taskId} 
-            taskName={taskName} 
             fieldPath={fieldPath} 
             className={className}
           />

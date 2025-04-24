@@ -7,7 +7,7 @@ import { Button } from "@/components/ui";
 import { Play } from "lucide-react";
 import { formatText } from "@/utils/text-case-converter";
 import { useAppDispatch } from "@/lib/redux";
-import { createTask } from "@/lib/redux/socket-io/socketThunks";
+import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
 
 interface ServiceTaskSelectorProps {
     connectionId: string;
@@ -34,12 +34,12 @@ export function ServiceTaskSelector({ connectionId, onTaskCreate }: ServiceTaskS
     };
 
     // Create a task
-    const handleCreateTask = () => {
+    const handleCreateTask = async () => {
         if (!service || !taskName) return;
-        const taskId = dispatch(createTask(service, taskName, {}, connectionId));
-
-        if (onTaskCreate) {
-            onTaskCreate(taskId);
+        const result = await dispatch(createTask({ service, taskName, initialData: {}, connectionId }));
+        
+        if (onTaskCreate && result.payload) {
+            onTaskCreate(result.payload as string);
         }
     };
 

@@ -12,7 +12,7 @@ import ConnectionManager from "@/components/socket-io/socket-connection/Connecti
 import ActiveConnectionSelector from "@/components/socket-io/socket-connection/ActiveConnectionSelector";
 import { useAppSelector } from "@/lib/redux";
 import { selectPrimaryConnectionId } from "@/lib/redux/socket-io/selectors";
-import { ServiceTaskSelector } from "@/components/socket-io/selectors/ServiceTaskSelector";
+import { ServiceTaskSelector } from "@/components/socket-io/select-components/ServiceTaskSelector";
 
 
 interface SocketHeaderProps {

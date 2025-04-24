@@ -1,12 +1,8 @@
 "use client";
 import { supabase } from "@/utils/supabase/client";
 import { v4 as uuidv4 } from "uuid";
+import { PredefinedConnection } from "../socket.types";
 
-export interface PredefinedConnection {
-  name: string;
-  url: string;
-  namespace: string;
-}
 
 export class SocketConnectionManager {
   private static instance: SocketConnectionManager | null = null;

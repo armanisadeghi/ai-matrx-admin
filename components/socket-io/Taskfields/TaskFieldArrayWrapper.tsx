@@ -4,7 +4,6 @@ import { useTaskField } from '@/lib/redux/socket-io/hooks/useTaskField';
 
 interface TaskFieldArrayWrapperProps {
   taskId: string;
-  taskName: string;
   fieldPath: string;
   renderItem: (
     item: any, 
@@ -19,7 +18,6 @@ interface TaskFieldArrayWrapperProps {
 
 export const TaskFieldArrayWrapper: React.FC<TaskFieldArrayWrapperProps> = ({
   taskId,
-  taskName,
   fieldPath,
   renderItem,
   renderAddButton,
@@ -33,7 +31,7 @@ export const TaskFieldArrayWrapper: React.FC<TaskFieldArrayWrapperProps> = ({
     isRequired,
     description,
     validationState
-  } = useTaskField(taskId, taskName, fieldPath);
+  } = useTaskField(taskId, fieldPath);
 
   // Ensure value is an array
   const items = Array.isArray(value) ? value : [];

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { RootState } from "@/lib/redux/store";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { createTask, startTask } from "@/lib/redux/socket-io/socketThunks";
+import { createTask, startTask } from "@/lib/redux/socket-io/thunks/socketThunks";
 import {
   selectIsConnected,
   selectSocketUrl,

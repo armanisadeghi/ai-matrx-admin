@@ -4,14 +4,12 @@ import { useTaskField } from '@/lib/redux/socket-io/hooks/useTaskField';
 
 interface TaskFieldSelectProps {
   taskId: string;
-  taskName: string;
   fieldPath: string;
   className?: string;
 }
 
 export const TaskFieldSelect: React.FC<TaskFieldSelectProps> = ({
   taskId,
-  taskName,
   fieldPath,
   className = '',
 }) => {
@@ -23,7 +21,7 @@ export const TaskFieldSelect: React.FC<TaskFieldSelectProps> = ({
     description,
     componentProps,
     validationState
-  } = useTaskField(taskId, taskName, fieldPath);
+  } = useTaskField(taskId, fieldPath);
 
   // Get options from component props
   const options = componentProps.options || [];

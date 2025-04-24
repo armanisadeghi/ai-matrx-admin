@@ -1,17 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { SocketConnectionManager, PredefinedConnection } from '../connection/socketConnectionManager';
-import { ConnectionForm, socketConnectionStatus } from '../socket.types';
+import { SocketConnectionManager } from '../connection/socketConnectionManager';
+import { socketConnectionStatus, SocketState } from '../socket.types';
 import { SocketConnection } from '../socket.types';
 
 
-interface SocketState {
-  connections: Record<string, SocketConnection>;
-  primaryConnectionId: string;
-  authToken: string | null;
-  isAdmin: boolean;
-  predefinedConnections: PredefinedConnection[];
-  connectionForm: ConnectionForm;
-}
 
 const initialState: SocketState = {
   connections: {

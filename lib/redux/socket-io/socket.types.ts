@@ -7,6 +7,12 @@ export interface SocketConfig {
     transports?: ("polling" | "websocket")[];
 }
 
+export interface PredefinedConnection {
+    name: string;
+    url: string;
+    namespace: string;
+}
+
 export type socketConnectionStatus = "disconnected" | "connecting" | "connected" | "error";
 
 export interface SocketConnection {
@@ -16,6 +22,15 @@ export interface SocketConnection {
     namespace: string;
     connectionStatus: socketConnectionStatus;
     isAuthenticated: boolean;
+}
+
+export interface SocketState {
+    connections: Record<string, SocketConnection>;
+    primaryConnectionId: string;
+    authToken: string | null;
+    isAdmin: boolean;
+    predefinedConnections: PredefinedConnection[];
+    connectionForm: ConnectionForm;
 }
 
 export interface ConnectionForm {

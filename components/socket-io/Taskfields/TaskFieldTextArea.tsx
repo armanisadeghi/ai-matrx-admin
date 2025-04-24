@@ -4,7 +4,6 @@ import { useTaskField } from '@/lib/redux/socket-io/hooks/useTaskField';
 
 interface TaskFieldTextAreaProps {
   taskId: string;
-  taskName: string;
   fieldPath: string;
   className?: string;
   placeholder?: string;
@@ -12,7 +11,6 @@ interface TaskFieldTextAreaProps {
 
 export const TaskFieldTextArea: React.FC<TaskFieldTextAreaProps> = ({
   taskId,
-  taskName,
   fieldPath,
   className = '',
   placeholder = '',
@@ -25,7 +23,7 @@ export const TaskFieldTextArea: React.FC<TaskFieldTextAreaProps> = ({
     description,
     componentProps,
     validationState
-  } = useTaskField(taskId, taskName, fieldPath);
+  } = useTaskField(taskId, fieldPath);
 
   // Use the component props from schema or override with props
   const textareaProps = {
