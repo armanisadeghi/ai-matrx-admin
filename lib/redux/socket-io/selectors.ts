@@ -84,17 +84,27 @@ export const selectFieldValue = (taskId: string, fieldPath: string) =>
     createSelector([(state: RootState) => state.socketTasks.tasks[taskId]?.taskData], (taskData) => {
         if (!taskData) return undefined;
 
-        const pathParts = fieldPath.split(".");
+        // Split path, preserving array indices (e.g., broker_values[0].name -> ["broker_values", "[0]", "name"])
+        const pathParts = fieldPath.split(/\.|(\[\d+\])/).filter(Boolean);
         let current = taskData;
+
         for (const part of pathParts) {
             if (!current || typeof current !== "object") {
                 return undefined;
             }
-            current = current[part];
+            // Handle array index (e.g., [0])
+            if (part.match(/^\[\d+\]$/)) {
+                const index = parseInt(part.slice(1, -1), 10);
+                if (!Array.isArray(current) || index >= current.length) {
+                    return undefined;
+                }
+                current = current[index];
+            } else {
+                current = current[part];
+            }
         }
         return current;
     });
-
 
 export const selectTaskNameById = createSelector(
     [(state: RootState) => state.socketTasks.tasks, (_, taskId: string) => taskId],
@@ -103,7 +113,6 @@ export const selectTaskNameById = createSelector(
         return task?.taskName || "";
     }
 );
-
 
 // Memoized task selectors
 export const selectTaskDataById = createSelector(
@@ -141,7 +150,7 @@ export const selectTaskByListenerId = createSelector(
 );
 
 export const selectTestMode = (state: RootState) => state.socketConnections.testMode;
-  
+
 // ==================== Response Selectors ====================
 // Simple response property access selectors
 export const selectAllResponses = (state: RootState) => state.socketResponse;

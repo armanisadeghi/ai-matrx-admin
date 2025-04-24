@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { updateTaskField, updateNestedTaskField, addToArrayField, setArrayField, updateArrayItem, removeArrayItem } from "../slices/socketTasksSlice";
-import { getFieldDefinition, getTaskSchema, Schema } from "@/constants/socket-schema";
+import { getFieldDefinitions } from "@/constants/socket-schema";
 import { RootState } from "../../store";
 
 export const updateTaskFieldByPath = createAsyncThunk<
@@ -16,7 +16,7 @@ export const updateTaskFieldByPath = createAsyncThunk<
       throw new Error(`Task with ID ${taskId} not found`);
     }
 
-    // Parse path to handle array indices (e.g., broker_values[0].name or broker_values[index].name)
+    // Parse path to handle array indices
     const indexMatch = fieldPath.match(/\[(\d+|index)\]/);
     const hasArrayIndex = !!indexMatch;
     let arrayIndex: number | null = null;
@@ -42,36 +42,36 @@ export const updateTaskFieldByPath = createAsyncThunk<
       nestedPath = pathParts.slice(1).join(".");
     }
 
-    const fieldDefinition = getFieldDefinition(task.taskName, rootField);
-    const isArrayField = fieldDefinition?.DATA_TYPE?.toLowerCase() === "array";
+    // Get field definitions
+    const fieldDefinitions = getFieldDefinitions(task.taskName);
+    const rootFieldDef = fieldDefinitions.find(def => def.path === rootField);
+    const isArrayField = rootFieldDef?.dataType.toLowerCase() === "array";
 
     if (hasArrayIndex && isArrayField && arrayIndex !== null) {
-      // Handle updates to array elements or their nested fields
+      // Handle array updates
       let currentArray = task.taskData[rootField];
       if (!Array.isArray(currentArray)) {
         currentArray = [];
       }
 
-      // Initialize new array element with schema defaults
-      const taskSchema = getTaskSchema(task.taskName);
-      const referenceSchema = taskSchema?.[rootField]?.REFERENCE as Schema | undefined;
-      const defaultItem = referenceSchema
+      // Initialize new element with defaults from reference schema
+      const defaultItem = rootFieldDef?.reference
         ? Object.fromEntries(
-            Object.entries(referenceSchema).map(([key, spec]) => [key, spec.DEFAULT])
+            Object.entries(rootFieldDef.reference).map(([fieldName, fieldDefinition]) => [
+              fieldName,
+              fieldDefinition.DEFAULT,
+            ])
           )
         : {};
 
-      // Create a new array, filling gaps with default objects
       let newArray = [...currentArray];
       while (newArray.length <= arrayIndex) {
         newArray.push({ ...defaultItem });
       }
 
       if (nestedPath) {
-        // Update nested field within array element
         const currentItem = newArray[arrayIndex] || { ...defaultItem };
         const updatedItem = { ...currentItem };
-        // Handle multi-level nested paths
         let target = updatedItem;
         const nestedParts = nestedPath.split(".");
         for (let i = 0; i < nestedParts.length - 1; i++) {
@@ -81,7 +81,6 @@ export const updateTaskFieldByPath = createAsyncThunk<
         target[nestedParts[nestedParts.length - 1]] = value;
         newArray[arrayIndex] = updatedItem;
       } else {
-        // Update entire array element
         newArray[arrayIndex] = { ...defaultItem, ...value };
       }
 
@@ -89,12 +88,12 @@ export const updateTaskFieldByPath = createAsyncThunk<
         updateNestedTaskField({
           taskId,
           parentField: rootField,
-          path: "", // Update entire array
+          path: "",
           value: newArray,
         })
       );
     } else {
-      // Handle non-array fields or nested objects
+      // Handle non-array fields
       const isNested = nestedPath.length > 0;
       if (isNested) {
         dispatch(
@@ -131,8 +130,9 @@ export const arrayOperation = createAsyncThunk<
       throw new Error(`Task with ID ${taskId} not found`);
     }
 
-    const fieldDefinition = getFieldDefinition(task.taskName, fieldPath);
-    if (fieldDefinition?.DATA_TYPE?.toLowerCase() !== "array") {
+    const fieldDefinitions = getFieldDefinitions(task.taskName);
+    const fieldDefinition = fieldDefinitions.find(def => def.path === fieldPath);
+    if (fieldDefinition?.dataType.toLowerCase() !== "array") {
       throw new Error(`Field ${fieldPath} is not an array`);
     }
 
@@ -142,7 +142,6 @@ export const arrayOperation = createAsyncThunk<
     const nestedPath = pathParts.slice(1).join(".");
 
     if (isNested) {
-      // For nested arrays, get the current array value
       let current = task.taskData[rootField];
       for (let i = 1; i < pathParts.length; i++) {
         if (!current || typeof current !== "object") {

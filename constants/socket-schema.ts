@@ -2948,6 +2948,49 @@ export const getAllFieldPaths = (taskName: string): string[] => {
     return fieldPaths;
 };
 
+export interface FieldDefinitionInfo {
+    path: string;
+    dataType: string;
+    defaultValue: any;
+    reference?: Schema;
+  }
+  
+  export const getFieldDefinitions = (taskName: string): FieldDefinitionInfo[] => {
+    const taskSchema = getTaskSchema(taskName);
+    if (!taskSchema) {
+      return [];
+    }
+  
+    const fieldDefinitions: FieldDefinitionInfo[] = [];
+  
+    const traverseSchema = (schema: Schema, prefix: string = "") => {
+      Object.entries(schema).forEach(([fieldName, fieldDefinition]) => {
+        const currentPath = prefix ? `${prefix}.${fieldName}` : fieldName;
+  
+        // Add field definition info
+        fieldDefinitions.push({
+          path: currentPath,
+          dataType: fieldDefinition.DATA_TYPE,
+          defaultValue: fieldDefinition.DEFAULT,
+          reference: fieldDefinition.REFERENCE,
+        });
+  
+        // Handle nested objects via REFERENCE
+        if (fieldDefinition.REFERENCE && typeof fieldDefinition.REFERENCE === "object") {
+          if (fieldDefinition.DATA_TYPE === "array") {
+            const arrayItemPath = `${currentPath}[index]`;
+            traverseSchema(fieldDefinition.REFERENCE as Schema, arrayItemPath);
+          } else {
+            traverseSchema(fieldDefinition.REFERENCE as Schema, currentPath);
+          }
+        }
+      });
+    };
+  
+    traverseSchema(taskSchema);
+    return fieldDefinitions;
+  };
+
 export const isValidField = (taskName: string, fieldPath: string, value: any, traverseNested: boolean = true): boolean => {
     console.log(`Validating field - taskName: ${taskName}, fieldPath: ${fieldPath}, value:`, value, `traverseNested: ${traverseNested}`);
     

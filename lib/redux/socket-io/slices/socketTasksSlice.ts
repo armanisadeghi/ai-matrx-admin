@@ -1,5 +1,3 @@
-// File Location: lib/redux/socket-io/slices/socketTasksSlice.ts
-
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { initializeTaskDataWithDefaults, validateTaskData } from "@/constants/socket-schema";
 import { v4 as uuidv4 } from "uuid";
@@ -15,7 +13,7 @@ const initialState: TasksState = {
 
 const setNestedValue = (obj: any, path: string, value: any): any => {
   const pathParts = path.split(".");
-  if (pathParts.length === 1) {
+  if (pathParts.length === 1 && pathParts[0]) {
     return { ...obj, [pathParts[0]]: value };
   }
 
@@ -113,10 +111,16 @@ const socketTasksSlice = createSlice({
       const { taskId, parentField, path, value } = action.payload;
       const task = state.tasks[taskId];
       if (task) {
-        if (!task.taskData[parentField]) {
-          task.taskData[parentField] = {};
+        if (!path) {
+          // Update entire field
+          task.taskData[parentField] = value;
+        } else {
+          // Update nested field
+          if (!task.taskData[parentField]) {
+            task.taskData[parentField] = {};
+          }
+          task.taskData[parentField] = setNestedValue(task.taskData[parentField], path, value);
         }
-        task.taskData[parentField] = setNestedValue(task.taskData[parentField], path, value);
       }
     },
 

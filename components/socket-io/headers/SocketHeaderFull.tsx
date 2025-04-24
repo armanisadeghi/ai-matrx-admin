@@ -61,7 +61,7 @@ export function SocketHeaderFull({
   };
   
   return (
-    <div className="p-4 pb-6 space-y-4 bg-gray-200 dark:bg-gray-900 border-3 border-gray-300 dark:border-gray-600 rounded-3xl">
+    <div className="py-2 px-3 space-y-1 bg-gray-200 dark:bg-gray-900 border-3 border-gray-300 dark:border-gray-600 rounded-3xl">
       <div className="flex flex-wrap gap-4 justify-between items-center">
         <div className="flex space-x-3">
           <h3 className="text-lg font-bold pr-4">Socket.IO Admin</h3>
@@ -103,7 +103,7 @@ export function SocketHeaderFull({
           </Button>
           <Button 
             onClick={() => setShowConnectionManager(!showConnectionManager)} 
-            variant="outline"
+            variant="ghost"
           >
             {showConnectionManager ? "Hide" : "Manage"} Connections
           </Button>
