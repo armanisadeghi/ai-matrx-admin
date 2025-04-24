@@ -11,7 +11,7 @@ interface ProviderConfig {
   processResponseData?: (data: any) => any;
 }
 
-// Provider configurations
+// Provider configurations - Simplified to only include Slack
 const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
   slack: {
     clientId: process.env.SLACK_CLIENT_ID, // Server-side env variable
@@ -30,12 +30,24 @@ const PROVIDER_CONFIGS: Record<string, ProviderConfig> = {
       return data;
     }
   },
-  // You can add other providers here like notion, github, etc.
+  // Extension point for future providers
+  /*
+  new_provider: {
+    clientId: process.env.NEW_PROVIDER_CLIENT_ID,
+    clientSecret: process.env.NEW_PROVIDER_CLIENT_SECRET,
+    tokenUrl: 'https://provider.com/oauth/token',
+    redirectUri: `${process.env.NEW_PROVIDER_REDIRECT_URL}/app_callback/new_provider`,
+    bodyFormat: 'json',
+    headers: {
+      'Accept': 'application/json',
+    }
+  },
+  */
 };
 
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { provider: string } }
+    request: NextRequest,
+    { params }: { params: { provider: string } }
 ) {
   try {
     const provider = params.provider.toLowerCase();
@@ -48,8 +60,8 @@ export async function POST(
     if (!code) {
       console.error('Missing authorization code');
       return NextResponse.json(
-        { error: 'Authorization code is required' },
-        { status: 400 }
+          { error: 'Authorization code is required' },
+          { status: 400 }
       );
     }
 
@@ -57,8 +69,8 @@ export async function POST(
     if (!PROVIDER_CONFIGS[provider]) {
       console.error(`Unsupported provider: ${provider}`);
       return NextResponse.json(
-        { error: `Unsupported provider: ${provider}` },
-        { status: 400 }
+          { error: `Unsupported provider: ${provider}` },
+          { status: 400 }
       );
     }
 
@@ -75,9 +87,9 @@ export async function POST(
 
     // Prepare request headers
     const requestHeaders: Record<string, string> = {
-      'Content-Type': bodyFormat === 'json' 
-        ? 'application/json' 
-        : 'application/x-www-form-urlencoded',
+      'Content-Type': bodyFormat === 'json'
+          ? 'application/json'
+          : 'application/x-www-form-urlencoded',
       ...(headers || {})
     };
 
@@ -116,7 +128,7 @@ export async function POST(
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`${provider} token exchange failed:`, errorText);
-      
+
       let errorMessage;
       try {
         const errorData = JSON.parse(errorText);
@@ -124,14 +136,14 @@ export async function POST(
       } catch {
         errorMessage = `Failed to exchange code: ${response.status} ${errorText}`;
       }
-      
+
       return NextResponse.json({ error: errorMessage }, { status: response.status });
     }
 
     // Parse and process response data
     let responseData = await response.json();
     console.log(`${provider} token exchange successful`);
-    
+
     // Apply provider-specific response processing if needed
     if (processResponseData) {
       try {
@@ -154,8 +166,8 @@ export async function POST(
 
 // This handles the initial redirect from Slack
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { provider: string } }
+    request: NextRequest,
+    { params }: { params: { provider: string } }
 ) {
   const provider = params.provider.toLowerCase();
   const url = new URL(request.url);
@@ -167,19 +179,19 @@ export async function GET(
   if (error) {
     // Redirect to the home page with the error
     return NextResponse.redirect(
-      new URL(`/?provider=${provider}&error=${error}`, request.url)
+        new URL(`/?provider=${provider}&error=${error}`, request.url)
     );
   }
 
   if (!code) {
     // Redirect to the home page with an error for missing code
     return NextResponse.redirect(
-      new URL(`/?provider=${provider}&error=missing_code`, request.url)
+        new URL(`/?provider=${provider}&error=missing_code`, request.url)
     );
   }
 
   // Redirect to the home page with the code
   return NextResponse.redirect(
-    new URL(`/?provider=${provider}&code=${code}`, request.url)
+      new URL(`/?provider=${provider}&code=${code}`, request.url)
   );
 }
