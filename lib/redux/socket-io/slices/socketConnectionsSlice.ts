@@ -3,9 +3,12 @@ import { SocketConnectionManager } from '../connection/socketConnectionManager';
 import { socketConnectionStatus, SocketState } from '../socket.types';
 import { SocketConnection } from '../socket.types';
 
+// Extend SocketState to include testMode
+interface ExtendedSocketState extends SocketState {
+  testMode: boolean;
+}
 
-
-const initialState: SocketState = {
+const initialState: ExtendedSocketState = {
   connections: {
     primary: {
       connectionId: 'primary',
@@ -25,6 +28,7 @@ const initialState: SocketState = {
     namespace: SocketConnectionManager.DEFAULT_NAMESPACE,
     selectedPredefined: '',
   },
+  testMode: false, // Add testMode to initial state
 };
 
 const socketConnectionsSlice = createSlice({
@@ -91,15 +95,12 @@ const socketConnectionsSlice = createSlice({
       }
     },
     reconnectConnection: (state, action: PayloadAction<string>) => {
-      // The actual reconnection happens in the middleware/saga/thunk,
-      // here we just update the status to connecting
       const conn = state.connections[action.payload];
       if (conn) {
         conn.connectionStatus = 'connecting';
       }
     },
     deleteConnection: (state, action: PayloadAction<string>) => {
-      // Don't allow deleting the primary connection
       if (action.payload !== state.primaryConnectionId) {
         delete state.connections[action.payload];
       }
@@ -117,14 +118,12 @@ const socketConnectionsSlice = createSlice({
         connectionStatus: 'disconnected',
         isAuthenticated: false,
       };
-      // Reset form after adding
       state.connectionForm = {
         url: '',
         namespace: SocketConnectionManager.DEFAULT_NAMESPACE,
         selectedPredefined: '',
       };
     },
-    // New form actions
     updateFormUrl: (state, action: PayloadAction<string>) => {
       state.connectionForm.url = action.payload;
     },
@@ -134,14 +133,12 @@ const socketConnectionsSlice = createSlice({
     selectPredefinedConnection: (state, action: PayloadAction<string>) => {
       state.connectionForm.selectedPredefined = action.payload;
       
-      // If it's a custom value, just clear the URL
       if (action.payload === 'custom') {
         state.connectionForm.url = '';
         state.connectionForm.namespace = SocketConnectionManager.DEFAULT_NAMESPACE;
         return;
       }
       
-      // Otherwise find the matching predefined connection
       const predefined = state.predefinedConnections.find(
         conn => conn.name === action.payload
       );
@@ -150,6 +147,10 @@ const socketConnectionsSlice = createSlice({
         state.connectionForm.url = predefined.url;
         state.connectionForm.namespace = predefined.namespace;
       }
+    },
+    // Add toggleTestMode action
+    toggleTestMode: (state) => {
+      state.testMode = !state.testMode;
     },
   },
 });
@@ -172,6 +173,7 @@ export const {
   updateFormUrl,
   updateFormNamespace,
   selectPredefinedConnection,
+  toggleTestMode,
 } = socketConnectionsSlice.actions;
 
 

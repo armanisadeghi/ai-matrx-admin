@@ -1,6 +1,6 @@
-// File location: components/socket-io/form-builder/field-components/SocketTaskSwitch.tsx
+// File location: components/socket-io/form-builder/field-components/SocketTaskTextarea.tsx
 import React, { useCallback, useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
+import { FancyTextarea } from "@/components/ui/textarea";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-constants";
@@ -11,9 +11,8 @@ import { selectFieldValue } from "@/lib/redux/socket-io/selectors";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 import { selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io/selectors";
 import { isValidField } from "@/constants/socket-schema";
-import { Label } from "@/components/ui/label";
 
-interface SocketTaskSwitchProps {
+interface SocketTaskTextareaProps {
     taskId: string;
     fieldName: string;
     fieldDefinition: SchemaField;
@@ -23,7 +22,7 @@ interface SocketTaskSwitchProps {
     showPlaceholder?: boolean;
 }
 
-const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
+const SocketTaskTextarea: React.FC<SocketTaskTextareaProps> = ({
     taskId,
     fieldName,
     fieldDefinition,
@@ -52,6 +51,13 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
 
     const validateField = useCallback((value: any) => isValidField(taskName, fullPath, value), [taskName, fullPath]);
 
+    const labelContent = (
+        <div className="flex items-start gap-1">
+            <span className="text-slate-700 dark:text-slate-300">{formatLabel(fieldName)}</span>
+            {fieldDefinition.REQUIRED && <span className="text-red-500 text-sm leading-none">*</span>}
+        </div>
+    );
+
     const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
     
@@ -66,29 +72,36 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
         }
     }
 
-    const handleChange = (checked: boolean) => {
-        dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: checked }));
-        
-        const isValid = validateField(checked);
-        setHasError(!isValid);
-        setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: e.target.value }));
+    };
+
+    const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+        if (e.target.value === "") {
+            setHasError(false);
+            setNotice("");
+        } else {
+            const isValid = validateField(e.target.value);
+            setHasError(!isValid);
+            setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+        }
+        dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: e.target.value }));
     };
 
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-                <Switch
-                    checked={!!currentValue}
-                    onCheckedChange={handleChange}
-                    className={cn(hasError ? "border-red-500" : "", props.className || "")}
-                    {...Object.fromEntries(Object.entries(props).filter(([key]) => key !== "className"))}
-                />
-                <Icon className="w-4 h-4 mr-2 text-slate-500" />
-                <Label className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</Label>
-            </div>
+            <FancyTextarea
+                value={currentValue || ""}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={cn("w-full bg-background", hasError ? "border-red-500" : "", props.className || "")}
+                placeholder={placeholder}
+                prefix={<Icon className="w-4 h-4" />}
+                {...Object.fromEntries(Object.entries(props).filter(([key]) => key !== "className"))}
+            />
             {notice && <span className="text-yellow-600 text-sm">{notice}</span>}
         </div>
     );
 };
 
-export default SocketTaskSwitch;
+export default SocketTaskTextarea;

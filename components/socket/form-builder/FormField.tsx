@@ -26,6 +26,7 @@ export type FieldType =
     | "fileupload"
     | "multifileupload"
     | "jsoneditor";
+    
 export interface FieldOverride {
     type: FieldType;
     props?: Record<string, any>;

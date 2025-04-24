@@ -1,6 +1,6 @@
-// File location: components/socket-io/form-builder/field-components/SocketTaskSwitch.tsx
+// File location: components/socket-io/form-builder/field-components/SocketTaskCheckbox.tsx
 import React, { useCallback, useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-constants";
@@ -13,7 +13,7 @@ import { selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io/select
 import { isValidField } from "@/constants/socket-schema";
 import { Label } from "@/components/ui/label";
 
-interface SocketTaskSwitchProps {
+interface SocketTaskCheckboxProps {
     taskId: string;
     fieldName: string;
     fieldDefinition: SchemaField;
@@ -23,7 +23,7 @@ interface SocketTaskSwitchProps {
     showPlaceholder?: boolean;
 }
 
-const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
+const SocketTaskCheckbox: React.FC<SocketTaskCheckboxProps> = ({
     taskId,
     fieldName,
     fieldDefinition,
@@ -68,8 +68,10 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
 
     const handleChange = (checked: boolean) => {
         dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: checked }));
-        
-        const isValid = validateField(checked);
+    };
+
+    const handleBlur = () => {
+        const isValid = validateField(currentValue);
         setHasError(!isValid);
         setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
     };
@@ -77,9 +79,10 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
     return (
         <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-                <Switch
+                <Checkbox
                     checked={!!currentValue}
                     onCheckedChange={handleChange}
+                    onBlur={handleBlur}
                     className={cn(hasError ? "border-red-500" : "", props.className || "")}
                     {...Object.fromEntries(Object.entries(props).filter(([key]) => key !== "className"))}
                 />
@@ -91,4 +94,4 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
     );
 };
 
-export default SocketTaskSwitch;
+export default SocketTaskCheckbox;

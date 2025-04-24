@@ -1,6 +1,6 @@
-// File location: components/socket-io/form-builder/field-components/SocketTaskSwitch.tsx
+// File location: components/socket-io/form-builder/field-components/SocketTaskSelect.tsx
 import React, { useCallback, useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SchemaField } from "@/constants/socket-constants";
@@ -11,9 +11,8 @@ import { selectFieldValue } from "@/lib/redux/socket-io/selectors";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 import { selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io/selectors";
 import { isValidField } from "@/constants/socket-schema";
-import { Label } from "@/components/ui/label";
 
-interface SocketTaskSwitchProps {
+interface SocketTaskSelectProps {
     taskId: string;
     fieldName: string;
     fieldDefinition: SchemaField;
@@ -23,7 +22,7 @@ interface SocketTaskSwitchProps {
     showPlaceholder?: boolean;
 }
 
-const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
+const SocketTaskSelect: React.FC<SocketTaskSelectProps> = ({
     taskId,
     fieldName,
     fieldDefinition,
@@ -36,14 +35,17 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
     const [hasError, setHasError] = useState(false);
     const [notice, setNotice] = useState("");
 
-    useEffect(() => {
-      dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: initialValue }));
-    }, []);
-
-    const testMode = useAppSelector(selectTestMode);
+    // Get the current value from Redux store
     const currentValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
+    const testMode = useAppSelector(selectTestMode);
     const taskName = useAppSelector((state) => selectTaskNameById(state, taskId));
 
+    // Initialize the value in Redux on component mount
+    useEffect(() => {
+        dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: initialValue }));
+    }, []);
+
+    // Handle test mode
     React.useEffect(() => {
         if (testMode && fieldDefinition.TEST_VALUE !== undefined) {
             dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: fieldDefinition.TEST_VALUE }));
@@ -55,6 +57,7 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
     const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
     
+    // Process component props
     const props: Record<string, any> = {};
     const finalProps = { ...fieldDefinition.COMPONENT_PROPS, ...propOverrides };
     
@@ -66,29 +69,47 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
         }
     }
 
-    const handleChange = (checked: boolean) => {
-        dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: checked }));
-        
-        const isValid = validateField(checked);
-        setHasError(!isValid);
-        setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+    // Handle value change
+    const handleValueChange = (value: string) => {
+        dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value }));
+    };
+
+    // Handle open change (blur)
+    const handleOpenChange = (open: boolean) => {
+        if (!open && currentValue) {
+            const isValid = validateField(currentValue);
+            setHasError(!isValid);
+            setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+        }
     };
 
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-                <Switch
-                    checked={!!currentValue}
-                    onCheckedChange={handleChange}
-                    className={cn(hasError ? "border-red-500" : "", props.className || "")}
-                    {...Object.fromEntries(Object.entries(props).filter(([key]) => key !== "className"))}
-                />
-                <Icon className="w-4 h-4 mr-2 text-slate-500" />
-                <Label className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</Label>
-            </div>
+            <Select
+                value={currentValue || ""}
+                onValueChange={handleValueChange}
+                onOpenChange={handleOpenChange}
+            >
+                <SelectTrigger className={cn("w-full", hasError ? "border-red-500" : "", finalProps.className || "")}>
+                    {!currentValue && (
+                        <div className="flex items-center">
+                            <Icon className="w-4 h-4 mr-2 text-slate-500" />
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</span>
+                        </div>
+                    )}
+                    {currentValue && <SelectValue />}
+                </SelectTrigger>
+                <SelectContent>
+                    {finalProps.options?.map((option: { label: string; value: string }) => (
+                        <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
             {notice && <span className="text-yellow-600 text-sm">{notice}</span>}
         </div>
     );
 };
 
-export default SocketTaskSwitch;
+export default SocketTaskSelect;

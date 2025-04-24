@@ -140,6 +140,8 @@ export const selectTaskByListenerId = createSelector(
     (tasks, listenerId) => Object.values(tasks).find((task) => task.listenerIds.includes(listenerId))
 );
 
+export const selectTestMode = (state: RootState) => state.socketConnections.testMode;
+  
 // ==================== Response Selectors ====================
 // Simple response property access selectors
 export const selectAllResponses = (state: RootState) => state.socketResponse;

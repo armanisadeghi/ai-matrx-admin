@@ -31,6 +31,7 @@ export interface SocketState {
     isAdmin: boolean;
     predefinedConnections: PredefinedConnection[];
     connectionForm: ConnectionForm;
+    testMode: boolean;
 }
 
 export interface ConnectionForm {

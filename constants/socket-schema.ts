@@ -2,7 +2,7 @@
 export interface SchemaField {
     REQUIRED: boolean;
     DEFAULT: any;
-    VALIDATION: string | null;
+    VALIDATION: any | null;
     DATA_TYPE: string | null;
     CONVERSION: string | null;
     REFERENCE: any;
@@ -17,69 +17,68 @@ export interface Schema {
     [key: string]: SchemaField;
 }
 
+export const validateUUID = (value: any): boolean => {
+    if (typeof value !== "string") {
+        return false;
+    }
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(value);
+};
 
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the id of the broker.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value of the broker.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: "true",
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
-    },
+export const validateTextLength = (value: any): boolean => {
+    if (typeof value !== "string") {
+        return false;
+    }
+    return value.length > 5;
+};
+
+export const validateMarkdown = (value: any): boolean => {
+    if (typeof value !== "string") {
+        return false;
+    }
+    // Check for common markdown patterns: headers, bold, italic, lists, links, or code
+    const markdownRegex = /(#+\s|[-*+]\s|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_|`.*?`|\[.*?\]\(.*?\))/;
+    return markdownRegex.test(value);
+};
+
+export const validToolNames =  [
+    "code_python_execute",
+    "code_web_store_html",
+    "code_fetcher_fetch",
+    "api_news_fetch_headlines",
+    "core_math_calculate",
+    "core_web_search",
+    "core_web_read_web_pages",
+    "core_web_search_and_read",
+    "data_sql_execute_query",
+    "data_sql_list_tables",
+    "data_sql_get_table_schema",
+    "data_sql_create_user_generated_table_data",
+    "text_analyze",
+    "text_regex_extract"
+]
+export const validateToolNames = (value: any): boolean => {
+    // Check if value is an array
+    if (!Array.isArray(value)) {
+        return false;
+    }
+
+    // Check if every item in the array is a string and exists in validToolNames
+    return value.every(item => 
+        typeof item === "string" && 
+        validToolNames.includes(item)
+    );
 };
 
 export const CHAT_CONFIG_DEFINITION: Schema = {
     recipe_id: {
         REQUIRED: true,
         DEFAULT: null,
-        VALIDATION: null,
+        VALIDATION: validateUUID,
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
@@ -92,9 +91,10 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
+        TEST_VALUE: "latest",
         DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
     },
     user_id: {
@@ -148,11 +148,11 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
     model_override: {
         REQUIRED: false,
         DEFAULT: null,
-        VALIDATION: null,
+        VALIDATION: validateUUID,
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         TEST_VALUE: "10168527-4d6b-456f-ab07-a889223ba3a9",
@@ -161,7 +161,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
     tools_override: {
         REQUIRED: false,
         DEFAULT: [],
-        VALIDATION: null,
+        VALIDATION: validateToolNames,
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
@@ -196,6 +196,59 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
     },
 };
 
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: "true",
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
+    },
+};
+
 export const MESSAGE_OBJECT_DEFINITION: Schema = {
     id: {
         REQUIRED: false,
@@ -204,7 +257,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the message id.",
@@ -216,7 +269,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the conversation id.",
@@ -228,7 +281,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "TextArea",
+        COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
         ICON_NAME: "Text",
         DESCRIPTION: "Enter the message content.",
@@ -291,7 +344,7 @@ export const OVERRIDE_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the model to use.",
         ICON_NAME: "Key",
@@ -402,7 +455,7 @@ export const READ_LOGS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Search",
         DESCRIPTION: "A search term to filter log lines (case-insensitive).",
@@ -417,7 +470,7 @@ export const CONVERT_RECIPE_TO_CHAT: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the chat to be converted to a recipe.",
@@ -432,7 +485,7 @@ export const SAMPLE_SERVICE: Schema = {
         DATA_TYPE: "number",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Slider",
+        COMPONENT: "slider",
         COMPONENT_PROPS: {"min": 0, "max": 100, "step": 1, "range": "False"},
         ICON_NAME: "Sliders",
         DESCRIPTION: "Adjust the value between 0 and 100",
@@ -564,7 +617,7 @@ export const CONVERT_NORMALIZED_DATA_TO_USER_DATA: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Baseline",
         DESCRIPTION: "Enter the name of the table to be created.",
@@ -576,7 +629,7 @@ export const CONVERT_NORMALIZED_DATA_TO_USER_DATA: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Text",
         DESCRIPTION: "Enter the description of the table to be created.",
@@ -591,7 +644,7 @@ export const PREPARE_BATCH_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: CHAT_CONFIG_DEFINITION,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the chat configs to be used in the recipe.",
@@ -603,7 +656,7 @@ export const PREPARE_BATCH_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -630,7 +683,7 @@ export const RUN_BATCH_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: CHAT_CONFIG_DEFINITION,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the chat configs to be used in the recipe.",
@@ -642,7 +695,7 @@ export const RUN_BATCH_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -669,7 +722,7 @@ export const RUN_RECIPE_TO_CHAT: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: CHAT_CONFIG_DEFINITION,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the chat config to be used in the recipe.",
@@ -681,7 +734,7 @@ export const RUN_RECIPE_TO_CHAT: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -696,7 +749,7 @@ export const PREP_CONVERSATION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the conversation to be fetched, cached and ready for fast usage.",
@@ -711,7 +764,7 @@ export const AI_CHAT: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the conversation id.",
@@ -723,7 +776,7 @@ export const AI_CHAT: Schema = {
         DATA_TYPE: "object",
         CONVERSION: "convert_message_object",
         REFERENCE: MESSAGE_OBJECT_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
         ICON_NAME: "Messages",
         DESCRIPTION: "Enter the message object with message id, conversation id, content, role, type, and files.",
@@ -1036,7 +1089,7 @@ export const SEARCH_AND_SCRAPE: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Slider",
+        COMPONENT: "slider",
         COMPONENT_PROPS: {"min": 10, "max": 30, "step": 1, "range": "False"},
         DESCRIPTION: "Enter the number of results per keyword to get.",
         ICON_NAME: "SlidersHorizontal",
@@ -1195,7 +1248,7 @@ export const GET_PARSED_PAGES: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the cursor to be used for the scrape.",
         ICON_NAME: "Key",
@@ -1342,7 +1395,7 @@ export const GET_SCRAPE_HISTORY_BY_URL: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the url to be scraped.",
         ICON_NAME: "Link",
@@ -1408,7 +1461,7 @@ export const PARSE_RESPONSE_BY_ID: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the scrape task id to be parsed.",
         ICON_NAME: "Key",
@@ -1432,7 +1485,7 @@ export const PARSE_RESPONSE_BY_ID: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the noise config id to be used for the scrape.",
         ICON_NAME: "Key",
@@ -1459,7 +1512,7 @@ export const SCRAPE_PAGE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the url to be scraped.",
         ICON_NAME: "Link",
@@ -1471,7 +1524,7 @@ export const SCRAPE_PAGE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the mode to be used for the scrape.",
         ICON_NAME: "Blend",
@@ -1522,7 +1575,7 @@ export const CREATE_SCRAPE_TASKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the mode to be used for the scrape.",
         ICON_NAME: "Blend",
@@ -1600,7 +1653,7 @@ export const SAVE_INTERACTION_SETTINGS: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the new interaction settings to be used for the domain.",
         ICON_NAME: "Key",
@@ -1627,7 +1680,7 @@ export const SAVE_FILTER_CONFIG: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the new filter config to be used for the domain.",
         ICON_NAME: "Key",
@@ -1654,7 +1707,7 @@ export const SAVE_NOISE_CONFIG: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the new noise config to be used for the domain.",
         ICON_NAME: "Key",
@@ -1669,7 +1722,7 @@ export const CREATE_FILTER_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the name of the filter config to be created.",
         ICON_NAME: "Key",
@@ -1750,7 +1803,7 @@ export const CREATE_INTERACTION_SETTINGS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the name of the interaction settings to be created.",
         ICON_NAME: "Key",
@@ -1765,7 +1818,7 @@ export const CREATE_DOMAIN: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the domain to be created.",
         ICON_NAME: "Key",
@@ -1792,7 +1845,7 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the path pattern to be used for the domain.",
         ICON_NAME: "Key",
@@ -1852,7 +1905,7 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the mode to be used for the domain.",
         ICON_NAME: "Key",
@@ -1879,7 +1932,7 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the path pattern to be used for the domain.",
         ICON_NAME: "Key",
@@ -1939,7 +1992,7 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the mode to be used for the domain.",
         ICON_NAME: "Key",
@@ -2029,7 +2082,7 @@ export const GET_PYTHON_DICTS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the variable name of the dictionary to be created.",
         ICON_NAME: "Key",
@@ -2071,7 +2124,7 @@ export const GET_SEGMENTS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the type of segment to be extracted.",
         ICON_NAME: "Key",
@@ -2098,7 +2151,7 @@ export const GET_SECTION_GROUPS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the type of section group to be extracted.",
         ICON_NAME: "Key",
@@ -2125,7 +2178,7 @@ export const GET_SECTION_BLOCKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the type of section to be extracted.",
         ICON_NAME: "Key",
@@ -2194,7 +2247,7 @@ export const GET_CODE_BLOCKS_BY_LANGUAGE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the language of the code blocks to be extracted.",
         ICON_NAME: "Key",
@@ -2236,7 +2289,7 @@ export const MIC_CHECK: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Check",
         DESCRIPTION: "Enter any message and the same message will be streamed back to you as a test of the mic.",
@@ -2251,10 +2304,11 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the recipe to be fetched, cached and ready for fast usage.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     version: {
         REQUIRED: false,
@@ -2263,7 +2317,7 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
@@ -2275,7 +2329,7 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -2335,7 +2389,7 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the AI Model or leave blank to use the default model.",
@@ -2343,7 +2397,7 @@ export const RUN_CHAT_RECIPE: Schema = {
     tools_override: {
         REQUIRED: false,
         DEFAULT: [],
-        VALIDATION: null,
+        VALIDATION: validateToolNames,
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
@@ -2386,10 +2440,11 @@ export const GET_NEEDED_RECIPE_BROKERS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the recipe to be fetched, cached and ready for fast usage.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     version: {
         REQUIRED: false,
@@ -2398,7 +2453,7 @@ export const GET_NEEDED_RECIPE_BROKERS: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
@@ -2413,7 +2468,7 @@ export const GET_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the compiled recipe to get.",
         ICON_NAME: "Key",
@@ -2428,10 +2483,11 @@ export const GET_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the recipe to get.",
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
 };
 
@@ -2443,10 +2499,11 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the recipe to add.",
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     compiled_id: {
         REQUIRED: true,
@@ -2455,7 +2512,7 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the compiled recipe to add.",
         ICON_NAME: "Key",
@@ -2467,7 +2524,7 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the compiled recipe to add.",
         ICON_NAME: "Key",
@@ -2482,10 +2539,11 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the recipe to run.",
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     compiled_id: {
         REQUIRED: true,
@@ -2494,7 +2552,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the compiled recipe to run.",
         ICON_NAME: "Key",
@@ -2506,7 +2564,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the compiled recipe to run.",
         ICON_NAME: "Key",
@@ -2533,10 +2591,11 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the recipe to run.",
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     broker_values: {
         REQUIRED: false,
@@ -2545,7 +2604,7 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -2557,7 +2616,7 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: OVERRIDE_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the overrides to be applied. These will override the 'settings' for the recipe, if overrides are allowed for the recipe.",
         ICON_NAME: "Parentheses",
@@ -2584,7 +2643,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Not sure what this is for yet.",
         ICON_NAME: "Key",
@@ -2596,7 +2655,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -2608,7 +2667,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: OVERRIDE_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the overrides to be applied. These will override the 'settings' for the recipe, if overrides are allowed for the recipe.",
         ICON_NAME: "Parentheses",
@@ -2865,21 +2924,21 @@ export const getAllFieldPaths = (taskName: string): string[] => {
     const fieldPaths: string[] = [];
 
     const traverseSchema = (schema: Schema, prefix: string = "") => {
-        Object.entries(schema).forEach(([fieldName, fieldSpec]) => {
+        Object.entries(schema).forEach(([fieldName, fieldDefinition]) => {
             const currentPath = prefix ? `${prefix}.${fieldName}` : fieldName;
 
             // Add the current field path
             fieldPaths.push(currentPath);
 
             // Handle nested objects via REFERENCE
-            if (fieldSpec.REFERENCE && typeof fieldSpec.REFERENCE === "object") {
-                if (fieldSpec.DATA_TYPE === "array") {
+            if (fieldDefinition.REFERENCE && typeof fieldDefinition.REFERENCE === "object") {
+                if (fieldDefinition.DATA_TYPE === "array") {
                     // For arrays, append [index] to the path and traverse the referenced schema
                     const arrayItemPath = `${currentPath}[index]`;
-                    traverseSchema(fieldSpec.REFERENCE as Schema, arrayItemPath);
+                    traverseSchema(fieldDefinition.REFERENCE as Schema, arrayItemPath);
                 } else {
                     // For non-array objects, traverse the referenced schema directly
-                    traverseSchema(fieldSpec.REFERENCE as Schema, currentPath);
+                    traverseSchema(fieldDefinition.REFERENCE as Schema, currentPath);
                 }
             }
         });
@@ -2887,4 +2946,93 @@ export const getAllFieldPaths = (taskName: string): string[] => {
 
     traverseSchema(taskSchema);
     return fieldPaths;
+};
+
+export const isValidField = (taskName: string, fieldPath: string, value: any, traverseNested: boolean = true): boolean => {
+    console.log(`Validating field - taskName: ${taskName}, fieldPath: ${fieldPath}, value:`, value, `traverseNested: ${traverseNested}`);
+    
+    const fieldDefinition = getFieldDefinition(taskName, fieldPath, traverseNested);
+    
+    // Return false if field definition is not found
+    if (!fieldDefinition) {
+        console.log(`Field definition not found for ${fieldPath}`);
+        return false;
+    }
+    console.log(`Field definition found:`, fieldDefinition);
+
+    // Check if field is empty (null or undefined)
+    const isEmpty = value === null || value === undefined;
+    console.log(`Is field empty? ${isEmpty}`);
+
+    // If field is not required and empty, return true (skip other validations)
+    if (!fieldDefinition.REQUIRED && isEmpty) {
+        console.log(`Field is not required and empty, returning true`);
+        return true;
+    }
+
+    // Check if required field has a value
+    if (fieldDefinition.REQUIRED && isEmpty) {
+        console.log(`Field is required but empty, returning false`);
+        return false;
+    }
+
+    // Check if data type matches (only for non-empty values)
+    const expectedType = fieldDefinition.DATA_TYPE;
+    console.log(`Expected data type: ${expectedType}`);
+    if (!isEmpty) {
+        console.log(`Validating data type for value:`, value);
+        switch (expectedType) {
+            case "string":
+                if (typeof value !== "string") {
+                    console.log(`Type mismatch: expected string, got ${typeof value}`);
+                    return false;
+                }
+                break;
+            case "number":
+                if (typeof value !== "number") {
+                    console.log(`Type mismatch: expected number, got ${typeof value}`);
+                    return false;
+                }
+                break;
+            case "boolean":
+                if (typeof value !== "boolean") {
+                    console.log(`Type mismatch: expected boolean, got ${typeof value}`);
+                    return false;
+                }
+                break;
+            case "array":
+                if (!Array.isArray(value)) {
+                    console.log(`Type mismatch: expected array, got ${typeof value}`);
+                    return false;
+                }
+                break;
+            case "object":
+                if (typeof value !== "object" || value === null || Array.isArray(value)) {
+                    console.log(`Type mismatch: expected object, got ${typeof value}`);
+                    return false;
+                }
+                break;
+            default:
+                console.log(`Unknown data type: ${expectedType}`);
+                return false;
+        }
+        console.log(`Data type validation passed`);
+    }
+
+    // Run validation function if it exists (only for non-empty values)
+    if (!isEmpty && fieldDefinition.VALIDATION) {
+        console.log(`Running validation function: ${fieldDefinition.VALIDATION}`);
+        // Assuming validation functions are exported in the same file and accessible
+        const validationFn = (globalThis as any)[fieldDefinition.VALIDATION] as (value: any) => boolean;
+        if (typeof validationFn === "function") {
+            const validationResult = validationFn(value);
+            console.log(`Validation function result: ${validationResult}`);
+            return validationResult;
+        }
+        console.log(`Validation function not found or invalid: ${fieldDefinition.VALIDATION}`);
+        return false;
+    }
+
+    console.log(`Validation passed, returning true`);
+    return true;
 };

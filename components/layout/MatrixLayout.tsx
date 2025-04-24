@@ -68,12 +68,7 @@ export function LayoutWithSidebar(
     const [showSidebar, setShowSidebar] = useState(true);
     const pathname = usePathname();
 
-    console.log(pathname);
-
-    // check for any match in this pathname (Starts with this path)
     const isFullScreen = FULL_SCREEN_PATHS.some(path => pathname.startsWith(path));
-
-    console.log(isFullScreen);
 
     return (
         <>

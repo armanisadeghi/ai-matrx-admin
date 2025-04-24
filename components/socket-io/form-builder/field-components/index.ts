@@ -1,2 +1,10 @@
 export { default as SocketTaskSwitch } from './SocketTaskSwitch';
 export { default as SocketTaskInput } from './SocketTaskInput'; 
+export { default as SocketTaskTextarea } from './SocketTaskTextarea';
+export { default as SocketTaskCheckbox } from './SocketTaskCheckbox';
+export { default as SocketTaskSlider } from './SocketTaskSlider';
+export { default as SocketTaskSelect } from './SocketTaskSelect';
+export { default as SocketTaskRadioGroup } from './SocketTaskRadioGroup';
+export { default as SocketTaskMultiFileUpload } from './SocketTaskMultiFileUpload';
+export { default as SocketTaskJsonEditor } from './SocketTaskJsonEditor';
+export { default as FieldRenderer } from './FieldRenderer';

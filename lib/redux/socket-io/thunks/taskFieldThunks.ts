@@ -1,151 +1,101 @@
-// File Location: lib/redux/socket-io/thunks/taskFieldThunks.ts
-
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { updateTaskField, updateNestedTaskField, addToArrayField, setArrayField, updateArrayItem, removeArrayItem } from "../slices/socketTasksSlice";
-import { getFieldDefinition } from "@/constants/socket-schema";
+import { getFieldDefinition, getTaskSchema, Schema } from "@/constants/socket-schema";
 import { RootState } from "../../store";
-
-/**
- * Helper function to parse array paths like "brokers[0].name" into segments
- * @param path Path string that may contain array notation
- * @returns Array of path segments with array indices
- */
-const parseArrayPath = (path: string): { segments: string[]; indices: number[] } => {
-  const segments: string[] = [];
-  const indices: number[] = [];
-  let currentSegment = '';
-  let inBrackets = false;
-  
-  // Parse the path character by character
-  for (let i = 0; i < path.length; i++) {
-    const char = path[i];
-    
-    if (char === '[') {
-      // End of segment, start of array index
-      if (currentSegment) {
-        segments.push(currentSegment);
-        currentSegment = '';
-      }
-      inBrackets = true;
-    } else if (char === ']') {
-      // End of array index
-      if (inBrackets && currentSegment) {
-        indices.push(parseInt(currentSegment, 10));
-        currentSegment = '';
-      }
-      inBrackets = false;
-    } else if (char === '.' && !inBrackets) {
-      // End of segment
-      if (currentSegment) {
-        segments.push(currentSegment);
-        currentSegment = '';
-      }
-    } else {
-      // Part of the current segment or index
-      currentSegment += char;
-    }
-  }
-  
-  // Add the last segment if there is one
-  if (currentSegment) {
-    segments.push(currentSegment);
-  }
-  
-  return { segments, indices };
-};
 
 export const updateTaskFieldByPath = createAsyncThunk<
   void,
-  { taskId: string; fieldPath: string; value: any },
+  { taskId: string; fieldPath: string; value: any; index?: number },
   { state: RootState }
 >(
   "socketTasks/updateTaskFieldByPath",
-  async ({ taskId, fieldPath, value }, { dispatch, getState }) => {
+  async ({ taskId, fieldPath, value, index }, { dispatch, getState }) => {
     const state = getState();
     const task = state.socketTasks.tasks[taskId];
     if (!task) {
       throw new Error(`Task with ID ${taskId} not found`);
     }
 
-    // Check if we're dealing with an array path like "brokers[0].name"
-    if (fieldPath.includes('[') && fieldPath.includes(']')) {
-      const { segments, indices } = parseArrayPath(fieldPath);
-      
-      // Get the root field (e.g., "brokers" from "brokers[0].name")
-      const rootField = segments[0];
-      
-      if (segments.length === 1) {
-        // Simple array update like "brokers[0]" = value
-        const arrayValue = [...(Array.isArray(task.taskData[rootField]) ? task.taskData[rootField] : [])];
-        const index = indices[0];
-        
-        // Ensure the array has enough items
-        while (arrayValue.length <= index) {
-          arrayValue.push({});
-        }
-        
-        arrayValue[index] = value;
-        
-        dispatch(
-          updateTaskField({
-            taskId,
-            field: rootField,
-            value: arrayValue,
-          })
-        );
-      } else if (segments.length > 1) {
-        // Complex nested array update like "brokers[0].name" = value
-        const arrayValue = [...(Array.isArray(task.taskData[rootField]) ? task.taskData[rootField] : [])];
-        const index = indices[0];
-        
-        // Ensure the array has enough items
-        while (arrayValue.length <= index) {
-          arrayValue.push({});
-        }
-        
-        // Construct the path to the nested property, e.g. "name" from "brokers[0].name"
-        const nestedPath = segments.slice(1).join('.');
-        
-        // Create a new object for this array item if needed
-        if (!arrayValue[index] || typeof arrayValue[index] !== 'object') {
-          arrayValue[index] = {};
-        }
-        
-        // Set the nested property on the array item
-        const updatedItem = { ...arrayValue[index] };
-        
-        // Handle nested paths with dot notation
-        let current = updatedItem;
-        const parts = nestedPath.split('.');
-        
-        for (let i = 0; i < parts.length - 1; i++) {
-          const part = parts[i];
-          if (!current[part] || typeof current[part] !== 'object') {
-            current[part] = {};
-          }
-          current = current[part];
-        }
-        
-        // Set the final value
-        current[parts[parts.length - 1]] = value;
-        
-        arrayValue[index] = updatedItem;
-        
-        dispatch(
-          updateTaskField({
-            taskId,
-            field: rootField,
-            value: arrayValue,
-          })
-        );
-      }
-    } else {
-      // Handle regular paths without array notation
-      const pathParts = fieldPath.split(".");
-      const isNested = pathParts.length > 1;
-      const rootField = pathParts[0];
-      const nestedPath = pathParts.slice(1).join(".");
+    // Parse path to handle array indices (e.g., broker_values[0].name or broker_values[index].name)
+    const indexMatch = fieldPath.match(/\[(\d+|index)\]/);
+    const hasArrayIndex = !!indexMatch;
+    let arrayIndex: number | null = null;
+    let rootField = fieldPath;
+    let nestedPath = "";
 
+    if (hasArrayIndex) {
+      const indexValue = indexMatch![1];
+      if (indexValue === "index") {
+        if (typeof index !== "number") {
+          throw new Error("Specific index required for paths with [index]");
+        }
+        arrayIndex = index;
+      } else {
+        arrayIndex = parseInt(indexValue, 10);
+      }
+      const parts = fieldPath.split(/\[.*?\]\.?/);
+      rootField = parts[0];
+      nestedPath = parts.slice(1).join(".");
+    } else {
+      const pathParts = fieldPath.split(".");
+      rootField = pathParts[0];
+      nestedPath = pathParts.slice(1).join(".");
+    }
+
+    const fieldDefinition = getFieldDefinition(task.taskName, rootField);
+    const isArrayField = fieldDefinition?.DATA_TYPE?.toLowerCase() === "array";
+
+    if (hasArrayIndex && isArrayField && arrayIndex !== null) {
+      // Handle updates to array elements or their nested fields
+      let currentArray = task.taskData[rootField];
+      if (!Array.isArray(currentArray)) {
+        currentArray = [];
+      }
+
+      // Initialize new array element with schema defaults
+      const taskSchema = getTaskSchema(task.taskName);
+      const referenceSchema = taskSchema?.[rootField]?.REFERENCE as Schema | undefined;
+      const defaultItem = referenceSchema
+        ? Object.fromEntries(
+            Object.entries(referenceSchema).map(([key, spec]) => [key, spec.DEFAULT])
+          )
+        : {};
+
+      // Create a new array, filling gaps with default objects
+      let newArray = [...currentArray];
+      while (newArray.length <= arrayIndex) {
+        newArray.push({ ...defaultItem });
+      }
+
+      if (nestedPath) {
+        // Update nested field within array element
+        const currentItem = newArray[arrayIndex] || { ...defaultItem };
+        const updatedItem = { ...currentItem };
+        // Handle multi-level nested paths
+        let target = updatedItem;
+        const nestedParts = nestedPath.split(".");
+        for (let i = 0; i < nestedParts.length - 1; i++) {
+          target[nestedParts[i]] = target[nestedParts[i]] || {};
+          target = target[nestedParts[i]];
+        }
+        target[nestedParts[nestedParts.length - 1]] = value;
+        newArray[arrayIndex] = updatedItem;
+      } else {
+        // Update entire array element
+        newArray[arrayIndex] = { ...defaultItem, ...value };
+      }
+
+      dispatch(
+        updateNestedTaskField({
+          taskId,
+          parentField: rootField,
+          path: "", // Update entire array
+          value: newArray,
+        })
+      );
+    } else {
+      // Handle non-array fields or nested objects
+      const isNested = nestedPath.length > 0;
       if (isNested) {
         dispatch(
           updateNestedTaskField({
@@ -181,19 +131,12 @@ export const arrayOperation = createAsyncThunk<
       throw new Error(`Task with ID ${taskId} not found`);
     }
 
-    // Handle array paths like "brokers[0]" by extracting the root field
-    let effectiveFieldPath = fieldPath;
-    if (fieldPath.includes('[') && fieldPath.includes(']')) {
-      const { segments } = parseArrayPath(fieldPath);
-      effectiveFieldPath = segments[0]; // Get the root array field
-    }
-
-    const fieldDefinition = getFieldDefinition(task.taskName, effectiveFieldPath);
+    const fieldDefinition = getFieldDefinition(task.taskName, fieldPath);
     if (fieldDefinition?.DATA_TYPE?.toLowerCase() !== "array") {
-      throw new Error(`Field ${effectiveFieldPath} is not an array`);
+      throw new Error(`Field ${fieldPath} is not an array`);
     }
 
-    const pathParts = effectiveFieldPath.split(".");
+    const pathParts = fieldPath.split(".");
     const isNested = pathParts.length > 1;
     const rootField = pathParts[0];
     const nestedPath = pathParts.slice(1).join(".");
@@ -245,7 +188,7 @@ export const arrayOperation = createAsyncThunk<
           dispatch(
             addToArrayField({
               taskId,
-              field: effectiveFieldPath,
+              field: fieldPath,
               item: value,
             })
           );
@@ -254,7 +197,7 @@ export const arrayOperation = createAsyncThunk<
           dispatch(
             setArrayField({
               taskId,
-              field: effectiveFieldPath,
+              field: fieldPath,
               items: Array.isArray(value) ? value : [],
             })
           );
@@ -266,7 +209,7 @@ export const arrayOperation = createAsyncThunk<
           dispatch(
             updateArrayItem({
               taskId,
-              field: effectiveFieldPath,
+              field: fieldPath,
               index,
               item: value,
             })
@@ -279,7 +222,7 @@ export const arrayOperation = createAsyncThunk<
           dispatch(
             removeArrayItem({
               taskId,
-              field: effectiveFieldPath,
+              field: fieldPath,
               index,
             })
           );

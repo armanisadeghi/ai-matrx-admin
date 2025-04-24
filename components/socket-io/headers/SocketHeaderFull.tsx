@@ -10,32 +10,32 @@ import ConnectionTypeIndicator from "@/components/socket-io/status-indicators/Co
 import { StatusIndicator } from '@/components/socket-io/status-indicators/StatusIndicator';
 import ConnectionManager from "@/components/socket-io/socket-connection/ConnectionManager";
 import ActiveConnectionSelector from "@/components/socket-io/socket-connection/ActiveConnectionSelector";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectPrimaryConnectionId } from "@/lib/redux/socket-io/selectors";
 import { ServiceTaskSelector } from "@/components/socket-io/select-components/ServiceTaskSelector";
-
+import { selectTestMode } from "@/lib/redux/socket-io/selectors";
+import { toggleTestMode } from "@/lib/redux/socket-io/slices/socketConnectionsSlice";
 
 interface SocketHeaderProps {
-  testMode?: boolean;
   onTestModeChange?: (testMode: boolean) => void;
   onConnectionSelect?: (connectionId: string) => void;
   onTaskCreate?: (taskId: string) => void;
 }
 
 export function SocketHeaderFull({ 
-  testMode = false, 
   onTestModeChange = () => {},
   onConnectionSelect,
   onTaskCreate,
 }: SocketHeaderProps) {
+  const dispatch = useAppDispatch();
+  const testMode = useAppSelector(selectTestMode);
   const primaryConnectionId = useAppSelector(selectPrimaryConnectionId);
-
   // Local UI state
   const [streamEnabled, setStreamEnabled] = React.useState(false);
   const [isResponseActive, setIsResponseActive] = React.useState(false);
   const [selectedConnectionId, setSelectedConnectionId] = React.useState<string>(primaryConnectionId);
   const [showConnectionManager, setShowConnectionManager] = React.useState(false);
-
+  
   // Handle connection selection
   const handleConnectionSelect = (connectionId: string) => {
     setSelectedConnectionId(connectionId);
@@ -43,7 +43,7 @@ export function SocketHeaderFull({
       onConnectionSelect(connectionId);
     }
   };
-
+  
   // Handle reset - go back to primary connection
   const handleReset = () => {
     setSelectedConnectionId(primaryConnectionId);
@@ -52,6 +52,14 @@ export function SocketHeaderFull({
     }
   };
 
+  // Handle test mode change
+  const handleTestModeChange = (value: boolean) => {
+    dispatch(toggleTestMode());
+    if (onTestModeChange) {
+      onTestModeChange(value);
+    }
+  };
+  
   return (
     <div className="p-4 pb-6 space-y-4 bg-gray-200 dark:bg-gray-900 border-3 border-gray-300 dark:border-gray-600 rounded-3xl">
       <div className="flex flex-wrap gap-4 justify-between items-center">
@@ -80,7 +88,10 @@ export function SocketHeaderFull({
         <div className="flex items-center space-x-4">
           <Switch checked={streamEnabled} onCheckedChange={setStreamEnabled} />
           <Label>Streaming</Label>
-          <Switch checked={testMode} onCheckedChange={onTestModeChange} />
+          <Switch 
+            checked={testMode} 
+            onCheckedChange={handleTestModeChange} 
+          />
           <Label>Test Mode</Label>
           <Button
             onClick={handleReset}
@@ -98,13 +109,11 @@ export function SocketHeaderFull({
           </Button>
         </div>
       </div>
-
       {showConnectionManager && (
         <div className="py-2">
           <ConnectionManager defaultOpen={true} />
         </div>
       )}
-
       <div className="grid md:grid-cols-4 gap-3">
         {/* Connection Selection */}
         <div>
@@ -113,7 +122,6 @@ export function SocketHeaderFull({
             onConnectionSelect={handleConnectionSelect}
           />
         </div>
-
         {/* Service & Task Selection (using the new combined component) */}
         <div className="col-span-3">
           <ServiceTaskSelector 

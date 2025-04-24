@@ -1,4 +1,6 @@
-import React from "react";
+// File location: components/socket-io/form-builder/field-components/SocketTaskInput.tsx
+
+import React, { useCallback, useEffect, useState } from "react";
 import { FancyInput } from "@/components/ui/input";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -7,29 +9,49 @@ import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-
 import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectFieldValue } from "@/lib/redux/socket-io/selectors";
+import { FieldOverrides } from "@/components/socket/form-builder/FormField";
+import { selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io/selectors";
+import { isValidField } from "@/constants/socket-schema";
 
 interface SocketTaskInputProps {
     taskId: string;
     fieldName: string;
     fieldDefinition: SchemaField;
     fullPath: string;
-    value: any;
+    initialValue: any;
+    propOverrides?: FieldOverrides;
     showPlaceholder?: boolean;
 }
 
-const SocketTaskInput: React.FC<SocketTaskInputProps> = ({ taskId, fieldName, fieldDefinition, fullPath, value, showPlaceholder = true }) => {
+const SocketTaskInput: React.FC<SocketTaskInputProps> = ({
+    taskId,
+    fieldName,
+    fieldDefinition,
+    fullPath,
+    initialValue,
+    showPlaceholder = true,
+    propOverrides = {},
+}) => {
     const dispatch = useAppDispatch();
+    const [hasError, setHasError] = useState(false);
+    const [notice, setNotice] = useState("");
 
-    console.log("fullPath", fullPath);
-    console.log("taskId", taskId);
+    useEffect(() => {
+      dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: initialValue }));
+    }, []);
 
+    const testMode = useAppSelector(selectTestMode);
     const currentValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
+    const taskName = useAppSelector((state) => selectTaskNameById(state, taskId));
 
-    console.log("currentValue", currentValue);
+    React.useEffect(() => {
+        if (testMode && fieldDefinition.TEST_VALUE !== undefined) {
+            dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: fieldDefinition.TEST_VALUE }));
+        }
+    }, [testMode]);
 
 
-    const hasError = false; // Get from Redux later
-    const notice = ""; // Get from Redux later
+    const validateField = useCallback((value: any) => isValidField(taskName, fullPath, value), [taskName, fullPath]);
 
     const labelContent = (
         <div className="flex items-start gap-1">
@@ -42,7 +64,8 @@ const SocketTaskInput: React.FC<SocketTaskInputProps> = ({ taskId, fieldName, fi
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
 
     const props: Record<string, any> = {};
-    for (const [key, value] of Object.entries(fieldDefinition.COMPONENT_PROPS)) {
+    const finalProps = { ...fieldDefinition.COMPONENT_PROPS, ...propOverrides };
+    for (const [key, value] of Object.entries(finalProps)) {
         if (key === "className" && props.className) {
             props.className = cn(props.className, value as string);
         } else {
@@ -51,12 +74,18 @@ const SocketTaskInput: React.FC<SocketTaskInputProps> = ({ taskId, fieldName, fi
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log("handleChange", e.target.value);
         dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: e.target.value }));
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        console.log("handleBlur", e.target.value);
+        if (e.target.value === "") {
+            setHasError(false);
+            setNotice("");
+        } else {
+            const isValid = validateField(e.target.value);
+            setHasError(!isValid);
+            setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+        }
         dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: e.target.value }));
     };
 
