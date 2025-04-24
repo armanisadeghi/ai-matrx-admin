@@ -1,7 +1,7 @@
 'use client'
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { selectAllResponses } from '@/lib/redux/socket-io/selectors';
+import { selectAllResponses } from '@/lib/redux/socket-io';
 
 const EventsList: React.FC = () => {
   const responses = useSelector(selectAllResponses);

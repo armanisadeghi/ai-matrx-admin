@@ -4,12 +4,12 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import * as LucideIcons from "lucide-react";
 import { formatLabel, formatPlaceholder } from "../utils/label-util";
-import { SchemaField } from "@/constants/socket-constants";
+import { SchemaField } from "@/constants/socket-schema";
 import { useAppDispatch } from "@/lib/redux";
 import { arrayOperation, updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
-import { selectTaskDataById } from "@/lib/redux/socket-io/selectors";
+import { selectTaskDataById } from "@/lib/redux/socket-io";
 
 interface ArrayFieldProps {
     taskId: string;
@@ -93,10 +93,10 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
     };
 
     const getIcon = useMemo(() => {
-        const iconName = fieldDefinition.ICON_NAME || fieldDefinition.iconName || "Files";
+        const iconName = fieldDefinition.ICON_NAME || "Files";
         const Icon = (LucideIcons as any)[iconName] || LucideIcons.Files;
         return <Icon className="w-4 h-4" />;
-    }, [fieldDefinition.ICON_NAME, fieldDefinition.iconName]);
+    }, [fieldDefinition.ICON_NAME]);
 
     // Memoize the rendered items to prevent unnecessary re-renders
     const renderedItems = useMemo(() => {

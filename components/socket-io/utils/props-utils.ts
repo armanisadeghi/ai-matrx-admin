@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { SchemaField } from "@/constants/socket-constants";
+import { SchemaField } from "@/constants/socket-schema";
 
 export const getComponentProps = (field: SchemaField) => {
     const props: Record<string, any> = {};

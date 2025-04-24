@@ -2,13 +2,12 @@
 import React, { useCallback, useEffect, useState, useMemo } from "react";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SchemaField } from "@/constants/socket-constants";
+import { SchemaField } from "@/constants/socket-schema";
 import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-util";
 import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectFieldValue } from "@/lib/redux/socket-io/selectors";
+import { selectFieldValue, selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
-import { selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io/selectors";
 import { isValidField } from "@/constants/socket-schema";
 import { Label } from "@/components/ui/label";
 
@@ -96,7 +95,10 @@ const SocketTaskJsonEditor: React.FC<SocketTaskJsonEditorProps> = ({
         }
     }, [testMode, fieldDefinition.TEST_VALUE, formatJsonValue]);
 
-    const validateField = useCallback((value: any) => isValidField(taskName, fullPath, value), [taskName, fullPath]);
+    const validateField = useCallback(
+        (value: any) => isValidField(taskName, fullPath, value),
+        [taskName, fullPath]
+      );
 
     const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
@@ -124,9 +126,10 @@ const SocketTaskJsonEditor: React.FC<SocketTaskJsonEditorProps> = ({
     const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
         // Try to format JSON on blur
         try {
+            let formattedJson = e.target.value;
             if (e.target.value.trim()) {
                 const parsedJson = JSON.parse(e.target.value);
-                const formattedJson = JSON.stringify(parsedJson, null, 2);
+                formattedJson = JSON.stringify(parsedJson, null, 2);
                 
                 if (formattedJson !== e.target.value) {
                     setLocalJsonValue(formattedJson);
@@ -136,16 +139,17 @@ const SocketTaskJsonEditor: React.FC<SocketTaskJsonEditorProps> = ({
                 setJsonError(false);
             }
             
-            const isValid = validateField(e.target.value);
+            const { isValid, errorMessage } = validateField(formattedJson);
             setHasError(!isValid);
-            setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+            setNotice(isValid ? "" : errorMessage);
         } catch (err) {
             // Not valid JSON
             setJsonError(true);
+            setNotice("Invalid JSON format");
             
-            const isValid = validateField(e.target.value);
+            const { isValid, errorMessage } = validateField(e.target.value);
             setHasError(!isValid);
-            setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+            setNotice(isValid ? "" : errorMessage);
         }
     };
 

@@ -3,13 +3,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SchemaField } from "@/constants/socket-constants";
-import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-util";
-import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
+import { SchemaField } from "@/constants/socket-schema";
+import { formatPlaceholder } from "@/components/socket/utils/label-util";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectFieldValue } from "@/lib/redux/socket-io/selectors";
+import { selectFieldValue, selectTestMode, selectTaskNameById, updateTaskFieldByPath } from "@/lib/redux/socket-io";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
-import { selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io/selectors";
 import { isValidField } from "@/constants/socket-schema";
 import { Label } from "@/components/ui/label";
 
@@ -50,7 +48,10 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
         }
     }, [testMode]);
 
-    const validateField = useCallback((value: any) => isValidField(taskName, fullPath, value), [taskName, fullPath]);
+    const validateField = useCallback(
+        (value: any) => isValidField(taskName, fullPath, value),
+        [taskName, fullPath]
+      );
 
     const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
@@ -69,9 +70,9 @@ const SocketTaskSwitch: React.FC<SocketTaskSwitchProps> = ({
     const handleChange = (checked: boolean) => {
         dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: checked }));
         
-        const isValid = validateField(checked);
+        const { isValid, errorMessage } = validateField(checked);
         setHasError(!isValid);
-        setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+        setNotice(isValid ? "" : errorMessage);
     };
 
     return (

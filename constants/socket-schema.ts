@@ -2,7 +2,7 @@
 export interface SchemaField {
     REQUIRED: boolean;
     DEFAULT: any;
-    VALIDATION: any | null;
+    VALIDATION: string | null;
     DATA_TYPE: string | null;
     CONVERSION: string | null;
     REFERENCE: any;
@@ -17,64 +17,65 @@ export interface Schema {
     [key: string]: SchemaField;
 }
 
-export const validateUUID = (value: any): boolean => {
-    if (typeof value !== "string") {
-        return false;
-    }
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(value);
-};
 
-export const validateTextLength = (value: any): boolean => {
-    if (typeof value !== "string") {
-        return false;
-    }
-    return value.length > 5;
-};
-
-export const validateMarkdown = (value: any): boolean => {
-    if (typeof value !== "string") {
-        return false;
-    }
-    // Check for common markdown patterns: headers, bold, italic, lists, links, or code
-    const markdownRegex = /(#+\s|[-*+]\s|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_|`.*?`|\[.*?\]\(.*?\))/;
-    return markdownRegex.test(value);
-};
-
-export const validToolNames =  [
-    "code_python_execute",
-    "code_web_store_html",
-    "code_fetcher_fetch",
-    "api_news_fetch_headlines",
-    "core_math_calculate",
-    "core_web_search",
-    "core_web_read_web_pages",
-    "core_web_search_and_read",
-    "data_sql_execute_query",
-    "data_sql_list_tables",
-    "data_sql_get_table_schema",
-    "data_sql_create_user_generated_table_data",
-    "text_analyze",
-    "text_regex_extract"
-]
-export const validateToolNames = (value: any): boolean => {
-    // Check if value is an array
-    if (!Array.isArray(value)) {
-        return false;
-    }
-
-    // Check if every item in the array is a string and exists in validToolNames
-    return value.every(item => 
-        typeof item === "string" && 
-        validToolNames.includes(item)
-    );
+export const BROKER_DEFINITION: Schema = {
+    name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the name of the broker.",
+        ICON_NAME: "User",
+    },
+    id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the id of the broker.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+    },
+    value: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the value of the broker.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
+    },
+    ready: {
+        REQUIRED: false,
+        DEFAULT: "true",
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
+        ICON_NAME: "Check",
+    },
 };
 
 export const CHAT_CONFIG_DEFINITION: Schema = {
     recipe_id: {
         REQUIRED: true,
         DEFAULT: null,
-        VALIDATION: validateUUID,
+        VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
@@ -88,7 +89,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         REQUIRED: false,
         DEFAULT: "latest",
         VALIDATION: null,
-        DATA_TYPE: "integer",
+        DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
         COMPONENT: "input",
@@ -148,7 +149,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
     model_override: {
         REQUIRED: false,
         DEFAULT: null,
-        VALIDATION: validateUUID,
+        VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
@@ -161,7 +162,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
     tools_override: {
         REQUIRED: false,
         DEFAULT: [],
-        VALIDATION: validateToolNames,
+        VALIDATION: null,
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
@@ -193,59 +194,6 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Determines if brokers which are not provided or are not ready should be removed from the input content prior to the call.",
-    },
-};
-
-export const BROKER_DEFINITION: Schema = {
-    name: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the name of the broker.",
-        ICON_NAME: "User",
-    },
-    id: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the id of the broker.",
-        ICON_NAME: "Key",
-        TEST_VALUE: "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-    },
-    value: {
-        REQUIRED: false,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the value of the broker.",
-        ICON_NAME: "LetterText",
-        TEST_VALUE: "I have an app that let's users create task lists from audio files.",
-    },
-    ready: {
-        REQUIRED: false,
-        DEFAULT: "true",
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "input",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
-        ICON_NAME: "Check",
     },
 };
 
@@ -722,9 +670,9 @@ export const RUN_RECIPE_TO_CHAT: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: CHAT_CONFIG_DEFINITION,
-        COMPONENT: "input",
+        COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
+        ICON_NAME: "Settings",
         DESCRIPTION: "Enter the chat config to be used in the recipe.",
     },
     broker_values: {
@@ -2284,7 +2232,7 @@ export const CLASSIFY_MARKDOWN: Schema = {
 export const MIC_CHECK: Schema = {
     mic_check_message: {
         REQUIRED: false,
-        DEFAULT: "This is the scraper speaking",
+        DEFAULT: "",
         VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,
@@ -2314,7 +2262,7 @@ export const RUN_CHAT_RECIPE: Schema = {
         REQUIRED: false,
         DEFAULT: null,
         VALIDATION: null,
-        DATA_TYPE: "integer",
+        DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
         COMPONENT: "input",
@@ -2397,7 +2345,7 @@ export const RUN_CHAT_RECIPE: Schema = {
     tools_override: {
         REQUIRED: false,
         DEFAULT: [],
-        VALIDATION: validateToolNames,
+        VALIDATION: null,
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
@@ -2450,7 +2398,7 @@ export const GET_NEEDED_RECIPE_BROKERS: Schema = {
         REQUIRED: false,
         DEFAULT: null,
         VALIDATION: null,
-        DATA_TYPE: "integer",
+        DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
         COMPONENT: "input",
@@ -2790,6 +2738,34 @@ export const AVAILABLE_NAMESPACES = {
     "/custom": "Custom Namespace",
 } as const;
 
+export type FieldType =
+    | "input"
+    | "textarea"
+    | "switch"
+    | "checkbox"
+    | "slider"
+    | "select"
+    | "radiogroup"
+    | "fileupload"
+    | "multifileupload"
+    | "jsoneditor";
+
+export interface FieldOverride {
+    type: FieldType;
+    props?: Record<string, any>;
+}
+
+export type FieldOverrides = Record<string, FieldOverride>;
+
+export const FIELD_OVERRIDES: FieldOverrides = {
+    raw_markdown: {
+        type: "textarea",
+        props: {
+            rows: 10,
+        },
+    },
+};
+
 
 
 
@@ -2954,19 +2930,19 @@ export interface FieldDefinitionInfo {
     defaultValue: any;
     reference?: Schema;
   }
-  
+
   export const getFieldDefinitions = (taskName: string): FieldDefinitionInfo[] => {
     const taskSchema = getTaskSchema(taskName);
     if (!taskSchema) {
       return [];
     }
-  
+
     const fieldDefinitions: FieldDefinitionInfo[] = [];
-  
+
     const traverseSchema = (schema: Schema, prefix: string = "") => {
       Object.entries(schema).forEach(([fieldName, fieldDefinition]) => {
         const currentPath = prefix ? `${prefix}.${fieldName}` : fieldName;
-  
+
         // Add field definition info
         fieldDefinitions.push({
           path: currentPath,
@@ -2974,7 +2950,7 @@ export interface FieldDefinitionInfo {
           defaultValue: fieldDefinition.DEFAULT,
           reference: fieldDefinition.REFERENCE,
         });
-  
+
         // Handle nested objects via REFERENCE
         if (fieldDefinition.REFERENCE && typeof fieldDefinition.REFERENCE === "object") {
           if (fieldDefinition.DATA_TYPE === "array") {
@@ -2986,96 +2962,160 @@ export interface FieldDefinitionInfo {
         }
       });
     };
-  
+
     traverseSchema(taskSchema);
     return fieldDefinitions;
   };
 
-export const isValidField = (taskName: string, fieldPath: string, value: any, traverseNested: boolean = true): boolean => {
-    console.log(`Validating field - taskName: ${taskName}, fieldPath: ${fieldPath}, value:`, value, `traverseNested: ${traverseNested}`);
-    
+
+// Define the eUUID function that was missing
+const eUUID = (value: any): boolean => {
+    // UUID regex pattern
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return typeof value === 'string' && uuidPattern.test(value);
+  };
+
+export const validateTextLength = (value: any): boolean => {
+    if (typeof value !== "string") {
+        return false;
+    }
+    return value.length > 5;
+};
+
+export const validateMarkdown = (value: any): boolean => {
+    if (typeof value !== "string") {
+        return false;
+    }
+    // Check for common markdown patterns: headers, bold, italic, lists, links, or code
+    const markdownRegex = /(#+\s|[-*+]\s|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_|`.*?`|\[.*?\]\(.*?\))/;
+    return markdownRegex.test(value);
+};
+
+export const validToolNames = [
+    "code_python_execute",
+    "code_web_store_html",
+    "code_fetcher_fetch",
+    "api_news_fetch_headlines",
+    "core_math_calculate",
+    "core_web_search",
+    "core_web_read_web_pages",
+    "core_web_search_and_read",
+    "data_sql_execute_query",
+    "data_sql_list_tables",
+    "data_sql_get_table_schema",
+    "data_sql_create_user_generated_table_data",
+    "text_analyze",
+    "text_regex_extract",
+];
+export const validateToolNames = (value: any): boolean => {
+    // Check if value is an array
+    if (!Array.isArray(value)) {
+        return false;
+    }
+
+    // Check if every item in the array is a string and exists in validToolNames
+    return value.every((item) => typeof item === "string" && validToolNames.includes(item));
+};
+
+const validationFunctions: Record<string, (value: any) => boolean> = {
+    eUUID,
+    validateTextLength,
+    validateMarkdown,
+    validateToolNames,
+};
+
+export const isValidField = (taskName: string, fieldPath: string, value: any, traverseNested: boolean = true): { isValid: boolean; errorMessage: string } => {
+
     const fieldDefinition = getFieldDefinition(taskName, fieldPath, traverseNested);
-    
-    // Return false if field definition is not found
     if (!fieldDefinition) {
-        console.log(`Field definition not found for ${fieldPath}`);
-        return false;
+      console.log(`Field definition not found for ${fieldPath}`);
+      return { isValid: false, errorMessage: `Field definition not found for ${fieldPath}` };
     }
-    console.log(`Field definition found:`, fieldDefinition);
 
-    // Check if field is empty (null or undefined)
     const isEmpty = value === null || value === undefined;
-    console.log(`Is field empty? ${isEmpty}`);
 
-    // If field is not required and empty, return true (skip other validations)
     if (!fieldDefinition.REQUIRED && isEmpty) {
-        console.log(`Field is not required and empty, returning true`);
-        return true;
+      console.log(`Field is not required and empty, returning true`);
+      return { isValid: true, errorMessage: "" };
     }
 
-    // Check if required field has a value
     if (fieldDefinition.REQUIRED && isEmpty) {
-        console.log(`Field is required but empty, returning false`);
-        return false;
+      console.log(`Field is required but empty, returning false`);
+      return { isValid: false, errorMessage: `${fieldPath} is required` };
     }
 
-    // Check if data type matches (only for non-empty values)
     const expectedType = fieldDefinition.DATA_TYPE;
     console.log(`Expected data type: ${expectedType}`);
     if (!isEmpty) {
-        console.log(`Validating data type for value:`, value);
-        switch (expectedType) {
-            case "string":
-                if (typeof value !== "string") {
-                    console.log(`Type mismatch: expected string, got ${typeof value}`);
-                    return false;
-                }
-                break;
-            case "number":
-                if (typeof value !== "number") {
-                    console.log(`Type mismatch: expected number, got ${typeof value}`);
-                    return false;
-                }
-                break;
-            case "boolean":
-                if (typeof value !== "boolean") {
-                    console.log(`Type mismatch: expected boolean, got ${typeof value}`);
-                    return false;
-                }
-                break;
-            case "array":
-                if (!Array.isArray(value)) {
-                    console.log(`Type mismatch: expected array, got ${typeof value}`);
-                    return false;
-                }
-                break;
-            case "object":
-                if (typeof value !== "object" || value === null || Array.isArray(value)) {
-                    console.log(`Type mismatch: expected object, got ${typeof value}`);
-                    return false;
-                }
-                break;
-            default:
-                console.log(`Unknown data type: ${expectedType}`);
-                return false;
-        }
-        console.log(`Data type validation passed`);
+      console.log(`Validating data type for value:`, value);
+      switch (expectedType) {
+        case "string":
+          if (typeof value !== "string") {
+            console.log(`Type mismatch: expected string, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected a string for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        case "number":
+        case "integer": // Add integer type
+          if (typeof value !== "number" || (expectedType === "integer" && !Number.isInteger(value))) {
+            console.log(`Type mismatch: expected ${expectedType}, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected an ${expectedType} for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        case "boolean":
+          if (typeof value !== "boolean") {
+            console.log(`Type mismatch: expected boolean, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected a boolean for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        case "array":
+          if (!Array.isArray(value)) {
+            console.log(`Type mismatch: expected array, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected an array for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        case "object":
+          if (typeof value !== "object" || value === null || Array.isArray(value)) {
+            console.log(`Type mismatch: expected object, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected an object for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        default:
+          console.log(`Unknown data type: ${expectedType}`);
+          return { isValid: false, errorMessage: `Unknown data type ${expectedType} for ${fieldPath}` };
+      }
+      console.log(`Data type validation passed`);
     }
 
-    // Run validation function if it exists (only for non-empty values)
     if (!isEmpty && fieldDefinition.VALIDATION) {
-        console.log(`Running validation function: ${fieldDefinition.VALIDATION}`);
-        // Assuming validation functions are exported in the same file and accessible
-        const validationFn = (globalThis as any)[fieldDefinition.VALIDATION] as (value: any) => boolean;
-        if (typeof validationFn === "function") {
-            const validationResult = validationFn(value);
-            console.log(`Validation function result: ${validationResult}`);
-            return validationResult;
+      console.log(`Running validation function: ${fieldDefinition.VALIDATION}`);
+      const validationFn = validationFunctions[fieldDefinition.VALIDATION];
+      if (typeof validationFn === "function") {
+        const validationResult = validationFn(value);
+        console.log(`Validation function result: ${validationResult}`);
+        if (!validationResult) {
+          return { isValid: false, errorMessage: `Validation failed for ${fieldPath}: ${getValidationErrorMessage(fieldDefinition.VALIDATION, value)}` };
         }
-        console.log(`Validation function not found or invalid: ${fieldDefinition.VALIDATION}`);
-        return false;
+        return { isValid: true, errorMessage: "" };
+      }
+      return { isValid: false, errorMessage: `Validation function ${fieldDefinition.VALIDATION} not found for ${fieldPath}` };
     }
 
-    console.log(`Validation passed, returning true`);
-    return true;
-};
+    return { isValid: true, errorMessage: "" };
+  };
+
+  // Helper to provide specific error messages for validation failures
+  const getValidationErrorMessage = (validationName: string, value: any): string => {
+    switch (validationName) {
+      case "eUUID":
+        return `Expected a valid UUID, got "${value}"`;
+      case "validateTextLength":
+        return `Expected a string longer than 5 characters, got "${value}"`;
+      case "validateMarkdown":
+        return `Expected valid Markdown content, got "${value}"`;
+      case "validateToolNames":
+        return `Expected an array of valid tool names, got ${JSON.stringify(value)}`;
+      default:
+        return `Invalid value "${value}"`;
+    }
+  };

@@ -2,8 +2,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '@/lib/redux/store';
-import { selectSocketUrl, selectConnectionStatus } from '@/lib/redux/socket-io/selectors';
-import { changeConnectionUrl } from '@/lib/redux/socket-io/slices/socketConnectionsSlice';
+import { changeConnectionUrl, selectSocketUrl, selectConnectionStatus } from '@/lib/redux/socket-io';
 
 
 

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/lib/redux/store';
 import { updateTaskField, resetTaskData } from '@/lib/redux/socket-io/slices/socketTasksSlice';
-import { selectTaskDataById, selectTaskById } from '@/lib/redux/socket-io/selectors';
+import { selectTaskDataById, selectTaskById } from '@/lib/redux/socket-io/selectors/socket-task-selectors';
 import { getTaskSchema } from '@/constants/socket-schema';
 
 interface TaskDataFieldsProps {

@@ -9,12 +9,9 @@ import {
 import {
   selectIsConnected, 
   selectTaskValidationState, 
-  selectTaskStatus,
-  selectTaskListenerIds,
-  selectAllTasks,
   selectTasksByStatus,
   selectHasResponseErrors
-} from "@/lib/redux/socket-io/selectors";
+} from "@/lib/redux/socket-io";
 
 // The original StatusIndicator for binary states
 interface BinaryStatusIndicatorProps {

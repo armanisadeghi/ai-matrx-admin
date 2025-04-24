@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { getTaskSchema } from "@/constants/socket-schema";
 import FormField, { FieldOverrides } from "./FormField";
 import { useSelector } from "react-redux";
-import { selectTaskById, selectTaskDataById } from "@/lib/redux/socket-io/selectors";
+import { selectTaskById, selectTaskDataById } from "@/lib/redux/socket-io";
 import { arrayOperation } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { RootState } from "@/lib/redux/store";
 import { useAppDispatch } from "@/lib/redux";

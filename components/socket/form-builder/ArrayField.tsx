@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import * as LucideIcons from "lucide-react";
 import { formatLabel, formatPlaceholder } from "../utils/label-util";
-import { SchemaField } from "@/constants/socket-constants";
+import { SchemaField } from "@/constants/socket-schema";
 
 interface ArrayFieldProps {
     fieldKey: string;
@@ -62,10 +62,10 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ fieldKey, field, fullPath, valu
 
     // Get the appropriate icon based on iconName in the field or use a default
     const getIcon = useMemo(() => {
-        const iconName = field.ICON_NAME || field.iconName || "Files";
+        const iconName = field.ICON_NAME || "Files";
         const Icon = (LucideIcons as any)[iconName] || LucideIcons.Files;
         return <Icon className="w-4 h-4" />;
-    }, [field.iconName]);
+    }, [field.ICON_NAME]);
 
     // Memoize the rendered items to prevent unnecessary re-renders
     const renderedItems = useMemo(() => {

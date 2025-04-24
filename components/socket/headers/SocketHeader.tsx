@@ -23,8 +23,8 @@ const StatusIndicator = ({ isActive, label, icon }: StatusIndicatorProps) => (
 
 interface SocketHeaderProps {
     socketHook: SocketHook;
-    testMode: boolean;
-    onTestModeChange: (testMode: boolean) => void;
+    testMode?: boolean;
+    onTestModeChange?: (testMode: boolean) => void;
 }
 
 export function SocketHeader({ socketHook, testMode, onTestModeChange }: SocketHeaderProps) {

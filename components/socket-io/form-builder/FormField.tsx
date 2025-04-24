@@ -1,6 +1,6 @@
 // FormField.tsx
 import React from "react";
-import { SchemaField } from "@/constants/socket-constants";
+import { SchemaField } from "@/constants/socket-schema";
 import ArrayField from "./ArrayField";
 import ArrayFieldSection from "./ArrayFieldSection";
 import RelatedObjectSection from "./RelatedObjectSection";

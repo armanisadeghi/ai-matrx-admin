@@ -3,14 +3,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SchemaField } from "@/constants/socket-constants";
-import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-util";
-import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
+import { SchemaField } from "@/constants/socket-schema";
+import { formatPlaceholder } from "@/components/socket/utils/label-util";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectFieldValue } from "@/lib/redux/socket-io/selectors";
+import { selectFieldValue, selectTestMode, selectTaskNameById, updateTaskFieldByPath } from "@/lib/redux/socket-io";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
-import { selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io/selectors";
 import { isValidField } from "@/constants/socket-schema";
+import { Label } from "@/components/ui/label";
 
 interface SocketTaskSelectProps {
     taskId: string;
@@ -52,7 +51,10 @@ const SocketTaskSelect: React.FC<SocketTaskSelectProps> = ({
         }
     }, [testMode]);
 
-    const validateField = useCallback((value: any) => isValidField(taskName, fullPath, value), [taskName, fullPath]);
+    const validateField = useCallback(
+        (value: any) => isValidField(taskName, fullPath, value),
+        [taskName, fullPath]
+      );
 
     const Icon = (LucideIcons as any)[fieldDefinition.ICON_NAME] || LucideIcons.File;
     const placeholder = showPlaceholder ? fieldDefinition.DESCRIPTION || formatPlaceholder(fieldName) : "";
@@ -77,9 +79,9 @@ const SocketTaskSelect: React.FC<SocketTaskSelectProps> = ({
     // Handle open change (blur)
     const handleOpenChange = (open: boolean) => {
         if (!open && currentValue) {
-            const isValid = validateField(currentValue);
+            const { isValid, errorMessage } = validateField(currentValue);
             setHasError(!isValid);
-            setNotice(isValid ? "" : "Invalid Entry. Please correct errors.");
+            setNotice(isValid ? "" : errorMessage);
         }
     };
 

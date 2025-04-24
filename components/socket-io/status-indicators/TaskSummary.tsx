@@ -8,7 +8,7 @@ import {
   selectIsTaskComplete,
   selectResponseEnded,
   selectHasResponseErrors,
-} from "@/lib/redux/socket-io/selectors";
+} from "@/lib/redux/socket-io";
 import { MultiStateStatusIndicator } from "./MultiStateStatusIndicator";
 import { CompactListDisplay } from "./CompactListDisplay";
 // Import Lucide React icons

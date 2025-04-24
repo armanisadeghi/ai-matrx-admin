@@ -2,7 +2,7 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { formatLabel } from "@/components/socket/utils/label-util";
-import { SchemaField } from "@/constants/socket-constants";
+import { SchemaField } from "@/constants/socket-schema";
 import {
     SocketTaskInput,
     SocketTaskJsonEditor,
@@ -36,7 +36,6 @@ const FIELD_COMPONENTS: Record<string, React.FC<FieldComponentProps>> = {
     jsoneditor: SocketTaskJsonEditor,
     textarea: SocketTaskTextarea,
     input: SocketTaskInput,
-    // Default to input if no match is found
     default: SocketTaskInput
 };
 

@@ -1,8 +1,7 @@
 "use client";
 import React from "react";
-import { Schema } from "@/constants/socket-constants";
+import { Schema, FIELD_OVERRIDES } from "@/constants/socket-schema";
 import FormField, { FieldOverrides } from "./FormField";
-import { FIELD_OVERRIDES } from "@/constants/socket-constants";
 import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useAppDispatch } from "@/lib/redux";
 

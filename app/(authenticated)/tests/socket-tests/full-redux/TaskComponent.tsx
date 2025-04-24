@@ -3,19 +3,17 @@
 import React, { useState, useEffect } from "react";
 import { RootState } from "@/lib/redux/store";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
-import { createTask, startTask } from "@/lib/redux/socket-io/thunks/socketThunks";
+import { createTask, deleteTask, submitTask } from "@/lib/redux/socket-io";
 import {
   selectIsConnected,
   selectSocketUrl,
   selectNamespace,
   selectPrimaryConnectionId,
-  selectConnectionById,
-} from "@/lib/redux/socket-io/selectors";
+} from "@/lib/redux/socket-io";
 import {
   changeConnectionUrl,
   changeNamespace,
-} from "@/lib/redux/socket-io/slices/socketConnectionsSlice";
-import { deleteTask } from "@/lib/redux/socket-io/slices/socketTasksSlice";
+} from "@/lib/redux/socket-io";
 import SocketServerSelect from "./socket-options/SocketServerSelect";
 import NamespaceSelect from "./socket-options/NamespaceSelect";
 import ServiceSelect from "./socket-options/ServiceSelect";
@@ -66,8 +64,10 @@ const TaskComponent: React.FC = () => {
   // Create task when service and taskName are set
   useEffect(() => {
     if (service && taskName) {
-      const newTaskId = dispatch(createTask(service, taskName, undefined, selectedConnectionId));
-      setTaskId(newTaskId);
+      const action = dispatch(createTask({ service, taskName, connectionId: selectedConnectionId }));
+      action.unwrap().then(newTaskId => {
+        setTaskId(newTaskId);
+      });
     } else {
       setTaskId(null);
     }
@@ -90,7 +90,7 @@ const TaskComponent: React.FC = () => {
   // Handle submit
   const handleSubmit = () => {
     if (service && taskName && taskId && isConnected) {
-      dispatch(startTask(service, taskName, {}, selectedConnectionId)); // Task data is already in Redux
+      dispatch(submitTask({ taskId })); // Task data is already in Redux
       dispatch(deleteTask(taskId)); // Clear task from store
       setService("");
       setTaskName("");
@@ -151,7 +151,7 @@ const TaskComponent: React.FC = () => {
             </div>
 
             <SocketServerSelect />
-            <NamespaceSelect />
+            <NamespaceSelect connectionId={selectedConnectionId} />
             <ServiceSelect value={service} onServiceChange={handleServiceChange} />
             <TaskSelect
               service={service}

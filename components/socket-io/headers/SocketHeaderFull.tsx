@@ -11,9 +11,8 @@ import { StatusIndicator } from '@/components/socket-io/status-indicators/Status
 import ConnectionManager from "@/components/socket-io/socket-connection/ConnectionManager";
 import ActiveConnectionSelector from "@/components/socket-io/socket-connection/ActiveConnectionSelector";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import { selectPrimaryConnectionId } from "@/lib/redux/socket-io/selectors";
+import { selectPrimaryConnectionId, selectTestMode } from "@/lib/redux/socket-io";
 import { ServiceTaskSelector } from "@/components/socket-io/select-components/ServiceTaskSelector";
-import { selectTestMode } from "@/lib/redux/socket-io/selectors";
 import { toggleTestMode } from "@/lib/redux/socket-io/slices/socketConnectionsSlice";
 
 interface SocketHeaderProps {

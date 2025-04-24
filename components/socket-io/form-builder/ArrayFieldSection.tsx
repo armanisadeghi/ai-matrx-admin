@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui';
 import { Trash, Plus } from 'lucide-react';
 import { formatLabel } from "@/components/socket-io/utils/label-util";
-import { SchemaField } from "@/constants/socket-constants";
+import { SchemaField } from "@/constants/socket-schema";
 import FormField, { FieldOverrides } from '@/components/socket-io/form-builder/FormField';
 
 interface ArrayFieldSectionProps {

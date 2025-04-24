@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCcw, Send, Copy } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/lib/redux";
-import { selectTaskDataById } from "@/lib/redux/socket-io/selectors";
+import { selectTaskDataById } from "@/lib/redux/socket-io";
 import { resetTaskData, validateTask } from "@/lib/redux/socket-io/slices/socketTasksSlice";
 import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { copyToClipboard } from "../utils/clipboard-utils";

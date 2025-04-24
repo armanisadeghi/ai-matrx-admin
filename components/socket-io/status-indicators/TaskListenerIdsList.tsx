@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/lib/redux";
-import { selectTaskListenerIds } from "@/lib/redux/socket-io/selectors";
+import { selectTaskListenerIds } from "@/lib/redux/socket-io";
 import { TruncatedList } from "./StatusIndicator";
 import { CompactListDisplay } from "./CompactListDisplay";
 

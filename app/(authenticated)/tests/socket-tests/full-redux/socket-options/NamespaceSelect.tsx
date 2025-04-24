@@ -2,16 +2,15 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch } from '@/lib/redux/store';
-import { changeNamespace } from '@/lib/redux/socket-io/slices/socketConnectionsSlice';
-import { selectNamespace } from '@/lib/redux/socket-io/selectors';
+import { selectNamespace, changeNamespace } from '@/lib/redux/socket-io';
 import { AVAILABLE_NAMESPACES } from '@/constants/socket-schema';
 
-const NamespaceSelect: React.FC = () => {
+const NamespaceSelect: React.FC<{ connectionId: string }> = ({ connectionId }) => {
   const dispatch = useDispatch<AppDispatch>();
   const namespace = useSelector(selectNamespace);
   
   const handleNamespaceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch(changeNamespace(e.target.value));
+    dispatch(changeNamespace({ connectionId, namespace: e.target.value }));
   };
 
   return (

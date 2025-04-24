@@ -4,7 +4,7 @@
 import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Send, Copy } from "lucide-react";
-import { Schema, SchemaField } from "@/constants/socket-constants";
+import { Schema, SchemaField } from "@/constants/socket-schema";
 import { getTaskSchema } from "@/constants/socket-schema";
 import FormField, { FieldOverrides } from "./FormField";
 import { useDynamicForm } from "./useDynamicForm";

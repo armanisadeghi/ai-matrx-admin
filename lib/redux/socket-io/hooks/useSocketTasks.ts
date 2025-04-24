@@ -2,15 +2,12 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import {
   createTask,
-  updateTask,
-  updateNestedTask,
-  addItemToTaskArray,
-  setTaskArray,
-  updateTaskArrayItem,
+  updateTaskField,
+  updateNestedTaskField,
+  addToArrayField,
+  setArrayField,
+  updateArrayItem,
   submitTask,
-  startTask,
-} from '../thunks/socketThunks';
-import {
   selectTaskById,
   selectTaskDataById,
   selectTaskValidationState,
@@ -19,10 +16,11 @@ import {
   selectPrimaryResponseForTask,
   selectTaskResults,
   selectIsTaskComplete,
-  selectTaskError,
-} from '../selectors';
-import { RootState } from '../../store';
-import { useAppDispatch } from '../../hooks';
+  selectTaskError
+} from '@/lib/redux/socket-io';
+
+import { RootState } from '@/lib/redux';
+import { useAppDispatch } from '@/lib/redux/hooks';
 
 // Hook for creating and managing tasks
 export const useSocketTask = (taskId?: string, connectionId?: string) => {
@@ -31,52 +29,52 @@ export const useSocketTask = (taskId?: string, connectionId?: string) => {
   // Create a new task
   const create = useCallback(
     (service: string, taskName: string, initialData?: Record<string, any>) =>
-      dispatch(createTask(service, taskName, initialData, connectionId)),
+      dispatch(createTask({ service, taskName, initialData, connectionId })),
     [dispatch, connectionId]
   );
 
   // Update task field
   const updateField = useCallback(
-    (id: string, field: string, value: any) => dispatch(updateTask(id, field, value)),
+    (id: string, field: string, value: any) => dispatch(updateTaskField({ taskId: id, field, value })),
     [dispatch]
   );
 
   // Update nested task field
   const updateNestedField = useCallback(
     (id: string, parentField: string, path: string, value: any) =>
-      dispatch(updateNestedTask(id, parentField, path, value)),
+      dispatch(updateNestedTaskField({ taskId: id, parentField, path, value })),
     [dispatch]
   );
 
   // Add item to array field
   const addToArray = useCallback(
-    (id: string, field: string, item: any) => dispatch(addItemToTaskArray(id, field, item)),
+    (id: string, field: string, item: any) => dispatch(addToArrayField({ taskId: id, field, item })),
     [dispatch]
   );
 
   // Set array field
   const setArray = useCallback(
-    (id: string, field: string, items: any[]) => dispatch(setTaskArray(id, field, items)),
+    (id: string, field: string, items: any[]) => dispatch(setArrayField({ taskId: id, field, items })),
     [dispatch]
   );
 
   // Update array item
-  const updateArrayItem = useCallback(
+  const updateArray = useCallback(
     (id: string, field: string, index: number, item: any) =>
-      dispatch(updateTaskArrayItem(id, field, index, item)),
+      dispatch(updateArrayItem({ taskId: id, field, index, item })),
     [dispatch]
   );
 
   // Submit task
   const submit = useCallback(
-    (id: string) => dispatch(submitTask(id, connectionId)),
-    [dispatch, connectionId]
+    (id: string) => dispatch(submitTask({ taskId: id })),
+    [dispatch]
   );
 
   // Create and submit in one step
   const createAndSubmit = useCallback(
-    (service: string, taskName: string, taskData: Record<string, any>) =>
-      dispatch(startTask(service, taskName, taskData, connectionId)),
+    (service: string, taskName: string, initialData: Record<string, any>) =>
+      dispatch(createTask({ service, taskName, initialData, connectionId })),
     [dispatch, connectionId]
   );
 
@@ -132,7 +130,7 @@ export const useSocketTask = (taskId?: string, connectionId?: string) => {
     updateNestedField,
     addToArray,
     setArray,
-    updateArrayItem,
+    updateArray,
     submit,
     createAndSubmit,
 
