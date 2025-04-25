@@ -161,7 +161,7 @@ export default streamingSlice.reducer;
 // Memoized Selectors
 // First create a base selector that gets the streaming state for a specific event ID
 const selectStreamingForEvent = (state: RootState, eventId: string) => 
-    state.streaming[eventId] || initialStreamData;
+    state.socketResponse[eventId] || initialStreamData;
 
 // Then create memoized selectors based on that
 export const selectStreamText = createSelector(

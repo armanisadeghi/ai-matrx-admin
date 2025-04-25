@@ -4,7 +4,7 @@ import {redirect} from 'next/navigation';
 import {createClient} from "@/utils/supabase/server";
 import {Providers} from "@/app/Providers";
 import {mapUserData} from '@/utils/userDataMapper';
-import {LayoutWithSidebar} from "@/components/layout/MatrixLayout";
+import {LayoutWithSidebar} from "@/components/layout/MatrxLayout";
 import {appSidebarLinks, adminSidebarLinks} from "@/constants";
 import {getTestDirectories} from '@/utils/directoryStructure';
 import {InitialReduxState} from "@/types/reduxTypes";

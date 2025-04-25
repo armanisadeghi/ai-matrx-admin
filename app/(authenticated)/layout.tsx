@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { Providers } from "@/app/Providers";
 import { mapUserData } from "@/utils/userDataMapper";
-import { LayoutWithSidebar } from "@/components/layout/MatrixLayout";
+import { LayoutWithSidebar } from "@/components/layout/MatrxLayout";
 import { appSidebarLinks, adminSidebarLinks } from "@/constants";
 import { generateClientGlobalCache, initializeSchemaSystem } from "@/utils/schema/schema-processing/processSchema";
 import { InitialReduxState } from "@/types/reduxTypes";

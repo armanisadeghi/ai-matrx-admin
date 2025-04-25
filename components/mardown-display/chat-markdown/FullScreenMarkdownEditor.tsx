@@ -1,10 +1,5 @@
 "use client";
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save, X } from "lucide-react";
 import remarkGfm from "remark-gfm";
 import dynamic from "next/dynamic";
 import type { Editor as TuiEditorReactComp } from "@toast-ui/react-editor";
@@ -13,6 +8,7 @@ import EditorLoading from "../text-block/editorLoading";
 import MarkdownAnalyzer from "./analyzer/MarkdownAnalyzer";
 import { MarkdownAnalysisData } from "./analyzer/types";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
+import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 
 // Import the Toast UI Editor dark theme CSS
 import "@toast-ui/editor/dist/toastui-editor.css";
@@ -24,16 +20,22 @@ const TuiEditor = dynamic(() => import("@toast-ui/react-editor").then((mod) => m
 });
 
 const loadColorSyntaxPlugin = () => import("@toast-ui/editor-plugin-color-syntax").then((mod) => mod.default);
-
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 interface FullScreenMarkdownEditorProps {
     isOpen: boolean;
     initialContent: string;
-    onSave: (newContent: string) => void;
-    onCancel: () => void;
+    onSave?: (newContent: string) => void;
+    onCancel?: () => void;
     analysisData?: MarkdownAnalysisData;
     messageId?: string;
+    title?: string;
+    description?: string;
+    showCopyButton?: boolean;
+    showSaveButton?: boolean;
+    showCancelButton?: boolean;
+    tabs?: Array<"write" | "rich" | "preview" | "analysis">;
+    initialTab?: "write" | "rich" | "preview" | "analysis";
 }
 
 const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
@@ -43,12 +45,18 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     onCancel,
     analysisData,
     messageId,
+    title = "Edit Content",
+    description = "A dialog for editing content with options to write in markdown, use a rich text editor, preview the content, or analyze it.",
+    showCopyButton = true,
+    showSaveButton = true,
+    showCancelButton = true,
+    tabs = ["write", "rich", "preview", "analysis"],
+    initialTab = "write",
 }) => {
     const [editedContent, setEditedContent] = useState(initialContent);
-    const [activeTab, setActiveTab] = useState<string>("write");
+    const [activeTab, setActiveTab] = useState<string>(initialTab);
     const editorRef = useRef<TuiEditorReactComp>(null);
     const { mode } = useTheme();
-
     const [colorSyntaxPlugin, setColorSyntaxPlugin] = useState<any>(null);
     const [isClient, setIsClient] = useState(false);
 
@@ -58,10 +66,8 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             try {
                 // Get the editor root element directly
                 const editorEl = editorRef.current.getRootElement();
-
                 // Find the actual editor container element
                 const editorContainer = editorEl?.querySelector(".toastui-editor-defaultUI");
-
                 if (editorContainer) {
                     if (mode === "dark") {
                         editorContainer.classList.add("toastui-editor-dark");
@@ -86,8 +92,6 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     useEffect(() => {
         if (isOpen) {
             setEditedContent(initialContent);
-            setActiveTab("write");
-            
             // If the editor is already open and initialContent changes, update the TUI editor
             if (activeTab === "rich" && editorRef.current) {
                 try {
@@ -119,7 +123,6 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
 
     const handleTabChange = (newTab: string) => {
         const currentTab = activeTab;
-
         if (currentTab === "rich" && editorRef.current) {
             try {
                 const instance = editorRef.current.getInstance();
@@ -131,9 +134,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                 console.error("Error getting markdown on tab change:", e);
             }
         }
-
         setActiveTab(newTab);
-
         if (newTab === "rich") {
             queueMicrotask(() => {
                 if (editorRef.current) {
@@ -143,11 +144,9 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                         if (currentMarkdownInTui !== editedContent) {
                             instance.setMarkdown(editedContent, false);
                         }
-
                         // Ensure dark mode is applied when switching tabs
                         const editorEl = editorRef.current.getRootElement();
                         const editorContainer = editorEl?.querySelector(".toastui-editor-defaultUI");
-
                         if (editorContainer) {
                             if (mode === "dark") {
                                 editorContainer.classList.add("toastui-editor-dark");
@@ -179,7 +178,9 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
                 console.error("Error getting final markdown from TUI editor on save:", e);
             }
         }
-        onSave(finalMarkdown);
+        if (onSave) {
+            onSave(finalMarkdown);
+        }
     };
 
     const handleImageUpload = async (blob: File | Blob, callback: (url: string, altText?: string) => void) => {
@@ -190,103 +191,97 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
 
     const editorPlugins = isClient && colorSyntaxPlugin ? [colorSyntaxPlugin] : [];
 
-    return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-            <DialogContent className="flex flex-col w-[90vw] max-w-[90vw] h-[95vh] max-h-[95vh] p-0 gap-0 border-3 border-solid border-slate-500 rounded-3xl">
-                <DialogHeader className="flex flex-row justify-between items-center border-b px-4 py-2 flex-shrink-0">
-                    <DialogTitle>Edit Content</DialogTitle>
-                    <Tabs value={activeTab} onValueChange={handleTabChange} className="mx-auto">
-                        <TabsList className="rounded-3xl space-x-2">
-                            <TabsTrigger
-                                className="rounded-l-3xl px-4 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700"
-                                value="write"
-                            >
-                                Write
-                            </TabsTrigger>
-                            <TabsTrigger
-                                className="px-4 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700"
-                                value="rich"
-                            >
-                                Rich Text
-                            </TabsTrigger>
-                            <TabsTrigger
-                                className="px-4 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700"
-                                value="preview"
-                            >
-                                Preview
-                            </TabsTrigger>
-                            <TabsTrigger
-                                className="rounded-r-3xl px-4 py-2 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-600 data-[state=active]:bg-gray-200 dark:data-[state=active]:bg-gray-700"
-                                value="analysis"
-                            >
-                                Analysis
-                            </TabsTrigger>
-                        </TabsList>{" "}
-                    </Tabs>
-                </DialogHeader>
-                {/* Add DialogDescription here */}
-                <DialogDescription className="sr-only">
-                    A dialog for editing content with options to write in markdown, use a rich text editor, preview the content, or analyze
-                    it.
-                </DialogDescription>
-
-                <Tabs value={activeTab} className="flex-grow flex flex-col overflow-hidden">
-                    <TabsContent value="write" className="flex-grow mt-0 border-none p-0 outline-none ring-0">
-                        <textarea
-                            className="w-full h-full p-4 outline-none resize-none border-none bg-background text-foreground text-base font-mono"
-                            value={editedContent}
-                            onChange={handleTextareaChange}
-                            placeholder="Start writing markdown..."
-                            aria-label="Markdown Editor"
+    // Define tabs content
+    const tabDefinitions: TabDefinition[] = [];
+    
+    if (tabs.includes("write")) {
+        tabDefinitions.push({
+            id: "write",
+            label: "Write",
+            content: (
+                <textarea
+                    className="w-full h-full p-4 outline-none resize-none border-none bg-background text-foreground text-base font-mono"
+                    value={editedContent}
+                    onChange={handleTextareaChange}
+                    placeholder="Start writing markdown..."
+                    aria-label="Markdown Editor"
+                />
+            ),
+            className: "p-0"
+        });
+    }
+    
+    if (tabs.includes("rich")) {
+        tabDefinitions.push({
+            id: "rich",
+            label: "Rich Text",
+            content: (
+                <div className="w-full h-full tui-editor-wrapper">
+                    {isOpen && isClient && (
+                        <TuiEditor
+                            ref={editorRef}
+                            key={`${activeTab}-${mode}-${isOpen}`}
+                            initialValue={editedContent}
+                            initialEditType="wysiwyg"
+                            previewStyle="tab"
+                            height="100%"
+                            usageStatistics={false}
+                            plugins={editorPlugins}
+                            hooks={{
+                                addImageBlobHook: handleImageUpload,
+                            }}
+                            onChange={handleTuiChange}
                         />
-                    </TabsContent>
+                    )}
+                    {!isClient && <EditorLoading />}
+                </div>
+            ),
+            className: "overflow-hidden p-0 bg-background"
+        });
+    }
+    
+    if (tabs.includes("preview")) {
+        tabDefinitions.push({
+            id: "preview",
+            label: "Preview",
+            content: (
+                <div className="prose dark:prose-invert max-w-none">
+                    {isClient && <ReactMarkdown remarkPlugins={[remarkGfm]}>{editedContent}</ReactMarkdown>}
+                </div>
+            ),
+            className: "p-4"
+        });
+    }
+    
+    if (tabs.includes("analysis")) {
+        tabDefinitions.push({
+            id: "analysis",
+            label: "Analysis",
+            content: <MarkdownAnalyzer messageId={messageId} />,
+            className: "p-4"
+        });
+    }
 
-                    <TabsContent value="rich" className="flex-grow mt-0 border-none overflow-hidden p-0 bg-background outline-none ring-0">
-                        <div className="w-full h-full tui-editor-wrapper">
-                            {isOpen && isClient && (
-                                <TuiEditor
-                                    ref={editorRef}
-                                    key={`${activeTab}-${mode}-${isOpen}`}
-                                    initialValue={editedContent}
-                                    initialEditType="wysiwyg"
-                                    previewStyle="tab"
-                                    height="100%"
-                                    usageStatistics={false}
-                                    plugins={editorPlugins}
-                                    hooks={{
-                                        addImageBlobHook: handleImageUpload,
-                                    }}
-                                    onChange={handleTuiChange}
-                                />
-                            )}
-                            {!isClient && <EditorLoading />}
-                        </div>
-                    </TabsContent>
+    // Define additional buttons
+    const additionalButtons = showCopyButton ? (
+        <MarkdownCopyButton markdownContent={editedContent} className="mr-2 bg-inherit text-inherit" />
+    ) : null;
 
-                    <TabsContent value="preview" className="flex-grow mt-0 border-none overflow-auto p-4 outline-none ring-0">
-                        <div className="prose dark:prose-invert max-w-none">
-                            {isClient && <ReactMarkdown remarkPlugins={[remarkGfm]}>{editedContent}</ReactMarkdown>}
-                        </div>
-                    </TabsContent>
-
-                    <TabsContent value="analysis" className="flex-grow mt-0 border-none overflow-auto p-4 outline-none ring-0">
-                        {/* TODO: Add analysis here */}
-                        <MarkdownAnalyzer messageId={messageId} />
-                    </TabsContent>
-                </Tabs>
-
-                <DialogFooter className="border-t p-4 flex justify-end flex-shrink-0">
-                    <MarkdownCopyButton content={editedContent} />
-                    <Button variant="outline" onClick={onCancel}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave}>
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Changes
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+    return (
+        <FullScreenOverlay
+            isOpen={isOpen}
+            onClose={() => onCancel?.()}
+            title={title}
+            description={description}
+            tabs={tabDefinitions}
+            initialTab={activeTab}
+            onTabChange={handleTabChange}
+            showSaveButton={showSaveButton}
+            onSave={handleSave}
+            showCancelButton={showCancelButton}
+            onCancel={onCancel}
+            additionalButtons={additionalButtons}
+        />
     );
 };
 
