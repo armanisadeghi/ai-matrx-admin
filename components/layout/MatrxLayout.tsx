@@ -16,6 +16,7 @@ import {ThemeSwitcher} from "@/styles/themes";
 import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip";
 import {CollapseToggleButton} from "./CollapseToggleButton";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
+import { getGlobalIsAdmin } from "@/lib/globalState";
 
 interface Links {
     label: string;
@@ -30,6 +31,7 @@ export interface LayoutWithSidebarProps {
     initialOpen?: boolean;
     setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
     children?: React.ReactNode;
+    isAdmin: boolean;
 }
 
 
@@ -43,7 +45,8 @@ export function LayoutWithSidebar(
         primaryLinks,
         secondaryLinks,
         children,
-        initialOpen = false
+        initialOpen = false,
+        isAdmin,
     }: LayoutWithSidebarProps) {
     const user = useSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split('@')[0] || "User";
@@ -78,6 +81,7 @@ export function LayoutWithSidebar(
                     secondaryLinks={secondaryLinks}
                     userName={displayName}
                     userProfilePhoto={profilePhoto}
+                    isAdmin={isAdmin}
                     open={open}
                     setOpen={setOpen}
                 >
@@ -126,6 +130,7 @@ export interface SidebarLayoutProps {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     userName: string;
     userProfilePhoto: string | null;
+    isAdmin: boolean;
 }
 
 export function SidebarLayout(
@@ -138,6 +143,7 @@ export function SidebarLayout(
         setOpen,
         userName,
         userProfilePhoto,
+        isAdmin,
     }: SidebarLayoutProps) {
     return (
         <div
@@ -161,6 +167,11 @@ export function SidebarLayout(
                             <div className="h-px w-full bg-white dark:bg-neutral-900"></div>
                         </div>
                         <div className="mt-4 flex flex-col">
+                            {isAdmin && (
+                                <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                                    Admin
+                                </div>
+                            )}
                             {secondaryLinks.map((link, idx) => (
                                 <SidebarLink key={idx} link={link}/>
                             ))}

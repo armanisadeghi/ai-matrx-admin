@@ -82,7 +82,7 @@ export const primaryLinks = [
     },
     {
         label: "Voices",
-        icon: <AiFillAudio className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
+        icon: <AiFillAudio className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         href: "/demo/voice/voice-manager",
     },
     {

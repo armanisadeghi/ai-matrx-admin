@@ -30,17 +30,19 @@ async function fetchTestDirectories() {
     }
 }
 
+const adminIds = [
+    "4cf62e4e-2679-484f-b652-034e697418df",
+    "8f7f17ba-935b-4967-8105-7c6b554f41f1",
+    "6555aa73-c647-4ecf-8a96-b60e315b6b18",
+  ];
+
+
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
     const headersList = await headers();
     const viewport = headersList.get("viewport-width") || "1024";
     const isMobile = Number(viewport) < 768;
-    const layoutProps = {
-        primaryLinks: appSidebarLinks,
-        secondaryLinks: adminSidebarLinks,
-        initialOpen: !isMobile ? false : false,
-        uniqueId: "matrix-layout-container",
-    };
+
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -51,7 +53,18 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     const session = await supabase.auth.getSession();
     const accessToken = session.data.session?.access_token;
     const userData = mapUserData(user, accessToken);
-    setGlobalUserIdAndToken(userData.id, accessToken);
+
+    const isAdmin = adminIds.includes(userData.id);
+
+    const layoutProps = {
+        primaryLinks: appSidebarLinks,
+        secondaryLinks: isAdmin ? adminSidebarLinks : [],
+        initialOpen: !isMobile ? false : false,
+        uniqueId: "matrix-layout-container",
+        isAdmin: isAdmin,
+    };
+
+    setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
     const testDirectories = [];
 
     const { data: preferences, error } = await supabase.from("user_preferences").select("preferences").eq("user_id", userData.id).single();

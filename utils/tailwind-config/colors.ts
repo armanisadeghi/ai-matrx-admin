@@ -42,6 +42,7 @@ export const colors = {
         foreground: "hsl(var(--warning-foreground))"
     },
     zinc: {
+        '750': 'hsl(240, 5%, 23%)',  // New zinc-750 between zinc-700 and zinc-800
         '850': 'hsl(240, 4%, 13%)'  // The HSL value we calculated
     },
     matrxback: 'hsl(var(--matrx-background))',
