@@ -2,14 +2,14 @@
 
 const clientId = process.env.NEXT_PUBLIC_SLACK_CLIENT_ID;
 const scopes = [
-  // 'app_mentions:read',
-  // 'channels:read',
+  'app_mentions:read',
+  'channels:read',
   'chat:write',
-  // 'commands',
+  'commands',
   'files:read',
-  // 'files:write',
-  // 'users:read',
-  // 'groups:read',
+  'files:write',
+  'users:read',
+  'groups:read',
 ];
 const redirectUri = process.env.NEXT_PUBLIC_SLACK_REDIRECT_URL;
 
