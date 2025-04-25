@@ -11,23 +11,28 @@ export async function GET(req: NextRequest) {
 
   const client = new WebClient();
 
-  console.log("Slack Client ID:", process.env.SLACK_CLIENT_ID);
-  console.log("Slack Client Secret:", process.env.SLACK_CLIENT_SECRET);
-  console.log("Slack Client Redirect URL:", `${process.env.SLACK_REDIRECT_URL}/api/slack/oauth/callback`);
-
   try {
     const response = await client.oauth.v2.access({
-      client_id: process.env.SLACK_CLIENT_ID,
-      client_secret: process.env.SLACK_CLIENT_SECRET,
+      client_id: process.env.SLACK_CLIENT_ID as string,
+      client_secret: process.env.SLACK_CLIENT_SECRET as string,
       code,
       redirect_uri: `${process.env.SLACK_REDIRECT_URL}/api/slack/oauth/callback`,
     });
 
     console.log('Slack OAuth Response:', response);
 
-    return new Response(`Slack app installed successfully! - ${response.access_token}`, { status: 200 });
+    // Get the bot token
+    const botToken = response.access_token;
+
+    if (!botToken) {
+      return new Response('No access token received from Slack', { status: 500 });
+    }
+
+    // Instead of showing the token on the page, redirect back to main page with token as query param
+    // The frontend will handle storing it in localStorage
+    return Response.redirect(`${process.env.SLACK_REDIRECT_URL}?token=${botToken}`, 302);
   } catch (error) {
     console.error('OAuth error:', error);
-    return new Response('OAuth failed', { status: 500 });
+    return new Response('OAuth failed: ' + (error instanceof Error ? error.message : 'Unknown error'), { status: 500 });
   }
 }

@@ -17,8 +17,8 @@ const Login = () => {
   const slackAuthUrl = `https://slack.com/oauth/v2/authorize?client_id=${clientId}&scope=${scopes.join(',')}&redirect_uri=${encodeURIComponent(redirectUri + "/api/slack/oauth/callback")}`;
 
   return (
-      <a href={slackAuthUrl}>
-        <button>Add to Slack</button>
+      <a href={slackAuthUrl} className="m-5">
+        <button className="py-1 px-2 rounded-sm border-1 border-gray-50 hover:bg-gray-700">Add to Slack</button>
       </a>
   );
 };
