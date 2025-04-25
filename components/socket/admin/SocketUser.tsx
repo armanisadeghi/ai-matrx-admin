@@ -1,58 +1,66 @@
 "use client";
 import { Card, CardContent } from "@/components/ui";
-import { useSocket } from "@/lib/redux/socket/hooks/useSocket";
-import DynamicForm from "../form-builder/DynamicForm";
 import { cn } from "@/lib/utils";
-import { SocketHeader } from "@/components/socket/headers/SocketHeader";
-import { SocketAccordionResponse } from "../response/SocketAccordionResponse";
-import { FIELD_OVERRIDES } from "@/constants/socket-constants";
+import DynamicForm from "@/components/socket-io/form-builder/DynamicForm";
+import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
+import { SocketHeaderFull } from "@/components/socket-io/headers/SocketHeaderFull";
+import { useState } from "react";
+import { useAppSelector } from "@/lib/redux";
+import { selectAllTasks, selectTaskById } from "@/lib/redux/socket-io";
+import SocketStreamMonitor from "../streaming/SocketStreamMonitor";
 
 interface SocketUserProps {
     className?: string;
 }
 
 export const SocketUser = ({ className }: SocketUserProps) => {
-    const socketHook = useSocket();
-    const { taskType, setTaskData, handleSend } = socketHook;
+    const [testMode, setTestMode] = useState(false);
+    const [taskId, setTaskId] = useState<string>("");
 
-    const handleChange = (data: any) => {
-        setTaskData(data);
+    const tasks = useAppSelector(selectAllTasks);
+    const taskState = useAppSelector((state) => selectTaskById(state, taskId));
+    const taskName = taskState?.taskName || "";
+
+    const handleTestModeChange = (testMode: boolean) => {
+        setTestMode(testMode);
     };
 
-    const handleSubmit = (data: any) => {
-        setTaskData(data);
-        handleSend();
+    const handleTaskCreate = (taskId: string) => {
+        setTaskId(taskId);
     };
 
     return (
         <div className={cn("w-full h-full py-4 px-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-2xl", className)}>
             <Card className="bg-gray-100 dark:bg-gray-800 rounded-2xl">
                 <CardContent className="space-y-8">
-                    {/* Header with task selection */}
-                    <SocketHeader socketHook={socketHook} />
-
-                    {/* Dynamic Form based on selected task */}
-                    <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 p-4 shadow-sm">
-                        {taskType ? (
-                            <DynamicForm
-                                taskType={taskType}
-                                onChange={handleChange}
-                                onSubmit={handleSubmit}
-                                fieldOverrides={FIELD_OVERRIDES}
-                            />
-                        ) : (
-                            <div className="text-gray-500 dark:text-gray-400 text-center py-4">
-                                Please select a task type from the header
+                    <div className="space-y-6">
+                        <div className="sticky top-0 z-50 bg-inherit text-inherit">
+                            <SocketHeaderFull onTestModeChange={handleTestModeChange} onTaskCreate={handleTaskCreate} debugMode={false} />
+                        </div>
+                        
+                        {/* Only render dynamic form when a task is selected */}
+                        {taskId && (
+                            <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 p-4 shadow-sm">
+                                <DynamicForm taskId={taskId} showDebug={false} />
                             </div>
                         )}
                     </div>
                 </CardContent>
             </Card>
-
+            
+            {/* Stream Monitor Panel */}
+            {taskId && (
+                <div className="mt-8">
+                    <SocketStreamMonitor taskId={taskId} />
+                </div>
+            )}
+            
             {/* Response Section */}
-            <div className="mt-8">
-                <SocketAccordionResponse socketHook={socketHook} />
-            </div>
+            {taskId && (
+                <div className="mt-8 px-2">
+                    <SocketAccordionResponse taskId={taskId} />
+                </div>
+            )}
         </div>
     );
 };

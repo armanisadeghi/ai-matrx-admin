@@ -1,23 +1,24 @@
 "use client";
 import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
 import { Card, CardContent, CardHeader, CardTitle, ScrollArea, Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
-import { cn } from "@/lib/utils";
 import JsonToCollapsible from "@/components/matrx/matrx-collapsible/json-to-collapsible";
 import StreamDisplayOverlay from "./StreamDisplayOverlay";
 import { MouseEvent } from "react";
+import { useAppSelector } from "@/lib/redux";
+import { selectResponseInfoByListenerId } from "@/lib/redux/socket-io";
 
-interface StreamObjectDisplayProps {
-    title: string;
-    selector: (state: RootState) => any;
+interface StreamInfoDisplayProps {
+    title?: string;
+    listenerId: string;
     isFullscreen?: boolean;
 }
 
 // Fullscreen Component
-const FullscreenDisplay = ({ title, data }: { title: string; data: any }) => {
-    const jsonString = safeStringify(data);
-    const hasContent = Array.isArray(data) ? data.length > 0 : data && typeof data === "object" && Object.keys(data).length > 0;
+export const FullscreenResponseInfoDisplay = ({ title = "Info Response", listenerId }: { title?: string; listenerId: string }) => {
+    const info = useAppSelector(selectResponseInfoByListenerId(listenerId));
+    const jsonString = safeStringify(info);
+    const hasContent = Array.isArray(info) ? info.length > 0 : info && typeof info === "object" && Object.keys(info).length > 0;
 
     return (
         <div className="h-full w-full flex flex-col">
@@ -37,11 +38,11 @@ const FullscreenDisplay = ({ title, data }: { title: string; data: any }) => {
                 <TabsContent value="tree" className="h-full w-full">
                     {hasContent ? (
                         <div className="h-full w-full overflow-auto p-4">
-                            <JsonToCollapsible title="" data={data} defaultExpanded={true} className="text-sm font-mono" />
+                            <JsonToCollapsible title="" data={info} defaultExpanded={true} className="text-sm font-mono" />
                         </div>
                     ) : (
                         <div className="h-full w-full flex items-center justify-center">
-                            <span className="text-gray-500 dark:text-gray-400 italic text-sm">No data available</span>
+                            <span className="text-gray-500 dark:text-gray-400 italic text-sm">No Info available</span>
                         </div>
                     )}
                 </TabsContent>
@@ -57,9 +58,10 @@ const FullscreenDisplay = ({ title, data }: { title: string; data: any }) => {
 };
 
 // Non-Fullscreen Component
-const CompactDisplay = ({ title, data }: { title: string; data: any }) => {
-    const jsonString = safeStringify(data);
-    const hasContent = Array.isArray(data) ? data.length > 0 : data && typeof data === "object" && Object.keys(data).length > 0;
+export const CompactResponseInfoDisplay = ({ title = "Info Response", listenerId }: { title?: string; listenerId: string }) => {
+    const info = useAppSelector(selectResponseInfoByListenerId(listenerId));
+    const jsonString = safeStringify(info);
+    const hasContent = Array.isArray(info) ? info.length > 0 : info && typeof info === "object" && Object.keys(info).length > 0;
 
     const handleInteractiveClick = (e: MouseEvent) => {
         e.stopPropagation();
@@ -94,11 +96,11 @@ const CompactDisplay = ({ title, data }: { title: string; data: any }) => {
                         <TabsContent value="tree" className="h-56 overflow-auto">
                             {hasContent ? (
                                 <div className="h-full w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
-                                    <JsonToCollapsible title="" data={data} defaultExpanded={true} className="text-xs font-mono" />
+                                    <JsonToCollapsible title="" data={info} defaultExpanded={true} className="text-xs font-mono" />
                                 </div>
                             ) : (
                                 <div className="h-full w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 flex items-center justify-center">
-                                    <span className="text-gray-500 dark:text-gray-400 italic text-xs">No data available</span>
+                                    <span className="text-gray-500 dark:text-gray-400 italic text-xs">No Info available</span>
                                 </div>
                             )}
                         </TabsContent>
@@ -111,7 +113,7 @@ const CompactDisplay = ({ title, data }: { title: string; data: any }) => {
                                     </pre>
                                 ) : (
                                     <div className="h-full flex items-center justify-center">
-                                        <span className="text-gray-500 dark:text-gray-400 italic text-xs">No data available</span>
+                                        <span className="text-gray-500 dark:text-gray-400 italic text-xs">No Info available</span>
                                     </div>
                                 )}
                             </div>
@@ -123,15 +125,10 @@ const CompactDisplay = ({ title, data }: { title: string; data: any }) => {
     );
 };
 
-// Main Component
-const StreamObjectDisplay = ({ title, selector, isFullscreen = false }: StreamObjectDisplayProps) => {
-    const rawData = useSelector(selector);
-    const data = rawData ?? {};
-
-    return isFullscreen ? <FullscreenDisplay title={title} data={data} /> : <CompactDisplay title={title} data={data} />;
+const ResponseInfoDisplay = ({ title = "Info Response", listenerId, isFullscreen = false }: StreamInfoDisplayProps) => {
+    return isFullscreen ? <FullscreenResponseInfoDisplay title={title} listenerId={listenerId} /> : <CompactResponseInfoDisplay title={title} listenerId={listenerId} />;
 };
 
-// Safe stringify utility function
 const safeStringify = (value: any, indent = 2): string => {
     try {
         return JSON.stringify(value, null, indent);
@@ -140,4 +137,4 @@ const safeStringify = (value: any, indent = 2): string => {
     }
 };
 
-export default StreamObjectDisplay;
+export default ResponseInfoDisplay;

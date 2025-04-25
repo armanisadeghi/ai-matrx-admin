@@ -162,3 +162,5 @@ export {TextDivider} from '@/components/matrx/TextDivider';
 export {default as ConfigBuilder} from '@/components/matrx/ConfigBuilder/index';
 export {InlineCopyButton} from '@/components/matrx/buttons/InlineCopyButton';
 export {CopyButton} from '@/components/matrx/buttons/CopyButton';
+
+export {Popover, PopoverTrigger, PopoverContent, PopoverAnchor} from './popover';

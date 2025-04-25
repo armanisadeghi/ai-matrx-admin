@@ -1,12 +1,9 @@
-// File Location: lib/redux/socket-io/thunks/submitTaskThunk.ts
-
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { addResponse, updateErrorResponse, markResponseEnd, updateTextResponse, updateDataResponse, updateInfoResponse } from "../slices/socketResponseSlice";
-import { completeTask, setTaskError, setTaskListenerIds, initializeTask, validateTask } from "../slices/socketTasksSlice";
+import { completeTask, setTaskError, setTaskListenerIds, initializeTask, validateTask, setTaskStreaming } from "../slices/socketTasksSlice";
 import { selectPrimaryConnection } from "../selectors";
 import { RootState } from "@/lib/redux";
 import { v4 as uuidv4 } from "uuid";
-
 
 export const submitTask = createAsyncThunk<string[], { taskId: string }, { state: RootState }>(
     "socketTasks/submitTask",
@@ -41,8 +38,7 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
           task.service,
           { taskName: task.taskName, taskData: task.taskData },
           (response: { response_listener_events?: string[] }) => {
-            const rawEventNames = response?.response_listener_events || [];
-            const eventNames = rawEventNames.map((name) => `${task.connectionId}:${name}`);
+            const eventNames = response?.response_listener_events || [];
   
             if (!eventNames.length) {
               const errorUuid = `internal-error-${Date.now()}`;
@@ -69,7 +65,15 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
             eventNames.forEach((eventName: string) => {
               dispatch(addResponse({ listenerId: eventName, taskId }));
   
+              let isFirstResponse = true;
+  
               const listener = (response: any) => {
+                // Set isStreaming to true on the first response of any kind
+                if (isFirstResponse) {
+                  dispatch(setTaskStreaming({ taskId, isStreaming: true }));
+                  isFirstResponse = false;
+                }
+  
                 if (typeof response === "string") {
                   dispatch(updateTextResponse({ listenerId: eventName, text: response }));
                 } else {
@@ -85,6 +89,7 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
   
                   const isEnd = response?.end === true || response?.end === "true" || response?.end === "True";
                   if (isEnd) {
+                    dispatch(setTaskStreaming({ taskId, isStreaming: false }));
                     dispatch(markResponseEnd(eventName));
                     connection.socket.off(eventName, listener);
   
@@ -108,13 +113,13 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
         );
       });
     }
-  );
-  
-  export const createAndSubmitTask = createAsyncThunk<
+);
+
+export const createAndSubmitTask = createAsyncThunk<
     string[],
     { service: string; taskName: string; taskData: Record<string, any>; connectionId?: string },
     { state: RootState }
-  >(
+>(
     "socketTasks/createAndSubmitTask",
     async ({ service, taskName, taskData, connectionId }, { dispatch, getState }) => {
       const state = getState();
@@ -137,4 +142,4 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
   
       return dispatch(submitTask({ taskId })).unwrap();
     }
-  );
+);

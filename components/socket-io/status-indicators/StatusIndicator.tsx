@@ -10,10 +10,10 @@ import {
   selectIsConnected, 
   selectTaskValidationState, 
   selectTasksByStatus,
-  selectHasResponseErrors
+  selectHasResponseErrorsByListenerId
 } from "@/lib/redux/socket-io";
 
-// The original StatusIndicator for binary states
+// Legacy binary status indicator
 interface BinaryStatusIndicatorProps {
   goodStatus: boolean;
   label: string;
@@ -39,17 +39,19 @@ export interface StatusIndicatorProps {
     inactive: React.ReactNode;
   };
   className?: string;
+  compact?: boolean;
 }
 
 export const StatusIndicator = ({ 
   isActive, 
   label, 
   icon,
-  className = ''
+  className = '',
+  compact = false
 }: StatusIndicatorProps) => (
-  <div className={`flex items-center space-x-1 ${className}`}>
-    <span className="mr-1">{isActive ? icon.active : icon.inactive}</span>
-    <span className="text-sm">{label}</span>
+  <div className={`flex items-center ${compact ? 'gap-1' : 'space-x-1'} ${className}`} title={compact ? label : undefined}>
+    <span className={compact ? '' : 'mr-1'}>{isActive ? icon.active : icon.inactive}</span>
+    {!compact && <span className="text-sm">{label}</span>}
   </div>
 );
 
@@ -182,7 +184,7 @@ export const TasksByStatusIndicator = ({ status }: { status: string }) => {
 };
 
 export const StreamErrorIndicator = ({ listenerId }: { listenerId: string }) => {
-  const hasErrors = useAppSelector(state => selectHasResponseErrors(listenerId)(state));
+  const hasErrors = useAppSelector(state => selectHasResponseErrorsByListenerId(listenerId)(state));
   
   return (
     <BinaryStatusIndicator 

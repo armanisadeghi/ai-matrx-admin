@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { useSelector } from 'react-redux';
 import { AlertTriangle } from 'lucide-react';
-import { selectResponseErrors } from '@/lib/redux/socket-io/selectors';
+import { selectResponseErrorsByListenerId } from '@/lib/redux/socket-io/selectors';
 import { SocketErrorObject } from '@/lib/redux/socket-io/socket.types';
 
 // Helper function to safely format JSON with proper indentation
@@ -68,7 +68,7 @@ const ErrorItem = ({ error, index }: { error: SocketErrorObject; index: number }
   
 // Main errors component with memoization to prevent unnecessary re-renders
 const SocketAdminErrorDisplay = memo(({ eventName }: { eventName: string }) => {
-  const errors = useSelector(selectResponseErrors(eventName));
+  const errors = useSelector(selectResponseErrorsByListenerId(eventName));
   const hasErrors = Array.isArray(errors) && errors.length > 0;
   
   return (

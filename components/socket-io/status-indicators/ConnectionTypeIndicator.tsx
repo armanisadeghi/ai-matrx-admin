@@ -1,23 +1,28 @@
 'use client';
 
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { Server, Laptop } from 'lucide-react';
-import { selectSocketUrl } from '@/lib/redux/socket-io/selectors';
+import { Server } from 'lucide-react';
+import { selectPrimaryConnection } from '@/lib/redux/socket-io';
 import { StatusIndicator } from '@/components/socket-io/status-indicators/StatusIndicator';
+import { useAppSelector } from '@/lib/redux';
 
-const ConnectionTypeIndicator: React.FC = () => {
-  const url = useSelector(selectSocketUrl);
-  const isLocal = url?.includes('localhost') || url?.includes('127.0.0.1');
+interface ConnectionTypeIndicatorProps {
+  compact?: boolean;
+}
+
+const ConnectionTypeIndicator: React.FC<ConnectionTypeIndicatorProps> = ({ compact = false }) => {
+  const connection = useAppSelector(selectPrimaryConnection);
+  const isLocal = connection?.url?.includes('localhost') || false;
   
   return (
     <StatusIndicator
-      isActive={true}
-      label={isLocal ? 'Local' : 'Server'}
+      isActive={!isLocal}
+      label={isLocal ? "Local" : "Remote"}
       icon={{
-        active: isLocal ? <Laptop className="h-4 w-4 text-green-500" /> : <Server className="h-4 w-4 text-blue-500" />,
-        inactive: isLocal ? <Laptop className="h-4 w-4 text-gray-400" /> : <Server className="h-4 w-4 text-gray-400" />,
+        active: <Server className={`${compact ? "h-3.5 w-3.5" : "h-4 w-4"} text-blue-500`} />,
+        inactive: <Server className={`${compact ? "h-3.5 w-3.5" : "h-4 w-4"} text-orange-500`} />,
       }}
+      compact={compact}
     />
   );
 };

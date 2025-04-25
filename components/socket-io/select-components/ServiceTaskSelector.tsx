@@ -12,9 +12,16 @@ import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
 interface ServiceTaskSelectorProps {
     connectionId: string;
     onTaskCreate?: (taskId: string) => void;
+    compact?: boolean;
+    inline?: boolean;
 }
 
-export function ServiceTaskSelector({ connectionId, onTaskCreate }: ServiceTaskSelectorProps) {
+export function ServiceTaskSelector({ 
+    connectionId, 
+    onTaskCreate, 
+    compact = false, 
+    inline = false 
+}: ServiceTaskSelectorProps) {
     const dispatch = useAppDispatch();
     const [service, setService] = React.useState("");
     const [taskName, setTaskName] = React.useState("");
@@ -45,6 +52,55 @@ export function ServiceTaskSelector({ connectionId, onTaskCreate }: ServiceTaskS
 
     const canCreateTask = !!service && !!taskName;
 
+    // Inline compact mode for the header (single row)
+    if (inline && compact) {
+        return (
+            <div className="flex items-center gap-2">
+                <div className="flex-1 min-w-[120px]">
+                    <ServiceSelector onServiceChange={handleServiceChange} compact />
+                </div>
+                
+                <div className="flex-1 min-w-[120px]">
+                    <TaskSelector service={service} onTaskChange={handleTaskChange} compact />
+                </div>
+                
+                <Button
+                    onClick={handleCreateTask}
+                    disabled={!canCreateTask}
+                    className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800 h-8 px-3 rounded-xl flex items-center justify-center"
+                    title={service && taskName ? `${formattedService} -> ${formattedTaskName}` : "Create Task"}
+                >
+                    <Play className="h-3.5 w-3.5" />
+                </Button>
+            </div>
+        );
+    }
+
+    // Regular compact mode (stacked)
+    if (compact) {
+        return (
+            <div className="flex gap-2 items-center justify-between">
+                <div className="flex-1">
+                    <ServiceSelector onServiceChange={handleServiceChange} compact />
+                </div>
+                
+                <div className="flex-1">
+                    <TaskSelector service={service} onTaskChange={handleTaskChange} compact />
+                </div>
+                
+                <Button
+                    onClick={handleCreateTask}
+                    disabled={!canCreateTask}
+                    className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800 h-8 px-3 rounded-xl flex items-center justify-center"
+                    title={service && taskName ? `${formattedService} -> ${formattedTaskName}` : "Create Task"}
+                >
+                    <Play className="h-3.5 w-3.5" />
+                </Button>
+            </div>
+        );
+    }
+
+    // Full mode (grid layout)
     return (
         <div className="grid md:grid-cols-3 gap-3">
             <div>

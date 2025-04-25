@@ -146,7 +146,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
             {/* Edit button now triggers onEditRequest */}
             {isHovering && !isStreamActive && (
                 <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">  
-                    {showCopyButton && <InlineCopyButton content={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>}
+                    {showCopyButton && <InlineCopyButton markdownContent={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>}
                     {/* Only show Edit button if onEditRequest is provided */}
                     {onEditRequest && (
                         <button onClick={handleEdit} className="p-1 text-gray-500 hover:text-gray-700 rounded-md ml-1" title="Edit content">

@@ -123,7 +123,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
     return (
         <div className={`${type === "message" ? "mb-4 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
             <div className={containerStyles + " relative"}>
-                <InlineCopyButton content={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
+                <InlineCopyButton markdownContent={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
                 <div className="text-base leading-relaxed tracking-wide h-full w-full">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
                         {content}

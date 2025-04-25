@@ -1,16 +1,16 @@
 "use client";
 
-import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 import { cn } from "@/lib/utils";
 import { useRef, useEffect, MouseEvent } from "react";
 import StreamDisplayOverlay from "./StreamDisplayOverlay";
+import { selectResponseTextByListenerId } from "@/lib/redux/socket-io";
+import { useAppSelector } from "@/lib/redux";
 
 interface StreamTextDisplayProps {
   title: string;
-  selector: (state: RootState) => string;
+  listenerId: string;
   errorDisplay?: boolean;
   isFullscreen?: boolean;
 }
@@ -118,11 +118,11 @@ const CompactTextDisplay = ({
 // Main Component
 const StreamTextDisplay = ({ 
   title, 
-  selector, 
+  listenerId,
   errorDisplay = false,
   isFullscreen = false 
 }: StreamTextDisplayProps) => {
-  const text = useSelector(selector);
+  const text = useAppSelector(selectResponseTextByListenerId(listenerId));
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   // Safely handle non-string values

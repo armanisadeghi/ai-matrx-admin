@@ -4,7 +4,6 @@ import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/redux";
 import { SocketTask } from "@/lib/redux/socket-io/socket.types";
 
-
 // ==================== Task Selectors ====================
 export const selectAllTasks = (state: RootState): Record<string, SocketTask> => state.socketTasks.tasks as Record<string, SocketTask>;
 
@@ -31,6 +30,14 @@ export const selectTaskListenerIds = createSelector(
     (tasks, taskId) => {
         const task = tasks[taskId];
         return task?.listenerIds || [];
+    }
+);
+
+export const selectTaskFirstListenerId = createSelector(
+    [selectAllTasks, (_, taskId: string) => taskId],
+    (tasks, taskId) => {
+        const task = tasks[taskId];
+        return task?.listenerIds[0] || "";
     }
 );
 
@@ -104,6 +111,21 @@ export const selectTaskByListenerId = createSelector(
     [selectAllTasks, (_, listenerId: string) => listenerId],
     (tasks, listenerId) =>
         Object.values(tasks).find((task) => task.listenerIds.includes(listenerId))
+);
+
+export const selectTaskStreamingById = createSelector(
+    [selectAllTasks, (_, taskId: string) => taskId],
+    (tasks, taskId) => {
+        const task = tasks[taskId];
+        return task?.isStreaming || false;
+    }
+);
+
+export const selectTaskStreamingByListenerId = createSelector(
+    [selectTaskByListenerId, (_, listenerId: string) => listenerId],
+    (task) => {
+        return task?.isStreaming || false;
+    }
 );
 
 export const selectTestMode = (state: RootState) => state.socketConnections.testMode;

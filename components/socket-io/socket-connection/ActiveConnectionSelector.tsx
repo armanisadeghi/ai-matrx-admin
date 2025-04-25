@@ -2,19 +2,21 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { useAppSelector } from '@/lib/redux';
-import { selectAllConnections, selectPrimaryConnectionId } from '@/lib/redux/socket-io/selectors';
+import { selectAllConnections, selectPrimaryConnectionId } from '@/lib/redux/socket-io';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui';
 
 interface ActiveConnectionSelectorProps {
   onConnectionSelect: (connectionId: string) => void;
   selectedConnectionId?: string;
   className?: string;
+  compact?: boolean;
 }
 
 const ActiveConnectionSelector: React.FC<ActiveConnectionSelectorProps> = ({
   onConnectionSelect,
   selectedConnectionId,
-  className = ''
+  className = '',
+  compact = false
 }) => {
   const connections = useAppSelector(selectAllConnections);
   const primaryConnectionId = useAppSelector(selectPrimaryConnectionId);
@@ -64,19 +66,25 @@ const ActiveConnectionSelector: React.FC<ActiveConnectionSelectorProps> = ({
     <Select value={currentConnectionId} onValueChange={handleChange}>
       <SelectTrigger 
         ref={triggerRef}
-        className={`bg-gray-200 dark:bg-gray-900 border border-gray-400 dark:border-gray-600 rounded-3xl ${className}`}
+        className={`
+          bg-gray-200 dark:bg-gray-900 border border-gray-400 dark:border-gray-600 
+          ${compact ? 'h-8 text-xs rounded-xl' : 'rounded-3xl'} 
+          ${className}
+        `}
       >
         <SelectValue placeholder="Select connection">
           {selectedConnection && (
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center space-x-2 flex-1 overflow-hidden">
                 <span className="truncate">{selectedConnection.url.replace(/^https?:\/\//, '')}</span>
-                <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 whitespace-nowrap flex-shrink-0">
-                  {formatNamespace(selectedConnection.namespace)}
-                </span>
+                {!compact && (
+                  <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 whitespace-nowrap flex-shrink-0">
+                    {formatNamespace(selectedConnection.namespace)}
+                  </span>
+                )}
               </div>
               
-              {showIndicators && (
+              {showIndicators && !compact && (
                 <div className="flex items-center space-x-2 ml-2 flex-shrink-0">
                   {isConnected && (
                     <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 whitespace-nowrap">

@@ -12,11 +12,9 @@ import {
     TabsContent,
     ScrollArea,
 } from "@/components/ui";
-import { useEffect, useState } from "react";
-import { SocketHook } from "@/lib/redux/socket/hooks/useSocket";
+import { useState } from "react";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 import DebugViewTab from "./tabs/DebugViewTab";
-import StreamOutputTab from "./tabs/StreamOutputTab";
 import PropertiesBrowserTab from "./tabs/PropertiesBrowserTab";
 import StructuredDataTab from "./tabs/StructuredDataTab";
 import RecursivePropertiesBrowser from "./tabs/RecursivePropertiesBrowser";
@@ -24,34 +22,36 @@ import JsonToCollapsible from "@/components/matrx/matrx-collapsible/json-to-coll
 import StreamTextTab from "./tabs/StreamTextTab";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
-interface SocketResponseProps {
-    socketHook: SocketHook;
-}
+import {
+    selectTaskResponsesByTaskId,
+    selectResponseTextByListenerId,
+    selectResponseDataByListenerId,
+    selectResponseInfoByListenerId,
+    selectResponseErrorsByListenerId,
+    selectHasResponseErrorsByListenerId,
+    selectResponseEndedByListenerId,
+    selectAllResponses,
+} from "@/lib/redux/socket-io";
+import { useAppSelector } from "@/lib/redux";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
-export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
-    const [accordionValue, setAccordionValue] = useState<string | undefined>(undefined);
+export function SocketAccordionResponse({ taskId }: { taskId: string }) {
+    // Change this line to set the default value to "response"
+    const [accordionValue, setAccordionValue] = useState<string | undefined>("response");
     const [selectedObjectIndex, setSelectedObjectIndex] = useState(0);
-    const [rawResponse, setRawResponse] = useState<string>("");
     const [displayModes, setDisplayModes] = useState<Record<string, boolean>>({});
-    const { streamingResponse, responses, responseRef, isResponseActive } = socketHook;
 
-    useEffect(() => {
-        if (isResponseActive) {
-            setAccordionValue("response");
-        }
-    }, [isResponseActive]);
+    const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
+    const allResponses = useAppSelector(selectAllResponses);
+    const socketResponse = useAppSelector(selectTaskResponsesByTaskId(taskId));
+    const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
+    const dataResponse = useAppSelector(selectResponseDataByListenerId(firstListenerId));
+    const infoResponse = useAppSelector(selectResponseInfoByListenerId(firstListenerId));
+    const errorsResponse = useAppSelector(selectResponseErrorsByListenerId(firstListenerId));
+    const hasErrors = useAppSelector(selectHasResponseErrorsByListenerId(firstListenerId));
+    const hasEnded = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
 
-    useEffect(() => {
-        const combined = {
-            streamingResponse,
-            responses,
-        };
-        setRawResponse(JSON.stringify(combined, null, 2));
-    }, [streamingResponse, responses]);
-
-    // Remove any "STREAM_END" from the streaming response
-    const cleanStreamingResponse = streamingResponse.replace(/STREAM_END/g, "");
-
+    // Rest of your component remains the same
     const safeStringify = (value: any, indent = 2): string => {
         try {
             return JSON.stringify(value, null, indent);
@@ -71,7 +71,7 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
         });
     };
 
-    const selectedObject = responses[selectedObjectIndex] || {};
+    const selectedObject = socketResponse[selectedObjectIndex] || {};
     const objectProperties = getObjectProperties(selectedObject);
 
     const toggleDisplayMode = (propPath: string) => {
@@ -82,57 +82,79 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
     };
 
     return (
-        <Card className="mt-4 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600">
+        <Card className="mt-1 bg-gray-100 dark:bg-gray-800 rounded-3xl border border-gray-300 dark:border-gray-600">
             <Accordion type="single" collapsible value={accordionValue} onValueChange={setAccordionValue}>
                 <AccordionItem value="response">
                     <CardHeader className="p-0">
-                        <div className="flex items-center justify-between px-6 py-4">
+                        <div className="flex items-center justify-between px-2 py-4">
                             <AccordionTrigger className="flex-1">
                                 <CardTitle>Response</CardTitle>
                             </AccordionTrigger>
                             <div onClick={(e) => e.stopPropagation()}>
-                                <CopyButton content={rawResponse} label="Copy Raw" className="ml-2" />
+                                <CopyButton content={textResponse} label="Copy Raw" className="ml-2" />
                             </div>
                         </div>
                     </CardHeader>
                     <AccordionContent>
-                        <div className="px-6 py-4">
-                            <Tabs defaultValue="stream">
-                                <TabsList className="mb-2">
-                                    <TabsTrigger value="stream">Stream Output</TabsTrigger>
-                                    <TabsTrigger value="streamText">Stream Output Text</TabsTrigger>
-                                    <TabsTrigger value="structured">Structured Data ({responses.length})</TabsTrigger>
-                                    <TabsTrigger value="propertiesBrowser" disabled={responses.length === 0}>
-                                        Properties Browser
+                        <div className="px-2 py-4">
+                            <Tabs defaultValue="streamText">
+                                <TabsList className="mb-2 gap-1 bg-transparent">
+                                    <TabsTrigger
+                                        value="streamText"
+                                    >
+                                        Text
                                     </TabsTrigger>
-                                    <TabsTrigger value="properties">Recursive Properties Browser</TabsTrigger>
-                                    <TabsTrigger value="jsonToCollapsible">JSON to Collapsible</TabsTrigger>
-                                    <TabsTrigger value="markdown">Markdown</TabsTrigger>
-                                    <TabsTrigger value="debug">Debug View</TabsTrigger>
+                                    <TabsTrigger
+                                        value="structured"
+                                    >
+                                        Structured ({socketResponse.length})
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        disabled={socketResponse.length === 0}
+                                        value="propertiesBrowser"
+                                    >
+                                        Browser
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="properties"
+                                    >
+                                        Recursive Browser
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="jsonToCollapsible"
+                                    >
+                                        Collapsible JSON
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="markdown"
+                                    >
+                                        Markdown
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="debug"
+                                    >
+                                        Debug
+                                    </TabsTrigger>
                                 </TabsList>
-
-                                {/* Stream Output Tab */}
-                                <StreamOutputTab cleanStreamingResponse={cleanStreamingResponse} responseRef={responseRef} />
-                                <StreamTextTab streamingResponse={streamingResponse} responseRef={responseRef} />
-
+                                <StreamTextTab streamingResponse={textResponse} />
                                 <TabsContent value="markdown">
-                                    <ScrollArea className="w-full rounded-md border p-4 h-96">
-                                        <FullscreenWrapper
-                                            buttonPosition="top-right-inside"
-                                            expandButtonTitle="View in fullscreen"
-                                            closeButtonTitle="Exit fullscreen"
-                                        >
-                                            <MarkdownRenderer content={streamingResponse} type="message" />
-                                        </FullscreenWrapper>
+                                    <ScrollArea className="w-full rounded-md border p-4 h-full">
+                                        {textResponse.length > 1 && (
+                                            <FullscreenWrapper
+                                                buttonPosition="top-right-inside"
+                                                expandButtonTitle="View in fullscreen"
+                                                closeButtonTitle="Exit fullscreen"
+                                            >
+                                                <MarkdownRenderer content={textResponse} type="message" />
+                                            </FullscreenWrapper>
+                                        )}
                                     </ScrollArea>
                                 </TabsContent>
-
                                 {/* Structured Data Tab */}
-                                <StructuredDataTab responses={responses} safeStringify={safeStringify} />
-
+                                <StructuredDataTab responses={socketResponse} safeStringify={safeStringify} />
                                 {/* Properties Browser Tab */}
                                 <PropertiesBrowserTab
-                                    responses={responses}
+                                    responses={socketResponse}
                                     selectedObjectIndex={selectedObjectIndex}
                                     setSelectedObjectIndex={setSelectedObjectIndex}
                                     selectedObject={selectedObject}
@@ -142,7 +164,7 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
                                     safeStringify={safeStringify}
                                 />
                                 <RecursivePropertiesBrowser
-                                    responses={responses}
+                                    responses={socketResponse}
                                     selectedObjectIndex={selectedObjectIndex}
                                     setSelectedObjectIndex={setSelectedObjectIndex}
                                     selectedObject={selectedObject}
@@ -155,15 +177,14 @@ export function SocketAccordionResponse({ socketHook }: SocketResponseProps) {
                                         title="JSON to Collapsible"
                                         data={selectedObject}
                                         defaultExpanded={true}
-                                        className="max-w-xl border border-gray-300 dark:border-gray-600 rounded-2xl  p-2 pr-4"
+                                        className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl  p-2 pr-4"
                                     />
                                 </TabsContent>
-
                                 {/* Debug View Tab */}
                                 <DebugViewTab
-                                    responses={responses}
-                                    streamingResponse={streamingResponse}
-                                    rawResponse={rawResponse}
+                                    responses={allResponses}
+                                    streamingResponse={textResponse}
+                                    rawResponse={dataResponse}
                                     safeStringify={safeStringify}
                                 />
                             </Tabs>

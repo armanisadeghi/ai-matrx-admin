@@ -6,8 +6,8 @@ import {
   selectTaskListenerIds,
   selectTaskError,
   selectIsTaskComplete,
-  selectResponseEnded,
-  selectHasResponseErrors,
+  selectResponseEndedByListenerId,
+  selectHasResponseErrorsByListenerId,
 } from "@/lib/redux/socket-io";
 import { MultiStateStatusIndicator } from "./MultiStateStatusIndicator";
 import { CompactListDisplay } from "./CompactListDisplay";
@@ -161,8 +161,8 @@ export const TaskSummary = ({ taskId }: { taskId: string }) => {
 };
 // Component to display stream status
 export const StreamStatusIndicator = ({ listenerId }: { listenerId: string }) => {
-  const hasErrors = useAppSelector(state => selectHasResponseErrors(listenerId)(state));
-  const isEnded = useAppSelector(state => selectResponseEnded(listenerId)(state));
+  const hasErrors = useAppSelector(state => selectHasResponseErrorsByListenerId(listenerId)(state));
+  const isEnded = useAppSelector(state => selectResponseEndedByListenerId(listenerId)(state));
   
   // Stream status options
   const streamStatusOptions = [

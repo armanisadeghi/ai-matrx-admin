@@ -1,11 +1,11 @@
 import { useSelector } from "react-redux";
 import { memo } from "react";
-import { selectResponseInfo } from '@/lib/redux/socket-io/selectors';
+import { selectResponseInfoByListenerId } from '@/lib/redux/socket-io/selectors';
 import { formatJson } from "@/utils/json-cleaner-utility";
 
 // Individual component for Info array - only rerenders when info changes
 const SocketInfoDisplay = memo(({ eventName }: { eventName: string }) => {
-    const info = useSelector(selectResponseInfo(eventName));
+    const info = useSelector(selectResponseInfoByListenerId(eventName));
     return (
       <div className="text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-md p-3">
         <span className="font-medium">Info:</span>

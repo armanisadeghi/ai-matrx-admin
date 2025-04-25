@@ -51,8 +51,9 @@ export interface SocketTask {
     validationErrors: string[];
     status: TaskStatus;
     listenerIds: string[];
-    connectionId?: string;
-}
+    connectionId: string;
+    isStreaming: boolean;
+  }
 
 export interface SocketErrorObject {
     message?: string;

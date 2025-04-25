@@ -66,6 +66,7 @@ const socketTasksSlice = createSlice({
           status: "building",
           listenerIds: [],
           connectionId,
+          isStreaming: false,
         };
       }
     },
@@ -112,10 +113,8 @@ const socketTasksSlice = createSlice({
       const task = state.tasks[taskId];
       if (task) {
         if (!path) {
-          // Update entire field
           task.taskData[parentField] = value;
         } else {
-          // Update nested field
           if (!task.taskData[parentField]) {
             task.taskData[parentField] = {};
           }
@@ -235,11 +234,26 @@ const socketTasksSlice = createSlice({
       }
     },
 
+    setTaskStreaming: (
+      state,
+      action: PayloadAction<{
+        taskId: string;
+        isStreaming: boolean;
+      }>
+    ) => {
+      const { taskId, isStreaming } = action.payload;
+      const task = state.tasks[taskId];
+      if (task) {
+        task.isStreaming = isStreaming;
+      }
+    },
+
     completeTask: (state, action: PayloadAction<string>) => {
       const taskId = action.payload;
       const task = state.tasks[taskId];
       if (task) {
         task.status = "completed";
+        task.isStreaming = false;
       }
     },
 
@@ -251,6 +265,7 @@ const socketTasksSlice = createSlice({
         task.isValid = false;
         task.validationErrors = [];
         task.status = "building";
+        task.isStreaming = false;
       }
     },
 
@@ -266,6 +281,7 @@ const socketTasksSlice = createSlice({
       if (task) {
         task.status = "error";
         task.validationErrors = [error];
+        task.isStreaming = false;
       }
     },
 
@@ -288,6 +304,7 @@ export const {
   validateTask,
   setTaskStatus,
   setTaskListenerIds,
+  setTaskStreaming,
   completeTask,
   setTaskError,
   deleteTask,

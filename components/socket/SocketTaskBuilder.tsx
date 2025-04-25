@@ -1,21 +1,27 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ConfigBuilder } from "@/components/ui";
-import { SocketHook } from '@/lib/redux/socket/hooks/useSocket';
-
+import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { selectTaskById, setTaskFields, submitTask, updateTaskFieldByPath } from '@/lib/redux/socket-io';
 interface SocketConfigBuilderProps {
-  socketHook: SocketHook;
+  taskId: string;
   className?: string;
   onConfigChange?: (config: any) => void;
 }
 
 export const SocketTaskBuilder: React.FC<SocketConfigBuilderProps> = ({
-  socketHook,
+  taskId,
   className = "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
   onConfigChange
 }) => {
-  const { setTaskData, handleSend } = socketHook;
   const [currentConfig, setCurrentConfig] = useState<any>({});
+  const initialConfig = useAppSelector((state) => selectTaskById(state, taskId)?.taskData);
+
+  useEffect(() => {
+    setCurrentConfig(initialConfig);
+  }, []);
+
+  const dispatch = useAppDispatch();
 
   // Handle configuration changes from the ConfigBuilder
   const handleConfigChange = (config: any) => {
@@ -27,7 +33,12 @@ export const SocketTaskBuilder: React.FC<SocketConfigBuilderProps> = ({
 
   // Handle setting the data
   const handleSetData = () => {
-    setTaskData(currentConfig);
+    dispatch(setTaskFields({ taskId, fields: currentConfig }));
+  };
+
+  const handleSend = () => {
+    dispatch(setTaskFields({ taskId, fields: currentConfig }));
+    dispatch(submitTask({ taskId }));
   };
 
   return (

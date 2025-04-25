@@ -7,23 +7,11 @@ import { selectTaskListenerIds, selectTaskById } from "./socket-task-selectors";
 
 export const selectAllResponses = (state: RootState) => state.socketResponse;
 
-export const selectResponseById =
+export const selectResponseByListenerId =
     (listenerId: string) =>
     (state: RootState): ResponseState | undefined =>
         state.socketResponse[listenerId] as ResponseState | undefined;
 
-export const selectResponseText = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.text || "";
-
-export const selectResponseData = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.data || [];
-
-export const selectResponseInfo = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.info || [];
-
-export const selectResponseErrors = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.errors || [];
-
-export const selectResponseEnded = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.ended || false;
-
-export const selectHasResponseErrors = (listenerId: string) => (state: RootState) =>
-    (state.socketResponse[listenerId]?.errors.length || 0) > 0;
 
 // Memoized response selectors
 export const selectResponsesByTaskId = createSelector(
@@ -38,6 +26,23 @@ export const selectResponsesByTaskId = createSelector(
         return taskResponses;
     }
 );
+
+
+
+
+export const selectResponseTextByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.text || "";
+
+export const selectResponseDataByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.data || [];
+
+export const selectResponseInfoByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.info || [];
+
+export const selectResponseErrorsByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.errors || [];
+
+export const selectResponseEndedByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.ended || false;
+
+export const selectHasResponseErrorsByListenerId = (listenerId: string) => (state: RootState) =>
+    (state.socketResponse[listenerId]?.errors.length || 0) > 0;
+
 
 // ==================== Combined Task-Response Selectors ====================
 export const selectTaskResponsesByTaskId = (taskId: string) =>
