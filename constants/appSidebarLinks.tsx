@@ -43,6 +43,7 @@ import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
 import { BsFillChatRightFill, BsChatRight } from "react-icons/bs";
 import { TbRelationManyToMany } from "react-icons/tb";
+import { AiFillAudio } from "react-icons/ai";
 
 //brokers/component-editor
 
@@ -78,6 +79,11 @@ export const primaryLinks = [
         label: "Tables",
         href: "/data",
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Voices",
+        icon: <AiFillAudio className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
+        href: "/demo/voice/voice-manager",
     },
     {
         label: "Component Editor",

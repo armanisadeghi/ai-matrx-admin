@@ -1,62 +1,54 @@
 "use client";
 
 import React from "react";
-import { FloatingDock } from "@/components/ui/floating-dock";
 import { IconHome, IconNewSection } from "@tabler/icons-react";
 import { FaBrain, FaImage, FaDatabase } from "react-icons/fa";
 import { SiGooglechat } from "react-icons/si";
 import { AiFillAudio } from "react-icons/ai";
-import { MdOutlineVideoChat } from "react-icons/md";
-import { BACKGROUND_PATTERN } from "@/constants/chat";
+import FloatingDock from "@/components/official/FloatingDock";
 
 export function MatrixFloatingMenu() {
     const links = [
         {
-            title: "Home",
+            label: "Home",
             icon: <IconHome className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
             href: "#",
         },
         {
-            title: "Chat",
+            label: "Chat",
             icon: <SiGooglechat className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
             href: "/chat",
         },
         {
-            title: "Cockpit",
+            label: "Cockpit",
             icon: <FaBrain className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
             href: "/cockpit",
         },
         {
-            title: "Applets",
+            label: "Applets",
             icon: <IconNewSection className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
             href: "/applets",
         },
         {
-            title: "Data",
+            label: "Data",
             icon: <FaDatabase className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
             href: "/data",
         },
 
         {
-            title: "Image Generation",
+            label: "Image Generation",
             icon: <FaImage className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
             href: "/image-editing/unsplash",
         },
 
         {
-            title: "Voice Assistant",
+            label: "Voices",
             icon: <AiFillAudio className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
-            href: "/demo/voice/voice-assistant",
+            href: "/demo/voice/voice-manager",
         },
-        {
-            title: "Video Meetings",
-            icon: <MdOutlineVideoChat className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
-            href: "#",
-        },
+
     ];
     return (
-        <div className="flex items-center justify-center w-auto mt-[1rem] bg-zinc-100 dark:bg-zinc-850" style={{ backgroundImage: BACKGROUND_PATTERN }}>
-            <FloatingDock items={links} desktopClassName="bg-zinc-100 dark:bg-zinc-850" mobileClassName="bg-zinc-100 dark:bg-zinc-850" />
-        </div>
+        <FloatingDock items={links} bgColorClassname="bg-zinc-100 dark:bg-zinc-850" iconBgColorClassname="bg-zinc-200 dark:bg-zinc-700" />
     );
 }

@@ -11,3 +11,15 @@ components\matrx\matrx-collapsible\AccordionWrapper.tsx
 
 ## Full Screen Overlay
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
+
+## Card & Grid
+components\official\card-and-grid
+ - A colorful card with title, description, icon and link.
+ - A flexible grid system for the cards
+ - A horizontal card with slightly less options as the other card
+ - A simple list that creates a list of the horizontal cards in a column
+
+ ## Floating Dock
+ components\official\FloatingDock.tsx
+ - Works well for desktop and mobile
+ - Might need slight adjustments to be used where it's not the only thing across the entire horizontal row

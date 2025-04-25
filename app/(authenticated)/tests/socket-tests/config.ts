@@ -10,18 +10,6 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Connection Test',
-        path: 'connection-test',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Task Field Demo',
-        path: 'task-field-demo',
-        relative: true,
-        description: 'This uses fields which are directly connected to the socket schema and redux.'
-    },
-    {
         title: 'Original Full Redux Test',
         path: 'full-redux',
         relative: true,
