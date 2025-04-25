@@ -1,16 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
     MessageSquare,
     Grid3X3,
     Database,
     Cpu,
     Image,
-    PlusCircle,
-    Search,
-    Bell,
-    ChevronRight,
     Zap,
     BarChart3,
     Clock,
@@ -18,9 +14,9 @@ import {
     Settings,
     User,
 } from "lucide-react";
-import { MatrixFloatingMenu } from "@/components/layout/MatrixFloatingMenu";
+import { BalancedMatrxFloatingMenu } from "@/components/layout/BalancedMatrxFloatingMenu";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
-import { Card, Grid, CardProps, HorizontalCard, HorizontalCardProps, List } from "@/components/official/card-and-grid";
+import { Grid, CardProps, HorizontalCardProps, List } from "@/components/official/card-and-grid";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AiFillAudio } from "react-icons/ai";
 import { useUserStats } from "./user-stats-fetch";
@@ -28,7 +24,8 @@ import { FaTasks } from "react-icons/fa";
 import Link from "next/link";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectUser, selectActiveUserName } from "@/lib/redux/selectors/userSelectors";
-import UnderConstructionBanner from "@/components/ui/UnderConstructionBanner";
+import { LatestAiModels } from "@/components/animated/ExpandableCards/ExpandableCardDemo";
+
 
 const DashboardPage = () => {
     const isMobile = useIsMobile();
@@ -115,7 +112,7 @@ const DashboardPage = () => {
         },
         {
             title: "Tables",
-            description: "Manage your custom data tables or create new ones in a Chat",
+            description: "Manage your custom data or create tables in a Chat",
             icon: <Database />,
             color: "blue",
             path: "/data",
@@ -132,7 +129,7 @@ const DashboardPage = () => {
             description: "Browse a collection of images you can use in your projects",
             icon: <Image />,
             color: "rose",
-            path: "/image-editing/unsplash",
+            path: "/image-editing/public-image-search",
         },
     ];
 
@@ -155,35 +152,67 @@ const DashboardPage = () => {
     ];
 
     return (
-        <div className="flex flex-col h-full w-full">
+        <div className="flex flex-col h-full w-full overflow-hidden">
             {/* Wrapper div that contains both the floating menu and the content */}
-            <div
-                className="flex flex-col w-full h-full bg-zinc-100 dark:bg-zinc-850 text-gray-800 dark:text-gray-100 pt-7"
+            <div 
+                className="flex flex-col w-full h-full bg-zinc-100 dark:bg-zinc-850 text-gray-800 dark:text-gray-100"
                 style={{ backgroundImage: BACKGROUND_PATTERN }}
             >
                 {/* Floating menu - using the same background as the main content */}
-                <div className="sticky top-0 z-50 bg-zinc-100 dark:bg-zinc-850">
-                    <MatrixFloatingMenu />
+                <div className="sticky top-0 z-50 bg-zinc-100 dark:bg-zinc-850 pt-1">
+                    {/* Original floating menu (commented out) */}
+                    {/* <MatrxFloatingMenu /> */}
+                    
+                    {/* New balanced floating menu with bottom labels */}
+                    <BalancedMatrxFloatingMenu growthFactor={1.5} labelPosition="bottom" />
                 </div>
 
-                {/* Main content - no margin or padding at the top to eliminate the gap */}
-                <div className="container mx-auto px-6">
+                {/* Main content with fixed height and scrollable sections */}
+                <div className="w-full px-6 pt-4 h-[calc(100vh-64px)] overflow-hidden"> {/* Added overflow-hidden to prevent page-level scrolling */}
                     {/* Main content grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-                        {/* Main features section - spans 2 columns */}
-                        <div className="lg:col-span-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                        {/* Main features section - spans 2 columns with independent scroll */}
+                        <div className="lg:col-span-2 overflow-y-auto scrollbar-none pr-3 pb-8 h-full"> {/* Added h-full to ensure full height */}
                             <Grid title="" items={featureCards} columns={4} showAddButton addButtonText="Add Feature" />
 
                             {/* Quick Access Section */}
                             <List title="" items={quickAccessItems} className="mt-8" containerClassName="p-2" />
 
-                            {/* User Settings Section */}
-                            <div className="mt-8">
-                                <Grid items={userSettingsCards} columns={4} className="mt-2" />
+                            {/* User Settings and Recommended row */}
+                            <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* User Settings Section - 2 columns */}
+                                <div className="lg:col-span-2">
+                                    <Grid items={userSettingsCards} columns={4} className="mt-2" />
+                                </div>
+                                
+                                {/* Moved Recommendations - 1 column */}
+                                <div className="lg:col-span-1">
+                                    <h2 className="text-md font-semibold mb-4">Recommended</h2>
+                                    <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 border border-indigo-100 dark:border-indigo-800/50">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/70">
+                                                <FaTasks size={18} className="text-indigo-500 dark:text-indigo-400" />
+                                            </div>
+                                            <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/70 dark:text-indigo-300">
+                                                Advanced Workflow
+                                            </span>
+                                        </div>
+                                        <h3 className="font-semibold text-md mb-1">Structured Plan & Task List</h3>
+                                        <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">
+                                            Use an Adio file to convert your speech into a structured plan and a real task list
+                                        </p>
+                                        <Link href="/chat">
+                                            <button className="w-full py-2 rounded-lg font-medium text-center transition bg-indigo-500 hover:bg-indigo-600 text-white dark:bg-indigo-600 dark:hover:bg-indigo-700">
+                                                Try Now
+                                            </button>
+                                        </Link>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        {/* Sidebar content - stats and activity */}
-                        <div className="lg:col-span-1 space-y-6">
+                        
+                        {/* Sidebar content - stats and activity with independent scroll */}
+                        <div className="lg:col-span-1 overflow-y-auto scrollbar-none pl-3 pb-8 h-full">
                             {/* User Profile Card */}
                             <div>
                                 <div className="p-4 rounded-xl bg-white dark:bg-zinc-800 shadow-md dark:shadow-zinc-800/20">
@@ -214,8 +243,11 @@ const DashboardPage = () => {
                                     </div>
                                 </div>
                             </div>
+                            <div className="mt-3 border border-gray-200 dark:border-zinc-700 rounded-3xl">
+                                <LatestAiModels />
+                            </div>
                             {/* Recent activity */}
-                            <div>
+                            <div className="mt-6">
                                 <div className="flex justify-between items-center mb-4">
                                     <h2 className="text-md font-semibold">New Features</h2>
                                     <button className="text-sm font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">
@@ -245,7 +277,7 @@ const DashboardPage = () => {
                                 </div>
                             </div>
                             {/* Usage stats */}
-                            <div>
+                            <div className="mt-6">
                                 <h2 className="text-md font-semibold mb-4">Stats</h2>
                                 <div className="rounded-xl overflow-hidden bg-white dark:bg-zinc-800 shadow-md dark:shadow-zinc-800/20">
                                     {usageStats.map((stat, index) => (
@@ -269,34 +301,8 @@ const DashboardPage = () => {
                                     ))}
                                 </div>
                             </div>
-                            {/* Recommendations */}
-                            <div>
-                                <h2 className="text-md font-semibold mb-4">Recommended</h2>
-                                <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/40 dark:to-purple-900/40 border border-indigo-100 dark:border-indigo-800/50">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/70">
-                                            <FaTasks size={18} className="text-indigo-500 dark:text-indigo-400" />
-                                        </div>
-                                        <span className="text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/70 dark:text-indigo-300">
-                                            Advanced Workflow
-                                        </span>
-                                    </div>
-                                    <h3 className="font-semibold text-md mb-1">Structured Plan & Task List</h3>
-                                    <p className="text-sm mb-4 text-gray-600 dark:text-gray-400">
-                                        Use an Adio file to convert your speech into a structured plan and a real task list
-                                    </p>
-                                    <Link href="/chat">
-                                        <button className="w-full py-2 rounded-lg font-medium text-center transition bg-indigo-500 hover:bg-indigo-600 text-white dark:bg-indigo-600 dark:hover:bg-indigo-700">
-                                            Try Now
-                                        </button>
-                                    </Link>
-                                </div>
-                            </div>
                         </div>
                     </div>
-
-                    {/* Add bottom padding/margin for spacing */}
-                    <div className="pb-8"></div>
                 </div>
             </div>
         </div>

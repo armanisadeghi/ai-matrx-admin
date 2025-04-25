@@ -6,8 +6,16 @@ components\ui\official\icon-button.tsx
 ## Text Icon Button With Tooltip:
 components\ui\official\TextIconButton.tsx
 
-## Accordion collapsible wrapper:
+## Accordion Wrappers:
+
+### Accordion collapsible wrapper:
 components\matrx\matrx-collapsible\AccordionWrapper.tsx
+
+### State Persistent collapsible wrapper:
+components\matrx\matrx-collapsible\StatePersistingAccordionWrapper.tsx
+
+### Chat Collapsible collapsible wrapper:
+components\mardown-display\blocks\ChatCollapsibleWrapper.tsx
 
 ## Full Screen Overlay
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
@@ -23,3 +31,7 @@ components\official\card-and-grid
  components\official\FloatingDock.tsx
  - Works well for desktop and mobile
  - Might need slight adjustments to be used where it's not the only thing across the entire horizontal row
+
+ ## Amazing JSON Explorer Component
+ features\scraper\parts\RawJsonExplorer.tsx
+ - This needs some work, but it's incredible!

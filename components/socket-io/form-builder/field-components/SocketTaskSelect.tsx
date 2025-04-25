@@ -1,4 +1,43 @@
 // File location: components/socket-io/form-builder/field-components/SocketTaskSelect.tsx
+/*
+COMPONENT SCHEMA REQUIREMENTS:
+{
+  "fieldName": {
+    "COMPONENT": "select",
+    "DATA_TYPE": "string",
+    "DEFAULT": "", // Default selected value (must match an option value)
+    "REQUIRED": true/false,
+    "COMPONENT_PROPS": {
+      "className": "your-custom-class", // Optional
+      "options": [ // REQUIRED - Array of options for the select dropdown
+        { 
+          "label": "Option 1 Display Text", // REQUIRED - Text shown to the user
+          "value": "option1" // REQUIRED - Value stored in Redux
+        },
+        { 
+          "label": "Option 2 Display Text",
+          "value": "option2"
+        }
+      ],
+      "placeholder": "Select an option", // Optional - Custom placeholder
+      "disabled": false // Optional - Disable the select
+    }
+  }
+}
+
+IMPORTANT NOTES:
+1. The "options" array in COMPONENT_PROPS is REQUIRED and must contain objects with "label" and "value" properties
+2. Each option must have a unique "value" property
+3. If no options are provided, the select will be empty and unusable
+4. The component displays an icon - customize with ICON_NAME property (defaults to "File")
+
+The component will:
+- Store the selected option value (string) in Redux
+- Display a dropdown with the provided options
+- Show validation errors if required field is not selected
+- Support test mode for automated testing with TEST_VALUE
+- Support light and dark mode through Tailwind classes
+*/
 import React, { useCallback, useEffect, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import * as LucideIcons from "lucide-react";

@@ -1,13 +1,11 @@
 "use client";
-import Image from "next/image";
+
 import React, { useEffect, useId, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 
-export function ExpandableCardDemo() {
-    const [active, setActive] = useState<(typeof cards)[number] | boolean | null>(
-        null
-    );
+export function LatestAiModels() {
+    const [active, setActive] = useState<(typeof cards)[number] | boolean | null>(null);
     const ref = useRef<HTMLDivElement>(null);
     const id = useId();
 
@@ -71,8 +69,7 @@ export function ExpandableCardDemo() {
                             className="w-full max-w-[500px]  h-full md:h-fit md:max-h-[90%]  flex flex-col bg-white dark:bg-neutral-900 sm:rounded-3xl overflow-hidden"
                         >
                             <motion.div layoutId={`image-${active.title}-${id}`}>
-                                <Image
-                                    priority
+                                <img
                                     width={200}
                                     height={200}
                                     src={active.src}
@@ -115,9 +112,7 @@ export function ExpandableCardDemo() {
                                         exit={{ opacity: 0 }}
                                         className="text-neutral-600 text-xs md:text-sm lg:text-base h-40 md:h-fit pb-10 flex flex-col items-start gap-4 overflow-auto dark:text-neutral-400 [mask:linear-gradient(to_bottom,white,white,transparent)] [scrollbar-width:none] [-ms-overflow-style:none] [-webkit-overflow-scrolling:touch]"
                                     >
-                                        {typeof active.content === "function"
-                                         ? active.content()
-                                         : active.content}
+                                        {typeof active.content === "function" ? active.content() : active.content}
                                     </motion.div>
                                 </div>
                             </div>
@@ -131,11 +126,11 @@ export function ExpandableCardDemo() {
                         layoutId={`card-${card.title}-${id}`}
                         key={`card-${card.title}-${id}`}
                         onClick={() => setActive(card)}
-                        className="p-4 flex flex-col md:flex-row justify-between items-center hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-xl cursor-pointer"
+                        className="py-2 px-4 flex flex-col md:flex-row justify-between items-center hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-3xl cursor-pointer"
                     >
-                        <div className="flex gap-4 flex-col md:flex-row ">
+                        <div className="flex gap-2 flex-col md:flex-row ">
                             <motion.div layoutId={`image-${card.title}-${id}`}>
-                                <Image
+                                <img
                                     width={100}
                                     height={100}
                                     src={card.src}
@@ -206,113 +201,220 @@ export const CloseIcon = () => {
 
 const cards = [
     {
-        description: "By Armani Sadeghi",
-        title: "Las Vegas Party Trip Planner",
-        src: "https://assets.aceternity.com/demos/lana-del-rey.jpeg",
-        ctaText: "Try Free",
-        ctaLink: "https://ui.aceternity.com/templates",
+        description: "Anthropic",
+        title: "Claude 3.7 Sonnet",
+        src: "/model-card-images/claude-37-sonnet.jpg",
+        ctaText: "Try",
+        ctaLink: "/chat",
         content: () => {
             return (
-                <p>
-                    Lana Del Rey, an iconic American singer-songwriter, is celebrated for
-                    her melancholic and cinematic music style. Born Elizabeth Woolridge
-                    Grant in New York City, she has captivated audiences worldwide with
-                    her haunting voice and introspective lyrics. <br /> <br /> Her songs
-                    often explore themes of tragic romance, glamour, and melancholia,
-                    drawing inspiration from both contemporary and vintage pop culture.
-                    With a career that has seen numerous critically acclaimed albums, Lana
-                    Del Rey has established herself as a unique and influential figure in
-                    the music industry, earning a dedicated fan base and numerous
-                    accolades.
-                </p>
+                <div className="space-y-3">
+                    <p className="font-medium">Claude 3.7 Sonnet | Anthropic Artificial Intelligence</p>
+                    
+                    <p>
+                        Claude 3.7 Sonnet, introduced by Anthropic in February 2025, delivers revolutionary hybrid reasoning capabilities, 
+                        seamlessly blending rapid responses with comprehensive, detailed analysis.
+                    </p>
+                    
+                    <p>
+                        Ideal for tasks from quick inquiries to intricate problem-solving, it excels in software development, data
+                        analysis, and creative writing, achieving an impressive 70.3% accuracy on the SWE-bench Verified benchmark.
+                    </p>
+                    
+                    <p>
+                        Widely accessible through Amazon Bedrock and Google Cloud's Vertex AI, Claude 3.7 Sonnet empowers businesses and developers
+                        with unparalleled adaptability and innovation.
+                    </p>
+                </div>
             );
         },
     },
     {
-        description: "Babbu Maan",
-        title: "Mitran Di Chhatri",
-        src: "https://assets.aceternity.com/demos/babbu-maan.jpeg",
-        ctaText: "Play",
-        ctaLink: "https://ui.aceternity.com/templates",
+        description: "DeepSeek",
+        title: "DeepSeek V3",
+        src: "/model-card-images/deepseek-v3.jpg",
+        ctaText: "Try",
+        ctaLink: "/chat",
         content: () => {
             return (
-                <p>
-                    Babu Maan, a legendary Punjabi singer, is renowned for his soulful
-                    voice and profound lyrics that resonate deeply with his audience. Born
-                    in the village of Khant Maanpur in Punjab, India, he has become a
-                    cultural icon in the Punjabi music industry. <br /> <br /> His songs
-                    often reflect the struggles and triumphs of everyday life, capturing
-                    the essence of Punjabi culture and traditions. With a career spanning
-                    over two decades, Babu Maan has released numerous hit albums and
-                    singles that have garnered him a massive fan following both in India
-                    and abroad.
-                </p>
-            );
-        },
-    },
-
-    {
-        description: "Metallica",
-        title: "For Whom The Bell Tolls",
-        src: "https://assets.aceternity.com/demos/metallica.jpeg",
-        ctaText: "Play",
-        ctaLink: "https://ui.aceternity.com/templates",
-        content: () => {
-            return (
-                <p>
-                    Metallica, an iconic American heavy metal band, is renowned for their
-                    powerful sound and intense performances that resonate deeply with
-                    their audience. Formed in Los Angeles, California, they have become a
-                    cultural icon in the heavy metal music industry. <br /> <br /> Their
-                    songs often reflect themes of aggression, social issues, and personal
-                    struggles, capturing the essence of the heavy metal genre. With a
-                    career spanning over four decades, Metallica has released numerous hit
-                    albums and singles that have garnered them a massive fan following
-                    both in the United States and abroad.
-                </p>
+                <div className="space-y-3">
+                    <p className="font-medium">DeepSeek-V3-0324 | DeepSeek Artificial Intelligence</p>
+                    
+                    <p>
+                        DeepSeek-V3-0324, launched in March 2025, is a state-of-the-art open-source AI model that maximizes efficiency and precision.
+                    </p>
+                    
+                    <p>
+                        Utilizing a Mixture-of-Experts architecture with 671 billion parameters and activating 37 billion per token, 
+                        it delivers lightning-fast performance up to 60 tokens per second.
+                    </p>
+                    
+                    <p>
+                        With groundbreaking Multi-head Latent Attention and DeepThink modes, it excels in complex reasoning tasks,
+                        scoring exceptionally on benchmarks such as 81.2% on MMLU-Pro and 49.2% on LiveCodeBench.
+                    </p>
+                    
+                    <p>
+                        Available under the MIT License via Hugging Face and GitHub, it fosters transparent, community-driven innovation.
+                    </p>
+                </div>
             );
         },
     },
     {
-        description: "Led Zeppelin",
-        title: "Stairway To Heaven",
-        src: "https://assets.aceternity.com/demos/led-zeppelin.jpeg",
-        ctaText: "Play",
-        ctaLink: "https://ui.aceternity.com/templates",
+        description: "Google DeepMind",
+        title: "Gemini 2.5 Pro",
+        src: "/model-card-images/gemini-25-pro.png",
+        ctaText: "Try",
+        ctaLink: "/chat",
         content: () => {
             return (
-                <p>
-                    Led Zeppelin, a legendary British rock band, is renowned for their
-                    innovative sound and profound impact on the music industry. Formed in
-                    London in 1968, they have become a cultural icon in the rock music
-                    world. <br /> <br /> Their songs often reflect a blend of blues, hard
-                    rock, and folk music, capturing the essence of the 1970s rock era.
-                    With a career spanning over a decade, Led Zeppelin has released
-                    numerous hit albums and singles that have garnered them a massive fan
-                    following both in the United Kingdom and abroad.
-                </p>
+                <div className="space-y-3">
+                    <p className="font-medium">Gemini 2.5 Pro | Google DeepMind Artificial Intelligence</p>
+                    
+                    <p>
+                        Gemini 2.5 Pro, unveiled by Google DeepMind in March 2025, sets a new benchmark in multimodal AI with exceptional 
+                        reasoning and analysis capabilities.
+                    </p>
+                    
+                    <p>
+                        Featuring a vast 1 million token context window, it achieves leading scores of 84.0% on GPQA and 86.7% on AIME 2025 benchmarks.
+                    </p>
+                    
+                    <p>
+                        Gemini 2.5 Pro seamlessly processes text, images, audio, video, and code, enhancing interactive simulations and data-driven tasks.
+                    </p>
+                    
+                    <p>
+                        Accessible via Google AI Studio and Vertex AI, it is freely available with advanced options, providing unmatched versatility for
+                        complex business solutions.
+                    </p>
+                </div>
             );
         },
     },
     {
-        description: "Mustafa Zahid",
-        title: "Toh Phir Aao",
-        src: "https://assets.aceternity.com/demos/toh-phir-aao.jpeg",
-        ctaText: "Play",
-        ctaLink: "https://ui.aceternity.com/templates",
+        description: "OpenAI",
+        title: "GPT 4.1",
+        src: "/model-card-images/gpt-41.jpg",
+        ctaText: "Try",
+        ctaLink: "/chat",
         content: () => {
             return (
-                <p>
-                    &quot;Aawarapan&quot;, a Bollywood movie starring Emraan Hashmi, is
-                    renowned for its intense storyline and powerful performances. Directed
-                    by Mohit Suri, the film has become a significant work in the Indian
-                    film industry. <br /> <br /> The movie explores themes of love,
-                    redemption, and sacrifice, capturing the essence of human emotions and
-                    relationships. With a gripping narrative and memorable music,
-                    &quot;Aawarapan&quot; has garnered a massive fan following both in
-                    India and abroad, solidifying Emraan Hashmi&apos;s status as a
-                    versatile actor.
-                </p>
+                <div className="space-y-3">
+                    <p className="font-medium">GPT-4.1 | OpenAI Artificial Intelligence</p>
+                    
+                    <p>
+                        GPT-4.1, released by OpenAI in April 2025, redefines AI-assisted development with a robust 1 million token context window 
+                        ideal for processing large codebases and extensive documentation.
+                    </p>
+                    
+                    <p>
+                        Excelling in multimodal tasks with a 72.0% score on Video-MME and favored by human evaluators in 80% of assessments, 
+                        GPT-4.1 streamlines coding and frontend development workflows.
+                    </p>
+                    
+                    <p>
+                        Available via the OpenAI API and Azure OpenAI Service, GPT-4.1 combines precision with versatility, 
+                        greatly enhancing productivity and creativity for developers and enterprises alike.
+                    </p>
+                </div>
+            );
+        },
+    },
+    {
+        description: "Meta",
+        title: "Llama 4",
+        src: "/model-card-images/llama-4.jpg",
+        ctaText: "Try",
+        ctaLink: "/chat",
+        content: () => {
+            return (
+                <div className="space-y-3">
+                    <p className="font-medium">Llama 4 | Meta Artificial Intelligence</p>
+                    
+                    <p>
+                        Llama 4, announced by Meta in April 2025, pioneers open-weight multimodal AI using innovative Mixture-of-Experts technology.
+                    </p>
+                    
+                    <p>
+                        Its variants, Scout and Maverick, combine 17 billion active parameters with extensive context capabilities (up to 10 million tokens), 
+                        excelling in coding, reasoning, and multimedia understanding.
+                    </p>
+                    
+                    <p>
+                        Trained on over 30 trillion tokens across diverse media, Llama 4 achieves superior performance and efficiency, 
+                        operating seamlessly even on single GPUs.
+                    </p>
+                    
+                    <p>
+                        Available on Hugging Face and Meta AI platforms, Llama 4 is a powerful tool driving innovation across diverse business applications.
+                    </p>
+                </div>
+            );
+        },
+    },
+    {
+        description: "xAI",
+        title: "Grok 3",
+        src: "/model-card-images/grok-3.jpg",
+        ctaText: "Try",
+        ctaLink: "/chat",
+        content: () => {
+            return (
+                <div className="space-y-3">
+                    <p className="font-medium">Grok 3 | xAI Artificial Intelligence</p>
+                    
+                    <p>
+                        Grok 3, introduced by xAI in February 2025, delivers cutting-edge AI with advanced reasoning and intuitive user-centric features.
+                    </p>
+                    
+                    <p>
+                        Its Think Mode provides transparent, step-by-step analysis, while DeepSearch offers real-time, web-integrated insights.
+                    </p>
+                    
+                    <p>
+                        Grok 3 excels across multimodal tasks, surpassing GPT-4o on key benchmarks like AIME and GPQA. 
+                        It uniquely offers specialized modes including adult-oriented interactions.
+                    </p>
+                    
+                    <p>
+                        Available via xAI API, X Premium+, and SuperGrok subscriptions, Grok 3 ensures businesses achieve unmatched flexibility, 
+                        transparency, and personalized user engagement.
+                    </p>
+                </div>
+            );
+        },
+    },
+    {
+        description: "AI Matrx",
+        title: "Matrx-AI 1.0",
+        src: "/model-card-images/matrx-ai-1.0-2.jpg",
+        ctaText: "Try",
+        ctaLink: "/chat",
+        content: () => {
+            return (
+                <div className="space-y-3">
+                    <p className="font-medium">Matrx-AI 1.0 | AI Matrx</p>
+                    
+                    <p>
+                        Matrx-AI-1.0, launched in 2025, fuses the power of Grok 3, Gemini 2.5 Pro, and GPT-4.1 into a single, intelligent system.
+                    </p>
+                    
+                    <p>
+                        Its unique task-routing optimizes each request, delivering lightning-fast responses and unmatched quality.
+                    </p>
+                    
+                    <p>
+                        Excelling in coding (54.6% on SWE-bench Verified), multimodal processing (72.0% on Video-MME), and reasoning (86.7% on AIME 2025), 
+                        it handles vast datasets with a 1M token context window.
+                    </p>
+                    
+                    <p>
+                        Available via a scalable API, Matrx-AI-1.0 empowers businesses with seamless, high-performance solutions for software development, 
+                        analytics, and innovation.
+                    </p>
+                </div>
             );
         },
     },

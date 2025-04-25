@@ -1,4 +1,35 @@
 // File location: components/socket-io/form-builder/field-components/SocketTaskSwitch.tsx
+/*
+COMPONENT SCHEMA REQUIREMENTS:
+{
+  "fieldName": {
+    "COMPONENT": "switch",
+    "DATA_TYPE": "boolean",
+    "DEFAULT": false, // Default value (true or false)
+    "REQUIRED": true/false,
+    "COMPONENT_PROPS": {
+      "className": "your-custom-class", // Optional
+      "disabled": false, // Optional - Disable the switch
+      "labelPosition": "right" // Optional - Position of the label ("right" or "left")
+    }
+  }
+}
+
+IMPORTANT NOTES:
+1. The switch component stores a boolean value (true/false) in Redux
+2. Unlike other components, the switch is always paired with its label in the UI
+3. The component displays an icon - customize with ICON_NAME property (defaults to "File")
+4. The label text is taken from DESCRIPTION or derived from the field name
+5. No specific REQUIRED props in COMPONENT_PROPS - all are optional
+
+The component will:
+- Store a boolean value in Redux
+- Toggle between true/false when clicked
+- Show validation errors if the value doesn't meet requirements
+- Validate immediately on change (no blur event needed)
+- Support test mode for automated testing with TEST_VALUE
+- Support light and dark mode through Tailwind classes
+*/
 import React, { useCallback, useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import * as LucideIcons from "lucide-react";

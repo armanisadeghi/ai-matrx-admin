@@ -17,7 +17,8 @@ export const TaskFieldBrokerValues: React.FC<TaskFieldBrokerValuesProps> = ({
   fieldPath,
   className = '',
 }) => {
-  const { definition } = useTaskField(taskId, taskName, fieldPath);
+
+  
   
   // Get the reference schema for broker values
   const brokerSchema = definition?.REFERENCE;
@@ -65,7 +66,6 @@ export const TaskFieldBrokerValues: React.FC<TaskFieldBrokerValuesProps> = ({
   return (
     <TaskFieldArrayWrapper
       taskId={taskId}
-      taskName={taskName}
       fieldPath={fieldPath}
       renderItem={renderBrokerItem}
       emptyItem={emptyBroker}

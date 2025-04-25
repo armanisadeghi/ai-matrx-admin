@@ -248,7 +248,7 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     }
 
     .light-mode-border {
-        border: 1px solid hsl(var(--border));
+        @apply border border-gray-200;
     }
 
     .light-mode-bg-gradient {
@@ -344,6 +344,15 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
     /* Optional active effect for the scrollbar thumb */
     .scrollbar-thin::-webkit-scrollbar-thumb:active {
         background-color: var(--secondary); /* Different color when the thumb is active */
+    }
+
+    .scrollbar-none {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;     /* Firefox */
+    }
+    
+    .scrollbar-none::-webkit-scrollbar {
+        display: none;             /* Chrome, Safari and Opera */
     }
 }
 

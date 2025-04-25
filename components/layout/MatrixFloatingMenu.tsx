@@ -7,7 +7,12 @@ import { SiGooglechat } from "react-icons/si";
 import { AiFillAudio } from "react-icons/ai";
 import FloatingDock from "@/components/official/FloatingDock";
 
+/**
+ * @deprecated Use MatrxFloatingMenu instead which uses the centralized navigation links
+ */
 export function MatrixFloatingMenu() {
+    console.warn("MatrixFloatingMenu is deprecated. Please use MatrxFloatingMenu instead.");
+    
     const links = [
         {
             label: "Home",
@@ -22,7 +27,7 @@ export function MatrixFloatingMenu() {
         {
             label: "Cockpit",
             icon: <FaBrain className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
-            href: "/cockpit",
+            href: "/ai/cockpit",
         },
         {
             label: "Applets",
@@ -38,7 +43,7 @@ export function MatrixFloatingMenu() {
         {
             label: "Image Generation",
             icon: <FaImage className="h-full w-full text-neutral-500 dark:text-neutral-300" />,
-            href: "/image-editing/unsplash",
+            href: "/image-editing/public-image-search",
         },
 
         {

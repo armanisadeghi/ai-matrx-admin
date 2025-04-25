@@ -6,8 +6,13 @@ import FullScreenOverlay from "@/components/official/FullScreenOverlay";
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
 import TaskDataDebug from "@/components/socket-io/form-builder/TaskDataDebug";
 import { getAllFieldPaths } from "@/constants/socket-schema";
-import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
+import FancyJsonExplorer from "@/features/scraper/parts/FancyJsonExplorer";
+import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
+import BookmarkViewer from "@/features/scraper/parts/BookmarkViewer";
+import { selectTaskResponsesByTaskId, selectPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectTaskById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 
 export interface DebugModalProps {
   taskId: string;
@@ -16,10 +21,11 @@ export interface DebugModalProps {
 
 const SocketDebugModal: React.FC<DebugModalProps> = ({ taskId, debugMode = true }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const taskState = useSelector((state: RootState) => 
-    taskId ? state.socketTasks.tasks[taskId] : null
-  );
+  const taskState = useAppSelector((state: RootState) => selectTaskById(state, taskId));
   const allFieldPaths = getAllFieldPaths(taskState?.taskName || "");
+
+  const allResponses = useAppSelector((state: RootState) => selectTaskResponsesByTaskId(taskId)(state));
+  const dataResponse = useAppSelector((state: RootState) => selectPrimaryResponseDataByTaskId(taskId)(state));
 
   const handleOpen = () => setIsOpen(true);
   const handleClose = () => setIsOpen(false);
@@ -86,6 +92,33 @@ const SocketDebugModal: React.FC<DebugModalProps> = ({ taskId, debugMode = true 
           >
             <TaskDataDebug taskId={taskId} show={debugMode} />
           </AccordionWrapper>
+        </div>
+      ),
+    },
+    {
+      id: "fancy-task-data",
+      label: "Fancy Json Explorer",
+      content: (
+        <div className="p-4">
+          <FancyJsonExplorer pageData={allResponses} />
+        </div>
+      ),
+    },
+    {
+      id: "raw-task-data",
+      label: "Raw Json Explorer (Data)",
+      content: (
+        <div className="p-4">
+          <RawJsonExplorer pageData={dataResponse} />
+        </div>
+      ),
+    },
+    {
+      id: "bookmarks",
+      label: "Bookmark Viewer",
+      content: (
+        <div className="p-4">
+          <BookmarkViewer pageData={allResponses} />
         </div>
       ),
     },

@@ -166,7 +166,7 @@ export const primaryLinks = [
 
     {
         label: "Image Gallery",
-        href: "/image-editing/unsplash", // https://lucide.dev/icons/
+        href: "/image-editing/public-image-search", // https://lucide.dev/icons/
         icon: <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
@@ -225,6 +225,11 @@ export const secondaryLinks = [
         label: "Admin Dashboard",
         href: "/admin",
         icon: <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Official Components",
+        href: "/admin/official-components",
+        icon: <Puzzle className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Matrx Table",

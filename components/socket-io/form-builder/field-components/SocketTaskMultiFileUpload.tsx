@@ -1,4 +1,39 @@
 // File location: components/socket-io/form-builder/field-components/SocketTaskMultiFileUpload.tsx
+/*
+COMPONENT SCHEMA REQUIREMENTS:
+{
+  "fieldName": {
+    "COMPONENT": "multifileupload",
+    "DATA_TYPE": "array", // Array of file information
+    "DEFAULT": [], // Default empty array
+    "REQUIRED": true/false,
+    "COMPONENT_PROPS": {
+      "className": "your-custom-class", // Optional
+      "maxFiles": 10, // Optional - Maximum number of files allowed
+      "accept": ".jpg,.png,.pdf", // Optional - Accepted file types (mime types or extensions)
+      "maxSize": 5242880, // Optional - Maximum file size in bytes (e.g., 5MB)
+      "disabled": false, // Optional - Disable the upload button
+      "buttonText": "Upload Files" // Optional - Custom text for the upload button
+    }
+  }
+}
+
+IMPORTANT NOTES:
+1. The component stores an array of files/file information in Redux
+2. The DEFAULT value should always be an empty array []
+3. Each file in the array can be either a string (file path/name) or an object with file metadata
+4. The component includes both the upload button and a list of uploaded files
+5. Files can be removed individually after upload
+6. The component displays an icon - customize with ICON_NAME property (defaults to "File")
+
+The component will:
+- Store an array of file information in Redux
+- Allow uploading multiple files
+- Display a list of uploaded files with remove buttons
+- Show validation errors if required files are missing
+- Support test mode for automated testing with TEST_VALUE
+- Support light and dark mode through Tailwind classes
+*/
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import * as LucideIcons from "lucide-react";

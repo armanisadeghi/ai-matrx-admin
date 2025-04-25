@@ -1,4 +1,45 @@
 // File location: components/socket-io/form-builder/field-components/SocketTaskRadioGroup.tsx
+/*
+COMPONENT SCHEMA REQUIREMENTS:
+{
+  "fieldName": {
+    "COMPONENT": "radiogroup",
+    "DATA_TYPE": "string",
+    "DEFAULT": "", // Default selected value (must match an option value)
+    "REQUIRED": true/false,
+    "COMPONENT_PROPS": {
+      "className": "your-custom-class", // Optional
+      "options": [ // REQUIRED - Array of options for the radio buttons
+        { 
+          "label": "Option 1 Display Text", // REQUIRED - Text shown next to the radio button
+          "value": "option1" // REQUIRED - Value stored in Redux when selected
+        },
+        { 
+          "label": "Option 2 Display Text",
+          "value": "option2"
+        }
+      ],
+      "layout": "vertical", // Optional - "vertical" (default) or "horizontal"
+      "disabled": false // Optional - Disable all radio buttons
+    }
+  }
+}
+
+IMPORTANT NOTES:
+1. The "options" array in COMPONENT_PROPS is REQUIRED and must contain objects with "label" and "value" properties
+2. Each option must have a unique "value" property
+3. If no options are provided, the radio group will be empty and unusable
+4. Radio buttons are stacked vertically by default
+5. The component displays an icon - customize with ICON_NAME property (defaults to "File")
+
+The component will:
+- Store the selected option value (string) in Redux
+- Display radio buttons with the provided options
+- Show validation errors if required field is not selected
+- Validate immediately on selection (no blur event needed)
+- Support test mode for automated testing with TEST_VALUE
+- Support light and dark mode through Tailwind classes
+*/
 import React, { useCallback, useEffect, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import * as LucideIcons from "lucide-react";

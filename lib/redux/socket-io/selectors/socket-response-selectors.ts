@@ -12,7 +12,6 @@ export const selectResponseByListenerId =
     (state: RootState): ResponseState | undefined =>
         state.socketResponse[listenerId] as ResponseState | undefined;
 
-
 // Memoized response selectors
 export const selectResponsesByTaskId = createSelector(
     [(state: RootState) => state.socketResponse, (_, taskId: string) => taskId],
@@ -27,22 +26,20 @@ export const selectResponsesByTaskId = createSelector(
     }
 );
 
-
-
-
 export const selectResponseTextByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.text || "";
 
 export const selectResponseDataByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.data || [];
 
 export const selectResponseInfoByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.info || [];
 
-export const selectResponseErrorsByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.errors || [];
+export const selectResponseErrorsByListenerId = (listenerId: string) => (state: RootState) =>
+    state.socketResponse[listenerId]?.errors || [];
 
-export const selectResponseEndedByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.ended || false;
+export const selectResponseEndedByListenerId = (listenerId: string) => (state: RootState) =>
+    state.socketResponse[listenerId]?.ended || false;
 
 export const selectHasResponseErrorsByListenerId = (listenerId: string) => (state: RootState) =>
     (state.socketResponse[listenerId]?.errors.length || 0) > 0;
-
 
 // ==================== Combined Task-Response Selectors ====================
 export const selectTaskResponsesByTaskId = (taskId: string) =>
@@ -121,4 +118,43 @@ export const selectTaskError = (taskId: string) =>
         }
     );
 
+export const selectPrimaryResponseTextByTaskId = (taskId: string) =>
+    createSelector(
+        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
+        (response: ResponseState | null) => response?.text || ""
+    );
 
+// Select the first response's data for a taskId
+export const selectPrimaryResponseDataByTaskId = (taskId: string) =>
+    createSelector(
+        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
+        (response: ResponseState | null) => response?.data || []
+    );
+
+// Select the first response's info for a taskId
+export const selectPrimaryResponseInfoByTaskId = (taskId: string) =>
+    createSelector(
+        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
+        (response: ResponseState | null) => response?.info || []
+    );
+
+// Select the first response's errors for a taskId
+export const selectPrimaryResponseErrorsByTaskId = (taskId: string) =>
+    createSelector(
+        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
+        (response: ResponseState | null) => response?.errors || []
+    );
+
+// Select the first response's ended status for a taskId
+export const selectPrimaryResponseEndedByTaskId = (taskId: string) =>
+    createSelector(
+        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
+        (response: ResponseState | null) => response?.ended || false
+    );
+
+// Select whether the first response has errors for a taskId
+export const selectHasPrimaryResponseErrorsByTaskId = (taskId: string) =>
+    createSelector(
+        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
+        (response: ResponseState | null) => (response?.errors?.length || 0) > 0
+    );

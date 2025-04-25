@@ -1,4 +1,39 @@
 // File location: components/socket-io/form-builder/field-components/SocketTaskSlider.tsx
+/*
+COMPONENT SCHEMA REQUIREMENTS:
+{
+  "fieldName": {
+    "COMPONENT": "slider",
+    "DATA_TYPE": "number",
+    "DEFAULT": 50, // Default numerical value within min-max range
+    "REQUIRED": true/false,
+    "COMPONENT_PROPS": {
+      "className": "your-custom-class", // Optional
+      "min": 0, // REQUIRED - Minimum value (default: 0 if not provided)
+      "max": 100, // REQUIRED - Maximum value (default: 100 if not provided)
+      "step": 1, // RECOMMENDED - Step increment (default: 1 if not provided)
+      "disabled": false, // Optional - Disable the slider
+      "showValueLabel": true // Optional - Show current value label
+    }
+  }
+}
+
+IMPORTANT NOTES:
+1. "min" and "max" are REQUIRED for proper functioning - they define the range
+2. "step" is HIGHLY RECOMMENDED to control increment granularity
+3. The component always stores a single numerical value (not an array)
+4. Default value should be within the min-max range
+5. The component shows both a label and the current value
+6. The component displays an icon - customize with ICON_NAME property (defaults to "File")
+
+The component will:
+- Store a single numerical value in Redux
+- Allow sliding within the defined min-max range
+- Update in real-time as the user drags the slider
+- Show validation errors if value is outside allowed range
+- Support test mode for automated testing with TEST_VALUE
+- Support light and dark mode through Tailwind classes
+*/
 import React, { useCallback, useEffect, useState } from "react";
 import { Slider } from "@/components/ui/slider";
 import * as LucideIcons from "lucide-react";

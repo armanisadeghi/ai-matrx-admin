@@ -13,6 +13,9 @@ import {
     SocketTaskCheckbox,
     SocketTaskRadioGroup,
     SocketTaskMultiFileUpload,
+    SocketTaskDatePicker,
+    SocketTaskDateRangePicker,
+    SocketTaskTimePicker,
 } from "./index";
 
 // Common props interface for all field components
@@ -36,6 +39,9 @@ const FIELD_COMPONENTS: Record<string, React.FC<FieldComponentProps>> = {
     jsoneditor: SocketTaskJsonEditor,
     textarea: SocketTaskTextarea,
     input: SocketTaskInput,
+    datepicker: SocketTaskDatePicker,
+    daterangepicker: SocketTaskDateRangePicker,
+    timepicker: SocketTaskTimePicker,
     default: SocketTaskInput
 };
 
