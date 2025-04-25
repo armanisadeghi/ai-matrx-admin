@@ -107,11 +107,38 @@ const SlackManager = () => {
         text: message
       };
 
-      await client.sendMessage(slackMessage);
-      setSuccess('Message sent successfully!');
-      setMessage('');
-      setLoading(false);
+      try {
+        await client.sendMessage(slackMessage);
+        setSuccess('Message sent successfully!');
+        setMessage('');
+      } catch (err: any) {
+        // Handle specific Slack errors
+        if (err.message?.includes('not_in_channel')) {
+          setError('Bot is not in this channel. Attempting to join...');
 
+          // Try to join manually and send again
+          const joined = await client.joinChannel(selectedChannel);
+          if (joined) {
+            try {
+              await client.sendMessage(slackMessage);
+              setSuccess('Bot joined channel and sent message successfully!');
+              setMessage('');
+            } catch (innerErr) {
+              setError('Failed to send message after joining channel. You may need to manually invite the bot using /invite @YourBotName');
+            }
+          } else {
+            setError('Failed to join channel. This might be a private channel - please manually invite the bot using /invite @YourBotName');
+          }
+        } else if (err.message?.includes('channel_not_found')) {
+          setError('Channel not found. Please select a valid channel.');
+        } else if (err.message?.includes('invalid_auth')) {
+          setError('Authentication failed. Your token may be invalid or expired.');
+        } else {
+          setError(`Failed to send message: ${err.message}`);
+        }
+      }
+
+      setLoading(false);
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setLoading(false);
@@ -151,9 +178,7 @@ const SlackManager = () => {
   };
 
   return (
-      <div className="max-w-4xl mx-auto p-6 rounded-lg shadow-md border border-gray-500">
-        <h1 className="text-2xl font-bold mb-6">Slack Integration Manager</h1>
-
+      <div className="max-w-4xl mx-auto">
         {/* Token Management */}
         <div className="mb-8 p-4 rounded shadow border border-gray-500">
           <h2 className="text-xl font-semibold mb-4">Token Management</h2>
@@ -213,7 +238,7 @@ const SlackManager = () => {
             >
               <option value="">Select a channel</option>
               {channels.map(channel => (
-                  <option key={channel.id} value={channel.id}>
+                  <option key={channel.id} value={channel.id} className="bg-gray-700">
                     #{channel.name}
                   </option>
               ))}

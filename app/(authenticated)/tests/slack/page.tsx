@@ -13,6 +13,7 @@ const scopes = [
   'files:write',
   'users:read',
   'groups:read',
+  'channels:join',
 ];
 const redirectUri = process.env.NEXT_PUBLIC_SLACK_REDIRECT_URL;
 
@@ -98,7 +99,7 @@ const SlackPage = () => {
               <div className="p-8 rounded-lg shadow-md text-center">
                 <h2 className="text-xl font-semibold mb-4">Welcome to Slack Integration</h2>
                 <p className="mb-6">To get started, add your Slack app to your workspace using the "Add to Slack" button above, or add your token manually if you already have one.</p>
-                <p className="text-sm text-gray-500">Note: For testing purposes, we're storing your tokens in localStorage. In a production environment, these should be securely stored on your server.</p>
+                <p className="text-sm text-gray-300">Note: For testing purposes, we're storing your tokens in localStorage. In a production environment, these should be securely stored on your server.</p>
               </div>
           )}
         </div>
