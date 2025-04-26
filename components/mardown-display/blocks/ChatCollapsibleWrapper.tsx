@@ -5,7 +5,7 @@ import { ChevronDown } from "lucide-react";
 
 interface ChatCollapsibleWrapperProps {
     icon: ReactNode;
-    title: string;
+    title: ReactNode; // Changed from string to ReactNode
     initialOpen?: boolean;
     onStateChange?: (state: any) => void;
     children: ReactNode;
@@ -38,7 +38,7 @@ const ChatCollapsibleWrapper: React.FC<ChatCollapsibleWrapperProps> = ({
             <CollapsibleTrigger className="relative flex w-full items-center justify-between rounded-t-lg py-3 px-4 font-medium hover:bg-accent/50 hover:shadow-sm">
                 <div className="flex items-center gap-2">
                     {icon}
-                    <span>{title}</span>
+                    {typeof title === 'string' ? <span>{title}</span> : title}
                 </div>
                 <ChevronDown
                     className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}

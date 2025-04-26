@@ -44,6 +44,7 @@ export interface MessageToolbarProps {
     onDebugClick?: (messageRecordId: MatrxRecordId) => void;
     onDisplayOptionChange: (messageRecordId: MatrxRecordId, displayOption: DisplayOption) => void;
     currentDisplayOption?: DisplayOption;
+    onToggleFullDisplay?: (messageRecordId: MatrxRecordId) => void;
 }
 
 // Super simple action button without tooltip
@@ -106,6 +107,7 @@ const MessageToolbar = ({
     onDebugClick,
     onDisplayOptionChange,
     currentDisplayOption = "textChat",
+    onToggleFullDisplay = () => {},
 }) => {
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -126,16 +128,6 @@ const MessageToolbar = ({
     // Display options - defined inline to avoid any memoization issues
     const displayOptions = [
         {
-            value: "brokerEditor",
-            label: "Broker Editor",
-            icon: <Code className="h-4 w-4" />,
-        },
-        {
-            value: "textChat",
-            label: "Text Chat",
-            icon: <MessageSquare className="h-4 w-4" />,
-        },
-        {
             value: "richText",
             label: "Rich Text",
             icon: <FileText className="h-4 w-4" />,
@@ -145,6 +137,17 @@ const MessageToolbar = ({
             label: "Markdown",
             icon: <RiMarkdownFill className="h-4 w-4" />,
         },
+        {
+            value: "brokerEditor",
+            label: "Broker Editor",
+            icon: <Code className="h-4 w-4" />,
+        },
+        {
+            value: "textChat",
+            label: "Text Chat",
+            icon: <MessageSquare className="h-4 w-4" />,
+        },
+
     ];
     
     // Define actions - defined inline to avoid any memoization issues

@@ -1,10 +1,16 @@
 import { ContentBlock } from "../EnhancedChatMarkdown";
+import { getMetadataFromText, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
+
+const MATRX_START = /<<<MATRX_START>>>/;
+const MATRX_END = /<<<MATRX_END>>>/;
 
 export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     const blocks: ContentBlock[] = [];
     let currentText = "";
     const lines = mdContent.split(/\r?\n/);
     let insideMarkdownBlock = false;
+    let insideMatrxBlock = false;
+    let matrxContent: string[] = [];
 
     // List of special tags to handle
     const specialTags = ["info", "task", "database", "private", "plan", "event", "tool"];
@@ -35,6 +41,79 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     while (i < lines.length) {
         const line = lines[i];
         const trimmedLine = line.trim();
+
+        // Handle MATRX pattern
+        if (!insideMatrxBlock && trimmedLine.match(MATRX_START)) {
+            if (currentText.trim()) {
+                blocks.push({ type: "text", content: currentText.trimEnd() });
+                currentText = "";
+            }
+            if (trimmedLine.match(MATRX_END)) {
+                // Single-line pattern
+                console.log(`Single-line MATRX pattern detected at line ${i}: ${trimmedLine}`);
+                try {
+                    console.log(`Calling getMetadataFromText with:`, trimmedLine);
+                    const metadata: MatrxMetadata[] = getMetadataFromText(trimmedLine);
+                    console.log(`Metadata extracted:`, metadata);
+                    if (metadata.length > 0) {
+                        const matrxBlock = {
+                            type: "matrxBroker",
+                            content: trimmedLine,
+                            metadata: metadata[0],
+                        };
+                        blocks.push(matrxBlock);
+                        console.log(`matrxBroker block added:`, matrxBlock);
+                    } else {
+                        console.log(`No metadata extracted for single-line MATRX pattern, adding as text`);
+                        currentText += trimmedLine + "\n";
+                    }
+                } catch (error) {
+                    console.error(`Error processing single-line MATRX pattern:`, error);
+                    console.log(`Adding unprocessed single-line MATRX content as text`);
+                    currentText += trimmedLine + "\n";
+                }
+            } else {
+                insideMatrxBlock = true;
+                matrxContent = [line];
+                console.log(`MATRX_START detected at line ${i}: ${trimmedLine}`);
+            }
+            i++;
+            continue;
+        }
+
+        if (insideMatrxBlock) {
+            matrxContent.push(line);
+            console.log(`Checking for MATRX_END at line ${i}: ${trimmedLine}`);
+            if (trimmedLine.match(MATRX_END)) {
+                insideMatrxBlock = false;
+                const fullMatrxContent = matrxContent.join("\n");
+                console.log(`MATRX_END detected at line ${i}, full content:`, fullMatrxContent);
+                try {
+                    console.log(`Calling getMetadataFromText with:`, fullMatrxContent);
+                    const metadata: MatrxMetadata[] = getMetadataFromText(fullMatrxContent);
+                    console.log(`Metadata extracted:`, metadata);
+                    if (metadata.length > 0) {
+                        const matrxBlock = {
+                            type: "matrxBroker",
+                            content: fullMatrxContent,
+                            metadata: metadata[0],
+                        };
+                        blocks.push(matrxBlock);
+                        console.log(`matrxBroker block added:`, matrxBlock);
+                    } else {
+                        console.log(`No metadata extracted for MATRX pattern, adding as text block`);
+                        currentText += fullMatrxContent + "\n";
+                    }
+                } catch (error) {
+                    console.error(`Error processing MATRX pattern:`, error);
+                    console.log(`Adding unprocessed MATRX content as text block`);
+                    currentText += fullMatrxContent + "\n";
+                }
+                matrxContent = [];
+            }
+            i++;
+            continue;
+        }
 
         // Handle ```markdown opening marker
         if (trimmedLine === "```markdown") {
@@ -231,9 +310,16 @@ export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
         i++;
     }
 
+    // Handle incomplete MATRX pattern
+    if (insideMatrxBlock && matrxContent.length > 0) {
+        console.log(`Incomplete MATRX pattern detected, adding as text:`, matrxContent);
+        currentText += matrxContent.join("\n") + "\n";
+    }
+
     if (currentText.trim()) {
         blocks.push({ type: "text", content: currentText.trimEnd() });
     }
 
+    console.log(`Final blocks array:`, blocks);
     return blocks;
 };

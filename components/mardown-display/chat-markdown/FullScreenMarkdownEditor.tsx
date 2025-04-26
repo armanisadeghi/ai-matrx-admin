@@ -13,6 +13,7 @@ import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScre
 // Import the Toast UI Editor dark theme CSS
 import "@toast-ui/editor/dist/toastui-editor.css";
 import "@toast-ui/editor/dist/theme/toastui-editor-dark.css";
+import EnhancedChatMarkdown from "./EnhancedChatMarkdown";
 
 const TuiEditor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), {
     ssr: false,
@@ -20,7 +21,6 @@ const TuiEditor = dynamic(() => import("@toast-ui/react-editor").then((mod) => m
 });
 
 const loadColorSyntaxPlugin = () => import("@toast-ui/editor-plugin-color-syntax").then((mod) => mod.default);
-const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 interface FullScreenMarkdownEditorProps {
     isOpen: boolean;
@@ -177,8 +177,11 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             } catch (e) {
                 console.error("Error getting final markdown from TUI editor on save:", e);
             }
+        } else {
+            finalMarkdown = editedContent;
         }
         if (onSave) {
+            console.log("--> FullScreenMarkdownEditor: handleSave: onSave: finalMarkdown: ", finalMarkdown);
             onSave(finalMarkdown);
         }
     };
@@ -245,11 +248,24 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             id: "preview",
             label: "Preview",
             content: (
-                <div className="prose dark:prose-invert max-w-none">
-                    {isClient && <ReactMarkdown remarkPlugins={[remarkGfm]}>{editedContent}</ReactMarkdown>}
+                <div className="w-full h-full overflow-auto bg-background dark:bg-background">
+                    <div className="flex justify-center min-h-full">
+                        <div className="max-w-[750px] w-full p-6 border-x-3 border-gray-500 dark:border-gray-500 shadow-sm min-h-full">
+                            <EnhancedChatMarkdown
+                                content={editedContent}
+                                type="message"
+                                role="assistant"
+                                className="bg-transparent dark:bg-transparent p-4"
+                                isStreamActive={false}
+                                analysisData={analysisData}
+                                messageId={messageId}
+                                allowFullScreenEditor={false}
+                            />
+                        </div>
+                    </div>
                 </div>
             ),
-            className: "p-4"
+            className: "p-0"
         });
     }
     

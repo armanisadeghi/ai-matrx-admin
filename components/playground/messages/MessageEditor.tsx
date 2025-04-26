@@ -10,6 +10,7 @@ import { BrokerMetaData, ChipData } from "@/types/editor.types";
 import useChipHandlers from "../hooks/brokers/useChipHandlers";
 import { TextPlaceholderEffect } from "./TextPlaceholderEffect";
 import { useEditorContext } from "@/providers/rich-text-editor/Provider";
+import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 
 const DEBUG_STATUS = true;
 const DEBUG_PRINTS = false;
@@ -63,6 +64,8 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     const [lastSavedContent, setLastSavedContent] = useState("");
     const [isEditorHidden, setIsEditorHidden] = useState(isCollapsed);
     const [debugVisible, setDebugVisible] = useState(false);
+    const [isFullScreenMarkdownEditorOpen, setIsFullScreenMarkdownEditorOpen] = useState(false);
+
     const { actions: messageActions } = useEntityTools("messageTemplate");
     const { handleChipClick, handleChipDoubleClick, handleChipMouseEnter, handleChipMouseLeave, handleChipContextMenu, addDialogHandler } =
         useChipHandlers(messageRecordId);
@@ -79,6 +82,7 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
 
     const updateMessageContent = useCallback(
         (content: string) => {
+            console.log("--> MessageEditor: updateMessageContent: Dispatching action to update content: ", content);
             dispatch(
                 messageActions.updateUnsavedField({
                     recordId: messageRecordId,
@@ -235,8 +239,45 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
     }, []);
 
     const handleDisplayOptionChange = useCallback((messageRecordId: MatrxRecordId, displayOption: DisplayOption) => {
+        if (displayOption === "markdown") {
+            setIsFullScreenMarkdownEditorOpen(true);
+        }
+
         setCurrentDisplayOption(displayOption);
     }, []);
+
+    const markdownAnalysisData = null;
+
+    const handleFullDisplayCancel = () => {
+        setIsFullScreenMarkdownEditorOpen(false);
+    };
+
+    const handleValidateContent = (newContent: string) => {
+        const isContentValid = true;
+        console.log("Validating content:", newContent);
+        return isContentValid;
+    };
+
+    const handleFullDisplaySave = (newContent: string) => {
+        console.log("--> MessageEditor: handleFullDisplaySave: newContent: ", newContent);
+        const isContentValid = handleValidateContent(newContent);
+        console.log("--> MessageEditor: handleFullDisplaySave: isContentValid: ", isContentValid);
+        if (isContentValid) {
+            context.setContent(messageRecordId, newContent);
+            
+            setTimeout(() => {
+                handleSave();
+            }, 100);
+            // message.content = newContent;
+            // updateMessageContent(newContent);
+            // console.log("--> MessageEditor: handleFullDisplaySave: message.content: ", message.content);
+            setIsFullScreenMarkdownEditorOpen(false);
+        }
+    };
+
+    const handleToggleFullDisplay = () => {
+        setIsFullScreenMarkdownEditorOpen((prev) => !prev);
+    };
 
     return (
         <Card className="h-full p-0 overflow-hidden bg-background border-elevation2">
@@ -284,6 +325,15 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
                         {...props}
                     />
                 )}
+                <FullScreenMarkdownEditor
+                    isOpen={isFullScreenMarkdownEditorOpen}
+                    initialContent={message.content}
+                    onSave={handleFullDisplaySave}
+                    onCancel={handleFullDisplayCancel}
+                    analysisData={markdownAnalysisData}
+                    messageId={message.id}
+                    initialTab="preview"
+                />
             </div>
         </Card>
     );
