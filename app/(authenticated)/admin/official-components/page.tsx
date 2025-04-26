@@ -7,16 +7,21 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { componentList } from './component-list';
+import { componentList, ComponentEntry } from './component-list';
 import dynamic from 'next/dynamic';
 import { FileCode } from 'lucide-react';
+
+// Create a type for the dynamic component that accepts component prop
+type ComponentDisplayProps = {
+  component?: ComponentEntry;
+};
 
 export default function OfficialComponentsPage() {
   const [selectedComponent, setSelectedComponent] = useState(componentList[0]?.id || '');
 
   // Dynamically import the selected component with fallback
   const ComponentDisplay = selectedComponent 
-    ? dynamic(() => import(`./component-displays/${selectedComponent}`).catch(() => {
+    ? dynamic<ComponentDisplayProps>(() => import(`./component-displays/${selectedComponent}`).catch(() => {
         // Fallback to placeholder if component display doesn't exist
         return import('./component-displays/placeholder');
       }), {

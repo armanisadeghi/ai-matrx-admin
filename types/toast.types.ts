@@ -15,4 +15,6 @@ export type ToastOptions = {
         onClick: () => void;
         className?: string;
     };
+    // Add className for styling control
+    className?: string;
 };

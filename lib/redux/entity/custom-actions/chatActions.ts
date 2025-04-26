@@ -58,8 +58,8 @@ export const getChatActions = (dispatch: AppDispatch) => {
         createConversationAndMessage: (params: { messageContent: string }) =>
             dispatch(createConversationAndMessage({ messageContent: params.messageContent })),
 
-        saveConversationAndMessage: (params: { conversationTempId: MatrxRecordId; messageTempId: MatrxRecordId }) =>
-            dispatch(saveConversationAndMessage({ conversationTempId: params.conversationTempId, messageTempId: params.messageTempId })),
+        saveConversationAndMessage: (params: { conversationTempId: MatrxRecordId; messageTempId: MatrxRecordId; taskId: string }) =>
+            dispatch(saveConversationAndMessage({ conversationTempId: params.conversationTempId, messageTempId: params.messageTempId, taskId: params.taskId })),
 
         saveMessageForConversation: (params: { messageTempId: MatrxRecordId }) =>
             dispatch(saveMessageThunk({ messageTempId: params.messageTempId })),
@@ -495,7 +495,7 @@ export const getChatActionsWithThunks = () => {
         },
 
         saveConversationAndMessage:
-            (params: { conversationTempId?: MatrxRecordId; messageTempId?: MatrxRecordId }) =>
+            (params: { conversationTempId?: MatrxRecordId; messageTempId?: MatrxRecordId; taskId?: string }) =>
             (dispatch: AppDispatch, getState: () => RootState) => {
                 const convKeyOrId = params.conversationTempId ?? getState().entities["conversation"].selection.activeRecord;
                 const msgKeyOrId = params.messageTempId ?? getState().entities["message"].selection.activeRecord;
@@ -509,7 +509,7 @@ export const getChatActionsWithThunks = () => {
                         value: "submitted",
                     })
                 );
-                return dispatch(saveConversationAndMessage({ conversationTempId: convKeyOrId, messageTempId: msgKeyOrId }));
+                return dispatch(saveConversationAndMessage({ conversationTempId: convKeyOrId, messageTempId: msgKeyOrId, taskId: params.taskId }));
             },
 
         updateConversationFieldSmart:

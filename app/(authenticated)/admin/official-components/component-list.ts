@@ -58,6 +58,12 @@ export const componentList: ComponentEntry[] = [
     description: 'Floating dock component for persistent tools or actions',
   },
   {
+    id: 'icon-select',
+    name: 'Icon Select',
+    path: 'components/official/IconSelect.tsx',
+    description: 'Icon-only select component with dropdown of labeled items',
+  },
+  {
     id: 'json-explorer',
     name: 'JSON Explorer',
     path: 'features/scraper/parts/RawJsonExplorer.tsx',

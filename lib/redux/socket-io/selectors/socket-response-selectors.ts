@@ -53,16 +53,6 @@ export const selectTaskResponsesByTaskId = (taskId: string) =>
             }))
     );
 
-export const selectPrimaryResponseForTask = (taskId: string) =>
-    createSelector(
-        (state: RootState) => selectTaskListenerIds(state, taskId),
-        (state: RootState) => state.socketResponse,
-        (listenerIds, responses) => {
-            if (listenerIds.length === 0) return null;
-            return responses[listenerIds[0]] as ResponseState;
-        }
-    );
-
 export const selectTaskResults = (taskId: string) =>
     createSelector(
         (state: RootState) => selectTaskListenerIds(state, taskId),
@@ -118,43 +108,104 @@ export const selectTaskError = (taskId: string) =>
         }
     );
 
+export const selectPrimaryResponseForTask = (taskId: string) =>
+    createSelector(
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return null;
+            return responses[listenerIds[0]] as ResponseState;
+        }
+    );
+
+// Fix: Don't call a selector factory inside another selector
 export const selectPrimaryResponseTextByTaskId = (taskId: string) =>
     createSelector(
-        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
-        (response: ResponseState | null) => response?.text || ""
+        // Use the same input selectors as the parent
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        // Re-implement the core logic and then add the specific field selection
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return "";
+            const response = responses[listenerIds[0]] as ResponseState;
+            return response?.text || "";
+        }
     );
 
-// Select the first response's data for a taskId
 export const selectPrimaryResponseDataByTaskId = (taskId: string) =>
     createSelector(
-        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
-        (response: ResponseState | null) => response?.data || []
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return [];
+            const response = responses[listenerIds[0]] as ResponseState;
+            return response?.data || [];
+        }
     );
 
-// Select the first response's info for a taskId
 export const selectPrimaryResponseInfoByTaskId = (taskId: string) =>
     createSelector(
-        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
-        (response: ResponseState | null) => response?.info || []
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return [];
+            const response = responses[listenerIds[0]] as ResponseState;
+            return response?.info || [];
+        }
     );
 
-// Select the first response's errors for a taskId
 export const selectPrimaryResponseErrorsByTaskId = (taskId: string) =>
     createSelector(
-        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
-        (response: ResponseState | null) => response?.errors || []
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return [];
+            const response = responses[listenerIds[0]] as ResponseState;
+            return response?.errors || [];
+        }
     );
 
-// Select the first response's ended status for a taskId
 export const selectPrimaryResponseEndedByTaskId = (taskId: string) =>
     createSelector(
-        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
-        (response: ResponseState | null) => response?.ended || false
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return false;
+            const response = responses[listenerIds[0]] as ResponseState;
+            return response?.ended || false;
+        }
     );
 
-// Select whether the first response has errors for a taskId
 export const selectHasPrimaryResponseErrorsByTaskId = (taskId: string) =>
     createSelector(
-        (state: RootState) => selectPrimaryResponseForTask(taskId)(state),
-        (response: ResponseState | null) => (response?.errors?.length || 0) > 0
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return false;
+            const response = responses[listenerIds[0]] as ResponseState;
+            return (response?.errors?.length || 0) > 0;
+        }
     );
+
+export const createTaskResponseSelectors = (taskId: string) => {
+    // Create the base selector once
+    const baseSelector = createSelector(
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return null;
+            return responses[listenerIds[0]] as ResponseState;
+        }
+    );
+
+    // Return all the derived selectors
+    return {
+        selectResponse: baseSelector,
+        selectText: createSelector(baseSelector, (response) => response?.text || ""),
+        selectData: createSelector(baseSelector, (response) => response?.data || []),
+        selectInfo: createSelector(baseSelector, (response) => response?.info || []),
+        selectErrors: createSelector(baseSelector, (response) => response?.errors || []),
+        selectEnded: createSelector(baseSelector, (response) => response?.ended || false),
+        selectHasErrors: createSelector(baseSelector, (response) => (response?.errors?.length || 0) > 0),
+    };
+};

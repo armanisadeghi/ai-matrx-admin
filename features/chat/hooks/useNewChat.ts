@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
 
 const INFO = true;
 const DEBUG = true;
@@ -13,12 +13,12 @@ const VERBOSE = false;
 export function useNewChat() {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [readyToNavigate, setReadyToNavigate] = useState<boolean>(false);
+    const [taskId, setTaskId] = useState<string>("");
     const dispatch = useAppDispatch();
 
     const { chatActions, conversationId, initialLoadComplete, chatSelectors } = useChatBasics();
     const isStreaming = useAppSelector(chatSelectors.isStreaming);
 
-    const chatManager = new ChatTaskManager(dispatch);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -42,33 +42,46 @@ export function useNewChat() {
         live: "true",
     });
 
+    // Create task on mount
     useEffect(() => {
-        if(isStreaming) return;
+        const action = dispatch(
+            createTask({
+                service: "chat_service",
+                taskName: "ai_chat",
+            })
+        );
+        action
+            .unwrap()
+            .then((newTaskId) => {
+                setTaskId(newTaskId);
+                if (DEBUG) console.log("New task created with taskId:", newTaskId);
+                dispatch(chatActions.updateConversationCustomData({keyOrId: conversationId, customData: {taskId: newTaskId}}))
+            })
+            .catch((error) => {
+                console.error("Failed to create task:", error);
+            });
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (isStreaming) return;
         if (!isStreaming && readyToNavigate) {
             router.push(`${pathname}/${conversationId}`);
         }
     }, [isStreaming, readyToNavigate, conversationId, pathname, router, queryString]);
 
-
     const submitChatMessage = useCallback(async () => {
         try {
             setIsSubmitting(true);
 
-            const result = await dispatch(chatActions.saveConversationAndMessage({})).unwrap();
+            const result = await dispatch(chatActions.saveConversationAndMessage({taskId})).unwrap();
 
             if (result && result.success) {
                 const conversation = result.conversationData.data;
                 const conversationId = conversation.id;
                 const message = result.messageData.data;
+                router.push(`${pathname}/${conversationId}`);
 
-                const eventName = await chatManager.streamMessage({ conversationId, message });
-                if (eventName) {
-                    chatActions.setSocketEventName({ eventName });
-                    chatActions.setIsStreaming();
-                    router.push(`${pathname}/${conversationId}`);
-                }
-
-                if (DEBUG) console.log("SUBMIT MESSAGE eventName:", eventName);
+                if (DEBUG) console.log("Task fields set with conversation_id:", conversationId, "message_object:", message);
                 return true;
             } else {
                 console.error("USE NEW CHAT ERROR! submitChatMessage failed:", result);
@@ -81,7 +94,7 @@ export function useNewChat() {
             setReadyToNavigate(true);
             setIsSubmitting(false);
         }
-    }, [dispatch, chatActions, chatManager, router]);
+    }, [dispatch, chatActions, router, pathname, taskId]);
 
     return {
         submitChatMessage,
@@ -89,6 +102,7 @@ export function useNewChat() {
         initialLoadComplete,
         chatActions,
         conversationId,
+        taskId,
     };
 }
 

@@ -2,6 +2,7 @@
 import { MatrxVariant } from "@/components/ui/types";
 import type { ToastDefaults, ToastOptions } from "@/types";
 
+// Default messages for different toast types
 const DEFAULT_MESSAGES = {
     success: "Operation completed successfully",
     error: "An error occurred",
@@ -10,6 +11,13 @@ const DEFAULT_MESSAGES = {
     notify: "Notification",
     loading: "Loading..."
 } as const;
+
+const DEFAULT_DURATION = 800;
+
+// Default toast size styling
+const DEFAULT_TOAST_STYLE = {
+    className: "max-w-xs" // This will make toasts smaller
+};
 
 class ToastService {
     private static instance: ToastService;
@@ -54,12 +62,19 @@ class ToastService {
             return "";
         }
 
+        // Merge default style with provided options
+        const mergedOptions = {
+            ...DEFAULT_TOAST_STYLE,
+            ...options
+        };
+
         return this.toastFn({
             title,
             description,
             variant,
-            duration: options?.duration,
-            options
+            // Use default duration if not specified
+            duration: options?.duration ?? DEFAULT_DURATION,
+            options: mergedOptions
         });
     }
 

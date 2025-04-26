@@ -369,6 +369,8 @@ export const createChatSelectors = () => {
 
     const isDebugMode = createSelector([conversationCustomData], (customData): boolean => Boolean(customData?.isDebugMode));
 
+    const taskId = createSelector([conversationCustomData], (customData): string | undefined => customData?.taskId as string | undefined);
+
     const messageCustomData = createSelector([selectMessageEntity], (entity): Record<string, unknown> | undefined => entity?.customData);
     const aiModelCustomData = createSelector([selectAiModelEntity], (entity): Record<string, unknown> | undefined => entity?.customData);
 
@@ -572,6 +574,7 @@ export const createChatSelectors = () => {
         shouldShowLoader,
 
         isDebugMode,
+        taskId,
     };
 };
 

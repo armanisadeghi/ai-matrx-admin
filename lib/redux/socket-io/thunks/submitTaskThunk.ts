@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { addResponse, updateErrorResponse, markResponseEnd, updateTextResponse, updateDataResponse, updateInfoResponse } from "../slices/socketResponseSlice";
-import { completeTask, setTaskError, setTaskListenerIds, initializeTask, validateTask, setTaskStreaming } from "../slices/socketTasksSlice";
+import { completeTask, setTaskError, setTaskListenerIds, initializeTask, validateTask, setTaskStreaming, setTaskFields } from "../slices/socketTasksSlice";
 import { selectPrimaryConnection } from "../selectors";
 import { RootState } from "@/lib/redux";
 import { v4 as uuidv4 } from "uuid";
@@ -116,30 +116,41 @@ export const submitTask = createAsyncThunk<string[], { taskId: string }, { state
 );
 
 export const createAndSubmitTask = createAsyncThunk<
-    string[],
-    { service: string; taskName: string; taskData: Record<string, any>; connectionId?: string },
-    { state: RootState }
+  { taskId: string; submitResult: string[] }, // Return taskId and submitTask result
+  { service: string; taskName: string; taskData: Record<string, any>; connectionId?: string },
+  { state: RootState }
 >(
-    "socketTasks/createAndSubmitTask",
-    async ({ service, taskName, taskData, connectionId }, { dispatch, getState }) => {
-      const state = getState();
-      const resolvedConnectionId =
-        connectionId || selectPrimaryConnection(state)?.connectionId;
-  
-      if (!resolvedConnectionId) {
-        throw new Error("No primary connection available and no connectionId provided");
-      }
-  
-      const taskId = uuidv4();
-      dispatch(
-        initializeTask({
-          taskId,
-          service,
-          taskName,
-          connectionId: resolvedConnectionId,
-        })
-      );
-  
-      return dispatch(submitTask({ taskId })).unwrap();
+  "socketTasks/createAndSubmitTask",
+  async ({ service, taskName, taskData, connectionId }, { dispatch, getState }) => {
+    const state = getState();
+    const resolvedConnectionId =
+      connectionId || selectPrimaryConnection(state)?.connectionId;
+
+    if (!resolvedConnectionId) {
+      throw new Error("No primary connection available and no connectionId provided");
     }
+
+
+    const taskId = uuidv4();
+    console.log("🚀 1 ~ createAndSubmitTask ~ taskId:", taskId);
+    dispatch(
+      initializeTask({
+        taskId,
+        service,
+        taskName,
+        connectionId: resolvedConnectionId,
+      })
+    );
+
+    console.log("🚀 2 ~ createAndSubmitTask ~ taskData:", taskData);
+
+    dispatch(setTaskFields({ taskId, fields: taskData }));
+    console.log("🚀 3 ~ createAndSubmitTask ~ taskData:", taskData);
+
+    const submitResult = await dispatch(submitTask({ taskId })).unwrap();
+
+    console.log("🚀 4 ~ createAndSubmitTask ~ submitResult:", submitResult);
+
+    return { taskId, submitResult };
+  }
 );

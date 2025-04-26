@@ -44,6 +44,7 @@ import { LuWebhook } from "react-icons/lu";
 import { BsFillChatRightFill, BsChatRight } from "react-icons/bs";
 import { TbRelationManyToMany } from "react-icons/tb";
 import { AiFillAudio } from "react-icons/ai";
+import { SiSocketdotio } from "react-icons/si";
 
 //brokers/component-editor
 
@@ -232,6 +233,11 @@ export const secondaryLinks = [
         icon: <Puzzle className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+        label: "New Socket Admin",
+        href: "/tests/socket-tests/redux-form-test",
+        icon: <SiSocketdotio className="text-blue-500 h-5 w-5 flex-shrink-0" />,
+    },
+    {
         label: "Matrx Table",
         href: "/tests/table-test/advanced-data-table",
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
@@ -246,6 +252,7 @@ export const secondaryLinks = [
         href: "/tests/forms/entity-final-test", // https://lucide.dev/icons/
         icon: <LandPlot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
+
     {
         label: "Socket Admin",
         href: "/admin/socketio",

@@ -32,6 +32,13 @@ components\official\card-and-grid
  - Works well for desktop and mobile
  - Might need slight adjustments to be used where it's not the only thing across the entire horizontal row
 
+ ## Icon Select
+ components\official\IconSelect.tsx
+ - Icon-only select button that displays a dropdown of labeled items
+ - Fully supports light and dark mode
+ - Customizable trigger, content and item styling
+ - Perfect for navigation menus, toolbars, and compact UI elements
+
  ## Amazing JSON Explorer Component
  features\scraper\parts\RawJsonExplorer.tsx
  - This needs some work, but it's incredible!
