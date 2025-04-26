@@ -13,7 +13,7 @@ const SlackManager: React.FC = () => {
   const [savedTokens, setSavedTokens] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'message' | 'upload'>('message');
 
-  // Load saved tokens on component mount
+  // Load saved tokens on the component mount
   useEffect(() => {
     const tokens = localStorage.getItem('slackTokens');
     if (tokens) {
@@ -144,8 +144,13 @@ const SlackManager: React.FC = () => {
 
   const handleFileUploadSuccess = (result: any) => {
     console.log({result});
-    setSuccess(`File "${result.file?.name || 'unnamed'}" uploaded successfully!`);
-    setTimeout(() => setSuccess(''), 3000);
+    // Extract file name from result if available
+    const fileName = result.files && result.files.length > 0
+        ? result.files[0].name || 'unnamed file'
+        : 'file';
+
+    setSuccess(`File "${fileName}" uploaded successfully!`);
+    setTimeout(() => setSuccess(''), 5000);
   };
 
   const handleFileUploadError = (err: Error) => {
@@ -163,6 +168,12 @@ const SlackManager: React.FC = () => {
     }
 
     setTimeout(() => setError(''), 5000);
+  };
+
+  // Get selected channel name for display purposes
+  const getSelectedChannelName = () => {
+    const channel = channels.find(c => c.id === selectedChannel);
+    return channel ? `#${channel.name}` : selectedChannel;
   };
 
   return (
@@ -242,6 +253,16 @@ const SlackManager: React.FC = () => {
           </div>
         </div>
 
+        {/* Current Channel Display */}
+        {selectedChannel && (
+            <div className="mb-4 p-2 bg-gray-800 rounded-lg">
+              <p className="text-sm flex items-center">
+                <span className="bg-green-600 h-2 w-2 rounded-full mr-2"></span>
+                Current target: {getSelectedChannelName()}
+              </p>
+            </div>
+        )}
+
         {/* Tabs */}
         <div className="mb-6 border-b border-gray-500">
           <nav className="flex space-x-1" aria-label="Tabs">
@@ -308,13 +329,15 @@ const SlackManager: React.FC = () => {
 
         {/* Status Messages */}
         {error && (
-            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded mb-4 dark:bg-red-900 dark:border-red-800 dark:text-red-300">
+            <div
+                className="p-3 bg-red-100 border border-red-400 text-red-700 rounded mb-4 dark:bg-red-900 dark:border-red-800 dark:text-red-300">
               {error}
             </div>
         )}
 
         {success && (
-            <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded mb-4 dark:bg-green-900 dark:border-green-800 dark:text-green-300">
+            <div
+                className="p-3 bg-green-100 border border-green-400 text-green-700 rounded mb-4 dark:bg-green-900 dark:border-green-800 dark:text-green-300">
               {success}
             </div>
         )}

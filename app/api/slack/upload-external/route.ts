@@ -113,20 +113,19 @@ export async function POST(request: NextRequest) {
       console.log('Completing external upload...');
 
       // According to docs, we need to provide files array
-      const fileInfo = { id: fileId };
+      const fileInfo: any = { id: fileId };
       if (title) {
-        fileInfo['title'] = title;
+        fileInfo.title = title;
       }
 
+      // IMPORTANT: This is where we need to ensure the file is shared properly
       const completeParams: any = {
-        files: [fileInfo]
+        files: [fileInfo],
+        // Ensure channels is properly passed - this is critical for sharing
+        channels: channels
       };
 
-      // Add optional parameters if provided
-      if (channels) {
-        completeParams.channels = channels;
-      }
-
+      // Add optional initial comment if provided
       if (initialComment) {
         completeParams.initial_comment = initialComment;
       }
@@ -135,8 +134,41 @@ export async function POST(request: NextRequest) {
 
       try {
         const completeResponse = await client.files.completeUploadExternal(completeParams);
-        console.log('External upload process completed successfully');
-        return NextResponse.json(completeResponse);
+        console.log('External upload process completed successfully.');
+
+        // Instead of using sharedPublicURL (which requires user token),
+        // send a notification message with permalink to the file
+        let notificationSent = false;
+
+        try {
+          if (completeResponse && completeResponse.files && completeResponse.files.length > 0) {
+            const fileInfo = completeResponse.files[0];
+            const filePermalink = fileInfo.permalink || '';
+            const fileTitle = fileInfo.title || filename;
+            const fileSize = fileInfo.size || stats.size;
+            const formattedSize = formatFileSize(fileSize);
+
+            console.log(`Sending notification message about file: ${fileTitle}`);
+            await client.chat.postMessage({
+              channel: channels,
+              text: `📎 *File uploaded:* ${fileTitle} (${formattedSize})\n${filePermalink}`
+            });
+
+            notificationSent = true;
+            console.log('Notification message sent successfully');
+          }
+        } catch (messageError: any) {
+          console.log(`Could not send notification message: ${messageError.message}`);
+          // This is non-critical, so we continue
+        }
+
+        // Add the notification status to the response
+        const enhancedResponse = {
+          ...completeResponse,
+          notification_sent: notificationSent
+        };
+
+        return NextResponse.json(enhancedResponse);
       } catch (completeError: any) {
         // Handle the "not_in_channel" error specifically
         if (completeError.message && completeError.message.includes('not_in_channel')) {
@@ -190,6 +222,13 @@ export async function POST(request: NextRequest) {
         { status: 500 }
     );
   }
+}
+
+// Helper function to format file size
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 // Configure the API route to handle large files

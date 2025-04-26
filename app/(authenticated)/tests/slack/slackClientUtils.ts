@@ -62,6 +62,7 @@ export class SlackClient {
       return result.ok === true;
     } catch (error) {
       console.error('Error joining Slack channel:', error);
+      // Don't throw here - it's normal to fail for private channels
       return false;
     }
   }
@@ -96,7 +97,7 @@ export class SlackClient {
     }
   }
 
-  // Upload file method using only external upload route
+  // Upload file method using external upload route
   async uploadFile(options: FileUploadOptions): Promise<any> {
     const {
       channel,
@@ -155,6 +156,19 @@ export class SlackClient {
         }
 
         console.log('File uploaded successfully');
+
+        // After successful upload, if the notification wasn't sent by the server,
+        // try to send it from the client side
+        if (data.files && data.files.length > 0 && !data.notification_sent) {
+          try {
+            const fileInfo = data.files[0];
+            await this.sendFileNotification(channel, fileInfo);
+          } catch (notifyError) {
+            console.warn('Could not send file notification from client:', notifyError);
+            // This is non-critical, so continue
+          }
+        }
+
         return data;
       } catch (fetchError: any) {
         clearTimeout(timeoutId);
@@ -169,5 +183,31 @@ export class SlackClient {
       console.error('Error uploading file to Slack:', error);
       throw error;
     }
+  }
+
+  // Send a notification message about an uploaded file
+  async sendFileNotification(channelId: string, fileInfo: any): Promise<any> {
+    if (!fileInfo || !fileInfo.id) return;
+
+    try {
+      const fileTitle = fileInfo.title || fileInfo.name || 'file';
+      const filePermalink = fileInfo.permalink || '';
+      const fileSize = fileInfo.size ? this.formatFileSize(fileInfo.size) : '';
+
+      return await this.sendMessage({
+        channel: channelId,
+        text: `📎 *File uploaded:* ${fileTitle} ${fileSize ? `(${fileSize})` : ''}\n${filePermalink}`
+      });
+    } catch (error) {
+      console.error('Error sending file notification:', error);
+      throw error;
+    }
+  }
+
+  // Helper function to format file size
+  private formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 }
