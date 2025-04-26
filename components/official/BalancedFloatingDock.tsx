@@ -2,10 +2,11 @@
 import React, { useRef, useState } from "react";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { cn } from "@/styles/themes/utils";
-import { IconLayoutNavbarCollapse, IconChevronRight } from "@tabler/icons-react";
+import { IconLayoutNavbarCollapse, IconChevronRight, IconArrowLeft } from "@tabler/icons-react";
 import { AnimatePresence, MotionValue, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRouter } from "next/navigation";
 
 export interface BalancedFloatingDockProps {
   items: { label: string; icon: React.ReactNode; href: string }[];
@@ -79,6 +80,7 @@ function BalancedFloatingDockMobile({
   iconBgColor: string;
 }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   
   return (
     <div className="relative block md:hidden">
@@ -106,6 +108,15 @@ function BalancedFloatingDockMobile({
                 </svg>
               </button>
             </div>
+            
+            {/* Back button (iOS style) */}
+            <button
+              onClick={() => router.back()}
+              className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700 text-blue-500 dark:text-blue-400"
+            >
+              <IconArrowLeft className="h-5 w-5 mr-2" />
+              <span>Back</span>
+            </button>
             
             {/* Menu items */}
             <div className="flex-1 overflow-y-auto">
