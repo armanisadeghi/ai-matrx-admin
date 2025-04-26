@@ -168,21 +168,21 @@ const DashboardPage = () => {
                 </div>
 
                 {/* Main content with fixed height and scrollable sections */}
-                <div className="w-full px-6 pt-4 h-[calc(100vh-64px)] overflow-hidden"> {/* Added overflow-hidden to prevent page-level scrolling */}
+                <div className={`w-full ${isMobile ? 'px-3' : 'px-6'} pt-4 ${isMobile ? 'h-full overflow-y-auto' : 'h-[calc(100vh-64px)] overflow-hidden'}`}>
                     {/* Main content grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                    <div className={`grid grid-cols-1 lg:grid-cols-3 gap-6 ${isMobile ? '' : 'h-full'}`}>
                         {/* Main features section - spans 2 columns with independent scroll */}
-                        <div className="lg:col-span-2 overflow-y-auto scrollbar-none pr-3 pb-8 h-full"> {/* Added h-full to ensure full height */}
-                            <Grid title="" items={featureCards} columns={4} showAddButton addButtonText="Add Feature" />
+                        <div className={`lg:col-span-2 ${!isMobile ? 'overflow-y-auto scrollbar-none h-full' : ''} ${isMobile ? 'pr-0' : 'pr-3'} pb-8`}>
+                            <Grid title="" items={featureCards} columns={isMobile ? 2 : 4} showAddButton addButtonText="Add Feature" />
 
                             {/* Quick Access Section */}
-                            <List title="" items={quickAccessItems} className="mt-8" containerClassName="p-2" />
+                            <List title="" items={quickAccessItems} className="mt-8" containerClassName={`${isMobile ? 'p-0' : 'p-2'}`} />
 
                             {/* User Settings and Recommended row */}
                             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 {/* User Settings Section - 2 columns */}
                                 <div className="lg:col-span-2">
-                                    <Grid items={userSettingsCards} columns={4} className="mt-2" />
+                                    <Grid items={userSettingsCards} columns={isMobile ? 2 : 4} className="mt-2" />
                                 </div>
                                 
                                 {/* Moved Recommendations - 1 column */}
@@ -212,7 +212,18 @@ const DashboardPage = () => {
                         </div>
                         
                         {/* Sidebar content - stats and activity with independent scroll */}
-                        <div className="lg:col-span-1 overflow-y-auto scrollbar-none pl-3 pb-8 h-full">
+                        <div className={`lg:col-span-1 ${!isMobile ? 'overflow-y-auto scrollbar-none h-full' : ''} ${isMobile ? 'pl-0' : 'pl-3'} pb-8`}>
+                            {/* Mobile divider */}
+                            {isMobile && (
+                                <div className="w-full my-8">
+                                    <div className="flex items-center">
+                                        <div className="flex-grow h-px bg-gray-300 dark:bg-gray-700"></div>
+                                        <span className="px-4 font-medium text-gray-600 dark:text-gray-400">Your Profile</span>
+                                        <div className="flex-grow h-px bg-gray-300 dark:bg-gray-700"></div>
+                                    </div>
+                                </div>
+                            )}
+                            
                             {/* User Profile Card */}
                             <div>
                                 <div className="p-4 rounded-xl bg-white dark:bg-zinc-800 shadow-md dark:shadow-zinc-800/20">

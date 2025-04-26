@@ -2,11 +2,10 @@
 import React, { useRef, useState } from "react";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { cn } from "@/styles/themes/utils";
-import { IconLayoutNavbarCollapse, IconChevronRight, IconArrowLeft } from "@tabler/icons-react";
+import { IconLayoutNavbarExpand, IconChevronRight, IconArrowLeft, IconChevronDown } from "@tabler/icons-react";
 import { AnimatePresence, MotionValue, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useRouter } from "next/navigation";
 
 export interface BalancedFloatingDockProps {
   items: { label: string; icon: React.ReactNode; href: string }[];
@@ -80,17 +79,19 @@ function BalancedFloatingDockMobile({
   iconBgColor: string;
 }) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
   
   return (
-    <div className="relative block md:hidden">
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setOpen(!open)}
-        className={cn("h-10 w-10 rounded-full flex items-center justify-center", iconBgColor)}
-      >
-        <IconLayoutNavbarCollapse className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-      </button>
+    <div className="relative block md:hidden w-full">
+      {/* Container with left alignment */}
+      <div className="flex justify-start px-3">
+        {/* Mobile menu button */}
+        <button
+          onClick={() => setOpen(!open)}
+          className={cn("h-10 w-10 rounded-full flex items-center justify-center", iconBgColor)}
+        >
+          <IconLayoutNavbarExpand className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+        </button>
+      </div>
 
       {/* Full screen overlay menu */}
       {open && (
@@ -98,7 +99,17 @@ function BalancedFloatingDockMobile({
           <div className="flex flex-col h-full">
             {/* Header with close button */}
             <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+              {/* Back button (positioned on the left) */}
+              <button
+                onClick={() => setOpen(false)}
+                className="flex items-center text-blue-500 dark:text-blue-400"
+              >
+                <IconArrowLeft className="h-5 w-5 mr-2" />
+                <span>Back</span>
+              </button>
+              
               <h2 className="text-lg font-medium">Menu</h2>
+              
               <button
                 onClick={() => setOpen(false)}
                 className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -108,15 +119,6 @@ function BalancedFloatingDockMobile({
                 </svg>
               </button>
             </div>
-            
-            {/* Back button (iOS style) */}
-            <button
-              onClick={() => router.back()}
-              className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700 text-blue-500 dark:text-blue-400"
-            >
-              <IconArrowLeft className="h-5 w-5 mr-2" />
-              <span>Back</span>
-            </button>
             
             {/* Menu items */}
             <div className="flex-1 overflow-y-auto">
