@@ -8,8 +8,8 @@ import { saveMessageThunk } from "@/lib/redux/features/aiChats/thunks/entity/cre
 import { createAndSubmitTask } from "@/lib/redux/socket-io";
 
 const INFO = true;
-const DEBUG = true;
-const VERBOSE = true;
+const DEBUG = false;
+const VERBOSE = false;
 
 interface ExistingChatProps {
     existingConversationId: string;
@@ -63,7 +63,6 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
           if (result && result.success) {
             const message = result.messageData.data;
     
-            console.log("🚀 ~ submitChatMessage ~ message:", JSON.stringify(message, null, 2));
             const { taskId } = await dispatch(
               createAndSubmitTask({
                 service: "chat_service",
@@ -75,16 +74,12 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
               })
             ).unwrap();
     
-            console.log("🚀 ~ submitChatMessage ~ taskId:", taskId);
-            // Store taskId in conversation custom data
             dispatch(
               chatActions.updateConversationCustomData({
                 keyOrId: conversationId,
                 customData: { taskId },
               })
             );
-
-            console.log("🚀 ~ submitChatMessage ~ updated updateConversationCustomData");
         
             if (DEBUG) console.log("USE EXISTING CHAT: Task created and submitted with taskId:", taskId, "for conversationId:", conversationId);
             return true;

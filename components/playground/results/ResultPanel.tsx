@@ -5,7 +5,7 @@ import { ImperativePanelHandle, Panel, PanelResizeHandle } from 'react-resizable
 import { Button, Card } from '@/components/ui';
 import MarkdownRenderer from '@/components/mardown-display/MarkdownRenderer';
 import DraggableToolbar, { ToolbarAction } from '../components/DraggableToolbar';
-import { Eye, Code, FileText, Copy, Braces } from 'lucide-react';
+import { Eye, Code, FileText, Copy, Braces, Plus } from 'lucide-react';
 
 interface ResultPanelProps {
     id: string;
@@ -19,9 +19,10 @@ interface ResultPanelProps {
     debug?: boolean;
     onDebugClick?: (id: string) => void;
     minSize?: number;
+    addAssistantResponse?: (response: string) => void;
 }
 
-export function ResultPanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick, minSize }: ResultPanelProps) {
+export function ResultPanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick, minSize, addAssistantResponse }: ResultPanelProps) {
     const panelRef = useRef<ImperativePanelHandle>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [previousSize, setPreviousSize] = useState(minSize);
@@ -72,6 +73,11 @@ export function ResultPanel({ id, order, number, label, streamingText, onDelete,
             label: 'View Parsed as JSON',
             icon: <Braces className='h-4 w-4' />,
             onClick: () => setViewMode('parsedAsJson'),
+        },
+        {
+            label: 'Add Assistant Response',
+            icon: <Plus className='h-4 w-4' />,
+            onClick: () => addAssistantResponse(streamingText),
         },
     ];
 

@@ -48,3 +48,20 @@ export const generateMessage = (role: AddMessagePayload['role'], order: number):
     };
 };
 
+export const generateMessageFromAssitantResponse = (response: string, order: number): AddMessagePayload => {
+    return {
+        role: 'assistant',
+        type: 'text',
+        content: response,
+        order: order,
+    };
+};
+
+export const generateBlankUserMessage = (order: number): AddMessagePayload => {
+    return {
+        role: 'user',
+        type: 'text',
+        content: '',
+        order: order,
+    };
+};

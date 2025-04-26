@@ -13,6 +13,7 @@ export interface BasePanelProps {
     debug?: boolean;
     onDebugClick?: (id: string) => void;
     minSize?: number;
+    addAssistantResponse?: (response: string) => void;
 }
 
 export interface PanelConfig {

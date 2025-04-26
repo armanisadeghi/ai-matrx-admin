@@ -132,7 +132,6 @@ export const createAndSubmitTask = createAsyncThunk<
 
 
     const taskId = uuidv4();
-    console.log("🚀 1 ~ createAndSubmitTask ~ taskId:", taskId);
     dispatch(
       initializeTask({
         taskId,
@@ -142,15 +141,10 @@ export const createAndSubmitTask = createAsyncThunk<
       })
     );
 
-    console.log("🚀 2 ~ createAndSubmitTask ~ taskData:", taskData);
-
     dispatch(setTaskFields({ taskId, fields: taskData }));
-    console.log("🚀 3 ~ createAndSubmitTask ~ taskData:", taskData);
 
     const submitResult = await dispatch(submitTask({ taskId })).unwrap();
-
-    console.log("🚀 4 ~ createAndSubmitTask ~ submitResult:", submitResult);
-
+    
     return { taskId, submitResult };
   }
 );

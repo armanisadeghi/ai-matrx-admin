@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
 
 const INFO = true;
-const DEBUG = true;
+const DEBUG = false;
 const VERBOSE = false;
 
 export function useNewChat() {

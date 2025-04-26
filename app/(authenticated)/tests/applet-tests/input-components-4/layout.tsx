@@ -1,12 +1,12 @@
 // app/booking/layout.tsx
 "use client";
 
-import AppletSearchBar from "./components/search-bar/bar/AppletSearchBar";
-import { AppletHeader, HeaderConfig } from "./components/header/AppletHeader";
 import { ReactNode } from "react";
-import { TabConfig } from "./components/header/HeaderTabs";
-import { ButtonConfig } from "./components/header/HeaderButtons";
-import { searchConfig } from "./constants";
+import AppletSearchBar from "@/features/applet/runner/components/search-bar/bar/AppletSearchBar";
+import { AppletHeader, HeaderConfig } from "@/features/applet/runner/components/header/AppletHeader";
+import { TabConfig } from "@/features/applet/runner/components/header/HeaderTabs";
+import { ButtonConfig } from "@/features/applet/runner/components/header/HeaderButtons";
+import { searchConfig } from "@/features/applet/sample-mock-data/constants";
 
 export const tabConfig: TabConfig[] = [
     { value: "stays", label: "Stays" },
