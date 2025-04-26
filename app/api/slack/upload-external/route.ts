@@ -4,7 +4,7 @@ import { writeFile, readFile } from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import fs from 'fs';
-import fetch from 'node-fetch'; // Using node-fetch for server-side
+import fetch from 'node-fetch';
 
 export async function POST(request: NextRequest) {
   let tempFilePath = null;
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         await client.conversations.join({ channel: channels });
         console.log(`Successfully joined channel ${channels}`);
       } catch (joinError: any) {
-        // Continue even if join fails - it might be a private channel or we're already a member
+        // Continue even if join fails
         console.log(`Note: Could not explicitly join channel (this is often normal): ${joinError.message}`);
       }
 
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
       console.log(`Getting external upload URL for ${filename} (${fileSize} bytes)`);
 
-      // Step 1: Get external upload URL using proper parameters
+      // Step 1: Get external upload URL
       const externalUploadResponse = await client.files.getUploadURLExternal({
         filename: filename,
         length: fileSize
@@ -77,31 +77,62 @@ export async function POST(request: NextRequest) {
       console.log(`Got upload URL and file_id: ${fileId}`);
 
       // Step 2: Upload the file to the external URL
-      // Read the entire file into a buffer to avoid redirect issues with streams
       console.log('Reading file into buffer for upload...');
       const fileBuffer = await readFile(tempFilePath);
 
       console.log(`Uploading to external URL (${uploadUrl})...`);
 
-      // Use node-fetch but with redirect: 'manual' to prevent automatic redirect following
+      // Determine content type based on file extension
+      const fileExtension = path.extname(filename).toLowerCase();
+      let contentType = 'application/octet-stream'; // Default
+
+      // Set specific content types for common file types
+      if (fileExtension === '.docx') {
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      } else if (fileExtension === '.xlsx') {
+        contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      } else if (fileExtension === '.pdf') {
+        contentType = 'application/pdf';
+      } else if (fileExtension === '.txt') {
+        contentType = 'text/plain';
+      } else if (fileExtension === '.jpg' || fileExtension === '.jpeg') {
+        contentType = 'image/jpeg';
+      } else if (fileExtension === '.png') {
+        contentType = 'image/png';
+      }
+
+      console.log(`Using content type: ${contentType} for file extension: ${fileExtension}`);
+
+      // Use fetch with automatic redirect following
       const uploadResponse = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/octet-stream',
+          'Content-Type': contentType,
           'Content-Length': fileSize.toString()
         },
         body: fileBuffer,
-        redirect: 'manual' // Don't automatically follow redirects
+        // Allow redirects to be followed automatically
+        redirect: 'follow'
       });
 
-      // Check for both successful responses and redirect responses (which we'll consider successful)
-      if (!uploadResponse.ok && uploadResponse.status !== 307 && uploadResponse.status !== 302 && uploadResponse.status !== 301) {
+      if (!uploadResponse.ok) {
         console.error('Upload response error:', uploadResponse.status, uploadResponse.statusText);
+
+        // Try to get more details from the response
+        let responseText = '';
+        try {
+          responseText = await uploadResponse.text();
+          console.error('Error response body:', responseText);
+        } catch (e) {
+          console.error('Could not read error response body');
+        }
+
         return NextResponse.json(
             {
               ok: false,
               error: `Failed to upload file to external URL: ${uploadResponse.statusText}`,
-              status: uploadResponse.status
+              status: uploadResponse.status,
+              details: responseText
             },
             { status: 500 }
         );
@@ -109,23 +140,29 @@ export async function POST(request: NextRequest) {
 
       console.log('File uploaded to external URL successfully');
 
+      // Optional: Log response details to debug
+      try {
+        const responseText = await uploadResponse.text();
+        if (responseText) {
+          console.log('Upload response body:', responseText.substring(0, 200) + '...');
+        } else {
+          console.log('Empty response body (this is normal for successful uploads)');
+        }
+      } catch (e) {
+        console.log('Could not read response body (may be empty)');
+      }
+
       // Step 3: Complete the upload by sharing the file
       console.log('Completing external upload...');
 
-      // According to docs, we need to provide files array
-      const fileInfo: any = { id: fileId };
-      if (title) {
-        fileInfo.title = title;
-      }
-
-      // IMPORTANT: This is where we need to ensure the file is shared properly
       const completeParams: any = {
-        files: [fileInfo],
-        // Ensure channels is properly passed - this is critical for sharing
+        files: [{
+          id: fileId,
+          title: title
+        }],
         channels: channels
       };
 
-      // Add optional initial comment if provided
       if (initialComment) {
         completeParams.initial_comment = initialComment;
       }
@@ -135,9 +172,9 @@ export async function POST(request: NextRequest) {
       try {
         const completeResponse = await client.files.completeUploadExternal(completeParams);
         console.log('External upload process completed successfully.');
+        console.log('Complete response details:', JSON.stringify(completeResponse));
 
-        // Instead of using sharedPublicURL (which requires user token),
-        // send a notification message with permalink to the file
+        // Send notification message with permalink to the file
         let notificationSent = false;
 
         try {
@@ -159,22 +196,18 @@ export async function POST(request: NextRequest) {
           }
         } catch (messageError: any) {
           console.log(`Could not send notification message: ${messageError.message}`);
-          // This is non-critical, so we continue
+          // Non-critical error
         }
 
-        // Add the notification status to the response
-        const enhancedResponse = {
+        return NextResponse.json({
           ...completeResponse,
           notification_sent: notificationSent
-        };
-
-        return NextResponse.json(enhancedResponse);
+        });
       } catch (completeError: any) {
         // Handle the "not_in_channel" error specifically
         if (completeError.message && completeError.message.includes('not_in_channel')) {
           console.log('Got not_in_channel error. This may be a private channel.');
 
-          // Return a more helpful error message
           return NextResponse.json(
               {
                 ok: false,

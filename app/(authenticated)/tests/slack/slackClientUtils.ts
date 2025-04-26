@@ -145,8 +145,18 @@ export class SlackClient {
         console.timeEnd('fileUpload');
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+          let errorMessage = `HTTP error! status: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+            // Log additional details if available
+            if (errorData.details) {
+              console.error('Error details:', errorData.details);
+            }
+          } catch (e) {
+            // Unable to parse error response as JSON
+          }
+          throw new Error(errorMessage);
         }
 
         const data = await response.json();
@@ -156,6 +166,7 @@ export class SlackClient {
         }
 
         console.log('File uploaded successfully');
+        console.log('Response details:', JSON.stringify(data));
 
         // After successful upload, if the notification wasn't sent by the server,
         // try to send it from the client side
