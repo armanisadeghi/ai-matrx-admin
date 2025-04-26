@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import {SlackChannel, SlackClient, SlackMessage} from '../slackClientUtils';
+import FileUpload from './FileUpload';
 
-const SlackManager = () => {
+const SlackManager: React.FC = () => {
   const [token, setToken] = useState('');
   const [channels, setChannels] = useState<SlackChannel[]>([]);
   const [selectedChannel, setSelectedChannel] = useState('');
   const [message, setMessage] = useState('');
-  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [savedTokens, setSavedTokens] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<'message' | 'upload'>('message');
 
-  // Load saved tokens on the component mount
+  // Load saved tokens on component mount
   useEffect(() => {
     const tokens = localStorage.getItem('slackTokens');
     if (tokens) {
@@ -85,12 +86,6 @@ const SlackManager = () => {
     setMessage(e.target.value);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-    }
-  };
-
   const sendMessage = async () => {
     if (!token || !selectedChannel || !message) {
       setError('Please provide token, select a channel, and enter a message');
@@ -147,40 +142,35 @@ const SlackManager = () => {
     }
   };
 
-  const uploadFile = async () => {
-    if (!token || !selectedChannel || !file) {
-      setError('Please provide token, select a channel, and choose a file');
-      return;
+  const handleFileUploadSuccess = (result: any) => {
+    console.log({result});
+    setSuccess(`File "${result.file?.name || 'unnamed'}" uploaded successfully!`);
+    setTimeout(() => setSuccess(''), 3000);
+  };
+
+  const handleFileUploadError = (err: Error) => {
+    // Handle specific Slack errors
+    if (err.message?.includes('not_in_channel')) {
+      setError('Bot is not in this channel. Try inviting it first using /invite @YourBotName');
+    } else if (err.message?.includes('channel_not_found')) {
+      setError('Channel not found. Please select a valid channel.');
+    } else if (err.message?.includes('invalid_auth')) {
+      setError('Authentication failed. Your token may be invalid or expired.');
+    } else if (err.message?.includes('timed out')) {
+      setError('Upload timed out. Try again or check your network connection.');
+    } else {
+      setError(`Failed to upload file: ${err.message}`);
     }
 
-    try {
-      setLoading(true);
-      setError('');
-      const client = new SlackClient(token);
-
-      await client.uploadFile(selectedChannel, file, file.name);
-      setSuccess('File uploaded successfully!');
-      setFile(null);
-      setLoading(false);
-
-      // Reset file input
-      const fileInput = document.getElementById('file-input') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
-      }
-
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setLoading(false);
-      setError('Failed to upload file');
-      console.error(err);
-    }
+    setTimeout(() => setError(''), 5000);
   };
 
   return (
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-6">Slack Integration</h1>
+
         {/* Token Management */}
-        <div className="mb-8 p-4 rounded shadow border border-gray-500">
+        <div className="mb-8 p-4 rounded-lg shadow border border-gray-500">
           <h2 className="text-xl font-semibold mb-4">Token Management</h2>
 
           <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -193,7 +183,7 @@ const SlackManager = () => {
             />
             <button
                 onClick={saveToken}
-                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
             >
               Save Token
             </button>
@@ -224,12 +214,10 @@ const SlackManager = () => {
           )}
         </div>
 
-        {/* Channel and Messaging */}
-        <div className="mb-8 p-4 rounded shadow border border-gray-500">
-          <h2 className="text-xl font-semibold mb-4">Send a Message</h2>
-
-          <div className="mb-4">
-            <label className="block mb-2">Channel:</label>
+        {/* Channel Selector */}
+        <div className="mb-6">
+          <label className="block mb-2 font-medium">Channel:</label>
+          <div className="flex gap-2">
             <select
                 value={selectedChannel}
                 onChange={handleChannelChange}
@@ -243,69 +231,90 @@ const SlackManager = () => {
                   </option>
               ))}
             </select>
-            {channels.length === 0 && token && !loading && (
-                <button
-                    onClick={fetchChannels}
-                    className="mt-2 bg-green-500 text-white py-1 px-3 rounded text-sm hover:bg-green-600"
-                >
-                  Refresh Channels
-                </button>
-            )}
-          </div>
 
-          <div className="mb-4">
-            <label className="block mb-2">Message:</label>
-            <textarea
-                value={message}
-                onChange={handleMessageChange}
-                placeholder="Type your message here..."
-                className="w-full p-2 border rounded h-32 bg-transparent"
-                disabled={loading}
-            />
+            <button
+                onClick={fetchChannels}
+                disabled={!token || loading}
+                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+            >
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
           </div>
-
-          <button
-              onClick={sendMessage}
-              className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 disabled:bg-gray-400"
-              disabled={loading || !token || !selectedChannel || !message}
-          >
-            {loading ? 'Sending...' : 'Send Message'}
-          </button>
         </div>
 
-        {/* File Upload */}
-        <div className="mb-8 p-4 rounded shadow border border-gray-500">
-          <h2 className="text-xl font-semibold mb-4">Upload a File</h2>
+        {/* Tabs */}
+        <div className="mb-6 border-b border-gray-500">
+          <nav className="flex space-x-1" aria-label="Tabs">
+            <button
+                onClick={() => setActiveTab('message')}
+                className={`px-3 py-2 font-medium text-sm rounded-t-lg ${
+                    activeTab === 'message'
+                        ? 'bg-gray-700 text-white border-b-2 border-blue-500'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                }`}
+            >
+              Send Message
+            </button>
+            <button
+                onClick={() => setActiveTab('upload')}
+                className={`px-3 py-2 font-medium text-sm rounded-t-lg ${
+                    activeTab === 'upload'
+                        ? 'bg-gray-700 text-white border-b-2 border-blue-500'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                }`}
+            >
+              Upload File
+            </button>
+          </nav>
+        </div>
 
-          <div className="mb-4">
-            <label className="block mb-2">Select File:</label>
-            <input
-                id="file-input"
-                type="file"
-                onChange={handleFileChange}
-                className="w-full p-2 border rounded"
-                disabled={loading}
-            />
-          </div>
+        {/* Tab Content */}
+        <div className="mb-8 p-4 rounded-lg shadow border border-gray-500">
+          {activeTab === 'message' ? (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Send a Message</h2>
+                <div className="mb-4">
+                  <label className="block mb-2">Message:</label>
+                  <textarea
+                      value={message}
+                      onChange={handleMessageChange}
+                      placeholder="Type your message here..."
+                      className="w-full p-2 border rounded h-32 bg-transparent"
+                      disabled={loading}
+                  />
+                </div>
 
-          <button
-              onClick={uploadFile}
-              className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600 disabled:bg-gray-400"
-              disabled={loading || !token || !selectedChannel || !file}
-          >
-            {loading ? 'Uploading...' : 'Upload File'}
-          </button>
+                <button
+                    onClick={sendMessage}
+                    className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 disabled:bg-gray-400 transition-colors"
+                    disabled={loading || !token || !selectedChannel || !message}
+                >
+                  {loading ? 'Sending...' : 'Send Message'}
+                </button>
+              </div>
+          ) : (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Upload a File</h2>
+                <FileUpload
+                    token={token}
+                    channelId={selectedChannel}
+                    onSuccess={handleFileUploadSuccess}
+                    onError={handleFileUploadError}
+                    disabled={!token || !selectedChannel}
+                />
+              </div>
+          )}
         </div>
 
         {/* Status Messages */}
         {error && (
-            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded mb-4">
+            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded mb-4 dark:bg-red-900 dark:border-red-800 dark:text-red-300">
               {error}
             </div>
         )}
 
         {success && (
-            <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded mb-4">
+            <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded mb-4 dark:bg-green-900 dark:border-green-800 dark:text-green-300">
               {success}
             </div>
         )}

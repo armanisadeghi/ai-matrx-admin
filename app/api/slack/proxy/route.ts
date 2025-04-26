@@ -1,81 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { WebClient } from '@slack/web-api';
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    // Get request details from the client
-    const { endpoint, method, body, token } = await req.json();
+    // Parse the request body
+    const { endpoint, method, token, body } = await request.json();
 
-    if (!endpoint || !token) {
-      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+    if (!endpoint || !method || !token) {
+      return NextResponse.json(
+          { ok: false, error: 'Missing required parameters' },
+          { status: 400 }
+      );
     }
 
-    // Build the full Slack API URL
-    const url = `https://slack.com/api/${endpoint}`;
+    // Initialize the Slack Web Client with the provided token
+    const client = new WebClient(token);
 
-    // Set up request options
-    const fetchOptions: RequestInit = {
-      method: method || 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json; charset=utf-8'
-      }
-    };
+    // Call the appropriate Slack API method
+    // We're using a dynamic approach to call methods like client.conversations.list, client.chat.postMessage, etc.
+    const parts = endpoint.split('.');
 
-    // Add body for non-GET requests
-    if (method !== 'GET' && body) {
-      fetchOptions.body = JSON.stringify(body);
+    let apiMethod: any = client;
+    for (const part of parts) {
+      apiMethod = apiMethod[part];
     }
 
-    // Make the request to Slack API
-    const response = await fetch(url, fetchOptions);
-    const data = await response.json();
+    if (typeof apiMethod !== 'function') {
+      return NextResponse.json(
+          { ok: false, error: `Invalid Slack API endpoint: ${endpoint}` },
+          { status: 400 }
+      );
+    }
 
-    // Return the response to the client
-    return NextResponse.json(data);
+    // Call the API method with the provided body
+    const result = await apiMethod(body || {});
 
-  } catch (error) {
-    console.error('Slack API Proxy Error:', error);
+    return NextResponse.json(result);
+  } catch (error: any) {
+    console.error('Error calling Slack API:', error);
     return NextResponse.json(
-        { error: 'Failed to proxy request to Slack API' },
-        { status: 500 }
-    );
-  }
-}
-
-// Special handler for file uploads
-export async function PUT(req: NextRequest) {
-  try {
-    const formData = await req.formData();
-    const token = formData.get('token') as string;
-
-    if (!token) {
-      return NextResponse.json({ error: 'Missing token' }, { status: 400 });
-    }
-
-    // Remove token from formData before forwarding to Slack
-    formData.delete('token');
-
-    // Build the full Slack API URL for file upload
-    const url = 'https://slack.com/api/files.upload';
-
-    // Make the request to Slack API
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      },
-      body: formData
-    });
-
-    const data = await response.json();
-
-    // Return the response to the client
-    return NextResponse.json(data);
-
-  } catch (error) {
-    console.error('Slack API File Upload Error:', error);
-    return NextResponse.json(
-        { error: 'Failed to upload file to Slack API' },
+        {
+          ok: false,
+          error: error.message || 'Unknown error',
+          data: error.data
+        },
         { status: 500 }
     );
   }

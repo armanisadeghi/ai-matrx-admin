@@ -7,13 +7,13 @@ const clientId = process.env.NEXT_PUBLIC_SLACK_CLIENT_ID;
 const scopes = [
   'app_mentions:read',
   'channels:read',
+  'channels:join',
   'chat:write',
   'commands',
   'files:read',
   'files:write',
   'users:read',
   'groups:read',
-  'channels:join',
 ];
 const redirectUri = process.env.NEXT_PUBLIC_SLACK_REDIRECT_URL;
 
@@ -96,7 +96,7 @@ const SlackPage = () => {
           {isLoggedIn ? (
               <SlackManager />
           ) : (
-              <div className="p-8 rounded-lg shadow-md text-center">
+              <div className="p-8 rounded-lg text-center border border-gray-500">
                 <h2 className="text-xl font-semibold mb-4">Welcome to Slack Integration</h2>
                 <p className="mb-6">To get started, add your Slack app to your workspace using the "Add to Slack" button above, or add your token manually if you already have one.</p>
                 <p className="text-sm text-gray-300">Note: For testing purposes, we're storing your tokens in localStorage. In a production environment, these should be securely stored on your server.</p>
