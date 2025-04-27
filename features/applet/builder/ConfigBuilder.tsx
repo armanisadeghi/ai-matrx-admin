@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from "@/components/ui/tabs";
-import { 
   Card, 
   CardContent, 
   CardDescription, 
@@ -18,36 +12,46 @@ import {
   TabSearchConfig, 
   SearchGroupConfig, 
   GroupFieldConfig 
-} from '../runner/components/field-components/types';
-import { Stepper } from './components/Stepper';
-import { AppletInfoStep } from './components/AppletInfoStep';
-import { TabsConfigStep } from './components/TabsConfigStep';
-import { GroupsConfigStep } from './components/GroupsConfigStep';
-import { FieldsConfigStep } from './components/FieldsConfigStep';
-import { PreviewConfig } from './components/PreviewConfig';
+} from '@/features/applet/runner/components/field-components/types';
+import { Stepper } from '@/features/applet/builder/components/Stepper';
+import { AppInfoStep } from '@/features/applet/builder/components/AppInfoStep';
+import { AppletsConfigStep } from '@/features/applet/builder/components/AppletsConfigStep';
+import { GroupsConfigStep } from '@/features/applet/builder/components/GroupsConfigStep';
+import { FieldsConfigStep } from '@/features/applet/builder/components/FieldsConfigStep';
+import { PreviewConfig } from '@/features/applet/builder/previews/PreviewConfig';
 
-export type AppletConfig = {
+export type Applet = {
   id: string;
   name: string;
   description: string;
-  tabs: { value: string; label: string }[];
+  creatorName?: string;
+  imageUrl?: string;
+}
+
+export type AppConfig = {
+  id: string;
+  name: string;
+  description: string;
+  creatorName?: string;
+  imageUrl?: string;
+  applets: Applet[];
   searchConfig: TabSearchConfig;
 }
 
 export const ConfigBuilder = () => {
   const [activeStep, setActiveStep] = useState(0);
-  const [config, setConfig] = useState<Partial<AppletConfig>>({
-    tabs: [],
+  const [config, setConfig] = useState<Partial<AppConfig>>({
+    applets: [],
     searchConfig: {}
   });
   
-  const [activeTab, setActiveTab] = useState<string | null>(null);
+  const [activeApplet, setActiveApplet] = useState<string | null>(null);
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   
   const steps = [
-    { id: 'applet-info', title: 'Applet Information', description: 'Basic information about your applet' },
-    { id: 'tabs-config', title: 'Tabs Configuration', description: 'Define the tabs for your applet' },
-    { id: 'groups-config', title: 'Groups Configuration', description: 'Create search groups for each tab' },
+    { id: 'app-info', title: 'App Information', description: 'Basic information about your app' },
+    { id: 'applets-config', title: 'Applets Configuration', description: 'Define the applets for your app' },
+    { id: 'groups-config', title: 'Groups Configuration', description: 'Create search groups for each applet' },
     { id: 'fields-config', title: 'Fields Configuration', description: 'Define fields for each search group' },
     { id: 'preview', title: 'Preview & Export', description: 'Review and export your configuration' }
   ];
@@ -64,15 +68,15 @@ export const ConfigBuilder = () => {
     }
   };
 
-  const updateConfig = (updates: Partial<AppletConfig>) => {
+  const updateConfig = (updates: Partial<AppConfig>) => {
     setConfig(prev => ({
       ...prev,
       ...updates
     }));
   };
 
-  const updateActiveTab = (tabValue: string) => {
-    setActiveTab(tabValue);
+  const updateActiveApplet = (appletId: string) => {
+    setActiveApplet(appletId);
     setActiveGroup(null);
   };
 
@@ -80,26 +84,26 @@ export const ConfigBuilder = () => {
     setActiveGroup(groupId);
   };
 
-  const addTab = (tab: { value: string; label: string }) => {
-    const updatedTabs = [...(config.tabs || []), tab];
+  const addApplet = (applet: Applet) => {
+    const updatedApplets = [...(config.applets || []), applet];
     setConfig(prev => ({
       ...prev,
-      tabs: updatedTabs,
+      applets: updatedApplets,
       searchConfig: {
         ...prev.searchConfig,
-        [tab.value]: []
+        [applet.id]: []
       }
     }));
-    if (!activeTab) {
-      setActiveTab(tab.value);
+    if (!activeApplet) {
+      setActiveApplet(applet.id);
     }
   };
 
   const addGroup = (group: SearchGroupConfig) => {
-    if (activeTab) {
+    if (activeApplet) {
       const updatedSearchConfig = { ...config.searchConfig };
-      updatedSearchConfig[activeTab] = [
-        ...(updatedSearchConfig[activeTab] || []),
+      updatedSearchConfig[activeApplet] = [
+        ...(updatedSearchConfig[activeApplet] || []),
         group
       ];
       
@@ -113,13 +117,13 @@ export const ConfigBuilder = () => {
   };
 
   const addField = (field: GroupFieldConfig) => {
-    if (activeTab && activeGroup) {
+    if (activeApplet && activeGroup) {
       const updatedSearchConfig = { ...config.searchConfig };
-      const groupIndex = updatedSearchConfig[activeTab].findIndex(g => g.id === activeGroup);
+      const groupIndex = updatedSearchConfig[activeApplet].findIndex(g => g.id === activeGroup);
       
       if (groupIndex !== -1) {
-        updatedSearchConfig[activeTab][groupIndex].fields = [
-          ...updatedSearchConfig[activeTab][groupIndex].fields,
+        updatedSearchConfig[activeApplet][groupIndex].fields = [
+          ...updatedSearchConfig[activeApplet][groupIndex].fields,
           field
         ];
         
@@ -132,11 +136,11 @@ export const ConfigBuilder = () => {
   };
 
   return (
-    <div className="w-full h-full px-4">
-      <Card className="border border-zinc-200 dark:border-zinc-800">
+    <div className="w-full h-full px-4 bg-white dark:bg-gray-900">
+      <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Applet Configuration Builder</CardTitle>
-          <CardDescription>Create search configurations for your applet</CardDescription>
+          <CardTitle className="text-2xl font-bold text-rose-500">App Configuration Builder</CardTitle>
+          <CardDescription className="text-gray-500 dark:text-gray-400">Create configurations for your your Applet</CardDescription>
         </CardHeader>
         <CardContent>
           <Stepper 
@@ -147,30 +151,30 @@ export const ConfigBuilder = () => {
           
           <div className="mt-8">
             {activeStep === 0 && (
-              <AppletInfoStep 
+              <AppInfoStep 
                 config={config} 
                 updateConfig={updateConfig} 
               />
             )}
             
             {activeStep === 1 && (
-              <TabsConfigStep 
-                tabs={config.tabs || []} 
-                addTab={addTab}
+              <AppletsConfigStep 
+                applets={config.applets || []} 
+                addApplet={addApplet}
                 updateConfig={updateConfig}
-                activeTab={activeTab}
-                setActiveTab={updateActiveTab}
+                activeApplet={activeApplet}
+                setActiveApplet={updateActiveApplet}
                 config={config}
               />
             )}
             
             {activeStep === 2 && (
               <GroupsConfigStep 
-                tabs={config.tabs || []}
+                applets={config.applets || []}
                 searchConfig={config.searchConfig || {}}
-                activeTab={activeTab}
+                activeApplet={activeApplet}
                 activeGroup={activeGroup}
-                setActiveTab={updateActiveTab}
+                setActiveApplet={updateActiveApplet}
                 setActiveGroup={updateActiveGroup}
                 addGroup={addGroup}
               />
@@ -179,9 +183,9 @@ export const ConfigBuilder = () => {
             {activeStep === 3 && (
               <FieldsConfigStep 
                 searchConfig={config.searchConfig || {}}
-                activeTab={activeTab}
+                activeApplet={activeApplet}
                 activeGroup={activeGroup}
-                setActiveTab={updateActiveTab}
+                setActiveApplet={updateActiveApplet}
                 setActiveGroup={updateActiveGroup}
                 addField={addField}
               />
@@ -192,19 +196,19 @@ export const ConfigBuilder = () => {
             )}
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between border-t border-zinc-200 dark:border-zinc-800 pt-4">
+        <CardFooter className="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
           <Button
             variant="outline"
             onClick={handleBack}
             disabled={activeStep === 0}
-            className="border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             Back
           </Button>
           <Button
             onClick={handleNext}
             disabled={activeStep === steps.length - 1}
-            className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
+            className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
           >
             {activeStep === steps.length - 2 ? 'Preview' : 'Next'}
           </Button>

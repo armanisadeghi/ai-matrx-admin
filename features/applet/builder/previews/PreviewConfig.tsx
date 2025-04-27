@@ -3,10 +3,10 @@ import { CheckIcon, ClipboardIcon, DownloadIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppletConfig } from '../ConfigBuilder';
+import { AppConfig } from '@/features/applet/builder/ConfigBuilder';
 
 interface PreviewConfigProps {
-  config: Partial<AppletConfig>;
+  config: Partial<AppConfig>;
 }
 
 export const PreviewConfig: React.FC<PreviewConfigProps> = ({ config }) => {
@@ -28,7 +28,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ config }) => {
       const dataStr = JSON.stringify(config, null, 2);
       const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
       
-      const exportFileDefaultName = `${config.id || 'applet'}-config.json`;
+      const exportFileDefaultName = `${config.id || 'app'}-config.json`;
       
       const linkElement = document.createElement('a');
       linkElement.setAttribute('href', dataUri);
@@ -39,7 +39,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ config }) => {
     }
   };
 
-  const getTabsCount = () => config.tabs?.length || 0;
+  const getAppletsCount = () => config.applets?.length || 0;
   
   const getGroupsCount = () => {
     if (!config.searchConfig) return 0;
@@ -48,8 +48,8 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ config }) => {
   
   const getFieldsCount = () => {
     if (!config.searchConfig) return 0;
-    return Object.values(config.searchConfig).reduce((tabTotal, groups) => {
-      return tabTotal + groups.reduce((groupTotal, group) => groupTotal + group.fields.length, 0);
+    return Object.values(config.searchConfig).reduce((appletTotal, groups) => {
+      return appletTotal + groups.reduce((groupTotal, group) => groupTotal + group.fields.length, 0);
     }, 0);
   };
 
@@ -58,7 +58,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ config }) => {
       <Card className="border border-zinc-200 dark:border-zinc-800">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-zinc-800 dark:text-zinc-200">
-            {config.name || 'Untitled Applet'}
+            {config.name || 'Untitled App'}
           </CardTitle>
           <CardDescription>
             {config.description || 'No description provided'}
@@ -68,9 +68,9 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ config }) => {
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
               <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                {getTabsCount()}
+                {getAppletsCount()}
               </p>
-              <p className="text-sm text-blue-600 dark:text-blue-400">Tabs</p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">Applets</p>
             </div>
             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
               <p className="text-3xl font-bold text-green-600 dark:text-green-400">
@@ -105,25 +105,25 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ config }) => {
             <TabsContent value="preview" className="mt-4">
               <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
                 <div className="bg-zinc-100 dark:bg-zinc-800 px-4 py-2 border-b border-zinc-200 dark:border-zinc-700">
-                  <h3 className="font-medium text-zinc-800 dark:text-zinc-200">Applet Structure</h3>
+                  <h3 className="font-medium text-zinc-800 dark:text-zinc-200">App Structure</h3>
                 </div>
                 
                 <div className="p-4 bg-white dark:bg-zinc-900">
-                  {config.tabs && config.tabs.length > 0 ? (
+                  {config.applets && config.applets.length > 0 ? (
                     <ul className="space-y-4">
-                      {config.tabs.map((tab) => (
-                        <li key={tab.value} className="space-y-2">
+                      {config.applets.map((applet) => (
+                        <li key={applet.id} className="space-y-2">
                           <div className="flex items-center">
                             <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs mr-2">
-                              T
+                              A
                             </span>
-                            <span className="font-medium text-zinc-800 dark:text-zinc-200">{tab.label}</span>
-                            <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">({tab.value})</span>
+                            <span className="font-medium text-zinc-800 dark:text-zinc-200">{applet.name}</span>
+                            <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">({applet.id})</span>
                           </div>
                           
-                          {config.searchConfig && config.searchConfig[tab.value] && (
+                          {config.searchConfig && config.searchConfig[applet.id] && (
                             <ul className="pl-8 space-y-3">
-                              {config.searchConfig[tab.value].map((group) => (
+                              {config.searchConfig[applet.id].map((group) => (
                                 <li key={group.id} className="space-y-2">
                                   <div className="flex items-center">
                                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 text-xs mr-2">
@@ -156,7 +156,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ config }) => {
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-zinc-600 dark:text-zinc-400">No tabs configured</p>
+                    <p className="text-zinc-600 dark:text-zinc-400">No applets configured</p>
                   )}
                 </div>
               </div>

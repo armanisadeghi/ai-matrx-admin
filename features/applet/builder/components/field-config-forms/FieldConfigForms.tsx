@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GroupFieldConfig } from '../../../runner/components/field-components/types';
+import { GroupFieldConfig } from '@/features/applet/runner/components/field-components/types';
 import { 
   InputConfigForm,
   TextareaConfigForm,

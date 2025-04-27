@@ -13,7 +13,7 @@ interface StepperProps {
 
 export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick }) => {
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div className="px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
       <nav aria-label="Progress">
         <ol role="list" className="flex items-center">
           {steps.map((step, index) => (
@@ -28,10 +28,10 @@ export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick
                   onClick={() => onStepClick(index)}
                   className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${
                     index < activeStep
-                      ? 'bg-blue-600 dark:bg-blue-700 group-hover:bg-blue-800'
+                      ? 'bg-rose-500 dark:bg-rose-600 group-hover:bg-rose-600 dark:group-hover:bg-rose-700'
                       : index === activeStep
-                      ? 'bg-blue-600 dark:bg-blue-700'
-                      : 'bg-zinc-200 dark:bg-zinc-700'
+                      ? 'bg-rose-500 dark:bg-rose-600'
+                      : 'bg-gray-200 dark:bg-gray-700'
                   }`}
                   disabled={index > activeStep + 1}
                 >
@@ -51,7 +51,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick
                 {index !== steps.length - 1 && (
                   <div
                     className={`absolute top-4 left-0 h-0.5 w-full ${
-                      index < activeStep ? 'bg-blue-600 dark:bg-blue-700' : 'bg-zinc-200 dark:bg-zinc-700'
+                      index < activeStep ? 'bg-rose-500 dark:bg-rose-600' : 'bg-gray-200 dark:bg-gray-700'
                     }`}
                   />
                 )}
@@ -59,12 +59,12 @@ export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick
               <div className="mt-2 flex flex-col items-start text-sm font-medium">
                 <span
                   className={`${
-                    index <= activeStep ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400'
+                    index <= activeStep ? 'text-rose-500 dark:text-rose-500' : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
                   {step.title}
                 </span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {step.description}
                 </span>
               </div>

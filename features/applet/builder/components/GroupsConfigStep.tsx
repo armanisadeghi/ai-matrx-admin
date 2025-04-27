@@ -17,24 +17,25 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs';
-import { TabSearchConfig, SearchGroupConfig } from '../../runner/components/field-components/types';
+import { TabSearchConfig, SearchGroupConfig } from '@/features/applet/runner/components/field-components/types';
+import { Applet } from '@/features/applet/builder/ConfigBuilder';
 
 interface GroupsConfigStepProps {
-  tabs: { value: string; label: string }[];
+  applets: Applet[];
   searchConfig: TabSearchConfig;
-  activeTab: string | null;
+  activeApplet: string | null;
   activeGroup: string | null;
-  setActiveTab: (tabValue: string) => void;
+  setActiveApplet: (appletId: string) => void;
   setActiveGroup: (groupId: string) => void;
   addGroup: (group: SearchGroupConfig) => void;
 }
 
 export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({
-  tabs,
+  applets,
   searchConfig,
-  activeTab,
+  activeApplet,
   activeGroup,
-  setActiveTab,
+  setActiveApplet,
   setActiveGroup,
   addGroup
 }) => {
@@ -46,15 +47,15 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({
     fields: []
   });
 
-  // Set the active tab if it's not set and there are tabs available
+  // Set the active applet if it's not set and there are applets available
   React.useEffect(() => {
-    if (!activeTab && tabs.length > 0) {
-      setActiveTab(tabs[0].value);
+    if (!activeApplet && applets.length > 0) {
+      setActiveApplet(applets[0].id);
     }
-  }, [activeTab, tabs, setActiveTab]);
+  }, [activeApplet, applets, setActiveApplet]);
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
+  const handleAppletChange = (value: string) => {
+    setActiveApplet(value);
     setActiveGroup(null);
   };
 
@@ -104,19 +105,19 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({
     }));
   };
 
-  const removeGroup = (tabValue: string, groupIndex: number) => {
+  const removeGroup = (appletId: string, groupIndex: number) => {
     // Implementation would go here
-    console.log(`Remove group at index ${groupIndex} from tab ${tabValue}`);
+    console.log(`Remove group at index ${groupIndex} from applet ${appletId}`);
     // This would require a prop to update the searchConfig
   };
 
   return (
     <div className="space-y-6">
-      {tabs.length === 0 ? (
+      {applets.length === 0 ? (
         <Card className="border border-zinc-200 dark:border-zinc-800">
           <CardContent className="flex flex-col items-center justify-center py-10">
             <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-              No tabs have been created yet. Please go back and add tabs first.
+              No applets have been created yet. Please go back and add applets first.
             </p>
             <Button 
               variant="outline" 
@@ -130,26 +131,26 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({
       ) : (
         <>
           <Tabs 
-            value={activeTab || ''} 
-            onValueChange={handleTabChange}
+            value={activeApplet || ''} 
+            onValueChange={handleAppletChange}
             className="w-full"
           >
             <TabsList className="w-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md">
-              {tabs.map((tab) => (
+              {applets.map((applet) => (
                 <TabsTrigger 
-                  key={tab.value} 
-                  value={tab.value}
+                  key={applet.id} 
+                  value={applet.id}
                   className="flex-1 data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm"
                 >
-                  {tab.label}
+                  {applet.name}
                 </TabsTrigger>
               ))}
             </TabsList>
 
-            {tabs.map((tab) => (
+            {applets.map((applet) => (
               <TabsContent 
-                key={tab.value} 
-                value={tab.value}
+                key={applet.id} 
+                value={applet.id}
                 className="mt-6"
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -160,7 +161,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({
                         Add Search Group
                       </CardTitle>
                       <CardDescription>
-                        Create a new search group for the {tab.label} tab
+                        Create a new search group for the {applet.name} applet
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -244,60 +245,49 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({
                         Configured Groups
                       </CardTitle>
                       <CardDescription>
-                        Search groups for the {tab.label} tab
+                        Search groups for the {applet.name} applet
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {searchConfig[tab.value]?.length ? (
-                        <div className="space-y-3">
-                          {searchConfig[tab.value].map((group, index) => (
+                      {searchConfig[applet.id]?.length === 0 || !searchConfig[applet.id] ? (
+                        <div className="flex items-center justify-center h-32 border border-dashed border-zinc-300 dark:border-zinc-700 rounded-md">
+                          <p className="text-zinc-500 dark:text-zinc-400">No groups added yet</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {searchConfig[applet.id]?.map((group, index) => (
                             <div 
                               key={group.id}
-                              onClick={() => handleGroupSelect(group.id)}
                               className={`p-3 rounded-md cursor-pointer ${
                                 activeGroup === group.id 
-                                ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
-                                : 'bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700'
+                                  ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' 
+                                  : 'bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800/70'
                               }`}
+                              onClick={() => handleGroupSelect(group.id)}
                             >
                               <div className="flex items-center justify-between">
-                                <h3 className="font-medium text-zinc-800 dark:text-zinc-200">
-                                  {group.label}
-                                </h3>
+                                <div>
+                                  <h4 className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                                    {group.label}
+                                  </h4>
+                                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                                    {group.fields.length} fields
+                                  </p>
+                                </div>
                                 <Button
                                   size="icon"
-                                  variant="ghost"
+                                  variant="ghost" 
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    removeGroup(tab.value, index);
+                                    removeGroup(applet.id, index);
                                   }}
-                                  className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                  className="h-7 w-7 text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
                                 >
                                   <XIcon className="h-4 w-4" />
                                 </Button>
                               </div>
-                              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                {group.placeholder}
-                              </p>
-                              {group.description && (
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                                  {group.description}
-                                </p>
-                              )}
-                              <div className="mt-2 flex items-center text-xs text-zinc-500 dark:text-zinc-400">
-                                <span>Fields: {group.fields.length}</span>
-                                {group.fields.length === 0 && (
-                                  <span className="ml-2 text-amber-600 dark:text-amber-400">
-                                    (No fields added yet)
-                                  </span>
-                                )}
-                              </div>
                             </div>
                           ))}
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center h-40 border border-dashed border-zinc-300 dark:border-zinc-700 rounded-md">
-                          <p className="text-zinc-500 dark:text-zinc-400">No groups added yet</p>
                         </div>
                       )}
                     </CardContent>
