@@ -14,8 +14,9 @@ import {
     Code,
     MessageSquare,
     FileText,
+    Diamond,
 } from "lucide-react";
-import { RiMarkdownFill } from "react-icons/ri";
+import { IoDiamondOutline } from "react-icons/io5";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MatrxRecordId } from "@/types";
 import { useSelector } from "react-redux";
@@ -135,7 +136,7 @@ const MessageToolbar = ({
         {
             value: "markdown",
             label: "Markdown",
-            icon: <RiMarkdownFill className="h-4 w-4" />,
+            icon: <IoDiamondOutline className="h-4 w-4 text-blue-500 hover:text-blue-600 hover:h-5 hover:w-5 transition-all" />,
         },
         {
             value: "brokerEditor",

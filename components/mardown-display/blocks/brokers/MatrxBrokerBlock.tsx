@@ -105,8 +105,9 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
     return (
         <ChatCollapsibleWrapper
             icon={<LuVariable className="h-6 w-6 text-blue-500 dark:text-blue-400" />}
-            title={metadata.name + " Broker" || "Unknown Broker"}
+            title={"Broker: " + metadata.name || "Unknown Broker"}
             className={cn("group relative", isBroken && "border-red-300 dark:border-red-700")}
+            initialOpen={false}
         >
             <div className="space-y-2">
                 {/* ID field with copy button */}
@@ -178,8 +179,8 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
                 </div>
 
                 {/* Default value field with copy button - textarea on new line and full width */}
-                <div className="mb-4">
-                    <label className="text-sm text-muted-foreground block mb-2 mt-4">Default Value:</label>
+                <div className="my-4 border border-gray-200 dark:border-gray-600 shadow-sm rounded-t-xl">
+                    <label className="pl-2 mt-2 text-sm text-muted-foreground block mb-2">Default Value:</label>
                     <FancyTextarea
                         className={cn("min-h-[100px] font-mono text-sm w-full resize-y", elevationStyles)}
                         value={editedMetadata.defaultValue || ""}
@@ -196,7 +197,7 @@ const MatrxBrokerBlock: React.FC<MatrxBrokerBlockProps> = ({ content, metadata, 
 
                 {/* Bottom action buttons */}
                 <div className="flex justify-between items-center gap-2 pt-2">
-                    <Badge className={cn("text-sm px-3 py-1 rounded-full", editedMetadata.status && getStatusColor(editedMetadata.status))}>
+                    <Badge className={cn("text-sm px-4 py-1 rounded-full", editedMetadata.status && getStatusColor(editedMetadata.status))}>
                         {editedMetadata.status ? editedMetadata.status.charAt(0).toUpperCase() + editedMetadata.status.slice(1) : "None"}
                     </Badge>
                     <div className="flex gap-2">

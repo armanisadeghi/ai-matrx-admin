@@ -264,13 +264,10 @@ export const MessageEditor: React.FC<MessageEditorProps> = ({
         console.log("--> MessageEditor: handleFullDisplaySave: isContentValid: ", isContentValid);
         if (isContentValid) {
             context.setContent(messageRecordId, newContent);
-            
+
             setTimeout(() => {
                 handleSave();
             }, 100);
-            // message.content = newContent;
-            // updateMessageContent(newContent);
-            // console.log("--> MessageEditor: handleFullDisplaySave: message.content: ", message.content);
             setIsFullScreenMarkdownEditorOpen(false);
         }
     };

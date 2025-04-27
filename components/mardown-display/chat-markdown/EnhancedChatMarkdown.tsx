@@ -56,11 +56,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         setCurrentContent(content);
     }, [content]);
 
-    const preprocessContent = (mdContent: string): string => {
-        // Match the format [Image URL: https://example.com/image.png]
-        const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
-        return mdContent.replace(imageUrlRegex, "![Image]($1)");
-    };
     
     const handleOpenEditor = () => {
         if (isStreamActive) return;
@@ -108,6 +103,12 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         const updatedContent = currentContent.replace(originalBrokerContent, updatedBrokerContent);
         setCurrentContent(updatedContent);
         onContentChange?.(updatedContent);
+    };
+
+    const preprocessContent = (mdContent: string): string => {
+        // Match the format [Image URL: https://example.com/image.png]
+        const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
+        return mdContent.replace(imageUrlRegex, "![Image]($1)");
     };
 
     const processedContent = preprocessContent(currentContent);
