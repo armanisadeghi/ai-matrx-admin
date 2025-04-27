@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckIcon } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface StepperProps {
   steps: {
@@ -13,14 +13,15 @@ interface StepperProps {
 
 export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick }) => {
   return (
-    <div className="px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
-      <nav aria-label="Progress">
-        <ol role="list" className="flex items-center">
+    <div className="w-full bg-white dark:bg-gray-900 overflow-x-auto">
+      <nav aria-label="Progress" className="pb-2">
+        {/* Desktop view */}
+        <ol role="list" className="hidden md:flex items-center">
           {steps.map((step, index) => (
             <li
               key={step.id}
               className={`relative ${
-                index !== steps.length - 1 ? 'pr-8 sm:pr-20 flex-grow' : ''
+                index !== steps.length - 1 ? 'pr-8 flex-grow' : ''
               }`}
             >
               <div className="flex items-center">
@@ -28,7 +29,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick
                   onClick={() => onStepClick(index)}
                   className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${
                     index < activeStep
-                      ? 'bg-rose-500 dark:bg-rose-600 group-hover:bg-rose-600 dark:group-hover:bg-rose-700'
+                      ? 'bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700'
                       : index === activeStep
                       ? 'bg-rose-500 dark:bg-rose-600'
                       : 'bg-gray-200 dark:bg-gray-700'
@@ -36,12 +37,15 @@ export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick
                   disabled={index > activeStep + 1}
                 >
                   {index < activeStep ? (
-                    <CheckIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                    <Check className="h-5 w-5 text-white" aria-hidden="true" />
+                  ) : index === activeStep ? (
+                    <span
+                      className="h-2.5 w-2.5 rounded-full bg-white"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <span
-                      className={`h-2.5 w-2.5 rounded-full ${
-                        index === activeStep ? 'bg-white' : 'bg-transparent'
-                      }`}
+                      className="h-2.5 w-2.5 rounded-full bg-rose-500"
                       aria-hidden="true"
                     />
                   )}
@@ -71,7 +75,67 @@ export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick
             </li>
           ))}
         </ol>
+
+        {/* Mobile view */}
+        <ol role="list" className="md:hidden flex items-center overflow-x-auto py-4 px-2 space-x-8">
+          {steps.map((step, index) => (
+            <li
+              key={step.id}
+              className="flex flex-col items-center w-16"
+            >
+              <div className="flex items-center">
+                <button
+                  onClick={() => onStepClick(index)}
+                  className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-full ${
+                    index < activeStep
+                      ? 'bg-rose-500 dark:bg-rose-600 hover:bg-rose-600 dark:hover:bg-rose-700'
+                      : index === activeStep
+                      ? 'bg-rose-500 dark:bg-rose-600'
+                      : 'bg-gray-200 dark:bg-gray-700'
+                  }`}
+                  disabled={index > activeStep + 1}
+                >
+                  {index < activeStep ? (
+                    <Check className="h-5 w-5 text-white" aria-hidden="true" />
+                  ) : index === activeStep ? (
+                    <span
+                      className="h-2.5 w-2.5 rounded-full bg-white"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span
+                      className="h-2.5 w-2.5 rounded-full bg-rose-500"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span className="sr-only">{step.title}</span>
+                </button>
+              </div>
+              <div className="mt-2 flex flex-col items-center text-sm font-medium">
+                <span
+                  className={`text-center h-10 flex items-center ${
+                    index <= activeStep ? 'text-rose-500 dark:text-rose-500' : 'text-gray-500 dark:text-gray-400'
+                  }`}
+                >
+                  {step.title.split(' ').map((word, i) => (
+                    <React.Fragment key={i}>
+                      {word}
+                      {i < step.title.split(' ').length - 1 && <br />}
+                    </React.Fragment>
+                  ))}
+                </span>
+              </div>
+              
+              {/* Mobile connecting line between steps */}
+              {index !== steps.length - 1 && (
+                <div className="absolute right-0 w-8 h-0.5 bg-gray-200 dark:bg-gray-700 translate-x-4 translate-y-4" />
+              )}
+            </li>
+          ))}
+        </ol>
       </nav>
     </div>
   );
-}; 
+};
+
+export default Stepper;

@@ -26,6 +26,7 @@ export type Applet = {
   description: string;
   creatorName?: string;
   imageUrl?: string;
+  slug?: string;
 }
 
 export type AppConfig = {
@@ -50,9 +51,9 @@ export const ConfigBuilder = () => {
   
   const steps = [
     { id: 'app-info', title: 'App Information', description: 'Basic information about your app' },
-    { id: 'applets-config', title: 'Applets Configuration', description: 'Define the applets for your app' },
-    { id: 'groups-config', title: 'Groups Configuration', description: 'Create search groups for each applet' },
-    { id: 'fields-config', title: 'Fields Configuration', description: 'Define fields for each search group' },
+    { id: 'applets-config', title: 'Add Applets', description: 'Define & Configure Applets' },
+    { id: 'groups-config', title: 'Broker Groups', description: 'Create groups of Brokers' },
+    { id: 'fields-config', title: 'Broker Fields', description: 'Define fields for each Broker' },
     { id: 'preview', title: 'Preview & Export', description: 'Review and export your configuration' }
   ];
 
@@ -137,7 +138,7 @@ export const ConfigBuilder = () => {
 
   return (
     <div className="w-full h-full px-4 bg-white dark:bg-gray-900">
-      <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
+      <Card className="border-none bg-white dark:bg-gray-900 shadow-lg space-y-2">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-rose-500">App Configuration Builder</CardTitle>
           <CardDescription className="text-gray-500 dark:text-gray-400">Create configurations for your your Applet</CardDescription>
@@ -196,7 +197,7 @@ export const ConfigBuilder = () => {
             )}
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-4">
+        <CardFooter className="flex justify-between">
           <Button
             variant="outline"
             onClick={handleBack}

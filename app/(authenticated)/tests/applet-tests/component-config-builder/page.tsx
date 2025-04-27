@@ -5,7 +5,7 @@ import ConfigBuilder from '@/features/applet/builder/ConfigBuilder';
 
 export default function ConfigBuilderPage() {
   return (
-    <div className="py-8">
+    <div className="py-4">
       <ConfigBuilder />
     </div>
   );
