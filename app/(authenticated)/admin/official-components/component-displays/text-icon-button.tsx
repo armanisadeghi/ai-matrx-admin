@@ -3,7 +3,7 @@
 import React from 'react';
 import { ComponentEntry } from '../component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
-import { TextIconButton } from '@/components/ui/official/TextIconButton';
+import { TextIconButton } from '@/components/official/TextIconButton';
 import { ArrowRight } from 'lucide-react';
 
 interface ComponentDisplayProps {
@@ -14,7 +14,7 @@ export default function TextIconButtonDisplay({ component }: ComponentDisplayPro
   if (!component) return null;
   
   // Example code with all available props and their default values
-  const code = `import { TextIconButton } from '@/components/ui/official/TextIconButton';
+  const code = `import { TextIconButton } from '@/components/official/TextIconButton';
 import { ArrowRight } from 'lucide-react';
 
 <TextIconButton

@@ -22,7 +22,7 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
       return {
         transform: `translateY(${Math.abs(position) * 15}px) scale(${1 - Math.abs(position) * 0.05})`,
         zIndex: 10 + position,
-        opacity: 1 - Math.abs(position) * 0.15,
+        opacity: 1 - Math.abs(position) * 0.05,
         filter: `brightness(${1 - Math.abs(position) * 0.1})`,
       };
     }
@@ -79,7 +79,7 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
                 onOpenChange={() => {}}
                 isLast={false}
                 isMobile={false}
-                className="h-full shadow-xl"
+                className="h-full shadow-xl "
               />
             </UniformHeightWrapper>
           </div>

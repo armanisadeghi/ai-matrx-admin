@@ -3,7 +3,7 @@ import { SearchLayoutProps } from "@/features/applet/layouts/types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 import UniformHeightWrapper from "@/features/applet/layouts/helpers/UniformHeightWrapper";
 
-const SidebarSearchLayout: React.FC<SearchLayoutProps> = ({
+const FullWidthSidebarSearchLayout: React.FC<SearchLayoutProps> = ({
   config,
   activeTab,
   actionButton,
@@ -57,58 +57,60 @@ const SidebarSearchLayout: React.FC<SearchLayoutProps> = ({
         </div>
 
         {/* Main content */}
-        <div className="flex-grow p-6 bg-white dark:bg-gray-900">
-          {activeSearchGroups.map((group) => (
-            <UniformHeightWrapper
-              key={group.id}
-              groupId={group.id}
-              layoutType="sidebar"
-              className={`transition-opacity duration-300 ${
-                activeGroupId === group.id 
-                  ? 'opacity-100 visible' 
-                  : 'opacity-0 invisible absolute'
-              }`}
-            >
-              {group.id === activeGroupId && (
-                <div>
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-medium text-gray-900 dark:text-gray-100">
-                      {group.label}
-                    </h2>
-                    {group.description && (
-                      <p className="mt-2 text-gray-600 dark:text-gray-400">{group.description}</p>
-                    )}
+        <div className="flex-grow p-6 bg-white dark:bg-gray-900 relative">
+          <div className="w-full h-full">
+            {activeSearchGroups.map((group) => (
+              <UniformHeightWrapper
+                key={group.id}
+                groupId={group.id}
+                layoutType="fullWidthSidebar"
+                className={`transition-opacity duration-300 ${
+                  activeGroupId === group.id 
+                    ? 'opacity-100 visible' 
+                    : 'opacity-0 invisible absolute top-0 left-0 w-full'
+                }`}
+              >
+                {group.id === activeGroupId && (
+                  <div>
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-medium text-gray-900 dark:text-gray-100">
+                        {group.label}
+                      </h2>
+                      {group.description && (
+                        <p className="mt-2 text-gray-600 dark:text-gray-400">{group.description}</p>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                      {group.fields.map((field) => (
+                        <div key={field.brokerId}>
+                          <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+                            {field.label}
+                          </label>
+                          {fieldController(field, false)}
+                          {field.helpText && (
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="mt-10">
+                      {actionButton || (
+                        <button className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-md px-6 py-3">
+                          Search
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    {group.fields.map((field) => (
-                      <div key={field.brokerId}>
-                        <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
-                          {field.label}
-                        </label>
-                        {fieldController(field, false)}
-                        {field.helpText && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="mt-10">
-                    {actionButton || (
-                      <button className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-md px-6 py-3">
-                        Search
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </UniformHeightWrapper>
-          ))}
+                )}
+              </UniformHeightWrapper>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default SidebarSearchLayout;
+export default FullWidthSidebarSearchLayout;

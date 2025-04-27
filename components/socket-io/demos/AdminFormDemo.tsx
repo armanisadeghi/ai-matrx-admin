@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useMeasure } from "@uidotdev/usehooks";
 import { getAllFieldPaths } from "@/constants/socket-schema";
 import SocketAccordionResponse from "@/components/socket/response/SocketAccordionResponse";
-import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
+import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
 import { useAppSelector } from "@/lib/redux";
 import { selectTaskById } from "@/lib/redux/socket-io";
 

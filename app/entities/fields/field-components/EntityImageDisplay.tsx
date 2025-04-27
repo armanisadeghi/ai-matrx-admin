@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Download, Link, X, MinusCircle, PlusCircle } from 'lucide-react';
-import IconButton from "@/components/ui/official/IconButton";
+import IconButton from "@/components/official/IconButton";
 import { cn } from "@/lib/utils";
 import { DEFAULT_IMAGE_SIZES, ImageDimensions, useImage } from '@/hooks/images/useImage';
 import { EntityComponentBaseProps } from "../types";

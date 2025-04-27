@@ -38,7 +38,7 @@ const DesktopAppletSearchBar: React.FC<DesktopAppletSearchBarProps> = ({ config 
                 activeFieldId={activeFieldId}
                 onActiveFieldChange={setActiveFieldId}
                 actionButton={searchButton}
-                className="mx-auto max-w-4xl rounded-full bg-red-500"
+                className="mx-auto max-w-4xl rounded-full"
             >
                 {activeSearchGroups.map((group, index) => (
                     <SearchGroupField

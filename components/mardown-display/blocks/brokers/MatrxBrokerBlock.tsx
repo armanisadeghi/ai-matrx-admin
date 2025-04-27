@@ -10,7 +10,7 @@ import { FancyInput } from "@/components/ui/input";
 import { FancyTextarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckIcon, SaveIcon, RotateCcwIcon, CopyIcon } from "lucide-react";
-import IconButton from "@/components/ui/official/IconButton";
+import IconButton from "@/components/official/IconButton";
 import { MatrxMetadata, MatrxStatus, encodeMatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 import { getAllColorOptions } from "@/features/rich-text-editor/utils/colorUitls";
 

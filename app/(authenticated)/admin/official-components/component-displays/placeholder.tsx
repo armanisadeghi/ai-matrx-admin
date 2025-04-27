@@ -2,48 +2,55 @@
 
 import React from 'react';
 import { ComponentEntry } from '../component-list';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { FileCode } from 'lucide-react';
 import { ComponentDisplayWrapper } from '../component-usage';
+import { FileCode, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-interface PlaceholderProps {
+interface ComponentDisplayProps {
   component?: ComponentEntry;
 }
 
-export default function PlaceholderDisplay({ component }: PlaceholderProps) {
-  if (!component) {
-    return (
-      <div className="flex items-center justify-center h-full text-gray-600 dark:text-gray-400">
-        Component not found
-      </div>
-    );
-  }
-
-  const componentName = component.name.replace(/\s/g, '');
-  const importPath = `@/${component.path.replace(/\.tsx?$/, '')}`;
-
-  const code = `import { ${componentName} } from '${importPath}';
-
-// Basic usage example
-<${componentName} 
-  // Props would be shown here with their default values
-/>`;
-
+export default function PlaceholderDisplay({ component }: ComponentDisplayProps) {
+  if (!component) return null;
+  
   return (
     <ComponentDisplayWrapper
       component={component}
-      code={code}
-      description="This component doesn't have a display implementation yet. You can help by creating one!"
-      className="h-[200px]"
+      code="// No example code is available for this component yet"
+      description={`This component doesn't have a display implementation yet. You can help by creating a demo for ${component.name}.`}
     >
-      <Alert className="bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800">
-        <FileCode className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-        <AlertTitle className="ml-2 text-yellow-800 dark:text-yellow-200">Component Display Not Implemented</AlertTitle>
-        <AlertDescription className="text-yellow-700 dark:text-yellow-300">
-          The display for this component is currently missing.
-          See the source code at {component.path} for usage details.
-        </AlertDescription>
-      </Alert>
+      <div className="w-full h-full flex flex-col items-center justify-center py-10 px-4 text-center space-y-6">
+        <Alert variant="default" className="max-w-lg border-amber-500 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/30">
+          <AlertTriangle className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+          <AlertTitle>Missing Component Display</AlertTitle>
+          <AlertDescription>
+            This component doesn't have a display implementation yet. Create one at:
+            <code className="block mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded">
+              app/(authenticated)/admin/official-components/component-displays/{component.id}.tsx
+            </code>
+          </AlertDescription>
+        </Alert>
+        
+        <div className="text-gray-500 dark:text-gray-400 max-w-md text-sm">
+          <p className="mb-4">
+            To create a new component display, use the existing displays as a template 
+            and follow the structure defined in the documentation.
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2"
+            onClick={() => {
+              // This is just a placeholder, in a real app you'd navigate to documentation
+              alert('Navigate to documentation');
+            }}
+          >
+            <FileCode className="h-4 w-4" />
+            View Documentation
+          </Button>
+        </div>
+      </div>
     </ComponentDisplayWrapper>
   );
 } 

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { SearchLayoutProps } from "@/features/applet/layouts/types";
 import StepperSearchGroup from "@/features/applet/layouts/core/StepperSearchGroup";
+import UniformHeightWrapper from "@/features/applet/layouts/helpers/UniformHeightWrapper";
 
 const StepperSearchLayout: React.FC<SearchLayoutProps> = ({
   config,
@@ -27,6 +28,11 @@ const StepperSearchLayout: React.FC<SearchLayoutProps> = ({
       setActiveFieldId(activeSearchGroups[currentStep - 1].id);
     }
   };
+
+  const handleStepClick = (index: number) => {
+    setCurrentStep(index);
+    setActiveFieldId(activeSearchGroups[index].id);
+  };
   
   const isLastStep = currentStep === activeSearchGroups.length - 1;
   
@@ -44,36 +50,53 @@ const StepperSearchLayout: React.FC<SearchLayoutProps> = ({
                   : "text-gray-400"
             }`}
           >
-            <div 
+            <button
+              onClick={() => handleStepClick(index)}
               className={`rounded-full w-8 h-8 mx-auto mb-2 flex items-center justify-center ${
                 index <= currentStep 
-                  ? "bg-rose-500 text-white" 
-                  : "bg-gray-200 text-gray-600"
+                  ? "bg-rose-500 text-white hover:bg-rose-600" 
+                  : "bg-gray-200 dark:bg-gray-700 text-rose-500 dark:text-rose-400 hover:bg-gray-300 dark:hover:bg-gray-600"
               }`}
             >
               {index + 1}
-            </div>
-            <div className="text-sm">{group.label}</div>
+            </button>
+            <button 
+              onClick={() => handleStepClick(index)}
+              className="text-sm hover:underline focus:outline-none"
+            >
+              {group.label}
+            </button>
           </div>
         ))}
       </div>
       
-      <div className="border rounded-lg p-4 bg-white dark:bg-gray-800 dark:border-gray-700">
-        {activeSearchGroups.map((group, index) => (
-          <div key={group.id} style={{ display: index === currentStep ? 'block' : 'none' }}>
-            <StepperSearchGroup
-              id={group.id}
-              label={group.label}
-              placeholder={group.placeholder}
-              description={group.description}
-              fields={group.fields}
-              isActive={true}
-              onClick={() => {}}
-              onOpenChange={() => {}}
-              isMobile={false}
-            />
-          </div>
-        ))}
+      <div className="border rounded-lg p-4 bg-white dark:bg-gray-800 dark:border-gray-700 relative">
+        <div className="w-full">
+          {activeSearchGroups.map((group, index) => (
+            <UniformHeightWrapper
+              key={group.id}
+              groupId={group.id}
+              layoutType="stepper"
+              className={`transition-opacity duration-300 ${
+                index === currentStep 
+                  ? 'opacity-100 visible' 
+                  : 'opacity-0 invisible absolute top-0 left-0 w-full'
+              }`}
+            >
+              <StepperSearchGroup
+                id={group.id}
+                label={group.label}
+                placeholder={group.placeholder}
+                description={group.description}
+                fields={group.fields}
+                isActive={true}
+                onClick={() => {}}
+                onOpenChange={() => {}}
+                isMobile={false}
+              />
+            </UniformHeightWrapper>
+          ))}
+        </div>
         
         <div className="flex justify-between mt-6">
           <button 
@@ -81,8 +104,8 @@ const StepperSearchLayout: React.FC<SearchLayoutProps> = ({
             disabled={currentStep === 0}
             className={`px-4 py-2 rounded ${
               currentStep === 0 
-                ? "bg-gray-200 text-gray-500" 
-                : "bg-gray-300 hover:bg-gray-400 text-gray-800"
+              ? "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+              : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
             }`}
           >
             Previous
