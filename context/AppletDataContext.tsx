@@ -1,11 +1,11 @@
-// context/SearchTabContext.tsx
+// context/AppletDataContext.tsx
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 
 type TabType = "stays" | "experiences";
 
-interface SearchTabContextType {
+interface AppletDataContextType {
     activeTab: TabType;
     setActiveTab: (tab: TabType) => void;
     searchFocus: string | null;
@@ -13,9 +13,9 @@ interface SearchTabContextType {
     isMobile: boolean; // Include isMobile in the context type
 }
 
-const SearchTabContext = createContext<SearchTabContextType | undefined>(undefined);
+const AppletDataContext = createContext<AppletDataContextType | undefined>(undefined);
 
-export function SearchTabProvider({
+export function AppletDataProvider({
     children,
     isMobile = false, // Default to false if not provided
 }: {
@@ -26,7 +26,7 @@ export function SearchTabProvider({
     const [searchFocus, setSearchFocus] = useState<string | null>(null);
 
     return (
-        <SearchTabContext.Provider
+        <AppletDataContext.Provider
             value={{
                 activeTab,
                 setActiveTab,
@@ -36,14 +36,14 @@ export function SearchTabProvider({
             }}
         >
             {children}
-        </SearchTabContext.Provider>
+        </AppletDataContext.Provider>
     );
 }
 
-export function useSearchTab() {
-    const context = useContext(SearchTabContext);
+export function useAppletData() {
+    const context = useContext(AppletDataContext);
     if (context === undefined) {
-        throw new Error("useSearchTab must be used within a SearchTabProvider");
+        throw new Error("useAppletData must be used within a AppletDataProvider");
     }
     return context;
 }

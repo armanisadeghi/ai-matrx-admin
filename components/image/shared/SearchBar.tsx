@@ -109,14 +109,13 @@ export const SearchBar: React.FC<SearchBarProps> = (
             <Button
                 type="submit"
                 disabled={loading}
-                className={cn("min-w-[100px]", buttonClassName)}
+                className={cn(buttonClassName)}
             >
                 {loading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                    <Loader2 className="h-4 w-4 animate-spin"/>
                 ) : (
-                    <Search className="mr-2 h-4 w-4"/>
+                    <Search className="h-4 w-4"/>
                 )}
-                Search
             </Button>
         </form>
     );

@@ -17,17 +17,17 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs';
-import { TabSearchConfig, SearchGroupConfig } from '@/features/applet/runner/components/field-components/types';
+import { AvailableAppletConfigs, AppletContainersConfig } from '@/features/applet/runner/components/field-components/types';
 import { Applet } from '@/features/applet/builder/ConfigBuilder';
 
 interface GroupsConfigStepProps {
   applets: Applet[];
-  searchConfig: TabSearchConfig;
+  searchConfig: AvailableAppletConfigs;
   activeApplet: string | null;
   activeGroup: string | null;
   setActiveApplet: (appletId: string) => void;
   setActiveGroup: (groupId: string) => void;
-  addGroup: (group: SearchGroupConfig) => void;
+  addGroup: (group: AppletContainersConfig) => void;
 }
 
 export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({
@@ -39,7 +39,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({
   setActiveGroup,
   addGroup
 }) => {
-  const [newGroup, setNewGroup] = useState<Partial<SearchGroupConfig>>({
+  const [newGroup, setNewGroup] = useState<Partial<AppletContainersConfig>>({
     id: '',
     label: '',
     placeholder: '',

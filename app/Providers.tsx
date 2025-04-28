@@ -25,11 +25,12 @@ import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 import { ChipMenuProvider } from "@/features/rich-text-editor/components/ChipContextMenu";
 import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
 import { EditorProvider } from "@/providers/rich-text-editor/Provider";
-import { SearchTabProvider } from "@/context/SearchTabContext";
+import { AppletDataProvider } from "@/context/AppletDataContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
+import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
 let globalUserId: string | null = null;
@@ -72,10 +73,12 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                                 <AudioModalProvider>
                                                                                     <ModuleHeaderProvider>
                                                                                         <GoogleAPIProvider>
-                                                                                            <SearchTabProvider isMobile={isMobile}>
-                                                                                                <PersistentDOMConnector />
-                                                                                                {children}
-                                                                                            </SearchTabProvider>
+                                                                                            <AppletDataProvider isMobile={isMobile}>
+                                                                                                <SelectedImagesProvider>
+                                                                                                    <PersistentDOMConnector />
+                                                                                                    {children}
+                                                                                                </SelectedImagesProvider>
+                                                                                            </AppletDataProvider>
                                                                                         </GoogleAPIProvider>
                                                                                     </ModuleHeaderProvider>
                                                                                     <Toaster />

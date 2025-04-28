@@ -1,9 +1,9 @@
 'use client';
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { ImageCard } from './ImageCard';
-import { SimpleImageViewer } from './SimpleImageViewer';
-import { SearchBar } from '../SearchBar';
+import { DesktopImageCard } from '@/components/image/shared/DesktopImageCard';
+import { SimpleImageViewer } from '@/components/image/gallery/desktop/SimpleImageViewer';
+import { SearchBar } from '@/components/image/shared/SearchBar';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Grid, Grid3X3 } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -15,7 +15,7 @@ export interface SimplePhoto {
     description: string;
 }
 
-export function ImageGallery({ imageUrls = [] }) {
+export function ImageGallery({ imageUrls = [] }: { imageUrls?: string[] }) {
     const [photos, setPhotos] = useState<SimplePhoto[]>([]);
     const [filteredPhotos, setFilteredPhotos] = useState<SimplePhoto[]>([]);
     const [loading, setLoading] = useState(false);
@@ -212,7 +212,7 @@ export function ImageGallery({ imageUrls = [] }) {
                         key={photo.id}
                         ref={index === visiblePhotos.length - 1 ? lastPhotoElementRef : undefined}
                     >
-                        <ImageCard 
+                        <DesktopImageCard 
                             photo={{
                                 id: photo.id,
                                 urls: { regular: photo.url, thumb: photo.url },

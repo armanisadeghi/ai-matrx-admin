@@ -1,21 +1,135 @@
+import { useDispatch } from "react-redux";
+import Link from "next/link";
+import { HeaderExtraButtonsConfig } from "../field-components/types";
+import { useToast } from "@/components/ui/use-toast";
 
 
-export interface ButtonConfig {
-    label: string;
-    onClick: () => void;
-  }
-  
-  
-  
-  export const HeaderButtonGroup = ({ buttons }: { buttons: ButtonConfig[] }) => {
-      return (
-          <div className="flex items-center gap-2">
-              {buttons.map((button) => (
-                  <button key={button.label} className="text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full px-2 py-2 text-gray-800 dark:text-gray-200">
-                      {button.label}
-                  </button>
-              ))}
-          </div>
-      );
-  };
-  
+// Example implementations for knownMethod
+const renderChat = (button: HeaderExtraButtonsConfig, toast) => {
+    console.log("Rendering chat interface");
+    // In a real app, this might open a chat window or component
+    toast({
+        title: "Chat interface rendered!",
+        description: "Chat interface rendered!",
+        variant: "success",
+    });
+};
+
+const changeApplet = (button: HeaderExtraButtonsConfig, toast) => {
+    console.log("Changing applet");
+    // In a real app, this might switch to a different applet or module
+    toast({
+        title: "Applet changed!",
+        description: "Applet changed!",
+        variant: "success",
+    });
+};
+
+const renderModal = (button: HeaderExtraButtonsConfig, toast) => {
+    console.log("Rendering modal");
+    // In a real app, this might open a modal or component
+    toast({
+        title: "Modal rendered!",
+        description: "Modal rendered!",
+        variant: "success",
+    });
+};
+
+export const HeaderExtraButtons = ({ buttons }: { buttons: HeaderExtraButtonsConfig[] }) => {
+    const dispatch = useDispatch();
+    const {toast} = useToast();
+
+    // Handle knownMethod executions
+    const handleKnownMethod = (button: HeaderExtraButtonsConfig) => {
+        if (!button.knownMethod || button.knownMethod === "none") return;
+        switch (button.knownMethod) {
+            case "renderChat":
+                renderChat(button, toast);
+                break;
+            case "changeApplet":
+                changeApplet(button, toast);
+                break;
+            case "renderModal":
+                renderModal(button, toast);
+                break;
+            default:
+                console.warn(`Unknown knownMethod: ${button.knownMethod}`);
+        }
+    };
+
+    return (
+        <div className="flex items-center gap-2">
+            {buttons.map((button) => {
+                const buttonStyles =
+                    "text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full px-2 py-2 text-gray-800 dark:text-gray-200 flex items-center gap-2";
+
+                switch (button.actionType) {
+                    case "button":
+                        return (
+                            <button
+                                key={button.label}
+                                className={buttonStyles}
+                                onClick={() => {
+                                    if (button.onClick) button.onClick();
+                                    handleKnownMethod(button);
+                                }}
+                            >
+                                {button.icon}
+                                {button.label}
+                            </button>
+                        );
+
+                    case "link":
+                        if (!button.route) {
+                            console.warn(`Link button "${button.label}" missing route`);
+                            return null;
+                        }
+                        return (
+                            <Link
+                                key={button.label}
+                                href={button.route}
+                                className={buttonStyles}
+                                onClick={() => handleKnownMethod(button)}
+                            >
+                                {button.icon}
+                                {button.label}
+                            </Link>
+                        );
+
+                    case "redux":
+                        if (!button.reduxAction) {
+                            console.warn(`Redux button "${button.label}" missing reduxAction`);
+                            return null;
+                        }
+                        return (
+                            <button
+                                key={button.label}
+                                className={buttonStyles}
+                                onClick={() => {
+                                    dispatch({ type: button.reduxAction, payload: {} });
+                                    handleKnownMethod(button);
+                                }}
+                            >
+                                {button.icon}
+                                {button.label}
+                            </button>
+                        );
+
+                    case "none":
+                    default:
+                        return (
+                            <div
+                                key={button.label}
+                                className={buttonStyles}
+                            >
+                                {button.icon}
+                                {button.label}
+                            </div>
+                        );
+                }
+            })}
+        </div>
+    );
+};
+
+export default HeaderExtraButtons;

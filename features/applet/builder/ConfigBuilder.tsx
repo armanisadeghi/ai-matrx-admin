@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { 
   Card, 
@@ -9,8 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  TabSearchConfig, 
-  SearchGroupConfig, 
+  AvailableAppletConfigs, 
+  AppletContainersConfig, 
   GroupFieldConfig 
 } from '@/features/applet/runner/components/field-components/types';
 import { Stepper } from '@/features/applet/builder/components/Stepper';
@@ -36,7 +38,7 @@ export type AppConfig = {
   creatorName?: string;
   imageUrl?: string;
   applets: Applet[];
-  searchConfig: TabSearchConfig;
+  searchConfig: AvailableAppletConfigs;
 }
 
 export const ConfigBuilder = () => {
@@ -100,7 +102,7 @@ export const ConfigBuilder = () => {
     }
   };
 
-  const addGroup = (group: SearchGroupConfig) => {
+  const addGroup = (group: AppletContainersConfig) => {
     if (activeApplet) {
       const updatedSearchConfig = { ...config.searchConfig };
       updatedSearchConfig[activeApplet] = [

@@ -3,14 +3,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { componentList, ComponentEntry, ComponentCategory, getCategoriesWithCounts, searchComponents } from './component-list';
+import { componentList, ComponentEntry, ComponentCategory, getCategoriesWithCounts, searchComponents } from './parts/component-list';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, FolderOpen, Code, Component, Server, Menu, PanelLeft, Layers, Layout, BarChart, Eye, MessageSquare, FileUp } from 'lucide-react';
+import { Search, FolderOpen, Code, Component, Server, Menu, PanelLeft, Layers, Layout, BarChart, Eye, MessageSquare, FileUp, Image } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +23,8 @@ const categoryIcons: Record<ComponentCategory, React.ReactNode> = {
   display: <Eye className="h-4 w-4" />,
   feedback: <MessageSquare className="h-4 w-4" />,
   data: <BarChart className="h-4 w-4" />,
-  overlays: <Layers className="h-4 w-4" />
+  overlays: <Layers className="h-4 w-4" />,
+  media: <Image className="h-4 w-4" />
 };
 
 // Human-friendly category names
@@ -35,7 +36,8 @@ const categoryNames: Record<ComponentCategory, string> = {
   display: 'Display',
   feedback: 'Feedback',
   data: 'Data',
-  overlays: 'Overlays'
+  overlays: 'Overlays',
+  media: 'Media'
 };
 
 export default function OfficialComponentsPage() {

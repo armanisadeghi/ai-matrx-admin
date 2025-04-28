@@ -1,14 +1,18 @@
 'use client';
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useUnsplashGallery } from '@/hooks/images/useUnsplashGallery';
-import { MobileImageCard } from '@/components/image/gallery/mobile/MobileImageCard';
-import { SearchBar } from '@/components/image/gallery/SearchBar';
+import { MobileImageCard } from '@/components/image/shared/MobileImageCard';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 import { MobileUnsplashViewer } from './MobileUnsplashViewer';
+import { MobileUnsplashSearch } from './MobileUnsplashSearch';
 
-export function MobileUnsplashGallery() {
+interface MobileUnsplashGalleryProps {
+    initialSearchTerm?: string;
+}
+
+export function MobileUnsplashGallery({ initialSearchTerm }: MobileUnsplashGalleryProps) {
     const {
         photos,
         loading,
@@ -21,12 +25,25 @@ export function MobileUnsplashGallery() {
         closePhotoView,
         toggleFavorite,
         downloadImage,
+        currentSortOrder,
+        currentOrientation,
+        currentPremiumFilter,
+        sortOrderOptions,
+        orientationOptions,
+        premiumFilterOptions
     } = useUnsplashGallery();
 
     const { toast } = useToast();
     const observer = useRef<IntersectionObserver | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState(initialSearchTerm || '');
     const [isSharing, setIsSharing] = useState(false);
+
+    // Perform initial search when component mounts
+    useEffect(() => {
+        if (searchQuery) {
+            handleSearch(searchQuery);
+        }
+    }, []);
 
     const lastPhotoElementRef = useCallback(
         (node: HTMLDivElement | null) => {
@@ -44,11 +61,12 @@ export function MobileUnsplashGallery() {
 
     const handleShare = async (photo: any) => {
         try {
-            await navigator.clipboard.writeText(photo.links.html);
+            const imageUrl = photo.urls.full || photo.urls.regular;
+            await navigator.clipboard.writeText(imageUrl);
             setIsSharing(true);
             toast({
-                title: 'Link copied',
-                description: 'The image link has been copied to your clipboard.',
+                title: 'Image link copied',
+                description: 'The direct image URL has been copied to your clipboard.',
             });
             setTimeout(() => setIsSharing(false), 2000);
         } catch (err) {
@@ -70,9 +88,9 @@ export function MobileUnsplashGallery() {
         });
     };
 
-    const handleSearchChange = (query: string) => {
+    const handleSearchChange = (query: string, options: any = {}) => {
         setSearchQuery(query);
-        handleSearch(query);
+        handleSearch(query, options);
     };
 
     // Convert Unsplash photos to the format our mobile components expect
@@ -84,16 +102,18 @@ export function MobileUnsplashGallery() {
     return (
         <div className="container-fluid p-2 space-y-4">
             <h1 className="text-2xl font-bold text-foreground mb-2">Unsplash</h1>
-            <SearchBar
+            
+            <MobileUnsplashSearch
                 onSearch={handleSearchChange}
                 loading={loading}
-                placeholder="Search..."
-                defaultValue={searchQuery}
+                initialSearchTerm={searchQuery}
                 className="w-full"
-                debounceTime={300}
-                showClearButton={true}
-                autoFocus={false}
-                buttonClassName="min-w-[70px]"
+                currentSortOrder={currentSortOrder}
+                currentOrientation={currentOrientation}
+                currentPremiumFilter={currentPremiumFilter}
+                sortOrderOptions={sortOrderOptions}
+                orientationOptions={orientationOptions}
+                premiumFilterOptions={premiumFilterOptions}
             />
             
             <div className="grid grid-cols-2 gap-2">

@@ -14,6 +14,23 @@ import IconButton from "@/components/official/IconButton";
 import { MatrxMetadata, MatrxStatus, encodeMatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
 import { getAllColorOptions } from "@/features/rich-text-editor/utils/colorUitls";
 
+/* TODO:
+
+- Connect this to Entities slice to attempt to fetch the broker by id.
+- If the broker is found, then it's 'connected' and if it's not, then it's 'disconnected'
+- The user also needs the ability to connect this instance of a broker to any broker they already have.
+- We need a way to display a list of available brokers for them to connect to.
+- However, if they make a change in the connection, we have to be careful about allowing changes because they will then be changing a broker that might already be used in other workflows.
+   - They can certainly do that, but we need a way to separate what they do that impacts only this instance and what will modify the actual broker system-wide.
+   - There must be a clear separation between the aspect of a broker which are 'local' and those which are going to impact that broker anywhere.
+
+*/
+
+
+
+
+
+
 // Define component and data type options
 const COMPONENT_OPTIONS = [
     { value: "button", label: "Button" },

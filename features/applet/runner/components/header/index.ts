@@ -1,6 +1,6 @@
 
-export * from "./AppletHeader";
+export * from "./CustomAppHeader";
 export * from "./HeaderTabs";
 export * from "./HeaderButtons";
-export * from "./MobileAppletHeader";
-export * from "./DesktopAppletHeader";
+export * from "./MobileAppHeader";
+export * from "./DesktopAppHeader";

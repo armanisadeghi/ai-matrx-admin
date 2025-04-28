@@ -48,11 +48,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { TabSearchConfig, GroupFieldConfig } from '../../runner/components/field-components/types';
+import { AvailableAppletConfigs, GroupFieldConfig } from '../../runner/components/field-components/types';
 import { FieldConfigForms } from './field-config-forms/FieldConfigForms';
 
 interface FieldsConfigStepProps {
-  searchConfig: TabSearchConfig;
+  searchConfig: AvailableAppletConfigs;
   activeApplet: string | null;
   activeGroup: string | null;
   setActiveApplet: (appletId: string) => void;

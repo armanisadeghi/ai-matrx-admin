@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ComponentEntry } from '../component-list';
+import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
 import AccordionWrapper from '@/components/matrx/matrx-collapsible/AccordionWrapper';
 import { Button } from '@/components/ui/button';

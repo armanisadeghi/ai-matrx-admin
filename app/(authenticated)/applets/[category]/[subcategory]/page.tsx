@@ -16,6 +16,10 @@ interface SubcategoryPageProps {
     params: Promise<SubcategoryPageParams>;
 }
 
+
+// NOTE: THese are just fake, hard-coded so we are not actually using 'subcategories' at this time.
+
+
 export default async function SubcategoryPage({ params }: SubcategoryPageProps) {
     const { category, subcategory } = await params;
     
@@ -46,7 +50,7 @@ export default async function SubcategoryPage({ params }: SubcategoryPageProps) 
           name: 'Report Generator',
           description: 'Create professional reports in minutes with customizable templates.',
           creator: 'Michael Rodriguez',
-          imageUrl: '/api/placeholder/400/200'
+          imageUrl: 'https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=srgb&fm=jpg&ixid=M3w2NjE4MDZ8MHwxfHNlYXJjaHwxOHx8ZGlnaXRhbCUyMHJlcG9ydHxlbnwwfHx8fDE3NDU3NjgzNTJ8MA&ixlib=rb-4.0.3&q=85'
         }
       ];
       

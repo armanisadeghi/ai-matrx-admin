@@ -8,8 +8,18 @@
 - See this component demo for a great, simple demo example: app\(authenticated)\admin\official-components\component-displays\chat-collapsible.tsx
 - New component demos are to be added here: app\(authenticated)\admin\official-components\component-list.ts
 
+IMPORTANT: IF your component requires you to write local logic to make it work, then it's not a reusable component. It's ok to provide props and data or even add live configuration settings, but if you have to apply local styling, wrappers and things like that, then what you're calling a reusable component is the same junk that ShadCN makes! That's not what we want. We are creating high-quality plug and play components SPECICALLY set up for our specific usecase.
+
+## ADDING NEW COMPONENTS:
+1. Create your reusable component in the appropriate location (usually `components/official/`)
+2. Create a demo component in `app/(authenticated)/admin/official-components/component-displays/[component-id].tsx`
+3. Add the component to `app/(authenticated)/admin/official-components/parts/component-list.tsx`
+4. Add documentation for the component in this file
+
+**Note:** Do not create separate page routes for your demos. The dynamic routing system at `app/(authenticated)/admin/official-components/[componentId]/page.tsx` will automatically handle routing and displaying your component based on its ID in the component list.
+
 ## Icon Button with tooltip:
-components\ui\official\icon-button.tsx
+components\ui\official\IconButton.tsx
 - This is the preferred button that should almost always be used.
 - If this button doesn't work for your use case and you can make a non-breaking change, then change it.
 - If there would be a breaking change or if the component would become too complex, then create a new variation as a new reusable component and add it to this list and upadte the documentation, as well as the testing UI.
@@ -78,6 +88,16 @@ components\official\IconSelect.tsx
  - Fully supports light and dark mode
  - Customizable trigger, content and item styling
  - Perfect for navigation menus, toolbars, and compact UI elements
+
+## Public Image Search
+components\official\PublicImageSearch.tsx
+ - Input field with Unsplash image search capability
+ - Supports single and multiple image selection modes
+ - Includes infinite scrolling for search results
+ - Features grid and natural view layouts for image display
+ - Fully supports light and dark mode with responsive design
+ - Integrates with existing IconButton component and follows design patterns
+ - Returns direct image URLs rather than webpage links
 
 ## Amazing JSON Explorer Component
 features\scraper\parts\RawJsonExplorer.tsx

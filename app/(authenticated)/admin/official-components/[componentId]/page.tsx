@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { notFound, useRouter } from 'next/navigation';
-import { componentList, ComponentEntry, ComponentCategory } from '../component-list';
+import { componentList, ComponentEntry, ComponentCategory } from '../parts/component-list';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ExternalLink, FileCode, Menu, PanelLeft, Layers, Layout, BarChart, Eye, MessageSquare, FileUp } from 'lucide-react';
+import { ChevronLeft, ExternalLink, FileCode, Menu, PanelLeft, Layers, Layout, BarChart, Eye, MessageSquare, FileUp, Image } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import dynamic from 'next/dynamic';
@@ -20,7 +20,8 @@ const categoryIcons: Record<ComponentCategory, React.ReactNode> = {
   display: <Eye className="h-5 w-5" />,
   feedback: <MessageSquare className="h-5 w-5" />,
   data: <BarChart className="h-5 w-5" />,
-  overlays: <Layers className="h-5 w-5" />
+  overlays: <Layers className="h-5 w-5" />,
+  media: <Image className="h-5 w-5" />
 };
 
 // Human-friendly category names
@@ -32,7 +33,8 @@ const categoryNames: Record<ComponentCategory, string> = {
   display: 'Display',
   feedback: 'Feedback',
   data: 'Data',
-  overlays: 'Overlays'
+  overlays: 'Overlays',
+  media: 'Media'
 };
 
 // Create a type for the dynamic component that accepts component prop

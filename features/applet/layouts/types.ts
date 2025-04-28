@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
-import { TabSearchConfig } from "@/features/applet/runner/components/field-components/types";
+import { AvailableAppletConfigs } from "@/features/applet/runner/components/field-components/types";
 import { GroupFieldConfig } from "@/features/applet/runner/components/field-components/types";
 
 export interface SearchLayoutProps {
-    config: TabSearchConfig;
+    config: AvailableAppletConfigs;
     activeTab: string;
     activeFieldId: string | null;
     setActiveFieldId: (id: string | null) => void;

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ComponentEntry } from '../component-list';
+import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
 import AdvancedCollapsible from '@/components/official/AdvancedCollapsible';
 import { FileText } from 'lucide-react';

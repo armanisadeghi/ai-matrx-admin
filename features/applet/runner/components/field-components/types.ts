@@ -1,6 +1,12 @@
 // types.ts - Updated with new field configurations
 import { ReactNode } from "react";
 
+export interface AppletListItemConfig {
+    value: string;
+    label: string;
+    icon?: ReactNode;
+}
+
 // Base configuration for all field components
 export interface BaseFieldProps {
     id: string;
@@ -93,7 +99,7 @@ export interface CheckboxGroupFieldConfig extends FieldDisplayProps {
     includeOther?: boolean;
     otherPlaceholder?: string;
     width?: string;
-    direction?: 'vertical' | 'horizontal';
+    direction?: "vertical" | "horizontal";
     checkboxClassName?: string;
     minOptionWidth?: number;
 }
@@ -111,7 +117,7 @@ export interface RadioGroupFieldConfig extends FieldDisplayProps {
     includeOther?: boolean;
     otherPlaceholder?: string;
     width?: string;
-    direction?: 'vertical' | 'horizontal';
+    direction?: "vertical" | "horizontal";
     radioClassName?: string;
 }
 
@@ -136,7 +142,7 @@ export interface SliderFieldConfig extends FieldDisplayProps {
 }
 
 // MultiSelect configurations
-export interface MultiSelectFieldConfig  extends FieldDisplayProps {
+export interface MultiSelectFieldConfig extends FieldDisplayProps {
     options: SelectOption[];
     maxItems?: number;
     showSearch?: boolean;
@@ -171,25 +177,18 @@ export interface CommandGroupConfig {
     items: CommandItemConfig[];
 }
 
-// Tab configuration
-export interface TabConfig {
-    value: string;
-    label: string;
-    icon?: ReactNode;
-}
-
 // Field configuration with broker ID
 export interface GroupFieldConfig {
     brokerId: string;
     label: string;
     placeholder?: string;
     helpText?: string;
-    type: "button" | "select" | "input" | "textarea" | "number" | "date" |"checkbox" | "radio" | "slider" | "multiselect";
-    customConfig?: 
-        | ButtonFieldConfig 
-        | SelectFieldConfig 
-        | InputFieldConfig 
-        | TextareaFieldConfig 
+    type: "button" | "select" | "input" | "textarea" | "number" | "date" | "checkbox" | "radio" | "slider" | "multiselect";
+    customConfig?:
+        | ButtonFieldConfig
+        | SelectFieldConfig
+        | InputFieldConfig
+        | TextareaFieldConfig
         | NumberInputFieldConfig
         | CheckboxFieldConfig
         | CheckboxGroupFieldConfig
@@ -201,14 +200,13 @@ export interface GroupFieldConfig {
 }
 
 export interface GroupConfig {
-    tab: TabConfig;
+    tab: AppletListItemConfig;
     fields: GroupFieldConfig[];
     title?: string;
     description?: string;
 }
 
-
-export interface SearchGroupConfig {
+export interface AppletContainersConfig {
     id: string;
     label: string;
     placeholder: string;
@@ -216,8 +214,30 @@ export interface SearchGroupConfig {
     fields: GroupFieldConfig[];
 }
 
-export interface TabSearchConfig {
-    [key: string]: SearchGroupConfig[];
+export interface AvailableAppletConfigs {
+    [key: string]: AppletContainersConfig[];
+}
+
+export interface HeaderExtraButtonsConfig {
+    label: string;
+    icon?: ReactNode;
+    actionType?: "button" | "link" | "redux" | "none";
+    onClick?: () => void;
+    route?: string;
+    reduxAction?: string;
+    knownMethod?: "renderChat" | "changeApplet" | "renderModal" | "none";
+}
+
+export interface CustomAppConfig {
+    name: string;
+    description: string;
+    slug: string;
+    icon: string;
+    creator: string;
+    primaryColor: string;
+    accentColor: string;
+    appletList: AppletListItemConfig[];
+    extraButtons: HeaderExtraButtonsConfig[];
 }
 
 // Group configuration
@@ -238,9 +258,3 @@ export interface FieldGroupProps {
     maxHeight?: string;
     isMobile?: boolean;
 }
-
-export interface TabConfig {
-    value: string;
-    label: string;
-  }
-  

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ComponentEntry } from '../component-list';
+import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
 import FloatingDock from '@/components/official/FloatingDock';
 import BalancedFloatingDock from '@/components/official/BalancedFloatingDock';

@@ -1,19 +1,19 @@
 "use client";
 
 import React from "react";
-import { useSearchTab } from "@/context/SearchTabContext";
-import { TabSearchConfig } from "../../field-components/types";
-import MobileAppletSearchBar from "./MobileAppletSearchBar";
-import DesktopAppletSearchBar from "./DesktopAppletSearchBar";
+import { useAppletData } from "@/context/AppletDataContext";
+import { AvailableAppletConfigs } from "../../field-components/types";
+import MobileAppletUserInputBar from "./MobileAppletUserInputBarr";
+import DesktopAppletUserInputBar from "./DesktopAppletSearchBar";
 
-interface AppletSearchBarProps {
-    config: TabSearchConfig;
+interface AppletUserInputBarProps {
+    config: AvailableAppletConfigs;
 }
 
-const AppletSearchBar: React.FC<AppletSearchBarProps> = ({ config }) => {
-    const { isMobile } = useSearchTab();
+const AppletUserInputBar: React.FC<AppletUserInputBarProps> = ({ config }) => {
+    const { isMobile } = useAppletData();
 
-    return isMobile ? <MobileAppletSearchBar config={config} /> : <DesktopAppletSearchBar config={config} />;
+    return isMobile ? <MobileAppletUserInputBar config={config} /> : <DesktopAppletUserInputBar config={config} />;
 };
 
-export default AppletSearchBar;
+export default AppletUserInputBar;

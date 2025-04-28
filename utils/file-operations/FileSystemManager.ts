@@ -796,6 +796,42 @@ class FileSystemManager {
         }
     }
 
+    async createUserDirectories(userId: string): Promise<boolean> {
+        try {
+            const buckets = ['user-public-assets', 'user-private-assets'];
+            const userDir = `user-${userId}`;
+    
+            for (const bucketName of buckets) {
+                // Check if the user directory already exists
+                const structure = await this.loadBucketStructure(bucketName);
+                if (structure && structure.contents.some(item => item.path === userDir)) {
+                    this.debugger.logOperation('createUserDirectories',
+                        { bucketName, userDir, userId },
+                        { success: true, message: 'Directory already exists' }
+                    );
+                    continue; // Skip creation if directory exists
+                }
+    
+                // Create the user directory if it doesn't exist
+                const success = await this.createFolder(bucketName, userDir);
+                if (!success) {
+                    throw new Error(`Failed to create directory ${userDir} in ${bucketName}`);
+                }
+    
+                this.debugger.logOperation('createUserDirectories',
+                    { bucketName, userDir, userId },
+                    { success: true, message: 'Directory created' }
+                );
+            }
+    
+            return true;
+        } catch (error) {
+            console.error('Error creating user directories:', error);
+            this.debugger.logOperation('createUserDirectories', { userId }, { error });
+            return false;
+        }
+    }
+
     private async mergeFolderContents(
         localContents: any[],
         remoteContents: any[],

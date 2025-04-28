@@ -1,9 +1,9 @@
 'use client';
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { MobileImageCard } from '@/components/image/gallery/mobile/MobileImageCard';
+import { MobileImageCard } from '@/components/image/shared/MobileImageCard';
 import { MobileImageViewer } from '@/components/image/gallery/mobile/MobileImageViewer';
-import { SearchBar } from '@/components/image/gallery/SearchBar';
+import { SearchBar } from '@/components/image/shared/SearchBar';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2 } from 'lucide-react';
 

@@ -4,21 +4,22 @@ import { useEffect, useState } from "react";
 import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useMeasure } from "@uidotdev/usehooks";
+import { AppletListItemConfig } from "../field-components/types";
 
-export interface TabConfig {
-    value: string;
-    label: string;
-}
+
+
+// STYLE TASK: Accent color in TabsTriggerCore
+
 
 const TabTrigger = ({ value, label, active }: { value: string; label: string; active: boolean }) => {
     return (
         <TabsTriggerCore
             value={value}
             className={cn(
-                "pb-2 px-0 data-[state=active]:border-b-3 data-[state=active]:border-rose-500 dark:data-[state=active]:border-rose-500 rounded-none whitespace-nowrap bg-transparent data-[state=active]:bg-transparent dark:bg-transparent dark:data-[state=active]:bg-transparent hover:bg-transparent",
+                "pb-2 px-0 data-[state=active]:border-b-3 data-[state=active]:border-blue-500 dark:data-[state=active]:border-rose-500 rounded-none whitespace-nowrap bg-transparent data-[state=active]:bg-transparent dark:bg-transparent dark:data-[state=active]:bg-transparent hover:bg-transparent",
                 active
                     ? "text-gray-900 hover:text-gray-900 dark:hover:text-gray-100"
-                    : "text-gray-800 dark:text-gray-200 hover:text-gray-900 hover:border-b-1 border-rose-700 dark:hover:text-gray-100"
+                    : "text-gray-800 dark:text-gray-200 hover:text-gray-900 hover:border-b-1 border-blue-700 dark:hover:text-gray-100"
             )}
         >
             {label}
@@ -29,24 +30,24 @@ const TabTrigger = ({ value, label, active }: { value: string; label: string; ac
 export interface TabListProps {
     activeTab: string;
     setActiveTab: (value: string) => void;
-    config: TabConfig[];
+    appletList: AppletListItemConfig[];
 }
 
-export const HeaderTabGroup = ({ activeTab, setActiveTab, config }: TabListProps) => {
+export const HeaderTabGroup = ({ activeTab, setActiveTab, appletList }: TabListProps) => {
     // Use measure hook for container width
     const [containerRef, { width: containerWidth }] = useMeasure();
 
     // State for visible and overflow tabs
-    const [visibleTabs, setVisibleTabs] = useState<TabConfig[]>(config);
-    const [overflowTabs, setOverflowTabs] = useState<TabConfig[]>([]);
+    const [visibleTabs, setVisibleTabs] = useState<AppletListItemConfig[]>(appletList);
+    const [overflowTabs, setOverflowTabs] = useState<AppletListItemConfig[]>([]);
 
     // Constants
     const GAP_SIZE = 32; // 8 in gap-8 class = 32px
     const MORE_BUTTON_WIDTH = 100; // Approximate width for "More" dropdown
     const CHAR_WIDTH = 8; // Character width approximation (in pixels)
-    const MIN_TAB_WIDTH = 50; // Minimum width for any tab
+    const MIN_TAB_WIDTH = 50; // Minimum width for any applet
 
-    // Estimate tab width based on text length
+    // Estimate applet width based on text length
     const estimateTabWidth = (label: string) => {
         return Math.max(label.length * CHAR_WIDTH, MIN_TAB_WIDTH);
     };
@@ -55,15 +56,15 @@ export const HeaderTabGroup = ({ activeTab, setActiveTab, config }: TabListProps
     useEffect(() => {
         if (!containerWidth) return;
 
-        // Make sure the active tab is included first
-        const activeTabConfig = config.find((tab) => tab.value === activeTab);
-        const otherTabs = config.filter((tab) => tab.value !== activeTab);
+        // Make sure the active applet is included first
+        const activeTabConfig = appletList.find((applet) => applet.value === activeTab);
+        const otherTabs = appletList.filter((applet) => applet.value !== activeTab);
 
         let availableWidth = containerWidth - MORE_BUTTON_WIDTH;
         let currentWidth = 0;
-        const visible: TabConfig[] = [];
+        const visible: AppletListItemConfig[] = [];
 
-        // Add active tab first
+        // Add active applet first
         if (activeTabConfig) {
             const activeTabWidth = estimateTabWidth(activeTabConfig.label);
             currentWidth += activeTabWidth;
@@ -71,14 +72,14 @@ export const HeaderTabGroup = ({ activeTab, setActiveTab, config }: TabListProps
         }
 
         // Add other tabs if they fit
-        for (const tab of otherTabs) {
-            const tabWidth = estimateTabWidth(tab.label);
+        for (const applet of otherTabs) {
+            const tabWidth = estimateTabWidth(applet.label);
             // Add gap width between tabs
             if (visible.length > 0) currentWidth += GAP_SIZE;
 
             if (currentWidth + tabWidth <= availableWidth) {
                 currentWidth += tabWidth;
-                visible.push(tab);
+                visible.push(applet);
             } else {
                 // We've run out of space, remaining tabs go to overflow
                 break;
@@ -86,24 +87,24 @@ export const HeaderTabGroup = ({ activeTab, setActiveTab, config }: TabListProps
         }
 
         // Set overflow tabs
-        const overflow = config.filter((tab) => !visible.includes(tab));
+        const overflow = appletList.filter((applet) => !visible.includes(applet));
 
         // Don't show the More dropdown if all tabs fit
         if (overflow.length === 0) {
-            setVisibleTabs(config);
+            setVisibleTabs(appletList);
             setOverflowTabs([]);
         } else {
             setVisibleTabs(visible);
             setOverflowTabs(overflow);
         }
-    }, [containerWidth, config, activeTab]);
+    }, [containerWidth, appletList, activeTab]);
 
     return (
         <div className="relative w-full" ref={containerRef}>
             <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value)} className="w-full">
                 <TabsList className="bg-transparent border-b-0 w-full justify-start gap-8 relative z-10">
-                    {visibleTabs.map((tab) => (
-                        <TabTrigger key={tab.value} value={tab.value} label={tab.label} active={activeTab === tab.value} />
+                    {visibleTabs.map((applet) => (
+                        <TabTrigger key={applet.value} value={applet.value} label={applet.label} active={activeTab === applet.value} />
                     ))}
 
                     {overflowTabs.length > 0 && (
@@ -114,16 +115,16 @@ export const HeaderTabGroup = ({ activeTab, setActiveTab, config }: TabListProps
                                 <ChevronDown size={16} className="ml-1" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
-                                {overflowTabs.map((tab) => (
+                                {overflowTabs.map((applet) => (
                                     <DropdownMenuItem
-                                        key={tab.value}
-                                        onClick={() => setActiveTab(tab.value)}
+                                        key={applet.value}
+                                        onClick={() => setActiveTab(applet.value)}
                                         className={cn(
                                             "cursor-pointer",
-                                            activeTab === tab.value && "font-medium text-rose-500 dark:text-rose-500"
+                                            activeTab === applet.value && "font-medium text-rose-500 dark:text-rose-500"
                                         )}
                                     >
-                                        {tab.label}
+                                        {applet.label}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>

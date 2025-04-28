@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ComponentEntry } from '../component-list';
+import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
 import IconSelect from '@/components/official/IconSelect';
 import { Home, Settings, Bell, Search, User, PanelTopOpen } from 'lucide-react';

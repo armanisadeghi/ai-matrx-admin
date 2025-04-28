@@ -1,20 +1,20 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { CircleX, Search, X } from "lucide-react";
-import MobileFieldRow from "../row/MobileFieldRow";
+import MobileAppletBrokerContainer from "../container/MobileAppletBrokerContainer";
 import SearchGroupField from "../group/SearchGroupField";
-import { useSearchTab } from "@/context/SearchTabContext";
-import { TabSearchConfig } from "../../field-components/types";
+import { useAppletData } from "@/context/AppletDataContext";
+import { AvailableAppletConfigs } from "../../field-components/types";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
 import { ALL_BROKER_IDS } from "../../../../sample-mock-data/constants";
 import MobileActionBar from "./MobileActionBar";
 
-interface MobileAppletSearchBarProps {
-    config: TabSearchConfig;
+interface MobileAppletUserInputBarProps {
+    config: AvailableAppletConfigs;
 }
 
-const MobileAppletSearchBar: React.FC<MobileAppletSearchBarProps> = ({ config }) => {
-    const { activeTab } = useSearchTab();
+const MobileAppletUserInputBar: React.FC<MobileAppletUserInputBarProps> = ({ config }) => {
+    const { activeTab } = useAppletData();
     const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
     const [showFullScreen, setShowFullScreen] = useState(false);
 
@@ -77,7 +77,7 @@ const MobileAppletSearchBar: React.FC<MobileAppletSearchBarProps> = ({ config })
 
             {/* Search fields */}
             <div className="flex-grow p-4 overflow-y-auto pb-24">
-                <MobileFieldRow activeFieldId={activeFieldId} onActiveFieldChange={setActiveFieldId} className="mx-auto w-full">
+                <MobileAppletBrokerContainer activeFieldId={activeFieldId} onActiveFieldChange={setActiveFieldId} className="mx-auto w-full">
                     {activeSearchGroups.map((group, index) => (
                         <SearchGroupField
                             key={group.id}
@@ -93,7 +93,7 @@ const MobileAppletSearchBar: React.FC<MobileAppletSearchBarProps> = ({ config })
                             isMobile={true}
                         />
                     ))}
-                </MobileFieldRow>
+                </MobileAppletBrokerContainer>
             </div>
 
             <MobileActionBar onClearAll={handleClearAll} onSearch={handleSearch} />
@@ -101,4 +101,4 @@ const MobileAppletSearchBar: React.FC<MobileAppletSearchBarProps> = ({ config })
     );
 };
 
-export default MobileAppletSearchBar;
+export default MobileAppletUserInputBar;

@@ -1,7 +1,7 @@
 // File: app/(authenticated)/admin/official-components/component-usage.tsx
 
 import React from 'react';
-import { ComponentEntry } from './component-list';
+import { ComponentEntry } from './parts/component-list';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 

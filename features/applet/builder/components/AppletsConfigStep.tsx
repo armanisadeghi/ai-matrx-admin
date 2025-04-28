@@ -1,3 +1,6 @@
+'use client';
+
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { PlusIcon, XIcon, LinkIcon } from 'lucide-react';
@@ -8,9 +11,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AppConfig, Applet } from '@/features/applet/builder/ConfigBuilder';
-import ImageUploadField from '@/components/ui/file-upload/ImageUploadField';
+import { SingleImageSelect } from '@/components/image/shared/SingleImageSelect';
 import AppletPreviewCard from '@/features/applet/builder/previews/AppletPreviewCard';
-
 
 interface AppletsConfigStepProps {
   applets: Applet[];
@@ -119,11 +121,11 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
     updateConfig({ applets: updatedApplets });
   };
 
-  const handleImageChange = (url: string) => {
+  const handleImageSelected = (imageUrl: string) => {
     if (activeAppletObj) {
       const updatedApplets = applets.map(applet => 
         applet.id === activeAppletObj.id 
-          ? { ...applet, imageUrl: url } 
+          ? { ...applet, imageUrl } 
           : applet
       );
       
@@ -131,7 +133,24 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
     } else {
       setNewApplet(prev => ({
         ...prev,
-        imageUrl: url
+        imageUrl
+      }));
+    }
+  };
+  
+  const handleImageRemoved = () => {
+    if (activeAppletObj) {
+      const updatedApplets = applets.map(applet => 
+        applet.id === activeAppletObj.id 
+          ? { ...applet, imageUrl: '' } 
+          : applet
+      );
+      
+      updateConfig({ applets: updatedApplets });
+    } else {
+      setNewApplet(prev => ({
+        ...prev,
+        imageUrl: ''
       }));
     }
   };
@@ -260,13 +279,29 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
                       />
                     </div>
                     
-                    <ImageUploadField
-                      label="Applet Banner Image"
-                      value={activeAppletObj.imageUrl}
-                      onChange={handleImageChange}
-                      bucket="applet-assets"
-                      path={`applets/${activeAppletObj.id}/images`}
-                    />
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Applet Image
+                      </Label>
+                      <div className="w-full">
+                        <SingleImageSelect 
+                          size="md"
+                          aspectRatio="landscape"
+                          placeholder="Select Applet Image"
+                          onImageSelected={handleImageSelected}
+                          onImageRemoved={handleImageRemoved}
+                          initialTab="public-search"
+                          initialSearchTerm={activeAppletObj?.name}
+                          preselectedImageUrl={activeAppletObj?.imageUrl}
+                          className="w-full"
+                          instanceId={`applet-${activeAppletObj?.id}`}
+                          saveTo="public"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Upload an image for your applet. This will be displayed on applet cards.
+                      </p>
+                    </div>
                     
                     <div className="pt-2">
                       <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -362,13 +397,29 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
                       </p>
                     </div>
                     
-                    <ImageUploadField
-                      label="Applet Banner Image"
-                      value={newApplet.imageUrl}
-                      onChange={handleImageChange}
-                      bucket="applet-assets"
-                      path={`applets/${newApplet.id}/images`}
-                    />
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Applet Image
+                      </Label>
+                      <div className="w-full">
+                        <SingleImageSelect 
+                          size="md"
+                          aspectRatio="landscape"
+                          placeholder="Select Applet Image"
+                          onImageSelected={handleImageSelected}
+                          onImageRemoved={handleImageRemoved}
+                          initialTab="public-search"
+                          initialSearchTerm={newApplet.name}
+                          preselectedImageUrl={newApplet.imageUrl}
+                          className="w-full"
+                          instanceId={`applet-${newApplet.id}`}
+                          saveTo="public"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Upload an image for your applet. This will be displayed on applet cards.
+                      </p>
+                    </div>
                     
                     <div className="pt-2">
                       <p className="text-xs text-gray-500 dark:text-gray-400">

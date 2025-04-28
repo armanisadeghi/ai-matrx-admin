@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ComponentEntry } from '../component-list';
+import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
 import { Card, Grid, CardColor } from '@/components/official/card-and-grid';
 import { Bell, Settings, Search } from 'lucide-react';

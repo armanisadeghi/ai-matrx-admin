@@ -1,17 +1,13 @@
-import { TabSearchConfig, SearchGroupConfig } from "@/features/applet/runner/components/field-components/types";
-import { TabConfig } from "@/features/applet/runner/components/header/HeaderTabs";
+import {
+    AvailableAppletConfigs,
+    AppletContainersConfig,
+    CustomAppConfig,
+    HeaderExtraButtonsConfig,
+} from "@/features/applet/runner/components/field-components/types";
+import { AppletListItemConfig } from "@/features/applet/runner/components/field-components/types";
 
-export const tabConfig: TabConfig[] = [
-    { value: "stays", label: "Stays" },
-    { value: "vegas-nightlife", label: "Vegas Nightlife" },
-    { value: "restaurants", label: "Restaurants" },
-    { value: "activities", label: "Activities" },
-    { value: "shopping", label: "Shopping" },
-    { value: "transportation", label: "Transportation" },
-    { value: "events", label: "Events" },
-];
 
-const staysConfig: SearchGroupConfig[] = [
+const staysConfig: AppletContainersConfig[] = [
     {
         id: "rooms",
         label: "Room Options",
@@ -159,7 +155,7 @@ const staysConfig: SearchGroupConfig[] = [
     },
 ];
 
-const nightlifeConfig: SearchGroupConfig[] = [
+const nightlifeConfig: AppletContainersConfig[] = [
     {
         id: "venue-type",
         label: "Venue Type",
@@ -269,7 +265,7 @@ const nightlifeConfig: SearchGroupConfig[] = [
     },
 ];
 
-const restaurantsConfig: SearchGroupConfig[] = [
+const restaurantsConfig: AppletContainersConfig[] = [
     {
         id: "cuisine",
         label: "Cuisine",
@@ -351,7 +347,7 @@ const restaurantsConfig: SearchGroupConfig[] = [
     },
 ];
 
-const activitiesConfig: SearchGroupConfig[] = [
+const activitiesConfig: AppletContainersConfig[] = [
     {
         id: "activity-type",
         label: "Activity Type",
@@ -446,7 +442,7 @@ const activitiesConfig: SearchGroupConfig[] = [
     },
 ];
 
-const shoppingConfig: SearchGroupConfig[] = [
+const shoppingConfig: AppletContainersConfig[] = [
     {
         id: "category",
         label: "Shopping Category",
@@ -526,7 +522,7 @@ const shoppingConfig: SearchGroupConfig[] = [
     },
 ];
 
-const transportConfig: SearchGroupConfig[] = [
+const transportConfig: AppletContainersConfig[] = [
     {
         id: "transport-type",
         label: "Transportation Type",
@@ -635,7 +631,7 @@ const transportConfig: SearchGroupConfig[] = [
     },
 ];
 
-const eventsConfig: SearchGroupConfig[] = [
+const eventsConfig: AppletContainersConfig[] = [
     {
         id: "event-type",
         label: "Event Type",
@@ -732,7 +728,94 @@ const eventsConfig: SearchGroupConfig[] = [
     },
 ];
 
-export const searchConfig: TabSearchConfig = {
+const fakeExtraConfigs: AppletContainersConfig[] = [
+    {
+        id: "fake-extra-config",
+        label: "Fake Applet",
+        placeholder: "Select cuisine",
+        fields: [
+            {
+                brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
+                label: "Cuisine Type",
+                type: "multiselect",
+                placeholder: "Select cuisine types",
+                customConfig: {
+                    options: [
+                        { value: "italian", label: "Italian" },
+                        { value: "japanese", label: "Japanese" },
+                        { value: "mexican", label: "Mexican" },
+                        { value: "american", label: "American" },
+                        { value: "chinese", label: "Chinese" },
+                        { value: "indian", label: "Indian" },
+                        { value: "thai", label: "Thai" },
+                        { value: "french", label: "French" },
+                        { value: "mediterranean", label: "Mediterranean" },
+                        { value: "vegan", label: "Vegan" },
+                    ],
+                    showSearch: true,
+                    searchPlaceholder: "Search cuisines...",
+                    showSelectAll: true,
+                    allowClear: true,
+                    maxItems: 5,
+                    width: "w-full",
+                },
+            },
+        ],
+    },
+    {
+        id: "dietary",
+        label: "Dietary Preferences",
+        placeholder: "Select dietary preferences",
+        fields: [
+            {
+                brokerId: "7a9c6d5e-3b2a-1c9d-8e7f-4a5b6c7d8e9f",
+                label: "Dietary Restrictions",
+                type: "checkbox",
+                placeholder: "Select dietary restrictions",
+                customConfig: {
+                    options: [
+                        { id: "vegetarian", label: "Vegetarian", value: "vegetarian" },
+                        { id: "vegan", label: "Vegan", value: "vegan" },
+                        { id: "gluten-free", label: "Gluten-Free", value: "gluten-free" },
+                        { id: "dairy-free", label: "Dairy-Free", value: "dairy-free" },
+                        { id: "nut-free", label: "Nut-Free", value: "nut-free" },
+                    ],
+                    direction: "vertical",
+                    width: "w-full",
+                },
+            },
+        ],
+    },
+    {
+        id: "price-range",
+        label: "Price Range",
+        placeholder: "Select price range",
+        fields: [
+            {
+                brokerId: "3e2d1c9b-8a7f-6e5d-4c3b-2a1d9e8f7c6b",
+                label: "Price Level",
+                type: "radio",
+                placeholder: "Select price level",
+                customConfig: {
+                    options: [
+                        { id: "inexpensive", label: "$ (Inexpensive)", value: "$", description: "Under $15 per person" },
+                        { id: "moderate", label: "$$ (Moderate)", value: "$$", description: "$15-$30 per person" },
+                        { id: "expensive", label: "$$$ (Expensive)", value: "$$$", description: "$31-$50 per person" },
+                        { id: "very-expensive", label: "$$$$ (Very Expensive)", value: "$$$$", description: "Over $50 per person" },
+                    ],
+                    width: "w-full",
+                },
+            },
+        ],
+    },
+];
+
+
+
+
+
+
+export const availableApplets: AvailableAppletConfigs = {
     stays: staysConfig,
     "vegas-nightlife": nightlifeConfig,
     restaurants: restaurantsConfig,
@@ -740,9 +823,10 @@ export const searchConfig: TabSearchConfig = {
     shopping: shoppingConfig,
     transportation: transportConfig,
     events: eventsConfig,
+    "fake-extra-config": fakeExtraConfigs,
 };
 
-export const ALL_BROKER_IDS = [
+export const USER_INPUT_BROKER_IDS = [
     "id:25a94523-132b-44be-be15-c487a5f6c921",
     "id:6d9e856e-027e-4e8e-89c2-b03fd5f3485e",
     "id:9ef213ad-9c90-4a97-a6cd-7bcef2882e9e",
@@ -754,3 +838,53 @@ export const ALL_BROKER_IDS = [
     "id:d58dffe2-cab7-4292-b4b8-27b7c34bfb32",
     "id:c3c1fbe0-45c5-4f9a-bc39-3c0a1cf84f71",
 ];
+
+export const SYSTEM_BROKER_IDS = [];
+export const ORGANIZATION_BROKER_IDS = [];
+export const PROJECT_BROKER_IDS = [];
+export const CLIENT_BROKER_IDS = [];
+export const ADDITIONAL_CONTEXT_BROKER_IDS = [];
+
+
+export const ALL_BROKER_IDS = [
+    ...USER_INPUT_BROKER_IDS,
+    ...SYSTEM_BROKER_IDS,
+    ...ORGANIZATION_BROKER_IDS,
+    ...PROJECT_BROKER_IDS,
+    ...CLIENT_BROKER_IDS,
+    ...ADDITIONAL_CONTEXT_BROKER_IDS,
+];
+
+
+export const travelAgentListConfig: AppletListItemConfig[] = [
+    { value: "stays", label: "Stays" },
+    { value: "vegas-nightlife", label: "Vegas Nightlife" },
+    { value: "restaurants", label: "Restaurants" },
+    { value: "activities", label: "Activities" },
+    { value: "shopping", label: "Shopping" },
+    { value: "transportation", label: "Transportation" },
+    { value: "events", label: "Events" },
+];
+
+export const extraButtonsConfig: HeaderExtraButtonsConfig[] = [
+    {
+        label: "Travel Agent Chat",
+        actionType: "button",
+        knownMethod: "renderChat",
+        onClick: () => {
+            console.log("Travel Agent Chat");
+        },
+    },
+];
+
+export const travelAgentAppConfig: CustomAppConfig = {
+    name: "Travel Agent",
+    description: "Travel Agent",
+    slug: "travel-agent",
+    icon: "TreePalm",
+    creator: "Travel Agent",
+    primaryColor: "gray",
+    accentColor: "fuchsia",
+    appletList: travelAgentListConfig,
+    extraButtons: extraButtonsConfig,
+};

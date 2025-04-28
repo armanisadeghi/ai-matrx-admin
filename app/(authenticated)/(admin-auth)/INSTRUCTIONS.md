@@ -41,12 +41,6 @@
 
 ### Data Visualization
 
-- **RawJsonExplorer** (`@/components/official/json-explorer/RawJsonExplorer`):
-  - Use for displaying and navigating complex JSON structures
-  - Provides bookmarking, path navigation, and improved readability
-  - Great for API responses and nested data structures
-  - Offers interactive exploration features
-
 - **AccordionWrapper** (`@/components/matrx/matrx-collapsible/AccordionWrapper`):
   - Use for collapsible sections of content
   - Helps organize complex interfaces without cluttering
@@ -199,3 +193,14 @@
 - This directory needs to be moved to the new (admin-auth) folder and all references to it need to be updated: app\(authenticated)\admin\official-components
  - Then, we neeed to create a new tasklist for the new folder.
  - The first task will be to fix the JSON Explorer demo because it's not working.
+
+
+
+
+# Broken Demos:
+
+- **RawJsonExplorer** (`@/components/official/json-explorer/RawJsonExplorer`):
+  - Use for displaying and navigating complex JSON structures
+  - Provides bookmarking, path navigation, and improved readability
+  - Great for API responses and nested data structures
+  - Offers interactive exploration features

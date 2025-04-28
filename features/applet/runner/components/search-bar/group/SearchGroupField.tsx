@@ -1,6 +1,6 @@
 // SearchGroupField.tsx
 import React from "react";
-import { useSearchTab } from "@/context/SearchTabContext";
+import { useAppletData } from "@/context/AppletDataContext";
 import DesktopSearchGroup from "./DesktopSearchFieldGroup";
 import MobileSearchGroup from "./MobileSearchFieldGroup";
 import { GroupFieldConfig } from "../../field-components/types";
@@ -22,7 +22,7 @@ interface SearchGroupFieldProps {
 }
 
 const SearchGroupField: React.FC<SearchGroupFieldProps> = (props) => {
-    const { isMobile } = useSearchTab();
+    const { isMobile } = useAppletData();
     
     return isMobile ? (
         <MobileSearchGroup {...props} />

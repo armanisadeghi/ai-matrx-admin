@@ -1,48 +1,21 @@
 'use client';
-import React, { useState, useEffect } from 'react';
 
-// Import both desktop and mobile versions
-import { ImageGallery } from './gallery/desktop/ImageGallery';
-import { MobileImageGallery } from '@/components/image/gallery/mobile/MobileImageGallery';
-import { EnhancedUnsplashGallery } from '@/components/image/unsplash/desktop/EnhancedUnsplashGallery';
-import { MobileUnsplashGallery } from '@/components/image/unsplash/mobile/MobileUnsplashGallery';
+import React from 'react';
+import { ResponsiveDirectGallery } from '@/components/image/gallery/ResponsiveDirectGallery';
+import { ResponsiveUnsplashGallery } from '@/components/image/unsplash/ResponsiveUnsplashGallery';
 
 interface ResponsiveGalleryProps {
   imageUrls?: string[];
   type?: 'direct' | 'unsplash';
+  initialSearchTerm?: string;
 }
 
-export function ResponsiveGallery({ imageUrls = [], type = 'direct' }: ResponsiveGalleryProps) {
-  const [isMobile, setIsMobile] = useState(false);
+export function ResponsiveGallery({ imageUrls = [], type = 'direct', initialSearchTerm }: ResponsiveGalleryProps) {
+  console.log('ResponsiveGallery rendered with', { type, imageUrls, initialSearchTerm });
   
-  // Detect mobile device based on screen width
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768); // Common breakpoint for tablets/mobile
-    };
-    
-    // Initial check
-    checkIfMobile();
-    
-    // Listen for window resize events
-    window.addEventListener('resize', checkIfMobile);
-    
-    // Cleanup
-    return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
-  
-  // Render appropriate gallery based on device type and gallery type
-  if (type === 'direct') {
-    return isMobile ? (
-      <MobileImageGallery imageUrls={imageUrls} />
-    ) : (
-      <ImageGallery imageUrls={imageUrls} />
-    );
-  } else {
-    return isMobile ? (
-      <MobileUnsplashGallery />
-    ) : (
-      <EnhancedUnsplashGallery />
-    );
-  }
+  return type === 'direct' ? (
+    <ResponsiveDirectGallery imageUrls={imageUrls} />
+  ) : (
+    <ResponsiveUnsplashGallery initialSearchTerm={initialSearchTerm} />
+  );
 }

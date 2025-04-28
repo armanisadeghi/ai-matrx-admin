@@ -3,16 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
-import { useSearchTab } from "@/context/SearchTabContext";
+import { useAppletData } from "@/context/AppletDataContext";
 import { SearchLayoutType } from "@/features/applet/layouts/types";
 import SearchLayoutManager from "@/features/applet/layouts/SearchLayoutManager";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
 import { ALL_BROKER_IDS } from "@/features/applet/sample-mock-data/constants";
-import { TabSearchConfig } from "@/features/applet/runner/components/field-components/types";
+import { AvailableAppletConfigs } from "@/features/applet/runner/components/field-components/types";
 
 
 interface AppletLayoutWrapperProps {
-  config: TabSearchConfig;
+  config: AvailableAppletConfigs;
   layoutType?: SearchLayoutType;
   className?: string;
 }
@@ -22,7 +22,7 @@ const AppletLayoutWrapper: React.FC<AppletLayoutWrapperProps> = ({
   layoutType = "horizontal",
   className = "",
 }) => {
-  const { activeTab } = useSearchTab();
+  const { activeTab } = useAppletData();
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   
   // Fetch data brokers (if needed)

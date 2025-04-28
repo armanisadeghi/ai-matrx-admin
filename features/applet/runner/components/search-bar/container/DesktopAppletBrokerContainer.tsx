@@ -11,7 +11,7 @@ export interface FieldChildProps {
   actionButton?: ReactNode;
 }
 
-export interface FieldRowProps {
+export interface DesktopAppletBrokerContainerProps {
   children: ReactNode;
   activeFieldId?: string | null;
   onActiveFieldChange?: (id: string | null) => void;
@@ -20,7 +20,7 @@ export interface FieldRowProps {
   isMobile?: boolean;
 }
 
-const DesktopFieldRow: React.FC<FieldRowProps> = ({
+const DesktopAppletBrokerContainer: React.FC<DesktopAppletBrokerContainerProps> = ({
   children,
   activeFieldId: externalActiveFieldId,
   onActiveFieldChange,
@@ -98,4 +98,4 @@ const DesktopFieldRow: React.FC<FieldRowProps> = ({
   );
 };
 
-export default DesktopFieldRow;
+export default DesktopAppletBrokerContainer;

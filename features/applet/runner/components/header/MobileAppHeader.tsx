@@ -1,25 +1,25 @@
-// components/AppletHeader/MobileAppletHeader.tsx
+// components/AppletHeader/MobileAppHeader.tsx
 "use client";
 import React from "react";
 import { LayoutPanelLeft } from "lucide-react";
-import { useSearchTab } from "@/context/SearchTabContext";
+import { useAppletData } from "@/context/AppletDataContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux";
 import { ThemeSwitcherIcon } from "@/styles/themes";
 import Image from "next/image";
 import Link from "next/link";
-import { HeaderConfig } from "./index";
+import { CustomAppHeaderProps } from "./CustomAppHeader";
 import MobileTabHeader from "./MobileTabHeader ";
 
-interface MobileAppletHeaderProps {
-  config: HeaderConfig;
-}
 
-export const MobileAppletHeader = ({ config }: MobileAppletHeaderProps) => {
+
+
+
+export const MobileAppHeader = ({ config }: CustomAppHeaderProps) => {
   const user = useSelector((state: RootState) => state.user);
   const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
   const profilePhoto = user.userMetadata.picture || null;
-  const { activeTab, setActiveTab } = useSearchTab();
+  const { activeTab, setActiveTab } = useAppletData();
   
   return (
     <div className="w-full bg-white dark:bg-gray-900 transition-colors">
@@ -34,7 +34,7 @@ export const MobileAppletHeader = ({ config }: MobileAppletHeaderProps) => {
         {/* Center section - Mobile Tab Header */}
         <div className="flex-1 mx-2">
           <MobileTabHeader 
-            config={config.tabs} 
+            config={config.appletList} 
             activeTab={activeTab} 
             setActiveTab={setActiveTab} 
           />
@@ -62,4 +62,4 @@ export const MobileAppletHeader = ({ config }: MobileAppletHeaderProps) => {
   );
 };
 
-export default MobileAppletHeader;
+export default MobileAppHeader;

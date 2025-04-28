@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ComponentEntry } from '../component-list';
+import { ComponentEntry } from '../parts/component-list';
 import { ComponentDisplayWrapper } from '../component-usage';
 import IconButton from '@/components/official/IconButton';
 import { Copy } from 'lucide-react';

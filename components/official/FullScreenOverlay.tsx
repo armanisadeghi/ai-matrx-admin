@@ -24,6 +24,7 @@ export interface FullScreenOverlayProps {
     showSaveButton?: boolean;
     onSave?: () => void;
     saveButtonLabel?: string;
+    saveButtonDisabled?: boolean;
     showCancelButton?: boolean;
     onCancel?: () => void;
     cancelButtonLabel?: string;
@@ -44,6 +45,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
     showSaveButton = false,
     onSave,
     saveButtonLabel = "Save",
+    saveButtonDisabled = false,
     showCancelButton = false,
     onCancel,
     cancelButtonLabel = "Cancel",
@@ -126,7 +128,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                             </Button>
                         )}
                         {showSaveButton && (
-                            <Button onClick={handleSave}>
+                            <Button onClick={handleSave} disabled={saveButtonDisabled}>
                                 <Save className="h-4 w-4 mr-2" />
                                 {saveButtonLabel}
                             </Button>

@@ -72,3 +72,10 @@
   - [ ] Verified by Arman
 - [ ] Document any edge cases or limitations
   - [ ] Verified by Arman 
+
+
+
+  NEW TASKS FROM ARMAN:
+  - We need to create a way to have the admin system also include places for test components and infomational things. Likely in a nice, well-categorized way.
+  - As our first one, The following route needs to be moved to the admin system: /applet/test-applets (This is a simple testing system for testing a hook)
+  

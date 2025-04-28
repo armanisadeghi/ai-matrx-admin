@@ -1,10 +1,10 @@
 "use client";
 
 import AppletLayoutWrapper from "@/features/applet/layouts/core/SearchApplet";
-import { searchConfig } from "@/features/applet/sample-mock-data/constants";
-import { AppletHeader, HeaderConfig } from "@/features/applet/runner/components/header/AppletHeader";
+import { availableApplets } from "@/features/applet/sample-mock-data/constants";
+import { CustomAppHeader, HeaderConfig } from "@/features/applet/runner/components/header/CustomAppHeader";
 import { TabConfig } from "@/features/applet/runner/components/header/HeaderTabs";
-import { ButtonConfig } from "@/features/applet/runner/components/header/HeaderButtons";
+import { AppletNamesMenuListConfig } from "@/features/applet/runner/components/header/HeaderButtons";
 import { UniformHeightProvider } from "@/features/applet/layouts";
 
 export const tabConfig: TabConfig[] = [
@@ -17,7 +17,7 @@ export const tabConfig: TabConfig[] = [
     { value: "events", label: "Events" },
 ];
 
-const buttonsConfig: ButtonConfig[] = [{ label: "Build Applets", onClick: () => {} }];
+const buttonsConfig: AppletNamesMenuListConfig[] = [{ label: "Build Applets", onClick: () => {} }];
 
 const headerConfig: HeaderConfig = {
     tabs: tabConfig,
@@ -39,70 +39,70 @@ export default function SearchAppletPage() {
     return (
         <UniformHeightProvider>
             <div className="w-full h-full">
-                <AppletHeader config={headerConfig} />
+                <CustomAppHeader config={headerConfig} />
 
                 <SectionSeparator name="Default Layout" />
-                <AppletLayoutWrapper config={searchConfig} />
+                <AppletLayoutWrapper config={availableApplets} />
 
                 <SectionSeparator name="Two Column Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="twoColumn" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="twoColumn" />
 
                 <SectionSeparator name="Three Column Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="threeColumn" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="threeColumn" />
 
                 <SectionSeparator name="Four Column Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="fourColumn" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="fourColumn" />
 
                 <SectionSeparator name="Tabs Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="tabs" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="tabs" />
 
                 <SectionSeparator name="Accordion Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="accordion" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="accordion" />
 
                 <SectionSeparator name="Vertical Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="vertical" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="vertical" />
 
                 <SectionSeparator name="Horizontal Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="horizontal" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="horizontal" />
 
                 <SectionSeparator name="Stepper Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="stepper" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="stepper" />
 
                 <SectionSeparator name="Flat Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="flat" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="flat" />
 
                 {/* First Set of New Layouts */}
                 <SectionSeparator name="Carousel Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="carousel" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="carousel" />
 
                 <SectionSeparator name="Floating Card Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="floatingCard" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="floatingCard" />
 
                 <SectionSeparator name="Minimalist Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="minimalist" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="minimalist" />
 
                 <SectionSeparator name="Sidebar Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="sidebar" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="sidebar" />
 
                 <SectionSeparator name="Full Width Sidebar Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="fullWidthSidebar" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="fullWidthSidebar" />
 
                 {/* Second Set of New Layouts */}
                 <SectionSeparator name="Card Stack Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="cardStack" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="cardStack" />
 
                 <SectionSeparator name="Contextual Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="contextual" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="contextual" />
 
                 <SectionSeparator name="Chat Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="chat" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="chat" />
 
                 <SectionSeparator name="Map Based Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="mapBased" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="mapBased" />
 
                 {/* Original Layouts */}
                 <SectionSeparator name="Open Layout" />
-                <AppletLayoutWrapper config={searchConfig} layoutType="open" />
+                <AppletLayoutWrapper config={availableApplets} layoutType="open" />
             </div>
         </UniformHeightProvider>
     );

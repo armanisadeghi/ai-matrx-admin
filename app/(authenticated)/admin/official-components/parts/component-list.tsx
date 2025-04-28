@@ -1,3 +1,6 @@
+import { Component, Menu, PanelLeft, Layout, BarChart, Eye, MessageSquare, FileUp, Image, Layers } from 'lucide-react';
+
+
 // Contains all official reusable components
 export interface ComponentEntry {
   id: string;
@@ -17,7 +20,36 @@ export type ComponentCategory =
   | 'display' 
   | 'feedback'
   | 'data'
-  | 'overlays';
+  | 'overlays'
+  | 'media';
+
+export const categoryNames: Record<ComponentCategory, string> = {
+  buttons: 'Buttons',
+  navigation: 'Navigation',
+  layout: 'Layout',
+  inputs: 'Inputs',
+  display: 'Display',
+  feedback: 'Feedback',
+  data: 'Data',
+  overlays: 'Overlays',
+  media: 'Media'
+};
+
+
+
+
+export const categoryIcons: Record<ComponentCategory, React.ReactNode> = {
+  buttons: <Menu className="h-4 w-4" />,
+  navigation: <PanelLeft className="h-4 w-4" />,
+  layout: <Layout className="h-4 w-4" />,
+  inputs: <FileUp className="h-4 w-4" />,
+  display: <Eye className="h-4 w-4" />,
+  feedback: <MessageSquare className="h-4 w-4" />,
+  data: <BarChart className="h-4 w-4" />,
+  overlays: <Layers className="h-4 w-4" />,
+  media: <Image className="h-4 w-4" />
+};
+
 
 // Documentation: official-components.md
 
@@ -25,7 +57,7 @@ export const componentList: ComponentEntry[] = [
   {
     id: 'icon-button',
     name: 'Icon Button with Tooltip',
-    path: 'components/official/icon-button.tsx',
+    path: 'components/official/IconButton.tsx',
     description: 'Button with icon and tooltip support for quick actions',
     category: 'buttons',
     tags: ['icon', 'tooltip', 'action', 'clickable']
@@ -125,6 +157,54 @@ export const componentList: ComponentEntry[] = [
     description: 'Advanced component for exploring and manipulating JSON data',
     category: 'data',
     tags: ['json', 'explorer', 'data', 'viewer', 'interactive']
+  },
+  {
+    id: 'public-image-search',
+    name: 'Public Image Search',
+    path: 'components/official/PublicImageSearch.tsx',
+    description: 'Search and select public images from Unsplash with direct URL input option',
+    category: 'media',
+    tags: ['image', 'search', 'select', 'unsplash', 'media', 'input', 'modal']
+  },
+  {
+    id: 'image-manager',
+    name: 'Image Manager',
+    path: 'components/image/ImageManager.tsx',
+    description: 'Full-screen image manager with tabs for browsing and selecting images from multiple sources',
+    category: 'media',
+    tags: ['image', 'gallery', 'select', 'manager', 'modal', 'tabs', 'unsplash']
+  },
+  {
+    id: 'image-preview-row',
+    name: 'Image Preview Row',
+    path: 'components/image/shared/ImagePreviewRow.tsx',
+    description: 'Responsive row for displaying selected image previews with various size options',
+    category: 'media',
+    tags: ['image', 'preview', 'thumbnails', 'gallery', 'responsive', 'carousel']
+  },
+  {
+    id: 'image-manager-row',
+    name: 'Image Manager Row',
+    path: 'components/image/shared/ImageManagerRow.tsx',
+    description: 'All-in-one image selection component that combines preview row with image manager',
+    category: 'media',
+    tags: ['image', 'upload', 'preview', 'select', 'manager', 'input']
+  },
+  {
+    id: 'image-manager-icon',
+    name: 'Image Manager Icon',
+    path: 'components/image/shared/ImageManagerIcon.tsx',
+    description: 'Icon-only image selection component with dropdown of labeled items',
+    category: 'media',
+    tags: ['image', 'upload', 'preview', 'select', 'manager', 'input']
+  },
+  {
+    id: 'single-image-select',
+    name: 'Single Image Select',
+    path: 'components/image/shared/SingleImageSelect.tsx',
+    description: 'Single image selection component with preview and upload options',
+    category: 'media',
+    tags: ['image', 'upload', 'preview', 'select', 'manager', 'input']
   }
 ]; 
 
@@ -159,4 +239,9 @@ export function getCategoriesWithCounts(): { category: ComponentCategory; count:
   });
   
   return Array.from(categories.entries()).map(([category, count]) => ({ category, count }));
-} 
+}
+
+export function getCategoryIcon(category: ComponentCategory): React.ReactNode {
+  return categoryIcons[category];
+}
+

@@ -1,3 +1,5 @@
+'use client';
+
 import React from "react";
 import { AppConfig } from "../ConfigBuilder";
 import { Input } from "@/components/ui/input";
@@ -5,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import AppPreviewCard from "@/features/applet/builder/previews/AppPreviewCard";
-import ImageUploadField from "@/components/ui/file-upload/ImageUploadField";
+import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 
 interface AppInfoStepProps {
     config: Partial<AppConfig>;
@@ -18,8 +20,14 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({ config, updateConfig }
         updateConfig({ [name]: value });
     };
 
-    const handleImageChange = (url: string) => {
-        updateConfig({ imageUrl: url });
+    const handleImageSelected = (imageUrl: string) => {
+        if (imageUrl && imageUrl !== config.imageUrl) {
+            updateConfig({ imageUrl });
+        }
+    };
+    
+    const handleImageRemoved = () => {
+        updateConfig({ imageUrl: "" });
     };
 
     return (
@@ -100,14 +108,32 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({ config, updateConfig }
                                     A brief description of your app and what it does.
                                 </p>
                             </div>
-                            {/* Image Upload */}
-                            <ImageUploadField
-                                label="App Banner Image"
-                                value={config.imageUrl}
-                                onChange={handleImageChange}
-                                bucket="app-assets"
-                                path={`apps/${config.id || "temp"}/images`}
-                            />
+                            
+                            {/* Image Selection */}
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                    App Banner Image
+                                </Label>
+                                <div className="w-full">
+                                    <SingleImageSelect 
+                                        size="md"
+                                        aspectRatio="landscape"
+                                        placeholder="Select App Banner"
+                                        onImageSelected={handleImageSelected}
+                                        onImageRemoved={handleImageRemoved}
+                                        initialTab="public-search"
+                                        initialSearchTerm={config.name}
+                                        preselectedImageUrl={config.imageUrl}
+                                        className="w-full max-w-full"
+                                        instanceId="app-banner"
+                                        saveTo="public"
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    Upload an image for your app banner. This will be displayed on the app card.
+                                    Recommended size: 1200 × 630 pixels.
+                                </p>
+                            </div>
                         </div>
                     </div>
 

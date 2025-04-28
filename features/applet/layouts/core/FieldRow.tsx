@@ -1,7 +1,7 @@
 // File: components/search/core/FieldRow.tsx
 // This is your existing FieldRow with minor modifications
 import React, { useState, ReactNode, Children, cloneElement, isValidElement, ReactElement } from 'react';
-import { FieldChildProps } from "@/features/applet/runner/components/search-bar/row/DesktopFieldRow";
+import { FieldChildProps } from "@/features/applet/runner/components/search-bar/container/DesktopAppletBrokerContainer";
 
 
 interface FieldRowProps {

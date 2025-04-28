@@ -3,19 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
-import FieldRow from "../row/FieldRow";
+import AppletBrokerContainer from "../container/AppletBrokerContainer";
 import SearchGroupField from "../group/SearchGroupField";
-import { useSearchTab } from "@/context/SearchTabContext";
-import { TabSearchConfig } from "../../field-components/types";
+import { useAppletData } from "@/context/AppletDataContext";
+import { AvailableAppletConfigs } from "../../field-components/types";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
 import { ALL_BROKER_IDS } from "../../../../sample-mock-data/constants";
 
-interface DesktopAppletSearchBarProps {
-    config: TabSearchConfig;
+interface DesktopAppletUserInputBarProps {
+    config: AvailableAppletConfigs;
 }
 
-const DesktopAppletSearchBar: React.FC<DesktopAppletSearchBarProps> = ({ config }) => {
-    const { activeTab } = useSearchTab();
+const DesktopAppletUserInputBar: React.FC<DesktopAppletUserInputBarProps> = ({ config }) => {
+    const { activeTab } = useAppletData();
     const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
 
     const dataBrokers = useGetorFetchRecords("dataBroker", ALL_BROKER_IDS);
@@ -25,7 +25,7 @@ const DesktopAppletSearchBar: React.FC<DesktopAppletSearchBarProps> = ({ config 
     }, [activeTab]);
 
     const searchButton = (
-        <div className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-full p-3 ml-2">
+        <div className="bg-blue-500 hover:bg-rose-600 dark:bg-blue-600 dark:hover:bg-rose-700 text-white rounded-full p-3 ml-2">
             <Search size={24} />
         </div>
     );
@@ -34,7 +34,7 @@ const DesktopAppletSearchBar: React.FC<DesktopAppletSearchBarProps> = ({ config 
 
     return (
         <div className="w-full p-4">
-            <FieldRow
+            <AppletBrokerContainer
                 activeFieldId={activeFieldId}
                 onActiveFieldChange={setActiveFieldId}
                 actionButton={searchButton}
@@ -55,9 +55,9 @@ const DesktopAppletSearchBar: React.FC<DesktopAppletSearchBarProps> = ({ config 
                         isMobile={false}
                     />
                 ))}
-            </FieldRow>
+            </AppletBrokerContainer>
         </div>
     );
 };
 
-export default DesktopAppletSearchBar;
+export default DesktopAppletUserInputBar;

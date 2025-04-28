@@ -13,7 +13,7 @@ interface FieldChildProps {
   isMobile?: boolean;
 }
 
-interface MobileFieldRowProps {
+interface MobileAppletBrokerContainerProps {
   children: ReactNode;
   activeFieldId?: string | null;
   onActiveFieldChange?: (id: string | null) => void;
@@ -21,7 +21,7 @@ interface MobileFieldRowProps {
   className?: string;
 }
 
-const MobileFieldRow: React.FC<MobileFieldRowProps> = ({
+const MobileAppletBrokerContainer: React.FC<MobileAppletBrokerContainerProps> = ({
   children,
   activeFieldId: externalActiveFieldId,
   onActiveFieldChange,
@@ -122,4 +122,4 @@ const MobileFieldRow: React.FC<MobileFieldRowProps> = ({
   );
 };
 
-export default MobileFieldRow;
+export default MobileAppletBrokerContainer;
