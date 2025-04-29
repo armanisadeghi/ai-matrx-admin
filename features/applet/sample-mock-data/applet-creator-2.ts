@@ -280,7 +280,7 @@ const inputTypesField: GroupFieldConfig = {
 
 
 const mvpScopeField: GroupFieldConfig = {
-    brokerId: "0fc49b4c-fc8b-970e-9dda-f43dedf74a9d",
+    brokerId: "655904af-df03-40ad-9420-69ea62a46c36",
     label: "MVP Scope",
     type: "textarea",
     placeholder: "Please list your 'must-have' features for initial launch, followed by 'nice-to-have' features that could be added later. Be as specific as possible about what functionality is essential versus what could be developed in future iterations.",

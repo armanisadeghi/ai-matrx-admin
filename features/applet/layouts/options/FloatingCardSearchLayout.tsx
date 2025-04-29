@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
 import OpenSearchGroup from "@/features/applet/layouts/core/OpenSearchGroup";
 
@@ -11,9 +11,18 @@ const FloatingCardSearchLayout: React.FC<SearchLayoutProps> = ({
   const activeSearchGroups = config[activeTab] || [];
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
 
+  const gridCols = useMemo(() => {
+    const count = activeSearchGroups.length;
+    if (count <= 2 || count === 4 || count === 5) {
+      return "md:grid-cols-2";
+    } else {
+      return "md:grid-cols-2 lg:grid-cols-3";
+    }
+  }, [activeSearchGroups.length]);
+
   return (
     <div className={`w-full max-w-6xl mx-auto p-4 ${className}`}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 py-8">
+      <div className={`grid grid-cols-1 ${gridCols} gap-10 py-8`}>
         {activeSearchGroups.map((group) => (
           <div 
             key={group.id} 

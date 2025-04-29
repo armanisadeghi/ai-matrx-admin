@@ -19,8 +19,6 @@ export type {
   SelectOption,
   InputFieldConfig,
   TextareaFieldConfig,
-  CommandItemConfig,
-  CommandGroupConfig,
   AppletListItemConfig as TabConfig,
   GroupFieldConfig,
   GroupConfig,

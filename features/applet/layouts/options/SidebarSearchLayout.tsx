@@ -38,7 +38,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
   const containerWidthClass = fullWidth ? "w-full" : "w-full max-w-6xl mx-auto";
 
   return (
-    <div className={`${containerWidthClass} ${className} border-2 border-red-500`}>
+    <div className={`${containerWidthClass} ${className}`}>
       <div className="flex flex-col md:flex-row h-full">
         {/* Sidebar */}
         <div className="w-full md:w-64 border-r dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800 flex-shrink-0">

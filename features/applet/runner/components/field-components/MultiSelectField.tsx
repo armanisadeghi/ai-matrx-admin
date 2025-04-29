@@ -262,7 +262,7 @@ const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
       <div className="relative" ref={dropdownRef}>
         {/* Selected options display */}
         <div
-          className="w-full p-2 min-h-[42px] border rounded-md cursor-pointer flex items-center flex-wrap gap-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full p-2 min-h-[42px] border rounded-md cursor-pointer flex items-center flex-wrap gap-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-none"
           onClick={toggleDropdown}
         >
           {renderSelectedChips()}
@@ -288,7 +288,7 @@ const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder={searchPlaceholder}
-                    className="w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                    className="w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-none border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
                   />
                   {searchTerm && (
                     <button
@@ -347,7 +347,7 @@ const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
                           type="checkbox"
                           checked={selectedValues.includes(option.value)}
                           onChange={() => {}} // Handled by parent div
-                          className="w-4 h-4 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
+                          className="w-4 h-4 border-gray-300 rounded text-blue-600 focus:ring-none"
                         />
                       </div>
                       <div className="flex items-center">

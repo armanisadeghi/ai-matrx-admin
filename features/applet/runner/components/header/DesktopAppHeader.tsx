@@ -1,6 +1,5 @@
 // components/Header.tsx
 "use client";
-
 import React from "react";
 import { Menu, LayoutPanelLeft, Sun, Moon, MessageSquare, Mail, Bell, Settings, HelpCircle, User, TreePalm } from "lucide-react";
 import { useAppletData } from "@/context/AppletDataContext";
@@ -57,20 +56,35 @@ export const APP_ICON_CLASSNAMES = {
     fuchsia: "text-fuchsia-500 dark:text-fuchsia-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-500",
 };
 
-export const DesktopAppHeader = ({ config }: CustomAppHeaderProps) => {
-    const { activeTab, setActiveTab } = useAppletData();
+// Update the CustomAppHeaderProps interface in your CustomAppHeader.ts file to include the new prop
+// export interface CustomAppHeaderProps {
+//     config: {
+//         icon: keyof typeof APP_ICON_OPTIONS;
+//         accentColor: keyof typeof APP_ICON_CLASSNAMES;
+//         appletList: any[];
+//         extraButtons?: any[];
+//     };
+//     headerClassName?: string; // New prop for custom header class
+// }
 
+export const DesktopAppHeader = ({ 
+    config, 
+    headerClassName 
+}: CustomAppHeaderProps & { headerClassName?: string }) => {
+    const { activeTab, setActiveTab } = useAppletData();
     const user = useSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata.picture || null;
-
     const AppIcon = APP_ICON_OPTIONS[config.icon] || LayoutPanelLeft;
     const AppIconClassName =
         APP_ICON_CLASSNAMES[config.accentColor] || "text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700";
-
-
+    
+    // Use the custom header class if provided, otherwise use the default class
+    const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";
+    const finalHeaderClass = headerClassName || defaultHeaderClass;
+    
     return (
-        <header className="sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm">
+        <header className={finalHeaderClass}>
             {/* Top Navigation with primary grid */}
             <div className="grid grid-cols-12 items-center h-full pt-2 pb-2 px-6">
                 {/* Left section - Icon and Tabs (8/12) */}
@@ -84,7 +98,6 @@ export const DesktopAppHeader = ({ config }: CustomAppHeaderProps) => {
                                 </Link>
                             </div>
                         </div>
-
                         {/* Tabs - with overflow handling */}
                         <div className="overflow-x-auto hide-scrollbar flex-grow">
                             <div className="flex w-full">
@@ -98,7 +111,6 @@ export const DesktopAppHeader = ({ config }: CustomAppHeaderProps) => {
                         </div>
                     </div>
                 </div>
-
                 {/* Right section - Buttons and profile (4/12) */}
                 <div className="col-span-12 lg:col-span-4 flex items-center justify-end gap-2 shrink-0 mt-2 lg:mt-0">
                     <HeaderExtraButtons buttons={config.extraButtons} />

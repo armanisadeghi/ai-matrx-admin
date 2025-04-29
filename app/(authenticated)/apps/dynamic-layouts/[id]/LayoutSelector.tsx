@@ -26,6 +26,11 @@ export const LayoutSelector = ({ currentLayout }: LayoutSelectorProps) => {
         router.push(`/apps/dynamic-layouts/${value}`);
     };
 
+    // Sort options alphabetically by title
+    const sortedLayoutOptions = [...appletLayoutOptionsArray].sort((a, b) => 
+        a.title.localeCompare(b.title)
+    );
+
     return (
         <div className="flex items-center gap-4 mb-4">
             <Link
@@ -44,7 +49,7 @@ export const LayoutSelector = ({ currentLayout }: LayoutSelectorProps) => {
                     <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700">
                         <SelectGroup>
                             <SelectLabel className="text-gray-500 dark:text-gray-400">Layout Options</SelectLabel>
-                            {appletLayoutOptionsArray.map((option) => (
+                            {sortedLayoutOptions.map((option) => (
                                 <SelectItem
                                     key={option.value}
                                     value={option.value}

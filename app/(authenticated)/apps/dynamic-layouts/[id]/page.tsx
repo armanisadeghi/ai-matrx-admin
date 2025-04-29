@@ -1,14 +1,14 @@
 // app\(authenticated)\apps\dynamic-layouts\[id]\page.tsx
 import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
-import AppletLayoutWrapper from "../../../../../features/applet/layouts/core/LayoutWrapper";
+import AppletLayoutWrapper from "@/features/applet/layouts/core/LayoutWrapper";
 import LayoutSelector from "./LayoutSelector";
-import { travelAgentAppConfig } from "@/features/applet/sample-mock-data/constants";
+import { everythingCombinedAppConfig } from "@/features/applet/sample-mock-data/constants";
 
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;
     const layoutId = resolvedParams.id;
-    const fullAppConfig = travelAgentAppConfig;
+    const fullAppConfig = everythingCombinedAppConfig;
     
     return (
         <>

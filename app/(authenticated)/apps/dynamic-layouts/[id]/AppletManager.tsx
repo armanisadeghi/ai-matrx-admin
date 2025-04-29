@@ -41,12 +41,12 @@ export const travelAgentAppConfig: CustomAppConfig = {
     layoutType: "twoColumn",
 };
 
-interface AppletManagerProps {
+interface AppManagerProps {
     appId: string;
     layoutType: string;
 }
 
-export const AppletManager = ({ appId, layoutType }: AppletManagerProps) => {
+export const AppManager = ({ appId, layoutType }: AppManagerProps) => {
     const appConfig = availableApps[appId];
     if (!appConfig) {
         return <div>App not found</div>;
@@ -63,4 +63,4 @@ export const AppletManager = ({ appId, layoutType }: AppletManagerProps) => {
     );
 };
 
-export default AppletManager;
+export default AppManager;

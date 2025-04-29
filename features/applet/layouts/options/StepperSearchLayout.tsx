@@ -119,7 +119,7 @@ const StepperSearchLayout: React.FC<SearchLayoutProps> = ({
         <button 
           onClick={handlePrev}
           disabled={currentStep === 0}
-          className={`px-4 py-2 rounded ${
+          className={`px-4 py-2 rounded-md ${
             currentStep === 0 
             ? "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
             : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
@@ -137,7 +137,7 @@ const StepperSearchLayout: React.FC<SearchLayoutProps> = ({
         ) : (
           <button 
             onClick={handleNext}
-            className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded"
+            className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md"
           >
             Next
           </button>

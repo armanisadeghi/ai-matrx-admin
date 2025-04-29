@@ -103,7 +103,7 @@ const SelectField: React.FC<FieldProps<SelectFieldConfig>> = ({
             className={`flex items-center justify-between w-full p-2 text-left rounded-md outline-none 
               bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 
               hover:bg-gray-50 dark:hover:bg-gray-750 focus:bg-white dark:focus:bg-gray-800 
-              focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500 ${open ? 'ring-2 ring-blue-500 border-blue-500' : ''}`}
+              focus:border-gray-200 dark:focus:border-gray-700 focus:ring-none`}
             aria-expanded={open}
           >
             <span className="truncate">{displayValue}</span>
@@ -146,7 +146,7 @@ const SelectField: React.FC<FieldProps<SelectFieldConfig>> = ({
                         )}
                         <span>{item.label}</span>
                         {currentValue === item.value && (
-                          <Check className="w-4 h-4 ml-auto text-blue-500 dark:text-blue-400" />
+                          <Check className="w-4 h-4 ml-auto text-gray-600 dark:text-gray-400" />
                         )}
                       </div>
                     </CommandItem>

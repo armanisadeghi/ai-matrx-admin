@@ -79,7 +79,7 @@ export const Grid = ({
                 </svg>
               </div>
               <h3 className="font-semibold text-lg">{addButtonText}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Click to add new (Sorry. Not implemented)</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">This is coming soon!</p>
             </div>
           </div>
         )}

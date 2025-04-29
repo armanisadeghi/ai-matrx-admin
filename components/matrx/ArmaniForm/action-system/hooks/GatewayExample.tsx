@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {useDynamicGateway} from "./useDynamicGateway";
+
 
 interface ComponentAProps {
     gateway: ReturnType<typeof useDynamicGateway>;

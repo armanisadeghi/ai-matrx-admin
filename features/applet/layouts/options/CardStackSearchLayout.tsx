@@ -1,16 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
 import OpenSearchGroup from "@/features/applet/layouts/core/OpenSearchGroup";
-import UniformHeightWrapper from "@/features/applet/layouts/core/UniformHeightWrapper";
+import UniformHeightWrapper, { UniformHeightContext } from "@/features/applet/layouts/core/UniformHeightWrapper";
 
 const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
   config,
   activeTab,
   actionButton,
+  activeFieldId,
+  setActiveFieldId,
   className = "",
 }) => {
   const activeSearchGroups = config[activeTab] || [];
   const [activeIndex, setActiveIndex] = useState(0);
+  const { getMaxHeight } = useContext(UniformHeightContext);
 
   // Calculate the position and z-index for each card
   const getCardStyle = (index: number) => {
@@ -20,10 +23,11 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
     // Cards behind the active card
     if (position < 0) {
       return {
-        transform: `translateY(${Math.abs(position) * 15}px) scale(${1 - Math.abs(position) * 0.05})`,
+        transform: `translateY(${Math.abs(position) * 20}px) scale(${1 - Math.abs(position) * 0.08})`,
         zIndex: 10 + position,
-        opacity: 1 - Math.abs(position) * 0.05,
-        filter: `brightness(${1 - Math.abs(position) * 0.1})`,
+        opacity: 1 - Math.abs(position) * 0.08,
+        filter: `brightness(${1 - Math.abs(position) * 0.15})`,
+        boxShadow: `0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)`,
       };
     }
     // Active card
@@ -33,27 +37,98 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
         zIndex: 20,
         opacity: 1,
         filter: "brightness(1)",
+        boxShadow: `0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)`,
       };
     }
     // Cards ahead of the active card
     else {
       return {
-        transform: `translateY(${-position * 10}px) scale(${1 - position * 0.05})`,
+        transform: `translateY(${-position * 10}px) scale(${1 - position * 0.08})`,
         zIndex: 10 - position,
-        opacity: 0.7 - position * 0.1,
-        filter: `brightness(${1 - position * 0.05})`,
+        opacity: 0.7 - position * 0.15,
+        filter: `brightness(${1 - position * 0.08})`,
         pointerEvents: "none",
+        boxShadow: `0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)`,
       };
     }
   };
 
+  const handleNext = () => {
+    if (activeIndex < activeSearchGroups.length - 1) {
+      setActiveIndex(activeIndex + 1);
+      if (setActiveFieldId) {
+        setActiveFieldId(activeSearchGroups[activeIndex + 1].id);
+      }
+    }
+  };
+  
+  const handlePrev = () => {
+    if (activeIndex > 0) {
+      setActiveIndex(activeIndex - 1);
+      if (setActiveFieldId) {
+        setActiveFieldId(activeSearchGroups[activeIndex - 1].id);
+      }
+    }
+  };
+
+  const isLastCard = activeIndex === activeSearchGroups.length - 1;
+  const isFirstCard = activeIndex === 0;
+  
+  // Get the maximum height from UniformHeightContext for cardStack layout
+  const maxContentHeight = getMaxHeight("cardStack");
+  // Add some padding to ensure there's enough space
+  const containerHeight = maxContentHeight > 0 ? maxContentHeight + 40 : 'auto';
+
   return (
     <div className={`w-full max-w-4xl mx-auto p-4 pb-16 ${className}`}>
-      <div className="relative h-[500px]">
+      {/* Stepper navigation */}
+      <div className="flex mb-6">
+        {activeSearchGroups.map((group, index) => (
+          <div 
+            key={group.id}
+            className={`flex-1 text-center ${
+              index < activeIndex 
+                ? "text-rose-600 dark:text-rose-400" 
+                : index === activeIndex 
+                  ? "text-rose-500 dark:text-rose-400 font-bold" 
+                  : "text-gray-400 dark:text-gray-500"
+            }`}
+          >
+            <button
+              onClick={() => {
+                setActiveIndex(index);
+                if (setActiveFieldId) {
+                  setActiveFieldId(group.id);
+                }
+              }}
+              className={`rounded-full w-8 h-8 mx-auto mb-2 flex items-center justify-center ${
+                index <= activeIndex 
+                  ? "bg-rose-500 text-white hover:bg-rose-600" 
+                  : "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600"
+              }`}
+            >
+              {index + 1}
+            </button>
+            <button 
+              onClick={() => {
+                setActiveIndex(index);
+                if (setActiveFieldId) {
+                  setActiveFieldId(group.id);
+                }
+              }}
+              className="text-sm hover:underline focus:outline-none text-gray-700 dark:text-gray-300"
+            >
+              {group.label}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="relative" style={{ minHeight: containerHeight }}>
         {activeSearchGroups.map((group, index) => (
           <div
             key={group.id}
-            className="absolute w-full transition-all duration-500 ease-in-out cursor-pointer"
+            className="absolute w-full transition-all duration-500 ease-in-out cursor-pointer rounded-lg overflow-hidden"
             style={{
               ...getCardStyle(index),
               top: 0,
@@ -66,7 +141,8 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
             <UniformHeightWrapper
               groupId={group.id}
               layoutType="cardStack"
-              className="h-full"
+              className="w-full"
+              enabled={true}
             >
               <OpenSearchGroup
                 id={group.id}
@@ -79,34 +155,39 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
                 onOpenChange={() => {}}
                 isLast={false}
                 isMobile={false}
-                className="h-full shadow-xl "
+                className="shadow-xl border-2 border-gray-200 dark:border-gray-700 rounded-lg"
               />
             </UniformHeightWrapper>
           </div>
         ))}
       </div>
 
-      {/* Navigation indicator */}
-      <div className="flex justify-center mt-6 items-center space-x-2">
-        {activeSearchGroups.map((group, index) => (
-          <button
-            key={group.id}
-            onClick={() => setActiveIndex(index)}
-            className={`px-3 py-1 rounded-full transition-all ${
-              index === activeIndex
-                ? "bg-rose-500 text-white font-medium px-4"
-                : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
-            }`}
+      {/* Navigation buttons */}
+      <div className="flex justify-between mt-6">
+        <button 
+          onClick={handlePrev}
+          disabled={isFirstCard}
+          className={`px-4 py-2 rounded-md ${
+            isFirstCard 
+              ? "bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-not-allowed"
+              : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600"
+          }`}
+        >
+          Previous
+        </button>
+        
+        {isLastCard ? (
+          actionButton || (
+            <button className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md">
+              Search
+            </button>
+          )
+        ) : (
+          <button 
+            onClick={handleNext}
+            className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md"
           >
-            {group.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex justify-center mt-8">
-        {actionButton || (
-          <button className="bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white rounded-full px-8 py-3 shadow-lg">
-            Search
+            Next
           </button>
         )}
       </div>

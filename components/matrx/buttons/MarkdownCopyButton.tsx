@@ -4,6 +4,7 @@ import { copyToClipboard } from "./markdown-copy-utils";
 import { Copy, CheckCircle2, FileText, FileType2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
+import { Microsoft } from '@lobehub/icons';
 
 /**
  * Simple Copy Button Component

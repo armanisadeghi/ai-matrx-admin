@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { allSystemWideMockApplets, travelAgentAppConfig } from "@/features/applet/sample-mock-data/constants";
+import { allSystemWideMockApplets, everythingCombinedAppConfig } from "@/features/applet/sample-mock-data/constants";
 import { AvailableAppletConfigs, CustomAppConfig } from "@/features/applet/runner/components/field-components/types";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 
@@ -35,7 +35,7 @@ export function AppletDataProvider({
     const [activeTab, setActiveTab] = useState<TabType>("stays");
     const [searchFocus, setSearchFocus] = useState<string | null>(null);
     const [availableApplets, setAvailableApplets] = useState<AvailableAppletConfigs>(allSystemWideMockApplets);
-    const [config, setConfig] = useState<CustomAppConfig>(travelAgentAppConfig);
+    const [config, setConfig] = useState<CustomAppConfig>(everythingCombinedAppConfig);
     const [appId, setAppId] = useState<string>("travel-agent");
     const [layoutType, setLayoutType] = useState<AppletLayoutOption>("horizontal");
 

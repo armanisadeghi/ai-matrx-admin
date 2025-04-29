@@ -9,11 +9,11 @@ import { CustomAppConfig } from "../field-components/types";
 
 export interface CustomAppHeaderProps {
   config: CustomAppConfig;
+  headerClassName?: string;
 }
 
 export const CustomAppHeader = ({ config }: CustomAppHeaderProps) => {
   const { isMobile } = useAppletData();
-  const { activeTab, availableApplets } = useAppletData();
 
   return isMobile ? (
     <MobileAppHeader config={config} />

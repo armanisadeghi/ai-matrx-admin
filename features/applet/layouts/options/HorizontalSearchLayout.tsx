@@ -50,8 +50,6 @@ const HorizontalSearchLayout: React.FC<SearchLayoutProps> = ({
     </div>
   );
 
-  console.log("config", JSON.stringify(config, null, 2));
-
   const activeSearchGroups = config[activeTab] || [];
 
   return (

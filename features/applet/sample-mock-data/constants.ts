@@ -7,6 +7,7 @@ import {
     AppletListItemConfig,
 } from "@/features/applet/runner/components/field-components/types";
 import { appletCreatorTwoConfig } from "./applet-creator-2";
+import { starterAppletConfig } from "./starter-applet";
 
 const staysConfig: AppletContainersConfig[] = [
     {
@@ -175,7 +176,7 @@ const nightlifeConfig: AppletContainersConfig[] = [
                         { id: "rooftop-bar", label: "Rooftop Bar", value: "rooftop-bar" },
                         { id: "pool-party", label: "Pool Party", value: "pool-party" },
                         { id: "dayclub", label: "Dayclub", value: "dayclub" },
-                        { id: "strip-club", label: "Gentlemen’s Club", value: "strip-club" },
+                        { id: "strip-club", label: "Gentlemen's Club", value: "strip-club" },
                         { id: "live-music", label: "Live Music Venue", value: "live-music" },
                         { id: "concert-hall", label: "Concert Hall", value: "concert-hall" },
                         { id: "karaoke", label: "Karaoke Bar", value: "karaoke" },
@@ -886,7 +887,6 @@ const appletCreatorConfigWhole: AppletContainersConfig[] = [
                     ],
                 },
             },
-
         ],
     },
     {
@@ -919,7 +919,7 @@ const appletCreatorConfigWhole: AppletContainersConfig[] = [
                 },
             },
         ],
-    }
+    },
 ];
 
 const primaryAudienceTypeField: GroupFieldConfig = {
@@ -1012,38 +1012,28 @@ const appletPurposeContainer: AppletContainersConfig = {
     id: "applet-purpose",
     label: "Purpose",
     placeholder: "App primary purpose",
-    fields: [
-        primaryAudienceTypeField,
-        targetUserField,
-        problemToOvercomeField,
-    ],
+    fields: [primaryAudienceTypeField, targetUserField, problemToOvercomeField],
 };
 
 const appletConceptContainer: AppletContainersConfig = {
     id: "applet-concept",
     label: "Concept",
     placeholder: "Core concept",
-    fields: [
-        coreConceptField,
-    ],
+    fields: [coreConceptField],
 };
 
 const appletFunctionalityContainer: AppletContainersConfig = {
     id: "applet-functionality",
     label: "Functionality",
     placeholder: "core functionality",
-    fields: [
-        coreFunctionalityField,
-    ],
+    fields: [coreFunctionalityField],
 };
 
 const aiIntegrationContainer: AppletContainersConfig = {
     id: "ai-integration",
     label: "AI Integration",
     placeholder: "AI capabilities",
-    fields: [
-        aiCapabilitiesField,
-    ],
+    fields: [aiCapabilitiesField],
 };
 
 export const appletCreatorConfig: AppletContainersConfig[] = [
@@ -1053,13 +1043,10 @@ export const appletCreatorConfig: AppletContainersConfig[] = [
     aiIntegrationContainer,
 ];
 
-
-
-
-
 export const allSystemWideMockApplets: AvailableAppletConfigs = {
     "applet-creator": appletCreatorConfig,
     "applet-creator-2": appletCreatorTwoConfig,
+    "starter-applet": starterAppletConfig,
     stays: staysConfig,
     "vegas-nightlife": nightlifeConfig,
     restaurants: restaurantsConfig,
@@ -1108,6 +1095,7 @@ export const travelAgentListConfig: AppletListItemConfig[] = [
     { value: "shopping", label: "Shopping" },
     { value: "transportation", label: "Transportation" },
     { value: "events", label: "Events" },
+    { value: "starter-app", label: "Starter App" },
 ];
 
 export const extraButtonsConfig: HeaderExtraButtonsConfig[] = [
@@ -1118,14 +1106,14 @@ export const extraButtonsConfig: HeaderExtraButtonsConfig[] = [
     },
 ];
 
-export const travelAgentAppConfig: CustomAppConfig = {
+export const everythingCombinedAppConfig: CustomAppConfig = {
     name: "Travel Agent",
     description: "Travel Agent",
     slug: "travel-agent",
     icon: "TreePalm",
     creator: "Travel Agent",
     primaryColor: "gray",
-    accentColor: "fuchsia",
+    accentColor: "rose",
     appletList: travelAgentListConfig,
     extraButtons: extraButtonsConfig,
     layoutType: "twoColumn",
@@ -1140,8 +1128,7 @@ export const matrixAppCreatorAppConfig: CustomAppConfig = {
     primaryColor: "gray",
     accentColor: "blue",
     appletList: [
-        { value: "applet-creator", label: "Applet Creator" },
-        { value: "applet-creator-2", label: "Applet Creator 2" },
+        { value: "applet-creator-2", label: "Applet Creator" },
     ],
     extraButtons: [
         {
@@ -1153,10 +1140,58 @@ export const matrixAppCreatorAppConfig: CustomAppConfig = {
     layoutType: "twoColumn",
 };
 
+export const starterAppConfig: CustomAppConfig = {
+    name: "Starter App",
+    description: "Starter App",
+    slug: "starter-app",
+    icon: "SiMagic",
+    creator: "Starter App",
+    primaryColor: "gray",
+    accentColor: "blue",
+    appletList: [{ value: "starter-applet", label: "Starter Applet" }],
+    extraButtons: [
+        {
+            label: "Your Custom Link",
+            actionType: "button",
+            knownMethod: "renderSampleApplet",
+        },
+    ],
+    layoutType: "open", // This needs to be editable, since it controls the field look and feel
+};
+
+export const minimalTravelAgentAppConfig: CustomAppConfig = {
+    name: "Travel Agent",
+    description: "Travel Agent",
+    slug: "travel-agent",
+    icon: "TreePalm",
+    creator: "Travel Agent",
+    primaryColor: "gray",
+    accentColor: "rose",
+    appletList: [
+        { value: "stays", label: "Stays" },
+        { value: "vegas-nightlife", label: "Vegas Nightlife" },
+        { value: "restaurants", label: "Restaurants" },
+        { value: "activities", label: "Activities" },
+        { value: "shopping", label: "Shopping" },
+        { value: "transportation", label: "Transportation" },
+        { value: "events", label: "Events" },
+    ],
+    extraButtons: [
+        {
+            label: "Travel Discounts",
+            actionType: "button",
+            knownMethod: "renderSampleApplet",
+        },
+    ],
+    layoutType: "twoColumn",
+};
+
+
 export const availableApps: Record<string, CustomAppConfig> = {
-    "travel-agent": travelAgentAppConfig,
+    "travel-agent": everythingCombinedAppConfig,
+    "everything-combined": everythingCombinedAppConfig,
     "matrix-app-creator": matrixAppCreatorAppConfig,
-}
-
-
+    "starter-app": starterAppConfig,
+    "minimal-travel-agent": minimalTravelAgentAppConfig,
+};
 

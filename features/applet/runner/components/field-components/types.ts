@@ -166,17 +166,6 @@ export interface FieldProps<T = {}> extends BaseFieldProps {
     isMobile?: boolean;
 }
 
-// Legacy types for backward compatibility
-export interface CommandItemConfig {
-    label: string;
-    value: string;
-    icon?: ReactNode;
-}
-
-export interface CommandGroupConfig {
-    heading: string;
-    items: CommandItemConfig[];
-}
 
 // Field configuration with broker ID
 export interface GroupFieldConfig {
