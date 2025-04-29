@@ -1,7 +1,7 @@
 // File: components/search/core/OpenSearchGroup.tsx
 // For the open/non-collapsible layouts
 import React, { useEffect, useRef } from "react";
-import { SearchGroupRendererProps } from "../types";
+import { SearchGroupRendererProps } from "../options/layout.types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 
 

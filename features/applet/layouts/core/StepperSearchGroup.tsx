@@ -1,7 +1,7 @@
 // File: components/search/core/StepperSearchGroup.tsx
 // For the stepper layout
 import React, { useEffect, useRef } from "react";
-import { SearchGroupRendererProps } from "@/features/applet/layouts/types";
+import { SearchGroupRendererProps } from "@/features/applet/layouts/options/layout.types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 
 const StepperSearchGroup: React.FC<SearchGroupRendererProps> = ({

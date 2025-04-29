@@ -1,7 +1,7 @@
 // File: components/search/core/VerticalSearchGroup.tsx
 // For the vertical layout
 import React, { useEffect, useRef, useState } from "react";
-import { SearchGroupRendererProps } from "@/features/applet/layouts/types";
+import { SearchGroupRendererProps } from "@/features/applet/layouts/options/layout.types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -19,6 +19,7 @@ const VerticalSearchGroup: React.FC<SearchGroupRendererProps> = ({
 }) => {
   const fieldRefs = useRef<Map<string, React.ReactNode>>(new Map());
   const [expanded, setExpanded] = useState(isActive);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setExpanded(isActive);
@@ -44,7 +45,9 @@ const VerticalSearchGroup: React.FC<SearchGroupRendererProps> = ({
   return (
     <div className={`border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}>
       <button
-        className="w-full flex justify-between items-center p-4 text-left focus:outline-none hover:bg-gray-50 dark:hover:bg-gray-700"
+        className={`w-full flex justify-between items-center p-4 text-left focus:outline-none hover:bg-gray-50 dark:hover:bg-gray-700 ${
+          expanded ? "bg-gray-50 dark:bg-gray-700" : ""
+        }`}
         onClick={handleToggle}
       >
         <div>
@@ -56,8 +59,13 @@ const VerticalSearchGroup: React.FC<SearchGroupRendererProps> = ({
         </div>
       </button>
       
-      {expanded && (
-        <div className="p-4 border-t dark:border-gray-700">
+      <div 
+        className="overflow-hidden transition-[height] duration-500 ease-in-out"
+        style={{ 
+          height: expanded ? (contentRef.current?.scrollHeight || 'auto') : 0 
+        }}
+      >
+        <div ref={contentRef} className="p-4 border-t dark:border-gray-700">
           {description && (
             <div className="pr-1 mb-5 text-sm text-gray-500 dark:text-gray-400">{description}</div>
           )}
@@ -76,7 +84,7 @@ const VerticalSearchGroup: React.FC<SearchGroupRendererProps> = ({
             ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

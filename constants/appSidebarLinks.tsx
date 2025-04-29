@@ -243,6 +243,21 @@ export const secondaryLinks = [
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+        label: "Applet demo",
+        href: "/apps/demo", // https://lucide.dev/icons/
+        icon: <LayoutPanelLeft className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Dynamic Layout Demo",
+        href: "/apps/dynamic-layouts", // app\(authenticated)\apps\dynamic-layouts
+        icon: <LayoutPanelLeft className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "All Layouts",
+        href: "/apps/all-layouts", // https://lucide.dev/icons/
+        icon: <LayoutPanelLeft className="text-blue-500 dark:text-blue-600 hover:text-blue-600 dark:hover:text-blue-700 h-5 w-5 flex-shrink-0" />,
+    },
+    {
         label: "Applet Components",
         href: "/tests/applet-tests/input-components-4", // https://lucide.dev/icons/
         icon: <LayoutPanelLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,

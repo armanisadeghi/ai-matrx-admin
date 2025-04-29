@@ -236,7 +236,7 @@ const CheckboxGroupField: React.FC<FieldProps<CheckboxGroupFieldConfig>> = ({
                 value={otherValue}
                 onChange={handleOtherInputChange}
                 placeholder={otherPlaceholder}
-                className="w-full p-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
+                className="w-full p-2 text-sm border rounded-md focus:outline-none focus:none border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
               />
             </div>
           )}

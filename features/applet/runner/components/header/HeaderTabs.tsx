@@ -31,9 +31,15 @@ export interface TabListProps {
     activeTab: string;
     setActiveTab: (value: string) => void;
     appletList: AppletListItemConfig[];
+    preserveTabOrder?: boolean;
 }
 
-export const HeaderTabGroup = ({ activeTab, setActiveTab, appletList }: TabListProps) => {
+export const HeaderTabGroup = ({ 
+    activeTab, 
+    setActiveTab, 
+    appletList,
+    preserveTabOrder = false 
+}: TabListProps) => {
     // Use measure hook for container width
     const [containerRef, { width: containerWidth }] = useMeasure();
 
@@ -56,33 +62,52 @@ export const HeaderTabGroup = ({ activeTab, setActiveTab, appletList }: TabListP
     useEffect(() => {
         if (!containerWidth) return;
 
-        // Make sure the active applet is included first
-        const activeTabConfig = appletList.find((applet) => applet.value === activeTab);
-        const otherTabs = appletList.filter((applet) => applet.value !== activeTab);
-
         let availableWidth = containerWidth - MORE_BUTTON_WIDTH;
         let currentWidth = 0;
         const visible: AppletListItemConfig[] = [];
+        
+        if (preserveTabOrder) {
+            // Keep tabs in their original order
+            for (const applet of appletList) {
+                const tabWidth = estimateTabWidth(applet.label);
+                
+                // Add gap width between tabs if not the first tab
+                if (visible.length > 0) currentWidth += GAP_SIZE;
+                
+                // If this is the active tab or there's still space, add it to visible
+                if (applet.value === activeTab || currentWidth + tabWidth <= availableWidth) {
+                    currentWidth += tabWidth;
+                    visible.push(applet);
+                } else {
+                    // No more space, and this isn't the active tab
+                    break;
+                }
+            }
+        } else {
+            // Original behavior: active tab first, then others
+            const activeTabConfig = appletList.find((applet) => applet.value === activeTab);
+            const otherTabs = appletList.filter((applet) => applet.value !== activeTab);
 
-        // Add active applet first
-        if (activeTabConfig) {
-            const activeTabWidth = estimateTabWidth(activeTabConfig.label);
-            currentWidth += activeTabWidth;
-            visible.push(activeTabConfig);
-        }
+            // Add active applet first
+            if (activeTabConfig) {
+                const activeTabWidth = estimateTabWidth(activeTabConfig.label);
+                currentWidth += activeTabWidth;
+                visible.push(activeTabConfig);
+            }
 
-        // Add other tabs if they fit
-        for (const applet of otherTabs) {
-            const tabWidth = estimateTabWidth(applet.label);
-            // Add gap width between tabs
-            if (visible.length > 0) currentWidth += GAP_SIZE;
+            // Add other tabs if they fit
+            for (const applet of otherTabs) {
+                const tabWidth = estimateTabWidth(applet.label);
+                // Add gap width between tabs
+                if (visible.length > 0) currentWidth += GAP_SIZE;
 
-            if (currentWidth + tabWidth <= availableWidth) {
-                currentWidth += tabWidth;
-                visible.push(applet);
-            } else {
-                // We've run out of space, remaining tabs go to overflow
-                break;
+                if (currentWidth + tabWidth <= availableWidth) {
+                    currentWidth += tabWidth;
+                    visible.push(applet);
+                } else {
+                    // We've run out of space, remaining tabs go to overflow
+                    break;
+                }
             }
         }
 
@@ -97,7 +122,7 @@ export const HeaderTabGroup = ({ activeTab, setActiveTab, appletList }: TabListP
             setVisibleTabs(visible);
             setOverflowTabs(overflow);
         }
-    }, [containerWidth, appletList, activeTab]);
+    }, [containerWidth, appletList, activeTab, preserveTabOrder]);
 
     return (
         <div className="relative w-full" ref={containerRef}>
@@ -111,8 +136,8 @@ export const HeaderTabGroup = ({ activeTab, setActiveTab, appletList }: TabListP
                         <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center pb-2 text-gray-800 dark:text-gray-200 hover:text-gray-900 dark:hover:text-gray-100 cursor-pointer">
                                 <MoreHorizontal size={20} />
-                                <span className="ml-1">More</span>
-                                <ChevronDown size={16} className="ml-1" />
+                                <span className="ml-1 text-sm">More</span>
+                                <ChevronDown size={14} className="ml-1 mt-0.5" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                                 {overflowTabs.map((applet) => (

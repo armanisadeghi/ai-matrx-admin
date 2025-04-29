@@ -13,7 +13,8 @@ export interface CustomAppHeaderProps {
 
 export const CustomAppHeader = ({ config }: CustomAppHeaderProps) => {
   const { isMobile } = useAppletData();
-  
+  const { activeTab, availableApplets } = useAppletData();
+
   return isMobile ? (
     <MobileAppHeader config={config} />
   ) : (

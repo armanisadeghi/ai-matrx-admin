@@ -37,8 +37,8 @@ const RadioGroupField: React.FC<FieldProps<RadioGroupFieldConfig>> = ({
     otherPlaceholder = "Please specify...",
     width = "w-full",
     direction = "vertical",
-    radioClassName = "border-gray-300 dark:border-gray-600 text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-400 dark:bg-gray-800",
-  } = customConfig;
+    radioClassName = "border-gray-300 dark:border-gray-600 text-blue-500 focus:none dark:bg-gray-800",
+  } = customConfig as RadioGroupFieldConfig;
 
   // Use value broker for managing the selected value
   const { currentValue, setValue } = useValueBroker(id);
@@ -103,9 +103,6 @@ const RadioGroupField: React.FC<FieldProps<RadioGroupFieldConfig>> = ({
 
   return (
     <div className={width}>
-      {label && (
-        <div className="mb-2 font-medium text-gray-800 dark:text-gray-200">{label}</div>
-      )}
       
       <div className={`space-y-2 ${direction === 'horizontal' ? 'sm:space-y-0 sm:flex sm:flex-wrap sm:gap-4' : ''}`}>
         {options.map((option) => (

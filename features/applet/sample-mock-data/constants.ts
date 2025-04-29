@@ -3,9 +3,10 @@ import {
     AppletContainersConfig,
     CustomAppConfig,
     HeaderExtraButtonsConfig,
+    GroupFieldConfig,
+    AppletListItemConfig,
 } from "@/features/applet/runner/components/field-components/types";
-import { AppletListItemConfig } from "@/features/applet/runner/components/field-components/types";
-
+import { appletCreatorTwoConfig } from "./applet-creator-2";
 
 const staysConfig: AppletContainersConfig[] = [
     {
@@ -702,7 +703,6 @@ const eventsConfig: AppletContainersConfig[] = [
                     range: true,
                     showInput: true,
                     valuePrefix: "$",
-                    width: "w-full",
                 },
             },
         ],
@@ -810,12 +810,256 @@ const fakeExtraConfigs: AppletContainersConfig[] = [
     },
 ];
 
+const appletCreatorConfigWhole: AppletContainersConfig[] = [
+    {
+        id: "applet-purpose",
+        label: "Applet Purpose",
+        placeholder: "What is your app's primary purpose?",
+        fields: [
+            {
+                brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
+                label: "Primary Audience Type",
+                type: "radio",
+                placeholder: "Who is your ideal user?",
+                customConfig: {
+                    options: [
+                        { id: "abc-123", value: "business", label: "Business" },
+                        { id: "abc-124", value: "consumer", label: "Consumer" },
+                        { id: "abc-125", value: "student", label: "Student" },
+                        { id: "abc-126", value: "other", label: "Other" },
+                    ],
+                },
+            },
+            {
+                brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
+                label: "Target User",
+                type: "input",
+                placeholder: "Who is your ideal user?",
+                customConfig: {},
+            },
+            {
+                brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
+                label: "Problem to Overcome",
+                type: "textarea",
+                placeholder: "Describe the problem your applet solves for users.",
+                customConfig: {},
+            },
+        ],
+    },
+    {
+        id: "applet-concept",
+        label: "Applet Concept",
+        placeholder: "What is the concept of your applet?",
+        fields: [
+            {
+                brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
+                label: "Core Concept",
+                type: "textarea",
+                placeholder: "Please provide a quick description of your applet's core concept.",
+                customConfig: {
+                    rows: 5,
+                },
+            },
+        ],
+    },
+    {
+        id: "applet-functionality",
+        label: "Applet Functionality",
+        placeholder: "What is the functionality of your applet?",
+        fields: [
+            {
+                brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
+                label: "Core Functionality",
+                type: "checkbox",
+                placeholder: "What core functionality does your app have to include?",
+                customConfig: {
+                    options: [
+                        { id: "abc-123", value: "web-search", label: "Web Search" },
+                        { id: "abc-124", value: "public-data", label: "Public Data" },
+                        { id: "abc-125", value: "user-data", label: "User Data" },
+                        { id: "abc-126", value: "specific-apis", label: "Specific APIs" },
+                        { id: "abc-127", value: "internal-business-process", label: "Internal Business Process" },
+                        { id: "abc-128", value: "internal-data", label: "Internal Data" },
+                        { id: "abc-129", value: "industry-specific-knowledgebase", label: "Industry-Specific Knowledgebase" },
+                        { id: "abc-130", value: "technical-knowledgebase", label: "Technical Knowledgebase" },
+                        { id: "abc-131", value: "other", label: "Other" },
+                    ],
+                },
+            },
+
+        ],
+    },
+    {
+        id: "ai-integration",
+        label: "AI Integration",
+        placeholder: "How will AI help your applet?",
+        fields: [
+            {
+                brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
+                label: "AI Capabilities",
+                type: "checkbox",
+                placeholder: "Select the AI capabilities your applet will leverage.",
+                customConfig: {
+                    options: [
+                        { id: "ai-002", value: "decision-making", label: "Decision Making" },
+                        { id: "ai-003", value: "data-synthesis", label: "Data Synthesis" },
+                        { id: "ai-004", value: "personalization", label: "Personalization" },
+                        { id: "ai-005", value: "content-generation", label: "Content Generation" },
+                        { id: "ai-006", value: "translation", label: "Translation" },
+                        { id: "ai-007", value: "predictive-analytics", label: "Predictive Analytics" },
+                        { id: "ai-008", value: "workflow-automation", label: "Workflow Automation" },
+                        { id: "ai-009", value: "knowledge-retrieval", label: "Knowledge Retrieval" },
+                        { id: "ai-010", value: "code-generation", label: "Code Generation" },
+                        { id: "ai-011", value: "data-organization", label: "Data Organization" },
+                        { id: "ai-012", value: "consistent-formatting", label: "Consistent Formatting" },
+                        { id: "ai-013", value: "error-detection", label: "Error Detection" },
+                        { id: "ai-014", value: "task-prioritization", label: "Task Prioritization" },
+                        { id: "ai-015", value: "other", label: "Other" },
+                    ],
+                },
+            },
+        ],
+    }
+];
+
+const primaryAudienceTypeField: GroupFieldConfig = {
+    brokerId: "0fc49b4c-fc8b-167e-9dda-f43dedf74a9d",
+    label: "Primary Audience Type",
+    type: "radio",
+    placeholder: "Who is your ideal user?",
+    customConfig: {
+        options: [
+            { id: "abc-123", value: "business", label: "Business" },
+            { id: "abc-124", value: "consumer", label: "Consumer" },
+            { id: "abc-125", value: "student", label: "Student" },
+        ],
+        includeOther: true,
+    },
+};
+
+const targetUserField: GroupFieldConfig = {
+    brokerId: "0fc49b4c-fc8b-267e-9dda-f43dedf74a9d",
+    label: "Target User",
+    type: "input",
+    placeholder: "Who is your ideal user?",
+    customConfig: {},
+};
+
+const problemToOvercomeField: GroupFieldConfig = {
+    brokerId: "0fc49b4c-fc8b-367e-9dda-f43dedf74a9d",
+    label: "Problem to Overcome",
+    type: "textarea",
+    placeholder: "Describe the problem your applet solves for users.",
+    customConfig: {},
+};
+
+const coreConceptField: GroupFieldConfig = {
+    brokerId: "0fc49b4c-fc8b-567e-9dda-f43dedf74a9d",
+    label: "Core Concept",
+    type: "textarea",
+    placeholder: "Please provide a quick description of your applet's core concept.",
+    customConfig: {
+        rows: 5,
+    },
+};
+
+const coreFunctionalityField: GroupFieldConfig = {
+    brokerId: "0fc49b4c-fc8b-667e-9dda-f43dedf74a9d",
+    label: "Core Functionality",
+    type: "checkbox",
+    placeholder: "What core functionality does your app have to include?",
+    customConfig: {
+        options: [
+            { id: "abc-123", value: "web-search", label: "Web Search" },
+            { id: "abc-124", value: "public-data", label: "Public Data" },
+            { id: "abc-125", value: "user-data", label: "User Data" },
+            { id: "abc-126", value: "specific-apis", label: "Specific APIs" },
+            { id: "abc-127", value: "internal-business-process", label: "Internal Business Process" },
+            { id: "abc-128", value: "internal-data", label: "Internal Data" },
+            { id: "abc-129", value: "industry-specific-knowledgebase", label: "Industry-Specific Knowledgebase" },
+            { id: "abc-130", value: "technical-knowledgebase", label: "Technical Knowledgebase" },
+            { id: "abc-131", value: "other", label: "Other" },
+        ],
+    },
+};
+
+const aiCapabilitiesField: GroupFieldConfig = {
+    brokerId: "0fc49b4c-fc8b-767e-9dda-f43dedf74a9d",
+    label: "AI Capabilities",
+    type: "checkbox",
+    placeholder: "Select the AI capabilities your applet will leverage.",
+    customConfig: {
+        options: [
+            { id: "ai-002", value: "decision-making", label: "Decision Making" },
+            { id: "ai-003", value: "data-synthesis", label: "Data Synthesis" },
+            { id: "ai-004", value: "personalization", label: "Personalization" },
+            { id: "ai-005", value: "content-generation", label: "Content Generation" },
+            { id: "ai-006", value: "translation", label: "Translation" },
+            { id: "ai-007", value: "predictive-analytics", label: "Predictive Analytics" },
+            { id: "ai-008", value: "workflow-automation", label: "Workflow Automation" },
+            { id: "ai-009", value: "knowledge-retrieval", label: "Knowledge Retrieval" },
+            { id: "ai-010", value: "code-generation", label: "Code Generation" },
+            { id: "ai-011", value: "data-organization", label: "Data Organization" },
+            { id: "ai-012", value: "consistent-formatting", label: "Consistent Formatting" },
+            { id: "ai-013", value: "error-detection", label: "Error Detection" },
+            { id: "ai-014", value: "task-prioritization", label: "Task Prioritization" },
+            { id: "ai-015", value: "other", label: "Other" },
+        ],
+    },
+};
+
+const appletPurposeContainer: AppletContainersConfig = {
+    id: "applet-purpose",
+    label: "Purpose",
+    placeholder: "App primary purpose",
+    fields: [
+        primaryAudienceTypeField,
+        targetUserField,
+        problemToOvercomeField,
+    ],
+};
+
+const appletConceptContainer: AppletContainersConfig = {
+    id: "applet-concept",
+    label: "Concept",
+    placeholder: "Core concept",
+    fields: [
+        coreConceptField,
+    ],
+};
+
+const appletFunctionalityContainer: AppletContainersConfig = {
+    id: "applet-functionality",
+    label: "Functionality",
+    placeholder: "core functionality",
+    fields: [
+        coreFunctionalityField,
+    ],
+};
+
+const aiIntegrationContainer: AppletContainersConfig = {
+    id: "ai-integration",
+    label: "AI Integration",
+    placeholder: "AI capabilities",
+    fields: [
+        aiCapabilitiesField,
+    ],
+};
+
+export const appletCreatorConfig: AppletContainersConfig[] = [
+    appletPurposeContainer,
+    appletConceptContainer,
+    appletFunctionalityContainer,
+    aiIntegrationContainer,
+];
 
 
 
 
 
-export const availableApplets: AvailableAppletConfigs = {
+export const allSystemWideMockApplets: AvailableAppletConfigs = {
+    "applet-creator": appletCreatorConfig,
+    "applet-creator-2": appletCreatorTwoConfig,
     stays: staysConfig,
     "vegas-nightlife": nightlifeConfig,
     restaurants: restaurantsConfig,
@@ -845,7 +1089,6 @@ export const PROJECT_BROKER_IDS = [];
 export const CLIENT_BROKER_IDS = [];
 export const ADDITIONAL_CONTEXT_BROKER_IDS = [];
 
-
 export const ALL_BROKER_IDS = [
     ...USER_INPUT_BROKER_IDS,
     ...SYSTEM_BROKER_IDS,
@@ -855,9 +1098,10 @@ export const ALL_BROKER_IDS = [
     ...ADDITIONAL_CONTEXT_BROKER_IDS,
 ];
 
-
 export const travelAgentListConfig: AppletListItemConfig[] = [
+    { value: "applet-creator-2", label: "Applet Creator 2" },
     { value: "stays", label: "Stays" },
+    { value: "applet-creator", label: "Applet Creator" },
     { value: "vegas-nightlife", label: "Vegas Nightlife" },
     { value: "restaurants", label: "Restaurants" },
     { value: "activities", label: "Activities" },
@@ -871,9 +1115,6 @@ export const extraButtonsConfig: HeaderExtraButtonsConfig[] = [
         label: "Travel Agent Chat",
         actionType: "button",
         knownMethod: "renderChat",
-        onClick: () => {
-            console.log("Travel Agent Chat");
-        },
     },
 ];
 
@@ -887,4 +1128,35 @@ export const travelAgentAppConfig: CustomAppConfig = {
     accentColor: "fuchsia",
     appletList: travelAgentListConfig,
     extraButtons: extraButtonsConfig,
+    layoutType: "twoColumn",
 };
+
+export const matrixAppCreatorAppConfig: CustomAppConfig = {
+    name: "Matrix App Creator",
+    description: "Matrix App Creator",
+    slug: "matrix-app-creator",
+    icon: "TreePalm",
+    creator: "Matrix App Creator",
+    primaryColor: "gray",
+    accentColor: "blue",
+    appletList: [
+        { value: "applet-creator", label: "Applet Creator" },
+        { value: "applet-creator-2", label: "Applet Creator 2" },
+    ],
+    extraButtons: [
+        {
+            label: "See Sample Applet",
+            actionType: "button",
+            knownMethod: "renderSampleApplet",
+        },
+    ],
+    layoutType: "twoColumn",
+};
+
+export const availableApps: Record<string, CustomAppConfig> = {
+    "travel-agent": travelAgentAppConfig,
+    "matrix-app-creator": matrixAppCreatorAppConfig,
+}
+
+
+

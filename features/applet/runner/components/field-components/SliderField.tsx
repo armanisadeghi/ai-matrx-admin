@@ -45,7 +45,7 @@ const SliderField: React.FC<FieldProps<SliderFieldConfig>> = ({
     valueSuffix = '',
     width = "w-full",
     trackClassName = "h-2 bg-gray-200 dark:bg-gray-700 rounded-full",
-    thumbClassName = "w-5 h-5 bg-blue-500 rounded-full shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
+    thumbClassName = "w-4 h-4 bg-blue-500 rounded-full shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
     range = false,
   } = customConfig;
 
@@ -177,11 +177,11 @@ const SliderField: React.FC<FieldProps<SliderFieldConfig>> = ({
     
     return (
       <div className={width}>
-        {label && (
+        {/* {label && (
           <div className="mb-2 font-medium text-gray-800 dark:text-gray-200">{label}</div>
-        )}
+        )} */}
         
-        <div className="relative pt-1">
+        <div className="relative p-2 space-y-4">
           {/* Current value display */}
           <div className="flex justify-between items-center mb-2">
             <div className="text-sm font-medium text-gray-800 dark:text-gray-200">

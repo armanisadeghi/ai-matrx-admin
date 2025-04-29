@@ -37,6 +37,7 @@ export interface LayoutWithSidebarProps {
 
 const FULL_SCREEN_PATHS = [
     "/chat",
+    "/apps",
 ]
 
 

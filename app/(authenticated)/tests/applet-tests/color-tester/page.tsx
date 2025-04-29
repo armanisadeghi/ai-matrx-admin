@@ -4,13 +4,13 @@ import React from "react";
 
 export default function ColorTesterPage() {
   return (
-    <div className="p-8 space-y-12">
-      <h1 className="text-2xl font-bold mb-8">Search Component Color Tester</h1>
+    <div className="px-8 py-4 space-y-6">
+      <h1 className="text-2xl font-bold mb-8">Matrx Applet Colors</h1>
 
       {/* Main Background Colors */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Background Colors</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-xl font-semibold mb-4">Background</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <ColorBlock 
             name="Page Background" 
             lightClass="bg-white" 
@@ -35,19 +35,13 @@ export default function ColorTesterPage() {
             darkClass="dark:bg-gray-700" 
             usage="Used in some header sections"
           />
-          <ColorBlock 
-            name="⚠️ Incorrect Color" 
-            lightClass="bg-red-500" 
-            darkClass="dark:bg-red-500" 
-            usage="Found in DesktopAppletSearchBar.tsx - should be bg-white/dark:bg-gray-800"
-          />
         </div>
       </section>
 
       {/* Text Colors */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Text Colors</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-xl font-semibold mb-4">Text</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <TextColorBlock 
             name="Primary Text" 
             lightClass="text-gray-900" 
@@ -78,19 +72,13 @@ export default function ColorTesterPage() {
             darkClass="dark:text-white" 
             usage="Text in action buttons"
           />
-          <TextColorBlock 
-            name="⚠️ Tab Accent (Inconsistent)" 
-            lightClass="text-blue-500 border-blue-500" 
-            darkClass="dark:text-blue-500 dark:border-blue-500" 
-            usage="Found in HeaderTabs.tsx - inconsistent with rose color scheme"
-          />
         </div>
       </section>
 
       {/* Border Colors */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Border Colors</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-xl font-semibold mb-4">Border</h2>
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <BorderColorBlock 
             name="Container Border" 
             lightClass="border-gray-200" 
@@ -103,18 +91,12 @@ export default function ColorTesterPage() {
             darkClass="dark:border-rose-500" 
             usage="Active tab indicator"
           />
-          <BorderColorBlock 
-            name="⚠️ Inconsistent Border" 
-            lightClass="border-black" 
-            darkClass="dark:border-white" 
-            usage="Found in HeaderTabs.tsx for active tabs"
-          />
         </div>
       </section>
 
       {/* Action Button Colors */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Action Button Colors</h2>
+        <h2 className="text-xl font-semibold mb-4">Action Button</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ButtonColorBlock 
             name="Primary Button" 
@@ -129,7 +111,7 @@ export default function ColorTesterPage() {
       {/* Shadow Examples */}
       <section>
         <h2 className="text-xl font-semibold mb-4">Shadow Styles</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <ShadowBlock 
             name="Container Shadow" 
             shadowClass="shadow-lg" 
@@ -196,27 +178,6 @@ export default function ColorTesterPage() {
               <code className="text-sm p-1 bg-gray-100 dark:bg-gray-800 rounded">search-shadow-interactive: shadow-sm hover:shadow-md</code>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Inconsistencies */}
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Detected Inconsistencies</h2>
-        <div className="p-4 border border-amber-300 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 rounded-lg">
-          <ul className="list-disc pl-5 space-y-2">
-            <li>
-              <strong>DesktopAppletSearchBar.tsx</strong>: Uses <code className="bg-red-500/20 p-1 rounded">bg-red-500</code> for field row container instead of the standard <code className="bg-gray-100 dark:bg-gray-800 p-1 rounded">bg-white dark:bg-gray-800</code>
-            </li>
-            <li>
-              <strong>HeaderTabs.tsx</strong>: Uses <code className="bg-blue-500/20 p-1 rounded">border-blue-500</code> for active tab indicators, inconsistent with the rose color scheme used elsewhere
-            </li>
-            <li>
-              <strong>HeaderTabs.tsx</strong>: Uses <code className="bg-gray-100 dark:bg-gray-800 p-1 rounded">border-black dark:border-white</code> for active tabs while other components use gray shades for borders
-            </li>
-            <li>
-              <strong>Text color inconsistency</strong>: Some components use <code className="bg-gray-100 dark:bg-gray-800 p-1 rounded">text-gray-800 dark:text-gray-200</code> while others use <code className="bg-gray-100 dark:bg-gray-800 p-1 rounded">text-gray-900 dark:text-gray-100</code> for similar elements
-            </li>
-          </ul>
         </div>
       </section>
     </div>

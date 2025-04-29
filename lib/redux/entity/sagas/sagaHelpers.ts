@@ -258,6 +258,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
     const entityLogger = EntityLogger.createLoggerWithDefaults('WITH FULL RELATION CONVERSION', entityKey);
     const payload = action.payload;
     const DEBUG_LEVEL = 'debug';
+    let unifiedDatabaseObject: UnifiedDatabaseObject | undefined;
 
     entityLogger.log(DEBUG_LEVEL, 'Starting with payload:', payload);
 
@@ -282,7 +283,7 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
 
         entityLogger.log(DEBUG_LEVEL, 'Flexible Query Options with columns', flexibleQueryOptions);
 
-        const unifiedDatabaseObject: UnifiedDatabaseObject = yield select(selectUnifiedDatabaseObjectConversion, flexibleQueryOptions);
+        unifiedDatabaseObject = yield select(selectUnifiedDatabaseObjectConversion, flexibleQueryOptions);
 
         entityLogger.log(DEBUG_LEVEL, 'Updated unifiedDatabaseObject just before call:', unifiedDatabaseObject);
         entityLogger.log(DEBUG_LEVEL, 'Unified Database Object Table Name:', unifiedDatabaseObject.tableName);
@@ -364,18 +365,42 @@ export function* withFullRelationConversion<TEntity extends EntityKeys>(
         }
         
     } catch (error: any) {
+        // Create a structured error object
+        const structuredError = {
+            entity: entityKey,
+            id: unifiedDatabaseObject?.primaryKeysAndValues?.id,
+            message: error.message || 'Record not found',
+            code: error.code || 'P0001',
+            details: {
+                tableName: unifiedDatabaseObject?.tableName,
+                primaryKeys: unifiedDatabaseObject?.primaryKeysAndValues,
+                originalError: error
+            }
+        };
+
+        // Log the error with context
+        entityLogger.log('error', 'Record not found error', {
+            entity: entityKey,
+            id: structuredError.id,
+            tableName: structuredError.details.tableName,
+            error: error
+        });
+
+        // Dispatch the error to the store
         yield put(
-            actions.setError({
-                message: error.message || 'An error occurred during database operation',
-                code: error.code,
-                details: error,
-            })
+            actions.setError(structuredError)
         );
 
+        // Handle callback if present
         if (payload.callbackId) {
-            callbackManager.trigger(action.payload.callbackId, { success: false, error: 'Error message' });
+            callbackManager.trigger(action.payload.callbackId, { 
+                success: false, 
+                error: structuredError 
+            });
         }
-        throw error;
+
+        // Return null to indicate failure without throwing
+        return null;
     }
 }
 

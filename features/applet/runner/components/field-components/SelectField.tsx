@@ -55,7 +55,7 @@ const SelectField: React.FC<FieldProps<SelectFieldConfig>> = ({
     if (defaultValue !== undefined && currentValue === null) {
       setValue(defaultValue);
     }
-  }, [defaultValue, currentValue, setValue]);
+  }, [defaultValue, currentValue]);
 
   // Group options by their group property
   const groupedOptions = React.useMemo(() => {

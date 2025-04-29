@@ -3,14 +3,13 @@ import Link from "next/link";
 import { HeaderExtraButtonsConfig } from "../field-components/types";
 import { useToast } from "@/components/ui/use-toast";
 
-
 // Example implementations for knownMethod
 const renderChat = (button: HeaderExtraButtonsConfig, toast) => {
     console.log("Rendering chat interface");
     // In a real app, this might open a chat window or component
     toast({
         title: "Chat interface rendered!",
-        description: "Chat interface rendered!",
+        description: JSON.stringify(button, null, 2),
         variant: "success",
     });
 };
@@ -20,7 +19,7 @@ const changeApplet = (button: HeaderExtraButtonsConfig, toast) => {
     // In a real app, this might switch to a different applet or module
     toast({
         title: "Applet changed!",
-        description: "Applet changed!",
+        description: JSON.stringify(button, null, 2),
         variant: "success",
     });
 };
@@ -30,14 +29,24 @@ const renderModal = (button: HeaderExtraButtonsConfig, toast) => {
     // In a real app, this might open a modal or component
     toast({
         title: "Modal rendered!",
-        description: "Modal rendered!",
+        description: JSON.stringify(button, null, 2),
+        variant: "success",
+    });
+};
+
+const renderSampleApplet = (button: HeaderExtraButtonsConfig, toast) => {
+    console.log("Rendering sample applet");
+    // In a real app, this might open a modal or component
+    toast({
+        title: "Sample applet rendered!",
+        description: JSON.stringify(button, null, 2),
         variant: "success",
     });
 };
 
 export const HeaderExtraButtons = ({ buttons }: { buttons: HeaderExtraButtonsConfig[] }) => {
     const dispatch = useDispatch();
-    const {toast} = useToast();
+    const { toast } = useToast();
 
     // Handle knownMethod executions
     const handleKnownMethod = (button: HeaderExtraButtonsConfig) => {
@@ -51,6 +60,9 @@ export const HeaderExtraButtons = ({ buttons }: { buttons: HeaderExtraButtonsCon
                 break;
             case "renderModal":
                 renderModal(button, toast);
+                break;
+            case "renderSampleApplet":
+                renderSampleApplet(button, toast);
                 break;
             default:
                 console.warn(`Unknown knownMethod: ${button.knownMethod}`);
@@ -85,12 +97,7 @@ export const HeaderExtraButtons = ({ buttons }: { buttons: HeaderExtraButtonsCon
                             return null;
                         }
                         return (
-                            <Link
-                                key={button.label}
-                                href={button.route}
-                                className={buttonStyles}
-                                onClick={() => handleKnownMethod(button)}
-                            >
+                            <Link key={button.label} href={button.route} className={buttonStyles} onClick={() => handleKnownMethod(button)}>
                                 {button.icon}
                                 {button.label}
                             </Link>
@@ -118,10 +125,7 @@ export const HeaderExtraButtons = ({ buttons }: { buttons: HeaderExtraButtonsCon
                     case "none":
                     default:
                         return (
-                            <div
-                                key={button.label}
-                                className={buttonStyles}
-                            >
+                            <div key={button.label} className={buttonStyles}>
                                 {button.icon}
                                 {button.label}
                             </div>

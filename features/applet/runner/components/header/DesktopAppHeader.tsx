@@ -58,6 +58,8 @@ export const APP_ICON_CLASSNAMES = {
 };
 
 export const DesktopAppHeader = ({ config }: CustomAppHeaderProps) => {
+    const { activeTab, setActiveTab } = useAppletData();
+
     const user = useSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata.picture || null;
@@ -66,12 +68,11 @@ export const DesktopAppHeader = ({ config }: CustomAppHeaderProps) => {
     const AppIconClassName =
         APP_ICON_CLASSNAMES[config.accentColor] || "text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700";
 
-    const { activeTab, setActiveTab } = useAppletData();
 
     return (
-        <div className="w-full bg-white dark:bg-gray-900 transition-colors">
+        <header className="sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm">
             {/* Top Navigation with primary grid */}
-            <div className="grid grid-cols-12 items-center pt-2 pb-2 px-6">
+            <div className="grid grid-cols-12 items-center h-full pt-2 pb-2 px-6">
                 {/* Left section - Icon and Tabs (8/12) */}
                 <div className="col-span-12 lg:col-span-8">
                     {/* Nested grid for icon and tabs */}
@@ -87,7 +88,12 @@ export const DesktopAppHeader = ({ config }: CustomAppHeaderProps) => {
                         {/* Tabs - with overflow handling */}
                         <div className="overflow-x-auto hide-scrollbar flex-grow">
                             <div className="flex w-full">
-                                <HeaderTabGroup appletList={config.appletList} activeTab={activeTab} setActiveTab={setActiveTab} />
+                                <HeaderTabGroup 
+                                    appletList={config.appletList} 
+                                    activeTab={activeTab} 
+                                    setActiveTab={setActiveTab}
+                                    preserveTabOrder={true}
+                                />
                             </div>
                         </div>
                     </div>
@@ -97,7 +103,7 @@ export const DesktopAppHeader = ({ config }: CustomAppHeaderProps) => {
                 <div className="col-span-12 lg:col-span-4 flex items-center justify-end gap-2 shrink-0 mt-2 lg:mt-0">
                     <HeaderExtraButtons buttons={config.extraButtons} />
                     <ThemeSwitcherIcon className="hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200" />
-                    <div className="flex items-center border rounded-full pl-2 pr-1 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md transition bg-white dark:bg-gray-800 dark:border-gray-700 cursor-pointer">
+                    <div className="flex items-center rounded-full pl-2 pr-1 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm hover:shadow-md transition bg-white dark:bg-gray-800 cursor-pointer">
                         <Menu size={18} className="ml-2 text-gray-600 dark:text-gray-400" />
                         {profilePhoto ? (
                             <div className="w-8 h-8 rounded-full ml-3 overflow-hidden">
@@ -109,7 +115,7 @@ export const DesktopAppHeader = ({ config }: CustomAppHeaderProps) => {
                     </div>
                 </div>
             </div>
-        </div>
+        </header>
     );
 };
 

@@ -1,4 +1,5 @@
 // types.ts - Updated with new field configurations
+import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import { ReactNode } from "react";
 
 export interface AppletListItemConfig {
@@ -218,6 +219,8 @@ export interface AvailableAppletConfigs {
     [key: string]: AppletContainersConfig[];
 }
 
+export type KnownMethod = "renderChat" | "changeApplet" | "renderModal" | "renderSampleApplet" | "none";
+
 export interface HeaderExtraButtonsConfig {
     label: string;
     icon?: ReactNode;
@@ -225,7 +228,7 @@ export interface HeaderExtraButtonsConfig {
     onClick?: () => void;
     route?: string;
     reduxAction?: string;
-    knownMethod?: "renderChat" | "changeApplet" | "renderModal" | "none";
+    knownMethod?: KnownMethod;
 }
 
 export interface CustomAppConfig {
@@ -238,6 +241,7 @@ export interface CustomAppConfig {
     accentColor: string;
     appletList: AppletListItemConfig[];
     extraButtons: HeaderExtraButtonsConfig[];
+    layoutType: AppletLayoutOption;
 }
 
 // Group configuration

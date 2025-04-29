@@ -1,7 +1,7 @@
 // File: components/search/core/SearchGroupField.tsx
 // This is for horizontal layout (similar to your existing component)
 import React, { useEffect, useRef } from "react";
-import { SearchGroupRendererProps } from "@/features/applet/layouts/types";
+import { SearchGroupRendererProps } from "@/features/applet/layouts/options/layout.types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 import SearchField from "./SearchField";
 

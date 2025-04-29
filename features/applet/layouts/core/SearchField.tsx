@@ -1,7 +1,7 @@
 // File: components/search/core/SearchField.tsx
 // This is your core search field component
 import React, { useRef, useEffect } from "react";
-import { SearchFieldProps } from "@/features/applet/layouts/types";
+import { SearchFieldProps } from "@/features/applet/layouts/options/layout.types";
 
 const SearchField: React.FC<SearchFieldProps> = ({
   id,
