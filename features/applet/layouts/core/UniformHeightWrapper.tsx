@@ -1,3 +1,7 @@
+// File: features\applet\layouts\core\UniformHeightWrapper.tsx
+'use client';
+
+
 import React, { useRef, useEffect, useState } from "react";
 
 interface UniformHeightWrapperProps {

@@ -1,4 +1,7 @@
-// File: components/search/core/VerticalSearchGroup.tsx
+// File: features\applet\layouts\core\VerticalSearchGroup.tsx
+'use client';
+
+
 // For the vertical layout
 import React, { useEffect, useRef, useState } from "react";
 import { SearchGroupRendererProps } from "@/features/applet/layouts/options/layout.types";

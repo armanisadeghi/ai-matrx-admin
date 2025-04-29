@@ -1,5 +1,9 @@
+// File: features\applet\layouts\core\AppletInputLayoutManager.tsx
+'use client';
+
+
 import React from "react";
-import { SearchLayoutProps, AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps, AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import AppletUserInputBar from "@/features/applet/runner/components/search-bar/bar/AppletSearchBar";
 import {
     AccordionSearchLayout,
@@ -23,11 +27,16 @@ import {
     FullWidthSidebarSearchLayout,
 } from "@/features/applet/layouts/options";
 
-interface SearchLayoutManagerProps extends SearchLayoutProps {
+interface AppletInputLayoutManagerProps extends AppletInputProps {
     layoutType: AppletLayoutOption;
+    initialAppName?: string;
 }
 
-const SearchLayoutManager: React.FC<SearchLayoutManagerProps> = ({ layoutType, ...props }) => {
+const AppletInputLayoutManager: React.FC<AppletInputLayoutManagerProps> = ({ 
+    layoutType, 
+    initialAppName,
+    ...props 
+}) => {
     switch (layoutType) {
         case "horizontal":
             return <HorizontalSearchLayout {...props} />;
@@ -68,10 +77,10 @@ const SearchLayoutManager: React.FC<SearchLayoutManagerProps> = ({ layoutType, .
         case "fullWidthSidebar":
             return <FullWidthSidebarSearchLayout {...props} />;
         case "input-bar":
-            return <AppletUserInputBar {...props} />;
+            return <AppletUserInputBar initialAppName={initialAppName} />;
         default:
             return <HorizontalSearchLayout {...props} />;
     }
 };
 
-export default SearchLayoutManager;
+export default AppletInputLayoutManager;

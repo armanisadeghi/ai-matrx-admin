@@ -1,16 +1,15 @@
 // File: components/search/layouts/TabsSearchLayout.tsx
 import React, { useState, useRef, useEffect } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import OpenSearchGroup from "@/features/applet/layouts/core/OpenSearchGroup";
 import UniformHeightWrapper from "@/features/applet/layouts/core/UniformHeightWrapper";
 
-const TabsSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const TabsSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   actionButton,
   className = "",
 }) => {
-  const activeSearchGroups = config[activeTab] || [];
   const [activeGroupIndex, setActiveGroupIndex] = useState(0);
   const [previousGroupIndex, setPreviousGroupIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -30,7 +29,7 @@ const TabsSearchLayout: React.FC<SearchLayoutProps> = ({
     checkForOverflow();
     window.addEventListener('resize', checkForOverflow);
     return () => window.removeEventListener('resize', checkForOverflow);
-  }, [activeSearchGroups]);
+  }, [appletDefinition]);
 
   const scrollTabs = (direction: 'left' | 'right') => {
     if (tabsRef.current) {
@@ -50,15 +49,16 @@ const TabsSearchLayout: React.FC<SearchLayoutProps> = ({
   };
 
   const handleTabChange = (index: number) => {
-    if (index === activeGroupIndex) return;
-    setPreviousGroupIndex(activeGroupIndex);
-    setIsTransitioning(true);
-    setActiveGroupIndex(index);
-    
-    // Reset transitioning state after animation completes
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 400); // Slightly longer than animation duration to ensure completion
+    if (index !== activeGroupIndex) {
+      setPreviousGroupIndex(activeGroupIndex);
+      setIsTransitioning(true);
+      setActiveGroupIndex(index);
+      
+      // Reset the transition state after animation completes
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }
   };
 
   return (
@@ -79,14 +79,13 @@ const TabsSearchLayout: React.FC<SearchLayoutProps> = ({
             <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white dark:from-gray-900 to-transparent pointer-events-none"></div>
           </div>
         )}
-
-        {/* Tabs container */}
+        
         <div 
           ref={tabsRef}
           className="flex mb-4 overflow-x-auto scrollbar-none relative"
           onScroll={checkForOverflow}
         >          
-          {activeSearchGroups.map((group, index) => (
+          {appletDefinition.map((group, index) => (
             <button
               key={group.id}
               className={`px-4 py-2 text-sm font-medium whitespace-nowrap relative ${
@@ -123,7 +122,7 @@ const TabsSearchLayout: React.FC<SearchLayoutProps> = ({
       </div>
       
       <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 relative">
-        {activeSearchGroups.map((group, index) => {
+        {appletDefinition.map((group, index) => {
           const isActive = index === activeGroupIndex;
           const isPrevious = isTransitioning && index === previousGroupIndex;
           
@@ -174,16 +173,10 @@ const TabsSearchLayout: React.FC<SearchLayoutProps> = ({
           Previous
         </button>
         
-        {activeGroupIndex === activeSearchGroups.length - 1 ? (
-          actionButton || (
-            <button className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded">
-              Search
-            </button>
-          )
-        ) : (
+        {activeGroupIndex === appletDefinition.length - 1 ? (actionButton) : (
           <button
             onClick={() => {
-              const newIndex = Math.min(activeGroupIndex + 1, activeSearchGroups.length - 1);
+              const newIndex = Math.min(activeGroupIndex + 1, appletDefinition.length - 1);
               handleTabChange(newIndex);
             }}
             className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md"

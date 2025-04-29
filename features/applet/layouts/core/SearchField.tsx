@@ -1,5 +1,7 @@
-// File: components/search/core/SearchField.tsx
-// This is your core search field component
+// File: features\applet\layouts\core\SearchField.tsx
+'use client';
+
+
 import React, { useRef, useEffect } from "react";
 import { SearchFieldProps } from "@/features/applet/layouts/options/layout.types";
 
@@ -16,6 +18,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
   className = "",
   preventClose = false,
   isMobile = false,
+  hideGroupPlaceholder = false,
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -124,14 +127,16 @@ const SearchField: React.FC<SearchFieldProps> = ({
       {/* Trigger button */}
       <button
         ref={buttonRef}
-        className={`flex-1 w-full h-full rounded-full text-left py-2 pl-6 focus:outline-none transition-colors duration-150 hover:bg-gray-200 dark:hover:bg-gray-700 ${
+        className={`flex-1 w-full h-full rounded-full text-left py-2 ${hideGroupPlaceholder ? 'pl-2' : 'pl-6'} focus:outline-none transition-colors duration-150 hover:bg-gray-200 dark:hover:bg-gray-700 ${
           !isLast ? "border-r dark:border-gray-700" : ""
         } ${actionButton ? "flex items-center pr-2" : ""} ${className}`}
         onClick={() => onClick(id)}
       >
         <div className={actionButton ? "flex-grow" : ""}>
           <div className="font-semibold text-xs text-gray-800 dark:text-gray-200">{label}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</div>
+          {!hideGroupPlaceholder && (
+            <div className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</div>
+          )}
         </div>
         {actionButton}
       </button>

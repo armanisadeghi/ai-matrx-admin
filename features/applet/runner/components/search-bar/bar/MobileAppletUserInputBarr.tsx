@@ -4,17 +4,16 @@ import { CircleX, Search, X } from "lucide-react";
 import MobileAppletBrokerContainer from "../container/MobileAppletBrokerContainer";
 import SearchGroupField from "../group/SearchGroupField";
 import { useAppletData } from "@/context/AppletDataContext";
-import { AvailableAppletConfigs } from "../../field-components/types";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
-import { ALL_BROKER_IDS } from "../../../../sample-mock-data/constants";
+import { ALL_BROKER_IDS } from "@/features/applet/sample-mock-data/constants";
 import MobileActionBar from "./MobileActionBar";
 
 interface MobileAppletUserInputBarProps {
-    config: AvailableAppletConfigs;
+    appName: string;
 }
 
-const MobileAppletUserInputBar: React.FC<MobileAppletUserInputBarProps> = ({ config }) => {
-    const { activeTab } = useAppletData();
+const MobileAppletUserInputBar: React.FC<MobileAppletUserInputBarProps> = ({ appName }) => {
+    const { activeTab, customAppConfig: config, accentColor } = useAppletData();
     const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
     const [showFullScreen, setShowFullScreen] = useState(false);
 
@@ -56,7 +55,7 @@ const MobileAppletUserInputBar: React.FC<MobileAppletUserInputBarProps> = ({ con
                     className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-full shadow-md border border-gray-200 dark:border-gray-700"
                 >
                     <div className="flex items-center">
-                        <Search size={18} className="text-gray-500 dark:text-gray-400 mr-2" />
+                        <Search size={18} className="text-gray-500 dark:text-gray-400 mr-2" style={{ color: accentColor }} />
                         <span className="text-gray-500 dark:text-gray-400">Search {activeTab}</span>
                     </div>
                 </button>

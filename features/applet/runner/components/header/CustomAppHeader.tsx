@@ -4,21 +4,21 @@ import React from "react";
 import { DesktopAppHeader } from "./DesktopAppHeader";
 import MobileAppHeader from "./MobileAppHeader";
 import { useAppletData } from "@/context/AppletDataContext";
-import { CustomAppConfig } from "../field-components/types";
 
 
 export interface CustomAppHeaderProps {
-  config: CustomAppConfig;
+  appName?: string;
   headerClassName?: string;
+  isDemo?: boolean;
 }
 
-export const CustomAppHeader = ({ config }: CustomAppHeaderProps) => {
+export const CustomAppHeader = ({ appName, isDemo = false }: CustomAppHeaderProps) => {
   const { isMobile } = useAppletData();
 
   return isMobile ? (
-    <MobileAppHeader config={config} />
+    <MobileAppHeader appName={appName} isDemo={isDemo} />
   ) : (
-    <DesktopAppHeader config={config} />
+    <DesktopAppHeader appName={appName} isDemo={isDemo} />
   );
 };
 

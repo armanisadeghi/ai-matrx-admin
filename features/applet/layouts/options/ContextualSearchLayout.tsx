@@ -1,14 +1,13 @@
 import React, { useState } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 
-const ContextualSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const ContextualSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   actionButton,
   className = "",
 }) => {
-  const activeSearchGroups = config[activeTab] || [];
   
   // Track the visual context (could be tied to actual search context in a real implementation)
   const [context, setContext] = useState<'hotels' | 'flights' | 'dining' | 'activities'>('hotels');
@@ -99,7 +98,7 @@ const ContextualSearchLayout: React.FC<SearchLayoutProps> = ({
           <h2 className="text-2xl font-medium text-center mb-8">Find the perfect {context}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {activeSearchGroups.map((group) => (
+            {appletDefinition.map((group) => (
               <div key={group.id} className="space-y-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{group.label}</h3>
                 
@@ -119,11 +118,7 @@ const ContextualSearchLayout: React.FC<SearchLayoutProps> = ({
           </div>
           
           <div className="mt-10 flex justify-center">
-            {actionButton || (
-              <button className="bg-rose-500 hover:bg-rose-600 text-white rounded-full px-8 py-3 text-lg shadow-lg">
-                Search {context}
-              </button>
-            )}
+            {actionButton}
           </div>
         </div>
       </div>

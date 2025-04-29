@@ -1,149 +1,143 @@
 import React, { useState } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 import UniformHeightWrapper from "@/features/applet/layouts/core/UniformHeightWrapper";
 import { ChevronRight, Send } from "lucide-react";
 
-interface SidebarSearchLayoutProps extends SearchLayoutProps {
-  fullWidth?: boolean;
+interface SidebarSearchLayoutProps extends AppletInputProps {
+    fullWidth?: boolean;
 }
 
 const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
-  config,
-  activeTab,
-  actionButton,
-  className = "",
-  fullWidth = false
+    appletDefinition,
+    activeTab,
+    actionButton,
+    className = "",
+    fullWidth = false,
 }) => {
-  const activeSearchGroups = config[activeTab] || [];
-  const [activeGroupId, setActiveGroupId] = useState(
-    activeSearchGroups.length > 0 ? activeSearchGroups[0].id : null
-  );
+    const [activeGroupId, setActiveGroupId] = useState(appletDefinition.length > 0 ? appletDefinition[0].id : null);
 
-  // Find current group index to determine if it's the last one
-  const currentGroupIndex = activeSearchGroups.findIndex(group => group.id === activeGroupId);
-  const isLastGroup = currentGroupIndex === activeSearchGroups.length - 1;
-  
-  // Function to navigate to the next group
-  const handleNext = () => {
-    if (currentGroupIndex < activeSearchGroups.length - 1) {
-      setActiveGroupId(activeSearchGroups[currentGroupIndex + 1].id);
-    }
-  };
+    // Find current group index to determine if it's the last one
+    const currentGroupIndex = appletDefinition.findIndex((group) => group.id === activeGroupId);
+    const isLastGroup = currentGroupIndex === appletDefinition.length - 1;
 
-  // Layout type identifier for UniformHeightWrapper
-  const layoutType = fullWidth ? "fullWidthSidebar" : "sidebar";
-  
-  // Width classes based on layout type
-  const containerWidthClass = fullWidth ? "w-full" : "w-full max-w-6xl mx-auto";
+    // Function to navigate to the next group
+    const handleNext = () => {
+        if (currentGroupIndex < appletDefinition.length - 1) {
+            setActiveGroupId(appletDefinition[currentGroupIndex + 1].id);
+        }
+    };
 
-  return (
-    <div className={`${containerWidthClass} ${className}`}>
-      <div className="flex flex-col md:flex-row h-full">
-        {/* Sidebar */}
-        <div className="w-full md:w-64 border-r dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
-          <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Search Options</h3>
-          <div className="space-y-1">
-            {activeSearchGroups.map((group) => (
-              <button
-                key={group.id}
-                onClick={() => setActiveGroupId(group.id)}
-                className={`w-full text-left px-4 py-3 rounded-lg transition ${
-                  activeGroupId === group.id
-                    ? "bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-100"
-                    : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                }`}
-              >
-                <div className="flex items-center">
-                  <span className="flex-grow">{group.label}</span>
-                  {activeGroupId === group.id && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  )}
+    // Layout type identifier for UniformHeightWrapper
+    const layoutType = fullWidth ? "fullWidthSidebar" : "sidebar";
+
+    // Width classes based on layout type
+    const containerWidthClass = fullWidth ? "w-full" : "w-full max-w-6xl mx-auto";
+
+    return (
+        <div className={`${containerWidthClass} ${className}`}>
+            <div className="flex flex-col md:flex-row h-full">
+                {/* Sidebar */}
+                <div className="w-full md:w-64 border-r dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
+                    <h3 className="text-lg font-medium mb-6 text-rose-500 dark:text-rose-500">
+                        <span className="inline-block border-b-2 border-gray-200 dark:border-gray-700 pb-2">Options</span>
+                    </h3>
+                    <div className="space-y-1">
+                        {appletDefinition.map((group) => (
+                            <button
+                                key={group.id}
+                                onClick={() => setActiveGroupId(group.id)}
+                                className={`w-full text-left px-4 py-3 rounded-lg transition ${
+                                    activeGroupId === group.id
+                                        ? "bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-100"
+                                        : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                }`}
+                            >
+                                <div className="flex items-center">
+                                    <span className="flex-grow">{group.label}</span>
+                                    {activeGroupId === group.id && (
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="16"
+                                            height="16"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    )}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
                 </div>
-              </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Main content area with relative positioning */}
-        <div className="flex-grow p-6 bg-white dark:bg-gray-900 relative flex flex-col">
-          {/* Content container with fixed height */}
-          <div className="flex-grow relative" style={{ minHeight: '400px' }}>
-            {activeSearchGroups.map((group) => (
-              <UniformHeightWrapper
-                key={group.id}
-                groupId={group.id}
-                layoutType={layoutType}
-                className={`transition-opacity duration-300 h-full ${
-                  activeGroupId === group.id 
-                    ? 'opacity-100 visible' 
-                    : 'opacity-0 invisible absolute top-0 left-0 w-full h-full'
-                }`}
-                enabled={true}
-              >
-                <div className="flex flex-col">
-                  <div className="mb-6">
-                    <h2 className="text-2xl font-medium text-gray-900 dark:text-gray-100">
-                      {group.label}
-                    </h2>
-                    {group.description && (
-                      <p className="mt-2 text-gray-600 dark:text-gray-400">{group.description}</p>
-                    )}
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    {group.fields.map((field) => (
-                      <div key={field.brokerId}>
-                        <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
-                          {field.label}
-                        </label>
-                        {fieldController(field, false)}
-                        {field.helpText && (
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                {/* Main content area with relative positioning */}
+                <div className="flex-grow p-6 bg-white dark:bg-gray-900 relative flex flex-col">
+                    {/* Content container with fixed height */}
+                    <div className="flex-grow relative" style={{ minHeight: "400px" }}>
+                        {appletDefinition.map((group) => (
+                            <UniformHeightWrapper
+                                key={group.id}
+                                groupId={group.id}
+                                layoutType={layoutType}
+                                className={`transition-opacity duration-300 h-full ${
+                                    activeGroupId === group.id
+                                        ? "opacity-100 visible"
+                                        : "opacity-0 invisible absolute top-0 left-0 w-full h-full"
+                                }`}
+                                enabled={true}
+                            >
+                                <div className="flex flex-col">
+                                    <div className="mb-6">
+                                        <h2 className="text-2xl font-medium text-gray-900 dark:text-gray-100">{group.label}</h2>
+                                        {group.description && <p className="mt-2 text-gray-600 dark:text-gray-400">{group.description}</p>}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                        {group.fields.map((field) => (
+                                            <div key={field.brokerId}>
+                                                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
+                                                    {field.label}
+                                                </label>
+                                                {fieldController(field, false)}
+                                                {field.helpText && (
+                                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </UniformHeightWrapper>
+                        ))}
+                    </div>
+
+                    {/* Footer with action button - always at the bottom */}
+                    <div className="flex justify-end">
+                        {actionButton ||
+                            (isLastGroup ? (
+                                <button className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-md px-6 py-3 flex items-center">
+                                    <span className="mr-2">Submit</span>
+                                    <Send size={16} />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleNext}
+                                    className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-md px-6 py-3 flex items-center"
+                                >
+                                    <span className="mr-2">Next</span>
+                                    <ChevronRight size={16} />
+                                </button>
+                            ))}
+                    </div>
                 </div>
-              </UniformHeightWrapper>
-            ))}
-          </div>
-          
-          {/* Footer with action button - always at the bottom */}
-          <div className="flex justify-end">
-            {actionButton || (
-              isLastGroup ? (
-                <button className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-md px-6 py-3 flex items-center">
-                  <span className="mr-2">Submit</span>
-                  <Send size={16} />
-                </button>
-              ) : (
-                <button 
-                  onClick={handleNext}
-                  className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-md px-6 py-3 flex items-center"
-                >
-                  <span className="mr-2">Next</span>
-                  <ChevronRight size={16} />
-                </button>
-              )
-            )}
-          </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default SidebarSearchLayout;

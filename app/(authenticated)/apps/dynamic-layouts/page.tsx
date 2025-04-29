@@ -1,17 +1,15 @@
-// app/booking/page.tsx
+// app\(authenticated)\apps\dynamic-layouts\page.tsx
 "use client";
 import AppletUserInputBar from "@/features/applet/runner/components/search-bar/bar/AppletSearchBar";
 import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
-import { allSystemWideMockApplets, availableApps } from "@/features/applet/sample-mock-data/constants";
 
 
 
 export default function DynamicLayoutsPage() {
-    const fullAppConfig = availableApps["everything-combined"];
     return (
         <>
-            <CustomAppHeader config={fullAppConfig} />
-            <AppletUserInputBar config={allSystemWideMockApplets} />
+            <CustomAppHeader appName={"everything-combined"} />
+            <AppletUserInputBar initialAppName={"everything-combined"} />
 
             <div className="px-6">
                 <div className="py-8">

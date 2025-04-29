@@ -8,7 +8,7 @@ export { default as ThreeColumnSearchLayout } from "./ThreeColumnSearchLayout";
 export { default as TabsSearchLayout } from "./TabsSearchLayout";
 export { default as AccordionSearchLayout } from "./AccordionSearchLayout";
 export { default as FourColumnSearchLayout } from "./FourColumnSearchLayout";
-export { default as SearchLayoutManager } from "./SearchLayoutManager";
+export { default as AppletInputLayoutManager } from "../core/AppletInputLayoutManager";
 export { default as MinimalistSearchLayout } from "./MinimalistSearchLayout";
 export { default as FloatingCardSearchLayout } from "./FloatingCardSearchLayout";
 export { default as SidebarSearchLayout } from "./SidebarSearchLayout";

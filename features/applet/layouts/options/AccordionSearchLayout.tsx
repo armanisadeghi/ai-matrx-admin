@@ -1,19 +1,17 @@
 // File: components/search/layouts/AccordionSearchLayout.tsx
 import React, { useState, useRef, useEffect } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import { ChevronDown, Send } from "lucide-react";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 
-const AccordionSearchLayout: React.FC<SearchLayoutProps> = ({ config, activeTab, actionButton, className = "" }) => {
-    const activeSearchGroups = config[activeTab] || [];
-    // Only store the currently active group ID instead of a Set
-    const [activeGroupId, setActiveGroupId] = useState<string>(activeSearchGroups[0]?.id || "");
+const AccordionSearchLayout: React.FC<AppletInputProps> = ({ appletDefinition, activeTab, actionButton, className = "" }) => {
+    const [activeGroupId, setActiveGroupId] = useState<string>(appletDefinition[0]?.id || "");
     const contentRefs = useRef<Map<string, React.RefObject<HTMLDivElement>>>(new Map());
     const fieldRefs = useRef<Map<string, Map<string, React.ReactNode>>>(new Map());
 
     // Initialize content refs for each group
     useEffect(() => {
-        activeSearchGroups.forEach((group) => {
+        appletDefinition.forEach((group) => {
             if (!contentRefs.current.has(group.id)) {
                 contentRefs.current.set(group.id, React.createRef<HTMLDivElement>());
             }
@@ -31,10 +29,10 @@ const AccordionSearchLayout: React.FC<SearchLayoutProps> = ({ config, activeTab,
         });
 
         // Ensure we always have an active group
-        if (!activeGroupId && activeSearchGroups.length > 0) {
-            setActiveGroupId(activeSearchGroups[0].id);
+        if (!activeGroupId && appletDefinition.length > 0) {
+            setActiveGroupId(appletDefinition[0].id);
         }
-    }, [activeSearchGroups, activeGroupId]);
+    }, [appletDefinition, activeGroupId]);
 
     const toggleGroup = (groupId: string) => {
         // In a true accordion, clicking on the active item doesn't close it
@@ -45,13 +43,13 @@ const AccordionSearchLayout: React.FC<SearchLayoutProps> = ({ config, activeTab,
 
     // Determine if we're at the last group
     const isLastGroup = (index: number): boolean => {
-        return index === activeSearchGroups.length - 1;
+        return index === appletDefinition.length - 1;
     };
 
     return (
         <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
             <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700">
-                {activeSearchGroups.map((group, index) => {
+                {appletDefinition.map((group, index) => {
                     const isActive = activeGroupId === group.id;
                     return (
                         <div key={group.id} className={`${index !== 0 ? "border-t dark:border-gray-700" : ""}`}>
@@ -100,12 +98,7 @@ const AccordionSearchLayout: React.FC<SearchLayoutProps> = ({ config, activeTab,
             </div>
 
             <div className="flex justify-end mt-3">
-                {actionButton || (
-                    <button className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-md px-6 py-3 flex items-center">
-                        <span className="mr-2">Submit</span>
-                        <Send size={16} />
-                    </button>
-                )}
+                {actionButton}
             </div>
         </div>
     );

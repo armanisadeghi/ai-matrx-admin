@@ -283,7 +283,8 @@ const mvpScopeField: GroupFieldConfig = {
     brokerId: "655904af-df03-40ad-9420-69ea62a46c36",
     label: "MVP Scope",
     type: "textarea",
-    placeholder: "Please list your 'must-have' features for initial launch, followed by 'nice-to-have' features that could be added later. Be as specific as possible about what functionality is essential versus what could be developed in future iterations.",
+    placeholder: "List your 'must-have' features.",
+    helpText: "Describe your 'must-have' features for initial launch, followed by 'nice-to-have' features that could be added later. Be as specific as possible about what functionality is essential versus what could be developed in future iterations.",
     customConfig: {
         rows: 6,
         helpText: "Prioritizing features helps us focus development on what matters most. Consider what's absolutely necessary to solve your core problem versus what would enhance the experience but isn't critical for launch."
@@ -357,7 +358,7 @@ const dataIntegrationContainer: AppletContainersConfig = {
 };
 
 
-export const appletCreatorTwoConfig: AppletContainersConfig[] = [
+export const advancedAppletCreatorDefinition: AppletContainersConfig[] = [
     userInfoContainer,
     problemPurposeContainer,
     conceptWorkflowContainer,
@@ -391,5 +392,26 @@ const aiModelPreferenceField: GroupFieldConfig = {
         ],
         includeOther: true,
     },
+};
+
+// Export individual field configurations to make them accessible
+export {
+    primaryAudienceTypeField,
+    targetUserField,
+    userInteractionField,
+    problemToOvercomeField,
+    appletPurposeField,
+    coreConceptField,
+    workflowTypeField,
+    workflowDescriptionField,
+    userInputTypesField,
+    outputTypesField,
+    dataSourcesField,
+    integrationNeedsField,
+    aiCapabilitiesField,
+    aiModelPrioritiesField,
+    inputTypesField,
+    mvpScopeField,
+    aiModelPreferenceField
 };
 

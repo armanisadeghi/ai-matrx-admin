@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 
-const ChatSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const ChatSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   actionButton,
   className = "",
-}) => {
-  const activeSearchGroups = config[activeTab] || [];
-  
+}) => {  
   // Combine all fields from all groups
-  const allFields = activeSearchGroups.flatMap(group => 
+  const allFields = appletDefinition.flatMap(group => 
     group.fields.map(field => ({ ...field, groupLabel: group.label }))
   );
   

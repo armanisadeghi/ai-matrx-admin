@@ -1,30 +1,40 @@
-// File: components/search/SearchApplet.tsx
-// Main component that ties everything together
+// File: features\applet\layouts\core\AppletLayoutWrapper.tsx
+'use client';
+
 import React, { useState, useEffect } from "react";
-import { Search } from "lucide-react";
 import { useAppletData } from "@/context/AppletDataContext";
-import SearchLayoutManager from "@/features/applet/layouts/options/SearchLayoutManager";
+import AppletInputLayoutManager from "@/features/applet/layouts/core/AppletInputLayoutManager";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
 import { ALL_BROKER_IDS } from "@/features/applet/sample-mock-data/constants";
-import { CustomAppConfig } from "@/features/applet/runner/components/field-components/types";
 import { AppletLayoutOption } from "../options/layout.types";
 
-
 interface AppletLayoutWrapperProps {
-  config: CustomAppConfig;
+  initialAppName?: string;
   layoutTypeOverride?: AppletLayoutOption;
   className?: string;
 }
 
-const AppletLayoutWrapper: React.FC<AppletLayoutWrapperProps> = ({
-  config,
+const AppletInputLayoutWrapper: React.FC<AppletLayoutWrapperProps> = ({
+  initialAppName,
   layoutTypeOverride,
   className = "",
 }) => {
-  const { activeTab, availableApplets } = useAppletData();
+  const { 
+    activeTab, 
+    appletDefinition, 
+    customAppConfig, 
+    submitButton, 
+    appName: contextAppName,
+    layoutType: contextLayoutType
+  } = useAppletData();
+  
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   
-  const layoutType: AppletLayoutOption = layoutTypeOverride || config.layoutType || "horizontal";
+  // Use the app name from props if provided, otherwise use from context
+  const appName = initialAppName || contextAppName;
+  
+  // Use provided layout type or fall back to context and then customAppConfig
+  const layoutType: AppletLayoutOption = layoutTypeOverride || contextLayoutType || customAppConfig.layoutType || "horizontal";
   
   const dataBrokers = useGetorFetchRecords("dataBroker", ALL_BROKER_IDS);
   
@@ -32,23 +42,25 @@ const AppletLayoutWrapper: React.FC<AppletLayoutWrapperProps> = ({
     setActiveFieldId(null);
   }, [activeTab]);
   
-  const searchButton = (
-    <div className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-full p-3">
-      <Search size={24} />
+  // Add ml-2 margin to the submitButton for consistency with search bar components
+  const actionButtonWithMargin = (
+    <div className="ml-2">
+      {submitButton}
     </div>
   );
 
   return (
-    <SearchLayoutManager
+    <AppletInputLayoutManager
       layoutType={layoutType}
-      config={availableApplets}
+      initialAppName={appName}
+      appletDefinition={appletDefinition}
       activeTab={activeTab}
       activeFieldId={activeFieldId}
       setActiveFieldId={setActiveFieldId}
-      actionButton={searchButton}
+      actionButton={actionButtonWithMargin}
       className={className}
     />
   );
 };
 
-export default AppletLayoutWrapper;
+export default AppletInputLayoutWrapper;

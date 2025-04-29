@@ -1,17 +1,16 @@
 import React, { useState, useContext } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import OpenSearchGroup from "@/features/applet/layouts/core/OpenSearchGroup";
 import UniformHeightWrapper, { UniformHeightContext } from "@/features/applet/layouts/core/UniformHeightWrapper";
 
-const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const CardStackSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   actionButton,
   activeFieldId,
   setActiveFieldId,
   className = "",
 }) => {
-  const activeSearchGroups = config[activeTab] || [];
   const [activeIndex, setActiveIndex] = useState(0);
   const { getMaxHeight } = useContext(UniformHeightContext);
 
@@ -54,10 +53,10 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
   };
 
   const handleNext = () => {
-    if (activeIndex < activeSearchGroups.length - 1) {
+    if (activeIndex < appletDefinition.length - 1) {
       setActiveIndex(activeIndex + 1);
       if (setActiveFieldId) {
-        setActiveFieldId(activeSearchGroups[activeIndex + 1].id);
+        setActiveFieldId(appletDefinition[activeIndex + 1].id);
       }
     }
   };
@@ -66,12 +65,12 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
     if (activeIndex > 0) {
       setActiveIndex(activeIndex - 1);
       if (setActiveFieldId) {
-        setActiveFieldId(activeSearchGroups[activeIndex - 1].id);
+        setActiveFieldId(appletDefinition[activeIndex - 1].id);
       }
     }
   };
 
-  const isLastCard = activeIndex === activeSearchGroups.length - 1;
+  const isLastCard = activeIndex === appletDefinition.length - 1;
   const isFirstCard = activeIndex === 0;
   
   // Get the maximum height from UniformHeightContext for cardStack layout
@@ -83,7 +82,7 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
     <div className={`w-full max-w-4xl mx-auto p-4 pb-16 ${className}`}>
       {/* Stepper navigation */}
       <div className="flex mb-6">
-        {activeSearchGroups.map((group, index) => (
+        {appletDefinition.map((group, index) => (
           <div 
             key={group.id}
             className={`flex-1 text-center ${
@@ -125,7 +124,7 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
       </div>
 
       <div className="relative" style={{ minHeight: containerHeight }}>
-        {activeSearchGroups.map((group, index) => (
+        {appletDefinition.map((group, index) => (
           <div
             key={group.id}
             className="absolute w-full transition-all duration-500 ease-in-out cursor-pointer rounded-lg overflow-hidden"
@@ -176,13 +175,7 @@ const CardStackSearchLayout: React.FC<SearchLayoutProps> = ({
           Previous
         </button>
         
-        {isLastCard ? (
-          actionButton || (
-            <button className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md">
-              Search
-            </button>
-          )
-        ) : (
+        {isLastCard ? (actionButton ) : (
           <button 
             onClick={handleNext}
             className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md"

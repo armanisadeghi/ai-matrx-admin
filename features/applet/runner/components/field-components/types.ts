@@ -2,12 +2,6 @@
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import { ReactNode } from "react";
 
-export interface AppletListItemConfig {
-    value: string;
-    label: string;
-    icon?: ReactNode;
-}
-
 // Base configuration for all field components
 export interface BaseFieldProps {
     id: string;
@@ -166,7 +160,6 @@ export interface FieldProps<T = {}> extends BaseFieldProps {
     isMobile?: boolean;
 }
 
-
 // Field configuration with broker ID
 export interface GroupFieldConfig {
     brokerId: string;
@@ -187,6 +180,12 @@ export interface GroupFieldConfig {
         | MultiSelectFieldConfig;
     isRequired?: boolean;
     isMobile?: boolean;
+}
+
+export interface AppletListItemConfig {
+    value: string;
+    label: string;
+    icon?: ReactNode;
 }
 
 export interface GroupConfig {
@@ -224,7 +223,8 @@ export interface CustomAppConfig {
     name: string;
     description: string;
     slug: string;
-    icon: string;
+    mainAppIcon: string;
+    mainAppSubmitIcon: string;
     creator: string;
     primaryColor: string;
     accentColor: string;
@@ -233,8 +233,6 @@ export interface CustomAppConfig {
     layoutType: AppletLayoutOption;
 }
 
-// Group configuration
-// Group component props
 export interface FieldGroupProps {
     id: string;
     label: string;
@@ -250,4 +248,32 @@ export interface FieldGroupProps {
     width?: string;
     maxHeight?: string;
     isMobile?: boolean;
+}
+
+// Complete structure for a Select Field
+export interface SelectFieldStructure {
+    brokerId: string; // Unique identifier for the field
+    label: string; // Display label for the field
+    placeholder?: string; // Placeholder text for the select input
+    helpText?: string; // Help text for additional guidance
+    type: "select"; // Specifies the field type as select
+    customConfig: {
+        options: {
+            value: string; // Option value
+            label: string; // Option display label
+            icon?: React.ReactNode; // Optional icon for the option
+            group?: string; // Optional group for grouped options
+            subtitle?: string; // Optional subtitle for the option
+            helpText?: string; // Optional help text for the option
+            width?: string; // Optional width for the option
+        }[]; // Array of select options
+        inputPlaceholder?: string; // Placeholder for the select input
+        emptyMessage?: string; // Message when no options are available
+        width?: string; // Width of the select field
+        showGroups?: boolean; // Whether to display option groups
+        subtitle?: string; // Subtitle for the select field
+        helpText?: string; // Help text for the select field
+    }; // Select-specific configuration
+    isRequired?: boolean; // Whether the field is required
+    isMobile?: boolean; // Whether the field is rendered on mobile
 }

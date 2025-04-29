@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { AppDemoManager } from '@/features/applet/layouts/core/AppDemoManager';
+import { AppDemoManager } from '@/features/applet/demo/AppDemoManager';
 import { Plus, Trash2, X, RefreshCw } from 'lucide-react';
 import { CheckboxGroupFieldConfig, CheckboxOption, GroupFieldConfig } from '@/features/applet/runner/components/field-components/types';
 import { 

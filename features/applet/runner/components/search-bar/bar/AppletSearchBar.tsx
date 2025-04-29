@@ -2,18 +2,23 @@
 
 import React from "react";
 import { useAppletData } from "@/context/AppletDataContext";
-import { AvailableAppletConfigs } from "../../field-components/types";
 import MobileAppletUserInputBar from "./MobileAppletUserInputBarr";
 import DesktopAppletUserInputBar from "./DesktopAppletSearchBar";
 
 interface AppletUserInputBarProps {
-    config: AvailableAppletConfigs;
+    initialAppName?: string;
 }
 
-const AppletUserInputBar: React.FC<AppletUserInputBarProps> = ({ config }) => {
-    const { isMobile } = useAppletData();
+const AppletUserInputBar: React.FC<AppletUserInputBarProps> = ({ initialAppName }) => {
+    const { isMobile, appName: contextAppName } = useAppletData();
+    
+    const appName = initialAppName || contextAppName;
 
-    return isMobile ? <MobileAppletUserInputBar config={config} /> : <DesktopAppletUserInputBar config={config} />;
+    return isMobile ? (
+        <MobileAppletUserInputBar appName={appName} />
+    ) : (
+        <DesktopAppletUserInputBar appName={appName} />
+    );
 };
 
 export default AppletUserInputBar;

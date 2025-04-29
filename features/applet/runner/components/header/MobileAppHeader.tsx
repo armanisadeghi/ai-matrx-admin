@@ -1,7 +1,6 @@
 // components/AppletHeader/MobileAppHeader.tsx
 "use client";
 import React from "react";
-import { LayoutPanelLeft } from "lucide-react";
 import { useAppletData } from "@/context/AppletDataContext";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux";
@@ -10,16 +9,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { CustomAppHeaderProps } from "./CustomAppHeader";
 import MobileTabHeader from "./MobileTabHeader ";
+import AppSelector from "./AppSelector";
+import ButtonMenu from "./ButtonMenu";
 
-
-
-
-
-export const MobileAppHeader = ({ config }: CustomAppHeaderProps) => {
+export const MobileAppHeader = ({ appName, isDemo = false }: CustomAppHeaderProps) => {
   const user = useSelector((state: RootState) => state.user);
   const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
   const profilePhoto = user.userMetadata.picture || null;
-  const { activeTab, setActiveTab } = useAppletData();
+  const { activeTab, setActiveTab, customAppConfig: config, activeAppIcon } = useAppletData();
   
   return (
     <div className="w-full bg-white dark:bg-gray-900 transition-colors">
@@ -27,7 +24,7 @@ export const MobileAppHeader = ({ config }: CustomAppHeaderProps) => {
         {/* Left section - App icon */}
         <div className="shrink-0">
           <Link href="/applets">
-            <LayoutPanelLeft size={24} className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700" />
+            {activeAppIcon}
           </Link>
         </div>
         
@@ -42,6 +39,12 @@ export const MobileAppHeader = ({ config }: CustomAppHeaderProps) => {
         
         {/* Right section - Theme switcher and profile */}
         <div className="flex items-center gap-1 shrink-0">
+          {config.extraButtons && config.extraButtons.length > 0 && (
+            <ButtonMenu buttons={config.extraButtons} />
+          )}
+          {(isDemo || !appName) && (
+            <AppSelector />
+          )}
           <ThemeSwitcherIcon className="text-gray-800 dark:text-gray-200" />
           <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
             {profilePhoto ? (

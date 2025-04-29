@@ -1,18 +1,19 @@
 import React, { useState } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import StepperSearchGroup from "@/features/applet/layouts/core/StepperSearchGroup";
 import UniformHeightWrapper from "@/features/applet/layouts/core/UniformHeightWrapper";
 import { allSystemWideMockApplets } from "@/features/applet/sample-mock-data/constants";
+import SearchGroupHeader from "../helpers/SearchGroupHeader";
 
-const StepperSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const StepperSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   activeFieldId,
   setActiveFieldId,
   actionButton,
   className = "",
 }) => {
-  const activeSearchGroups = allSystemWideMockApplets[activeTab] || [];
+  const activeSearchGroups = appletDefinition
   const [currentStep, setCurrentStep] = useState(0);
   
   const handleNext = () => {
@@ -73,15 +74,10 @@ const StepperSearchLayout: React.FC<SearchLayoutProps> = ({
       
       <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700">
         {/* Header section with lighter background */}
-        <div className="bg-gray-100 dark:bg-gray-700 p-4 border-b dark:border-gray-600">
-          <div className="text-rose-500 font-medium text-lg">
-            {activeSearchGroups[currentStep]?.label}
-          </div>
-          <div className="text-gray-600 dark:text-gray-300 text-sm">
-            Select the number of beds and room type
-          </div>
-        </div>
-        
+        <SearchGroupHeader 
+          label={activeSearchGroups[currentStep]?.label} 
+          placeholder={activeSearchGroups[currentStep]?.placeholder} 
+        />
         {/* Content section */}
         <div className="p-4">
           <div className="w-full">

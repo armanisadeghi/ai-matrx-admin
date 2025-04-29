@@ -1,47 +1,7 @@
 "use client";
 
-import AppletLayoutWrapper from "@/features/applet/layouts/core/AppletLayoutWrapper";
+import AppletInputLayoutWrapper from "@/features/applet/layouts/core/AppletLayoutWrapper";
 import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
-import { UniformHeightProvider } from "@/features/applet/layouts/core";
-import { AppletListItemConfig, CustomAppConfig } from "@/features/applet/runner/components/field-components/types";
-import { HeaderExtraButtonsConfig } from "@/features/applet/runner/components/field-components/types";
-
-
-export const travelAgentListConfig: AppletListItemConfig[] = [
-    { value: "stays", label: "Stays" },
-    { value: "applet-creator", label: "Applet Creator" },
-    { value: "applet-creator-2", label: "Applet Creator 2" },
-    { value: "vegas-nightlife", label: "Vegas Nightlife" },
-    { value: "restaurants", label: "Restaurants" },
-    { value: "activities", label: "Activities" },
-    { value: "shopping", label: "Shopping" },
-    { value: "transportation", label: "Transportation" },
-    { value: "events", label: "Events" },
-];
-
-export const extraButtonsConfig: HeaderExtraButtonsConfig[] = [
-    {
-        label: "Travel Agent Chat",
-        actionType: "button",
-        knownMethod: "renderChat",
-        onClick: () => {
-            console.log("Travel Agent Chat");
-        },
-    },
-];
-
-export const travelAgentAppConfig: CustomAppConfig = {
-    name: "Travel Agent",
-    description: "Travel Agent",
-    slug: "travel-agent",
-    icon: "TreePalm",
-    creator: "Travel Agent",
-    primaryColor: "gray",
-    accentColor: "fuchsia",
-    appletList: travelAgentListConfig,
-    extraButtons: extraButtonsConfig,
-    layoutType: "twoColumn",
-};
 
 
 
@@ -59,71 +19,71 @@ const SectionSeparator = ({ name }: { name: string }) => (
 export default function SearchAppletPage() {
     return (
             <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
-                <CustomAppHeader config={travelAgentAppConfig} />
+                <CustomAppHeader isDemo={true} />
 
                 <SectionSeparator name="Applet Specified Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" />
 
                 <SectionSeparator name="Horizontal Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="horizontal" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="horizontal" />
 
                 <SectionSeparator name="Stepper Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="stepper" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="stepper" />
 
 
                 <SectionSeparator name="Vertical Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="vertical" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="vertical" />
 
                 <SectionSeparator name="Two Column Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="twoColumn" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="twoColumn" />
 
                 <SectionSeparator name="Three Column Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="threeColumn" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="threeColumn" />
 
                 <SectionSeparator name="Four Column Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="fourColumn" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="fourColumn" />
 
                 <SectionSeparator name="Tabs Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="tabs" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="tabs" />
 
                 <SectionSeparator name="Accordion Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="accordion" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="accordion" />
 
                 <SectionSeparator name="Flat Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="flat" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="flat" />
 
                 {/* First Set of New Layouts */}
                 <SectionSeparator name="Carousel Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="carousel" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="carousel" />
 
                 <SectionSeparator name="Floating Card Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="floatingCard" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="floatingCard" />
 
                 <SectionSeparator name="Minimalist Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="minimalist" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="minimalist" />
 
                 <SectionSeparator name="Sidebar Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="sidebar" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="sidebar" />
 
                 <SectionSeparator name="Full Width Sidebar Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="fullWidthSidebar" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="fullWidthSidebar" />
 
                 {/* Second Set of New Layouts */}
                 <SectionSeparator name="Card Stack Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="cardStack" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="cardStack" />
 
                 <SectionSeparator name="Contextual Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="contextual" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="contextual" />
 
                 <SectionSeparator name="Chat Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="chat" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="chat" />
 
                 <SectionSeparator name="Map Based Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="mapBased" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="mapBased" />
 
                 {/* Original Layouts */}
                 <SectionSeparator name="Open Layout" />
-                <AppletLayoutWrapper config={travelAgentAppConfig} layoutTypeOverride="open" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="open" />
             </div>
     );
 }

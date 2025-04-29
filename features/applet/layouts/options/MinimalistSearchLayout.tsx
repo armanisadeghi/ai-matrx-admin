@@ -1,14 +1,13 @@
 import React, { useState } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 
-const MinimalistSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const MinimalistSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   actionButton,
   className = "",
 }) => {
-  const activeSearchGroups = config[activeTab] || [];
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
   return (
@@ -18,7 +17,7 @@ const MinimalistSearchLayout: React.FC<SearchLayoutProps> = ({
       </div>
       
       <div className="space-y-10">
-        {activeSearchGroups.map((group) => {
+        {appletDefinition.map((group) => {
           const isExpanded = expandedGroup === group.id;
           
           return (
@@ -60,11 +59,7 @@ const MinimalistSearchLayout: React.FC<SearchLayoutProps> = ({
       </div>
       
       <div className="flex justify-center mt-12">
-        {actionButton || (
-          <button className="bg-transparent hover:bg-rose-500 text-rose-500 hover:text-white border-2 border-rose-500 transition-colors duration-300 rounded-full px-8 py-3 text-lg">
-            Search
-          </button>
-        )}
+        {actionButton}
       </div>
     </div>
   );

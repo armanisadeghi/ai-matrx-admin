@@ -1,66 +1,31 @@
 // File: components/search/layouts/HorizontalSearchLayout.tsx
-import React, { ReactNode } from "react";
+import React from "react";
 import SearchGroupField from "@/features/applet/layouts/core/SearchGroupField";
-import { Search } from "lucide-react";
-import AppletBrokerContainer from "../../runner/components/search-bar/container/AppletBrokerContainer";
-import { AppletListItemConfig } from "../../runner/components/field-components/types";
-import { GroupFieldConfig } from "../../runner/components/field-components/types";
+import AppletBrokerContainer from "@/features/applet/runner/components/search-bar/container/AppletBrokerContainer";
+import { AppletInputProps } from "../options/layout.types";
 
-
-export interface GroupConfig {
-  tab: AppletListItemConfig;
-  fields: GroupFieldConfig[];
-  title?: string;
-  description?: string;
-}
-
-export interface AppletContainersConfig {
-  id: string;
-  label: string;
-  placeholder: string;
-  description?: string;
-  fields: GroupFieldConfig[];
-}
-
-export interface AvailableAppletConfigs {
-  [key: string]: AppletContainersConfig[];
-}
-
-
-interface SearchLayoutProps {
-  config: AvailableAppletConfigs;
-  activeTab: string;
-  activeFieldId: string | null;
-  setActiveFieldId: (id: string | null) => void;
-  actionButton?: ReactNode;
-  className?: string;
-}
-
-const HorizontalSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const HorizontalSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   activeFieldId,
   setActiveFieldId,
   actionButton,
   className = "",
 }) => {
-  const searchButton = actionButton || (
-    <div className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-full p-3 ml-2">
-      <Search size={24} />
-    </div>
-  );
 
-  const activeSearchGroups = config[activeTab] || [];
+  const groupsCount = appletDefinition.length;
+  const hideGroupPlaceholder = groupsCount > 4;
+
 
   return (
     <div className="w-full p-4">
       <AppletBrokerContainer
         activeFieldId={activeFieldId}
         onActiveFieldChange={setActiveFieldId}
-        actionButton={searchButton}
+        actionButton={actionButton}
         className={`mx-auto max-w-4xl rounded-full bg-white ${className}`}
       >
-        {activeSearchGroups.map((group, index) => (
+        {appletDefinition.map((group, index) => (
           <SearchGroupField
             key={group.id}
             id={group.id}
@@ -71,8 +36,9 @@ const HorizontalSearchLayout: React.FC<SearchLayoutProps> = ({
             isActive={activeFieldId === group.id}
             onClick={() => {}} // Managed by FieldRow
             onOpenChange={() => {}} // Managed by FieldRow
-            isLast={index === activeSearchGroups.length - 1}
+            isLast={index === appletDefinition.length - 1}
             isMobile={false}
+            hideGroupPlaceholder={hideGroupPlaceholder}
           />
         ))}
       </AppletBrokerContainer>

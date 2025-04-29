@@ -1,22 +1,21 @@
 import React, { useState } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import OpenSearchGroup from "@/features/applet/layouts/core/OpenSearchGroup";
 
-const CarouselSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const CarouselSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   actionButton,
   className = "",
 }) => {
-  const activeSearchGroups = config[activeTab] || [];
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handlePrev = () => {
-    setActiveIndex((prev) => (prev === 0 ? activeSearchGroups.length - 1 : prev - 1));
+    setActiveIndex((prev) => (prev === 0 ? appletDefinition.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
-    setActiveIndex((prev) => (prev === activeSearchGroups.length - 1 ? 0 : prev + 1));
+    setActiveIndex((prev) => (prev === appletDefinition.length - 1 ? 0 : prev + 1));
   };
 
   return (
@@ -27,7 +26,7 @@ const CarouselSearchLayout: React.FC<SearchLayoutProps> = ({
             className="transition-transform duration-300 ease-in-out flex"
             style={{ transform: `translateX(-${activeIndex * 100}%)` }}
           >
-            {activeSearchGroups.map((group) => (
+            {appletDefinition.map((group) => (
               <div key={group.id} className="w-full flex-shrink-0">
                 <OpenSearchGroup
                   id={group.id}
@@ -71,7 +70,7 @@ const CarouselSearchLayout: React.FC<SearchLayoutProps> = ({
       
       {/* Dots indicator */}
       <div className="flex justify-center mt-4 space-x-2">
-        {activeSearchGroups.map((_, index) => (
+        {appletDefinition.map((_, index) => (
           <button
             key={index}
             onClick={() => setActiveIndex(index)}

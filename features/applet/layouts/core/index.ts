@@ -1,6 +1,5 @@
 // Export core layout components
-import AppletLayoutWrapper from './AppletLayoutWrapper';
-import LayoutWrapper from './LayoutWrapper';
+import AppletInputLayoutWrapper from './AppletLayoutWrapper';
 import OpenSearchGroup from './OpenSearchGroup';
 import SearchField from './SearchField';
 import SearchGroupField from './SearchGroupField';
@@ -9,8 +8,7 @@ import UniformHeightWrapper, { UniformHeightContext, UniformHeightProvider } fro
 import VerticalSearchGroup from './VerticalSearchGroup';
 
 export {
-  AppletLayoutWrapper,
-  LayoutWrapper,
+  AppletInputLayoutWrapper as AppletLayoutWrapper,
   OpenSearchGroup,
   SearchField,
   SearchGroupField,
@@ -25,5 +23,5 @@ export {
 export type { 
   SearchFieldProps,
   SearchGroupRendererProps,
-  SearchLayoutProps
+  AppletInputProps as SearchLayoutProps
 } from '@/features/applet/layouts/options/layout.types';

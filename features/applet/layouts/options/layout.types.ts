@@ -1,9 +1,9 @@
 import { ReactNode } from "react";
-import { AvailableAppletConfigs } from "@/features/applet/runner/components/field-components/types";
+import { AppletContainersConfig } from "@/features/applet/runner/components/field-components/types";
 import { GroupFieldConfig } from "@/features/applet/runner/components/field-components/types";
 
-export interface SearchLayoutProps {
-    config: AvailableAppletConfigs;
+export interface AppletInputProps {
+    appletDefinition: AppletContainersConfig[];
     activeTab: string;
     activeFieldId: string | null;
     setActiveFieldId: (id: string | null) => void;
@@ -25,6 +25,7 @@ export interface SearchGroupRendererProps {
     actionButton?: ReactNode;
     className?: string;
     isMobile?: boolean;
+    hideGroupPlaceholder?: boolean;
 }
 
 // Base search field props
@@ -41,6 +42,7 @@ export interface SearchFieldProps {
     className?: string;
     preventClose?: boolean;
     isMobile?: boolean;
+    hideGroupPlaceholder?: boolean;
 }
 
 // Layout options type

@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import { SearchLayoutProps } from "@/features/applet/layouts/options/layout.types";
+import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
 import OpenSearchGroup from "@/features/applet/layouts/core/OpenSearchGroup";
 import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
 
-const MapBasedSearchLayout: React.FC<SearchLayoutProps> = ({
-  config,
+const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
+  appletDefinition,
   activeTab,
   actionButton,
   className = "",
 }) => {
-  const activeSearchGroups = config[activeTab] || [];
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
 
   return (
@@ -73,7 +72,7 @@ const MapBasedSearchLayout: React.FC<SearchLayoutProps> = ({
             </svg>
             <span>Filters</span>
             <span className="bg-white text-rose-500 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-              {activeSearchGroups.reduce((sum, group) => sum + group.fields.length, 0)}
+              {appletDefinition.reduce((sum, group) => sum + group.fields.length, 0)}
             </span>
           </button>
           
@@ -141,7 +140,7 @@ const MapBasedSearchLayout: React.FC<SearchLayoutProps> = ({
           </div>
           
           <div className="p-4 space-y-6">
-            {activeSearchGroups.map((group) => (
+            {appletDefinition.map((group) => (
               <div key={group.id} className="border-b dark:border-gray-700 pb-4 last:border-0">
                 <h4 className="text-md font-medium mb-3 text-rose-500">{group.label}</h4>
                 {group.fields.map((field) => (
@@ -162,11 +161,7 @@ const MapBasedSearchLayout: React.FC<SearchLayoutProps> = ({
           </div>
           
           <div className="p-4 border-t dark:border-gray-700">
-            {actionButton || (
-              <button className="w-full bg-rose-500 hover:bg-rose-600 text-white rounded-lg py-3">
-                Apply Filters
-              </button>
-            )}
+            {actionButton}
           </div>
         </div>
       </div>

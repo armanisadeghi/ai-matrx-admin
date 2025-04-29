@@ -6,8 +6,8 @@ import {
     GroupFieldConfig,
     AppletListItemConfig,
 } from "@/features/applet/runner/components/field-components/types";
-import { appletCreatorTwoConfig } from "./applet-creator-2";
 import { starterAppletConfig } from "./starter-applet";
+import { advancedAppletCreatorDefinition } from "./applet-creator";
 
 const staysConfig: AppletContainersConfig[] = [
     {
@@ -729,88 +729,6 @@ const eventsConfig: AppletContainersConfig[] = [
     },
 ];
 
-const fakeExtraConfigs: AppletContainersConfig[] = [
-    {
-        id: "fake-extra-config",
-        label: "Fake Applet",
-        placeholder: "Select cuisine",
-        fields: [
-            {
-                brokerId: "0fc49b4c-fc8b-467e-9dda-f43dedf74a9d",
-                label: "Cuisine Type",
-                type: "multiselect",
-                placeholder: "Select cuisine types",
-                customConfig: {
-                    options: [
-                        { value: "italian", label: "Italian" },
-                        { value: "japanese", label: "Japanese" },
-                        { value: "mexican", label: "Mexican" },
-                        { value: "american", label: "American" },
-                        { value: "chinese", label: "Chinese" },
-                        { value: "indian", label: "Indian" },
-                        { value: "thai", label: "Thai" },
-                        { value: "french", label: "French" },
-                        { value: "mediterranean", label: "Mediterranean" },
-                        { value: "vegan", label: "Vegan" },
-                    ],
-                    showSearch: true,
-                    searchPlaceholder: "Search cuisines...",
-                    showSelectAll: true,
-                    allowClear: true,
-                    maxItems: 5,
-                    width: "w-full",
-                },
-            },
-        ],
-    },
-    {
-        id: "dietary",
-        label: "Dietary Preferences",
-        placeholder: "Select dietary preferences",
-        fields: [
-            {
-                brokerId: "7a9c6d5e-3b2a-1c9d-8e7f-4a5b6c7d8e9f",
-                label: "Dietary Restrictions",
-                type: "checkbox",
-                placeholder: "Select dietary restrictions",
-                customConfig: {
-                    options: [
-                        { id: "vegetarian", label: "Vegetarian", value: "vegetarian" },
-                        { id: "vegan", label: "Vegan", value: "vegan" },
-                        { id: "gluten-free", label: "Gluten-Free", value: "gluten-free" },
-                        { id: "dairy-free", label: "Dairy-Free", value: "dairy-free" },
-                        { id: "nut-free", label: "Nut-Free", value: "nut-free" },
-                    ],
-                    direction: "vertical",
-                    width: "w-full",
-                },
-            },
-        ],
-    },
-    {
-        id: "price-range",
-        label: "Price Range",
-        placeholder: "Select price range",
-        fields: [
-            {
-                brokerId: "3e2d1c9b-8a7f-6e5d-4c3b-2a1d9e8f7c6b",
-                label: "Price Level",
-                type: "radio",
-                placeholder: "Select price level",
-                customConfig: {
-                    options: [
-                        { id: "inexpensive", label: "$ (Inexpensive)", value: "$", description: "Under $15 per person" },
-                        { id: "moderate", label: "$$ (Moderate)", value: "$$", description: "$15-$30 per person" },
-                        { id: "expensive", label: "$$$ (Expensive)", value: "$$$", description: "$31-$50 per person" },
-                        { id: "very-expensive", label: "$$$$ (Very Expensive)", value: "$$$$", description: "Over $50 per person" },
-                    ],
-                    width: "w-full",
-                },
-            },
-        ],
-    },
-];
-
 const appletCreatorConfigWhole: AppletContainersConfig[] = [
     {
         id: "applet-purpose",
@@ -938,7 +856,7 @@ const primaryAudienceTypeField: GroupFieldConfig = {
 };
 
 const targetUserField: GroupFieldConfig = {
-    brokerId: "0fc49b4c-fc8b-267e-9dda-f43dedf74a9d",
+    brokerId: "93c623ef-6025-4fb9-a362-e8cbb25bbaa0",
     label: "Target User",
     type: "input",
     placeholder: "Who is your ideal user?",
@@ -1036,7 +954,7 @@ const aiIntegrationContainer: AppletContainersConfig = {
     fields: [aiCapabilitiesField],
 };
 
-export const appletCreatorConfig: AppletContainersConfig[] = [
+export const simpleAppCreatorDefinition: AppletContainersConfig[] = [
     appletPurposeContainer,
     appletConceptContainer,
     appletFunctionalityContainer,
@@ -1044,8 +962,8 @@ export const appletCreatorConfig: AppletContainersConfig[] = [
 ];
 
 export const allSystemWideMockApplets: AvailableAppletConfigs = {
-    "applet-creator": appletCreatorConfig,
-    "applet-creator-2": appletCreatorTwoConfig,
+    "simple-applet-creator": simpleAppCreatorDefinition,
+    "advanced-applet-creator": advancedAppletCreatorDefinition,
     "starter-applet": starterAppletConfig,
     stays: staysConfig,
     "vegas-nightlife": nightlifeConfig,
@@ -1054,7 +972,6 @@ export const allSystemWideMockApplets: AvailableAppletConfigs = {
     shopping: shoppingConfig,
     transportation: transportConfig,
     events: eventsConfig,
-    "fake-extra-config": fakeExtraConfigs,
 };
 
 export const USER_INPUT_BROKER_IDS = [
@@ -1086,9 +1003,8 @@ export const ALL_BROKER_IDS = [
 ];
 
 export const travelAgentListConfig: AppletListItemConfig[] = [
-    { value: "applet-creator-2", label: "Applet Creator 2" },
+    { value: "simple-applet-creator", label: "Applet Creator" },
     { value: "stays", label: "Stays" },
-    { value: "applet-creator", label: "Applet Creator" },
     { value: "vegas-nightlife", label: "Vegas Nightlife" },
     { value: "restaurants", label: "Restaurants" },
     { value: "activities", label: "Activities" },
@@ -1107,11 +1023,12 @@ export const extraButtonsConfig: HeaderExtraButtonsConfig[] = [
 ];
 
 export const everythingCombinedAppConfig: CustomAppConfig = {
-    name: "Travel Agent",
-    description: "Travel Agent",
-    slug: "travel-agent",
-    icon: "TreePalm",
-    creator: "Travel Agent",
+    name: "Everything Combined",
+    description: "Everything Combined",
+    slug: "everything-combined",
+    mainAppIcon: "TreePalm",
+    mainAppSubmitIcon: "Search",
+    creator: "Everything Combined",
     primaryColor: "gray",
     accentColor: "rose",
     appletList: travelAgentListConfig,
@@ -1123,18 +1040,25 @@ export const matrixAppCreatorAppConfig: CustomAppConfig = {
     name: "Matrix App Creator",
     description: "Matrix App Creator",
     slug: "matrix-app-creator",
-    icon: "TreePalm",
+    mainAppIcon: "SiCodemagic",
+    mainAppSubmitIcon: "ArrowBigRightDash",
     creator: "Matrix App Creator",
     primaryColor: "gray",
     accentColor: "blue",
     appletList: [
-        { value: "applet-creator-2", label: "Applet Creator" },
+        { value: "advanced-applet-creator", label: "Advanced Applet Creator" },
+        { value: "simple-applet-creator", label: "Simple Applet Creator" },
     ],
     extraButtons: [
         {
             label: "See Sample Applet",
             actionType: "button",
             knownMethod: "renderSampleApplet",
+        },
+        {
+            label: "Live Chat",
+            actionType: "button",
+            knownMethod: "renderChat",
         },
     ],
     layoutType: "twoColumn",
@@ -1144,7 +1068,8 @@ export const starterAppConfig: CustomAppConfig = {
     name: "Starter App",
     description: "Starter App",
     slug: "starter-app",
-    icon: "SiMagic",
+    mainAppIcon: "SiMagic",
+    mainAppSubmitIcon: "FaPaperPlane",
     creator: "Starter App",
     primaryColor: "gray",
     accentColor: "blue",
@@ -1163,7 +1088,8 @@ export const minimalTravelAgentAppConfig: CustomAppConfig = {
     name: "Travel Agent",
     description: "Travel Agent",
     slug: "travel-agent",
-    icon: "TreePalm",
+    mainAppIcon: "TreePalm",
+    mainAppSubmitIcon: "Search",
     creator: "Travel Agent",
     primaryColor: "gray",
     accentColor: "rose",
@@ -1188,10 +1114,15 @@ export const minimalTravelAgentAppConfig: CustomAppConfig = {
 
 
 export const availableApps: Record<string, CustomAppConfig> = {
-    "travel-agent": everythingCombinedAppConfig,
+    "starter-app": starterAppConfig,
+    "travel-agent": minimalTravelAgentAppConfig,
     "everything-combined": everythingCombinedAppConfig,
     "matrix-app-creator": matrixAppCreatorAppConfig,
-    "starter-app": starterAppConfig,
-    "minimal-travel-agent": minimalTravelAgentAppConfig,
 };
 
+export function getSelectOptionsFromApps(apps: Record<string, CustomAppConfig>) {
+    return Object.entries(apps).map(([slug, app]) => ({
+      value: slug,
+      label: app.name,
+    }));
+  }
