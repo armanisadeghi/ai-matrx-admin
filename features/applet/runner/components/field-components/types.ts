@@ -277,3 +277,107 @@ export interface SelectFieldStructure {
     isRequired?: boolean; // Whether the field is required
     isMobile?: boolean; // Whether the field is rendered on mobile
 }
+
+// Not used yet
+export interface FieldNew {
+    componentId: string;
+    label: string;
+    description?: string;
+    placeholder?: string;
+    helpText?: string;
+    type: "button" | "select" | "input" | "textarea" | "number" | "date" | "checkbox" | "radio" | "slider";
+    subType?: string; // multiselect, checkboxGroup, radioGroup, dateWithTime, rangeSlider
+    options?: {
+        id: string;
+        label: string;
+        description?: string;
+        helpText?: string;
+        group?: string;
+        icon?: ReactNode;
+    }[];
+    customConfig?:
+        | ButtonFieldConfig
+        | SelectFieldConfig
+        | InputFieldConfig
+        | TextareaFieldConfig
+        | NumberInputFieldConfig
+        | CheckboxFieldConfig
+        | CheckboxGroupFieldConfig
+        | RadioGroupFieldConfig
+        | SliderFieldConfig
+        | MultiSelectFieldConfig;
+    isRequired?: boolean;
+    isMobile?: boolean;
+}
+
+
+export interface FieldItem {
+    id: string; // Unique identifier for the field or option
+    label: string; // Display label for the field or option
+    description?: string; // Additional context or instructions
+    helpText?: string; // Guidance text, possibly dynamic
+    group?: string; // Optional grouping (e.g., for select options or field categorization)
+    iconName?: string; // Optional icon identifier (e.g., "fa-user" for FontAwesome)
+}
+
+export interface FieldConfig {
+    type: string; // Component type (e.g., "input", "select", "radio", "slider")
+    field: FieldItem; // Core field properties
+    options?: FieldItem[]; // Array of options, ignored by components like input or slider
+    settings?: { // Component-specific settings
+        [key: string]: any; // Flexible key-value pairs (e.g., min, max, rows)
+    }; // Optional settings for specific components
+    styles?: { // Styling properties, ignored if not applicable
+        [key: string]: any; // Flexible key-value pairs (e.g., width, className)
+    }; // Optional styling properties
+}
+
+
+
+
+const field: FieldConfig = {
+    type: "select", // Could be "input", "radio", "textarea", "slider", etc.
+    field: {
+        id: "someuuid",
+        label: "What is your field of work?",
+        description: "This helps us cater your resume for the industry for which it will be used.",
+        helpText: "It's best to use the most specific industry, but if you're unsure, this can be changed later.",
+        group: "personal-info", // Example group for field categorization
+        iconName: "fa-briefcase" // Example FontAwesome icon
+    },
+    options: [
+        {
+            id: "opt1",
+            label: "Technology",
+            description: "Software, IT, etc.",
+            helpText: "Select if you work in tech industries",
+            group: "tech", // For grouped select options
+            iconName: "fa-code"
+        },
+        {
+            id: "opt2",
+            label: "Finance",
+            description: "Banking, accounting, etc.",
+            helpText: "Select for financial sectors",
+            group: "business",
+            iconName: "fa-dollar-sign"
+        },
+        {
+            id: "opt3",
+            label: "Healthcare",
+            description: "Medical, nursing, etc.",
+            helpText: "Select for healthcare roles",
+            group: "medical",
+            iconName: "fa-heartbeat"
+        }
+    ],
+    settings: {
+        placeholder: "Select an industry", // Unified placeholder
+        emptyMessage: "No industries available", // For select/multiselect
+        showGroups: true // For select/multiselect with grouped options
+    },
+    styles: {
+        width: "100%", // Field width
+        optionClass: "option-item" // Example class for options
+    }
+};
