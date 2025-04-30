@@ -172,6 +172,8 @@ export type AutomationTableName =
     | 'tasks'
     | 'tool'
     | 'transformer'
+    | 'userListItems'
+    | 'userLists'
     | 'userPreferences'
     | 'userTables'
     | 'wcClaim'
@@ -982,6 +984,24 @@ export type TransformerProcessed = Expand<ProcessedEntityData<"transformer">>;
 export type TransformerData = Expand<EntityDataMixed<"transformer">>;
 export type TransformerState = EntityStateType<"transformer">;
 export type TransformerRecordMap = Record<"transformerRecordId", TransformerData>;
+
+export type UserListItemsType = AutomationEntity<"userListItems">;
+export type UserListItemsDataRequired = Expand<EntityData<"userListItems">>;
+export type UserListItemsDataOptional = Expand<EntityDataOptional<"userListItems">>;
+export type UserListItemsRecordWithKey = Expand<EntityDataWithKey<"userListItems">>;
+export type UserListItemsProcessed = Expand<ProcessedEntityData<"userListItems">>;
+export type UserListItemsData = Expand<EntityDataMixed<"userListItems">>;
+export type UserListItemsState = EntityStateType<"userListItems">;
+export type UserListItemsRecordMap = Record<"userListItemsRecordId", UserListItemsData>;
+
+export type UserListsType = AutomationEntity<"userLists">;
+export type UserListsDataRequired = Expand<EntityData<"userLists">>;
+export type UserListsDataOptional = Expand<EntityDataOptional<"userLists">>;
+export type UserListsRecordWithKey = Expand<EntityDataWithKey<"userLists">>;
+export type UserListsProcessed = Expand<ProcessedEntityData<"userLists">>;
+export type UserListsData = Expand<EntityDataMixed<"userLists">>;
+export type UserListsState = EntityStateType<"userLists">;
+export type UserListsRecordMap = Record<"userListsRecordId", UserListsData>;
 
 export type UserPreferencesType = AutomationEntity<"userPreferences">;
 export type UserPreferencesDataRequired = Expand<EntityData<"userPreferences">>;

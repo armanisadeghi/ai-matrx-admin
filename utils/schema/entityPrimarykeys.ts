@@ -348,6 +348,14 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  userListItems: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  userLists: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   userPreferences: {
     frontendFields: ['user_id'],
     databaseColumns: ['userId'],

@@ -7553,6 +7553,178 @@ export const useTransformerWithFetch = (): UseTransformerWithFetchReturn => {
 
 
 
+type UseUserListItemsWithFetchReturn = {
+    userListItemsSelectors: EntitySelectors<"userListItems">;
+    userListItemsActions: EntityActions<"userListItems">;
+    userListItemsRecords: Record<MatrxRecordId, UserListItemsData>;
+    userListItemsUnsavedRecords: Record<MatrxRecordId, Partial<UserListItemsData>>;
+    userListItemsSelectedRecordIds: MatrxRecordId[];
+    userListItemsIsLoading: boolean;
+    userListItemsIsError: boolean;
+    userListItemsQuickRefRecords: QuickReferenceRecord[];
+    addUserListItemsMatrxId: (recordId: MatrxRecordId) => void;
+    addUserListItemsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserListItemsMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserListItemsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserListItemsPkValue: (pkValue: string) => void;
+    addUserListItemsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserListItemsPkValue: (pkValue: string) => void;
+    removeUserListItemsPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserListItemsMissingRecords: boolean;
+    setUserListItemsShouldFetch: (shouldFetch: boolean) => void;
+    setUserListItemsFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserListItemsQuickRefs: () => void;
+    fetchUserListItemsOne: (recordId: MatrxRecordId) => void;
+    fetchUserListItemsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserListItemsAll: () => void;
+    fetchUserListItemsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useUserListItemsWithFetch = (): UseUserListItemsWithFetchReturn => {
+    const {
+        selectors: userListItemsSelectors,
+        actions: userListItemsActions,
+        allRecords: userListItemsRecords,
+        unsavedRecords: userListItemsUnsavedRecords,
+        selectedRecordIds: userListItemsSelectedRecordIds,
+        isLoading: userListItemsIsLoading,
+        isError: userListItemsIsError,
+        quickRefRecords: userListItemsQuickRefRecords,
+        addMatrxId: addUserListItemsMatrxId,
+        addMatrxIds: addUserListItemsMatrxIds,
+        removeMatrxId: removeUserListItemsMatrxId,
+        removeMatrxIds: removeUserListItemsMatrxIds,
+        addPkValue: addUserListItemsPkValue,
+        addPkValues: addUserListItemsPkValues,
+        removePkValue: removeUserListItemsPkValue,
+        removePkValues: removeUserListItemsPkValues,
+        isMissingRecords: isUserListItemsMissingRecords,
+        setShouldFetch: setUserListItemsShouldFetch,
+        setFetchMode: setUserListItemsFetchMode,
+        fetchQuickRefs: fetchUserListItemsQuickRefs,
+        fetchOne: fetchUserListItemsOne,
+        fetchOneWithFkIfk: fetchUserListItemsOneWithFkIfk,
+        fetchAll: fetchUserListItemsAll,
+        fetchPaginated: fetchUserListItemsPaginated,
+
+    } = useEntityWithFetch("userListItems");
+
+    return {
+        userListItemsSelectors,
+        userListItemsActions,
+        userListItemsRecords,
+        userListItemsUnsavedRecords,
+        userListItemsSelectedRecordIds,
+        userListItemsIsLoading,
+        userListItemsIsError,
+        userListItemsQuickRefRecords,
+        addUserListItemsMatrxId,
+        addUserListItemsMatrxIds,
+        removeUserListItemsMatrxId,
+        removeUserListItemsMatrxIds,
+        addUserListItemsPkValue,
+        addUserListItemsPkValues,
+        removeUserListItemsPkValue,
+        removeUserListItemsPkValues,
+        isUserListItemsMissingRecords,
+        setUserListItemsShouldFetch,
+        setUserListItemsFetchMode,
+        fetchUserListItemsQuickRefs,
+        fetchUserListItemsOne,
+        fetchUserListItemsOneWithFkIfk,
+        fetchUserListItemsAll,
+        fetchUserListItemsPaginated,
+    };
+};
+
+
+
+type UseUserListsWithFetchReturn = {
+    userListsSelectors: EntitySelectors<"userLists">;
+    userListsActions: EntityActions<"userLists">;
+    userListsRecords: Record<MatrxRecordId, UserListsData>;
+    userListsUnsavedRecords: Record<MatrxRecordId, Partial<UserListsData>>;
+    userListsSelectedRecordIds: MatrxRecordId[];
+    userListsIsLoading: boolean;
+    userListsIsError: boolean;
+    userListsQuickRefRecords: QuickReferenceRecord[];
+    addUserListsMatrxId: (recordId: MatrxRecordId) => void;
+    addUserListsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeUserListsMatrxId: (recordId: MatrxRecordId) => void;
+    removeUserListsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addUserListsPkValue: (pkValue: string) => void;
+    addUserListsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeUserListsPkValue: (pkValue: string) => void;
+    removeUserListsPkValues: (pkValues: Record<string, unknown>) => void;
+    isUserListsMissingRecords: boolean;
+    setUserListsShouldFetch: (shouldFetch: boolean) => void;
+    setUserListsFetchMode: (fetchMode: FetchMode) => void;
+    fetchUserListsQuickRefs: () => void;
+    fetchUserListsOne: (recordId: MatrxRecordId) => void;
+    fetchUserListsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchUserListsAll: () => void;
+    fetchUserListsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useUserListsWithFetch = (): UseUserListsWithFetchReturn => {
+    const {
+        selectors: userListsSelectors,
+        actions: userListsActions,
+        allRecords: userListsRecords,
+        unsavedRecords: userListsUnsavedRecords,
+        selectedRecordIds: userListsSelectedRecordIds,
+        isLoading: userListsIsLoading,
+        isError: userListsIsError,
+        quickRefRecords: userListsQuickRefRecords,
+        addMatrxId: addUserListsMatrxId,
+        addMatrxIds: addUserListsMatrxIds,
+        removeMatrxId: removeUserListsMatrxId,
+        removeMatrxIds: removeUserListsMatrxIds,
+        addPkValue: addUserListsPkValue,
+        addPkValues: addUserListsPkValues,
+        removePkValue: removeUserListsPkValue,
+        removePkValues: removeUserListsPkValues,
+        isMissingRecords: isUserListsMissingRecords,
+        setShouldFetch: setUserListsShouldFetch,
+        setFetchMode: setUserListsFetchMode,
+        fetchQuickRefs: fetchUserListsQuickRefs,
+        fetchOne: fetchUserListsOne,
+        fetchOneWithFkIfk: fetchUserListsOneWithFkIfk,
+        fetchAll: fetchUserListsAll,
+        fetchPaginated: fetchUserListsPaginated,
+
+    } = useEntityWithFetch("userLists");
+
+    return {
+        userListsSelectors,
+        userListsActions,
+        userListsRecords,
+        userListsUnsavedRecords,
+        userListsSelectedRecordIds,
+        userListsIsLoading,
+        userListsIsError,
+        userListsQuickRefRecords,
+        addUserListsMatrxId,
+        addUserListsMatrxIds,
+        removeUserListsMatrxId,
+        removeUserListsMatrxIds,
+        addUserListsPkValue,
+        addUserListsPkValues,
+        removeUserListsPkValue,
+        removeUserListsPkValues,
+        isUserListsMissingRecords,
+        setUserListsShouldFetch,
+        setUserListsFetchMode,
+        fetchUserListsQuickRefs,
+        fetchUserListsOne,
+        fetchUserListsOneWithFkIfk,
+        fetchUserListsAll,
+        fetchUserListsPaginated,
+    };
+};
+
+
+
 type UseUserPreferencesWithFetchReturn = {
     userPreferencesSelectors: EntitySelectors<"userPreferences">;
     userPreferencesActions: EntityActions<"userPreferences">;

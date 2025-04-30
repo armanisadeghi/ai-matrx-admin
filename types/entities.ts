@@ -256,6 +256,7 @@ export type Conversation = {
     isPublic?: boolean;
     description?: string;
     keywords?: Record<string, unknown>;
+    group?: string;
 }
 
 export type DataBroker = {
@@ -970,7 +971,8 @@ export type Tasks = {
     dueDate?: Date;
     createdAt?: Date;
     updatedAt?: Date;
-    createdBy?: string;
+    userId?: string;
+    authenticatedRead?: boolean;
 }
 
 export type Tool = {
@@ -989,6 +991,33 @@ export type Transformer = {
     name?: string;
     inputParams?: Record<string, unknown>;
     outputParams?: Record<string, unknown>;
+}
+
+export type UserListItems = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    label?: string;
+    description?: string;
+    helpText?: string;
+    groupName?: string;
+    userId?: string;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+    listId?: string;
+}
+
+export type UserLists = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    listName?: string;
+    description?: string;
+    userId?: string;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
 }
 
 export type UserPreferences = {
