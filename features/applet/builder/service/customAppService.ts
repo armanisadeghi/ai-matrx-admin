@@ -287,7 +287,7 @@ export const setCustomAppConfigPublic = async (id: string, isPublic: boolean): P
   }
 };
 
-export const isSlugAvailable = async (slug: string, excludeId?: string): Promise<boolean> => {
+export const isAppSlugAvailable = async (slug: string, excludeId?: string): Promise<boolean> => {
   let query = supabase
     .from('custom_app_configs')
     .select('id')

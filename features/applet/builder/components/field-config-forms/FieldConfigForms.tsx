@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { GroupFieldConfig } from '@/features/applet/runner/components/field-components/types';
+import { ComponentType } from '@/features/applet/builder/builder.types';
 import { 
   InputConfigForm,
   TextareaConfigForm,
@@ -25,17 +26,23 @@ import {
 } from './field-types';
 
 interface FieldConfigFormsProps {
-  fieldType: GroupFieldConfig['type'];
+  // Support both type and fieldType for backward compatibility
+  type?: ComponentType | GroupFieldConfig['type'];
+  fieldType?: ComponentType | GroupFieldConfig['type'];
   config: any;
   onChange: (config: any) => void;
 }
 
 export const FieldConfigForms: React.FC<FieldConfigFormsProps> = ({
+  type, // Keep for backward compatibility
   fieldType,
   config,
   onChange
 }) => {
-  switch (fieldType) {
+  // Use fieldType if provided, otherwise use type
+  const componentType = fieldType || type || 'input';
+  
+  switch (componentType) {
     case 'input':
       return <InputConfigForm config={config} onChange={onChange} />;
     

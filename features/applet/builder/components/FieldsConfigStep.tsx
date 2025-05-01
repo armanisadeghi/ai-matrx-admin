@@ -1,10 +1,11 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { PlusIcon, XIcon, Settings2Icon, CheckIcon } from 'lucide-react';
+import { PlusIcon, XIcon, Settings2, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   Card, 
   CardContent, 
@@ -13,12 +14,6 @@ import {
   CardTitle,
   CardFooter
 } from '@/components/ui/card';
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -48,60 +43,50 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { AvailableAppletConfigs, GroupFieldConfig } from '../../runner/components/field-components/types';
+import { CustomAppletConfig, ComponentGroup, FieldDefinition, ComponentType, ComponentProps } from '@/features/applet/builder/builder.types';
 import { FieldConfigForms } from './field-config-forms/FieldConfigForms';
 
 interface FieldsConfigStepProps {
-  searchConfig: AvailableAppletConfigs;
+  applets: CustomAppletConfig[];
   activeApplet: string | null;
   activeGroup: string | null;
   setActiveApplet: (appletId: string) => void;
   setActiveGroup: (groupId: string) => void;
-  addField: (field: GroupFieldConfig) => void;
+  addField: (fieldId: string, groupId: string) => Promise<void>;
+  removeField: (fieldId: string, groupId: string) => Promise<void>;
 }
 
-// Helper function to generate UUID without the built-in uuid package
+// Helper function to generate UUID
 const generateBrokerId = () => {
   return uuidv4();
 };
 
 export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
-  searchConfig,
+  applets,
   activeApplet,
   activeGroup,
   setActiveApplet,
   setActiveGroup,
-  addField
+  addField,
+  removeField
 }) => {
-  const [applets, setApplets] = useState<{id: string, name: string}[]>([]);
-  const [newField, setNewField] = useState<Partial<GroupFieldConfig>>({
-    brokerId: generateBrokerId(),
+  const [newField, setNewField] = useState<Partial<FieldDefinition>>({
+    id: generateBrokerId(),
+    component: 'input' as ComponentType,
     label: '',
     placeholder: '',
-    type: 'input',
-    customConfig: {}
+    componentProps: {}
   });
   const [activeAppletName, setActiveAppletName] = useState<string>('');
   const [activeGroupLabel, setActiveGroupLabel] = useState<string>('');
   const [showCustomConfigDialog, setShowCustomConfigDialog] = useState(false);
 
   useEffect(() => {
-    // Extract applet names from searchConfig
-    const extractedApplets = Object.keys(searchConfig).map(appletId => {
-      // Use the first group's data to try to get a name, or format the ID if no groups exist
-      const firstGroup = searchConfig[appletId]?.[0];
-      return {
-        id: appletId,
-        name: firstGroup ? `${appletId.charAt(0).toUpperCase()}${appletId.slice(1).replace(/-/g, ' ')}` : appletId
-      };
-    });
-    setApplets(extractedApplets);
-    
     // Set active applet if it's not set and there are applets available
-    if (!activeApplet && extractedApplets.length > 0) {
-      setActiveApplet(extractedApplets[0].id);
+    if (!activeApplet && applets.length > 0) {
+      setActiveApplet(applets[0].id);
     }
-  }, [searchConfig, activeApplet, setActiveApplet]);
+  }, [applets, activeApplet, setActiveApplet]);
 
   useEffect(() => {
     // Find the current active applet name
@@ -115,13 +100,16 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
 
   useEffect(() => {
     // Find the current active group label
-    if (activeApplet && activeGroup && searchConfig[activeApplet]) {
-      const group = searchConfig[activeApplet].find(g => g.id === activeGroup);
-      if (group) {
-        setActiveGroupLabel(group.label);
+    if (activeApplet && activeGroup) {
+      const applet = applets.find(a => a.id === activeApplet);
+      if (applet) {
+        const container = applet.containers?.find(c => c.groupId === activeGroup || c.id === activeGroup);
+        if (container) {
+          setActiveGroupLabel(container.label);
+        }
       }
     }
-  }, [activeApplet, activeGroup, searchConfig]);
+  }, [activeApplet, activeGroup, applets]);
 
   const fieldTypes = [
     { value: 'button', label: 'Button' },
@@ -156,33 +144,34 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
   const handleTypeChange = (value: string) => {
     setNewField(prev => ({
       ...prev,
-      type: value as GroupFieldConfig['type'],
-      customConfig: {} // Reset custom config when type changes
+      component: value as ComponentType,
+      componentProps: {} // Reset custom config when type changes
     }));
   };
 
-  const handleCustomConfigChange = (customConfig: any) => {
+  const handleCustomConfigChange = (componentProps: ComponentProps) => {
     setNewField(prev => ({
       ...prev,
-      customConfig
+      componentProps
     }));
   };
 
   const handleAddField = () => {
     if (
-      newField.brokerId && 
+      newField.id && 
       newField.label && 
-      newField.type
+      newField.component &&
+      activeGroup
     ) {
-      addField(newField as GroupFieldConfig);
+      addField(newField.id, activeGroup);
       
       // Reset form
       setNewField({
-        brokerId: generateBrokerId(),
+        id: generateBrokerId(),
+        component: 'input' as ComponentType,
         label: '',
         placeholder: '',
-        type: 'input',
-        customConfig: {}
+        componentProps: {}
       });
       
       setShowCustomConfigDialog(false);
@@ -191,27 +180,31 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
 
   const getActiveGroups = () => {
     if (!activeApplet) return [];
-    return searchConfig[activeApplet] || [];
+    const applet = applets.find(a => a.id === activeApplet);
+    return applet?.containers || [];
   };
 
   const getGroupFields = () => {
     if (!activeApplet || !activeGroup) return [];
-    const group = searchConfig[activeApplet]?.find(g => g.id === activeGroup);
-    return group?.fields || [];
+    const applet = applets.find(a => a.id === activeApplet);
+    if (!applet) return [];
+    
+    const container = applet.containers?.find(c => c.groupId === activeGroup || c.id === activeGroup);
+    return container?.fields || [];
   };
 
   return (
     <div className="space-y-6">
-      {Object.keys(searchConfig).length === 0 ? (
-        <Card className="border border-zinc-200 dark:border-zinc-800">
+      {applets.length === 0 ? (
+        <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
           <CardContent className="flex flex-col items-center justify-center py-10">
-            <p className="text-zinc-600 dark:text-zinc-400 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               No applets or groups have been created yet. Please go back and add applets and groups first.
             </p>
             <Button 
               variant="outline" 
               onClick={() => window.history.back()}
-              className="border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Go Back
             </Button>
@@ -222,9 +215,9 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
           <div className="grid grid-cols-12 gap-6">
             {/* Sidebar Navigation */}
             <div className="col-span-12 md:col-span-3 space-y-4">
-              <Card className="border border-zinc-200 dark:border-zinc-800">
+              <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
+                  <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
                     Navigation
                   </CardTitle>
                 </CardHeader>
@@ -234,30 +227,30 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
                       <AccordionItem key={applet.id} value={applet.id}>
                         <AccordionTrigger 
                           onClick={() => handleAppletChange(applet.id)}
-                          className={`px-2 py-1.5 text-sm rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 ${
+                          className={`px-2 py-1.5 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 ${
                             activeApplet === applet.id 
-                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' 
-                              : 'text-zinc-800 dark:text-zinc-200'
+                              ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400' 
+                              : 'text-gray-800 dark:text-gray-200'
                           }`}
                         >
                           {applet.name}
                         </AccordionTrigger>
                         <AccordionContent>
-                          <div className="pl-4 border-l border-zinc-200 dark:border-zinc-700">
-                            {searchConfig[applet.id]?.map((group) => (
+                          <div className="pl-4 border-l border-gray-200 dark:border-gray-700">
+                            {applet.containers?.map((container) => (
                               <button
-                                key={group.id}
+                                key={container.groupId || container.id}
                                 onClick={() => {
                                   setActiveApplet(applet.id);
-                                  handleGroupChange(group.id);
+                                  handleGroupChange(container.groupId || container.id || '');
                                 }}
                                 className={`w-full text-left px-2 py-1.5 text-sm rounded-md my-1 ${
-                                  activeGroup === group.id && activeApplet === applet.id
-                                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' 
-                                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                  activeGroup === (container.groupId || container.id) && activeApplet === applet.id
+                                    ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'
+                                    : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
                                 }`}
                               >
-                                {group.label}
+                                {container.label}
                               </button>
                             ))}
                           </div>
@@ -269,43 +262,36 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
               </Card>
             </div>
 
-            {/* Main Content */}
-            <div className="col-span-12 md:col-span-9">
-              {!activeApplet ? (
-                <Alert className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-                  <AlertTitle className="text-amber-800 dark:text-amber-300">
-                    No Applet Selected
-                  </AlertTitle>
-                  <AlertDescription className="text-amber-700 dark:text-amber-400">
-                    Please select an applet from the navigation panel to configure fields.
-                  </AlertDescription>
-                </Alert>
-              ) : !activeGroup ? (
-                <Alert className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-                  <AlertTitle className="text-amber-800 dark:text-amber-300">
-                    No Group Selected
-                  </AlertTitle>
-                  <AlertDescription className="text-amber-700 dark:text-amber-400">
-                    Please select a group from the navigation panel to configure fields.
-                  </AlertDescription>
-                </Alert>
-              ) : (
+            {/* Main Content Area */}
+            <div className="col-span-12 md:col-span-9 space-y-6">
+              {activeApplet && activeGroup ? (
                 <>
-                  {/* Add Field Form */}
-                  <Card className="border border-zinc-200 dark:border-zinc-800 mb-6">
-                    <CardHeader>
-                      <CardTitle className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
-                        Add Field to {activeGroupLabel}
-                      </CardTitle>
-                      <CardDescription>
-                        Configure a new field for the {activeGroupLabel} group in {activeAppletName} applet
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-medium text-gray-900 dark:text-gray-100">
+                        Fields for {activeAppletName} / {activeGroupLabel}
+                      </h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Configure the fields that will appear in this group
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Add new field form */}
+                    <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
+                      <CardHeader>
+                        <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
+                          Add New Field
+                        </CardTitle>
+                        <CardDescription>
+                          Create a new field for this group
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="label" className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                            <Label htmlFor="label" className="text-sm font-medium text-gray-800 dark:text-gray-200">
                               Field Label
                             </Label>
                             <Input
@@ -314,21 +300,36 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
                               placeholder="e.g. First Name"
                               value={newField.label}
                               onChange={handleInputChange}
-                              className="border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200"
+                              className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
                             />
                           </div>
                           
                           <div className="space-y-2">
-                            <Label htmlFor="type" className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                            <Label htmlFor="placeholder" className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                              Placeholder Text
+                            </Label>
+                            <Input
+                              id="placeholder"
+                              name="placeholder"
+                              placeholder="e.g. Enter your first name"
+                              value={newField.placeholder}
+                              onChange={handleInputChange}
+                              className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
+                            />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="type" className="text-sm font-medium text-gray-800 dark:text-gray-200">
                               Field Type
                             </Label>
-                            <Select value={newField.type} onValueChange={handleTypeChange}>
-                              <SelectTrigger className="border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200">
-                                <SelectValue placeholder="Select a field type" />
+                            <Select value={newField.component} onValueChange={handleTypeChange}>
+                              <SelectTrigger className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+                                <SelectValue placeholder="Select field type" />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectGroup>
-                                  {fieldTypes.map((type) => (
+                                  <SelectLabel>Field Types</SelectLabel>
+                                  {fieldTypes.map(type => (
                                     <SelectItem key={type.value} value={type.value}>
                                       {type.label}
                                     </SelectItem>
@@ -337,127 +338,120 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
                               </SelectContent>
                             </Select>
                           </div>
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="placeholder" className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                            Placeholder Text
-                          </Label>
-                          <Input
-                            id="placeholder"
-                            name="placeholder"
-                            placeholder="e.g. Enter your first name"
-                            value={newField.placeholder}
-                            onChange={handleInputChange}
-                            className="border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200"
-                          />
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <Dialog open={showCustomConfigDialog} onOpenChange={setShowCustomConfigDialog}>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                              >
-                                <Settings2Icon className="h-4 w-4 mr-2" />
-                                Configure Field Options
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-lg">
-                              <DialogHeader>
-                                <DialogTitle>Configure {newField.type} Field</DialogTitle>
-                                <DialogDescription>
-                                  Set up advanced options for this field type
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="py-4">
-                                <FieldConfigForms
-                                  fieldType={newField.type as GroupFieldConfig['type']}
-                                  config={newField.customConfig}
-                                  onChange={handleCustomConfigChange}
-                                />
-                              </div>
-                              <DialogFooter>
-                                <Button
-                                  onClick={() => setShowCustomConfigDialog(false)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
-                                >
-                                  Done
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
                           
-                          <Button
-                            onClick={handleAddField}
-                            disabled={!newField.label || !newField.type}
-                            className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
-                          >
-                            <PlusIcon className="h-4 w-4 mr-2" />
-                            Add Field
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Display of existing fields */}
-                  <Card className="border border-zinc-200 dark:border-zinc-800">
-                    <CardHeader>
-                      <CardTitle className="text-lg font-medium text-zinc-800 dark:text-zinc-200">
-                        Fields in {activeGroupLabel}
-                      </CardTitle>
-                      <CardDescription>
-                        The fields configured for this group
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {getGroupFields().length === 0 ? (
-                        <div className="flex items-center justify-center h-32 border border-dashed border-zinc-300 dark:border-zinc-700 rounded-md">
-                          <p className="text-zinc-500 dark:text-zinc-400">No fields added yet</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {getGroupFields().map((field, index) => (
-                            <div
-                              key={field.brokerId}
-                              className="p-3 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                  <div className="rounded-md bg-blue-100 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-800 dark:text-blue-300 w-24 text-center">
-                                    {fieldTypes.find(t => t.value === field.type)?.label || field.type}
-                                  </div>
-                                  <h4 className="ml-3 font-medium text-zinc-800 dark:text-zinc-200">
-                                    {field.label}
-                                  </h4>
-                                </div>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-7 w-7 text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400"
+                          <div className="pt-2 flex justify-between">
+                            <Dialog open={showCustomConfigDialog} onOpenChange={setShowCustomConfigDialog}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                                 >
-                                  <XIcon className="h-4 w-4" />
+                                  <Settings2 className="h-4 w-4 mr-2" />
+                                  Advanced Settings
                                 </Button>
-                              </div>
-                              {field.placeholder && (
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                  Placeholder: {field.placeholder}
-                                </p>
-                              )}
-                              {field.helpText && (
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-                                  Help Text: {field.helpText}
-                                </p>
-                              )}
-                            </div>
-                          ))}
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-[500px]">
+                                <DialogHeader>
+                                  <DialogTitle>Field Configuration</DialogTitle>
+                                  <DialogDescription>
+                                    Configure advanced settings for this {newField.component} field.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                  <FieldConfigForms 
+                                    fieldType={newField.component || 'input'} 
+                                    config={newField.componentProps || {}} 
+                                    onChange={handleCustomConfigChange} 
+                                  />
+                                </div>
+                                <DialogFooter>
+                                  <Button 
+                                    onClick={() => setShowCustomConfigDialog(false)}
+                                    className="bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
+                                  >
+                                    <Check className="h-4 w-4 mr-2" />
+                                    Apply Settings
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          
+                            <Button
+                              onClick={handleAddField}
+                              disabled={!newField.label || !newField.component}
+                              className="bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
+                            >
+                              <PlusIcon className="h-4 w-4 mr-2" />
+                              Add Field
+                            </Button>
+                          </div>
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+
+                    {/* List of fields */}
+                    <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
+                      <CardHeader>
+                        <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
+                          Configured Fields
+                        </CardTitle>
+                        <CardDescription>
+                          Fields in this group
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {getGroupFields().length === 0 ? (
+                          <div className="flex items-center justify-center h-32 border border-dashed border-gray-300 dark:border-gray-700 rounded-md">
+                            <p className="text-gray-500 dark:text-gray-400">No fields added yet</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {getGroupFields().map((field, index) => (
+                              <div 
+                                key={field.id || index}
+                                className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="flex items-center">
+                                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{field.label}</h4>
+                                      <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                                        {field.component || 'input'}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {field.placeholder || 'No placeholder'}
+                                    </p>
+                                  </div>
+                                  
+                                  <Button
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => removeField(field.id, activeGroup)}
+                                    className="h-8 w-8 p-0 rounded-full text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+                                  >
+                                    <XIcon className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </>
+              ) : (
+                <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
+                  <CardContent className="flex flex-col items-center justify-center py-10">
+                    <Alert>
+                      <AlertTitle>No group selected</AlertTitle>
+                      <AlertDescription>
+                        Please select an applet and group from the sidebar to configure fields.
+                      </AlertDescription>
+                    </Alert>
+                  </CardContent>
+                </Card>
               )}
             </div>
           </div>
@@ -465,4 +459,6 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
       )}
     </div>
   );
-}; 
+};
+
+export default FieldsConfigStep; 

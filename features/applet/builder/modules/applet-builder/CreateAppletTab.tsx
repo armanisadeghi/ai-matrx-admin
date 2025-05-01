@@ -34,7 +34,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { CustomAppletConfig, AppletContainer } from '../../builder.types';
 import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/layouts/helpers/StyledComponents';
-import { RecipeInfo } from './customAppletService';
+import { RecipeInfo } from '../../service/customAppletService';
 
 interface CreateAppletTabProps {
   newApplet: Partial<CustomAppletConfig>;
@@ -211,7 +211,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
                 name="appletSubmitText"
                 value={newApplet.appletSubmitText || ''}
                 onChange={handleInputChange}
-                placeholder="Submit text"
+                placeholder="Submit text (Most people do not use this for applets)"
                 className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
               />
             </div>

@@ -6,10 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { AppletContainersConfig } from "@/features/applet/runner/components/field-components/types";
-import { ComponentGroup } from "@/features/applet/builder/builder.types";
+import { ComponentGroup, FieldDefinition } from "@/features/applet/builder/builder.types";
 import {
     createComponentGroup,
-    getAllComponentGroups,
     deleteComponentGroup,
     updateComponentGroup,
     refreshFieldInGroup,
@@ -17,9 +16,9 @@ import {
     addFieldToGroup,
     removeFieldFromGroup,
     getComponentGroupById,
-} from "./fieldGroupService";
-import { FieldDefinition } from "../../builder.types";
-import { getAllFieldComponents } from "../field-builder/fieldComponentService";
+    getAllFieldComponents,
+    getAllComponentGroups
+} from "@/features/applet/builder/service";
 import { CreateGroupForm } from "./CreateGroupForm";
 import { SavedGroupsList } from "./SavedGroupsList";
 import { AddFieldsDialog } from "./AddFieldsDialog";

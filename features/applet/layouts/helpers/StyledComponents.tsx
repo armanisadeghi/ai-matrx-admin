@@ -69,6 +69,8 @@ import {
     Rocket,
     ShoppingBag,
     Star,
+    AppWindowIcon,
+    LayoutTemplate,
     Target,
     Ticket,
     Trophy,
@@ -81,7 +83,7 @@ import { LuBrain } from "react-icons/lu";
 import { GiArtificialIntelligence } from "react-icons/gi";
 import { FaBrain } from "react-icons/fa";
 import { SiCodemagic } from "react-icons/si";
-// Additional React icons for app icons
+// Additional React icons for app icons<LayoutTemplate />
 import { 
     FaChartBar, 
     FaClipboard, 
@@ -120,6 +122,8 @@ export const ICON_OPTIONS = {
     Send,
     FaMagic,
     ArrowBigRightDash,
+    AppWindowIcon,
+    LayoutTemplate,
     // Added submit button icons
     CheckCircle,
     Check,
@@ -283,6 +287,30 @@ export const COLOR_VARIANTS = {
         violet: "border-violet-500 dark:border-violet-400 hover:border-violet-600 dark:hover:border-violet-700",
         fuchsia: "border-fuchsia-500 dark:border-fuchsia-400 hover:border-fuchsia-600 dark:hover:border-fuchsia-700",
     },
+
+    background: {
+        gray: "bg-white dark:bg-gray-900",
+        rose: "bg-rose-500 dark:bg-rose-900",
+        blue: "bg-blue-500 dark:bg-blue-900",
+        green: "bg-green-500 dark:bg-green-900",
+        purple: "bg-purple-500 dark:bg-purple-900",
+        yellow: "bg-yellow-500 dark:bg-yellow-900",
+        red: "bg-red-500 dark:bg-red-900",
+        orange: "bg-orange-500 dark:bg-orange-900",
+        pink: "bg-pink-500 dark:bg-pink-900",
+        slate: "bg-slate-500 dark:bg-slate-900",
+        zinc: "bg-zinc-500 dark:bg-zinc-900",
+        neutral: "bg-neutral-500 dark:bg-neutral-900",
+        stone: "bg-stone-500 dark:bg-stone-900",
+        amber: "bg-amber-500 dark:bg-amber-900",
+        lime: "bg-lime-500 dark:bg-lime-900",
+        emerald: "bg-emerald-500 dark:bg-emerald-900",
+        teal: "bg-teal-500 dark:bg-teal-900",
+        cyan: "bg-cyan-500 dark:bg-cyan-900",
+        sky: "bg-sky-500 dark:bg-sky-900",
+        violet: "bg-violet-500 dark:bg-violet-900",
+        fuchsia: "bg-fuchsia-500 dark:bg-fuchsia-900",
+    },
 };
 
 // Component types with their specific styles
@@ -294,6 +322,11 @@ export const COMPONENT_STYLES = {
     appIcon: {
         base: "", // Base classes for app icon
         colorType: "text", // References the text color group
+    },
+    appIconWithBg: {
+        base: "w-96 h-12 p-2 rounded-none flex items-center justify-center",
+        colorType: "text", // Icon color from text color group
+        bgColorType: "background", // Background color from background color group
     },
     actionButton: {
         base: "rounded-md px-4 py-2 flex items-center justify-center",
@@ -307,7 +340,7 @@ export const COMPONENT_STYLES = {
 };
 
 // Main function to generate components
-export const getComponent = ({ type = "submitButton", color = "rose", icon = "Search", size = 24, className = "", children = null }) => {
+export const getComponent = ({ type = "submitButton", color = "rose", primaryColor = "gray", icon = "Search", size = 24, className = "", children = null }) => {
     // Get component style configuration
     const componentConfig = COMPONENT_STYLES[type];
 
@@ -324,6 +357,12 @@ export const getComponent = ({ type = "submitButton", color = "rose", icon = "Se
         return null;
     }
 
+    // Handle background color for components that use it (like appIconWithBg)
+    let bgColorClasses = "";
+    if (componentConfig.bgColorType && primaryColor) {
+        bgColorClasses = COLOR_VARIANTS[componentConfig.bgColorType][primaryColor.toLowerCase()] || "";
+    }
+
     // Get the icon component
     const IconComponent = ICON_OPTIONS[icon];
 
@@ -333,7 +372,7 @@ export const getComponent = ({ type = "submitButton", color = "rose", icon = "Se
     }
 
     // Generate all classes
-    const allClasses = `${componentConfig.base} ${colorClasses} ${className}`;
+    const allClasses = `${componentConfig.base} ${bgColorClasses} ${colorClasses} ${className}`;
 
     // Return the appropriate component based on type
     return (
@@ -347,6 +386,7 @@ export const getComponent = ({ type = "submitButton", color = "rose", icon = "Se
 // Named exports for specific component types (convenience wrappers)
 export const getSubmitButton = (props) => getComponent({ type: "submitButton", ...props });
 export const getAppIcon = (props) => getComponent({ type: "appIcon", ...props });
+export const getAppIconWithBg = (props) => getComponent({ type: "appIconWithBg", ...props });
 export const getActionButton = (props) => getComponent({ type: "actionButton", ...props });
 export const getOutlineButton = (props) => getComponent({ type: "outlineButton", ...props });
 

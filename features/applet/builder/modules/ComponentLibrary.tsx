@@ -9,12 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { DownloadIcon, UploadIcon, DatabaseIcon, FileIcon, AppWindowIcon, BoxIcon, LayersIcon, CheckIcon, Copy } from "lucide-react";
-import { ComponentGroup, FieldDefinition, CustomApplet, AppletContainer, ComponentType } from "../builder.types";
-import { getAllCustomAppConfigs } from "./app-builder/customAppService";
-import { getAllCustomAppletConfigs } from "./applet-builder/customAppletService";
-import { getAllFieldComponents } from "./field-builder/fieldComponentService";
-import { getAllComponentGroups } from "./group-builder/fieldGroupService";
-import { CustomAppConfig, CustomAppletConfig } from "../builder.types";
+import { ComponentGroup, FieldDefinition, CustomApplet, AppletContainer, ComponentType } from "@/features/applet/builder/builder.types";
+import { getAllCustomAppConfigs } from "../service/customAppService";
+import { getAllCustomAppletConfigs } from "../service/customAppletService";
+import { getAllFieldComponents, getAllComponentGroups } from "@/features/applet/builder/service";
+import { CustomAppConfig, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 
 type AppPartType = "app" | "applet" | "group" | "field";
 

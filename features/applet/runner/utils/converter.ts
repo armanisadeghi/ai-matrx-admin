@@ -141,19 +141,23 @@ export function convertNewFieldToLegacy(field: FieldDefinition): GroupFieldConfi
 
 // Helper function to map new component types to legacy types
 function mapComponentTypeToLegacy(newType: ComponentType): "button" | "select" | "input" | "textarea" | "number" | "date" | "checkbox" | "radio" | "slider" | "multiselect" | "switch" {
-    const typeMap: Record<ComponentType, "button" | "select" | "input" | "textarea" | "number" | "date" | "checkbox" | "radio" | "slider" | "multiselect" | "switch"> = {
-      'input': 'input',
-      'textarea': 'textarea',
-      'select': 'select',
-      'multiselect': 'multiselect',
-      'radio': 'radio',
-      'checkbox': 'checkbox',
-      'slider': 'slider',
-      'number': 'number',
-      'date': 'date',
-      'switch': 'switch'
-    };
-  
-    return typeMap[newType] || 'input';
-  }
-  
+  const typeMap: Record<ComponentType, "button" | "select" | "input" | "textarea" | "number" | "date" | "checkbox" | "radio" | "slider" | "multiselect" | "switch"> = {
+    'input': 'input',
+    'textarea': 'textarea',
+    'select': 'select',
+    'multiselect': 'multiselect',
+    'radio': 'radio',
+    'checkbox': 'checkbox',
+    'slider': 'slider',
+    'number': 'number',
+    'date': 'date',
+    'switch': 'switch',
+    'button': 'button',
+    'rangeSlider': 'slider',
+    'numberPicker': 'number',
+    'jsonField': 'textarea',
+    'fileUpload': 'input'
+  };
+
+  return typeMap[newType] || 'input';
+}

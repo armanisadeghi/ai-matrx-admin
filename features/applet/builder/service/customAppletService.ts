@@ -331,7 +331,7 @@ export const getCustomAppletConfigsByCompiledRecipe = async (compiledRecipeId: s
   return (data || []).map(dbToAppletConfig);
 };
 
-export const isSlugAvailable = async (slug: string, excludeId?: string): Promise<boolean> => {
+export const isAppletSlugAvailable = async (slug: string, excludeId?: string): Promise<boolean> => {
   let query = supabase
     .from('custom_applet_configs')
     .select('id')

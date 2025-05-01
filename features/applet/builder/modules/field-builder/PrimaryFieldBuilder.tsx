@@ -12,7 +12,7 @@ import {
   updateFieldComponent,
   deleteFieldComponent, 
   duplicateFieldComponent
-} from '@/features/applet/builder/modules/field-builder/fieldComponentService';
+} from '@/features/applet/builder/service';
 import { 
   Card, 
   CardContent,

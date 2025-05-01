@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FieldDefinition } from '../../builder.types';
+import { FieldDefinition } from '@/features/applet/builder/builder.types';
 import { 
   getAllFieldComponents, 
   deleteFieldComponent, 
   duplicateFieldComponent,
   setFieldComponentPublic
-} from './fieldComponentService';
+} from '@/features/applet/builder/service/fieldComponentService';
 
 export default function FieldComponentsList() {
   const [components, setComponents] = useState<FieldDefinition[]>([]);

@@ -20,7 +20,7 @@ import {
 
 import { SavedGroup } from '../group-builder/GroupBuilder';
 import { 
-  isSlugAvailable, 
+  isAppletSlugAvailable, 
   RecipeInfo, 
   getUserRecipes, 
   getCompiledRecipeByVersion, 
@@ -33,8 +33,8 @@ import {
   addGroupsToApplet,
   refreshGroupInApplet,
   refreshAllGroupsInApplet
-} from '@/features/applet/builder/modules/applet-builder/customAppletService';
-import { getAllComponentGroups } from '@/features/applet/builder/modules/group-builder/fieldGroupService';
+} from '@/features/applet/builder/service/customAppletService';
+import { getAllComponentGroups } from '@/features/applet/builder/service/fieldGroupService';
 import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
 import { CustomAppletConfig, AppletContainer, ComponentGroup } from '../../builder.types';
 
@@ -220,7 +220,7 @@ export const AppletBuilder = () => {
     // Check slug uniqueness before saving
     setIsLoading(true);
     try {
-      const isAvailable = await isSlugAvailable(newApplet.slug);
+      const isAvailable = await isAppletSlugAvailable(newApplet.slug);
       
       if (!isAvailable) {
         toast({
@@ -273,7 +273,7 @@ export const AppletBuilder = () => {
     setIsLoading(true);
     try {
       if (selectedApplet.slug !== newApplet.slug) {
-        const isAvailable = await isSlugAvailable(newApplet.slug, selectedApplet.id);
+        const isAvailable = await isAppletSlugAvailable(newApplet.slug, selectedApplet.id);
         
         if (!isAvailable) {
           toast({

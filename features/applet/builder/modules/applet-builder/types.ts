@@ -1,5 +1,5 @@
 import { CustomAppletConfig } from '../../builder.types';
-import { RecipeInfo } from './customAppletService';
+import { RecipeInfo } from '../../service/customAppletService';
 import { SavedGroup } from '../group-builder/GroupBuilder';
 
 export interface IconOption {

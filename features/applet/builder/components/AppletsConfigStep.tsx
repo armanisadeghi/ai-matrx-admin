@@ -1,6 +1,5 @@
 'use client';
 
-
 import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { PlusIcon, XIcon, LinkIcon } from 'lucide-react';
@@ -10,37 +9,49 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { AppConfig, Applet } from '@/features/applet/builder/ConfigBuilder';
+import { CustomAppConfig, CustomAppletConfig } from '@/features/applet/builder/builder.types';
 import { SingleImageSelect } from '@/components/image/shared/SingleImageSelect';
 import AppletPreviewCard from '@/features/applet/builder/previews/AppletPreviewCard';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AppletsConfigStepProps {
-  applets: Applet[];
-  addApplet: (applet: Applet) => void;
-  updateConfig: (updates: Partial<AppConfig>) => void;
+  applets: CustomAppletConfig[];
+  availableApplets: CustomAppletConfig[];
+  addApplet: (applet: CustomAppletConfig) => void;
+  updateConfig: (updates: Partial<CustomAppConfig>) => void;
   activeApplet: string | null;
   setActiveApplet: (appletId: string) => void;
-  config: Partial<AppConfig>;
+  config: Partial<CustomAppConfig>;
+  savedApp: CustomAppConfig | null;
 }
 
 export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
   applets,
+  availableApplets,
   addApplet,
   updateConfig,
   activeApplet,
   setActiveApplet,
-  config
+  config,
+  savedApp
 }) => {
-  const [newApplet, setNewApplet] = useState<Partial<Applet>>({
+  const [newApplet, setNewApplet] = useState<Partial<CustomAppletConfig>>({
     id: uuidv4(),
     name: '',
     description: '',
-    creatorName: '',
+    creator: '',
     imageUrl: ''
   });
   
-  const [activeAppletObj, setActiveAppletObj] = useState<Applet | null>(null);
+  const [activeAppletObj, setActiveAppletObj] = useState<CustomAppletConfig | null>(null);
   const [slugError, setSlugError] = useState('');
+  const [showExistingApplets, setShowExistingApplets] = useState(false);
 
   // Update the active applet object when activeApplet ID changes
   useEffect(() => {
@@ -60,21 +71,28 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
   };
 
   const handleAddApplet = () => {
-    if (newApplet.name && validateSlug(newApplet.slug || '')) {
-      addApplet({
+    if (newApplet.name && newApplet.slug && validateSlug(newApplet.slug)) {
+      // Create a proper CustomAppletConfig with all required fields
+      const appletToAdd: CustomAppletConfig = {
         id: newApplet.id || uuidv4(),
         name: newApplet.name,
         description: newApplet.description || '',
-        creatorName: newApplet.creatorName || '',
+        slug: newApplet.slug,
+        creator: newApplet.creator || '',
         imageUrl: newApplet.imageUrl || '',
-        slug: newApplet.slug || generateSlug(newApplet.name)
-      } as Applet);
+        primaryColor: 'emerald',
+        accentColor: 'blue',
+        layoutType: 'flat',
+        containers: [] // Initialize with empty array
+      };
+      
+      addApplet(appletToAdd);
       
       setNewApplet({
         id: uuidv4(),
         name: '',
         description: '',
-        creatorName: '',
+        creator: '',
         imageUrl: '',
         slug: ''
       });
@@ -82,23 +100,33 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
     }
   };
 
+  const handleSelectExistingApplet = (appletId: string) => {
+    const selectedApplet = availableApplets.find(a => a.id === appletId);
+    if (selectedApplet) {
+      // Ensure the selected applet has a containers array
+      const appletToAdd: CustomAppletConfig = {
+        ...selectedApplet,
+        containers: selectedApplet.containers || []
+      };
+      addApplet(appletToAdd);
+      setShowExistingApplets(false);
+    }
+  };
+
   const handleRemoveApplet = (appletId: string) => {
-    const updatedApplets = applets.filter(applet => applet.id !== appletId);
-    
-    const updatedSearchConfig = { ...config.searchConfig || {} };
-    if (updatedSearchConfig) {
-      const { [appletId]: _, ...rest } = updatedSearchConfig;
-      
-      updateConfig({
-        applets: updatedApplets,
-        searchConfig: rest
-      });
+    // Update the appletList in the app config
+    if (config.appletList) {
+      const updatedAppletList = config.appletList.filter(a => a.appletId !== appletId);
+      updateConfig({ appletList: updatedAppletList });
     }
     
-    if (activeApplet === appletId && updatedApplets.length > 0) {
-      setActiveApplet(updatedApplets[0].id);
-    } else if (updatedApplets.length === 0) {
-      setActiveApplet('');
+    if (activeApplet === appletId && applets.length > 0) {
+      const remainingApplets = applets.filter(a => a.id !== appletId);
+      if (remainingApplets.length > 0) {
+        setActiveApplet(remainingApplets[0].id);
+      } else {
+        setActiveApplet('');
+      }
     }
   };
 
@@ -112,24 +140,29 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
       setSlugError('');
     }
     
-    const updatedApplets = applets.map(applet => 
-      applet.id === activeAppletObj.id 
-        ? { ...applet, [field]: value } 
-        : applet
-    );
+    // Create an updated applet
+    const updatedApplet = {
+      ...activeAppletObj,
+      [field]: value
+    };
     
-    updateConfig({ applets: updatedApplets });
+    // If we've updated the name of an applet, also update its reference in the appletList
+    if (field === 'name' && config.appletList) {
+      const updatedAppletList = config.appletList.map(item => 
+        item.appletId === activeAppletObj.id 
+          ? { ...item, label: value } 
+          : item
+      );
+      updateConfig({ appletList: updatedAppletList });
+    }
   };
 
   const handleImageSelected = (imageUrl: string) => {
     if (activeAppletObj) {
-      const updatedApplets = applets.map(applet => 
-        applet.id === activeAppletObj.id 
-          ? { ...applet, imageUrl } 
-          : applet
-      );
-      
-      updateConfig({ applets: updatedApplets });
+      const updatedApplet = {
+        ...activeAppletObj,
+        imageUrl
+      };
     } else {
       setNewApplet(prev => ({
         ...prev,
@@ -140,13 +173,10 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
   
   const handleImageRemoved = () => {
     if (activeAppletObj) {
-      const updatedApplets = applets.map(applet => 
-        applet.id === activeAppletObj.id 
-          ? { ...applet, imageUrl: '' } 
-          : applet
-      );
-      
-      updateConfig({ applets: updatedApplets });
+      const updatedApplet = {
+        ...activeAppletObj,
+        imageUrl: ''
+      };
     } else {
       setNewApplet(prev => ({
         ...prev,
@@ -173,23 +203,21 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
   };
 
   const generateSlug = (name: string): string => {
-    return name.toLowerCase().replace(/[^a-z0-9\-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    return name.toLowerCase()
+      .replace(/([a-z])([A-Z])/g, '$1-$2') // Convert camelCase to kebab
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-z0-9-]/g, ''); // Remove special characters
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const name = e.target.value;
+    const slug = generateSlug(name);
+    
     setNewApplet(prev => ({
       ...prev,
-      name
+      name,
+      slug
     }));
-    
-    // Auto-generate slug from name if slug is empty
-    if (!newApplet.slug) {
-      setNewApplet(prev => ({
-        ...prev,
-        slug: generateSlug(name)
-      }));
-    }
   };
 
   // Get applet URL for display
@@ -197,6 +225,11 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
     const appNameSlug = generateSlug(appName);
     return `aimatrx.com/applets/${appNameSlug}/${slug}`;
   };
+
+  // Filter out applets that are already in the app
+  const filteredAvailableApplets = availableApplets.filter(
+    availableApplet => !applets.some(applet => applet.id === availableApplet.id)
+  );
 
   return (
     <div className="w-full">
@@ -234,35 +267,33 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="edit-creatorName" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <Label htmlFor="edit-creator" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         Creator Name
                       </Label>
                       <Input
-                        id="edit-creatorName"
-                        value={activeAppletObj.creatorName || ''}
-                        onChange={(e) => handleActiveAppletChange('creatorName', e.target.value)}
+                        id="edit-creator"
+                        value={activeAppletObj.creator || ''}
+                        onChange={(e) => handleActiveAppletChange('creator', e.target.value)}
                         className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
                       />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="edit-slug" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Applet URL Slug
+                        Applet Slug
                       </Label>
-                      <div className="relative">
-                        <Input
-                          id="edit-slug"
-                          value={activeAppletObj.slug || ''}
-                          onChange={(e) => handleActiveAppletChange('slug', e.target.value)}
-                          className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${slugError ? 'border-red-300 dark:border-red-700' : ''}`}
-                        />
-                        <div className="flex items-center mt-1.5">
-                          <LinkIcon className="h-3 w-3 text-gray-500 dark:text-gray-400 mr-1" />
-                          <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            {getAppletUrl(config.name, activeAppletObj.slug)}
-                          </span>
-                        </div>
-                        {slugError && <p className="text-xs text-red-500 mt-1">{slugError}</p>}
+                      <Input
+                        id="edit-slug"
+                        value={activeAppletObj.slug || ''}
+                        onChange={(e) => handleActiveAppletChange('slug', e.target.value)}
+                        className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
+                          slugError ? 'border-red-500' : ''
+                        }`}
+                      />
+                      {slugError && <p className="text-red-500 text-xs">{slugError}</p>}
+                      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                        <LinkIcon size={12} className="mr-1" />
+                        {getAppletUrl(config.name, activeAppletObj.slug)}
                       </div>
                     </div>
                     
@@ -272,138 +303,182 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
                       </Label>
                       <Textarea
                         id="edit-description"
-                        value={activeAppletObj.description}
+                        value={activeAppletObj.description || ''}
                         onChange={(e) => handleActiveAppletChange('description', e.target.value)}
-                        rows={4}
+                        rows={3}
                         className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
                       />
                     </div>
-                    
+                  </div>
+                  
+                  {/* Image section */}
+                  <div className="w-full md:w-1/3 space-y-4">
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         Applet Image
                       </Label>
-                      <div className="w-full">
-                        <SingleImageSelect 
-                          size="md"
-                          aspectRatio="landscape"
-                          placeholder="Select Applet Image"
-                          onImageSelected={handleImageSelected}
-                          onImageRemoved={handleImageRemoved}
-                          initialTab="public-search"
-                          initialSearchTerm={activeAppletObj?.name}
-                          preselectedImageUrl={activeAppletObj?.imageUrl}
-                          className="w-full"
-                          instanceId={`applet-${activeAppletObj?.id}`}
-                          saveTo="public"
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Upload an image for your applet. This will be displayed on applet cards.
-                      </p>
+                      <SingleImageSelect
+                        size="sm"
+                        aspectRatio="landscape"
+                        placeholder="Select Applet Image"
+                        onImageSelected={handleImageSelected}
+                        onImageRemoved={handleImageRemoved}
+                        initialTab="public-search"
+                        initialSearchTerm={activeAppletObj.name}
+                        preselectedImageUrl={activeAppletObj.imageUrl}
+                        className="w-full"
+                        instanceId={`applet-image-${activeAppletObj.id}`}
+                        saveTo="public"
+                      />
                     </div>
                     
-                    <div className="pt-2">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        <span className="font-medium">Applet ID: </span>
-                        <span className="font-mono">{activeAppletObj.id}</span>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Preview section */}
-                  <div className="w-full md:w-1/3">
-                    <div className="sticky top-4">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">Preview</p>
-                      <AppletPreviewCard applet={activeAppletObj} className="max-w-full" />
-                    </div>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => handleRemoveApplet(activeAppletObj.id)}
+                      className="w-full mt-2"
+                    >
+                      <XIcon size={16} className="mr-2" />
+                      Remove Applet
+                    </Button>
                   </div>
                 </div>
               </div>
             ) : (
               /* Create new applet form */
               <div className="space-y-5">
-                <h3 className="text-gray-900 dark:text-gray-100 font-medium">Create New Applet</h3>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-gray-900 dark:text-gray-100 font-medium">Add New Applet</h3>
+                  
+                  {filteredAvailableApplets.length > 0 && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowExistingApplets(!showExistingApplets)}
+                      className="border-rose-300 dark:border-rose-700 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                    >
+                      {showExistingApplets ? 'Create New' : 'Use Existing Applet'}
+                    </Button>
+                  )}
+                </div>
                 
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Form section */}
-                  <div className="w-full md:w-2/3 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Applet Name
-                      </Label>
-                      <Input
-                        id="name"
-                        name="name"
-                        placeholder="e.g. Hotels Search"
-                        value={newApplet.name}
-                        onChange={handleNameChange}
-                        className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
-                      />
-                    </div>
+                {showExistingApplets ? (
+                  /* Existing applets selection */
+                  <div className="space-y-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Select an existing applet to add to this app:
+                    </p>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="creatorName" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Creator Name
-                      </Label>
-                      <Input
-                        id="creatorName"
-                        name="creatorName"
-                        placeholder="e.g. John Doe"
-                        value={newApplet.creatorName}
-                        onChange={handleNewAppletChange}
-                        className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="slug" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Applet URL Slug
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="slug"
-                          name="slug"
-                          placeholder="e.g. hotels-search"
-                          value={newApplet.slug}
-                          onChange={handleNewAppletChange}
-                          className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${slugError ? 'border-red-300 dark:border-red-700' : ''}`}
-                        />
-                        <div className="flex items-center mt-1.5">
-                          <LinkIcon className="h-3 w-3 text-gray-500 dark:text-gray-400 mr-1" />
-                          <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            {getAppletUrl(config.name, newApplet.slug)}
-                          </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filteredAvailableApplets.map(applet => (
+                        <div 
+                          key={applet.id} 
+                          className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-rose-300 dark:hover:border-rose-700 cursor-pointer"
+                          onClick={() => handleSelectExistingApplet(applet.id)}
+                        >
+                          <div className="flex items-start gap-3">
+                            {applet.imageUrl ? (
+                              <img 
+                                src={applet.imageUrl} 
+                                alt={applet.name} 
+                                className="w-12 h-12 object-cover rounded" 
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
+                                <PlusIcon className="w-6 h-6 text-gray-400" />
+                              </div>
+                            )}
+                            <div>
+                              <h4 className="font-medium text-gray-900 dark:text-gray-100">{applet.name}</h4>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
+                                {applet.description || 'No description'}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                        {slugError && <p className="text-xs text-red-500 mt-1">{slugError}</p>}
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  /* New applet creation form */
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {/* Form section */}
+                    <div className="w-full md:w-2/3 space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="new-name" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Applet Name
+                        </Label>
+                        <Input
+                          id="new-name"
+                          name="name"
+                          value={newApplet.name}
+                          onChange={handleNameChange}
+                          placeholder="Enter applet name"
+                          className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="new-creator" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Creator Name
+                        </Label>
+                        <Input
+                          id="new-creator"
+                          name="creator"
+                          value={newApplet.creator || ''}
+                          onChange={handleNewAppletChange}
+                          placeholder="Enter creator name"
+                          className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="new-slug" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Applet Slug
+                        </Label>
+                        <Input
+                          id="new-slug"
+                          name="slug"
+                          value={newApplet.slug || ''}
+                          onChange={handleNewAppletChange}
+                          placeholder="Enter applet slug"
+                          className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
+                            slugError ? 'border-red-500' : ''
+                          }`}
+                        />
+                        {slugError && <p className="text-red-500 text-xs">{slugError}</p>}
+                        {newApplet.slug && (
+                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                            <LinkIcon size={12} className="mr-1" />
+                            {getAppletUrl(config.name, newApplet.slug)}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="new-description" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Description
+                        </Label>
+                        <Textarea
+                          id="new-description"
+                          name="description"
+                          value={newApplet.description || ''}
+                          onChange={handleNewAppletChange}
+                          placeholder="Enter applet description"
+                          rows={3}
+                          className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                        />
                       </div>
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="description" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Description
-                      </Label>
-                      <Textarea
-                        id="description"
-                        name="description"
-                        placeholder="Enter applet description"
-                        value={newApplet.description}
-                        onChange={handleNewAppletChange}
-                        rows={4}
-                        className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Briefly describe what this applet does and how users will interact with it.
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        Applet Image
-                      </Label>
-                      <div className="w-full">
-                        <SingleImageSelect 
-                          size="md"
+                    {/* Image section */}
+                    <div className="w-full md:w-1/3 space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          Applet Image
+                        </Label>
+                        <SingleImageSelect
+                          size="sm"
                           aspectRatio="landscape"
                           placeholder="Select Applet Image"
                           onImageSelected={handleImageSelected}
@@ -412,109 +487,60 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
                           initialSearchTerm={newApplet.name}
                           preselectedImageUrl={newApplet.imageUrl}
                           className="w-full"
-                          instanceId={`applet-${newApplet.id}`}
+                          instanceId="new-applet-image"
                           saveTo="public"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Upload an image for your applet. This will be displayed on applet cards.
-                      </p>
-                    </div>
-                    
-                    <div className="pt-2">
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        <span className="font-medium">Applet ID: </span>
-                        <span className="font-mono">{newApplet.id}</span>
-                      </p>
-                    </div>
-                    
-                    <Button 
-                      onClick={handleAddApplet} 
-                      disabled={!newApplet.name || !newApplet.slug || !!slugError}
-                      className="w-full mt-4 bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
-                    >
-                      <PlusIcon className="h-4 w-4 mr-2" />
-                      Add Applet
-                    </Button>
-                  </div>
-                  
-                  {/* Preview section */}
-                  <div className="w-full md:w-1/3">
-                    <div className="sticky top-1">
-                      <AppletPreviewCard applet={newApplet as Applet} className="max-w-full" />
+                      
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="w-full mt-2 bg-rose-500 hover:bg-rose-600 text-white"
+                        onClick={handleAddApplet}
+                        disabled={!newApplet.name || !newApplet.slug || !validateSlug(newApplet.slug || '')}
+                      >
+                        <PlusIcon size={16} className="mr-2" />
+                        Add Applet
+                      </Button>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
           
           {/* Right side: Applet list */}
-          <div className="w-full md:w-1/3 border-l border-gray-200 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-800/50">
-            <h3 className="text-gray-900 dark:text-gray-100 font-medium mb-4">Your Applets</h3>
+          <div className="w-full md:w-1/3 p-5 bg-gray-50 dark:bg-gray-800/50 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700">
+            <h3 className="text-gray-900 dark:text-gray-100 font-medium mb-4">Applets ({applets.length})</h3>
             
-            <div className="space-y-3 mb-6 max-h-[500px] overflow-y-auto">
-              {applets.length === 0 ? (
-                <div className="flex items-center justify-center h-24 border border-dashed border-gray-300 dark:border-gray-600 rounded-md">
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">No applets added yet</p>
-                </div>
-              ) : (
-                applets.map((applet) => (
-                  <div 
-                    key={applet.id} 
-                    className={`p-3 rounded-md cursor-pointer transition-all duration-200 ${
-                      activeApplet === applet.id 
-                        ? 'bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800' 
-                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/50'
-                    }`}
+            {applets.length === 0 ? (
+              <div className="text-center py-8 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                <PlusIcon className="h-10 w-10 mx-auto text-gray-400 dark:text-gray-600" />
+                <p className="mt-2 text-gray-500 dark:text-gray-400">No applets added yet</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  Fill out the form to add your first applet
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[500px] overflow-y-auto">
+                {applets.map(applet => (
+                  <div
+                    key={applet.id}
                     onClick={() => setActiveApplet(applet.id)}
+                    className={`cursor-pointer transition-all ${
+                      activeApplet === applet.id ? 'ring-2 ring-rose-500' : 'hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Badge 
-                          variant={activeApplet === applet.id ? "default" : "outline"}
-                          className={activeApplet === applet.id 
-                            ? "bg-rose-500 dark:bg-rose-600 text-white hover:bg-rose-600 dark:hover:bg-rose-700"
-                            : "text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
-                          }
-                        >
-                          {applet.name}
-                        </Badge>
-                      </div>
-                      
-                      <Button
-                        size="icon"
-                        variant="ghost" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveApplet(applet.id);
-                        }}
-                        className="h-7 w-7 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      <div className="line-clamp-2">{applet.description || 'No description'}</div>
-                      <div className="mt-1">Created by: {applet.creatorName || 'Unknown'}</div>
-                    </div>
+                    <AppletPreviewCard applet={applet} />
                   </div>
-                ))
-              )}
-            </div>
-            
-            <Button 
-              variant="outline"
-              onClick={() => setActiveApplet('')}
-              className="w-full mt-2 border-rose-300 dark:border-rose-700 text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Create New Applet
-            </Button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </Card>
     </div>
   );
-}; 
+};
+
+export default AppletsConfigStep; 

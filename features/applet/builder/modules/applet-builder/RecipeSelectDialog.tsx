@@ -23,7 +23,7 @@ import {
   RecipeInfo, 
   getCompiledRecipeByVersion, 
   checkCompiledRecipeVersionExists 
-} from './customAppletService';
+} from '../../service/customAppletService';
 
 // Extended RecipeInfo interface with extracted tags
 interface ExtendedRecipeInfo extends Omit<RecipeInfo, 'tags'> {

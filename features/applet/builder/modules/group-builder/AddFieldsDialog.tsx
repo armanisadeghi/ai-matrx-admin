@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { FieldDefinition } from "../../builder.types";
+import { FieldDefinition } from "@/features/applet/builder/builder.types";
 
 
 interface AddFieldsDialogProps {

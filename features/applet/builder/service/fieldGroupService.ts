@@ -1,6 +1,7 @@
 import { supabase } from "@/utils/supabase/client";
-import { FieldDefinition, ComponentGroup } from "../../builder.types";
-import { dbToFieldDefinition, FieldComponentDB } from "../field-builder/fieldComponentService";
+import { FieldDefinition, ComponentGroup } from "../builder.types";
+import { dbToFieldDefinition, FieldComponentDB } from "./fieldComponentService";
+
 
 export type ComponentGroupDB = {
     id: string;
