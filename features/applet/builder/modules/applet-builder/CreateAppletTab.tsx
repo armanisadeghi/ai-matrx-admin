@@ -133,7 +133,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
+        <div className="space-y-4 p-2">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-gray-900 dark:text-gray-100">
               Applet Name
@@ -152,6 +152,9 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
             <Label htmlFor="slug" className="text-gray-900 dark:text-gray-100">
               Slug
             </Label>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Auto-generated from name, but can be customized (Must be unique)
+            </p>
             <Input
               id="slug"
               name="slug"
@@ -160,9 +163,6 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
               placeholder="Enter applet slug"
               className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Auto-generated from name, but can be customized
-            </p>
           </div>
           
           <div className="space-y-2">
@@ -176,7 +176,7 @@ export const CreateAppletTab: React.FC<CreateAppletTabProps> = ({
               onChange={handleInputChange}
               placeholder="Enter applet description"
               className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-              rows={3}
+              rows={9}
             />
           </div>
         </div>

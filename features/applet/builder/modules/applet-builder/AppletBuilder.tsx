@@ -36,7 +36,7 @@ import {
 } from '@/features/applet/builder/modules/applet-builder/customAppletService';
 import { getAllComponentGroups } from '@/features/applet/builder/modules/group-builder/fieldGroupService';
 import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
-import { CustomAppletConfig, AppletContainer } from '../../builder.types';
+import { CustomAppletConfig, AppletContainer, ComponentGroup } from '../../builder.types';
 
 // Import our modular components
 import CreateAppletTab from './CreateAppletTab';
@@ -71,7 +71,7 @@ export const AppletBuilder = () => {
   
   // Group management
   const [showAddGroupsDialog, setShowAddGroupsDialog] = useState(false);
-  const [availableGroups, setAvailableGroups] = useState<SavedGroup[]>([]);
+  const [availableGroups, setAvailableGroups] = useState<ComponentGroup[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
   // Recipe selection state
@@ -112,6 +112,7 @@ export const AppletBuilder = () => {
     setIsLoading(true);
     try {
       const applets = await getAllCustomAppletConfigs();
+      console.log("applets", JSON.stringify(applets, null, 2));
       setSavedApplets(applets);
     } catch (error) {
       console.error('Failed to load applets:', error);
@@ -347,7 +348,9 @@ export const AppletBuilder = () => {
     setIsLoading(true);
     try {
       // Add the groups as containers to the applet using the RPC function
+      console.log("selectedGroups", selectedGroups);
       const success = await addGroupsToApplet(selectedApplet.id, selectedGroups);
+      console.log("success", success);
       
       if (success) {
         // Refresh the applet data to get the updated containers

@@ -75,7 +75,7 @@ const TabsNavigation: React.FC<TabsNavigationProps> = ({
 
   return (
     <div ref={containerRef} className={`w-full relative ${centered ? 'flex justify-center' : ''} ${className}`}>
-      <div className={`relative ${centered ? 'max-w-3xl' : 'w-full'}`}>
+      <div className={`relative ${centered ? 'max-w-5xl' : 'w-full'}`}>
         {/* Left fade indicator with button */}
         {showLeftIndicator && (
           <div className="absolute left-0 top-0 bottom-0 z-10 flex items-center">

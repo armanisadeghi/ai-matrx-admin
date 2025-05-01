@@ -31,7 +31,7 @@ export default function BuilderPageLayout({
 
   return (
     <div className={`py-4 ${className}`}>
-      <div className="mb-4 px-4 mx-auto max-w-7xl flex justify-start">
+      <div className="px-4 w-full flex justify-start">
         <Link href={backHref}>
           <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
             <ArrowLeft className="h-4 w-4" />
@@ -39,10 +39,10 @@ export default function BuilderPageLayout({
           </Button>
         </Link>
       </div>
-      <div className="mb-6 px-4 mx-auto">
+      <div className="px-4 mx-auto">
         <TabsNavigation tabs={tabs} activeId={activeModuleId} centered={true} />
       </div>
-      <div className={`mx-auto ${contentMaxWidth} px-4`}>
+      <div className={`mx-auto ${contentMaxWidth}`}>
         {children}
       </div>
     </div>

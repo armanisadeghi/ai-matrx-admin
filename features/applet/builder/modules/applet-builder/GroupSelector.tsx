@@ -11,12 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { SavedGroup } from '../group-builder/GroupBuilder';
+import { ComponentGroup } from '../../builder.types';
 
 interface GroupSelectorProps {
   showAddGroupsDialog: boolean;
   setShowAddGroupsDialog: (show: boolean) => void;
-  availableGroups: SavedGroup[];
+  availableGroups: ComponentGroup[];
   selectedGroups: string[];
   toggleGroupSelection: (groupId: string) => void;
   addSelectedGroupsToApplet: () => void;

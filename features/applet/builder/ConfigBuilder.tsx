@@ -140,83 +140,85 @@ export const ConfigBuilder = () => {
 
   return (
     <div className="w-full h-full px-4 bg-white dark:bg-gray-900">
-      <Card className="border-none bg-white dark:bg-gray-900 shadow-lg space-y-2">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-rose-500">App Configuration Builder</CardTitle>
-          <CardDescription className="text-gray-500 dark:text-gray-400">Create configurations for your your Applet</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Stepper 
-            steps={steps} 
-            activeStep={activeStep} 
-            onStepClick={(index) => setActiveStep(index)} 
-          />
-          
-          <div className="mt-8">
-            {activeStep === 0 && (
-              <AppInfoStep 
-                config={config} 
-                updateConfig={updateConfig} 
-              />
-            )}
+      <div className="max-w-7xl mx-auto">
+        <Card className="border-none bg-white dark:bg-gray-900 shadow-lg space-y-2">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-rose-500">App Configuration Builder</CardTitle>
+            <CardDescription className="text-gray-500 dark:text-gray-400">Create configurations for your your Applet</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Stepper 
+              steps={steps} 
+              activeStep={activeStep} 
+              onStepClick={(index) => setActiveStep(index)} 
+            />
             
-            {activeStep === 1 && (
-              <AppletsConfigStep 
-                applets={config.applets || []} 
-                addApplet={addApplet}
-                updateConfig={updateConfig}
-                activeApplet={activeApplet}
-                setActiveApplet={updateActiveApplet}
-                config={config}
-              />
-            )}
-            
-            {activeStep === 2 && (
-              <GroupsConfigStep 
-                applets={config.applets || []}
-                searchConfig={config.searchConfig || {}}
-                activeApplet={activeApplet}
-                activeGroup={activeGroup}
-                setActiveApplet={updateActiveApplet}
-                setActiveGroup={updateActiveGroup}
-                addGroup={addGroup}
-              />
-            )}
-            
-            {activeStep === 3 && (
-              <FieldsConfigStep 
-                searchConfig={config.searchConfig || {}}
-                activeApplet={activeApplet}
-                activeGroup={activeGroup}
-                setActiveApplet={updateActiveApplet}
-                setActiveGroup={updateActiveGroup}
-                addField={addField}
-              />
-            )}
-            
-            {activeStep === 4 && (
-              <PreviewConfig config={config} />
-            )}
-          </div>
-        </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={activeStep === 0}
-            className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
-          >
-            Back
-          </Button>
-          <Button
-            onClick={handleNext}
-            disabled={activeStep === steps.length - 1}
-            className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
-          >
-            {activeStep === steps.length - 2 ? 'Preview' : 'Next'}
-          </Button>
-        </CardFooter>
-      </Card>
+            <div className="mt-8">
+              {activeStep === 0 && (
+                <AppInfoStep 
+                  config={config} 
+                  updateConfig={updateConfig} 
+                />
+              )}
+              
+              {activeStep === 1 && (
+                <AppletsConfigStep 
+                  applets={config.applets || []} 
+                  addApplet={addApplet}
+                  updateConfig={updateConfig}
+                  activeApplet={activeApplet}
+                  setActiveApplet={updateActiveApplet}
+                  config={config}
+                />
+              )}
+              
+              {activeStep === 2 && (
+                <GroupsConfigStep 
+                  applets={config.applets || []}
+                  searchConfig={config.searchConfig || {}}
+                  activeApplet={activeApplet}
+                  activeGroup={activeGroup}
+                  setActiveApplet={updateActiveApplet}
+                  setActiveGroup={updateActiveGroup}
+                  addGroup={addGroup}
+                />
+              )}
+              
+              {activeStep === 3 && (
+                <FieldsConfigStep 
+                  searchConfig={config.searchConfig || {}}
+                  activeApplet={activeApplet}
+                  activeGroup={activeGroup}
+                  setActiveApplet={updateActiveApplet}
+                  setActiveGroup={updateActiveGroup}
+                  addField={addField}
+                />
+              )}
+              
+              {activeStep === 4 && (
+                <PreviewConfig config={config} />
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={activeStep === 0}
+              className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Back
+            </Button>
+            <Button
+              onClick={handleNext}
+              disabled={activeStep === steps.length - 1}
+              className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
+            >
+              {activeStep === steps.length - 2 ? 'Preview' : 'Next'}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 };
