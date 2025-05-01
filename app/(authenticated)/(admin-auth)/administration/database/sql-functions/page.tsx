@@ -1,32 +1,34 @@
 import React from 'react';
+import { getSqlFunctions } from '@/actions/admin/sql-functions';
+import SqlFunctionsContainer from './components/SqlFunctionsContainer';
+import { SqlFunction } from '@/types/sql-functions';
 
 export const metadata = {
   title: 'SQL Functions',
   description: 'Manage database SQL functions',
 };
 
-export default function SQLFunctionsPage() {
-  return (
-    <div className="w-full h-full min-h-screen bg-slate-100 dark:bg-slate-800 py-6 px-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-slate-200 mb-2">
-          SQL Functions
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          Browse, search, and manage SQL functions in the database
-        </p>
-      </div>
+export default async function SQLFunctionsPage() {
+  // Fetch SQL functions on the server side
+  let functionsData: SqlFunction[] = [];
+  let errorMessage = '';
+  
+  try {
+    functionsData = await getSqlFunctions();
+  } catch (error) {
+    console.error('Error fetching SQL functions:', error);
+    errorMessage = 'Failed to load SQL functions. Please try again later.';
+  }
 
-      <div className="w-full h-full">
-        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-          <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-4">
-            SQL Functions Management
-          </h2>
-          <p className="text-slate-600 dark:text-slate-400">
-            SQL Functions component will be implemented here with filtering, sorting, and search capabilities.
-          </p>
+  return (
+    <div className="w-full bg-slate-100 dark:bg-slate-800 py-2">
+      {errorMessage ? (
+        <div className="bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-800 dark:text-red-200">
+          {errorMessage}
         </div>
-      </div>
+      ) : (
+        <SqlFunctionsContainer initialFunctions={functionsData} />
+      )}
     </div>
   );
 } 

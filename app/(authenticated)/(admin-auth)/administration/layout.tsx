@@ -10,7 +10,6 @@ export default function Layout(
         children: React.ReactNode;
     }) {
     const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-    console.log("currentPath", currentPath);
     return (
         <div className="flex flex-col h-full">
             <div className="sticky top-0 z-10 bg-matrx-card-background">

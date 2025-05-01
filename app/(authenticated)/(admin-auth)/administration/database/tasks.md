@@ -1,5 +1,31 @@
 # Database Administration Tasks
 
+## Current structure for \app\(authenticated)\(admin-auth)\administration
+
+administration/
+├── config.ts
+├── devTasks.md
+├── layout.tsx
+├── page.tsx
+├── database/
+│   ├── config.ts
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── tasks.md
+│   ├── components/
+│   │   ├── database-client.tsx
+│   │   ├── enhanced-sql-editor.tsx
+│   ├── sql-functions/
+│   │   ├── page.tsx
+│   │   ├── tasks.md
+│   │   ├── components/
+│   │   │   ├── SqlFunctionDetail.tsx
+│   │   │   ├── SqlFunctionForm.tsx
+│   │   │   ├── SqlFunctionsContainer.tsx
+│   │   │   ├── SqlFunctionsList.tsx
+│   ├── sql-queries/
+│   │   ├── page.tsx
+
 ## Initial Setup
 - [x] Create basic route and SQL Editor page
   - [x] Verified by Arman

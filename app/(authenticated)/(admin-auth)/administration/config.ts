@@ -40,14 +40,20 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'SQL Functions',
+        path: 'database/sql-functions',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'SQL Queries',
+        path: 'database/sql-queries',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Database',
+        path: 'database',
         relative: true,
         description: ''
     },
@@ -56,5 +62,5 @@ export const pages: ModulePage[] = [
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');
 
-export const MODULE_HOME = '/admin';
-export const MODULE_NAME = 'Admin Dashboard';
+export const MODULE_HOME = '/administration';
+export const MODULE_NAME = 'Administration';
