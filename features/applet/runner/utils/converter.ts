@@ -1,4 +1,4 @@
-import { ComponentType, FieldDefinition } from "@/features/applet/builder/modules/field-builder/types";
+import { ComponentType, FieldDefinition } from "@/features/applet/builder/builder.types";
 import { 
   GroupFieldConfig, 
   SelectFieldConfig, 

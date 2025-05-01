@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FieldOption } from './types';
+import { FieldOption } from '../../builder.types';
 import { PlusIcon, TrashIcon } from 'lucide-react';
 
 interface OptionsManagerProps {

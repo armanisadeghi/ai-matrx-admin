@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ComponentGroup } from './fieldGroupService';
+import { ComponentGroup } from '@/features/applet/builder/builder.types';
 
 interface CreateGroupFormProps {
   newGroup: Partial<ComponentGroup>;
@@ -105,7 +105,7 @@ export const CreateGroupForm: React.FC<CreateGroupFormProps> = ({
                 disabled={loading}
               />
               <label htmlFor="hideDescription" className="ml-2 block text-sm text-gray-500 dark:text-gray-400">
-                Hide description from users
+                Hide description (Useful if the layout you choose looks busy with a description or if one is not needed for your use case)
               </label>
             </div>
           </div>

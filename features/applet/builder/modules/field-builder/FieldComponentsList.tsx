@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FieldDefinition } from './types';
+import { FieldDefinition } from '../../builder.types';
 import { 
   getAllFieldComponents, 
   deleteFieldComponent, 

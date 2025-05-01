@@ -2,7 +2,7 @@
 import React from "react";
 import HorizontalSearchLayout from "./HorizontalSearchLayout";
 import { convertNewFieldToLegacy } from "@/features/applet/runner/utils/converter";
-import { FieldDefinition } from "@/features/applet/builder/modules/field-builder/types";
+import { FieldDefinition } from "@/features/applet/builder/builder.types";
 
 // Interface for the new format group structure
 interface NewFormatGroup {

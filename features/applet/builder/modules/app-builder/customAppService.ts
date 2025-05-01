@@ -1,4 +1,5 @@
 import { supabase } from "@/utils/supabase/client";
+import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 
 // Define the database type for CustomAppConfig
 export type CustomAppConfigDB = {
@@ -23,25 +24,6 @@ export type CustomAppConfigDB = {
   image_url?: string;
 }
 
-export type CustomAppConfig = {
-  id?: string;
-  name: string;
-  description: string;
-  slug: string;
-  mainAppIcon?: string;
-  mainAppSubmitIcon?: string;
-  creator?: string;
-  primaryColor?: string;
-  accentColor?: string;
-  appletList?: { appletId: string; label: string }[];
-  extraButtons?: {
-    label: string;
-    actionType: string;
-    knownMethod: string;
-  }[];
-  layoutType?: string;
-  imageUrl?: string;
-}
 
 /**
  * Normalizes a CustomAppConfig object

@@ -1,4 +1,5 @@
 import { supabase } from "@/utils/supabase/client";
+import { AppletContainer, CustomApplet, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 
 export type CustomAppletConfigDB = {
   id: string;
@@ -24,26 +25,6 @@ export type CustomAppletConfigDB = {
   compiled_recipe_id?: string;
   subcategory_id?: string;
   image_url?: string;
-}
-
-export type CustomAppletConfig = {
-  id?: string;
-  name: string;
-  description?: string;
-  slug: string;
-  appletIcon?: string;
-  appletSubmitText?: string;
-  creator?: string;
-  primaryColor?: string;
-  accentColor?: string;
-  layoutType?: string;
-  containers?: any;
-  dataSourceConfig?: any;
-  resultComponentConfig?: any;
-  nextStepConfig?: any;
-  compiledRecipeId?: string;
-  subcategoryId?: string;
-  imageUrl?: string;
 }
 
 /**
@@ -379,7 +360,8 @@ export type RecipeInfo = {
   description?: string;
   version: number;
   status: string;
-}
+  tags?: Record<string, unknown>;
+};
 
 /**
  * Fetches all recipes for the current user
@@ -395,7 +377,7 @@ export const getUserRecipes = async (): Promise<RecipeInfo[]> => {
   
   const { data, error } = await supabase
     .from('recipe')
-    .select('id, name, description, version, status')
+    .select('id, name, description, version, status, tags')
     .eq('user_id', userId)
     .order('name');
     
@@ -453,4 +435,168 @@ export const checkCompiledRecipeVersionExists = async (recipeId: string, version
   }
   
   return !!data;
+};
+
+/**
+ * Adds groups to an applet as containers
+ */
+export const addGroupsToApplet = async (appletId: string, groupIds: string[]): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.rpc('add_groups_to_applet', {
+      p_applet_id: appletId,
+      p_group_ids: groupIds
+    });
+    
+    if (error) {
+      console.error('Error adding groups to applet:', error);
+      throw error;
+    }
+    
+    return !!data;
+  } catch (err) {
+    console.error('Exception in addGroupsToApplet:', err);
+    throw err;
+  }
+};
+
+/**
+ * Refreshes a single group in an applet
+ */
+export const refreshGroupInApplet = async (appletId: string, groupId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.rpc('refresh_group_in_applet', {
+      p_applet_id: appletId,
+      p_group_id: groupId
+    });
+    
+    if (error) {
+      console.error('Error refreshing group in applet:', error);
+      throw error;
+    }
+    
+    return !!data;
+  } catch (err) {
+    console.error('Exception in refreshGroupInApplet:', err);
+    throw err;
+  }
+};
+
+/**
+ * Refreshes all groups in an applet
+ */
+export const refreshAllGroupsInApplet = async (appletId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase.rpc('refresh_all_groups_in_applet', {
+      p_applet_id: appletId
+    });
+    
+    if (error) {
+      console.error('Error refreshing all groups in applet:', error);
+      throw error;
+    }
+    
+    return !!data;
+  } catch (err) {
+    console.error('Exception in refreshAllGroupsInApplet:', err);
+    throw err;
+  }
+};
+
+/**
+ * Gets an applet by ID with properly formatted containers
+ */
+export const getAppletById = async (id: string): Promise<CustomApplet | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('custom_applet_configs')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') { // Record not found
+        return null;
+      }
+      console.error('Error fetching applet:', error);
+      throw error;
+    }
+    
+    if (!data) return null;
+    
+    // Convert snake_case to camelCase for direct properties
+    const camelCaseApplet: CustomApplet = {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      slug: data.slug,
+      appletIcon: data.applet_icon,
+      appletSubmitText: data.applet_submit_text,
+      creator: data.creator,
+      primaryColor: data.primary_color,
+      accentColor: data.accent_color,
+      layoutType: data.layout_type,
+      containers: data.containers as AppletContainer[] || [],
+      dataSourceConfig: data.data_source_config,
+      resultComponentConfig: data.result_component_config,
+      nextStepConfig: data.next_step_config,
+      compiledRecipeId: data.compiled_recipe_id,
+      subcategoryId: data.subcategory_id,
+      imageUrl: data.image_url,
+    };
+    
+    return camelCaseApplet;
+  } catch (err) {
+    console.error('Exception in getAppletById:', err);
+    throw err;
+  }
+};
+
+/**
+ * Fetches all applets for the current user
+ */
+export const getAllApplets = async (): Promise<CustomApplet[]> => {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+    
+    const { data, error } = await supabase
+      .from('custom_applet_configs')
+      .select('*')
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error fetching applets:', error);
+      throw error;
+    }
+    
+    // Convert snake_case to camelCase for all applets
+    const camelCaseApplets: CustomApplet[] = (data || []).map(applet => ({
+      id: applet.id,
+      name: applet.name,
+      description: applet.description,
+      slug: applet.slug,
+      appletIcon: applet.applet_icon,
+      appletSubmitText: applet.applet_submit_text,
+      creator: applet.creator,
+      primaryColor: applet.primary_color,
+      accentColor: applet.accent_color,
+      layoutType: applet.layout_type,
+      containers: applet.containers as AppletContainer[] || [],
+      dataSourceConfig: applet.data_source_config,
+      resultComponentConfig: applet.result_component_config,
+      nextStepConfig: applet.next_step_config,
+      compiledRecipeId: applet.compiled_recipe_id,
+      subcategoryId: applet.subcategory_id,
+      imageUrl: applet.image_url,
+    }));
+    
+    return camelCaseApplets;
+  } catch (err) {
+    console.error('Exception in getAllApplets:', err);
+    throw err;
+  }
 };

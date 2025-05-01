@@ -6,8 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { AppletContainersConfig } from "@/features/applet/runner/components/field-components/types";
+import { ComponentGroup } from "@/features/applet/builder/builder.types";
 import {
-    ComponentGroup,
     createComponentGroup,
     getAllComponentGroups,
     deleteComponentGroup,
@@ -16,8 +16,9 @@ import {
     refreshAllFieldsInGroup,
     addFieldToGroup,
     removeFieldFromGroup,
+    getComponentGroupById,
 } from "./fieldGroupService";
-import { FieldDefinition } from "../field-builder/types";
+import { FieldDefinition } from "../../builder.types";
 import { getAllFieldComponents } from "../field-builder/fieldComponentService";
 import { CreateGroupForm } from "./CreateGroupForm";
 import { SavedGroupsList } from "./SavedGroupsList";
@@ -453,90 +454,85 @@ export const GroupBuilder = () => {
 
     const handleRefreshFields = async () => {
         if (!groupToRefresh) return;
-
         setLoading(true);
         try {
-            if (refreshOption === "all") {
-                // Refresh all fields in the group
-                await refreshAllFieldsInGroup(groupToRefresh);
-                toast({
-                    title: "Fields Refreshed",
-                    description: "All fields in the group have been refreshed.",
-                });
-            } else {
-                // Refresh only selected fields
-                if (fieldsToRefresh.length === 0) {
-                    toast({
-                        title: "No Fields Selected",
-                        description: "Please select fields to refresh or choose 'All Fields'.",
-                        variant: "destructive",
-                    });
-                    setLoading(false);
-                    return;
-                }
-
-                // Refresh each selected field
-                for (const fieldId of fieldsToRefresh) {
-                    await refreshFieldInGroup(groupToRefresh, fieldId);
-                }
-
-                toast({
-                    title: "Fields Refreshed",
-                    description: `${fieldsToRefresh.length} fields have been refreshed.`,
-                });
-            }
-
-            // Fetch all fields again to ensure we have the latest data
-            const fields = await getAllFieldComponents();
-            setAvailableFields(fields);
-            
-            // Refresh the groups list
-            const groups = await getAllComponentGroups();
-            
-            // Process groups to ensure complete field data
-            const processedGroups = groups.map(group => {
-                if (group.fields && Array.isArray(group.fields)) {
-                    const completeFields = group.fields.map(field => {
-                        const fieldId = typeof field === 'string' ? field : field.id;
-                        const completeField = fields.find(f => f.id === fieldId);
-                        return completeField || field;
-                    }).filter(Boolean);
-                    
-                    return {
-                        ...group,
-                        fields: completeFields
-                    };
-                }
-                return group;
-            });
-            
-            setSavedGroups(processedGroups);
-
-            // Update the form if we're editing this group
-            if (selectedGroup?.id === groupToRefresh) {
-                const updatedGroup = processedGroups.find((g) => g.id === groupToRefresh);
-                if (updatedGroup) {
-                    setNewGroup({
-                        ...newGroup,
-                        fields: updatedGroup.fields,
-                    });
-                }
-            }
-        } catch (error) {
-            console.error("Error refreshing fields:", error);
-            toast({
-                title: "Error",
-                description: "Failed to refresh fields. Please try again.",
+          let refreshSuccess = false;
+          
+          if (refreshOption === "all") {
+            // Refresh all fields in the group
+            refreshSuccess = await refreshAllFieldsInGroup(groupToRefresh);
+          } else {
+            // Refresh only selected fields
+            if (fieldsToRefresh.length === 0) {
+              toast({
+                title: "No Fields Selected",
+                description: "Please select fields to refresh or choose 'All Fields'.",
                 variant: "destructive",
+              });
+              setLoading(false);
+              return;
+            }
+            
+            // Refresh each selected field
+            let allSuccess = true;
+            for (const fieldId of fieldsToRefresh) {
+              const success = await refreshFieldInGroup(groupToRefresh, fieldId);
+              if (!success) allSuccess = false;
+            }
+            refreshSuccess = allSuccess;
+          }
+          
+          if (refreshSuccess) {
+            // After refresh, fetch updated group directly from database
+            const updatedGroup = await getComponentGroupById(groupToRefresh);
+            
+            if (updatedGroup) {
+              // Update the local state with fresh data from database
+              setSavedGroups(prevGroups => 
+                prevGroups.map(group => 
+                  group.id === groupToRefresh ? updatedGroup : group
+                )
+              );
+              
+              // Update form if editing this group
+              if (selectedGroup?.id === groupToRefresh) {
+                setNewGroup({
+                  ...newGroup,
+                  fields: updatedGroup.fields,
+                });
+                setSelectedGroup(updatedGroup);
+              }
+              
+              toast({
+                title: "Fields Refreshed",
+                description: refreshOption === "all" 
+                  ? "All fields in the group have been refreshed." 
+                  : `${fieldsToRefresh.length} fields have been refreshed.`,
+              });
+            }
+          } else {
+            toast({
+              title: "Refresh Warning",
+              description: "Some fields could not be refreshed. Please try again.",
+              variant: "destructive",
             });
+          }
+        } catch (error) {
+          console.error("Error refreshing fields:", error);
+          toast({
+            title: "Error",
+            description: "Failed to refresh fields. Please try again.",
+            variant: "destructive",
+          });
         } finally {
-            setLoading(false);
-            setShowRefreshDialog(false);
-            setGroupToRefresh(null);
-            setFieldsToRefresh([]);
+          setLoading(false);
+          setShowRefreshDialog(false);
+          setGroupToRefresh(null);
+          setFieldsToRefresh([]);
         }
-    };
+      };
 
+      
     const toggleFieldRefresh = (fieldId: string) => {
         setFieldsToRefresh((prev) => (prev.includes(fieldId) ? prev.filter((id) => id !== fieldId) : [...prev, fieldId]));
     };

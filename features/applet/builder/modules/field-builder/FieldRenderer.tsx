@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FieldDefinition, normalizeFieldDefinition } from './types';
+import { FieldDefinition, normalizeFieldDefinition } from '../../builder.types';
 import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 

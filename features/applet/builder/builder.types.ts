@@ -42,30 +42,80 @@ export interface ComponentProps {
 }
 
 export interface FieldDefinition {
-  // Core field properties
   id: string;
   label: string;
   description?: string;
   helpText?: string;
   group?: string;
   iconName?: string;
-
   // Basic component properties
   component: ComponentType;
   required?: boolean;
   disabled?: boolean;
   placeholder?: string;
   defaultValue?: any;
-  
-  // Options for select, multiselect, radio, checkbox
+
   options?: FieldOption[];
-  
-  // Component-specific properties 
   componentProps: ComponentProps;
-  
-  // Option for including "Other" input field
   includeOther?: boolean;
 }
+
+export type AppletContainer = {
+  id: string;
+  label: string;
+  shortLabel?: string;
+  description?: string;
+  hideDescription?: boolean;
+  helpText?: string;
+  fields: FieldDefinition[];
+};
+
+export type CustomApplet = {
+  id?: string;
+  name: string;
+  description?: string;
+  slug: string;
+  appletIcon?: string;
+  appletSubmitText?: string;
+  creator?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  layoutType?: string;
+  containers?: AppletContainer[];
+  dataSourceConfig?: any;
+  resultComponentConfig?: any;
+  nextStepConfig?: any;
+  compiledRecipeId?: string;
+  subcategoryId?: string;
+  imageUrl?: string;
+};
+
+
+export type CustomAppRuntimeConfig = {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+  mainAppIcon?: string;
+  mainAppSubmitIcon?: string;
+  creator?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  appletList?: { appletId: string; label: string }[];
+  extraButtons?: {
+      label: string;
+      actionType: string;
+      knownMethod: string;
+  }[];
+  layoutType?: string;
+  imageUrl?: string;
+};
+
+
+
+
+
+
 
 // Function to normalize a field definition by adding missing properties
 export function normalizeFieldDefinition(field: Partial<FieldDefinition>): FieldDefinition {
@@ -122,3 +172,59 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition>): Field
     includeOther: field.includeOther !== undefined ? field.includeOther : false
   };
 } 
+
+
+export type CustomAppConfig = {
+  id?: string;
+  name: string;
+  description: string;
+  slug: string;
+  mainAppIcon?: string;
+  mainAppSubmitIcon?: string;
+  creator?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  appletList?: { appletId: string; label: string }[];
+  extraButtons?: {
+      label: string;
+      actionType: string;
+      knownMethod: string;
+  }[];
+  layoutType?: string;
+  imageUrl?: string;
+};
+
+export type CustomAppletConfig = {
+  id?: string;
+  name: string;
+  description?: string;
+  slug: string;
+  appletIcon?: string;
+  appletSubmitText?: string;
+  creator?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  layoutType?: string;
+  containers?: any;
+  dataSourceConfig?: any;
+  resultComponentConfig?: any;
+  nextStepConfig?: any;
+  compiledRecipeId?: string;
+  subcategoryId?: string;
+  imageUrl?: string;
+};
+
+export type ComponentGroup = {
+  id: string;
+  label: string;
+  shortLabel?: string;
+  description?: string;
+  hideDescription?: boolean;
+  helpText?: string;
+  fields: FieldDefinition[];
+  isPublic?: boolean;
+  authenticatedRead?: boolean;
+  publicRead?: boolean;
+};
+
+

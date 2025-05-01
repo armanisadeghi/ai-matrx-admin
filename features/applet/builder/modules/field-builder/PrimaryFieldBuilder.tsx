@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import FieldBuilder from './FieldBuilder';
 import FieldRenderer from './FieldRenderer';
-import { FieldDefinition, ComponentType, normalizeFieldDefinition } from './types';
+import { FieldDefinition, ComponentType, normalizeFieldDefinition } from '../../builder.types';
 import { 
   getAllFieldComponents, 
   getFieldComponentById,

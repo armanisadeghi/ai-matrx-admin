@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FieldDefinition, FieldOption, ComponentType } from './types';
+import { FieldDefinition, FieldOption, ComponentType } from '../../builder.types';
 import OptionsManager from './OptionsManager';
 
 interface FieldBuilderProps {

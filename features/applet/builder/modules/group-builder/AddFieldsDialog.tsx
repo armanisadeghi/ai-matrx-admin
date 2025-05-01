@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { FieldDefinition } from "../field-builder/types";
+import { FieldDefinition } from "../../builder.types";
 
 
 interface AddFieldsDialogProps {
@@ -33,12 +33,6 @@ export const AddFieldsDialog: React.FC<AddFieldsDialogProps> = ({
   addSelectedFieldsToGroup,
   loading
 }) => {
-  // Debug log - remove after fixing
-  React.useEffect(() => {
-    if (open) {
-      console.log("AddFieldsDialog - availableFields:", availableFields);
-    }
-  }, [open, availableFields]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
