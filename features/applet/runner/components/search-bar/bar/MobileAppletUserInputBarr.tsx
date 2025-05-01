@@ -86,8 +86,8 @@ const MobileAppletUserInputBar: React.FC<MobileAppletUserInputBarProps> = ({ app
                             description={group.description}
                             fields={group.fields}
                             isActive={activeFieldId === group.id}
-                            onClick={() => {}} // Managed by FieldRow
-                            onOpenChange={() => {}} // Managed by FieldRow
+                            onClick={() => {}} // Managed by Broker Container
+                            onOpenChange={() => {}} // Managed by Broker Container
                             isLast={index === activeSearchGroups.length - 1}
                             isMobile={true}
                         />

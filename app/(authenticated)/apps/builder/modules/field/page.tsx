@@ -1,22 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-import FieldBuilder from '@/features/applet/builder/modules/FieldBuilder';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import PrimaryFieldBuilder from '@/features/applet/builder/modules/field-builder/PrimaryFieldBuilder';
+import BuilderPageLayout from '../common/BuilderPageLayout';
 
 export default function FieldBuilderPage() {
   return (
-    <div className="py-4">
-      <div className="mb-4 mx-4">
-        <Link href="/apps/builder/hub">
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Builder Hub</span>
-          </Button>
-        </Link>
-      </div>
-      <FieldBuilder />
-    </div>
+    <BuilderPageLayout activeModuleId="fields">
+      <PrimaryFieldBuilder />
+    </BuilderPageLayout>
   );
 } 

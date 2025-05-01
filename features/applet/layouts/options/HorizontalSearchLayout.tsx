@@ -34,8 +34,8 @@ const HorizontalSearchLayout: React.FC<AppletInputProps> = ({
             description={group.description}
             fields={group.fields}
             isActive={activeFieldId === group.id}
-            onClick={() => {}} // Managed by FieldRow
-            onOpenChange={() => {}} // Managed by FieldRow
+            onClick={() => {}} // Managed by AppletBrokerContainer
+            onOpenChange={() => {}} // Managed by AppletBrokerContainer
             isLast={index === appletDefinition.length - 1}
             isMobile={false}
             hideGroupPlaceholder={hideGroupPlaceholder}

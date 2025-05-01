@@ -20,24 +20,24 @@ import {
 } from "@/components/ui/tabs";
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/components/ui/use-toast';
-import { DownloadIcon, UploadIcon, DatabaseIcon, FileIcon, AppWindowIcon, BoxIcon, LayersIcon, Copy, CheckIcon } from 'lucide-react';
-import { SavedApp } from './AppBuilder';
-import { SavedApplet } from './AppletBuilder';
-import { SavedGroup } from './GroupBuilder';
-import { SavedField } from './FieldBuilder';
+import { DownloadIcon, UploadIcon, DatabaseIcon, FileIcon, AppWindowIcon, BoxIcon, LayersIcon, CheckIcon } from 'lucide-react';
+import { SavedApplet } from './applet-builder/AppletBuilder';
+import { SavedGroup } from './group-builder/GroupBuilder';
+import { FieldDefinition } from './field-builder/types';
+import { CustomAppConfig } from './app-builder/customAppService';
 
-type ComponentType = 'app' | 'applet' | 'group' | 'field';
+type AppPartType = 'app' | 'applet' | 'group' | 'field';
 
 const ComponentLibrary = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('export');
-  const [componentType, setComponentType] = useState<ComponentType>('app');
+  const [componentType, setComponentType] = useState<AppPartType>('app');
   const [exportData, setExportData] = useState<string>('');
   const [importData, setImportData] = useState<string>('');
-  const [savedApps, setSavedApps] = useState<SavedApp[]>([]);
+  const [savedApps, setSavedApps] = useState<CustomAppConfig[]>([]);
   const [savedApplets, setSavedApplets] = useState<SavedApplet[]>([]);
   const [savedGroups, setSavedGroups] = useState<SavedGroup[]>([]);
-  const [savedFields, setSavedFields] = useState<SavedField[]>([]);
+  const [savedFields, setSavedFields] = useState<FieldDefinition[]>([]);
   const [copied, setCopied] = useState(false);
 
   // Load saved data from localStorage on component mount
@@ -119,7 +119,7 @@ const ComponentLibrary = () => {
   };
 
   const handleComponentTypeChange = (type: string) => {
-    setComponentType(type as ComponentType);
+    setComponentType(type as AppPartType);
   };
 
   const handleImportDataChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -158,7 +158,7 @@ const ComponentLibrary = () => {
         case 'app':
           // Merge with existing apps, avoiding duplicates by ID
           const mergedApps = [...savedApps];
-          importObj.data.forEach((app: SavedApp) => {
+          importObj.data.forEach((app: CustomAppConfig) => {
             const existingIndex = mergedApps.findIndex(a => a.id === app.id);
             if (existingIndex === -1) {
               mergedApps.push(app);
@@ -197,7 +197,7 @@ const ComponentLibrary = () => {
         case 'field':
           // Merge with existing fields, avoiding duplicates by ID
           const mergedFields = [...savedFields];
-          importObj.data.forEach((field: SavedField) => {
+          importObj.data.forEach((field: FieldDefinition) => {
             const existingIndex = mergedFields.findIndex(f => f.id === field.id);
             if (existingIndex === -1) {
               mergedFields.push(field);

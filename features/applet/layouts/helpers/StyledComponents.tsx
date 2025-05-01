@@ -40,6 +40,40 @@ import {
     MessageSquare,
     HelpCircle,
     TreePalm,
+    // Add more app icons
+    Bookmark,
+    Box,
+    Briefcase,
+    Building,
+    Coffee,
+    Compass,
+    Crown,
+    Database,
+    Flag,
+    Flower,
+    Gift,
+    Globe,
+    Heart,
+    Image,
+    Layers,
+    Library,
+    LifeBuoy,
+    Lightbulb,
+    Map,
+    Monitor,
+    Music,
+    Package,
+    Palette,
+    Pizza,
+    Radio,
+    Rocket,
+    ShoppingBag,
+    Star,
+    Target,
+    Ticket,
+    Trophy,
+    Tv,
+    Zap,
 } from "lucide-react";
 import { FaCheck, FaArrowRight, FaCheckCircle, FaMagic, FaSave, FaThumbsUp, FaArrowCircleRight, FaPaperPlane } from "react-icons/fa";
 import { SiMagic } from "react-icons/si";
@@ -47,6 +81,28 @@ import { LuBrain } from "react-icons/lu";
 import { GiArtificialIntelligence } from "react-icons/gi";
 import { FaBrain } from "react-icons/fa";
 import { SiCodemagic } from "react-icons/si";
+// Additional React icons for app icons
+import { 
+    FaChartBar, 
+    FaClipboard, 
+    FaCode, 
+    FaCoffee, 
+    FaDesktop, 
+    FaEnvelope, 
+    FaFileAlt, 
+    FaGamepad, 
+    FaGraduationCap, 
+    FaHeadphones, 
+    FaLaptop, 
+    FaLock, 
+    FaMapMarkerAlt, 
+    FaMicrophone, 
+    FaMusic, 
+    FaNewspaper, 
+    FaStore, 
+    FaTools, 
+    FaUser 
+} from "react-icons/fa";
 
 // Define your icon options
 export const ICON_OPTIONS = {
@@ -95,6 +151,64 @@ export const ICON_OPTIONS = {
     GiArtificialIntelligence,
     FaBrain,
     SiCodemagic,
+    
+    // Additional app icons - Lucide
+    Bookmark,
+    Box,
+    Briefcase,
+    Building,
+    Coffee,
+    Compass,
+    Crown,
+    Database,
+    Flag,
+    Flower,
+    Gift,
+    Globe,
+    Heart,
+    Image,
+    Layers,
+    Library,
+    LifeBuoy,
+    Lightbulb,
+    Map,
+    MessageSquare,
+    Monitor,
+    Moon,
+    Music,
+    Package,
+    Palette,
+    Pizza,
+    Radio,
+    Rocket,
+    ShoppingBag,
+    Star,
+    Target,
+    Ticket,
+    Trophy,
+    Tv,
+    Zap,
+    HelpCircle,
+    
+    // Additional app icons - React Icons
+    FaChartBar,
+    FaClipboard,
+    FaCode,
+    FaCoffee,
+    FaDesktop,
+    FaEnvelope,
+    FaFileAlt,
+    FaGamepad,
+    FaGraduationCap,
+    FaHeadphones,
+    FaLaptop,
+    FaLock,
+    FaMapMarkerAlt,
+    FaMicrophone,
+    FaMusic,
+    FaNewspaper,
+    FaStore,
+    FaTools,
 };
 // Define color variations for different component types
 export const COLOR_VARIANTS = {
@@ -235,3 +349,83 @@ export const getSubmitButton = (props) => getComponent({ type: "submitButton", .
 export const getAppIcon = (props) => getComponent({ type: "appIcon", ...props });
 export const getActionButton = (props) => getComponent({ type: "actionButton", ...props });
 export const getOutlineButton = (props) => getComponent({ type: "outlineButton", ...props });
+
+// Utility function to get a list of recommended app icons
+export const getAppIconOptions = () => {
+    // Icons that are suitable as app icons
+    const appIconNames = [
+        // Lucide Icons
+        "Bookmark",
+        "Box",
+        "Briefcase",
+        "Building",
+        "Coffee",
+        "Compass",
+        "Crown",
+        "Database",
+        "Flag",
+        "Flower",
+        "Gift",
+        "Globe",
+        "Heart",
+        "Home",
+        "Image",
+        "Layers",
+        "Library",
+        "LifeBuoy",
+        "Lightbulb",
+        "Map",
+        "MessageSquare",
+        "Monitor",
+        "Moon",
+        "Music",
+        "Package",
+        "Palette",
+        "Pizza",
+        "Radio",
+        "Rocket",
+        "Settings",
+        "ShoppingBag",
+        "Star",
+        "Sun",
+        "Target",
+        "Ticket",
+        "Trophy",
+        "Tv",
+        "Zap",
+        "HelpCircle",
+        "TreePalm",
+        
+        // React Icons
+        "FaChartBar",
+        "FaClipboard",
+        "FaCode",
+        "FaCoffee",
+        "FaDesktop",
+        "FaEnvelope",
+        "FaFileAlt",
+        "FaGamepad",
+        "FaGraduationCap",
+        "FaHeadphones",
+        "FaLaptop",
+        "FaLock",
+        "FaMapMarkerAlt",
+        "FaMicrophone",
+        "FaMusic",
+        "FaNewspaper",
+        "FaStore",
+        "FaTools",
+        "FaBrain",
+        "FaMagic",
+        "GiArtificialIntelligence",
+        "LuBrain",
+        "SiMagic",
+        "SiCodemagic"
+    ];
+
+    // Return the list of icons with their components
+    return appIconNames.map(iconName => ({
+        name: iconName,
+        component: ICON_OPTIONS[iconName]
+    }));
+};

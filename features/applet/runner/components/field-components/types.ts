@@ -1,6 +1,7 @@
 // types.ts - Updated with new field configurations
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import { ReactNode } from "react";
+import { SwitchFieldConfig } from "./SwitchField";
 
 // Base configuration for all field components
 export interface BaseFieldProps {
@@ -54,15 +55,6 @@ export interface InputFieldConfig extends FieldDisplayProps {
     autoComplete?: string;
     width?: string;
     inputClassName?: string;
-}
-
-// Textarea type configurations
-export interface TextareaFieldConfig extends FieldDisplayProps {
-    rows?: number;
-    maxLength?: number;
-    resize?: "none" | "vertical" | "horizontal" | "both";
-    width?: string;
-    textareaClassName?: string;
 }
 
 // Number input configurations
@@ -160,13 +152,23 @@ export interface FieldProps<T = {}> extends BaseFieldProps {
     isMobile?: boolean;
 }
 
+// Textarea type configurations
+export interface TextareaFieldConfig extends FieldDisplayProps {
+    rows?: number;
+    maxLength?: number;
+    resize?: "none" | "vertical" | "horizontal" | "both";
+    width?: string;
+    textareaClassName?: string;
+}
+
+
 // Field configuration with broker ID
 export interface GroupFieldConfig {
     brokerId: string;
     label: string;
     placeholder?: string;
     helpText?: string;
-    type: "button" | "select" | "input" | "textarea" | "number" | "date" | "checkbox" | "radio" | "slider" | "multiselect";
+    type: "button" | "select" | "input" | "textarea" | "number" | "date" | "checkbox" | "radio" | "slider" | "multiselect" | "switch";
     customConfig?:
         | ButtonFieldConfig
         | SelectFieldConfig
@@ -177,7 +179,8 @@ export interface GroupFieldConfig {
         | CheckboxGroupFieldConfig
         | RadioGroupFieldConfig
         | SliderFieldConfig
-        | MultiSelectFieldConfig;
+        | MultiSelectFieldConfig
+        | SwitchFieldConfig;
     isRequired?: boolean;
     isMobile?: boolean;
 }
@@ -250,134 +253,3 @@ export interface FieldGroupProps {
     isMobile?: boolean;
 }
 
-// Complete structure for a Select Field
-export interface SelectFieldStructure {
-    brokerId: string; // Unique identifier for the field
-    label: string; // Display label for the field
-    placeholder?: string; // Placeholder text for the select input
-    helpText?: string; // Help text for additional guidance
-    type: "select"; // Specifies the field type as select
-    customConfig: {
-        options: {
-            value: string; // Option value
-            label: string; // Option display label
-            icon?: React.ReactNode; // Optional icon for the option
-            group?: string; // Optional group for grouped options
-            subtitle?: string; // Optional subtitle for the option
-            helpText?: string; // Optional help text for the option
-            width?: string; // Optional width for the option
-        }[]; // Array of select options
-        inputPlaceholder?: string; // Placeholder for the select input
-        emptyMessage?: string; // Message when no options are available
-        width?: string; // Width of the select field
-        showGroups?: boolean; // Whether to display option groups
-        subtitle?: string; // Subtitle for the select field
-        helpText?: string; // Help text for the select field
-    }; // Select-specific configuration
-    isRequired?: boolean; // Whether the field is required
-    isMobile?: boolean; // Whether the field is rendered on mobile
-}
-
-// Not used yet
-export interface FieldNew {
-    componentId: string;
-    label: string;
-    description?: string;
-    placeholder?: string;
-    helpText?: string;
-    type: "button" | "select" | "input" | "textarea" | "number" | "date" | "checkbox" | "radio" | "slider";
-    subType?: string; // multiselect, checkboxGroup, radioGroup, dateWithTime, rangeSlider
-    options?: {
-        id: string;
-        label: string;
-        description?: string;
-        helpText?: string;
-        group?: string;
-        icon?: ReactNode;
-    }[];
-    customConfig?:
-        | ButtonFieldConfig
-        | SelectFieldConfig
-        | InputFieldConfig
-        | TextareaFieldConfig
-        | NumberInputFieldConfig
-        | CheckboxFieldConfig
-        | CheckboxGroupFieldConfig
-        | RadioGroupFieldConfig
-        | SliderFieldConfig
-        | MultiSelectFieldConfig;
-    isRequired?: boolean;
-    isMobile?: boolean;
-}
-
-
-export interface FieldItem {
-    id: string; // Unique identifier for the field or option
-    label: string; // Display label for the field or option
-    description?: string; // Additional context or instructions
-    helpText?: string; // Guidance text, possibly dynamic
-    group?: string; // Optional grouping (e.g., for select options or field categorization)
-    iconName?: string; // Optional icon identifier (e.g., "fa-user" for FontAwesome)
-}
-
-export interface FieldConfig {
-    type: string; // Component type (e.g., "input", "select", "radio", "slider")
-    field: FieldItem; // Core field properties
-    options?: FieldItem[]; // Array of options, ignored by components like input or slider
-    settings?: { // Component-specific settings
-        [key: string]: any; // Flexible key-value pairs (e.g., min, max, rows)
-    }; // Optional settings for specific components
-    styles?: { // Styling properties, ignored if not applicable
-        [key: string]: any; // Flexible key-value pairs (e.g., width, className)
-    }; // Optional styling properties
-}
-
-
-
-
-const field: FieldConfig = {
-    type: "select", // Could be "input", "radio", "textarea", "slider", etc.
-    field: {
-        id: "someuuid",
-        label: "What is your field of work?",
-        description: "This helps us cater your resume for the industry for which it will be used.",
-        helpText: "It's best to use the most specific industry, but if you're unsure, this can be changed later.",
-        group: "personal-info", // Example group for field categorization
-        iconName: "fa-briefcase" // Example FontAwesome icon
-    },
-    options: [
-        {
-            id: "opt1",
-            label: "Technology",
-            description: "Software, IT, etc.",
-            helpText: "Select if you work in tech industries",
-            group: "tech", // For grouped select options
-            iconName: "fa-code"
-        },
-        {
-            id: "opt2",
-            label: "Finance",
-            description: "Banking, accounting, etc.",
-            helpText: "Select for financial sectors",
-            group: "business",
-            iconName: "fa-dollar-sign"
-        },
-        {
-            id: "opt3",
-            label: "Healthcare",
-            description: "Medical, nursing, etc.",
-            helpText: "Select for healthcare roles",
-            group: "medical",
-            iconName: "fa-heartbeat"
-        }
-    ],
-    settings: {
-        placeholder: "Select an industry", // Unified placeholder
-        emptyMessage: "No industries available", // For select/multiselect
-        showGroups: true // For select/multiselect with grouped options
-    },
-    styles: {
-        width: "100%", // Field width
-        optionClass: "option-item" // Example class for options
-    }
-};

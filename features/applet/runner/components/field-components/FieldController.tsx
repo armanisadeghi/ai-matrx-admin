@@ -22,6 +22,7 @@ import {
     SliderFieldConfig,
     MultiSelectFieldConfig,
 } from ".";
+import { SwitchField, SwitchFieldConfig } from "./SwitchField";
 
 export const fieldController = (field: GroupFieldConfig, isMobile: boolean) => {
     switch (field.type) {
@@ -133,6 +134,19 @@ export const fieldController = (field: GroupFieldConfig, isMobile: boolean) => {
                 />
             );
         }
+        case "switch": {
+            const { customConfig, ...commonProps } = field;
+            return (
+                <SwitchField
+                    id={field.brokerId}
+                    label={field.label}
+                    placeholder={field.placeholder || ""}
+                    customConfig={customConfig as SwitchFieldConfig}
+                    isMobile={isMobile}
+                />
+            );
+        }
+
         default: {
             const { customConfig, ...commonProps } = field;
             return (

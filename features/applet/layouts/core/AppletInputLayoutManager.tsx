@@ -30,16 +30,24 @@ import {
 interface AppletInputLayoutManagerProps extends AppletInputProps {
     layoutType: AppletLayoutOption;
     initialAppName?: string;
+    convertFromNewFormat?: boolean;
 }
 
 const AppletInputLayoutManager: React.FC<AppletInputLayoutManagerProps> = ({ 
     layoutType, 
     initialAppName,
+    convertFromNewFormat = false,
     ...props 
 }) => {
+    // If convertFromNewFormat is true, convert the appletDefinition to legacy format
+    const convertedProps = convertFromNewFormat 
+        ? {
+            ...props,
+            appletDefinition: convertNewFormatToLegacy(props.appletDefinition)
+        }
+        : props;
+
     switch (layoutType) {
-        case "horizontal":
-            return <HorizontalSearchLayout {...props} />;
         case "vertical":
             return <VerticalSearchLayout {...props} />;
         case "stepper":
@@ -84,3 +92,7 @@ const AppletInputLayoutManager: React.FC<AppletInputLayoutManagerProps> = ({
 };
 
 export default AppletInputLayoutManager;
+function convertNewFormatToLegacy(appletDefinition: import("../../runner/components/field-components").SearchGroupConfig[]) {
+    throw new Error("Function not implemented.");
+}
+

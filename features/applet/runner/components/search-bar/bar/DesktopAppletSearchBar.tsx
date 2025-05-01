@@ -45,8 +45,8 @@ const DesktopAppletUserInputBar: React.FC<DesktopAppletUserInputBarProps> = ({ a
                         description={group.description}
                         fields={group.fields}
                         isActive={activeFieldId === group.id}
-                        onClick={() => {}} // Managed by FieldRow
-                        onOpenChange={() => {}} // Managed by FieldRow
+                        onClick={() => {}} // Managed by Broker Container
+                        onOpenChange={() => {}} // Managed by Broker Container
                         isLast={index === appletDefinition.length - 1}
                         isMobile={false}
                     />

@@ -224,6 +224,10 @@ export const primaryLinks = [
 
 export const secondaryLinks = [
     {
+        label: "New Admin Dashboard",
+        href: "/administration",
+        icon: <ShieldEllipsis className="text-rose-500 dark:text-rose-600 h-5 w-5 flex-shrink-0" />,
+    },    {
         label: "Admin Dashboard",
         href: "/admin",
         icon: <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,

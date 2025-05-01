@@ -1,4 +1,4 @@
-// FieldRow.tsx
+// features\applet\runner\components\search-bar\container\DesktopAppletBrokerContainer.tsx
 import React, { useState, ReactNode, Children, cloneElement, isValidElement, ReactElement } from 'react';
 
 // Define the expected shape of child components' props

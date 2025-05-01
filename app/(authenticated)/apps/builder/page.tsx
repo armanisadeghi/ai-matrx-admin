@@ -1,22 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import ConfigBuilder from '@/features/applet/builder/ConfigBuilder';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import BuilderPageLayout from './modules/common/BuilderPageLayout';
 
 export default function ConfigBuilderPage() {
   return (
-    <div className="py-4">
-      <div className="mb-4 mx-4">
-        <Link href="/apps/builder/hub">
-          <Button variant="ghost" size="sm" className="flex items-center gap-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Builder Hub</span>
-          </Button>
-        </Link>
-      </div>
+    <BuilderPageLayout activeModuleId="complete">
       <ConfigBuilder />
-    </div>
+    </BuilderPageLayout>
   );
 }

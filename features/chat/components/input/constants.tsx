@@ -360,6 +360,13 @@ export const allTools: Tool[] = [
         icon: <Table size={20} />,
     },
     {
+        id: "data_user_lists_create_list",
+        name: "Create User Data List",
+        description: "Create a list of any data and save it to your official lists, which can be used to create components and other data.",
+        category: "Data",
+        icon: <List size={20} />,
+    },
+    {
         id: "data_sql_execute_query",
         name: "Execute SQL Query",
         description: "Run SQL queries to insert, update, select, or delete data in the Supabase database",
