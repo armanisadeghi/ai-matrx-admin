@@ -15,6 +15,7 @@ import { AppInfoStep } from '@/features/applet/builder/components/AppInfoStep';
 import { AppletsConfigStep } from '@/features/applet/builder/components/AppletsConfigStep';
 import { GroupsConfigStep } from '@/features/applet/builder/components/GroupsConfigStep';
 import { FieldsConfigStep } from '@/features/applet/builder/components/FieldsConfigStep';
+import { SelectAppStep } from '@/features/applet/builder/components/SelectAppStep';
 import { PreviewConfig } from '@/features/applet/builder/previews/PreviewConfig';
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -183,6 +184,7 @@ export const ConfigBuilder = () => {
   }, [savedApp, toast, activeApplet]);
   
   const steps = [
+    { id: 'select-app', title: 'Select App', description: 'Select an existing app or create a new one' },
     { id: 'app-info', title: 'App Information', description: 'Basic information about your app' },
     { id: 'applets-config', title: 'Add Applets', description: 'Define & Configure Applets' },
     { id: 'groups-config', title: 'Broker Groups', description: 'Create groups of Brokers' },
@@ -192,6 +194,17 @@ export const ConfigBuilder = () => {
 
   const handleNext = async () => {
     if (activeStep === 0) {
+      // For the first step (Select App), we don't need validation as the user
+      // either selects an app (which sets savedApp) or creates a new one (moving to step 1)
+      if (!savedApp && activeStep === 0) {
+        // If no app is selected, move to App Info step to create a new one
+        setActiveStep(1);
+        // Reset to default state for new app creation
+        setAppConfig(DEFAULT_APP_CONFIG);
+        return;
+      }
+      setActiveStep(1);
+    } else if (activeStep === 1) {
       // Validate app info before moving to the next step
       if (!appConfig.name || !appConfig.slug) {
         toast({
@@ -209,7 +222,7 @@ export const ConfigBuilder = () => {
         // Error is already handled in handleSaveApp
         return;
       }
-    } else if (activeStep === 1) {
+    } else if (activeStep === 2) {
       // Verify we have at least one applet before proceeding
       if (applets.length === 0) {
         toast({
@@ -219,7 +232,7 @@ export const ConfigBuilder = () => {
         });
         return;
       }
-    } else if (activeStep === 2) {
+    } else if (activeStep === 3) {
       // Ensure all applets have at least one group
       const hasEmptyApplet = applets.some(applet => !applet.containers || applet.containers.length === 0);
       if (hasEmptyApplet) {
@@ -658,8 +671,126 @@ export const ConfigBuilder = () => {
     }
   };
 
+  const handleAppSelected = (app: CustomAppConfig) => {
+    setIsSavingApp(true);
+    setLoadingMessage('Loading selected app...');
+    
+    try {
+      // Set the selected app as the current app
+      setSavedApp(app);
+      setAppConfig(app);
+      
+      toast({
+        title: "App Selected",
+        description: `You've selected ${app.name} to edit.`,
+      });
+      
+      // Move to the next step (App Info)
+      setActiveStep(1);
+    } catch (error) {
+      console.error('Error selecting app:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load selected app. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingApp(false);
+    }
+  };
+
+  const handleCreateNewApp = () => {
+    // Reset app state to defaults for a new app
+    setSavedApp(null);
+    setAppConfig({
+      ...DEFAULT_APP_CONFIG,
+      id: undefined, // Ensure no ID is carried over
+      name: '',
+      description: '',
+      slug: '',
+      mainAppIcon: 'LayoutTemplate',
+      mainAppSubmitIcon: 'Search',
+      creator: '',
+      primaryColor: 'gray',
+      accentColor: 'rose',
+      appletList: [],
+      extraButtons: [],
+      layoutType: 'oneColumn',
+      imageUrl: '',
+    });
+    setApplets([]);
+    setActiveApplet(null);
+    
+    // Move to App Info step
+    setActiveStep(1);
+    
+    toast({
+      title: "Create New App",
+      description: "Let's start by entering your app's basic information.",
+    });
+  };
+
+  // Reset to the app selection step
+  const resetToSelectStep = () => {
+    setActiveStep(0);
+    toast({
+      title: "Select Different App",
+      description: "You can select a different app or create a new one.",
+    });
+  };
+
+  // Initial welcome message
+  useEffect(() => {
+    if (!savedApp) {
+      toast({
+        title: "Welcome to App Builder",
+        description: "Select an existing app to edit or create a new one.",
+      });
+    }
+  }, [savedApp, toast]);
+
   const isStepLoading = () => {
     return isLoading || isSavingApp || isLoadingApplets || isLoadingGroups;
+  };
+
+  // Footer rendering with conditional reset button
+  const renderFooter = () => {
+    return (
+      <CardFooter className="flex justify-between">
+        {activeStep > 0 ? (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={isStepLoading()}
+              className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Back
+            </Button>
+            {activeStep > 0 && (
+              <Button
+                variant="ghost"
+                onClick={resetToSelectStep}
+                disabled={isStepLoading()}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                Select Different App
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div></div> // Empty div to maintain space in flex layout
+        )}
+        
+        <Button
+          onClick={handleNext}
+          disabled={activeStep === steps.length - 1 || isStepLoading()}
+          className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
+        >
+          {activeStep === steps.length - 2 ? 'Preview' : 'Next'}
+        </Button>
+      </CardFooter>
+    );
   };
 
   return (
@@ -691,6 +822,14 @@ export const ConfigBuilder = () => {
               )}
               
               {activeStep === 0 && (
+                <SelectAppStep 
+                  onAppSelected={handleAppSelected}
+                  onCreateNewApp={handleCreateNewApp}
+                  selectedApp={savedApp}
+                />
+              )}
+              
+              {activeStep === 1 && (
                 <AppInfoStep 
                   config={appConfig} 
                   updateConfig={updateAppConfig}
@@ -699,7 +838,7 @@ export const ConfigBuilder = () => {
                 />
               )}
               
-              {activeStep === 1 && (
+              {activeStep === 2 && (
                 <AppletsConfigStep 
                   applets={applets}
                   availableApplets={availableApplets}
@@ -712,7 +851,7 @@ export const ConfigBuilder = () => {
                 />
               )}
               
-              {activeStep === 2 && (
+              {activeStep === 3 && (
                 <GroupsConfigStep 
                   applets={applets}
                   availableGroups={availableGroups}
@@ -724,7 +863,7 @@ export const ConfigBuilder = () => {
                 />
               )}
               
-              {activeStep === 3 && (
+              {activeStep === 4 && (
                 <FieldsConfigStep 
                   applets={applets}
                   activeApplet={activeApplet}
@@ -736,7 +875,7 @@ export const ConfigBuilder = () => {
                 />
               )}
               
-              {activeStep === 4 && (
+              {activeStep === 5 && (
                 <PreviewConfig 
                   config={savedApp} 
                   applets={applets}
@@ -746,23 +885,7 @@ export const ConfigBuilder = () => {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={activeStep === 0 || isStepLoading()}
-              className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Back
-            </Button>
-            <Button
-              onClick={handleNext}
-              disabled={activeStep === steps.length - 1 || isStepLoading()}
-              className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
-            >
-              {activeStep === steps.length - 2 ? 'Preview' : 'Next'}
-            </Button>
-          </CardFooter>
+          {renderFooter()}
         </Card>
       </div>
       <Toaster />

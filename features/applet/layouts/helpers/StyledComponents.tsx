@@ -17,6 +17,7 @@ import {
     ArrowBigRightDash,
     Send,
     // Add more icons specifically good for Submit buttons
+    CheckIcon,
     CheckCircle,
     Check,
     ArrowRight,
@@ -124,6 +125,7 @@ export const ICON_OPTIONS = {
     ArrowBigRightDash,
     AppWindowIcon,
     LayoutTemplate,
+    CheckIcon,
     // Added submit button icons
     CheckCircle,
     Check,

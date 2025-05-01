@@ -7,18 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { CustomAppConfig, CustomAppletConfig } from '@/features/applet/builder/builder.types';
 import { SingleImageSelect } from '@/components/image/shared/SingleImageSelect';
 import AppletPreviewCard from '@/features/applet/builder/previews/AppletPreviewCard';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 
 interface AppletsConfigStepProps {
   applets: CustomAppletConfig[];
