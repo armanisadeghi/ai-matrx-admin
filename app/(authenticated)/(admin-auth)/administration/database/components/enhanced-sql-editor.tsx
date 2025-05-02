@@ -363,7 +363,7 @@ export const EnhancedSQLEditor = ({
                 </div>
 
                 <TabsContent value="raw" className="m-0">
-                  <ScrollArea className="h-[400px] w-full">
+                  <ScrollArea className="h-[1200px] w-full">
                     <pre className="p-4 text-sm text-slate-800 dark:text-slate-200 font-mono whitespace-pre-wrap">
                       {JSON.stringify(queryResult, null, 2)}
                     </pre>
@@ -371,7 +371,7 @@ export const EnhancedSQLEditor = ({
                 </TabsContent>
 
                 <TabsContent value="explorer" className="m-0">
-                  <div className="h-[400px] overflow-auto">
+                  <div className="h-[1200px] overflow-auto">
                     <RawJsonExplorer pageData={queryResult} />
                   </div>
                 </TabsContent>

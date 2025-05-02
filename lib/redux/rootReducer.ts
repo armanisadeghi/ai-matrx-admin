@@ -31,6 +31,8 @@ import chatDisplayReducer from "./features/aiChats/chatDisplaySlice";
 import socketConnectionReducer from "./socket-io/slices/socketConnectionsSlice";
 import socketResponseReducer from "./socket-io/slices/socketResponseSlice";
 import socketTasksReducer from "./socket-io/slices/socketTasksSlice";
+import { componentDefinitionsSlice } from "./applets/slices/componentDefinitionsSlice";
+import { brokerValuesSlice } from "./applets/slices/brokerValuesSlice";
 
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
@@ -102,5 +104,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         socketConnections: socketConnectionReducer,
         socketResponse: socketResponseReducer,
         socketTasks: socketTasksReducer,
+
+        componentDefinitions: componentDefinitionsSlice.reducer,
+        brokerValues: brokerValuesSlice.reducer,
     });
 };
