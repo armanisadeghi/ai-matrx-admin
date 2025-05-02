@@ -33,6 +33,11 @@ import socketResponseReducer from "./socket-io/slices/socketResponseSlice";
 import socketTasksReducer from "./socket-io/slices/socketTasksSlice";
 import { componentDefinitionsSlice } from "./applets/slices/componentDefinitionsSlice";
 import { brokerValuesSlice } from "./applets/slices/brokerValuesSlice";
+import { appBuilderSlice } from "./app-builder/slices/appBuilderSlice";
+import { appletBuilderSlice } from "./app-builder/slices/appletBuilderSlice";
+import { containerBuilderSlice } from "./app-builder/slices/containerBuilderSlice";
+import { fieldBuilderSlice } from "./app-builder/slices/fieldBuilderSlice";
+
 
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
@@ -107,5 +112,16 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         componentDefinitions: componentDefinitionsSlice.reducer,
         brokerValues: brokerValuesSlice.reducer,
+
+        appBuilder: appBuilderSlice.reducer,
+        appletBuilder: appletBuilderSlice.reducer,
+        containerBuilder: containerBuilderSlice.reducer,
+        fieldBuilder: fieldBuilderSlice.reducer,
+
+        // buttonBuilder: buttonBuilderSlice.reducer,
+        // brokerMapping: brokerMappingSlice.reducer,
+        // recipeBuilder: recipeBuilderSlice.reducer,
+        // workflowBuilder: workflowBuilderSlice.reducer,
+
     });
 };

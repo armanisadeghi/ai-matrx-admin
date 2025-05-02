@@ -12,7 +12,7 @@ import {
   updateFieldComponent,
   deleteFieldComponent, 
   duplicateFieldComponent
-} from '@/features/applet/builder/service';
+} from '@/lib/redux/app-builder/service';
 import { 
   Card, 
   CardContent,

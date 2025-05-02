@@ -17,7 +17,7 @@ import {
     updateCustomAppConfig,
     deleteCustomAppConfig,
     isAppSlugAvailable,
-} from "@/features/applet/builder/service/customAppService";
+} from "@/lib/redux/app-builder/service/customAppService";
 import { getAppIconOptions, COLOR_VARIANTS } from "@/features/applet/layouts/helpers/StyledComponents";
 import { appletLayoutOptionsArray } from "@/features/applet/layouts/options/layout-options";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";

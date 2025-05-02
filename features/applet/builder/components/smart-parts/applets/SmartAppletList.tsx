@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
-import { getAllCustomAppletConfigs, getCustomAppletConfigById } from '@/features/applet/builder/service/customAppletService';
+import { getAllCustomAppletConfigs, getCustomAppletConfigById } from '@/lib/redux/app-builder/service/customAppletService';
 import { COLOR_VARIANTS, ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
 import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
 

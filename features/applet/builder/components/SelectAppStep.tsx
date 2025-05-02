@@ -56,15 +56,7 @@ export const SelectAppStep: React.FC<SelectAppStepProps> = ({
                 Currently Selected App
               </h3>
               <p className="text-gray-700 dark:text-gray-300 text-sm mb-1">
-                <span className="font-medium">{selectedApp.name}</span>
-                {selectedApp.description && (
-                  <span className="ml-2 text-gray-500 dark:text-gray-400">
-                    — {selectedApp.description}
-                  </span>
-                )}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                You can continue working with this app or select a different one below.
+                <span className="font-medium">{selectedApp.name} - Continue with this or select a different one below</span>
               </p>
             </div>
           )}

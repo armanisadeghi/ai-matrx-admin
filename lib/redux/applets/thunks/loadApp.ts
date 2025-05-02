@@ -1,7 +1,7 @@
 import { AppThunk } from "@/lib/redux/store";
 import { componentDefinitionsSlice } from "../slices/componentDefinitionsSlice";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
-import { fetchAppConfig } from "@/lib/redux/applets/thunks/utils";
+import { fetchAppConfig } from "@/lib/redux/applets/utils/applet-service";
 import { CustomAppRuntimeConfig } from "@/features/applet/builder/builder.types";
 import { loadApplet } from "./loadApplet";
 

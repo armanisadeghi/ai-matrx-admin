@@ -205,6 +205,22 @@ export const componentList: ComponentEntry[] = [
     description: 'Single image selection component with preview and upload options',
     category: 'media',
     tags: ['image', 'upload', 'preview', 'select', 'manager', 'input']
+  },
+  {
+    id: 'image-cropper',
+    name: 'Image Cropper',
+    path: 'components/official/image-cropper/index.tsx',
+    description: 'Flexible image cropping component with aspect ratio selection and preview',
+    category: 'media',
+    tags: ['image', 'crop', 'edit', 'aspect ratio', 'resize', 'media']
+  },
+  {
+    id: 'multi-applet-selector',
+    name: 'Multi Applet Selector',
+    path: 'features/applet/builder/components/smart-parts/applets/MultiAppletSelector.tsx',
+    description: 'Component for selecting and managing multiple applets with various configuration options',
+    category: 'inputs',
+    tags: ['applet', 'select', 'multiple', 'management', 'configuration', 'dropdown']
   }
 ]; 
 

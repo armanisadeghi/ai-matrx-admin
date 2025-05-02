@@ -24,7 +24,7 @@ import {
   deleteFieldComponent, 
   duplicateFieldComponent,
   setFieldComponentPublic 
-} from '@/features/applet/builder/service/fieldComponentService';
+} from '@/lib/redux/app-builder/service/fieldComponentService';
 import { FieldDefinition } from '@/features/applet/builder/builder.types';
 
 // Define type for fieldIds

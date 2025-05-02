@@ -1,5 +1,5 @@
 import { CustomAppletConfig } from '../../builder.types';
-import { RecipeInfo } from '../../service/customAppletService';
+import { RecipeInfo } from '../../../../../lib/redux/app-builder/service/customAppletService';
 import { SavedGroup } from '../group-builder/GroupBuilder';
 
 export interface IconOption {

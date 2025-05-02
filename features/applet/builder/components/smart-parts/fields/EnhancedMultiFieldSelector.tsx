@@ -24,7 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { FieldDefinition } from '@/features/applet/builder/builder.types';
-import { getAllFieldComponents, getFieldComponentById } from '@/features/applet/builder/service';
+import { getAllFieldComponents, getFieldComponentById } from '@/lib/redux/app-builder/service';
 
 // Define type for fieldIds
 type FieldId = string;

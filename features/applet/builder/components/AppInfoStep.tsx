@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { TailwindColorPicker } from '@/components/ui/TailwindColorPicker';
-import { isAppSlugAvailable } from "@/features/applet/builder/service/customAppService";
+import { isAppSlugAvailable } from "@/lib/redux/app-builder/service/customAppService";
 import AppPreviewCard from "@/features/applet/builder/previews/AppPreviewCard";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { IconPicker } from '@/components/ui/IconPicker';

@@ -23,7 +23,7 @@ import {
   RecipeInfo, 
   getCompiledRecipeByVersion, 
   checkCompiledRecipeVersionExists 
-} from '../../service/customAppletService';
+} from '../../../../../lib/redux/app-builder/service/customAppletService';
 
 // Extended RecipeInfo interface with extracted tags
 interface ExtendedRecipeInfo extends Omit<RecipeInfo, 'tags'> {

@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ComponentGroup } from '@/features/applet/builder/builder.types';
-import { getAllComponentGroups, getComponentGroupById } from '@/features/applet/builder/service';
+import { getAllComponentGroups, getComponentGroupById } from '@/lib/redux/app-builder/service';
 
 // Define type for groupIds
 type GroupId = string;

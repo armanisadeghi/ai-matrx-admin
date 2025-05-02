@@ -8,7 +8,7 @@ import {
   deleteFieldComponent, 
   duplicateFieldComponent,
   setFieldComponentPublic
-} from '@/features/applet/builder/service/fieldComponentService';
+} from '@/lib/redux/app-builder/service/fieldComponentService';
 
 export default function FieldComponentsList() {
   const [components, setComponents] = useState<FieldDefinition[]>([]);

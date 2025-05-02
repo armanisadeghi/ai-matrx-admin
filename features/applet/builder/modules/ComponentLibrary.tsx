@@ -10,9 +10,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { DownloadIcon, UploadIcon, DatabaseIcon, FileIcon, AppWindowIcon, BoxIcon, LayersIcon, CheckIcon, Copy } from "lucide-react";
 import { ComponentGroup, FieldDefinition, CustomApplet, AppletContainer, ComponentType } from "@/features/applet/builder/builder.types";
-import { getAllCustomAppConfigs } from "../service/customAppService";
-import { getAllCustomAppletConfigs } from "../service/customAppletService";
-import { getAllFieldComponents, getAllComponentGroups } from "@/features/applet/builder/service";
+import { getAllCustomAppConfigs } from "../../../../lib/redux/app-builder/service/customAppService";
+import { getAllCustomAppletConfigs } from "../../../../lib/redux/app-builder/service/customAppletService";
+import { getAllFieldComponents, getAllComponentGroups } from "@/lib/redux/app-builder/service";
 import { CustomAppConfig, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 
 type AppPartType = "app" | "applet" | "group" | "field";

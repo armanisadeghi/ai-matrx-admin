@@ -88,6 +88,8 @@ export type CustomApplet = {
   compiledRecipeId?: string;
   subcategoryId?: string;
   imageUrl?: string;
+  appId?: string;
+  brokerMappings?: { fieldId: string; brokerId: string }[];
 };
 
 
@@ -173,6 +175,12 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition>): Field
   };
 } 
 
+export type CustomActionButton = {
+  label: string;
+  actionType: string;
+  knownMethod: string;
+}
+
 
 export type CustomAppConfig = {
   id?: string;
@@ -185,11 +193,7 @@ export type CustomAppConfig = {
   primaryColor?: string;
   accentColor?: string;
   appletList?: { appletId: string; label: string }[];
-  extraButtons?: {
-      label: string;
-      actionType: string;
-      knownMethod: string;
-  }[];
+  extraButtons?: CustomActionButton[];
   layoutType?: string;
   imageUrl?: string;
 };
@@ -212,6 +216,7 @@ export type CustomAppletConfig = {
   compiledRecipeId?: string;
   subcategoryId?: string;
   imageUrl?: string;
+  appId?: string;
 };
 
 export type ComponentGroup = {

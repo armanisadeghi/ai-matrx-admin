@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
-import { getAllCustomAppletConfigs, getCustomAppletConfigById } from '@/features/applet/builder/service/customAppletService';
+import { getAllCustomAppletConfigs, getCustomAppletConfigById } from '@/lib/redux/app-builder/service/customAppletService';
 import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/layouts/helpers/StyledComponents';
 
 // Define type for appletIds

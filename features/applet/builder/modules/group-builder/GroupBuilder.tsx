@@ -18,7 +18,7 @@ import {
     getComponentGroupById,
     getAllFieldComponents,
     getAllComponentGroups
-} from "@/features/applet/builder/service";
+} from "@/lib/redux/app-builder/service";
 import { CreateGroupForm } from "./CreateGroupForm";
 import { SavedGroupsList } from "./SavedGroupsList";
 import { AddFieldsDialog } from "./AddFieldsDialog";

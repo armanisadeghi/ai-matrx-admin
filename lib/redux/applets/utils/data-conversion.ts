@@ -1,5 +1,4 @@
 import { CustomAppRuntimeConfig, CustomApplet } from "@/features/applet/builder/builder.types"; // Adjust import based on your types file
-import { createClient } from "@/utils/supabase/client";
 import { RuntimeCompiledRecipe, RuntimeBrokerDefinition } from "../types";
 
 
@@ -173,75 +172,4 @@ export function transformAppWithApplets(rawConfig: any): AppWithApplets {
         applets,
         compiledRecipes,
     };
-}
-
-const supabase = createClient();
-
-/**
- * Fetches and transforms app config and applets by slug.
- * @param slug - The slug of the app (e.g., 'travel-manager')
- * @returns A Promise resolving to the transformed AppWithApplets
- * @throws Error if the fetch or transformation fails
- */
-export async function fetchAppConfigBySlug(slug: string): Promise<AppWithApplets> {
-    try {
-        const { data, error } = await supabase.rpc("get_custom_app_with_applets", { app_id: null, app_slug: slug });
-
-        if (error) {
-            throw new Error(`Failed to fetch app config by slug: ${error.message}`);
-        }
-
-        if (!data) {
-            throw new Error("No app config data returned for the provided slug");
-        }
-
-        return transformAppWithApplets(data);
-    } catch (err) {
-        throw new Error(`Error fetching app config by slug: ${err instanceof Error ? err.message : "Unknown error"}`);
-    }
-}
-
-/**
- * Fetches and transforms app config and applets by ID.
- * @param id - The ID of the app (e.g., '12b995eb-5baa-4754-87e1-8d27b0a9ff9c')
- * @returns A Promise resolving to the transformed AppWithApplets
- * @throws Error if the fetch or transformation fails
- */
-export async function fetchAppConfigById(id: string): Promise<AppWithApplets> {
-    try {
-        const { data, error } = await supabase.rpc("get_custom_app_with_applets", { app_id: id, app_slug: null });
-
-        if (error) {
-            throw new Error(`Failed to fetch app config by ID: ${error.message}`);
-        }
-
-        if (!data) {
-            throw new Error("No app config data returned for the provided ID");
-        }
-
-        return transformAppWithApplets(data);
-    } catch (err) {
-        throw new Error(`Error fetching app config by ID: ${err instanceof Error ? err.message : "Unknown error"}`);
-    }
-}
-
-/**
- * Fetches and transforms app config and applets using either a slug or an ID.
- * Prefers slug if both are provided.
- * @param params - Object containing optional slug and/or id
- * @returns A Promise resolving to the transformed AppWithApplets
- * @throws Error if neither slug nor id is provided, or if the fetch fails
- */
-export async function fetchAppConfig({ slug, id }: { slug?: string; id?: string }): Promise<AppWithApplets> {
-    if (!slug && !id) {
-        throw new Error("Either slug or id must be provided to fetch app config");
-    }
-
-    // Prefer slug if both are provided, as it's the most common use case
-    if (slug) {
-        return fetchAppConfigBySlug(slug);
-    }
-
-    // Fallback to ID if slug is not provided
-    return fetchAppConfigById(id!);
 }

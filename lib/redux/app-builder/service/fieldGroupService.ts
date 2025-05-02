@@ -1,7 +1,8 @@
 import { supabase } from "@/utils/supabase/client";
-import { FieldDefinition, ComponentGroup } from "../builder.types";
-import { dbToFieldDefinition, FieldComponentDB } from "./fieldComponentService";
 
+import { dbToFieldDefinition, FieldComponentDB } from "./fieldComponentService";
+import { ContainerBuilder } from "../types";
+import { FieldDefinition } from "@/features/applet/builder/builder.types";
 
 export type ComponentGroupDB = {
     id: string;
@@ -12,7 +13,7 @@ export type ComponentGroupDB = {
     description?: string;
     hide_description?: boolean;
     help_text?: string;
-    fields?: any[];
+    fields?: FieldDefinition[];
     user_id?: string;
     is_public?: boolean;
     authenticated_read?: boolean;
@@ -20,12 +21,11 @@ export type ComponentGroupDB = {
 };
 
 /**
- * Converts a ComponentGroup to the database format
+ * Converts a ContainerBuilder to the database format
  */
 export const componentGroupToDBFormat = async (
-    group: ComponentGroup
+    group: ContainerBuilder
 ): Promise<Omit<ComponentGroupDB, "id" | "created_at" | "updated_at">> => {
-    // Get the current user ID from the session
     const { data } = await supabase.auth.getUser();
     const userId = data.user?.id;
 
@@ -39,7 +39,7 @@ export const componentGroupToDBFormat = async (
         description: group.description || null,
         hide_description: group.hideDescription !== undefined ? group.hideDescription : false,
         help_text: group.helpText || null,
-        fields: group.fields || [], // Fields will be handled separately with RPCs
+        fields: group.fields || [],
         user_id: userId,
         is_public: group.isPublic !== undefined ? group.isPublic : false,
         authenticated_read: group.authenticatedRead !== undefined ? group.authenticatedRead : true,
@@ -48,52 +48,48 @@ export const componentGroupToDBFormat = async (
 };
 
 /**
- * Converts a database record to a ComponentGroup
+ * Converts a database record to a ContainerBuilder
  */
-export const dbToComponentGroup = (dbRecord: ComponentGroupDB): ComponentGroup => {
-  let processedFields: FieldDefinition[] = [];
-  
-  // Process fields from database
-  if (Array.isArray(dbRecord.fields)) {
-      processedFields = dbRecord.fields
-          .map((field: any) => {
-              // Only process complete field objects
-              if (field && typeof field === "object" && field.label && field.component) {
-                  try {
-                      return dbToFieldDefinition(field as FieldComponentDB);
-                  } catch (error) {
-                      console.error("Error processing field:", field.id, error);
-                      return null;
-                  }
-              }
-              // Log warning for incomplete fields
-              if (field && field.id) {
-                  console.warn(`Incomplete field found in group ${dbRecord.id}: ${field.id}`);
-              }
-              return null;
-          })
-          .filter((field): field is FieldDefinition => field !== null);
-  }
-  
-  return {
-      id: dbRecord.id,
-      label: dbRecord.label,
-      shortLabel: dbRecord.short_label,
-      description: dbRecord.description,
-      hideDescription: dbRecord.hide_description,
-      helpText: dbRecord.help_text,
-      fields: processedFields,
-      isPublic: dbRecord.is_public,
-      authenticatedRead: dbRecord.authenticated_read,
-      publicRead: dbRecord.public_read,
-  };
+export const dbToComponentGroup = (dbRecord: ComponentGroupDB): ContainerBuilder => {
+    let processedFields: FieldDefinition[] = [];
+
+    if (Array.isArray(dbRecord.fields)) {
+        processedFields = dbRecord.fields
+            .map((field: any) => {
+                if (field && typeof field === "object" && field.label && field.component) {
+                    try {
+                        return dbToFieldDefinition(field as FieldComponentDB);
+                    } catch (error) {
+                        console.error("Error processing field:", field.id, error);
+                        return null;
+                    }
+                }
+                if (field && field.id) {
+                    console.warn(`Incomplete field found in group ${dbRecord.id}: ${field.id}`);
+                }
+                return null;
+            })
+            .filter((field): field is FieldDefinition => field !== null);
+    }
+
+    return {
+        id: dbRecord.id,
+        label: dbRecord.label,
+        shortLabel: dbRecord.short_label,
+        description: dbRecord.description,
+        hideDescription: dbRecord.hide_description,
+        helpText: dbRecord.help_text,
+        fields: processedFields,
+        isPublic: dbRecord.is_public,
+        authenticatedRead: dbRecord.authenticated_read,
+        publicRead: dbRecord.public_read,
+    };
 };
 
 /**
  * Fetches all component groups for the current user
  */
-export const getAllComponentGroups = async (): Promise<ComponentGroup[]> => {
-    // Get the current user ID
+export const getAllComponentGroups = async (): Promise<ContainerBuilder[]> => {
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
 
@@ -114,12 +110,11 @@ export const getAllComponentGroups = async (): Promise<ComponentGroup[]> => {
 /**
  * Fetches a specific component group by ID
  */
-export const getComponentGroupById = async (id: string): Promise<ComponentGroup | null> => {
+export const getComponentGroupById = async (id: string): Promise<ContainerBuilder | null> => {
     const { data, error } = await supabase.from("component_groups").select("*").eq("id", id).single();
 
     if (error) {
         if (error.code === "PGRST116") {
-            // Record not found
             return null;
         }
         console.error("Error fetching component group:", error);
@@ -132,15 +127,12 @@ export const getComponentGroupById = async (id: string): Promise<ComponentGroup 
 /**
  * Creates a new component group with fields
  */
-export const createComponentGroup = async (group: ComponentGroup): Promise<ComponentGroup> => {
+export const createComponentGroup = async (group: ContainerBuilder): Promise<ContainerBuilder> => {
     try {
-        // Check if we have fields to add
         if (group.fields && group.fields.length > 0) {
-            // Use the RPC function to create group with fields in one operation
             const fieldIds = group.fields.map((field) => field.id).filter(Boolean) as string[];
 
             if (fieldIds.length > 0) {
-                // Call RPC to create group with fields
                 const { data: createdId, error: rpcError } = await supabase.rpc("create_component_group", {
                     p_label: group.label,
                     p_short_label: group.shortLabel || null,
@@ -155,7 +147,6 @@ export const createComponentGroup = async (group: ComponentGroup): Promise<Compo
                     throw rpcError;
                 }
 
-                // Fetch the complete group with fields
                 const newGroup = await getComponentGroupById(createdId);
                 if (!newGroup) {
                     throw new Error("Failed to retrieve newly created group");
@@ -165,10 +156,7 @@ export const createComponentGroup = async (group: ComponentGroup): Promise<Compo
             }
         }
 
-        // If no fields, use standard approach
         const dbData = await componentGroupToDBFormat(group);
-
-        // Remove the fields property as we'll handle that separately
         const { fields, ...restData } = dbData;
 
         const { data, error } = await supabase.from("component_groups").insert(restData).select().single();
@@ -192,10 +180,8 @@ export const createComponentGroup = async (group: ComponentGroup): Promise<Compo
 /**
  * Updates an existing component group (without modifying its fields)
  */
-export const updateComponentGroup = async (id: string, group: ComponentGroup): Promise<ComponentGroup> => {
+export const updateComponentGroup = async (id: string, group: ContainerBuilder): Promise<ContainerBuilder> => {
     const dbData = await componentGroupToDBFormat(group);
-
-    // Remove the fields property as we'll handle that separately
     const { fields, ...restData } = dbData;
 
     try {
@@ -319,29 +305,26 @@ export const removeFieldFromGroup = async (groupId: string, fieldId: string): Pr
 /**
  * Duplicates a component group
  */
-export const duplicateComponentGroup = async (id: string): Promise<ComponentGroup> => {
-    // First get the group to duplicate
+export const duplicateComponentGroup = async (id: string): Promise<ContainerBuilder> => {
     const group = await getComponentGroupById(id);
 
     if (!group) {
         throw new Error(`Component group with id ${id} not found`);
     }
 
-    // Create a copy with a new label
     const newGroup = {
         ...group,
-        id: "", // Clear the ID so a new one will be generated
+        id: "",
         label: `${group.label} (Copy)`,
     };
 
-    // Create the new group with its fields
     return await createComponentGroup(newGroup);
 };
 
 /**
  * Fetches public component groups
  */
-export const getPublicComponentGroups = async (): Promise<ComponentGroup[]> => {
+export const getPublicComponentGroups = async (): Promise<ContainerBuilder[]> => {
     const { data, error } = await supabase.from("component_groups").select("*").eq("is_public", true);
 
     if (error) {
@@ -363,4 +346,3 @@ export const setComponentGroupPublic = async (id: string, isPublic: boolean): Pr
         throw error;
     }
 };
-

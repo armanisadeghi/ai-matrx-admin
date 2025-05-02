@@ -35,17 +35,17 @@ import {
   createCustomAppConfig,
   updateCustomAppConfig,
   isAppSlugAvailable
-} from '@/features/applet/builder/service/customAppService';
+} from '@/lib/redux/app-builder/service/customAppService';
 
 import {
   getAllCustomAppletConfigs,
   getCustomAppletConfigById,
   createCustomAppletConfig,
   updateCustomAppletConfig,
-  refreshGroupInApplet,
-  refreshAllGroupsInApplet,
+  recompileGroupInAppletById,
+  recompileAllGroupsInApplet,
   isAppletSlugAvailable
-} from '@/features/applet/builder/service/customAppletService';
+} from '@/lib/redux/app-builder/service/customAppletService';
 
 import {
   getAllComponentGroups,
@@ -54,12 +54,12 @@ import {
   removeFieldFromGroup,
   refreshFieldInGroup,
   refreshAllFieldsInGroup
-} from '@/features/applet/builder/service/fieldGroupService';
+} from '@/lib/redux/app-builder/service/fieldGroupService';
 
 import {
   getAllFieldComponents,
   getFieldComponentById
-} from '@/features/applet/builder/service/fieldComponentService';
+} from '@/lib/redux/app-builder/service/fieldComponentService';
 
 // Default app configuration values
 const DEFAULT_APP_CONFIG: Partial<CustomAppConfig> = {
@@ -461,7 +461,7 @@ export const ConfigBuilder = () => {
       if (!applet) throw new Error("Applet not found");
       
       // Add the group to the applet using the RPC function
-      const success = await refreshGroupInApplet(applet.id, group.id);
+      const success = await recompileGroupInAppletById(applet.id, group.id);
       
       if (success) {
         // Get the updated applet with the new group container
@@ -516,7 +516,7 @@ export const ConfigBuilder = () => {
         await refreshFieldInGroup(groupId, fieldId);
         
         // Refresh the group in the applet to update the embedded object
-        await refreshGroupInApplet(activeApplet, groupId);
+        await recompileGroupInAppletById(activeApplet, groupId);
         
         // Get the updated applet with the refreshed group
         const updatedApplet = await getCustomAppletConfigById(activeApplet);
@@ -557,7 +557,7 @@ export const ConfigBuilder = () => {
       
       if (success) {
         // Refresh the group in the applet
-        await refreshGroupInApplet(activeApplet, groupId);
+        await recompileGroupInAppletById(activeApplet, groupId);
         
         // Get the updated applet
         const updatedApplet = await getCustomAppletConfigById(activeApplet);
@@ -594,7 +594,7 @@ export const ConfigBuilder = () => {
     setIsLoading(true);
     setLoadingMessage('Refreshing applet groups...');
     try {
-      const success = await refreshAllGroupsInApplet(appletId);
+      const success = await recompileAllGroupsInApplet(appletId);
       
       if (success) {
         // Get the updated applet
@@ -637,7 +637,7 @@ export const ConfigBuilder = () => {
       
       if (fieldsSuccess) {
         // Refresh the group in the applet
-        const groupSuccess = await refreshGroupInApplet(appletId, groupId);
+        const groupSuccess = await recompileGroupInAppletById(appletId, groupId);
         
         if (groupSuccess) {
           // Get the updated applet

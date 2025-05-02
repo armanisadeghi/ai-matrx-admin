@@ -154,6 +154,7 @@
         "react-device-detect": "latest",
         "react-dom": "latest",
         "react-dropzone": "latest",
+        "react-easy-crop": "^5.4.1",
         "react-element-to-jsx-string": "latest",
         "react-fast-marquee": "latest",
         "react-hook-form": "latest",

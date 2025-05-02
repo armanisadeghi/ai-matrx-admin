@@ -102,3 +102,29 @@ components\official\PublicImageSearch.tsx
 ## Amazing JSON Explorer Component
 features\scraper\parts\RawJsonExplorer.tsx
  - This needs some work, but it's incredible!
+
+## Image Cropper Component
+components\official\image-cropper\index.tsx
+ - Versatile image cropping tool with customizable aspect ratios
+ - Provides two component variants:
+   - ImageCropperWithSelect: Complete solution with image upload, aspect ratio selection, and preview
+   - EasyImageCropper: Simplified version with predefined aspect ratio for quick cropping tasks
+ - Supports custom aspect ratio sets (square, landscape, portrait, etc.)
+ - Fully responsive with intuitive crop area selection
+ - Delivers cropped image as a URL through onComplete callback
+ - Lightweight and integrates seamlessly with Next.js
+ - Maintains consistent light and dark mode styling across the app
+
+## Multi Applet Selector
+features\applet\builder\components\smart-parts\applets\MultiAppletSelector.tsx
+ - Interactive component for selecting and managing multiple applets
+ - Includes applet browsing, filtering, and selection capabilities
+ - Supports configuration options:
+   - Custom button labels and styling variants
+   - Optional limit on the number of selections
+   - Custom empty state messages
+   - Ability to create new applets directly from the interface
+ - Maintains selected applet state with proper callbacks
+ - Fully responsive with built-in mobile support
+ - Seamlessly integrates with the applet ecosystem
+ - Follows application theming with light and dark mode support

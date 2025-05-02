@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
-import { getAllComponentGroups, getComponentGroupById } from '@/features/applet/builder/service';
+import { getAllComponentGroups, getComponentGroupById } from '@/lib/redux/app-builder/service';
 import { ComponentGroup } from '@/features/applet/builder/builder.types';
 
 // Define type for groupIds

@@ -31,10 +31,10 @@ import {
   updateCustomAppletConfig,
   deleteCustomAppletConfig,
   addGroupsToApplet,
-  refreshGroupInApplet,
-  refreshAllGroupsInApplet
-} from '@/features/applet/builder/service/customAppletService';
-import { getAllComponentGroups } from '@/features/applet/builder/service/fieldGroupService';
+  recompileGroupInAppletById,
+  recompileAllGroupsInApplet
+} from '@/lib/redux/app-builder/service/customAppletService';
+import { getAllComponentGroups } from '@/lib/redux/app-builder/service/fieldGroupService';
 import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
 import { CustomAppletConfig, AppletContainer, ComponentGroup } from '../../builder.types';
 
@@ -410,7 +410,7 @@ export const AppletBuilder = () => {
     
     setIsLoading(true);
     try {
-      const success = await refreshGroupInApplet(selectedApplet.id, groupId);
+      const success = await recompileGroupInAppletById(selectedApplet.id, groupId);
       
       if (success) {
         // Refresh the applet data to get the updated container
@@ -453,7 +453,7 @@ export const AppletBuilder = () => {
     
     setIsLoading(true);
     try {
-      const success = await refreshAllGroupsInApplet(selectedApplet.id);
+      const success = await recompileAllGroupsInApplet(selectedApplet.id);
       
       if (success) {
         // Refresh the applet data to get the updated containers
