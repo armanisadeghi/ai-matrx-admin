@@ -23,6 +23,9 @@ export default function SearchAppletPage() {
 
                 <SectionSeparator name="Applet Specified Layout" />
                 <AppletInputLayoutWrapper initialAppName="travel-agent" />
+                {/* Original Layouts */}
+                <SectionSeparator name="Open Layout" />
+                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="open" />
 
                 <SectionSeparator name="Horizontal Layout" />
                 <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="horizontal" />
@@ -81,9 +84,6 @@ export default function SearchAppletPage() {
                 <SectionSeparator name="Map Based Layout" />
                 <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="mapBased" />
 
-                {/* Original Layouts */}
-                <SectionSeparator name="Open Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="open" />
             </div>
     );
 }

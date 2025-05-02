@@ -4,9 +4,9 @@ import React, { useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from 'lucide-react';
-import SmartAppListWrapper from '@/features/applet/builder/components/smart-parts/SmartAppListWrapper';
+import SmartAppListWrapper from '@/features/applet/builder/components/smart-parts/apps/SmartAppListWrapper';
 import { CustomAppConfig } from '@/features/applet/builder/builder.types';
-import { SmartAppListRefType } from './smart-parts/SmartAppList';
+import { SmartAppListRefType } from './smart-parts/apps/SmartAppList';
 
 interface SelectAppStepProps {
   onAppSelected: (app: CustomAppConfig) => void;

@@ -11,7 +11,8 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ComponentGroup } from '../../service/fieldGroupService';
+import { ComponentGroup } from '../../builder.types';
+
 
 interface SavedGroupsListProps {
   loading: boolean;

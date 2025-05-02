@@ -73,7 +73,7 @@ const DEFAULT_APP_CONFIG: Partial<CustomAppConfig> = {
   accentColor: 'rose',
   appletList: [],
   extraButtons: [],
-  layoutType: 'oneColumn',
+  layoutType: 'open',
   imageUrl: '',
 };
 
@@ -715,8 +715,8 @@ export const ConfigBuilder = () => {
       accentColor: 'rose',
       appletList: [],
       extraButtons: [],
-      layoutType: 'oneColumn',
-      imageUrl: '',
+      layoutType: 'open',
+      imageUrl: '',    
     });
     setApplets([]);
     setActiveApplet(null);

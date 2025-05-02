@@ -502,7 +502,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({
             )}
           </div>
           
-          {/* Right side: Applet list */}
+          {/* Right side: Applet list  THIS IS NOT WORKING AND NEEDS TO BE UPDATED TO USE THE APPLET MULTI-SELECT AND THEN SAVE AN ARRAY OF OBJECTS WITH THE APPLET ID AND THE APPLET NAME*/}
           <div className="w-full md:w-1/3 p-5 bg-gray-50 dark:bg-gray-800/50 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700">
             <h3 className="text-gray-900 dark:text-gray-100 font-medium mb-4">Applets ({applets.length})</h3>
             

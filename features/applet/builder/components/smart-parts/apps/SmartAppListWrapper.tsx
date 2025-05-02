@@ -140,14 +140,6 @@ const SmartAppListWrapper = forwardRef<SmartAppListRefType, SmartAppListWrapperP
                 >
                   <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onClose}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
               </div>
             </div>
             
