@@ -30,11 +30,11 @@ import {
   createCustomAppletConfig,
   updateCustomAppletConfig,
   deleteCustomAppletConfig,
-  addGroupsToApplet,
-  recompileGroupInAppletById,
-  recompileAllGroupsInApplet
+  addContainersToApplet,
+  recompileContainerInAppletById,
+  recompileAllContainersInApplet
 } from '@/lib/redux/app-builder/service/customAppletService';
-import { getAllComponentGroups } from '@/lib/redux/app-builder/service/fieldGroupService';
+import { getAllComponentGroups } from '@/lib/redux/app-builder/service/fieldContainerService';
 import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
 import { CustomAppletConfig, AppletContainer, ComponentGroup } from '../../builder.types';
 
@@ -349,7 +349,7 @@ export const AppletBuilder = () => {
     try {
       // Add the groups as containers to the applet using the RPC function
       console.log("selectedGroups", selectedGroups);
-      const success = await addGroupsToApplet(selectedApplet.id, selectedGroups);
+      const success = await addContainersToApplet(selectedApplet.id, selectedGroups);
       console.log("success", success);
       
       if (success) {
@@ -410,7 +410,7 @@ export const AppletBuilder = () => {
     
     setIsLoading(true);
     try {
-      const success = await recompileGroupInAppletById(selectedApplet.id, groupId);
+      const success = await recompileContainerInAppletById(selectedApplet.id, groupId);
       
       if (success) {
         // Refresh the applet data to get the updated container
@@ -453,7 +453,7 @@ export const AppletBuilder = () => {
     
     setIsLoading(true);
     try {
-      const success = await recompileAllGroupsInApplet(selectedApplet.id);
+      const success = await recompileAllContainersInApplet(selectedApplet.id);
       
       if (success) {
         // Refresh the applet data to get the updated containers

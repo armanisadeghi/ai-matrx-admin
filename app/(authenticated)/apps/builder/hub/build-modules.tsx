@@ -27,8 +27,8 @@ export const builderModules = [
     },
     {
         id: "groups",
-        title: "Broker Groups",
-        description: "Create reusable field groups",
+        title: "Field Containers",
+        description: "Create containers for similar fields",
         icon: <IoLogoWebComponent className="h-8 w-8 text-amber-500 dark:text-amber-500" />,
         href: "/apps/builder/modules/group",
     },

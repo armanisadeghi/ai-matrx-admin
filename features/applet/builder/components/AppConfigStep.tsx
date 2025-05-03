@@ -13,35 +13,23 @@ import { TailwindColorPicker } from '@/components/ui/TailwindColorPicker';
 import AppPreviewCard from "@/features/applet/builder/previews/AppPreviewCard";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { IconPicker } from '@/components/ui/IconPicker';
-import { CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { appletLayoutOptionsArray } from '@/features/applet/layouts/options/layout-options';
+import { CheckCircle } from 'lucide-react';
 import { createAppThunk, updateAppThunk } from '@/lib/redux/app-builder/thunks/appBuilderThunks';
 import { updateApp } from '@/lib/redux/app-builder/slices/appBuilderSlice';
-import { selectAppById, selectAppLoading, selectAppError, selectAppSlugStatus, selectAppIsDirty } from '@/lib/redux/app-builder/selectors/appSelectors';
+import { selectAppLoading, selectAppError, selectAppSlugStatus, selectAppIsDirty } from '@/lib/redux/app-builder/selectors/appSelectors';
 import { convertToKebabCase } from '@/utils/text/stringUtils';
 import { checkAppSlugUniqueness } from '@/lib/redux/app-builder/thunks/appBuilderThunks';
+import { AppLayoutSelection } from '@/features/applet/builder/parts/AppLayoutSelection';
+import { AppSlugChecker } from '@/features/applet/builder/components/smart-parts/apps/AppSlugChecker';
 
-interface AppInfoStepProps {
+interface AppConfigStepProps {
     config: Partial<CustomAppConfig>;
     updateConfig: (updates: Partial<CustomAppConfig>) => void;
     saveApp: (appId: string) => void;
     isEdit: boolean;
 }
 
-export const AppInfoStep: React.FC<AppInfoStepProps> = ({ 
+export const AppConfigStep: React.FC<AppConfigStepProps> = ({ 
     config, 
     updateConfig,
     saveApp,
@@ -168,35 +156,6 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
         }
     };
     
-    const handleLayoutChange = (layoutType: string) => {
-        if (config.id) {
-            dispatch(updateApp({ 
-                id: config.id, 
-                changes: { layoutType } 
-            }));
-        } else {
-            updateConfig({ layoutType });
-        }
-    };
-    
-    const handleCheckSlugAvailability = async () => {
-        if (!config.slug) return;
-        
-        try {
-            await dispatch(checkAppSlugUniqueness({
-                slug: config.slug,
-                appId: config.id
-            }));
-        } catch (error) {
-            console.error('Error checking slug uniqueness:', error);
-            toast({
-                title: "Error",
-                description: "Failed to check slug availability.",
-                variant: "destructive",
-            });
-        }
-    };
-    
     const handleSaveApp = async () => {
         if (!config.name || !config.slug) {
             toast({
@@ -287,58 +246,6 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
         }
     };
     
-    // Render slug status icon with tooltip
-    const renderSlugStatusIcon = () => {
-        switch(slugStatus) {
-            case 'unique':
-                return (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Slug is available and unique</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                );
-            case 'notUnique':
-                return (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <XCircle className="h-4 w-4 text-red-500" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>This slug is already in use</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                );
-            default:
-                return config.slug ? (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button 
-                                    onClick={handleCheckSlugAvailability} 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    className="h-5 w-5 p-0 text-amber-500 hover:text-amber-600 hover:bg-transparent"
-                                >
-                                    <RefreshCw className="h-4 w-4" />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Click to check slug availability</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                ) : null;
-        }
-    };
-    
     // Helper to render required field indicator
     const Required = () => (
         <span className="text-red-500 ml-1">*</span>
@@ -418,9 +325,7 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                                                 slugStatus === 'notUnique' ? 'border-red-500 dark:border-red-500' : ''
                                             } pr-10`}
                                         />
-                                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                            {renderSlugStatusIcon()}
-                                        </div>
+                                        <AppSlugChecker appId={config.id} slug={config.slug || ""} />
                                     </div>
                                     {slugStatus === 'notUnique' && (
                                         <p className="text-red-500 text-xs mt-1">This slug is already in use</p>
@@ -507,31 +412,21 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                                 </div>
                             </div>
                             
-                            {/* Layout Type & App Image row */}
+                            {/* Layout Type & Creator Name row */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="layoutType" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        App Layout
-                                    </Label>
-                                    <Select
-                                        value={config.layoutType || "open"}
-                                        onValueChange={handleLayoutChange}
-                                    >
-                                        <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                                            <SelectValue placeholder="Select a layout" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {appletLayoutOptionsArray.map(layout => (
-                                                <SelectItem key={layout.value} value={layout.value} className="flex items-center gap-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-gray-700 dark:text-gray-300">{layout.icon}</span>
-                                                        <span>{layout.title}</span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                {/* Replace Select with AppLayoutSelection component */}
+                                {config.id ? (
+                                    <AppLayoutSelection appId={config.id} label="App Layout" />
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            App Layout
+                                        </Label>
+                                        <div className="text-sm text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 p-2 rounded-md">
+                                            Save app to select a layout
+                                        </div>
+                                    </div>
+                                )}
                                 
                                 <div className="space-y-2">
                                     <Label htmlFor="creator" className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -594,7 +489,7 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Layout:</span>
                                     <span className="font-medium text-gray-900 dark:text-gray-100">
-                                        {appletLayoutOptionsArray.find(l => l.value === config.layoutType)?.title || 'Standard'}
+                                        {config.layoutType ? config.layoutType.charAt(0).toUpperCase() + config.layoutType.slice(1) : 'Not set'}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
@@ -616,4 +511,4 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
     );
 };
 
-export default AppInfoStep;
+export default AppConfigStep;

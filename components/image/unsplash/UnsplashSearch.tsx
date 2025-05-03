@@ -38,7 +38,7 @@ export function UnsplashSearch({
   onSearch,
   loading = false,
   className,
-  currentSortOrder = 'latest',
+  currentSortOrder = 'relevant',
   currentOrientation,
   currentPremiumFilter = 'none',
   sortOrderOptions = ['latest', 'popular', 'relevant', 'oldest'],

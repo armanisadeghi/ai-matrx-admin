@@ -18,11 +18,15 @@ import {
   MessageSquare, 
   Map, 
   SidebarOpen,
-  Terminal
+  Terminal,
+  List,
+  Search,
+  Grid
 } from 'lucide-react';
 import { PiTabsBold } from "react-icons/pi";
 import { TbCarouselHorizontal } from "react-icons/tb";
 import { AppletLayoutOption, AppletLayoutOptionInfo } from './layout.types';
+import { AppLayoutOptions } from '../../builder/builder.types';
 
 
 export const appletLayoutOptions: Record<AppletLayoutOption, AppletLayoutOptionInfo> = {
@@ -156,3 +160,48 @@ export const appletLayoutOptions: Record<AppletLayoutOption, AppletLayoutOptionI
 
 // Helper to convert the object to an array for easier mapping in components
 export const appletLayoutOptionsArray: AppletLayoutOptionInfo[] = Object.values(appletLayoutOptions);
+
+// App Layout Option Info interface with the same structure as AppletLayoutOptionInfo
+export interface AppLayoutOptionInfo {
+  value: AppLayoutOptions;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}
+
+// App Layout Options similar to Applet Layout Options
+export const appLayoutOptions: Record<AppLayoutOptions, AppLayoutOptionInfo> = {
+  "tabbedApplets": {
+    value: "tabbedApplets",
+    title: "Tabbed Applets",
+    description: "Shows applets in a tabbed interface for easy navigation",
+    icon: <PiTabsBold size={24} />
+  },
+  "singleDropdown": {
+    value: "singleDropdown",
+    title: "Single Dropdown",
+    description: "A dropdown menu for selecting a single applet",
+    icon: <List size={24} />
+  },
+  "multiDropdown": {
+    value: "multiDropdown",
+    title: "Multi Dropdown",
+    description: "A dropdown menu allowing multiple applet selections",
+    icon: <Layers size={24} />
+  },
+  "singleDropdownWithSearch": {
+    value: "singleDropdownWithSearch",
+    title: "Searchable Dropdown",
+    description: "A searchable dropdown menu for finding applets",
+    icon: <Search size={24} />
+  },
+  "icons": {
+    value: "icons",
+    title: "Icon Layout",
+    description: "Displays applets as clickable icons for visual navigation",
+    icon: <Grid size={24} />
+  }
+};
+
+// Helper to convert the object to an array for easier mapping in components
+export const appLayoutOptionsArray: AppLayoutOptionInfo[] = Object.values(appLayoutOptions);

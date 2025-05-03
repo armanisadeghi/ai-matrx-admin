@@ -9,12 +9,88 @@ import {
     refreshAllFieldsInGroup,
     getAllComponentGroups,
     getComponentGroupById,
-} from "../service/fieldGroupService";
-import { ContainerBuilder, FieldDefinition } from "../types";
+} from "../service/fieldContainerService";
+import { ContainerBuilder } from "../types";
 import { RootState } from "@/lib/redux";
 
 import { v4 as uuidv4 } from "uuid";
 import { selectContainerById } from "../selectors/containerSelectors";
+import { addContainersToApplet, recompileContainerInAppletById, recompileAllContainersInApplet } from "../service/customAppletService";
+import { FieldDefinition } from "@/features/applet/builder/builder.types";
+import { saveFieldAndUpdateContainerThunk } from "./fieldBuilderThunks";
+
+/**
+ * Unified thunk for saving a container - handles both create and update
+ */
+export const saveContainerThunk = createAsyncThunk<
+    ContainerBuilder,
+    string,
+    { state: RootState }
+>("containerBuilder/saveContainer", async (containerId, { getState, rejectWithValue }) => {
+    try {
+        const container = selectContainerById(getState(), containerId);
+        
+        if (!container) {
+            throw new Error(`Container with ID ${containerId} not found`);
+        }
+        
+        let savedContainer;
+        
+        // Determine if this is a new container (isLocal) or an existing one
+        if (container.isLocal) {
+            // Create new container
+            savedContainer = await createComponentGroup(container);
+        } else {
+            // Update existing container
+            savedContainer = await updateComponentGroup(containerId, container);
+        }
+        
+        // Return consistently formatted result
+        return {
+            ...savedContainer,
+            fields: savedContainer.fields || [],
+            isDirty: false,
+            isLocal: false,
+        };
+    } catch (error: any) {
+        return rejectWithValue(error.message || "Failed to save container");
+    }
+});
+
+/**
+ * Integrated thunk to save a container and update its parent applet
+ */
+export const saveContainerAndUpdateAppletThunk = createAsyncThunk(
+    "containerBuilder/saveAndUpdateApplet",
+    async ({ containerId, appletId }: { containerId: string, appletId: string }, { dispatch, rejectWithValue }) => {
+        try {
+            // First save the container
+            const saveResult = await dispatch(saveContainerThunk(containerId)).unwrap();
+            
+            if (!saveResult) {
+                throw new Error("Failed to save container");
+            }
+            
+            // If successful, add/update the container in the applet and recompile
+            if (appletId) {
+                // Add the container to the applet if needed
+                await addContainersToApplet(appletId, [saveResult.id]);
+                
+                // Recompile the specific container in the applet
+                await recompileContainerInAppletById(appletId, saveResult.id);
+            }
+            
+            return {
+                container: saveResult,
+                appletId
+            };
+        } catch (error: any) {
+            return rejectWithValue(
+                error.message || "Failed to save container and update applet"
+            );
+        }
+    }
+);
 
 // Create a new container
 export const createContainerThunk = createAsyncThunk<
@@ -23,7 +99,7 @@ export const createContainerThunk = createAsyncThunk<
     { state: RootState }
 >("containerBuilder/createContainer", async (containerData, { rejectWithValue }) => {
     try {
-        // If no ID is provided, generate a unique ID
+        // If no ID is provided, generate a unique ID using uuid v4
         const container = {
             ...containerData,
             id: containerData.id || uuidv4(),
@@ -31,7 +107,12 @@ export const createContainerThunk = createAsyncThunk<
         };
         
         const result = await createComponentGroup(container as ContainerBuilder);
-        return result;
+        return {
+            ...result,
+            fields: result.fields || [],
+            isDirty: false,
+            isLocal: false,
+        };
     } catch (error: any) {
         console.error("Error creating container:", error);
         return rejectWithValue(error.message || "Failed to create container");
@@ -59,7 +140,12 @@ export const updateContainerThunk = createAsyncThunk<
         };
         
         const result = await updateComponentGroup(id, updatedContainer);
-        return result;
+        return {
+            ...result,
+            fields: result.fields || [],
+            isDirty: false,
+            isLocal: false,
+        };
     } catch (error: any) {
         console.error("Error updating container:", error);
         return rejectWithValue(error.message || "Failed to update container");
@@ -217,21 +303,23 @@ export const fetchContainerByIdThunk = createAsyncThunk<
     }
 });
 
-// Add all containers from a source container to active applet
+// Add a container to an applet
 export const saveContainerToAppletThunk = createAsyncThunk<
     void,
     { appletId: string; containerId: string },
     { state: RootState }
 >("containerBuilder/saveContainerToApplet", async ({ appletId, containerId }, { getState, rejectWithValue }) => {
     try {
-        // This would need to leverage your existing recompile group in applet system
-        // Assuming you have a function to do this from your existing code
-        // For now this is a placeholder - you would replace with your actual function
-        const success = await addContainerToApplet(appletId, containerId);
+        // Use the proper function from customAppletService
+        const success = await addContainersToApplet(appletId, [containerId]);
         
         if (!success) {
             throw new Error("Failed to add container to applet");
         }
+        
+        // Recompile the container in the applet to ensure it's properly added
+        await recompileContainerInAppletById(appletId, containerId);
+        
     } catch (error: any) {
         console.error("Error saving container to applet:", error);
         return rejectWithValue(error.message || "Failed to save container to applet");
@@ -252,16 +340,16 @@ export const moveFieldUpThunk = createAsyncThunk<
             throw new Error(`Container with ID ${containerId} not found`);
         }
         
-        // Find the field index
+        // Find the index of the field to move
         const fieldIndex = container.fields.findIndex(f => f.id === fieldId);
         
         if (fieldIndex === -1) {
-            throw new Error(`Field with ID ${fieldId} not found in container`);
+            throw new Error(`Field with ID ${fieldId} not found in container ${containerId}`);
         }
         
         // Can't move up if already at the top
         if (fieldIndex === 0) {
-            return { containerId, newFieldsOrder: [...container.fields] };
+            return { containerId, newFieldsOrder: container.fields };
         }
         
         // Create a new array with the field moved up
@@ -269,14 +357,6 @@ export const moveFieldUpThunk = createAsyncThunk<
         const temp = newFieldsOrder[fieldIndex];
         newFieldsOrder[fieldIndex] = newFieldsOrder[fieldIndex - 1];
         newFieldsOrder[fieldIndex - 1] = temp;
-        
-        // Would need to use your existing system to update field order
-        // For now this is a placeholder - you would replace with your actual function
-        // You can use your existing update approach for component groups
-        await updateComponentGroup(containerId, {
-            ...container,
-            fields: newFieldsOrder
-        });
         
         return { containerId, newFieldsOrder };
     } catch (error: any) {
@@ -299,16 +379,16 @@ export const moveFieldDownThunk = createAsyncThunk<
             throw new Error(`Container with ID ${containerId} not found`);
         }
         
-        // Find the field index
+        // Find the index of the field to move
         const fieldIndex = container.fields.findIndex(f => f.id === fieldId);
         
         if (fieldIndex === -1) {
-            throw new Error(`Field with ID ${fieldId} not found in container`);
+            throw new Error(`Field with ID ${fieldId} not found in container ${containerId}`);
         }
         
         // Can't move down if already at the bottom
         if (fieldIndex === container.fields.length - 1) {
-            return { containerId, newFieldsOrder: [...container.fields] };
+            return { containerId, newFieldsOrder: container.fields };
         }
         
         // Create a new array with the field moved down
@@ -317,23 +397,9 @@ export const moveFieldDownThunk = createAsyncThunk<
         newFieldsOrder[fieldIndex] = newFieldsOrder[fieldIndex + 1];
         newFieldsOrder[fieldIndex + 1] = temp;
         
-        // Would need to use your existing system to update field order
-        // For now this is a placeholder - you would replace with your actual function
-        await updateComponentGroup(containerId, {
-            ...container,
-            fields: newFieldsOrder
-        });
-        
         return { containerId, newFieldsOrder };
     } catch (error: any) {
         console.error("Error moving field down:", error);
         return rejectWithValue(error.message || "Failed to move field down");
     }
 });
-
-// Placeholder - would need your actual implementation to connect with your applet system
-const addContainerToApplet = async (appletId: string, containerId: string): Promise<boolean> => {
-    console.log("Adding container to applet", { appletId, containerId });
-    // This would integrate with your existing recompileGroupInAppletById function
-    return true;
-};

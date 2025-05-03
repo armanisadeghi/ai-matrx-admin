@@ -3,7 +3,7 @@ import { RootState } from "@/lib/redux";
 import { FieldBuilder } from "../types";
 
 // Base selector for the fieldBuilder state
-const getFieldBuilderState = (state: RootState) => state.fieldBuilder;
+export const getFieldBuilderState = (state: RootState) => state.fieldBuilder;
 
 // Memoized selector for all fields
 export const selectAllFields = createSelector(
@@ -67,6 +67,30 @@ export const selectHasUnsavedChanges = createSelector(
 export const selectLocalFields = createSelector(
   [selectAllFields],
   (fields) => fields.filter(field => field.isLocal === true)
+);
+
+// Memoized selector for the active field ID
+export const selectActiveFieldId = createSelector(
+  [getFieldBuilderState],
+  (fieldBuilderState) => fieldBuilderState.activeFieldId
+);
+
+// Memoized selector for the active field
+export const selectActiveField = createSelector(
+  [getFieldBuilderState, selectActiveFieldId],
+  (fieldBuilderState, activeId) => activeId ? fieldBuilderState.fields[activeId] : null
+);
+
+// Memoized selector for the new field ID
+export const selectNewFieldId = createSelector(
+  [getFieldBuilderState],
+  (fieldBuilderState) => fieldBuilderState.newFieldId
+);
+
+// Memoized selector for the new field
+export const selectNewField = createSelector(
+  [getFieldBuilderState, selectNewFieldId],
+  (fieldBuilderState, newId) => newId ? fieldBuilderState.fields[newId] : null
 );
 
 // Explicit selectors for each FieldBuilder property
@@ -153,4 +177,10 @@ export const selectFieldIsDirty = createSelector(
 export const selectFieldIsLocal = createSelector(
   [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
   (field) => (field ? field.isLocal : null)
+);
+
+// Memoized selector for field dirty status
+export const selectFieldDirtyStatus = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => field?.isDirty || false
 );

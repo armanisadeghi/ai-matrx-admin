@@ -8,21 +8,16 @@ import {
     recompileAppletThunk,
     fetchAppletsThunk,
     checkAppletSlugUniqueness,
+    saveAppletThunk,
+    addAppletToAppThunk,
 } from "../thunks/appletBuilderThunks";
+import { saveContainerAndUpdateAppletThunk } from "../thunks/containerBuilderThunks";
+import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
 import { AppletBuilder, ContainerBuilder } from "../types";
+import { v4 as uuidv4 } from "uuid";
+import { BrokerMapping } from "@/features/applet/builder/builder.types";
+import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 
-// Default applet configuration
-export const DEFAULT_APPLET: Partial<AppletBuilder> = {
-    name: "",
-    slug: "",
-    containers: [],
-    isPublic: false,
-    authenticatedRead: true,
-    publicRead: false,
-    isDirty: true,
-    isLocal: true,
-    slugStatus: "unchecked",
-};
 
 interface AppletsState {
     applets: Record<string, AppletBuilder>;
@@ -46,14 +41,22 @@ export const appletBuilderSlice = createSlice({
     reducers: {
         // Initialize a new applet
         startNewApplet: (state, action: PayloadAction<Partial<AppletBuilder> | undefined>) => {
-            const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            state.applets[tempId] = {
-                ...DEFAULT_APPLET,
-                id: tempId,
+            const id = uuidv4();
+            state.applets[id] = {
+                id: id,
+                name: "",
+                slug: "",
+                containers: [],
+                isPublic: false,
+                authenticatedRead: true,
+                publicRead: false,
+                isDirty: true,
+                isLocal: true,
+                slugStatus: "unchecked",
                 ...action.payload,
             } as AppletBuilder;
-            state.newAppletId = tempId;
-            state.activeAppletId = tempId;
+            state.newAppletId = id;
+            state.activeAppletId = id;
         },
         // Cancel creation of a local applet
         cancelNewApplet: (state, action: PayloadAction<string>) => {
@@ -121,7 +124,7 @@ export const appletBuilderSlice = createSlice({
                 state.applets[id] = { ...state.applets[id], accentColor, isDirty: true };
             }
         },
-        setLayoutType: (state, action: PayloadAction<{ id: string; layoutType?: string }>) => {
+        setLayoutType: (state, action: PayloadAction<{ id: string; layoutType?: AppletLayoutOption }>) => {
             const { id, layoutType } = action.payload;
             if (state.applets[id]) {
                 state.applets[id] = { ...state.applets[id], layoutType, isDirty: true };
@@ -169,7 +172,7 @@ export const appletBuilderSlice = createSlice({
                 state.applets[id] = { ...state.applets[id], appId, isDirty: true };
             }
         },
-        setBrokerMappings: (state, action: PayloadAction<{ id: string; brokerMappings?: { fieldId: string; brokerId: string }[] }>) => {
+        setBrokerMappings: (state, action: PayloadAction<{ id: string; brokerMappings?: BrokerMapping[] }>) => {
             const { id, brokerMappings } = action.payload;
             if (state.applets[id]) {
                 state.applets[id] = { ...state.applets[id], brokerMappings, isDirty: true };
@@ -255,6 +258,66 @@ export const appletBuilderSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
+        // Add applet to app
+        builder.addCase(addAppletToAppThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(addAppletToAppThunk.fulfilled, (state, action) => {
+            const appletId = action.payload.id;
+            if (state.applets[appletId]) {
+                state.applets[appletId] = {
+                    ...action.payload,
+                    isDirty: false,
+                    isLocal: false
+                };
+            }
+            state.isLoading = false;
+        });
+        builder.addCase(addAppletToAppThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to associate applet with app";
+        });
+
+        // Unified Save Applet
+        builder.addCase(saveAppletThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(saveAppletThunk.fulfilled, (state, action) => {
+            const oldId = state.activeAppletId; 
+            const newId = action.payload.id;
+            
+            // Handle case where local ID is replaced with server ID
+            if (oldId && oldId !== newId) {
+                // If the saved applet had a temporary ID, we need to remove the temp entry
+                delete state.applets[oldId];
+                
+                // Update active and new applet IDs to the new server-generated ID
+                if (state.activeAppletId === oldId) {
+                    state.activeAppletId = newId;
+                }
+                
+                if (state.newAppletId === oldId) {
+                    state.newAppletId = null; // No longer a "new" applet
+                }
+            }
+            
+            // Update the applet with server data
+            state.applets[newId] = { 
+                ...action.payload, 
+                isDirty: false, 
+                isLocal: false, 
+                slugStatus: 'unique' 
+            };
+            
+            state.isLoading = false;
+        });
+        builder.addCase(saveAppletThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to save applet";
+        });
+
         // Create Applet
         builder.addCase(createAppletThunk.pending, (state) => {
             state.isLoading = true;
@@ -393,6 +456,42 @@ export const appletBuilderSlice = createSlice({
         builder.addCase(checkAppletSlugUniqueness.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.error.message || "Failed to check slug uniqueness";
+        });
+
+        // Handle saveContainerAndUpdateAppletThunk
+        builder.addCase(saveContainerAndUpdateAppletThunk.fulfilled, (state, action) => {
+            const { container, appletId } = action.payload;
+            
+            if (container && appletId && state.applets[appletId]) {
+                // Find the container in the applet
+                const containerIndex = state.applets[appletId].containers.findIndex(c => c.id === container.id);
+                
+                if (containerIndex >= 0) {
+                    // Update existing container
+                    state.applets[appletId].containers[containerIndex] = container;
+                } else {
+                    // Add new container
+                    state.applets[appletId].containers.push(container);
+                }
+                
+                state.applets[appletId].isDirty = true;
+            }
+        });
+
+        // Handle saveFieldAndUpdateContainerThunk - if needed for containers within applets
+        builder.addCase(saveFieldAndUpdateContainerThunk.fulfilled, (state, action) => {
+            const { containerId } = action.payload;
+            
+            // Find which applet contains this container and mark it as dirty
+            if (containerId) {
+                Object.values(state.applets).forEach(applet => {
+                    const containerIndex = applet.containers.findIndex(c => c.id === containerId);
+                    if (containerIndex >= 0) {
+                        // Mark the applet as dirty since a field in one of its containers changed
+                        applet.isDirty = true;
+                    }
+                });
+            }
         });
     },
 });

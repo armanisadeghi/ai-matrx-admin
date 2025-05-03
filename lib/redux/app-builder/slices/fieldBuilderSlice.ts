@@ -4,26 +4,50 @@ import {
     updateFieldThunk,
     deleteFieldThunk,
     fetchFieldsThunk,
+    fetchFieldByIdThunk,
     setFieldPublicThunk,
+    saveFieldThunk,
+    saveFieldAndUpdateContainerThunk,
+    saveFieldToContainerThunk,
 } from "../thunks/fieldBuilderThunks";
-import { FieldBuilder, FieldOption } from "../types";
-import { RootState } from "@/lib/redux";
+import { FieldBuilder } from "../types";
+import { FieldOption } from "@/features/applet/builder/builder.types";
+import { v4 as uuidv4 } from "uuid";
 
-// Utility to generate a temporary UUID-like ID
-const generateTempId = (): string => {
-    return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+// Default field configuration
+export const DEFAULT_FIELD: Partial<FieldBuilder> = {
+    label: "",
+    description: "",
+    helpText: "",
+    group: "default",
+    iconName: "",
+    component: "input",
+    required: false,
+    disabled: false,
+    placeholder: "",
+    defaultValue: "",
+    options: [],
+    componentProps: {},
+    includeOther: false,
+    isPublic: false,
+    isDirty: true,
+    isLocal: true,
 };
 
 interface FieldsState {
     fields: Record<string, FieldBuilder>;
     isLoading: boolean;
     error: string | null;
+    activeFieldId: string | null;
+    newFieldId: string | null;
 }
 
 const initialState: FieldsState = {
     fields: {},
     isLoading: false,
     error: null,
+    activeFieldId: null,
+    newFieldId: null,
 };
 
 export const fieldBuilderSlice = createSlice({
@@ -32,27 +56,31 @@ export const fieldBuilderSlice = createSlice({
     reducers: {
         // Initialize a new field for creation
         startFieldCreation: (state, action: PayloadAction<Partial<FieldBuilder> | undefined>) => {
-            const id = generateTempId();
-            const defaultField: FieldBuilder = {
-                id,
-                label: "",
-                component: "input",
-                componentProps: {},
-                required: false,
-                disabled: false,
-                isPublic: false,
-                isDirty: true,
-                isLocal: true,
+            const id = uuidv4();
+            state.fields[id] = {
+                ...DEFAULT_FIELD,
+                id: id,
                 ...action.payload,
-            };
-            state.fields[id] = defaultField;
+            } as FieldBuilder;
+            state.newFieldId = id;
+            state.activeFieldId = id;
         },
         // Cancel creation of a local field
         cancelFieldCreation: (state, action: PayloadAction<string>) => {
             const id = action.payload;
             if (state.fields[id] && state.fields[id].isLocal) {
                 delete state.fields[id];
+                if (state.newFieldId === id) {
+                    state.newFieldId = null;
+                }
+                if (state.activeFieldId === id) {
+                    state.activeFieldId = null;
+                }
             }
+        },
+        // Set the active field for editing
+        setActiveField: (state, action: PayloadAction<string | null>) => {
+            state.activeFieldId = action.payload;
         },
         // Direct actions for top-level FieldBuilder properties
         setLabel: (state, action: PayloadAction<{ id: string; label: string }>) => {
@@ -162,6 +190,13 @@ export const fieldBuilderSlice = createSlice({
                 state.fields[id] = { ...state.fields[id], options, isDirty: true };
             }
         },
+        deleteOption: (state, action: PayloadAction<{ id: string; optionId: string }>) => {
+            const { id, optionId } = action.payload;
+            if (state.fields[id] && state.fields[id].options) {
+                const options = state.fields[id].options!.filter(opt => opt.id !== optionId);
+                state.fields[id] = { ...state.fields[id], options, isDirty: true };
+            }
+        },
         // Other existing actions
         deleteField: (state, action: PayloadAction<string>) => {
             delete state.fields[action.payload];
@@ -239,6 +274,20 @@ export const fieldBuilderSlice = createSlice({
             state.error = action.error.message || "Failed to fetch fields";
         });
 
+        // Fetch Field By Id
+        builder.addCase(fetchFieldByIdThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(fetchFieldByIdThunk.fulfilled, (state, action) => {
+            state.fields[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
+            state.isLoading = false;
+        });
+        builder.addCase(fetchFieldByIdThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to fetch field";
+        });
+
         // Set Field Public
         builder.addCase(setFieldPublicThunk.pending, (state) => {
             state.isLoading = true;
@@ -251,12 +300,85 @@ export const fieldBuilderSlice = createSlice({
             state.isLoading = false;
             state.error = action.error.message || "Failed to set field visibility";
         });
+
+        // Unified Save Field
+        builder.addCase(saveFieldThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(saveFieldThunk.fulfilled, (state, action) => {
+            const oldId = state.activeFieldId;
+            const newId = action.payload.id;
+            
+            // Handle case where local ID is replaced with server ID
+            if (oldId && oldId !== newId) {
+                // If the saved field had a temporary ID, we need to remove the temp entry
+                delete state.fields[oldId];
+                
+                // Update active and new field IDs to the new server-generated ID
+                if (state.activeFieldId === oldId) {
+                    state.activeFieldId = newId;
+                }
+                
+                if (state.newFieldId === oldId) {
+                    state.newFieldId = null; // No longer a "new" field
+                }
+            }
+            
+            // Update the field with server data
+            state.fields[newId] = { 
+                ...action.payload, 
+                isDirty: false, 
+                isLocal: false
+            };
+            
+            state.isLoading = false;
+        });
+        builder.addCase(saveFieldThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to save field";
+        });
+
+        // Save Field and Update Container
+        builder.addCase(saveFieldAndUpdateContainerThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(saveFieldAndUpdateContainerThunk.fulfilled, (state, action) => {
+            const { field } = action.payload;
+            if (field) {
+                state.fields[field.id] = {
+                    ...field,
+                    isDirty: false,
+                    isLocal: false,
+                };
+            }
+            state.isLoading = false;
+        });
+        builder.addCase(saveFieldAndUpdateContainerThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to save field and update container";
+        });
+
+        // Save Field to Container
+        builder.addCase(saveFieldToContainerThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(saveFieldToContainerThunk.fulfilled, (state) => {
+            state.isLoading = false;
+        });
+        builder.addCase(saveFieldToContainerThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to save field to container";
+        });
     },
 });
 
 export const {
     startFieldCreation,
     cancelFieldCreation,
+    setActiveField,
     setLabel,
     setDescription,
     setHelpText,
@@ -274,6 +396,7 @@ export const {
     setIsLocal,
     addOption,
     updateOption,
+    deleteOption,
     deleteField,
     setLoading,
     setError,

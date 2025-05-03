@@ -1,5 +1,6 @@
 import { isSlugInUse } from "@/config/applets/apps/constants";
 import { AppletContainer, CustomAppletConfig } from "@/features/applet/builder/builder.types";
+import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import { supabase } from "@/utils/supabase/client";
 
 export type CustomAppletConfigDB = {
@@ -14,7 +15,7 @@ export type CustomAppletConfigDB = {
     creator?: string;
     primary_color?: string;
     accent_color?: string;
-    layout_type?: string;
+    layout_type?: AppletLayoutOption;
     containers?: AppletContainer[];
     data_source_config?: any;
     result_component_config?: any;
@@ -61,7 +62,7 @@ export const normalizeCustomAppletConfig = (config: Partial<CustomAppletConfig>)
  */
 export const appletConfigToDBFormat = async (
     config: CustomAppletConfig
-): Promise<Omit<CustomAppletConfigDB, "id" | "created_at" | "updated_at">> => {
+): Promise<Omit<CustomAppletConfigDB, "created_at" | "updated_at">> => {
     const { data } = await supabase.auth.getUser();
     const userId = data.user?.id;
 
@@ -70,6 +71,7 @@ export const appletConfigToDBFormat = async (
     }
 
     return {
+        id: config.id || null,
         name: config.name,
         description: config.description || null,
         slug: config.slug,
@@ -374,9 +376,9 @@ export const checkCompiledRecipeVersionExists = async (recipeId: string, version
 };
 
 /**
- * Adds groups to an applet as containers
+ * Adds Containers to an applet as containers
  */
-export const addGroupsToApplet = async (appletId: string, groupIds: string[]): Promise<boolean> => {
+export const addContainersToApplet = async (appletId: string, groupIds: string[]): Promise<boolean> => {
     try {
         const { data, error } = await supabase.rpc("add_groups_to_applet", {
             p_applet_id: appletId,
@@ -384,13 +386,13 @@ export const addGroupsToApplet = async (appletId: string, groupIds: string[]): P
         });
 
         if (error) {
-            console.error("Error adding groups to applet:", error);
+            console.error("Error adding containers to applet:", error);
             throw error;
         }
 
         return !!data;
     } catch (err) {
-        console.error("Exception in addGroupsToApplet:", err);
+        console.error("Exception in addContainersToApplet:", err);
         throw err;
     }
 };
@@ -398,7 +400,7 @@ export const addGroupsToApplet = async (appletId: string, groupIds: string[]): P
 /**
  * Recompiles a single group in an applet
  */
-export const recompileGroupInAppletById = async (appletId: string, groupId: string): Promise<boolean> => {
+export const recompileContainerInAppletById = async (appletId: string, groupId: string): Promise<boolean> => {
     try {
         const { data, error } = await supabase.rpc("refresh_group_in_applet", {
             p_applet_id: appletId,
@@ -420,7 +422,7 @@ export const recompileGroupInAppletById = async (appletId: string, groupId: stri
 /**
  * Recompiles all groups in an applet
  */
-export const recompileAllGroupsInApplet = async (appletId: string): Promise<boolean> => {
+export const recompileAllContainersInApplet = async (appletId: string): Promise<boolean> => {
     try {
         const { data, error } = await supabase.rpc("refresh_all_groups_in_applet", {
             p_applet_id: appletId,

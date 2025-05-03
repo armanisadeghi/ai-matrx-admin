@@ -3,7 +3,7 @@ import { createApi, OrderBy, Orientation, Plus } from "unsplash-js";
 import { SearchOrderBy } from "unsplash-js/dist/methods/search/types/request";
 
 // Our simple types
-export type SortOrder = "latest" | "popular" | "relevant" | "oldest";
+export type SortOrder = "latest" | "popular" | "relevant" | "oldest" | "views" | "downloads";
 export type ImageOrientation = "landscape" | "portrait" | "squarish" | undefined;
 export type PremiumFilter = "mixed" | "only" | "none";
 
@@ -17,13 +17,17 @@ const mapSortOrderToOrderBy = (sort?: SortOrder): OrderBy => {
             return OrderBy.OLDEST;
         case "popular":
             return OrderBy.POPULAR;
+        case "views":
+            return OrderBy.VIEWS;
+        case "downloads":
+            return OrderBy.DOWNLOADS;
         default:
             return OrderBy.LATEST;
     }
 };
 
 const mapSortOrderToSearchOrderBy = (sort?: SortOrder): SearchOrderBy => {
-    if (!sort) return "latest";
+    if (!sort) return "relevant";
     switch (sort) {
         case "latest":
             return "latest";

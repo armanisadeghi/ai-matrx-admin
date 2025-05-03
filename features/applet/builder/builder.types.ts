@@ -1,3 +1,5 @@
+import { AppletLayoutOption } from "../layouts/options/layout.types";
+
 export type ComponentType = 
   | 'input' 
   | 'textarea' 
@@ -70,6 +72,13 @@ export type AppletContainer = {
   fields: FieldDefinition[];
 };
 
+export interface BrokerMapping {
+  appletId: string;
+  fieldId: string;
+  brokerId: string;
+}
+
+
 export type CustomApplet = {
   id: string;
   name: string;
@@ -80,7 +89,7 @@ export type CustomApplet = {
   creator?: string;
   primaryColor?: string;
   accentColor?: string;
-  layoutType?: string;
+  layoutType?: AppletLayoutOption;
   containers?: AppletContainer[];
   dataSourceConfig?: any;
   resultComponentConfig?: any;
@@ -89,8 +98,10 @@ export type CustomApplet = {
   subcategoryId?: string;
   imageUrl?: string;
   appId?: string;
-  brokerMappings?: { fieldId: string; brokerId: string }[];
+  brokerMappings?: BrokerMapping[];
 };
+
+export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
 
 
 export type CustomAppRuntimeConfig = {
@@ -109,7 +120,7 @@ export type CustomAppRuntimeConfig = {
       actionType: string;
       knownMethod: string;
   }[];
-  layoutType?: string;
+  layoutType?: AppLayoutOptions;
   imageUrl?: string;
 };
 
@@ -194,7 +205,7 @@ export type CustomAppConfig = {
   accentColor?: string;
   appletList?: { appletId: string; label: string }[];
   extraButtons?: CustomActionButton[];
-  layoutType?: string;
+  layoutType?: AppLayoutOptions;
   imageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -214,7 +225,7 @@ export type CustomAppletConfig = {
   creator?: string;
   primaryColor?: string;
   accentColor?: string;
-  layoutType?: string;
+  layoutType?: AppletLayoutOption;
   containers?: AppletContainer[];
   dataSourceConfig?: any;
   resultComponentConfig?: any;

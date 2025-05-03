@@ -11,7 +11,6 @@ import { IconPicker } from "@/components/ui/IconPicker";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { RootState } from "@/lib/redux/store";
 import {
-    startNewApplet,
     setName,
     setSlug,
     setDescription,
@@ -20,11 +19,9 @@ import {
     setAppletSubmitText,
     setPrimaryColor,
     setAccentColor,
-    setLayoutType,
     setImageUrl,
 } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
-import { createAppletThunk, deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { fetchAppletsForAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
+import { deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import {
     selectAppletById,
     selectAppletName,
@@ -42,42 +39,39 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { AppletSlugChecker } from "@/features/applet/builder/components/smart-parts/applets/AppletSlugChecker";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import { AppletBuilder } from "@/lib/redux/app-builder/types";
+import { AppletLayoutSelection } from "@/features/applet/builder/parts/AppletLayoutSelection";
+
 
 // Default values for new applets
-export const DEFAULT_APPLET_CONFIG = {
+export const DEFAULT_APPLET_CONFIG: AppletBuilder = {
+    id: "",
     name: "",
     description: "",
     slug: "",
-    appletIcon: "Settings",
+    appletIcon: "Search",
     appletSubmitText: "",
     creator: "",
-    primaryColor: "emerald",
+    primaryColor: "gray",
     accentColor: "blue",
-    layoutType: "default",
+    layoutType: "open",
     containers: [],
     imageUrl: "",
 };
 
 export interface AppletFormProps {
-    appletId?: string; // Existing applet ID or undefined for new applet
+    appletId?: string; // Existing applet ID
     appId?: string; // Optional app ID for the applet
-    onAppletAdded?: (appletId: string) => void; // Callback when applet is added/saved
-    onAppletRemoved?: () => void; // Callback when applet is removed
     isNew?: boolean; // Flag to indicate if this is a new applet form
 }
 
-export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId, onAppletAdded, onAppletRemoved, isNew = false }) => {
+export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId, isNew = false }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
+    const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
 
-    // If this is a new applet and no appletId is provided, create a new one
-    useEffect(() => {
-        if (isNew && !appletId) {
-            dispatch(startNewApplet({ ...DEFAULT_APPLET_CONFIG, appId }));
-        }
-    }, [dispatch, isNew, appletId, appId]);
-
-    // Redux selectors for the current applet (new or existing)
+    // Redux selectors for the current applet
     const applet = useAppSelector((state: RootState) => selectAppletById(state, appletId || ""));
     const appletName = useAppSelector((state: RootState) => selectAppletName(state, appletId || ""));
     const appletSlug = useAppSelector((state: RootState) => selectAppletSlug(state, appletId || ""));
@@ -87,46 +81,14 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     const appletSubmitText = useAppSelector((state: RootState) => selectAppletSubmitText(state, appletId || ""));
     const appletPrimaryColor = useAppSelector((state: RootState) => selectAppletPrimaryColor(state, appletId || ""));
     const appletAccentColor = useAppSelector((state: RootState) => selectAppletAccentColor(state, appletId || ""));
-    const appletLayoutType = useAppSelector((state: RootState) => selectAppletLayoutType(state, appletId || ""));
     const appletImageUrl = useAppSelector((state: RootState) => selectAppletImageUrl(state, appletId || ""));
     const appletLoading = useAppSelector(selectAppletLoading);
-
-    const handleAddApplet = () => {
-        if (applet && appletName && appletSlug) {
-            dispatch(createAppletThunk(applet))
-                .then((result) => {
-                    // Access the created applet ID from the result
-                    const createdAppletId =
-                        result.payload && typeof result.payload === "object" && "id" in result.payload
-                            ? (result.payload.id as string)
-                            : undefined;
-                    if (onAppletAdded && createdAppletId) {
-                        onAppletAdded(createdAppletId);
-                    }
-
-                    toast({
-                        title: "Success",
-                        description: "Applet created successfully.",
-                    });
-                })
-                .catch((error) => {
-                    toast({
-                        title: "Error",
-                        description: "Failed to create applet.",
-                        variant: "destructive",
-                    });
-                });
-        }
-    };
 
     const handleRemoveApplet = () => {
         if (appletId) {
             dispatch(deleteAppletThunk(appletId))
+                .unwrap()
                 .then(() => {
-                    if (onAppletRemoved) {
-                        onAppletRemoved();
-                    }
-
                     toast({
                         title: "Success",
                         description: "Applet removed successfully.",
@@ -160,7 +122,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
             if (name === "name") {
                 dispatch(setName({ id: appletId, name: value }));
                 // Auto-generate slug from name if this is a new applet
-                if (isNew) {
+                if (isNew && !appletSlug) {
                     const slug = generateSlug(value);
                     dispatch(setSlug({ id: appletId, slug }));
                 }
@@ -175,6 +137,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     };
 
     const generateSlug = (name: string): string => {
+        if (!name) return '';
         return name
             .toLowerCase()
             .replace(/([a-z])([A-Z])/g, "$1-$2") // Convert camelCase to kebab
@@ -183,8 +146,8 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     };
 
     const getAppletUrl = (appName: string = "", slug: string = ""): string => {
-        const appNameSlug = generateSlug(appName);
-        return `aimatrx.com/applets/${appNameSlug}/${slug}`;
+        if (!slug) return '';
+        return `aimatrx.com/applets/${slug}`;
     };
 
     const handleAppletIconSelect = (iconName: string) => {
@@ -203,18 +166,17 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
         }
     };
 
-    const handleLayoutChange = (layout: string) => {
-        if (appletId) {
-            dispatch(setLayoutType({ id: appletId, layoutType: layout }));
-        }
-    };
-
     const handleAppletSubmitTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         if (appletId) {
             dispatch(setAppletSubmitText({ id: appletId, appletSubmitText: value }));
         }
     };
+
+    // Ensure we have a valid applet before rendering
+    if (!appletId) {
+        return <div className="p-4 text-gray-500 dark:text-gray-400">No applet selected</div>;
+    }
 
     return (
         <div className="space-y-5">
@@ -254,7 +216,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor={`${isNew ? "new" : "edit"}-slug`} className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            Applet Slug
+                            Slug URL
                         </Label>
                         <div className="relative">
                             <Input
@@ -262,17 +224,15 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                                 name="slug"
                                 value={appletSlug || ""}
                                 onChange={handleAppletChange}
-                                placeholder="Enter applet slug"
+                                placeholder="Enter URL slug"
                                 className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 pr-10"
                             />
                             <AppletSlugChecker appletId={appletId} slug={appletSlug || ""} />
                         </div>
-                        {appletSlug && (
-                            <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 flex items-center">
-                                <LinkIcon size={12} className="mr-1" />
-                                {getAppletUrl("", appletSlug)}
-                            </div>
-                        )}
+                        <div className="flex items-center mt-1 space-x-1 text-xs text-gray-500 dark:text-gray-400">
+                            <LinkIcon className="w-3 h-3" />
+                            <span>{getAppletUrl(appletName, appletSlug)}</span>
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label
@@ -291,7 +251,6 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
                         />
                     </div>
-                    {/* Submit Button row */}
                     <div className="space-y-2">
                         <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Submit Button</Label>
                         <div className="flex items-center gap-2">
@@ -314,6 +273,9 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             />
                         </div>
                     </div>
+                    
+                    {/* Replace manual layout implementation with AppletLayoutSelection component */}
+                    {appletId && <AppletLayoutSelection appletId={appletId} label="Layout Type" />}
                 </div>
 
                 {/* Image section */}
@@ -352,66 +314,46 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             </div>
                         </div>
                     </div>
-                    {isNew ? (
-                        <Button
-                            variant="default"
-                            size="sm"
-                            className="w-full mt-2 bg-rose-500 hover:bg-rose-600 text-white"
-                            onClick={handleAddApplet}
-                            disabled={!appletName || !appletSlug || appletLoading}
-                        >
-                            <PlusIcon size={16} className="mr-2" />
-                            Add Applet
-                        </Button>
-                    ) : (
-                        <div className="flex flex-col gap-2 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <Button
-                                variant="default"
-                                size="sm"
-                                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white"
-                                onClick={() => {
-                                    if (applet && appletId) {
-                                        dispatch(createAppletThunk(applet))
-                                            .then(() => {
-                                                toast({
-                                                    title: "Success",
-                                                    description: "Applet updated successfully.",
-                                                });
-                                                
-                                                // Refresh applets if appId is available
-                                                if (appId) {
-                                                    dispatch(fetchAppletsForAppThunk(appId));
-                                                }
-                                            })
-                                            .catch((error) => {
-                                                toast({
-                                                    title: "Error",
-                                                    description: "Failed to update applet.",
-                                                    variant: "destructive",
-                                                });
-                                            });
-                                    }
-                                }}
-                                disabled={appletLoading}
-                            >
-                                Save Changes
-                            </Button>
+
+                    {!isNew && (
+                        <div className="pt-4">
                             <Button
                                 variant="destructive"
-                                size="sm"
-                                onClick={handleRemoveApplet}
-                                className="w-full"
+                                onClick={() => setShowDeleteDialog(true)}
+                                className="w-full sm:w-auto"
                                 disabled={appletLoading}
                             >
-                                <XIcon size={16} className="mr-2" />
+                                <XIcon className="w-4 h-4 mr-2" />
                                 Remove Applet
                             </Button>
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure you want to delete this applet?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the applet and remove it from any apps that use it.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={handleRemoveApplet}
+                            className="bg-red-500 text-white hover:bg-red-600"
+                        >
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
 
 export default AppletFormComponent;
+

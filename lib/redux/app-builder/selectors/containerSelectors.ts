@@ -3,7 +3,7 @@ import { RootState } from "@/lib/redux";
 import { ContainerBuilder } from "../types";
 
 // Base selector for the containerBuilder state
-const getContainerBuilderState = (state: RootState) => state.containerBuilder;
+export const getContainerBuilderState = (state: RootState) => state.containerBuilder;
 
 // Memoized selector for all containers
 export const selectAllContainers = createSelector(
@@ -54,40 +54,60 @@ export const selectPublicContainers = createSelector(
   (containers) => containers.filter(container => container.isPublic)
 ); 
 
+// Memoized selector for the active container ID
+export const selectActiveContainerId = createSelector(
+  [getContainerBuilderState],
+  (containerBuilderState) => containerBuilderState.activeContainerId
+);
 
-// Basic selectors
-export const selectContainerState = (state: RootState) => state.containerBuilder;
+// Memoized selector for the active container
+export const selectActiveContainer = createSelector(
+  [getContainerBuilderState, selectActiveContainerId],
+  (containerBuilderState, activeId) => activeId ? containerBuilderState.containers[activeId] : null
+);
 
-// Active container selectors
-export const selectActiveContainerId = (state: RootState) => state.containerBuilder?.activeContainerId;
-export const selectActiveContainer = (state: RootState) => {
-    const activeId = state.containerBuilder?.activeContainerId;
-    return activeId ? state.containerBuilder?.containers[activeId] : null;
-};
+// Memoized selector for the new container ID
+export const selectNewContainerId = createSelector(
+  [getContainerBuilderState],
+  (containerBuilderState) => containerBuilderState.newContainerId
+);
 
-// New container selectors
-export const selectNewContainerId = (state: RootState) => state.containerBuilder?.newContainerId;
-export const selectNewContainer = (state: RootState) => {
-    const newId = state.containerBuilder?.newContainerId;
-    return newId ? state.containerBuilder?.containers[newId] : null;
-};
+// Memoized selector for the new container
+export const selectNewContainer = createSelector(
+  [getContainerBuilderState, selectNewContainerId],
+  (containerBuilderState, newId) => newId ? containerBuilderState.containers[newId] : null
+);
 
-export const selectFieldById = (state: RootState, containerId: string, fieldId: string) => {
-    const container = state.containerBuilder?.containers[containerId];
-    if (!container) return null;
-    return container.fields.find(field => field.id === fieldId) || null;
-};
+// Memoized selector for a specific field within a container
+export const selectFieldById = createSelector(
+  [(state: RootState, containerId: string, fieldId: string) => {
+    const container = getContainerBuilderState(state).containers[containerId];
+    return container ? container.fields.find(field => field.id === fieldId) : null;
+  }],
+  (field) => field || null
+);
 
-// Status selectors
-export const selectDirtyContainers = (state: RootState) => 
-    selectAllContainers(state).filter(container => (container as ContainerBuilder).isDirty === true);
+// Memoized selector for dirty containers
+export const selectDirtyContainers = createSelector(
+  [selectAllContainers],
+  (containers) => containers.filter(container => container.isDirty === true)
+);
 
-export const selectHasUnsavedContainerChanges = (state: RootState) => 
-    selectAllContainers(state).some(container => (container as ContainerBuilder).isDirty === true);
+// Memoized selector for checking if there are unsaved changes
+export const selectHasUnsavedContainerChanges = createSelector(
+  [selectAllContainers],
+  (containers) => containers.some(container => container.isDirty === true)
+);
 
-export const selectLocalContainers = (state: RootState) => 
-    selectAllContainers(state).filter(container => (container as ContainerBuilder).isLocal === true);
+// Memoized selector for local containers
+export const selectLocalContainers = createSelector(
+  [selectAllContainers],
+  (containers) => containers.filter(container => container.isLocal === true)
+);
 
-export const selectContainerDirtyStatus = (state: RootState, id: string) => 
-    state.containerBuilder?.containers[id]?.isDirty || false;
+// Memoized selector for container dirty status
+export const selectContainerDirtyStatus = createSelector(
+  [(state: RootState, id: string) => getContainerBuilderState(state).containers[id]],
+  (container) => container?.isDirty || false
+);
 

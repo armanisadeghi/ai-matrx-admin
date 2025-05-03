@@ -7,8 +7,12 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RootState } from "@/lib/redux/store";
 import { startNewApplet, cancelNewApplet, setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
-import { createAppletThunk, fetchAppletsThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { fetchAppletsForAppThunk, addAppletThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
+import { 
+    fetchAppletsThunk, 
+    saveAppletThunk, 
+    addAppletToAppThunk 
+} from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+import { fetchAppletsForAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import {
     selectNewAppletId,
     selectActiveAppletId,
@@ -17,9 +21,9 @@ import {
     selectAllApplets,
     selectAppletsByAppId,
     selectLocalApplets,
+    selectAppletError,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { useToast } from "@/components/ui/use-toast";
-import AppletCarousel from "@/features/applet/builder/previews/AppletCarousel";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import AppletFormComponent, { DEFAULT_APPLET_CONFIG } from "@/features/applet/builder/components/smart-parts/applets/AppletFormComponent";
 import AppletSelectorOverlay from "@/features/applet/builder/components/smart-parts/applets/AppletSelectorOverlay";
@@ -38,73 +42,102 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
     const newAppletId = useAppSelector(selectNewAppletId);
     const activeAppletId = useAppSelector(selectActiveAppletId);
     const appletLoading = useAppSelector(selectAppletLoading);
+    const appletError = useAppSelector(selectAppletError);
     const applets = useAppSelector((state: RootState) => selectAppletsByAppId(state, appId || ""));
     const availableApplets = useAppSelector(selectAllApplets);
     const localApplets = useAppSelector(selectLocalApplets);
-    const showExistingApplets = localApplets.length === 0; // Show existing applets if no local applet is being created
-
+    
     // This is needed for conditional rendering
     const activeApplet = useAppSelector((state: RootState) => (activeAppletId ? selectAppletById(state, activeAppletId) : null));
 
-    // Initialize a new applet on mount if none exists and fetch applets for the app
+    // Initial data loading
     useEffect(() => {
-        if (!newAppletId && localApplets.length === 0) {
+        // Initialize a new applet if no active/new applet exists
+        if (!activeAppletId && !newAppletId) {
             dispatch(startNewApplet({ ...DEFAULT_APPLET_CONFIG, appId }));
         }
 
-        // Fetch applets for this app if appId is provided
+        // Load appropriate applets based on context
         if (appId) {
             dispatch(fetchAppletsForAppThunk(appId));
         } else {
-            // Fetch all applets if no appId is provided
             dispatch(fetchAppletsThunk());
         }
-    }, [dispatch, newAppletId, localApplets, appId]);
+    }, [dispatch, appId, activeAppletId, newAppletId]);
+
+    // Show error toasts when they occur
+    useEffect(() => {
+        if (appletError) {
+            toast({
+                title: "Error",
+                description: appletError,
+                variant: "destructive",
+            });
+        }
+    }, [appletError, toast]);
 
     // Filter available applets that aren't already in the app
     const appletIds = applets.map((applet) => applet.id);
     const filteredAvailableApplets = availableApplets.filter((availableApplet) => !appletIds.includes(availableApplet.id));
 
-    const handleSelectExistingApplet = (appletId: string) => {
-        const selectedApplet = availableApplets.find((a) => a.id === appletId);
-        if (selectedApplet) {
-            const appletToAdd = {
-                ...selectedApplet,
-                containers: selectedApplet.containers || [],
-                appId: appId || undefined,
-            };
-            dispatch(createAppletThunk(appletToAdd)).catch((error) => {
-                toast({
-                    title: "Error",
-                    description: "Failed to add existing applet.",
-                    variant: "destructive",
-                });
-            });
+    // Handlers
+    const handleCreateNewApplet = () => {
+        // Always cancel any existing new applet first
+        if (newAppletId) {
+            dispatch(cancelNewApplet(newAppletId));
         }
-    };
-
-    const handleAppletAdded = (appletId: string) => {
-        // Clear current local applet and start a new one
-        dispatch(cancelNewApplet(newAppletId!));
+        
+        // Clear any active applet
+        dispatch(setActiveApplet(null));
+        
+        // Start fresh with new applet
         dispatch(startNewApplet({ ...DEFAULT_APPLET_CONFIG, appId }));
     };
 
-    const handleAppletRemoved = () => {
-        // Deselect the active applet
-        dispatch(setActiveApplet(null));
+    const handleSaveApplet = () => {
+        if (activeAppletId) {
+            dispatch(saveAppletThunk(activeAppletId))
+                .unwrap()
+                .then((savedApplet) => {
+                    toast({
+                        title: "Success",
+                        description: `Applet "${savedApplet.name}" saved successfully.`,
+                    });
+                    
+                    // If this applet should be associated with an app, make sure it is
+                    if (appId && (!savedApplet.appId || savedApplet.appId !== appId)) {
+                        dispatch(addAppletToAppThunk({ appletId: savedApplet.id, appId }));
+                    }
+                    
+                    // Refresh the applet list
+                    if (appId) {
+                        dispatch(fetchAppletsForAppThunk(appId));
+                    } else {
+                        dispatch(fetchAppletsThunk());
+                    }
+                })
+                .catch((error) => {
+                    toast({
+                        title: "Error",
+                        description: typeof error === 'string' ? error : "Failed to save applet.",
+                        variant: "destructive",
+                    });
+                });
+        }
     };
 
-    // Handler for AppletSelectorOverlay
     const handleAppletSelect = (applet: CustomAppletConfig) => {
         if (appId && applet.id) {
-            // Associate the selected applet with the current app
-            dispatch(addAppletThunk({ appId, appletId: applet.id }))
+            // Associate selected applet with current app
+            dispatch(addAppletToAppThunk({ appletId: applet.id, appId }))
                 .unwrap()
                 .then(() => {
-                    // Refresh the applets after successful association
-                    dispatch(fetchAppletsForAppThunk(appId));
-                    // Set the selected applet as active so they can edit it
+                    // Set selected applet as active
                     dispatch(setActiveApplet(applet.id));
+                    
+                    // Refresh applet list
+                    dispatch(fetchAppletsForAppThunk(appId));
+                    
                     toast({
                         title: "Success",
                         description: `Added "${applet.name}" to this app.`,
@@ -117,28 +150,28 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                         variant: "destructive",
                     });
                 });
+        } else if (applet.id) {
+            // Just set as active if no app context
+            dispatch(setActiveApplet(applet.id));
         }
-    };
-
-    const handleCreateApplet = () => {
-        // Deselect any active applet to show the form
-        dispatch(setActiveApplet(null));
-        
-        // Cancel any existing new applet first
-        if (newAppletId) {
-            dispatch(cancelNewApplet(newAppletId));
-        }
-        
-        // Then create a new one
-        dispatch(startNewApplet({ ...DEFAULT_APPLET_CONFIG, appId }));
     };
 
     const handleAppletRefreshComplete = () => {
-        // Refresh applets for the current app
+        // Refresh applets for the current context
         if (appId) {
             dispatch(fetchAppletsForAppThunk(appId));
+        } else {
+            dispatch(fetchAppletsThunk());
         }
     };
+
+    // Determine if we're in edit or create mode
+    const isEditMode = activeApplet && !activeApplet.isLocal;
+    const isCreateMode = (activeApplet && activeApplet.isLocal) || Boolean(newAppletId);
+    
+    // Determine if save button should be enabled
+    const isDirty = activeApplet?.isDirty;
+    const saveButtonDisabled = appletLoading || !isDirty;
 
     return (
         <div className="w-full">
@@ -174,34 +207,59 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                 <div className="flex flex-col md:flex-row">
                     {/* Left side: Form or Edit area */}
                     <div className="w-full md:w-2/3 p-5">
-                        {activeApplet ? (
-                            /* Edit existing applet */
-                            <AppletFormComponent
-                                appletId={activeAppletId}
-                                appId={appId}
-                                onAppletRemoved={handleAppletRemoved}
-                                isNew={false}
-                            />
-                        ) : (
-                            /* Create new applet form or select existing */
-                            <div className="space-y-5">
-                                <div className="flex justify-between items-center">
+                        <div className="space-y-5">
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center space-x-2">
+                                    {/* Indicate current mode */}
+                                    {isEditMode && (
+                                        <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400">
+                                            Editing Existing Applet
+                                        </Badge>
+                                    )}
+                                    {isCreateMode && (
+                                        <Badge variant="outline" className="border-green-500 text-green-600 dark:text-green-400">
+                                            Creating New Applet
+                                        </Badge>
+                                    )}
+                                    
+                                    {/* Show dirty state if applicable */}
+                                    {isDirty && (
+                                        <Badge variant="outline" className="border-blue-500 text-blue-600 dark:text-blue-400">
+                                            Unsaved Changes
+                                        </Badge>
+                                    )}
+                                </div>
+                                
+                                <div className="flex space-x-2">
+                                    <Button 
+                                        variant="default"
+                                        onClick={handleSaveApplet}
+                                        disabled={saveButtonDisabled}
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                    >
+                                        {appletLoading ? "Saving..." : "Save Applet"}
+                                    </Button>
+                                    
                                     <AppletSelectorOverlay
                                         buttonLabel="Add Existing"
                                         buttonVariant="outline"
                                         buttonSize="sm"
                                         buttonClassName="border-emerald-500 text-emerald-500"
                                         onAppletSelected={handleAppletSelect}
-                                        onCreateApplet={handleCreateApplet}
+                                        onCreateApplet={handleCreateNewApplet}
                                         onRefreshComplete={handleAppletRefreshComplete}
                                         dialogTitle="Select an Applet to Add"
                                     />
                                 </div>
-
-                                {/* Always show the form for creating a new applet */}
-                                <AppletFormComponent appletId={newAppletId} appId={appId} onAppletAdded={handleAppletAdded} isNew={true} />
                             </div>
-                        )}
+
+                            {/* Always show the form, just change what's loaded in it */}
+                            <AppletFormComponent 
+                                appletId={activeAppletId || newAppletId} 
+                                appId={appId} 
+                                isNew={activeApplet?.isLocal ?? true}
+                            />
+                        </div>
                     </div>
 
                     {/* Right side: Applet list */}
@@ -211,24 +269,13 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                                 Your Applets <span className="text-sm text-gray-500 dark:text-gray-400">({applets.length})</span>
                             </h3>
 
-                            {/* Always show both buttons */}
+                            {/* Action buttons */}
                             <div className="flex space-x-2">
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     className="border-emerald-500 text-emerald-500"
-                                    onClick={() => {
-                                        // Deselect the active applet to show the form
-                                        dispatch(setActiveApplet(null));
-                                        
-                                        // Cancel any existing new applet first
-                                        if (newAppletId) {
-                                            dispatch(cancelNewApplet(newAppletId));
-                                        }
-                                        
-                                        // Then create a new one
-                                        dispatch(startNewApplet({ ...DEFAULT_APPLET_CONFIG, appId }));
-                                    }}
+                                    onClick={handleCreateNewApplet}
                                 >
                                     <PlusIcon className="w-4 h-4 mr-1" />
                                     New
@@ -240,13 +287,13 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                                     buttonSize="sm"
                                     buttonClassName="border-emerald-500 text-emerald-500"
                                     onAppletSelected={handleAppletSelect}
-                                    onCreateApplet={handleCreateApplet}
+                                    onCreateApplet={handleCreateNewApplet}
                                     onRefreshComplete={handleAppletRefreshComplete}
                                 />
                             </div>
                         </div>
 
-                        {/* Always show the list, with appropriate empty state */}
+                        {/* Applet list */}
                         <div className="mt-4">
                             {applets.length === 0 ? (
                                 <div className="text-center py-6 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
@@ -259,11 +306,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                                         appId={appId}
                                         onSelectApplet={(applet) => dispatch(setActiveApplet(applet.id))}
                                         showCreateButton={false}
-                                        onRefreshComplete={() => {
-                                            if (appId) {
-                                                dispatch(fetchAppletsForAppThunk(appId));
-                                            }
-                                        }}
+                                        onRefreshComplete={handleAppletRefreshComplete}
                                     />
                                 </div>
                             )}

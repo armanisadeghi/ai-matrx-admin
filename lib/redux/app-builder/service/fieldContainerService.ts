@@ -25,7 +25,7 @@ export type ComponentGroupDB = {
  */
 export const componentGroupToDBFormat = async (
     group: ContainerBuilder
-): Promise<Omit<ComponentGroupDB, "id" | "created_at" | "updated_at">> => {
+): Promise<Omit<ComponentGroupDB, "created_at" | "updated_at">> => {
     const { data } = await supabase.auth.getUser();
     const userId = data.user?.id;
 
@@ -34,6 +34,7 @@ export const componentGroupToDBFormat = async (
     }
 
     return {
+        id: group.id || null,
         label: group.label || "",
         short_label: group.shortLabel || null,
         description: group.description || null,

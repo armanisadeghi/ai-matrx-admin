@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FieldDefinition } from './types';
+import { FieldBuilder } from '@/lib/redux/app-builder/types';
 import { 
   getAllFieldComponents, 
   deleteFieldComponent, 
   duplicateFieldComponent,
   setFieldComponentPublic
-} from '@/features/applet/builder/modules/field-builder/fieldComponentService';
+} from '@/lib/redux/app-builder/service/fieldComponentService';
 
 export default function FieldComponentsList() {
-  const [components, setComponents] = useState<FieldDefinition[]>([]);
+  const [components, setComponents] = useState<FieldBuilder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -152,7 +152,7 @@ export default function FieldComponentsList() {
                   )}
                   {component.includeOther && (
                     <span className="px-2 py-1 text-xs rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
-                      Has "Other" option
+                      Has "Other" option (1)
                     </span>
                   )}
                 </div>

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useRef } from 'react';
-import { X, RefreshCw } from 'lucide-react';
+import { X, RefreshCw, LayersIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
@@ -70,6 +70,9 @@ const GroupSelectorOverlay: React.FC<GroupSelectorOverlayProps> & {
         title: "Group Selected",
         description: `You selected "${group.label}"`,
       });
+      
+      // Console log the selected container information
+      console.log('Selected container:', group);
     }
   };
 
@@ -223,3 +226,28 @@ export default GroupSelectorOverlay;
 //   onRefreshComplete={(groups) => console.log('Refreshed groups:', groups)}
 //   onGroupSelected={handleGroupSelected}
 // />
+
+// 7. Used with FieldComponentCard
+// <FieldComponentCard
+//   component={component}
+//   isSelected={isSelected}
+//   onEdit={handleEdit}
+//   onDelete={handleDelete}
+//   onDuplicate={handleDuplicate}
+//   onPublicToggle={handlePublicToggle}
+//   onSelect={() => {
+//     // Show the group selector overlay when a field card is clicked
+//     setSelectedFieldId(component.id);
+//     setShowGroupSelector(true);
+//   }}
+// />
+// {showGroupSelector && (
+//   <GroupSelectorOverlay
+//     defaultOpen={true}
+//     dialogTitle="Select Container for Field"
+//     onGroupSelected={(group) => {
+//       console.log(`Assigning field ${selectedFieldId} to container ${group.id}`);
+//       setShowGroupSelector(false);
+//     }}
+//   />
+// )}

@@ -3,8 +3,8 @@ import {
     createCustomAppletConfig,
     updateCustomAppletConfig,
     deleteCustomAppletConfig,
-    addGroupsToApplet,
-    recompileAllGroupsInApplet,
+    addContainersToApplet,
+    recompileAllContainersInApplet,
     getAllCustomAppletConfigs,
     getCustomAppletConfigById,
     isAppletSlugAvailable,
@@ -12,6 +12,79 @@ import {
 import { AppletBuilder, ContainerBuilder } from "../types";
 import { RootState } from "@/lib/redux/store";
 import { selectAppletById } from "../selectors/appletSelectors";
+
+/**
+ * Associate an applet with an app by updating the applet's appId field
+ */
+export const addAppletToAppThunk = createAsyncThunk<
+    AppletBuilder,
+    { appletId: string; appId: string },
+    { state: RootState }
+>(
+    "appletBuilder/addAppletToApp",
+    async ({ appletId, appId }, { getState, rejectWithValue }) => {
+        try {
+            const applet = selectAppletById(getState() as RootState, appletId);
+            if (!applet) {
+                throw new Error(`Applet with ID ${appletId} not found`);
+            }
+            
+            // Update the applet with the new appId
+            const updatedApplet = { ...applet, appId };
+            const result = await updateCustomAppletConfig(appletId, updatedApplet);
+            
+            return {
+                ...result,
+                containers: result.containers || [],
+                isDirty: false, 
+                isLocal: false,
+                slugStatus: 'unique',
+                appId // Ensure appId is in the result
+            };
+        } catch (error: any) {
+            return rejectWithValue(error.message || "Failed to associate applet with app");
+        }
+    }
+);
+
+// New unified save applet thunk
+export const saveAppletThunk = createAsyncThunk<
+    AppletBuilder,
+    string,
+    { state: RootState }
+>(
+    "appletBuilder/saveApplet",
+    async (appletId, { getState, rejectWithValue }) => {
+        try {
+            const applet = selectAppletById(getState() as RootState, appletId);
+            if (!applet) {
+                throw new Error(`Applet with ID ${appletId} not found`);
+            }
+            
+            let savedApplet;
+            
+            // Determine if this is a new applet (isLocal) or an existing one
+            if (applet.isLocal) {
+                // Create new applet
+                savedApplet = await createCustomAppletConfig(applet);
+            } else {
+                // Update existing applet
+                savedApplet = await updateCustomAppletConfig(appletId, applet);
+            }
+            
+            // Return consistently formatted result
+            return {
+                ...savedApplet,
+                containers: savedApplet.containers || [],
+                isDirty: false,
+                isLocal: false,
+                slugStatus: 'unique',
+            };
+        } catch (error: any) {
+            return rejectWithValue(error.message || "Failed to save applet");
+        }
+    }
+);
 
 export const createAppletThunk = createAsyncThunk<AppletBuilder, AppletBuilder>(
     "appletBuilder/createApplet",
@@ -77,7 +150,7 @@ export const addContainerThunk = createAsyncThunk<
     "appletBuilder/addContainer",
     async ({ appletId, containerId }, { rejectWithValue }) => {
         try {
-            await addGroupsToApplet(appletId, [containerId]);
+            await addContainersToApplet(appletId, [containerId]);
             const applet = await getCustomAppletConfigById(appletId);
             if (!applet) {
                 throw new Error("Failed to fetch updated applet");
@@ -125,7 +198,7 @@ export const recompileContainerThunk = createAsyncThunk<
             if (!existingContainer) {
                 throw new Error(`Container with ID ${containerId} not found in applet ${appletId}`);
             }
-            await recompileAllGroupsInApplet(appletId); // Recompile all to ensure consistency
+            await recompileAllContainersInApplet(appletId); // Recompile all to ensure consistency
             const updatedApplet = await getCustomAppletConfigById(appletId);
             if (!updatedApplet) {
                 throw new Error("Failed to fetch updated applet");
@@ -145,7 +218,7 @@ export const recompileAppletThunk = createAsyncThunk<AppletBuilder, string>(
     "appletBuilder/recompileApplet",
     async (appletId, { rejectWithValue }) => {
         try {
-            await recompileAllGroupsInApplet(appletId);
+            await recompileAllContainersInApplet(appletId);
             const updatedApplet = await getCustomAppletConfigById(appletId);
             if (!updatedApplet) {
                 throw new Error("Failed to fetch recompiled applet");

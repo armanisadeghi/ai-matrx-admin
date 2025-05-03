@@ -12,8 +12,14 @@ import {
     saveContainerToAppletThunk,
     moveFieldUpThunk,
     moveFieldDownThunk,
+    saveContainerThunk,
+    saveContainerAndUpdateAppletThunk,
 } from "../thunks/containerBuilderThunks";
-import { ContainerBuilder, FieldDefinition } from "../types";
+import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
+import { ContainerBuilder } from "../types";
+import { FieldDefinition } from "@/features/applet/builder/builder.types";
+import { v4 as uuidv4 } from "uuid";
+
 
 // Default container configuration
 export const DEFAULT_CONTAINER: Partial<ContainerBuilder> = {
@@ -52,14 +58,14 @@ export const containerBuilderSlice = createSlice({
     reducers: {
         // Initialize a new container
         startNewContainer: (state, action: PayloadAction<Partial<ContainerBuilder> | undefined>) => {
-            const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            state.containers[tempId] = {
+            const id = uuidv4();
+            state.containers[id] = {
                 ...DEFAULT_CONTAINER,
-                id: tempId,
+                id: id,
                 ...action.payload,
             } as ContainerBuilder;
-            state.newContainerId = tempId;
-            state.activeContainerId = tempId;
+            state.newContainerId = id;
+            state.activeContainerId = id;
         },
         // Cancel creation of a local container
         cancelNewContainer: (state, action: PayloadAction<string>) => {
@@ -200,6 +206,18 @@ export const containerBuilderSlice = createSlice({
         },
         setError: (state, action: PayloadAction<string | null>) => {
             state.error = action.payload;
+        },
+        // Create a new container in local state
+        createNewContainer: (state) => {
+            const newId = uuidv4();
+            state.containers[newId] = {
+                ...DEFAULT_CONTAINER,
+                id: newId,
+                isLocal: true,
+                isDirty: true,
+            } as ContainerBuilder;
+            state.newContainerId = newId;
+            state.activeContainerId = newId;
         },
     },
     extraReducers: (builder) => {
@@ -403,6 +421,81 @@ export const containerBuilderSlice = createSlice({
             state.isLoading = false;
             state.error = action.error.message || "Failed to move field down";
         });
+
+        // Unified Save Container
+        builder.addCase(saveContainerThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(saveContainerThunk.fulfilled, (state, action) => {
+            const oldId = state.activeContainerId;
+            const newId = action.payload.id;
+            
+            // Handle case where local ID is replaced with server ID
+            if (oldId && oldId !== newId) {
+                // If the saved container had a temporary ID, we need to remove the temp entry
+                delete state.containers[oldId];
+                
+                // Update active and new container IDs to the new server-generated ID
+                if (state.activeContainerId === oldId) {
+                    state.activeContainerId = newId;
+                }
+                
+                if (state.newContainerId === oldId) {
+                    state.newContainerId = null; // No longer a "new" container
+                }
+            }
+            
+            // Update the container with server data
+            state.containers[newId] = { 
+                ...action.payload, 
+                isDirty: false, 
+                isLocal: false
+            };
+            
+            state.isLoading = false;
+        });
+        builder.addCase(saveContainerThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to save container";
+        });
+
+        // Save Container to Applet and Update
+        builder.addCase(saveContainerAndUpdateAppletThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(saveContainerAndUpdateAppletThunk.fulfilled, (state, action) => {
+            const { container } = action.payload;
+            if (container) {
+                state.containers[container.id] = {
+                    ...container,
+                    isDirty: false,
+                    isLocal: false,
+                };
+            }
+            state.isLoading = false;
+        });
+        builder.addCase(saveContainerAndUpdateAppletThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to save container and update applet";
+        });
+
+        // Handle saveFieldAndUpdateContainerThunk
+        builder.addCase(saveFieldAndUpdateContainerThunk.fulfilled, (state, action) => {
+            const { field, containerId } = action.payload;
+            
+            if (field && containerId && state.containers[containerId]) {
+                // Find if the field already exists in the container
+                const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === field.id);
+                
+                if (fieldIndex >= 0) {
+                    // Update existing field
+                    state.containers[containerId].fields[fieldIndex] = field;
+                    state.containers[containerId].isDirty = true;
+                }
+            }
+        });
     },
 });
 
@@ -428,6 +521,7 @@ export const {
     deleteContainer,
     setLoading,
     setError,
+    createNewContainer,
 } = containerBuilderSlice.actions;
 
 export default containerBuilderSlice.reducer;
