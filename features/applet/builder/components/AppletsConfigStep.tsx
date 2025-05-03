@@ -46,7 +46,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
     const applets = useAppSelector((state: RootState) => selectAppletsByAppId(state, appId || ""));
     const availableApplets = useAppSelector(selectAllApplets);
     const localApplets = useAppSelector(selectLocalApplets);
-    
+
     // This is needed for conditional rendering
     const activeApplet = useAppSelector((state: RootState) => (activeAppletId ? selectAppletById(state, activeAppletId) : null));
 
@@ -117,12 +117,12 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                     }
                 })
                 .catch((error) => {
-                    toast({
-                        title: "Error",
+                toast({
+                    title: "Error",
                         description: typeof error === 'string' ? error : "Failed to save applet.",
-                        variant: "destructive",
-                    });
+                    variant: "destructive",
                 });
+            });
         }
     };
 
@@ -207,8 +207,8 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                 <div className="flex flex-col md:flex-row">
                     {/* Left side: Form or Edit area */}
                     <div className="w-full md:w-2/3 p-5">
-                        <div className="space-y-5">
-                            <div className="flex justify-between items-center">
+                            <div className="space-y-5">
+                                <div className="flex justify-between items-center">
                                 <div className="flex items-center space-x-2">
                                     {/* Indicate current mode */}
                                     {isEditMode && (

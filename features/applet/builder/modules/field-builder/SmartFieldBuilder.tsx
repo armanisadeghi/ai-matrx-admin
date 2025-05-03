@@ -145,15 +145,9 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId })
   const canHaveOther = ['select', 'multiselect', 'radio', 'checkbox'].includes(component || '');
 
   return (
-    <Card className="h-full overflow-y-auto border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
-      <div className="bg-gray-100 dark:bg-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
-        <h2 className="text-rose-500 font-medium text-lg">Field Definition Builder</h2>
-        <p className="text-gray-600 dark:text-gray-300 text-sm">
-          Configure all aspects of this field component.
-        </p>
-      </div>
+    <Card className="h-full overflow-y-auto border-none bg-white dark:bg-gray-800 shadow-lg rounded-lg p-0">
       
-      <div className="p-5 space-y-4">
+      <div className="py-5 px-2 space-y-4">
         <div>
           <Label htmlFor="component" className="text-sm font-medium text-gray-900 dark:text-gray-100">
             Component Type

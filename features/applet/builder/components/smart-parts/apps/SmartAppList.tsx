@@ -29,6 +29,8 @@ import {
 import { IconPicker } from '@/components/ui/IconPicker';
 import { COLOR_VARIANTS } from '@/features/applet/layouts/helpers/StyledComponents';
 import { CustomAppConfig } from '@/features/applet/builder/builder.types';
+import { getAppColorClasses } from '../styles';
+
 
 export type SmartAppListRefType = {
   refresh: () => Promise<void>;
@@ -43,6 +45,11 @@ export type SmartAppListRefType = {
  * @param {string} props.className - Additional CSS classes
  * @param {string[]} props.appIds - Optional list of app IDs to fetch and display
  * @param {Function} props.onRefreshComplete - Optional callback when refresh completes
+ * @param {Object} props.gridColumns - Optional configuration for grid columns
+ * @param {number} props.gridColumns.sm - Columns for small screens (default: 1)
+ * @param {number} props.gridColumns.md - Columns for medium screens (default: 2)
+ * @param {number} props.gridColumns.lg - Columns for large screens (default: 3)
+ * @param {number} props.gridColumns.xl - Columns for extra large screens (default: 4)
  */
 const SmartAppList = forwardRef<SmartAppListRefType, {
   onSelectApp?: (app: CustomAppConfig) => void, 
@@ -50,14 +57,21 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
   onCreateApp?: () => void,
   className?: string,
   appIds?: string[],
-  onRefreshComplete?: (apps: CustomAppConfig[]) => void
+  onRefreshComplete?: (apps: CustomAppConfig[]) => void,
+  gridColumns?: {
+    sm?: number,
+    md?: number,
+    lg?: number,
+    xl?: number
+  }
 }>(({ 
   onSelectApp, 
   showCreateButton = true, 
   onCreateApp,
   className = '',
   appIds,
-  onRefreshComplete
+  onRefreshComplete,
+  gridColumns = { sm: 1, md: 2, lg: 3, xl: 4 }
 }, ref) => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
@@ -73,7 +87,6 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
   const allApps = useAppSelector(selectAllApps);
   const isLoading = useAppSelector(selectAppLoading);
   const error = useAppSelector(selectAppError);
-  
   
   // Derived state
   const apps = appIds 
@@ -127,6 +140,19 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
     
     return result;
   }, [apps, searchTerm, sortBy]);
+  
+  // Generate the grid columns CSS class based on the gridColumns prop
+  const getGridColumnsClass = useCallback(() => {
+    // Default values
+    const columns = {
+      sm: gridColumns?.sm || 1,
+      md: gridColumns?.md || 2,
+      lg: gridColumns?.lg || 3,
+      xl: gridColumns?.xl || 3
+    };
+    
+    return `grid grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} xl:grid-cols-${columns.xl} gap-4`;
+  }, [gridColumns]);
   
   // Initial data fetch
   useEffect(() => {
@@ -225,122 +251,6 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
     ));
   };
 
-  // Get color classes based on app's primary color
-  const getColorClasses = (app) => {
-    const color = app.primaryColor || 'gray';
-    
-    // Default text and card background colors
-    const defaultTextClass = 'text-gray-900 dark:text-gray-100';
-    const defaultCardBg = 'bg-white dark:bg-gray-800';
-    const defaultCardFooterBg = 'bg-gray-50 dark:bg-gray-800';
-    const defaultDescriptionClass = 'text-gray-600 dark:text-gray-300';
-    
-    // If we're using banner images, don't colorize
-    if (viewMode === 'grid' && app.imageUrl) {
-      return {
-        cardBg: defaultCardBg,
-        cardFooterBg: defaultCardFooterBg,
-        titleClass: defaultTextClass,
-        descriptionClass: defaultDescriptionClass,
-      };
-    }
-
-    // If card has primaryColor, use that color's background variant
-    if (color && COLOR_VARIANTS.background[color]) {
-      // For light colored backgrounds, use dark text and vice versa
-      const isDarkColor = [
-        'blue', 'green', 'purple', 'red', 'slate', 'zinc', 'neutral', 
-        'stone', 'emerald', 'teal', 'cyan', 'sky', 'violet', 'fuchsia'
-      ].includes(color);
-      
-      const isVeryLightColor = ['white', 'gray'].includes(color);
-      
-      // Apply bg-{color}-100 for light mode and bg-{color}-900 for dark mode
-      // NOTE: Using these specific classes to ensure they're included in the Tailwind bundle
-      let cardBgClass;
-      
-      switch (color) {
-        case 'gray': cardBgClass = 'bg-gray-100 dark:bg-gray-900'; break;
-        case 'rose': cardBgClass = 'bg-rose-100 dark:bg-rose-900'; break;
-        case 'blue': cardBgClass = 'bg-blue-100 dark:bg-blue-900'; break;
-        case 'green': cardBgClass = 'bg-green-100 dark:bg-green-900'; break;
-        case 'purple': cardBgClass = 'bg-purple-100 dark:bg-purple-900'; break;
-        case 'yellow': cardBgClass = 'bg-yellow-100 dark:bg-yellow-900'; break;
-        case 'red': cardBgClass = 'bg-red-100 dark:bg-red-900'; break;
-        case 'orange': cardBgClass = 'bg-orange-100 dark:bg-orange-900'; break;
-        case 'pink': cardBgClass = 'bg-pink-100 dark:bg-pink-900'; break;
-        case 'slate': cardBgClass = 'bg-slate-100 dark:bg-slate-900'; break;
-        case 'zinc': cardBgClass = 'bg-zinc-100 dark:bg-zinc-900'; break;
-        case 'neutral': cardBgClass = 'bg-neutral-100 dark:bg-neutral-900'; break;
-        case 'stone': cardBgClass = 'bg-stone-100 dark:bg-stone-900'; break;
-        case 'amber': cardBgClass = 'bg-amber-100 dark:bg-amber-900'; break;
-        case 'lime': cardBgClass = 'bg-lime-100 dark:bg-lime-900'; break;
-        case 'emerald': cardBgClass = 'bg-emerald-100 dark:bg-emerald-900'; break;
-        case 'teal': cardBgClass = 'bg-teal-100 dark:bg-teal-900'; break;
-        case 'cyan': cardBgClass = 'bg-cyan-100 dark:bg-cyan-900'; break;
-        case 'sky': cardBgClass = 'bg-sky-100 dark:bg-sky-900'; break;
-        case 'violet': cardBgClass = 'bg-violet-100 dark:bg-violet-900'; break;
-        case 'fuchsia': cardBgClass = 'bg-fuchsia-100 dark:bg-fuchsia-900'; break;
-        default: cardBgClass = defaultCardBg;
-      }
-      
-      // For footer, use a slightly darker shade
-      let cardFooterBgClass;
-      
-      switch (color) {
-        case 'gray': cardFooterBgClass = 'bg-gray-200 dark:bg-gray-800'; break;
-        case 'rose': cardFooterBgClass = 'bg-rose-200 dark:bg-rose-800'; break;
-        case 'blue': cardFooterBgClass = 'bg-blue-200 dark:bg-blue-800'; break;
-        case 'green': cardFooterBgClass = 'bg-green-200 dark:bg-green-800'; break;
-        case 'purple': cardFooterBgClass = 'bg-purple-200 dark:bg-purple-800'; break;
-        case 'yellow': cardFooterBgClass = 'bg-yellow-200 dark:bg-yellow-800'; break;
-        case 'red': cardFooterBgClass = 'bg-red-200 dark:bg-red-800'; break;
-        case 'orange': cardFooterBgClass = 'bg-orange-200 dark:bg-orange-800'; break;
-        case 'pink': cardFooterBgClass = 'bg-pink-200 dark:bg-pink-800'; break;
-        case 'slate': cardFooterBgClass = 'bg-slate-200 dark:bg-slate-800'; break;
-        case 'zinc': cardFooterBgClass = 'bg-zinc-200 dark:bg-zinc-800'; break;
-        case 'neutral': cardFooterBgClass = 'bg-neutral-200 dark:bg-neutral-800'; break;
-        case 'stone': cardFooterBgClass = 'bg-stone-200 dark:bg-stone-800'; break;
-        case 'amber': cardFooterBgClass = 'bg-amber-200 dark:bg-amber-800'; break;
-        case 'lime': cardFooterBgClass = 'bg-lime-200 dark:bg-lime-800'; break;
-        case 'emerald': cardFooterBgClass = 'bg-emerald-200 dark:bg-emerald-800'; break;
-        case 'teal': cardFooterBgClass = 'bg-teal-200 dark:bg-teal-800'; break;
-        case 'cyan': cardFooterBgClass = 'bg-cyan-200 dark:bg-cyan-800'; break;
-        case 'sky': cardFooterBgClass = 'bg-sky-200 dark:bg-sky-800'; break;
-        case 'violet': cardFooterBgClass = 'bg-violet-200 dark:bg-violet-800'; break;
-        case 'fuchsia': cardFooterBgClass = 'bg-fuchsia-200 dark:bg-fuchsia-800'; break;
-        default: cardFooterBgClass = defaultCardFooterBg;
-      }
-      
-      // Determine text color based on background
-      const titleClass = isVeryLightColor 
-        ? 'text-gray-900 dark:text-white'
-        : !isDarkColor 
-          ? 'text-gray-900 dark:text-white' 
-          : 'text-white dark:text-white';
-          
-      const descriptionClass = isVeryLightColor
-        ? 'text-gray-600 dark:text-gray-300'
-        : !isDarkColor
-          ? 'text-gray-700 dark:text-gray-200'
-          : 'text-gray-100 dark:text-gray-200';
-      
-      return {
-        cardBg: cardBgClass,
-        cardFooterBg: cardFooterBgClass,
-        titleClass,
-        descriptionClass,
-      };
-    }
-    
-    // Default fallback
-    return {
-      cardBg: defaultCardBg,
-      cardFooterBg: defaultCardFooterBg,
-      titleClass: defaultTextClass,
-      descriptionClass: defaultDescriptionClass,
-    };
-  };
 
   // Show error state if Redux has an error
   if (error) {
@@ -454,7 +364,7 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
       {/* App cards */}
       <div className={
         viewMode === 'grid' 
-          ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' 
+          ? getGridColumnsClass() 
           : 'space-y-3'
       }>
         {isLoading ? (
@@ -480,7 +390,7 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
         ) : (
           <AnimatePresence mode="popLayout">
             {filteredApps.map(app => {
-              const colorClasses = getColorClasses(app);
+              const colorClasses = getAppColorClasses(app, viewMode);
               
               return (
                 <motion.div

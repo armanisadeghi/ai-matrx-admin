@@ -19,6 +19,12 @@ export type SmartAppListWrapperProps = {
   className?: string;
   appIds?: AppId[];
   onRefreshComplete?: (apps: CustomAppConfig[]) => void;
+  gridColumns?: {
+    sm?: number;
+    md?: number;
+    lg?: number;
+    xl?: number;
+  };
 };
 
 /**
@@ -33,7 +39,8 @@ const SmartAppListWrapper = forwardRef<SmartAppListRefType, SmartAppListWrapperP
   onClose,
   className = '',
   appIds,
-  onRefreshComplete
+  onRefreshComplete,
+  gridColumns
 }, ref) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Use proper typing for the ref
@@ -90,6 +97,7 @@ const SmartAppListWrapper = forwardRef<SmartAppListRefType, SmartAppListWrapperP
           onCreateApp={onCreateApp}
           appIds={appIds}
           onRefreshComplete={onRefreshComplete}
+          gridColumns={gridColumns}
         />
       </div>
     );
@@ -153,6 +161,7 @@ const SmartAppListWrapper = forwardRef<SmartAppListRefType, SmartAppListWrapperP
                 className="pb-6"
                 appIds={appIds}
                 onRefreshComplete={onRefreshComplete}
+                gridColumns={gridColumns}
               />
             </div>
             

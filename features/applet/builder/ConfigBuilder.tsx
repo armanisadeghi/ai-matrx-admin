@@ -16,30 +16,13 @@ import { LoadingSpinner } from "@/components/ui/spinner";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectAppById, selectAppLoading, selectAppError } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { fetchAppsThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
-import { addAppletThunk, removeAppletThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
-import { createAppletThunk, updateAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-
 // Import database services
-import { CustomAppConfig, CustomAppletConfig, ComponentGroup, FieldDefinition } from "@/features/applet/builder/builder.types";
+import { CustomAppConfig, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 
 import {
     getAllCustomAppletConfigs,
     getCustomAppletConfigById,
-    createCustomAppletConfig,
-    updateCustomAppletConfig,
-    recompileContainerInAppletById,
-    recompileAllContainersInApplet,
-    isAppletSlugAvailable,
 } from "@/lib/redux/app-builder/service/customAppletService";
-
-import {
-    getAllComponentGroups,
-    getComponentGroupById,
-    addFieldToGroup,
-    removeFieldFromGroup,
-    refreshFieldInGroup,
-    refreshAllFieldsInGroup,
-} from "@/lib/redux/app-builder/service/fieldContainerService";
 
 // Default app configuration values
 const DEFAULT_APP_CONFIG: Partial<CustomAppConfig> = {
@@ -78,25 +61,17 @@ export const ConfigBuilder = () => {
     const [availableApplets, setAvailableApplets] = useState<CustomAppletConfig[]>([]);
     const [activeApplet, setActiveApplet] = useState<string | null>(null);
 
-    // Group state
-    const [availableGroups, setAvailableGroups] = useState<ComponentGroup[]>([]);
-    const [activeGroup, setActiveGroup] = useState<string | null>(null);
-
     // Loading states for specific operations
     const [isLoadingApplets, setIsLoadingApplets] = useState(false);
-    const [isLoadingGroups, setIsLoadingGroups] = useState(false);
 
-    // When the component mounts, fetch available applets and groups
+    // When the component mounts, fetch available applets
     useEffect(() => {
         const fetchData = async () => {
             setLoadingMessage("Loading available resources...");
             try {
-                // Fetch available applets and groups for selection
+                // Fetch available applets for selection
                 const fetchedApplets = await getAllCustomAppletConfigs();
-                const fetchedGroups = await getAllComponentGroups();
-
                 setAvailableApplets(fetchedApplets);
-                setAvailableGroups(fetchedGroups);
 
                 // Also fetch apps via Redux
                 dispatch(fetchAppsThunk());
@@ -233,219 +208,11 @@ export const ConfigBuilder = () => {
 
     const updateActiveApplet = (appletId: string) => {
         setActiveApplet(appletId);
-        setActiveGroup(null);
-    };
-
-    const updateActiveGroup = (groupId: string) => {
-        setActiveGroup(groupId);
     };
 
     // Function to update the temporary new app config (when creating a new app)
     const updateTempNewAppConfig = (updates: Partial<CustomAppConfig>) => {
         setTempNewAppConfig((prev) => ({ ...prev, ...updates }));
-    };
-
-    const addGroup = async (group: ComponentGroup) => {
-        if (!activeApplet) {
-            toast({
-                title: "No Active Applet",
-                description: "Please select an applet first.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        setLoadingMessage("Adding group to applet...");
-        try {
-            // Get the current applet
-            const applet = applets.find((a) => a.id === activeApplet);
-            if (!applet) throw new Error("Applet not found");
-
-            // Add the group to the applet using the RPC function
-            const success = await recompileContainerInAppletById(applet.id, group.id);
-
-            if (success) {
-                // Get the updated applet with the new group container
-                const updatedApplet = await getCustomAppletConfigById(applet.id);
-                if (!updatedApplet) throw new Error("Failed to fetch updated applet");
-
-                // Update the applets list
-                setApplets((prev) => prev.map((a) => (a.id === applet.id ? updatedApplet : a)));
-
-                // Set the new group as active
-                setActiveGroup(group.id);
-
-                toast({
-                    title: "Group Added",
-                    description: `${group.label} has been added to the applet.`,
-                });
-            } else {
-                throw new Error("Failed to add group to applet");
-            }
-        } catch (error) {
-            console.error("Error adding group:", error);
-            toast({
-                title: "Error",
-                description: "Failed to add group to applet.",
-                variant: "destructive",
-            });
-        }
-    };
-
-    const addField = async (fieldId: string, groupId: string) => {
-        if (!activeApplet || !groupId) {
-            toast({
-                title: "Selection Required",
-                description: "Please select an applet and group first.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        setLoadingMessage("Adding field to group...");
-        try {
-            // Add the field to the group
-            const success = await addFieldToGroup(groupId, fieldId);
-
-            if (success) {
-                // Refresh the field in the group to ensure it's updated
-                await refreshFieldInGroup(groupId, fieldId);
-
-                // Refresh the group in the applet to update the embedded object
-                await recompileContainerInAppletById(activeApplet, groupId);
-
-                // Get the updated applet with the refreshed group
-                const updatedApplet = await getCustomAppletConfigById(activeApplet);
-                if (!updatedApplet) throw new Error("Failed to fetch updated applet");
-
-                // Update the applets list
-                setApplets((prev) => prev.map((a) => (a.id === activeApplet ? updatedApplet : a)));
-
-                toast({
-                    title: "Field Added",
-                    description: "The field has been added to the group.",
-                });
-            } else {
-                throw new Error("Failed to add field to group");
-            }
-        } catch (error) {
-            console.error("Error adding field:", error);
-            toast({
-                title: "Error",
-                description: "Failed to add field to group.",
-                variant: "destructive",
-            });
-        }
-    };
-
-    const removeField = async (fieldId: string, groupId: string) => {
-        if (!activeApplet || !groupId) return;
-
-        setLoadingMessage("Removing field from group...");
-        try {
-            // Remove the field from the group
-            const success = await removeFieldFromGroup(groupId, fieldId);
-
-            if (success) {
-                // Refresh the group in the applet
-                await recompileContainerInAppletById(activeApplet, groupId);
-
-                // Get the updated applet
-                const updatedApplet = await getCustomAppletConfigById(activeApplet);
-                if (!updatedApplet) throw new Error("Failed to fetch updated applet");
-
-                // Update the applets list
-                setApplets((prev) => prev.map((a) => (a.id === activeApplet ? updatedApplet : a)));
-
-                toast({
-                    title: "Field Removed",
-                    description: "The field has been removed from the group.",
-                });
-            } else {
-                throw new Error("Failed to remove field from group");
-            }
-        } catch (error) {
-            console.error("Error removing field:", error);
-            toast({
-                title: "Error",
-                description: "Failed to remove field from group.",
-                variant: "destructive",
-            });
-        }
-    };
-
-    // Function to refresh all groups in an applet
-    const refreshAppletGroups = async (appletId: string) => {
-        if (!appletId) return;
-
-        setLoadingMessage("Refreshing applet groups...");
-        try {
-            const success = await recompileAllContainersInApplet(appletId);
-
-            if (success) {
-                // Get the updated applet
-                const updatedApplet = await getCustomAppletConfigById(appletId);
-                if (!updatedApplet) throw new Error("Failed to fetch updated applet");
-
-                // Update the applets list
-                setApplets((prev) => prev.map((a) => (a.id === appletId ? updatedApplet : a)));
-
-                toast({
-                    title: "Groups Refreshed",
-                    description: "All groups have been refreshed in the applet.",
-                });
-            } else {
-                throw new Error("Failed to refresh applet groups");
-            }
-        } catch (error) {
-            console.error("Error refreshing applet groups:", error);
-            toast({
-                title: "Error",
-                description: "Failed to refresh applet groups.",
-                variant: "destructive",
-            });
-        }
-    };
-
-    // Function to refresh all fields in a group
-    const refreshGroupFields = async (groupId: string, appletId: string) => {
-        if (!groupId || !appletId) return;
-
-        setLoadingMessage("Refreshing group fields...");
-        try {
-            // Refresh all fields in the group
-            const fieldsSuccess = await refreshAllFieldsInGroup(groupId);
-
-            if (fieldsSuccess) {
-                // Refresh the group in the applet
-                const groupSuccess = await recompileContainerInAppletById(appletId, groupId);
-
-                if (groupSuccess) {
-                    // Get the updated applet
-                    const updatedApplet = await getCustomAppletConfigById(appletId);
-                    if (!updatedApplet) throw new Error("Failed to fetch updated applet");
-
-                    // Update the applets list
-                    setApplets((prev) => prev.map((a) => (a.id === appletId ? updatedApplet : a)));
-
-                    toast({
-                        title: "Fields Refreshed",
-                        description: "All fields have been refreshed in the group.",
-                    });
-                } else {
-                    throw new Error("Failed to refresh group in applet");
-                }
-            } else {
-                throw new Error("Failed to refresh fields in group");
-            }
-        } catch (error) {
-            console.error("Error refreshing group fields:", error);
-            toast({
-                title: "Error",
-                description: "Failed to refresh group fields.",
-                variant: "destructive",
-            });
-        }
     };
 
     const handleAppSelected = (app: CustomAppConfig) => {
@@ -499,7 +266,7 @@ export const ConfigBuilder = () => {
     }, [selectedAppId, isCreatingNewApp, toast]);
 
     const isStepLoading = () => {
-        return appLoading || isLoadingApplets || isLoadingGroups;
+        return appLoading || isLoadingApplets;
     };
 
     // Footer rendering with conditional reset button
@@ -603,36 +370,14 @@ export const ConfigBuilder = () => {
 
                             {activeStep === 2 && <AppletsConfigStep appId={selectedAppId} />}
 
-                            {activeStep === 3 && (
-                                <GroupsConfigStep
-                                    applets={applets}
-                                    availableGroups={availableGroups}
-                                    activeApplet={activeApplet}
-                                    activeGroup={activeGroup}
-                                    setActiveApplet={updateActiveApplet}
-                                    setActiveGroup={updateActiveGroup}
-                                    addGroup={addGroup}
-                                />
-                            )}
+                            {activeStep === 3 && <GroupsConfigStep appId={selectedAppId} />}
 
-                            {activeStep === 4 && (
-                                <FieldsConfigStep
-                                    applets={applets}
-                                    activeApplet={activeApplet}
-                                    activeGroup={activeGroup}
-                                    setActiveApplet={updateActiveApplet}
-                                    setActiveGroup={updateActiveGroup}
-                                    addField={addField}
-                                    removeField={removeField}
-                                />
-                            )}
+                            {activeStep === 4 && <FieldsConfigStep appId={selectedAppId} />}
 
+                            {/* PreviewConfig has been updated to use Redux directly and only needs an appId */}
                             {activeStep === 5 && (
-                                <PreviewConfig
-                                    config={selectedApp as CustomAppConfig}
-                                    applets={applets}
-                                    refreshAppletGroups={refreshAppletGroups}
-                                    refreshGroupFields={refreshGroupFields}
+                                <PreviewConfig 
+                                    appId={selectedAppId}
                                 />
                             )}
                         </div>

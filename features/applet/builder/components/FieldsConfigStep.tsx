@@ -43,73 +43,104 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CustomAppletConfig, ComponentGroup, FieldDefinition, ComponentType, ComponentProps } from '@/features/applet/builder/builder.types';
+import { FieldDefinition, ComponentType, ComponentProps } from '@/features/applet/builder/builder.types';
 import { FieldConfigForms } from './field-config-forms/FieldConfigForms';
+import { useAppDispatch, useAppSelector } from '@/lib/redux';
+import { 
+  selectAppletsByAppId, 
+  selectActiveAppletId, 
+  selectContainersForApplet,
+  selectAppletById
+} from '@/lib/redux/app-builder/selectors/appletSelectors';
+import {
+  selectActiveContainerId,
+  selectContainerById,
+  selectContainerLoading
+} from '@/lib/redux/app-builder/selectors/containerSelectors';
+import {
+  selectActiveFieldId,
+  selectFieldById,
+  selectFieldLoading
+} from '@/lib/redux/app-builder/selectors/fieldSelectors';
+import { setActiveApplet } from '@/lib/redux/app-builder/slices/appletBuilderSlice';
+import { setActiveContainer } from '@/lib/redux/app-builder/slices/containerBuilderSlice';
+import {
+  startFieldCreation,
+  setActiveField,
+  setLabel,
+  setPlaceholder,
+  setComponent,
+  setComponentProps
+} from '@/lib/redux/app-builder/slices/fieldBuilderSlice';
+import {
+  saveFieldThunk,
+  saveFieldToContainerThunk,
+  deleteFieldThunk
+} from '@/lib/redux/app-builder/thunks/fieldBuilderThunks';
+import { useToast } from '@/components/ui/use-toast';
 
 interface FieldsConfigStepProps {
-  applets: CustomAppletConfig[];
-  activeApplet: string | null;
-  activeGroup: string | null;
-  setActiveApplet: (appletId: string) => void;
-  setActiveGroup: (groupId: string) => void;
-  addField: (fieldId: string, groupId: string) => Promise<void>;
-  removeField: (fieldId: string, groupId: string) => Promise<void>;
+  appId: string;
 }
 
-// Helper function to generate UUID
-const generateBrokerId = () => {
-  return uuidv4();
-};
-
-export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
-  applets,
-  activeApplet,
-  activeGroup,
-  setActiveApplet,
-  setActiveGroup,
-  addField,
-  removeField
-}) => {
+export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId }) => {
+  const dispatch = useAppDispatch();
+  const { toast } = useToast();
+  
+  // Redux state
+  const applets = useAppSelector((state) => selectAppletsByAppId(state, appId));
+  const activeAppletId = useAppSelector(selectActiveAppletId);
+  const activeContainerId = useAppSelector(selectActiveContainerId);
+  const activeFieldId = useAppSelector(selectActiveFieldId);
+  const fieldLoading = useAppSelector(selectFieldLoading);
+  const containerLoading = useAppSelector(selectContainerLoading);
+  
+  // UI state
+  const [showCustomConfigDialog, setShowCustomConfigDialog] = useState(false);
   const [newField, setNewField] = useState<Partial<FieldDefinition>>({
-    id: generateBrokerId(),
+    id: uuidv4(),
     component: 'input' as ComponentType,
     label: '',
     placeholder: '',
     componentProps: {}
   });
-  const [activeAppletName, setActiveAppletName] = useState<string>('');
-  const [activeGroupLabel, setActiveGroupLabel] = useState<string>('');
-  const [showCustomConfigDialog, setShowCustomConfigDialog] = useState(false);
+  
+  // Get active applet info
+  const activeApplet = useAppSelector((state) => 
+    activeAppletId ? selectAppletById(state, activeAppletId) : null
+  );
+  const activeAppletName = activeApplet?.name || '';
+  
+  // Get active container info
+  const activeContainer = useAppSelector((state) => 
+    activeContainerId ? selectContainerById(state, activeContainerId) : null
+  );
+  const activeGroupLabel = activeContainer?.label || '';
+  
+  // Get containers for active applet
+  const containers = useAppSelector((state) => 
+    activeAppletId ? selectContainersForApplet(state, activeAppletId) : []
+  );
 
   useEffect(() => {
     // Set active applet if it's not set and there are applets available
-    if (!activeApplet && applets.length > 0) {
-      setActiveApplet(applets[0].id);
+    if (!activeAppletId && applets.length > 0) {
+      dispatch(setActiveApplet(applets[0].id));
     }
-  }, [applets, activeApplet, setActiveApplet]);
-
+  }, [applets, activeAppletId, dispatch]);
+  
+  // Reset field form when changing container
   useEffect(() => {
-    // Find the current active applet name
-    if (activeApplet) {
-      const applet = applets.find(a => a.id === activeApplet);
-      if (applet) {
-        setActiveAppletName(applet.name);
-      }
+    if (activeContainerId) {
+      setNewField({
+        id: uuidv4(),
+        component: 'input' as ComponentType,
+        label: '',
+        placeholder: '',
+        componentProps: {}
+      });
     }
-  }, [activeApplet, applets]);
-
-  useEffect(() => {
-    // Find the current active group label
-    if (activeApplet && activeGroup) {
-      const applet = applets.find(a => a.id === activeApplet);
-      if (applet) {
-        const container = applet.containers?.find(c => c.id === activeGroup);
-        if (container) {
-          setActiveGroupLabel(container.label);
-        }
-      }
-    }
-  }, [activeApplet, activeGroup, applets]);
+  }, [activeContainerId]);
 
   const fieldTypes = [
     { value: 'button', label: 'Button' },
@@ -125,12 +156,14 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
   ];
 
   const handleAppletChange = (value: string) => {
-    setActiveApplet(value);
-    setActiveGroup(null);
+    dispatch(setActiveApplet(value));
+    dispatch(setActiveContainer(null));
+    dispatch(setActiveField(null));
   };
 
   const handleGroupChange = (value: string) => {
-    setActiveGroup(value);
+    dispatch(setActiveContainer(value));
+    dispatch(setActiveField(null));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -156,41 +189,87 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
     }));
   };
 
-  const handleAddField = () => {
+  const handleAddField = async () => {
     if (
       newField.id && 
       newField.label && 
       newField.component &&
-      activeGroup
+      activeContainerId
     ) {
-      addField(newField.id, activeGroup);
-      
-      // Reset form
-      setNewField({
-        id: generateBrokerId(),
-        component: 'input' as ComponentType,
-        label: '',
-        placeholder: '',
-        componentProps: {}
-      });
-      
-      setShowCustomConfigDialog(false);
+      try {
+        // Create a new field in Redux state
+        dispatch(startFieldCreation({
+          id: newField.id,
+          label: newField.label,
+          placeholder: newField.placeholder || '',
+          component: newField.component,
+          componentProps: newField.componentProps || {}
+        }));
+        
+        // Save the field
+        const savedField = await dispatch(saveFieldThunk(newField.id)).unwrap();
+        
+        // Add the field to the container
+        await dispatch(saveFieldToContainerThunk({
+          containerId: activeContainerId,
+          fieldId: savedField.id
+        })).unwrap();
+        
+        toast({
+          title: "Field Added",
+          description: `Field "${newField.label}" has been added to the container.`
+        });
+        
+        // Reset form
+        setNewField({
+          id: uuidv4(),
+          component: 'input' as ComponentType,
+          label: '',
+          placeholder: '',
+          componentProps: {}
+        });
+        
+        setShowCustomConfigDialog(false);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to add field. Please try again.",
+          variant: "destructive"
+        });
+        console.error("Error adding field:", error);
+      }
+    }
+  };
+
+  const handleRemoveField = async (fieldId: string) => {
+    if (fieldId && activeContainerId) {
+      try {
+        // We need to first remove the field reference from the container
+        // This will happen automatically when we delete the field
+        await dispatch(deleteFieldThunk(fieldId)).unwrap();
+        
+        toast({
+          title: "Field Removed",
+          description: "Field has been removed from the container."
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to remove field. Please try again.",
+          variant: "destructive"
+        });
+        console.error("Error removing field:", error);
+      }
     }
   };
 
   const getActiveGroups = () => {
-    if (!activeApplet) return [];
-    const applet = applets.find(a => a.id === activeApplet);
-    return applet?.containers || [];
+    return containers || [];
   };
 
   const getGroupFields = () => {
-    if (!activeApplet || !activeGroup) return [];
-    const applet = applets.find(a => a.id === activeApplet);
-    if (!applet) return [];
-    
-    const container = applet.containers?.find(c => c.id === activeGroup);
-    return container?.fields || [];
+    if (!activeContainer) return [];
+    return activeContainer.fields || [];
   };
 
   return (
@@ -228,7 +307,7 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
                         <AccordionTrigger 
                           onClick={() => handleAppletChange(applet.id)}
                           className={`px-2 py-1.5 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 ${
-                            activeApplet === applet.id 
+                            activeAppletId === applet.id 
                               ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400' 
                               : 'text-gray-800 dark:text-gray-200'
                           }`}
@@ -241,11 +320,11 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
                               <button
                                 key={container.id}
                                 onClick={() => {
-                                  setActiveApplet(applet.id);
-                                  handleGroupChange(container.id || '');
+                                  handleAppletChange(applet.id);
+                                  handleGroupChange(container.id);
                                 }}
                                 className={`w-full text-left px-2 py-1.5 text-sm rounded-md my-1 ${
-                                  activeGroup === (container.id) && activeApplet === applet.id
+                                  activeContainerId === container.id && activeAppletId === applet.id
                                     ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'
                                     : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
                                 }`}
@@ -264,7 +343,7 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
 
             {/* Main Content Area */}
             <div className="col-span-12 md:col-span-9 space-y-6">
-              {activeApplet && activeGroup ? (
+              {activeAppletId && activeContainerId ? (
                 <>
                   <div className="flex items-center justify-between">
                     <div>
@@ -378,11 +457,17 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
                           
                             <Button
                               onClick={handleAddField}
-                              disabled={!newField.label || !newField.component}
+                              disabled={!newField.label || !newField.component || fieldLoading}
                               className="bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
                             >
-                              <PlusIcon className="h-4 w-4 mr-2" />
-                              Add Field
+                              {fieldLoading ? (
+                                "Adding..."
+                              ) : (
+                                <>
+                                  <PlusIcon className="h-4 w-4 mr-2" />
+                                  Add Field
+                                </>
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -427,10 +512,15 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
                                   <Button
                                     variant="ghost" 
                                     size="sm"
-                                    onClick={() => removeField(field.id, activeGroup)}
+                                    onClick={() => handleRemoveField(field.id)}
+                                    disabled={fieldLoading}
                                     className="h-8 w-8 p-0 rounded-full text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
                                   >
-                                    <XIcon className="h-4 w-4" />
+                                    {fieldLoading ? (
+                                      <span className="h-4 w-4 animate-spin">⌛</span>
+                                    ) : (
+                                      <XIcon className="h-4 w-4" />
+                                    )}
                                   </Button>
                                 </div>
                               </div>

@@ -24,6 +24,12 @@ type AppSelectorOverlayProps = {
   isFullscreen?: boolean;
   appIds?: AppId[];
   onRefreshComplete?: (apps: CustomAppConfig[]) => void;
+  gridColumns?: {
+    sm?: number;
+    md?: number;
+    lg?: number;
+    xl?: number;
+  };
 }
 
 /**
@@ -45,7 +51,8 @@ const AppSelectorOverlay: React.FC<AppSelectorOverlayProps> & {
   defaultOpen = false,
   isFullscreen = false,
   appIds,
-  onRefreshComplete
+  onRefreshComplete,
+  gridColumns
 }) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(defaultOpen);
@@ -149,6 +156,7 @@ const AppSelectorOverlay: React.FC<AppSelectorOverlayProps> & {
             className="pb-4"
             appIds={appIds}
             onRefreshComplete={onRefreshComplete}
+            gridColumns={gridColumns}
           />
         </div>
         
