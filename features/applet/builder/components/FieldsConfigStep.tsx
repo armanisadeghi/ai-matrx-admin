@@ -103,7 +103,7 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
     if (activeApplet && activeGroup) {
       const applet = applets.find(a => a.id === activeApplet);
       if (applet) {
-        const container = applet.containers?.find(c => c.groupId === activeGroup || c.id === activeGroup);
+        const container = applet.containers?.find(c => c.id === activeGroup);
         if (container) {
           setActiveGroupLabel(container.label);
         }
@@ -189,7 +189,7 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
     const applet = applets.find(a => a.id === activeApplet);
     if (!applet) return [];
     
-    const container = applet.containers?.find(c => c.groupId === activeGroup || c.id === activeGroup);
+    const container = applet.containers?.find(c => c.id === activeGroup);
     return container?.fields || [];
   };
 
@@ -239,13 +239,13 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({
                           <div className="pl-4 border-l border-gray-200 dark:border-gray-700">
                             {applet.containers?.map((container) => (
                               <button
-                                key={container.groupId || container.id}
+                                key={container.id}
                                 onClick={() => {
                                   setActiveApplet(applet.id);
-                                  handleGroupChange(container.groupId || container.id || '');
+                                  handleGroupChange(container.id || '');
                                 }}
                                 className={`w-full text-left px-2 py-1.5 text-sm rounded-md my-1 ${
-                                  activeGroup === (container.groupId || container.id) && activeApplet === applet.id
+                                  activeGroup === (container.id) && activeApplet === applet.id
                                     ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'
                                     : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
                                 }`}

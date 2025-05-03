@@ -3,7 +3,7 @@ import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react'
 import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import SmartGroupList, { SmartGroupListRefType } from './SmartGroupList';
+import SmartContainerList, { SmartContainerListRefType } from './SmartContainerList';
 import { ComponentGroup } from '@/features/applet/builder/builder.types';
 
 // Define type for groupIds
@@ -27,7 +27,7 @@ export type SmartGroupListWrapperProps = {
 /**
  * A component that wraps SmartGroupList and can display it either as an overlay or inline
  */
-const SmartGroupListWrapper = forwardRef<SmartGroupListRefType, SmartGroupListWrapperProps>(({
+const SmartGroupListWrapper = forwardRef<SmartContainerListRefType, SmartGroupListWrapperProps>(({
   isOverlay = false,
   onSelectGroup,
   showCreateButton = true,
@@ -43,7 +43,7 @@ const SmartGroupListWrapper = forwardRef<SmartGroupListRefType, SmartGroupListWr
 }, ref) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Use proper typing for the ref
-  const groupListRef = useRef<SmartGroupListRefType | null>(null);
+  const groupListRef = useRef<SmartContainerListRefType | null>(null);
 
   // Forward the ref to the internal SmartGroupList component
   useImperativeHandle(ref, () => ({
@@ -89,7 +89,7 @@ const SmartGroupListWrapper = forwardRef<SmartGroupListRefType, SmartGroupListWr
   if (!isOverlay) {
     return (
       <div className={className}>
-        <SmartGroupList
+        <SmartContainerList
           ref={groupListRef}
           onSelectGroup={handleSelectGroup}
           onRefreshGroup={onRefreshGroup}
@@ -162,7 +162,7 @@ const SmartGroupListWrapper = forwardRef<SmartGroupListRefType, SmartGroupListWr
             
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-4">
-              <SmartGroupList
+              <SmartContainerList
                 ref={groupListRef}
                 onSelectGroup={handleSelectGroup}
                 onRefreshGroup={onRefreshGroup}

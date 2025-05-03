@@ -41,11 +41,10 @@ const SmartAppListWrapper = forwardRef<SmartAppListRefType, SmartAppListWrapperP
 
   // Forward the ref to the internal SmartAppList component
   useImperativeHandle(ref, () => ({
-    refresh: async (specificAppIds?: AppId[]) => {
+    refresh: async () => {
       if (appListRef.current && typeof appListRef.current.refresh === 'function') {
-        return appListRef.current.refresh(specificAppIds);
+        await appListRef.current.refresh();
       }
-      return [];
     }
   }));
 
@@ -64,11 +63,12 @@ const SmartAppListWrapper = forwardRef<SmartAppListRefType, SmartAppListWrapperP
     if (appListRef.current && typeof appListRef.current.refresh === 'function') {
       setIsRefreshing(true);
       try {
-        const refreshedApps = await appListRef.current.refresh(appIds);
+        await appListRef.current.refresh();
+        // Return empty array since we can't get refreshed apps directly
         if (onRefreshComplete) {
-          onRefreshComplete(refreshedApps);
+          onRefreshComplete([]);
         }
-        return refreshedApps;
+        return [];
       } catch (error) {
         console.error('Error refreshing apps:', error);
         return [];

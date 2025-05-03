@@ -4,7 +4,7 @@ import { X, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
-import SmartGroupList from './SmartGroupList';
+import SmartContainerList from './SmartContainerList';
 import { ComponentGroup } from '@/features/applet/builder/builder.types';
 
 // Define type for groupIds
@@ -147,7 +147,7 @@ const GroupSelectorOverlay: React.FC<GroupSelectorOverlayProps> & {
         </DialogHeader>
         
         <div className={`overflow-y-auto p-6 ${isFullscreen ? 'h-[calc(100vh-10rem)]' : 'max-h-[70vh]'}`}>
-          <SmartGroupList
+          <SmartContainerList
             ref={groupListRef}
             onSelectGroup={handleGroupSelect}
             onRefreshGroup={onRefreshGroup}

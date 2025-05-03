@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from "react";
+import React from "react";
+import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,10 +10,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { TailwindColorPicker } from '@/components/ui/TailwindColorPicker';
-import { isAppSlugAvailable } from "@/lib/redux/app-builder/service/customAppService";
 import AppPreviewCard from "@/features/applet/builder/previews/AppPreviewCard";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { IconPicker } from '@/components/ui/IconPicker';
+import { CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { 
   Select,
   SelectContent,
@@ -20,12 +21,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { appletLayoutOptionsArray } from '@/features/applet/layouts/options/layout-options';
+import { createAppThunk, updateAppThunk } from '@/lib/redux/app-builder/thunks/appBuilderThunks';
+import { updateApp } from '@/lib/redux/app-builder/slices/appBuilderSlice';
+import { selectAppById, selectAppLoading, selectAppError, selectAppSlugStatus, selectAppIsDirty } from '@/lib/redux/app-builder/selectors/appSelectors';
+import { convertToKebabCase } from '@/utils/text/stringUtils';
+import { checkAppSlugUniqueness } from '@/lib/redux/app-builder/thunks/appBuilderThunks';
 
 interface AppInfoStepProps {
     config: Partial<CustomAppConfig>;
     updateConfig: (updates: Partial<CustomAppConfig>) => void;
-    saveApp: () => void;
+    saveApp: (appId: string) => void;
     isEdit: boolean;
 }
 
@@ -36,92 +48,327 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
     isEdit 
 }) => {
     const { toast } = useToast();
-    const [slugError, setSlugError] = useState<string>('');
-    const [isCheckingSlug, setIsCheckingSlug] = useState<boolean>(false);
+    const dispatch = useAppDispatch();
     
+    // Redux state
+    const appLoading = useAppSelector(selectAppLoading);
+    const appError = useAppSelector(selectAppError);
+    const slugStatus = useAppSelector(state => config.id ? selectAppSlugStatus(state, config.id) : 'unchecked');
+    const isDirty = useAppSelector(state => config.id ? selectAppIsDirty(state, config.id) : true);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        updateConfig({ [name]: value });
+        
+        // If we have an ID, update through Redux
+        if (config.id) {
+            dispatch(updateApp({ 
+                id: config.id, 
+                changes: { [name]: value } 
+            }));
+        } else {
+            // Otherwise, update local state through parent component
+            updateConfig({ [name]: value });
+        }
     };
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const name = e.target.value;
-        // Convert to kebab-case
-        const slug = name.toLowerCase()
-            .replace(/([a-z])([A-Z])/g, '$1-$2') // Convert camelCase to kebab
-            .replace(/\s+/g, '-') // Replace spaces with hyphens
-            .replace(/[^a-z0-9-]/g, ''); // Remove special characters
+        const slug = convertToKebabCase(name);
         
-        updateConfig({ name, slug });
+        if (config.id) {
+            dispatch(updateApp({ 
+                id: config.id, 
+                changes: { name, slug } 
+            }));
+        } else {
+            updateConfig({ name, slug });
+        }
     };
     
-    const handleSlugChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const slug = e.target.value;
+    const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawSlug = e.target.value;
+        // Convert to kebab case to ensure proper formatting
+        const slug = convertToKebabCase(rawSlug);
         
-        // Basic validation
-        if (slug && !isValidSlug(slug)) {
-            setSlugError('Slug can only contain lowercase letters, numbers, and hyphens');
+        if (config.id) {
+            dispatch(updateApp({ 
+                id: config.id, 
+                changes: { slug } 
+            }));
+        } else {
             updateConfig({ slug });
-            return;
-        }
-        
-        setSlugError('');
-        updateConfig({ slug });
-    };
-
-    const checkSlugAvailability = async (slug: string) => {
-        if (!slug) return;
-        
-        setIsCheckingSlug(true);
-        try {
-            const isAvailable = await isAppSlugAvailable(
-                slug, 
-                config.id // Pass current ID for edit mode
-            );
-            
-            if (!isAvailable) {
-                setSlugError('This slug is already in use');
-            }
-        } catch (error) {
-            console.error('Error checking slug availability:', error);
-        } finally {
-            setIsCheckingSlug(false);
         }
     };
     
-    const isValidSlug = (slug: string): boolean => {
-        const slugRegex = /^[a-z0-9-]+$/;
-        return slugRegex.test(slug);
-    };
-
     const handleImageSelected = (imageUrl: string) => {
         if (imageUrl && imageUrl !== config.imageUrl) {
-            updateConfig({ imageUrl });
+            if (config.id) {
+                dispatch(updateApp({ 
+                    id: config.id, 
+                    changes: { imageUrl } 
+                }));
+            } else {
+                updateConfig({ imageUrl });
+            }
         }
     };
     
     const handleImageRemoved = () => {
-        updateConfig({ imageUrl: "" });
+        if (config.id) {
+            dispatch(updateApp({ 
+                id: config.id, 
+                changes: { imageUrl: "" } 
+            }));
+        } else {
+            updateConfig({ imageUrl: "" });
+        }
     };
     
     const handleIconSelect = (iconType: string, iconName: string) => {
         if (iconType === 'mainAppIcon') {
-            updateConfig({ mainAppIcon: iconName });
+            if (config.id) {
+                dispatch(updateApp({ 
+                    id: config.id, 
+                    changes: { mainAppIcon: iconName } 
+                }));
+            } else {
+                updateConfig({ mainAppIcon: iconName });
+            }
         } else if (iconType === 'mainAppSubmitIcon') {
-            updateConfig({ mainAppSubmitIcon: iconName });
+            if (config.id) {
+                dispatch(updateApp({ 
+                    id: config.id, 
+                    changes: { mainAppSubmitIcon: iconName } 
+                }));
+            } else {
+                updateConfig({ mainAppSubmitIcon: iconName });
+            }
         }
     };
     
     const handleColorChange = (colorType: string, color: string) => {
         if (colorType === 'primary') {
-            updateConfig({ primaryColor: color });
+            if (config.id) {
+                dispatch(updateApp({ 
+                    id: config.id, 
+                    changes: { primaryColor: color } 
+                }));
+            } else {
+                updateConfig({ primaryColor: color });
+            }
         } else if (colorType === 'accent') {
-            updateConfig({ accentColor: color });
+            if (config.id) {
+                dispatch(updateApp({ 
+                    id: config.id, 
+                    changes: { accentColor: color } 
+                }));
+            } else {
+                updateConfig({ accentColor: color });
+            }
         }
     };
     
     const handleLayoutChange = (layoutType: string) => {
-        updateConfig({ layoutType });
+        if (config.id) {
+            dispatch(updateApp({ 
+                id: config.id, 
+                changes: { layoutType } 
+            }));
+        } else {
+            updateConfig({ layoutType });
+        }
+    };
+    
+    const handleCheckSlugAvailability = async () => {
+        if (!config.slug) return;
+        
+        try {
+            await dispatch(checkAppSlugUniqueness({
+                slug: config.slug,
+                appId: config.id
+            }));
+        } catch (error) {
+            console.error('Error checking slug uniqueness:', error);
+            toast({
+                title: "Error",
+                description: "Failed to check slug availability.",
+                variant: "destructive",
+            });
+        }
+    };
+    
+    const handleSaveApp = async () => {
+        if (!config.name || !config.slug) {
+            toast({
+                title: "Required Fields Missing",
+                description: "App name and slug are required.",
+                variant: "destructive",
+            });
+            return;
+        }
+        
+        // For new apps, check slug uniqueness before saving
+        if (!isEdit) {
+            try {
+                // Check if the slug is available
+                const checkResult = await dispatch(checkAppSlugUniqueness({
+                    slug: config.slug,
+                    appId: config.id
+                })).unwrap();
+                
+                if (!checkResult) {
+                    toast({
+                        title: "Slug Already In Use",
+                        description: "This slug is already in use. Please choose a different one.",
+                        variant: "destructive",
+                    });
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking slug uniqueness:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to check slug availability. Please try again.",
+                    variant: "destructive",
+                });
+                return;
+            }
+        } else if (slugStatus === 'notUnique') {
+            // For existing apps, check the current slugStatus
+            toast({
+                title: "Slug Already In Use",
+                description: "This slug is already in use. Please choose a different one.",
+                variant: "destructive",
+            });
+            return;
+        }
+        
+        try {
+            let savedAppId: string;
+            
+            if (isEdit && config.id) {
+                // Update existing app
+                const updatedApp = await dispatch(updateAppThunk({
+                    id: config.id,
+                    changes: config as Partial<CustomAppConfig>
+                })).unwrap();
+                
+                savedAppId = updatedApp.id;
+                
+                toast({
+                    title: "App Updated",
+                    description: "Your changes have been saved.",
+                });
+            } else {
+                // Create new app
+                const newApp = await dispatch(createAppThunk({
+                    ...config,
+                    id: '',
+                    appletIds: []
+                } as any)).unwrap();
+                
+                savedAppId = newApp.id;
+                
+                toast({
+                    title: "App Created",
+                    description: "Your app has been created successfully.",
+                });
+            }
+            
+            // Call the parent's saveApp function with the app ID
+            saveApp(savedAppId);
+        } catch (error) {
+            console.error('Error saving app:', error);
+            toast({
+                title: "Error",
+                description: "Failed to save app. Please try again.",
+                variant: "destructive",
+            });
+        }
+    };
+    
+    // Render slug status icon with tooltip
+    const renderSlugStatusIcon = () => {
+        switch(slugStatus) {
+            case 'unique':
+                return (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Slug is available and unique</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                );
+            case 'notUnique':
+                return (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <XCircle className="h-4 w-4 text-red-500" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>This slug is already in use</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                );
+            default:
+                return config.slug ? (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button 
+                                    onClick={handleCheckSlugAvailability} 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-5 w-5 p-0 text-amber-500 hover:text-amber-600 hover:bg-transparent"
+                                >
+                                    <RefreshCw className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Click to check slug availability</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                ) : null;
+        }
+    };
+    
+    // Helper to render required field indicator
+    const Required = () => (
+        <span className="text-red-500 ml-1">*</span>
+    );
+
+    // Render the save/update button based on dirty state
+    const renderSaveButton = () => {
+        // For new apps (not yet saved) or dirty apps
+        if (!isEdit || isDirty) {
+            return (
+                <Button 
+                    onClick={handleSaveApp}
+                    disabled={appLoading || slugStatus === 'notUnique' || !config.name || !config.slug}
+                    className="w-full mt-4 bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
+                >
+                    {appLoading ? 'Saving...' : isEdit ? 'Update App Info' : 'Save App Info'}
+                </Button>
+            );
+        }
+        
+        // For saved apps with no changes (not dirty)
+        return (
+            <Button 
+                disabled
+                className="w-full mt-4 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 flex items-center justify-center gap-2 cursor-default"
+            >
+                <CheckCircle className="h-4 w-4" />
+                App Saved
+            </Button>
+        );
     };
 
     return (
@@ -144,7 +391,7 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        App Name
+                                        App Name<Required />
                                     </Label>
                                     <Input
                                         id="name"
@@ -158,24 +405,25 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
 
                                 <div className="space-y-2">
                                     <Label htmlFor="slug" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        App URL Slug
+                                        App URL Slug<Required />
                                     </Label>
-                                    <Input
-                                        id="slug"
-                                        name="slug"
-                                        placeholder="Enter unique app slug"
-                                        value={config.slug || ""}
-                                        onChange={handleSlugChange}
-                                        onBlur={() => checkSlugAvailability(config.slug || "")}
-                                        className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
-                                            slugError ? 'border-red-500 dark:border-red-500' : ''
-                                        }`}
-                                    />
-                                    {slugError && (
-                                        <p className="text-red-500 text-xs mt-1">{slugError}</p>
-                                    )}
-                                    {isCheckingSlug && (
-                                        <p className="text-blue-500 text-xs mt-1">Checking availability...</p>
+                                    <div className="relative">
+                                        <Input
+                                            id="slug"
+                                            name="slug"
+                                            placeholder="Enter unique app slug"
+                                            value={config.slug || ""}
+                                            onChange={handleSlugChange}
+                                            className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
+                                                slugStatus === 'notUnique' ? 'border-red-500 dark:border-red-500' : ''
+                                            } pr-10`}
+                                        />
+                                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                            {renderSlugStatusIcon()}
+                                        </div>
+                                    </div>
+                                    {slugStatus === 'notUnique' && (
+                                        <p className="text-red-500 text-xs mt-1">This slug is already in use</p>
                                     )}
                                 </div>
                             </div>
@@ -253,20 +501,20 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                                     <TailwindColorPicker
                                         selectedColor={config.accentColor || "rose"}
                                         onColorChange={(color) => handleColorChange('accent', color)}
-                                        size="sm" 
+                                        size="sm"
                                         className="w-full"
                                     />
                                 </div>
                             </div>
                             
-                            {/* Layout and App Banner in a single row */}
+                            {/* Layout Type & App Image row */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="layoutType" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                         App Layout
                                     </Label>
                                     <Select
-                                        value={config.layoutType || "oneColumn"}
+                                        value={config.layoutType || "open"}
                                         onValueChange={handleLayoutChange}
                                     >
                                         <SelectTrigger className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -306,7 +554,7 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                                     App Banner Image
                                 </Label>
                                 <div className="w-full">
-                                    <SingleImageSelect 
+                                    <SingleImageSelect
                                         size="md"
                                         aspectRatio="landscape"
                                         placeholder="Select App Banner"
@@ -323,13 +571,12 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                             </div>
                         </div>
                     </div>
-
+                    
                     {/* Preview */}
                     <div className="p-5 md:w-1/3 flex-shrink-0 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-                        <h3 className="text-gray-900 dark:text-gray-100 font-medium mb-4">Live Preview</h3>
                         <AppPreviewCard app={config} className="max-w-lg mx-auto mb-6" />
                         
-                        <div className="p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                        <div className={`p-4 bg-${config.primaryColor} rounded-lg border border-gray-200 dark:border-gray-600`}>
                             <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">App Information</h4>
                             <div className="grid grid-cols-1 gap-2 text-xs">
                                 <div className="flex justify-between">
@@ -338,7 +585,7 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Slug:</span>
-                                    <span className="font-medium text-gray-900 dark:text-gray-100">{config.slug || 'Not set'}</span>
+                                    <span className="font-medium text-gray-900 dark:text-gray-100">matrx.com/apps/{config.slug || 'Not set'}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Creator:</span>
@@ -353,7 +600,7 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 dark:text-gray-400">Colors:</span>
                                     <span className="flex items-center">
-                                        <span className={`inline-block w-3 h-3 rounded-full bg-${config.primaryColor || 'gray'}-500 mr-1`}></span>
+                                        <span className={`inline-block w-6 h-6 rounded-none bg-${config.primaryColor || 'gray'}-500 mr-1`}></span>
                                         <span className={`inline-block w-3 h-3 rounded-full bg-${config.accentColor || 'rose'}-500 ml-1`}></span>
                                     </span>
                                 </div>
@@ -361,13 +608,7 @@ export const AppInfoStep: React.FC<AppInfoStepProps> = ({
                         </div>
                         
                         {/* Save Button in Preview Section */}
-                        <Button 
-                            onClick={saveApp}
-                            disabled={!config.name || !config.slug || !!slugError}
-                            className="w-full mt-4 bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
-                        >
-                            {isEdit ? 'Update App Info' : 'Save App Info'}
-                        </Button>
+                        {renderSaveButton()}
                     </div>
                 </div>
             </Card>

@@ -1,23 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { CustomActionButton } from "@/features/applet/builder/builder.types";
-import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk } from "../thunks/appBuilderThunks";
-import { RootState } from "@/lib/redux";
-
-export interface AppBuilder {
-    id: string;
-    name: string;
-    description: string;
-    slug: string;
-    mainAppIcon?: string;
-    mainAppSubmitIcon?: string;
-    creator?: string;
-    primaryColor?: string;
-    accentColor?: string;
-    layoutType?: string;
-    extraButtons?: CustomActionButton[];
-    imageUrl?: string;
-    appletIds: string[];
-}
+import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk, fetchAppsThunk, checkAppSlugUniqueness } from "../thunks/appBuilderThunks";
+import { AppBuilder } from "../types";
 
 export interface AppsState {
     apps: Record<string, AppBuilder>;
@@ -36,12 +19,13 @@ export const appBuilderSlice = createSlice({
     initialState,
     reducers: {
         setApp: (state, action: PayloadAction<AppBuilder>) => {
-            state.apps[action.payload.id] = action.payload;
+            state.apps[action.payload.id] = { ...action.payload, isDirty: action.payload.isDirty || true, isLocal: action.payload.isLocal || true, slugStatus: action.payload.slugStatus || 'unchecked' };
         },
         updateApp: (state, action: PayloadAction<{ id: string; changes: Partial<AppBuilder> }>) => {
             const { id, changes } = action.payload;
             if (state.apps[id]) {
-                state.apps[id] = { ...state.apps[id], ...changes };
+                const isSlugChanged = changes.slug && changes.slug !== state.apps[id].slug;
+                state.apps[id] = { ...state.apps[id], ...changes, isDirty: true, slugStatus: isSlugChanged ? 'unchecked' : state.apps[id].slugStatus };
             }
         },
         deleteApp: (state, action: PayloadAction<string>) => {
@@ -51,12 +35,14 @@ export const appBuilderSlice = createSlice({
             const { appId, appletId } = action.payload;
             if (state.apps[appId] && !state.apps[appId].appletIds.includes(appletId)) {
                 state.apps[appId].appletIds.push(appletId);
+                state.apps[appId].isDirty = true;
             }
         },
         removeApplet: (state, action: PayloadAction<{ appId: string; appletId: string }>) => {
             const { appId, appletId } = action.payload;
             if (state.apps[appId]) {
                 state.apps[appId].appletIds = state.apps[appId].appletIds.filter((id) => id !== appletId);
+                state.apps[appId].isDirty = true;
             }
         },
         setLoading: (state, action: PayloadAction<boolean>) => {
@@ -73,7 +59,7 @@ export const appBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(createAppThunk.fulfilled, (state, action) => {
-            state.apps[action.payload.id] = action.payload;
+            state.apps[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: 'unique' };
             state.isLoading = false;
         });
         builder.addCase(createAppThunk.rejected, (state, action) => {
@@ -87,7 +73,7 @@ export const appBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(updateAppThunk.fulfilled, (state, action) => {
-            state.apps[action.payload.id] = action.payload;
+            state.apps[action.payload.id] = { ...action.payload, isDirty: false, slugStatus: 'unique' };
             state.isLoading = false;
         });
         builder.addCase(updateAppThunk.rejected, (state, action) => {
@@ -142,17 +128,65 @@ export const appBuilderSlice = createSlice({
             state.isLoading = false;
             state.error = action.error.message || "Failed to remove applet";
         });
+
+        // Check Slug Uniqueness
+        builder.addCase(checkAppSlugUniqueness.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(checkAppSlugUniqueness.fulfilled, (state, action) => {
+            const { slug, appId } = action.meta.arg;
+            if (appId && state.apps[appId]) {
+                state.apps[appId].slugStatus = action.payload ? 'unique' : 'notUnique';
+            } else {
+                Object.values(state.apps).forEach(app => {
+                    if (app.slug === slug) {
+                        app.slugStatus = action.payload ? 'unique' : 'notUnique';
+                    }
+                });
+            }
+            state.isLoading = false;
+        });
+        builder.addCase(checkAppSlugUniqueness.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to check slug uniqueness";
+        });
+
+        // Fetch Apps
+        builder.addCase(fetchAppsThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(fetchAppsThunk.fulfilled, (state, action) => {
+            
+            // Create a new apps object based on the payload
+            const newApps = action.payload.reduce((acc, app) => {
+                acc[app.id] = {
+                    ...app,
+                    // Preserve existing state properties if the app already exists
+                    ...(state.apps[app.id] ? {
+                        isDirty: state.apps[app.id].isDirty,
+                        isLocal: state.apps[app.id].isLocal,
+                        slugStatus: state.apps[app.id].slugStatus
+                    } : {
+                        isDirty: false,
+                        isLocal: false,
+                        slugStatus: 'unchecked'
+                    })
+                };
+                return acc;
+            }, {} as Record<string, AppBuilder>);
+            
+            state.apps = newApps;
+            state.isLoading = false;
+        });
+        builder.addCase(fetchAppsThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to fetch apps";
+        });
     },
 });
 
 export const { setApp, updateApp, deleteApp, addApplet, removeApplet, setLoading, setError } = appBuilderSlice.actions;
 
 export default appBuilderSlice.reducer;
-
-// Selectors
-export const selectAppById = (state: RootState, id: string) => state.appBuilder.apps[id] || null;
-export const selectAllApps = (state: RootState) => Object.values(state.appBuilder.apps);
-export const selectAppletsForApp = (state: RootState, appId: string) =>
-    state.appBuilder.apps[appId]?.appletIds || [];
-export const selectAppLoading = (state: RootState) => state.appBuilder.isLoading;
-export const selectAppError = (state: RootState) => state.appBuilder.error;

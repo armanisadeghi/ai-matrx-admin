@@ -5,6 +5,7 @@ import AppletSelectorOverlay from './applets/AppletSelectorOverlay';
 import MultiAppletSelector from './applets/MultiAppletSelector';
 import SmartAppletList from './applets/SmartAppletList';
 import SmartAppletListWrapper from './applets/SmartAppletListWrapper';
+import AppletFormComponent from './applets/AppletFormComponent';
 
 // Apps components
 import AppSelectorOverlay from './apps/AppSelectorOverlay';
@@ -18,11 +19,11 @@ import SmartFieldsList from './fields/SmartFieldsList';
 import SmartFieldsListWrapper from './fields/SmartFieldsListWrapper';
 
 // Groups components
-import GroupSelectorOverlay from './groups/GroupSelectorOverlay';
-import MultiGroupSelector from './groups/MultiGroupSelector';
-import SmartGroupList from './groups/SmartGroupList';
-import SmartGroupListWrapper from './groups/SmartGroupListWrapper';
-
+import GroupSelectorOverlay from './containers/GroupSelectorOverlay';
+import MultiGroupSelector from './containers/MultiGroupSelector';
+import SmartContainerList from './containers/SmartContainerList';
+import SmartGroupListWrapper from './containers/SmartGroupListWrapper';
+import { getFieldComponentStyle } from './styles';
 // Export all components
 export {
   // Applets
@@ -30,6 +31,7 @@ export {
   MultiAppletSelector,
   SmartAppletList,
   SmartAppletListWrapper,
+  AppletFormComponent,
   
   // Apps
   AppSelectorOverlay,
@@ -45,6 +47,7 @@ export {
   // Groups
   GroupSelectorOverlay,
   MultiGroupSelector,
-  SmartGroupList,
-  SmartGroupListWrapper
+  SmartContainerList as SmartGroupList,
+  SmartGroupListWrapper,
+  getFieldComponentStyle
 };

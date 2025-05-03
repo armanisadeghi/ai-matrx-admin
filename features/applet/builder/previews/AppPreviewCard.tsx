@@ -1,13 +1,12 @@
 'use client';
-
 import React from 'react';
-import { CalendarIcon, CogIcon, UsersIcon, StarIcon, ImageIcon } from 'lucide-react';
+import { CalendarIcon, CogIcon, UsersIcon, StarIcon, ImageIcon, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CustomAppConfig } from '@/features/applet/builder/builder.types';
 import { cn } from '@/lib/utils';
-import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
+import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/layouts/helpers/StyledComponents';
 
 interface AppPreviewCardProps {
   app: Partial<CustomAppConfig>;
@@ -35,20 +34,17 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
     return <IconComponent className="h-5 w-5" />;
   };
 
-  // Generate placeholder color classes based on app config
-  const getPrimaryColorClass = (type: 'bg' | 'text' | 'border') => {
-    const color = app.primaryColor || 'gray';
-    if (type === 'bg') return `bg-${color}-100 dark:bg-${color}-900/30`;
-    if (type === 'text') return `text-${color}-600 dark:text-${color}-400`;
-    return `border-${color}-200 dark:border-${color}-800`;
-  };
+  // Get color classes using exact variants
+  const primaryColor = app.primaryColor || 'gray';
+  const accentColor = app.accentColor || 'rose';
 
-  const getAccentColorClass = (type: 'bg' | 'text' | 'border') => {
-    const color = app.accentColor || 'rose';
-    if (type === 'bg') return `bg-${color}-500 dark:bg-${color}-600`;
-    if (type === 'text') return `text-${color}-500 dark:text-${color}-400`;
-    return `border-${color}-500 dark:border-${color}-600`;
-  };
+  const primaryBgClass = COLOR_VARIANTS.primaryBg[primaryColor];
+  const primaryTextClass = COLOR_VARIANTS.primaryText[primaryColor];
+  const primaryBorderClass = COLOR_VARIANTS.primaryBorder[primaryColor];
+  
+  const accentBgClass = COLOR_VARIANTS.accentBg[accentColor];
+  const accentTextClass = COLOR_VARIANTS.accentText[accentColor];
+  const accentBorderClass = COLOR_VARIANTS.accentBorder[accentColor];
 
   return (
     <div className={cn("w-full", className)}>
@@ -63,19 +59,20 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
             />
           </div>
         ) : (
-          <div className={`w-full h-36 flex items-center justify-center ${getPrimaryColorClass('bg')} ${getPrimaryColorClass('border')} border-b`}>
+          <div className="w-full h-36 flex items-center justify-center bg-gray-100 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <div className="flex flex-col items-center text-gray-400 dark:text-gray-500">
-              <ImageIcon className="h-10 w-10 mb-2" />
+              <ImageIcon className={`h-10 w-10 mb-2 ${accentTextClass} ${accentBorderClass}`} />
               <span className="text-sm">App Banner Image</span>
             </div>
           </div>
         )}
-
-        <CardHeader className="p-4">
+        
+        {/* Apply primary background color to header section */}
+        <CardHeader className={`p-4 ${primaryBgClass}`}>
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
-              {/* App Icon */}
-              <div className={`p-2 rounded-md ${getAccentColorClass('bg')} text-white`}>
+              {/* App Icon with accent color */}
+              <div className={`p-2 rounded-md ${accentBgClass} text-white`}>
                 {renderAppIcon()}
               </div>
               
@@ -84,48 +81,49 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
                   {app.name || 'App Name'}
                 </CardTitle>
                 <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  {app.slug ? `/${app.slug}` : '/app-url'}
+                  {app.slug ? `matrx.com/apps/${app.slug}` : 'matrx.com/apps/your-slug'}
                 </CardDescription>
               </div>
             </div>
-
-            {/* Creator Avatar */}
-            <Avatar className="h-8 w-8 bg-gray-200 dark:bg-gray-700">
-              <AvatarFallback className="text-gray-600 dark:text-gray-300 text-xs">
-                {getInitials(app.creator || 'User')}
+            {/* Creator Avatar - using User icon instead of initials */}
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-gray-200 dark:bg-gray-700">
+                <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
               </AvatarFallback>
             </Avatar>
           </div>
         </CardHeader>
-
-        <CardContent className="p-4 pt-0">
+        
+        {/* Apply primary background color to content section */}
+        <CardContent className={`p-4 pt-0 ${primaryBgClass}`}>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-            {app.description || 'App description will appear here. Provide a clear and concise description of what your app does.'}
+            {app.description || 'App description will appear here.'}
           </p>
-
+          
           {/* App Features/Statistics */}
           <div className="grid grid-cols-2 gap-2 mt-4">
-            <div className={`p-2 rounded-md ${getPrimaryColorClass('bg')} ${getPrimaryColorClass('border')} border`}>
+            <div className={`p-2 rounded-md bg-white dark:bg-gray-800 ${primaryBorderClass} border`}>
               <div className="flex items-center space-x-2">
-                <UsersIcon className={`h-4 w-4 ${getPrimaryColorClass('text')}`} />
+                <UsersIcon className={`h-4 w-4 ${primaryTextClass}`} />
                 <span className="text-xs text-gray-600 dark:text-gray-300">
                   {(app.appletList?.length || 0)} Applets
                 </span>
               </div>
             </div>
             
-            <div className={`p-2 rounded-md ${getPrimaryColorClass('bg')} ${getPrimaryColorClass('border')} border`}>
+            <div className={`p-2 rounded-md bg-white dark:bg-gray-800 ${primaryBorderClass} border`}>
               <div className="flex items-center space-x-2">
-                <StarIcon className={`h-4 w-4 ${getPrimaryColorClass('text')}`} />
+                <StarIcon className={`h-4 w-4 ${primaryTextClass}`} />
                 <span className="text-xs text-gray-600 dark:text-gray-300">
-                  {app.layoutType || 'Standard'} Layout
+                  <span className="capitalize">{app.layoutType || 'Standard'}</span> Layout
                 </span>
               </div>
             </div>
           </div>
         </CardContent>
-
-        <CardFooter className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        
+        {/* Apply primary background color to footer section */}
+        <CardFooter className={`p-4 border-t border-gray-200 dark:border-gray-700 ${primaryBgClass}`}>
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center space-x-2">
               <CalendarIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
@@ -134,8 +132,8 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
               </span>
             </div>
             
-            <Badge variant="outline" className={`${getAccentColorClass('text')} border ${getAccentColorClass('border')}`}>
-              Preview
+            <Badge variant="outline" className={`${accentTextClass} ${accentBorderClass} bg-transparent`}>
+              Styled Preview
             </Badge>
           </div>
         </CardFooter>

@@ -5,120 +5,335 @@ import {
     deleteComponentGroup,
     addFieldToGroup,
     removeFieldFromGroup,
+    refreshFieldInGroup,
     refreshAllFieldsInGroup,
     getAllComponentGroups,
     getComponentGroupById,
 } from "../service/fieldGroupService";
 import { ContainerBuilder, FieldDefinition } from "../types";
+import { RootState } from "@/lib/redux";
 
-export const createContainerThunk = createAsyncThunk<ContainerBuilder, ContainerBuilder>(
-    "containerBuilder/createContainer",
-    async (container, { rejectWithValue }) => {
-        try {
-            const savedContainer = await createComponentGroup({
-                id: container.id,
-                label: container.label,
-                shortLabel: container.shortLabel,
-                description: container.description,
-                hideDescription: container.hideDescription,
-                helpText: container.helpText,
-                fields: container.fields || [],
-                isPublic: container.isPublic,
-                authenticatedRead: container.authenticatedRead,
-                publicRead: container.publicRead,
-            });
-            return savedContainer;
-        } catch (error: any) {
-            return rejectWithValue(error.message);
-        }
+import { v4 as uuidv4 } from "uuid";
+import { selectContainerById } from "../selectors/containerSelectors";
+
+// Create a new container
+export const createContainerThunk = createAsyncThunk<
+    ContainerBuilder,
+    Partial<ContainerBuilder>,
+    { state: RootState }
+>("containerBuilder/createContainer", async (containerData, { rejectWithValue }) => {
+    try {
+        // If no ID is provided, generate a unique ID
+        const container = {
+            ...containerData,
+            id: containerData.id || uuidv4(),
+            fields: containerData.fields || [],
+        };
+        
+        const result = await createComponentGroup(container as ContainerBuilder);
+        return result;
+    } catch (error: any) {
+        console.error("Error creating container:", error);
+        return rejectWithValue(error.message || "Failed to create container");
     }
-);
+});
 
-export const updateContainerThunk = createAsyncThunk<ContainerBuilder, { id: string; changes: Partial<ContainerBuilder> }>(
-    "containerBuilder/updateContainer",
-    async ({ id, changes }, { rejectWithValue }) => {
-        try {
-            const updatedContainer = await updateComponentGroup(id, {
-                id,
-                label: changes.label || '',
-                ...changes,
-                fields: changes.fields || [],
-            });
-            return updatedContainer;
-        } catch (error: any) {
-            return rejectWithValue(error.message);
+// Update an existing container
+export const updateContainerThunk = createAsyncThunk<
+    ContainerBuilder,
+    { id: string; changes: Partial<ContainerBuilder> },
+    { state: RootState }
+>("containerBuilder/updateContainer", async ({ id, changes }, { getState, rejectWithValue }) => {
+    try {
+        // Get the current container from state
+        const currentContainer = selectContainerById(getState(), id);
+        
+        if (!currentContainer) {
+            throw new Error(`Container with ID ${id} not found`);
         }
+        
+        // Merge changes with current container data
+        const updatedContainer = {
+            ...currentContainer,
+            ...changes,
+        };
+        
+        const result = await updateComponentGroup(id, updatedContainer);
+        return result;
+    } catch (error: any) {
+        console.error("Error updating container:", error);
+        return rejectWithValue(error.message || "Failed to update container");
     }
-);
+});
 
-export const deleteContainerThunk = createAsyncThunk<void, string>(
-    "containerBuilder/deleteContainer",
-    async (id, { rejectWithValue }) => {
-        try {
-            await deleteComponentGroup(id);
-        } catch (error: any) {
-            return rejectWithValue(error.message);
-        }
+// Delete a container
+export const deleteContainerThunk = createAsyncThunk<
+    void,
+    string,
+    { state: RootState }
+>("containerBuilder/deleteContainer", async (containerId, { rejectWithValue }) => {
+    try {
+        await deleteComponentGroup(containerId);
+    } catch (error: any) {
+        console.error("Error deleting container:", error);
+        return rejectWithValue(error.message || "Failed to delete container");
     }
-);
+});
 
+// Add a field to a container
 export const addFieldThunk = createAsyncThunk<
     { containerId: string; field: FieldDefinition },
-    { containerId: string; fieldId: string }
->(
-    "containerBuilder/addField",
-    async ({ containerId, fieldId }, { rejectWithValue }) => {
-        try {
-            await addFieldToGroup(containerId, fieldId);
-            const container = await getComponentGroupById(containerId);
-            if (!container) {
-                throw new Error("Failed to fetch updated container");
-            }
-            const field = container.fields.find((f) => f.id === fieldId);
-            if (!field) {
-                throw new Error("Field not found in container");
-            }
-            return { containerId, field };
-        } catch (error: any) {
-            return rejectWithValue(error.message);
-        }
+    { containerId: string; field: FieldDefinition },
+    { state: RootState }
+>("containerBuilder/addField", async ({ containerId, field }, { getState, rejectWithValue }) => {
+    try {
+        // Add field ID if not provided
+        const fieldWithId = {
+            ...field,
+            id: field.id || uuidv4(),
+        };
+        
+        // Add the field to the container
+        await addFieldToGroup(containerId, fieldWithId.id);
+        
+        // Refresh the field in the group to ensure it's properly added
+        await refreshFieldInGroup(containerId, fieldWithId.id);
+        
+        return { containerId, field: fieldWithId };
+    } catch (error: any) {
+        console.error("Error adding field to container:", error);
+        return rejectWithValue(error.message || "Failed to add field to container");
     }
-);
+});
 
-export const removeFieldThunk = createAsyncThunk<void, { containerId: string; fieldId: string }>(
-    "containerBuilder/removeField",
-    async ({ containerId, fieldId }, { rejectWithValue }) => {
-        try {
-            await removeFieldFromGroup(containerId, fieldId);
-        } catch (error: any) {
-            return rejectWithValue(error.message);
-        }
+// Remove a field from a container
+export const removeFieldThunk = createAsyncThunk<
+    void,
+    { containerId: string; fieldId: string },
+    { state: RootState }
+>("containerBuilder/removeField", async ({ containerId, fieldId }, { rejectWithValue }) => {
+    try {
+        await removeFieldFromGroup(containerId, fieldId);
+    } catch (error: any) {
+        console.error("Error removing field from container:", error);
+        return rejectWithValue(error.message || "Failed to remove field from container");
     }
-);
+});
 
-export const recompileContainerThunk = createAsyncThunk<ContainerBuilder, string>(
-    "containerBuilder/recompileContainer",
-    async (containerId, { rejectWithValue }) => {
-        try {
-            await refreshAllFieldsInGroup(containerId);
-            const updatedContainer = await getComponentGroupById(containerId);
-            if (!updatedContainer) {
-                throw new Error("Failed to fetch recompiled container");
-            }
-            return updatedContainer;
-        } catch (error: any) {
-            return rejectWithValue(error.message);
+// Update a field within a container
+export const updateFieldThunk = createAsyncThunk<
+    { containerId: string; fieldId: string; updatedField: FieldDefinition },
+    { containerId: string; fieldId: string; changes: Partial<FieldDefinition> },
+    { state: RootState }
+>("containerBuilder/updateField", async ({ containerId, fieldId, changes }, { getState, rejectWithValue }) => {
+    try {
+        // Get the current container
+        const container = selectContainerById(getState(), containerId);
+        
+        if (!container) {
+            throw new Error(`Container with ID ${containerId} not found`);
         }
+        
+        // Find the field to update
+        const existingField = container.fields.find(f => f.id === fieldId);
+        
+        if (!existingField) {
+            throw new Error(`Field with ID ${fieldId} not found in container ${containerId}`);
+        }
+        
+        // Create the updated field
+        const updatedField = {
+            ...existingField,
+            ...changes,
+        };
+        
+        // This will need to leverage your existing systems
+        // For now we'll just refresh the field to ensure consistency
+        await refreshFieldInGroup(containerId, fieldId);
+        
+        return { containerId, fieldId, updatedField };
+    } catch (error: any) {
+        console.error("Error updating field:", error);
+        return rejectWithValue(error.message || "Failed to update field");
     }
-);
+});
 
-export const fetchContainersThunk = createAsyncThunk<ContainerBuilder[], void>(
-    "containerBuilder/fetchContainers",
-    async (_, { rejectWithValue }) => {
-        try {
-            return await getAllComponentGroups();
-        } catch (error: any) {
-            return rejectWithValue(error.message);
+// Recompile a container (refresh all its data from source)
+export const recompileContainerThunk = createAsyncThunk<
+    ContainerBuilder,
+    string,
+    { state: RootState }
+>("containerBuilder/recompileContainer", async (containerId, { rejectWithValue }) => {
+    try {
+        // Refresh all fields in the group
+        await refreshAllFieldsInGroup(containerId);
+        
+        // Get the updated container
+        const result = await getComponentGroupById(containerId);
+        
+        if (!result) {
+            throw new Error("Failed to fetch recompiled container");
         }
+        
+        return result;
+    } catch (error: any) {
+        console.error("Error recompiling container:", error);
+        return rejectWithValue(error.message || "Failed to recompile container");
     }
-);
+});
+
+// Fetch all containers
+export const fetchContainersThunk = createAsyncThunk<
+    ContainerBuilder[],
+    void,
+    { state: RootState }
+>("containerBuilder/fetchContainers", async (_, { rejectWithValue }) => {
+    try {
+        const containers = await getAllComponentGroups();
+        return containers;
+    } catch (error: any) {
+        console.error("Error fetching containers:", error);
+        return rejectWithValue(error.message || "Failed to fetch containers");
+    }
+});
+
+// Fetch a single container by ID
+export const fetchContainerByIdThunk = createAsyncThunk<
+    ContainerBuilder,
+    string,
+    { state: RootState }
+>("containerBuilder/fetchContainerById", async (containerId, { rejectWithValue }) => {
+    try {
+        const container = await getComponentGroupById(containerId);
+        
+        if (!container) {
+            throw new Error(`Container with ID ${containerId} not found`);
+        }
+        
+        return container;
+    } catch (error: any) {
+        console.error("Error fetching container:", error);
+        return rejectWithValue(error.message || "Failed to fetch container");
+    }
+});
+
+// Add all containers from a source container to active applet
+export const saveContainerToAppletThunk = createAsyncThunk<
+    void,
+    { appletId: string; containerId: string },
+    { state: RootState }
+>("containerBuilder/saveContainerToApplet", async ({ appletId, containerId }, { getState, rejectWithValue }) => {
+    try {
+        // This would need to leverage your existing recompile group in applet system
+        // Assuming you have a function to do this from your existing code
+        // For now this is a placeholder - you would replace with your actual function
+        const success = await addContainerToApplet(appletId, containerId);
+        
+        if (!success) {
+            throw new Error("Failed to add container to applet");
+        }
+    } catch (error: any) {
+        console.error("Error saving container to applet:", error);
+        return rejectWithValue(error.message || "Failed to save container to applet");
+    }
+});
+
+// Move a field up in the container order
+export const moveFieldUpThunk = createAsyncThunk<
+    { containerId: string; newFieldsOrder: FieldDefinition[] },
+    { containerId: string; fieldId: string },
+    { state: RootState }
+>("containerBuilder/moveFieldUp", async ({ containerId, fieldId }, { getState, rejectWithValue }) => {
+    try {
+        // Get the current container
+        const container = selectContainerById(getState(), containerId);
+        
+        if (!container) {
+            throw new Error(`Container with ID ${containerId} not found`);
+        }
+        
+        // Find the field index
+        const fieldIndex = container.fields.findIndex(f => f.id === fieldId);
+        
+        if (fieldIndex === -1) {
+            throw new Error(`Field with ID ${fieldId} not found in container`);
+        }
+        
+        // Can't move up if already at the top
+        if (fieldIndex === 0) {
+            return { containerId, newFieldsOrder: [...container.fields] };
+        }
+        
+        // Create a new array with the field moved up
+        const newFieldsOrder = [...container.fields];
+        const temp = newFieldsOrder[fieldIndex];
+        newFieldsOrder[fieldIndex] = newFieldsOrder[fieldIndex - 1];
+        newFieldsOrder[fieldIndex - 1] = temp;
+        
+        // Would need to use your existing system to update field order
+        // For now this is a placeholder - you would replace with your actual function
+        // You can use your existing update approach for component groups
+        await updateComponentGroup(containerId, {
+            ...container,
+            fields: newFieldsOrder
+        });
+        
+        return { containerId, newFieldsOrder };
+    } catch (error: any) {
+        console.error("Error moving field up:", error);
+        return rejectWithValue(error.message || "Failed to move field up");
+    }
+});
+
+// Move a field down in the container order
+export const moveFieldDownThunk = createAsyncThunk<
+    { containerId: string; newFieldsOrder: FieldDefinition[] },
+    { containerId: string; fieldId: string },
+    { state: RootState }
+>("containerBuilder/moveFieldDown", async ({ containerId, fieldId }, { getState, rejectWithValue }) => {
+    try {
+        // Get the current container
+        const container = selectContainerById(getState(), containerId);
+        
+        if (!container) {
+            throw new Error(`Container with ID ${containerId} not found`);
+        }
+        
+        // Find the field index
+        const fieldIndex = container.fields.findIndex(f => f.id === fieldId);
+        
+        if (fieldIndex === -1) {
+            throw new Error(`Field with ID ${fieldId} not found in container`);
+        }
+        
+        // Can't move down if already at the bottom
+        if (fieldIndex === container.fields.length - 1) {
+            return { containerId, newFieldsOrder: [...container.fields] };
+        }
+        
+        // Create a new array with the field moved down
+        const newFieldsOrder = [...container.fields];
+        const temp = newFieldsOrder[fieldIndex];
+        newFieldsOrder[fieldIndex] = newFieldsOrder[fieldIndex + 1];
+        newFieldsOrder[fieldIndex + 1] = temp;
+        
+        // Would need to use your existing system to update field order
+        // For now this is a placeholder - you would replace with your actual function
+        await updateComponentGroup(containerId, {
+            ...container,
+            fields: newFieldsOrder
+        });
+        
+        return { containerId, newFieldsOrder };
+    } catch (error: any) {
+        console.error("Error moving field down:", error);
+        return rejectWithValue(error.message || "Failed to move field down");
+    }
+});
+
+// Placeholder - would need your actual implementation to connect with your applet system
+const addContainerToApplet = async (appletId: string, containerId: string): Promise<boolean> => {
+    console.log("Adding container to applet", { appletId, containerId });
+    // This would integrate with your existing recompileGroupInAppletById function
+    return true;
+};

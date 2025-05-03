@@ -71,7 +71,7 @@ export type AppletContainer = {
 };
 
 export type CustomApplet = {
-  id?: string;
+  id: string;
   name: string;
   description?: string;
   slug: string;
@@ -196,10 +196,16 @@ export type CustomAppConfig = {
   extraButtons?: CustomActionButton[];
   layoutType?: string;
   imageUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  userId?: string;
+  isPublic?: boolean;
+  authenticatedRead?: boolean;
+  publicRead?: boolean;
 };
 
 export type CustomAppletConfig = {
-  id?: string;
+  id: string;
   name: string;
   description?: string;
   slug: string;
@@ -209,7 +215,7 @@ export type CustomAppletConfig = {
   primaryColor?: string;
   accentColor?: string;
   layoutType?: string;
-  containers?: any;
+  containers?: AppletContainer[];
   dataSourceConfig?: any;
   resultComponentConfig?: any;
   nextStepConfig?: any;

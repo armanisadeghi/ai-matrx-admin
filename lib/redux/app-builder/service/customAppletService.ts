@@ -1,4 +1,5 @@
-import { AppletContainer } from "@/features/applet/builder/builder.types";
+import { isSlugInUse } from "@/config/applets/apps/constants";
+import { AppletContainer, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 import { supabase } from "@/utils/supabase/client";
 
 export type CustomAppletConfigDB = {
@@ -28,26 +29,6 @@ export type CustomAppletConfigDB = {
     app_id?: string;
 };
 
-export type CustomAppletConfig = {
-    id: string;
-    name: string;
-    description?: string;
-    slug: string;
-    appletIcon?: string;
-    appletSubmitText?: string;
-    creator?: string;
-    primaryColor?: string;
-    accentColor?: string;
-    layoutType?: string;
-    containers?: AppletContainer[];
-    dataSourceConfig?: any;
-    resultComponentConfig?: any;
-    nextStepConfig?: any;
-    compiledRecipeId?: string;
-    subcategoryId?: string;
-    imageUrl?: string;
-    appId?: string;
-};
 
 /**
  * Normalizes a CustomAppletConfig to ensure it has all required fields
@@ -314,23 +295,6 @@ export const getCustomAppletConfigsByCompiledRecipe = async (compiledRecipeId: s
     return (data || []).map(dbToAppletConfig);
 };
 
-export const isAppletSlugAvailable = async (slug: string, excludeId?: string): Promise<boolean> => {
-    let query = supabase.from("custom_applet_configs").select("id").eq("slug", slug);
-
-    if (excludeId) {
-        query = query.neq("id", excludeId);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-        console.error("Error checking slug availability:", error);
-        throw error;
-    }
-
-    return data.length === 0;
-};
-
 /**
  * Type for recipe information
  */
@@ -579,4 +543,29 @@ export const getCustomAppletConfigsByAppId = async (appId: string): Promise<Cust
         throw error;
     }
     return (data || []).map(dbToAppletConfig);
+};
+
+export const isAppletSlugAvailable = async (slug: string, excludeId?: string): Promise<boolean> => {
+    // Check if slug is already used in categories, subcategories, or forbidden list
+    if (isSlugInUse(slug)) {
+        return false;
+    }
+
+    let query = supabase
+        .from("custom_applet_configs")
+        .select("id")
+        .eq("slug", slug);
+
+    if (excludeId) {
+        query = query.neq("id", excludeId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error("Error checking applet slug availability:", error);
+        throw error;
+    }
+
+    return data.length === 0;
 };

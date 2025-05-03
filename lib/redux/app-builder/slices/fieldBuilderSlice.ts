@@ -6,8 +6,13 @@ import {
     fetchFieldsThunk,
     setFieldPublicThunk,
 } from "../thunks/fieldBuilderThunks";
-import { FieldBuilder } from "../types";
+import { FieldBuilder, FieldOption } from "../types";
 import { RootState } from "@/lib/redux";
+
+// Utility to generate a temporary UUID-like ID
+const generateTempId = (): string => {
+    return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
 
 interface FieldsState {
     fields: Record<string, FieldBuilder>;
@@ -25,15 +30,139 @@ export const fieldBuilderSlice = createSlice({
     name: "fieldBuilder",
     initialState,
     reducers: {
-        setField: (state, action: PayloadAction<FieldBuilder>) => {
-            state.fields[action.payload.id] = action.payload;
+        // Initialize a new field for creation
+        startFieldCreation: (state, action: PayloadAction<Partial<FieldBuilder> | undefined>) => {
+            const id = generateTempId();
+            const defaultField: FieldBuilder = {
+                id,
+                label: "",
+                component: "input",
+                componentProps: {},
+                required: false,
+                disabled: false,
+                isPublic: false,
+                isDirty: true,
+                isLocal: true,
+                ...action.payload,
+            };
+            state.fields[id] = defaultField;
         },
-        updateField: (state, action: PayloadAction<{ id: string; changes: Partial<FieldBuilder> }>) => {
-            const { id, changes } = action.payload;
-            if (state.fields[id]) {
-                state.fields[id] = { ...state.fields[id], ...changes };
+        // Cancel creation of a local field
+        cancelFieldCreation: (state, action: PayloadAction<string>) => {
+            const id = action.payload;
+            if (state.fields[id] && state.fields[id].isLocal) {
+                delete state.fields[id];
             }
         },
+        // Direct actions for top-level FieldBuilder properties
+        setLabel: (state, action: PayloadAction<{ id: string; label: string }>) => {
+            const { id, label } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], label, isDirty: true };
+            }
+        },
+        setDescription: (state, action: PayloadAction<{ id: string; description?: string }>) => {
+            const { id, description } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], description, isDirty: true };
+            }
+        },
+        setHelpText: (state, action: PayloadAction<{ id: string; helpText?: string }>) => {
+            const { id, helpText } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], helpText, isDirty: true };
+            }
+        },
+        setGroup: (state, action: PayloadAction<{ id: string; group?: string }>) => {
+            const { id, group } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], group, isDirty: true };
+            }
+        },
+        setIconName: (state, action: PayloadAction<{ id: string; iconName?: string }>) => {
+            const { id, iconName } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], iconName, isDirty: true };
+            }
+        },
+        setComponent: (state, action: PayloadAction<{ id: string; component: FieldBuilder['component'] }>) => {
+            const { id, component } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], component, isDirty: true };
+            }
+        },
+        setRequired: (state, action: PayloadAction<{ id: string; required?: boolean }>) => {
+            const { id, required } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], required, isDirty: true };
+            }
+        },
+        setDisabled: (state, action: PayloadAction<{ id: string; disabled?: boolean }>) => {
+            const { id, disabled } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], disabled, isDirty: true };
+            }
+        },
+        setPlaceholder: (state, action: PayloadAction<{ id: string; placeholder?: string }>) => {
+            const { id, placeholder } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], placeholder, isDirty: true };
+            }
+        },
+        setDefaultValue: (state, action: PayloadAction<{ id: string; defaultValue?: any }>) => {
+            const { id, defaultValue } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], defaultValue, isDirty: true };
+            }
+        },
+        setComponentProps: (state, action: PayloadAction<{ id: string; componentProps: FieldBuilder['componentProps'] }>) => {
+            const { id, componentProps } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], componentProps, isDirty: true };
+            }
+        },
+        setIncludeOther: (state, action: PayloadAction<{ id: string; includeOther?: boolean }>) => {
+            const { id, includeOther } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], includeOther, isDirty: true };
+            }
+        },
+        setIsPublic: (state, action: PayloadAction<{ id: string; isPublic?: boolean }>) => {
+            const { id, isPublic } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], isPublic, isDirty: true };
+            }
+        },
+        setIsDirty: (state, action: PayloadAction<{ id: string; isDirty?: boolean }>) => {
+            const { id, isDirty } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], isDirty };
+            }
+        },
+        setIsLocal: (state, action: PayloadAction<{ id: string; isLocal?: boolean }>) => {
+            const { id, isLocal } = action.payload;
+            if (state.fields[id]) {
+                state.fields[id] = { ...state.fields[id], isLocal };
+            }
+        },
+        // Actions for options
+        addOption: (state, action: PayloadAction<{ id: string; option: FieldOption }>) => {
+            const { id, option } = action.payload;
+            if (state.fields[id]) {
+                const options = state.fields[id].options || [];
+                state.fields[id] = { ...state.fields[id], options: [...options, option], isDirty: true };
+            }
+        },
+        updateOption: (state, action: PayloadAction<{ id: string; optionId: string; changes: Partial<FieldOption> }>) => {
+            const { id, optionId, changes } = action.payload;
+            if (state.fields[id] && state.fields[id].options) {
+                const options = state.fields[id].options!.map((opt) =>
+                    opt.id === optionId ? { ...opt, ...changes } : opt
+                );
+                state.fields[id] = { ...state.fields[id], options, isDirty: true };
+            }
+        },
+        // Other existing actions
         deleteField: (state, action: PayloadAction<string>) => {
             delete state.fields[action.payload];
         },
@@ -51,7 +180,13 @@ export const fieldBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(createFieldThunk.fulfilled, (state, action) => {
-            state.fields[action.payload.id] = action.payload;
+            state.fields[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
+            // Remove temporary field if it had a different ID
+            Object.keys(state.fields).forEach((key) => {
+                if (key.startsWith("temp_") && key !== action.payload.id) {
+                    delete state.fields[key];
+                }
+            });
             state.isLoading = false;
         });
         builder.addCase(createFieldThunk.rejected, (state, action) => {
@@ -65,7 +200,7 @@ export const fieldBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(updateFieldThunk.fulfilled, (state, action) => {
-            state.fields[action.payload.id] = action.payload;
+            state.fields[action.payload.id] = { ...action.payload, isDirty: false };
             state.isLoading = false;
         });
         builder.addCase(updateFieldThunk.rejected, (state, action) => {
@@ -119,7 +254,29 @@ export const fieldBuilderSlice = createSlice({
     },
 });
 
-export const { setField, updateField, deleteField, setLoading, setError } = fieldBuilderSlice.actions;
+export const {
+    startFieldCreation,
+    cancelFieldCreation,
+    setLabel,
+    setDescription,
+    setHelpText,
+    setGroup,
+    setIconName,
+    setComponent,
+    setRequired,
+    setDisabled,
+    setPlaceholder,
+    setDefaultValue,
+    setComponentProps,
+    setIncludeOther,
+    setIsPublic,
+    setIsDirty,
+    setIsLocal,
+    addOption,
+    updateOption,
+    deleteField,
+    setLoading,
+    setError,
+} = fieldBuilderSlice.actions;
 
 export default fieldBuilderSlice.reducer;
-

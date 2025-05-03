@@ -80,11 +80,15 @@ const AppSelectorOverlay: React.FC<AppSelectorOverlayProps> & {
     if (appListRef.current && typeof appListRef.current.refresh === 'function') {
       setIsRefreshing(true);
       try {
-        const refreshedApps = await appListRef.current.refresh(appIds);
+        await appListRef.current.refresh();
+        
+        // Since refresh() returns void, use the current apps from state
         if (onRefreshComplete) {
-          onRefreshComplete(refreshedApps);
+          // We'll need to pass the current apps from the parent component
+          // Since we can't get them directly from the refresh() call
+          onRefreshComplete([]);
         }
-        return refreshedApps;
+        return [];
       } catch (error) {
         console.error('Error refreshing apps:', error);
         return [];

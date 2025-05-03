@@ -21,7 +21,7 @@ export default function Layout(
                     moduleName={MODULE_NAME}
                 />
             </div>
-            <main className="w-full h-full bg-gray-100 dark:bg-neutral-800">
+            <main className="w-full h-full bg-gray-100 dark:bg-gray-800">
                 {children}
             </main>
         </div>

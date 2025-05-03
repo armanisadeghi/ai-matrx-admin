@@ -10,7 +10,6 @@ import {
     getAppIconWithBg
 } from "@/features/applet/layouts/helpers/StyledComponents";
 
-
 interface IconPickerProps {
     selectedIcon: string;
     onIconSelect: (iconName: string) => void;
@@ -108,7 +107,10 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                                 <Button
                                     key={name}
                                     variant={isSelected ? "default" : "outline"}
-                                    onClick={() => onIconSelect(name)}
+                                    onClick={() => {
+                                        onIconSelect(name);
+                                        setIsOpen(false);
+                                    }}
                                     className="h-12 w-12 p-1 flex items-center justify-center"
                                 >
                                     {gridIcon}

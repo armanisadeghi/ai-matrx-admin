@@ -1,9 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { createCustomAppConfig, updateCustomAppConfig, deleteCustomAppConfig } from "../service/customAppService";
+import { createCustomAppConfig, updateCustomAppConfig, deleteCustomAppConfig, getAllCustomAppConfigs, getCustomAppConfigById, getAllCustomAppConfigsWithApplets, isAppSlugAvailable } from "../service/customAppService";
 
-import { updateCustomAppletConfig, getCustomAppletConfigsByAppId } from "../service/customAppletService";
-import { AppBuilder } from "../slices/appBuilderSlice";
-import { AppletBuilder } from "../types";
+import { updateCustomAppletConfig, getCustomAppletConfigsByAppId, getAllCustomAppletConfigs } from "../service/customAppletService";
+import { AppBuilder, AppletBuilder } from "../types";
+import { RootState } from "../../store";
 
 export const createAppThunk = createAsyncThunk<AppBuilder, AppBuilder>(
     "appBuilder/createApp",
@@ -98,3 +98,42 @@ export const fetchAppletsForAppThunk = createAsyncThunk<AppletBuilder[], string>
         }
     }
 );
+
+export const fetchAppsThunk = createAsyncThunk<AppBuilder[], void>(
+    "appBuilder/fetchApps",
+    async (_, { rejectWithValue }) => {
+        try {
+            // Use the optimized function to get apps with applets in a single transaction
+            const enhancedApps = await getAllCustomAppConfigsWithApplets();
+            
+            // Map to the expected AppBuilder format
+            const result = enhancedApps.map(app => ({
+                ...app,
+                id: app.id || '',
+                name: app.name || '',
+                description: app.description || '',
+                slug: app.slug || '',
+                appletIds: app.appletIds || [],
+            }));
+            
+            return result;
+        } catch (error: any) {
+            console.error("fetchAppsThunk - error:", error);
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+export const checkAppSlugUniqueness = createAsyncThunk<boolean, { slug: string; appId?: string }, { state: RootState }>(
+    'appBuilder/checkSlugUniqueness',
+    async ({ slug, appId }, { rejectWithValue }) => {
+      try {
+        const isAvailable = await isAppSlugAvailable(slug, appId);
+        return isAvailable;
+      } catch (error: any) {
+        return rejectWithValue(error.message || 'Failed to check slug uniqueness');
+      }
+    }
+  );
+  
+  

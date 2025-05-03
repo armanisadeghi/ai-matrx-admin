@@ -305,10 +305,10 @@ const SmartAppListsDemo = () => {
     };
 
     return (
-        <div className="h-full w-full p-6">
-            <Card className="border-gray-200 dark:border-gray-700 shadow-lg">
+        <div className="h-full w-full bg-gray-100 dark:bg-gray-800">
+            <Card className="border-gray-200 dark:border-gray-700 shadow-lg p-0">
                 <CardHeader>
-                    <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-emerald-400">
+                    <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-emerald-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-emerald-400 p-4">
                         Smart Components Demo
                     </CardTitle>
                     <CardDescription>Explore our comprehensive suite of App and Applet components</CardDescription>
@@ -316,7 +316,7 @@ const SmartAppListsDemo = () => {
 
                 <CardContent className="p-6">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-6 mb-6">
+                        <TabsList className="grid w-full grid-cols-8 mb-6">
                             <TabsTrigger value="comparison">Comparison</TabsTrigger>
                             <TabsTrigger value="apps">Apps</TabsTrigger>
                             <TabsTrigger value="applets">Applets</TabsTrigger>
@@ -328,7 +328,7 @@ const SmartAppListsDemo = () => {
                         </TabsList>
 
                         {/* Tab 1: Comparison View */}
-                        <TabsContent value="comparison" className="border rounded-lg p-6">
+                        <TabsContent value="comparison" className="rounded-lg">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-lg font-medium">Side-by-Side Comparison</h3>
                                 <div className="flex items-center space-x-2">
@@ -421,7 +421,7 @@ const SmartAppListsDemo = () => {
                         </TabsContent>
 
                         {/* Tab 2: Apps */}
-                        <TabsContent value="apps" className="border rounded-lg p-6">
+                        <TabsContent value="apps" className="rounded-lg">
                             <div className="flex justify-between mb-6">
                                 <h3 className="text-lg font-medium text-blue-600 dark:text-blue-400">SmartAppList Component</h3>
                                 <Button onClick={handleAppManualRefresh} className="bg-blue-500 hover:bg-blue-600">
@@ -445,7 +445,7 @@ const SmartAppListsDemo = () => {
                         </TabsContent>
 
                         {/* Tab 3: Applets */}
-                        <TabsContent value="applets" className="border rounded-lg p-6">
+                        <TabsContent value="applets" className="rounded-lg">
                             <div className="flex justify-between mb-6">
                                 <h3 className="text-lg font-medium text-emerald-600 dark:text-emerald-400">SmartAppletList Component</h3>
                                 <Button onClick={handleAppletManualRefresh} className="bg-emerald-500 hover:bg-emerald-600">
@@ -464,7 +464,7 @@ const SmartAppListsDemo = () => {
                         </TabsContent>
 
                         {/* Tab 4: Multi Applets */}
-                        <TabsContent value="multi-applets" className="border rounded-lg p-6">
+                        <TabsContent value="multi-applets" className="rounded-lg">
                             <Tabs defaultValue="basic" className="w-full">
                                 <TabsList className="grid w-full grid-cols-3 mb-6">
                                     <TabsTrigger value="basic">Basic Usage</TabsTrigger>
@@ -704,7 +704,7 @@ const SmartAppListsDemo = () => {
                         </TabsContent>
 
                         {/* Tab 5: Multi Groups */}
-                        <TabsContent value="multi-groups" className="border rounded-lg p-6">
+                        <TabsContent value="multi-groups" className="rounded-lg">
                             <div className="flex justify-between mb-6">
                                 <h3 className="text-lg font-medium text-amber-600 dark:text-amber-400 flex items-center">
                                     <LayoutGrid className="mr-2 h-5 w-5" />
@@ -767,7 +767,7 @@ const SmartAppListsDemo = () => {
                         </TabsContent>
 
                         {/* Tab 6: Multi Fields */}
-                        <TabsContent value="multi-fields" className="border rounded-lg p-6">
+                        <TabsContent value="multi-fields" className="rounded-lg">
                             <div className="flex justify-between mb-6">
                                 <h3 className="text-lg font-medium text-purple-600 dark:text-purple-400 flex items-center">
                                     <FormInput className="mr-2 h-5 w-5" />
@@ -836,7 +836,7 @@ const SmartAppListsDemo = () => {
                         </TabsContent>
 
                         {/* Tab 7: Wrappers */}
-                        <TabsContent value="wrappers" className="border rounded-lg p-6">
+                        <TabsContent value="wrappers" className="rounded-lg">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* App Wrapper */}
                                 <div className="space-y-4">
@@ -987,7 +987,7 @@ const SmartAppListsDemo = () => {
                         </TabsContent>
 
                         {/* Tab 8: Overlays */}
-                        <TabsContent value="overlays" className="border rounded-lg p-6">
+                        <TabsContent value="overlays" className="rounded-lg">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* App Selector Overlay */}
                                 <div className="space-y-4">

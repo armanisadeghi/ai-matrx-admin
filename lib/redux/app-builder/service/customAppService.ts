@@ -1,5 +1,6 @@
 import { supabase } from "@/utils/supabase/client";
 import { CustomAppConfig } from "@/features/applet/builder/builder.types";
+import { isSlugInUse } from "@/config/applets/apps/constants";
 
 // Define the database type for CustomAppConfig
 export type CustomAppConfigDB = {
@@ -42,7 +43,13 @@ export const normalizeCustomAppConfig = (config: Partial<CustomAppConfig>): Cust
     appletList: config.appletList || [],
     extraButtons: config.extraButtons || [],
     layoutType: config.layoutType || 'oneColumn',
-    imageUrl: config.imageUrl || null
+    imageUrl: config.imageUrl || null,
+    createdAt: config.createdAt || null,
+    updatedAt: config.updatedAt || null,
+    userId: config.userId || null,
+    isPublic: config.isPublic || false,
+    authenticatedRead: config.authenticatedRead || false,
+    publicRead: config.publicRead || false
   };
 };
 
@@ -95,7 +102,13 @@ export const dbToCustomAppConfig = (dbRecord: CustomAppConfigDB): CustomAppConfi
     appletList: dbRecord.applet_list,
     extraButtons: dbRecord.extra_buttons,
     layoutType: dbRecord.layout_type,
-    imageUrl: dbRecord.image_url
+    imageUrl: dbRecord.image_url,
+    createdAt: dbRecord.created_at,
+    updatedAt: dbRecord.updated_at,
+    userId: dbRecord.user_id,
+    isPublic: dbRecord.is_public,
+    authenticatedRead: dbRecord.authenticated_read,
+    publicRead: dbRecord.public_read
   });
 };
 
@@ -120,6 +133,72 @@ export const getAllCustomAppConfigs = async (): Promise<CustomAppConfig[]> => {
     throw error;
   }
   return (data || []).map(dbToCustomAppConfig);
+};
+
+/**
+ * Fetches all custom app configs for the current user along with their associated applets
+ * This is an optimized version that gets everything in a single transaction
+ */
+export const getAllCustomAppConfigsWithApplets = async (): Promise<(CustomAppConfig & { appletIds: string[] })[]> => {
+  // Get the current user ID
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id;
+  
+  if (!userId) {
+    throw new Error('User not authenticated');
+  }
+  
+  // First, get all apps for the current user
+  const { data: appsData, error: appsError } = await supabase
+    .from('custom_app_configs')
+    .select('*')
+    .eq('user_id', userId);
+    
+  if (appsError) {
+    console.error('Error fetching custom app configs:', appsError);
+    throw appsError;
+  }
+  
+  if (!appsData || appsData.length === 0) {
+    return [];
+  }
+  
+  // Get all app IDs
+  const appIds = appsData.map(app => app.id);
+  
+  // Get all applets that reference these apps
+  const { data: appletsData, error: appletsError } = await supabase
+    .from('custom_applet_configs')
+    .select('*')
+    .in('app_id', appIds);
+    
+  if (appletsError) {
+    console.error('Error fetching applets for apps:', appletsError);
+    throw appletsError;
+  }
+  
+  // Convert raw DB records to proper CustomAppConfig objects with applet IDs
+  return appsData.map(appData => {
+    // Find all applets associated with this app
+    const appApplets = appletsData?.filter(applet => applet.app_id === appData.id) || [];
+    const appletIds = appApplets.map(applet => applet.id);
+    
+    // Transform DB record to CustomAppConfig
+    const appConfig = dbToCustomAppConfig(appData);
+    
+    // Create or update appletList with the applet data
+    const appletList = appApplets.map(applet => ({
+      appletId: applet.id,
+      label: applet.name || applet.id,
+    }));
+    
+    // Ensure appletIds and appletList are properly set
+    return {
+      ...appConfig,
+      appletIds,
+      appletList: appletList.length > 0 ? appletList : appConfig.appletList || [],
+    };
+  });
 };
 
 /**
@@ -288,21 +367,26 @@ export const setCustomAppConfigPublic = async (id: string, isPublic: boolean): P
 };
 
 export const isAppSlugAvailable = async (slug: string, excludeId?: string): Promise<boolean> => {
+  // Check if slug is already used in categories, subcategories, or forbidden list
+  if (isSlugInUse(slug)) {
+      return false;
+  }
+
   let query = supabase
-    .from('custom_app_configs')
-    .select('id')
-    .eq('slug', slug);
-    
+      .from("custom_app_configs")
+      .select("id")
+      .eq("slug", slug);
+
   if (excludeId) {
-    query = query.neq('id', excludeId);
+      query = query.neq("id", excludeId);
   }
-  
+
   const { data, error } = await query;
-  
+
   if (error) {
-    console.error('Error checking slug availability:', error);
-    throw error;
+      console.error("Error checking app slug availability:", error);
+      throw error;
   }
-  
+
   return data.length === 0;
 };

@@ -19,6 +19,8 @@ export type SmartAppletListWrapperProps = {
   className?: string;
   appletIds?: AppletId[];
   onRefreshComplete?: (applets: CustomAppletConfig[]) => void;
+  // New prop for appId filtering
+  appId?: string;
 };
 
 /**
@@ -33,7 +35,8 @@ const SmartAppletListWrapper = forwardRef<SmartAppletListRefType, SmartAppletLis
   onClose,
   className = '',
   appletIds,
-  onRefreshComplete
+  onRefreshComplete,
+  appId, // New prop
 }, ref) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Use proper typing for the ref
@@ -90,6 +93,7 @@ const SmartAppletListWrapper = forwardRef<SmartAppletListRefType, SmartAppletLis
           onCreateApplet={onCreateApplet}
           appletIds={appletIds}
           onRefreshComplete={onRefreshComplete}
+          appId={appId} // Pass appId to SmartAppletList
         />
       </div>
     );
@@ -153,6 +157,7 @@ const SmartAppletListWrapper = forwardRef<SmartAppletListRefType, SmartAppletLis
                 className="pb-6"
                 appletIds={appletIds}
                 onRefreshComplete={onRefreshComplete}
+                appId={appId} // Pass appId to SmartAppletList
               />
             </div>
             

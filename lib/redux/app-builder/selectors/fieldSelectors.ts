@@ -1,29 +1,156 @@
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux";
 import { FieldBuilder } from "../types";
 
 // Base selector for the fieldBuilder state
 const getFieldBuilderState = (state: RootState) => state.fieldBuilder;
 
-// Selector for all fields
-export const selectAllFields = (state: RootState): FieldBuilder[] => Object.values(getFieldBuilderState(state).fields);
+// Memoized selector for all fields
+export const selectAllFields = createSelector(
+  [getFieldBuilderState],
+  (fieldBuilderState) => Object.values(fieldBuilderState.fields)
+);
 
-// Selector for a specific field by ID
-export const selectFieldById = (state: RootState, id: string): FieldBuilder | null => getFieldBuilderState(state).fields[id] || null;
+// Memoized selector for a specific field by ID
+export const selectFieldById = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => field || null
+);
 
-// Selector for field loading state
-export const selectFieldLoading = (state: RootState): boolean => getFieldBuilderState(state).isLoading;
+// Memoized selector for field loading state
+export const selectFieldLoading = createSelector(
+  [getFieldBuilderState],
+  (fieldBuilderState) => fieldBuilderState.isLoading
+);
 
-// Selector for field error state
-export const selectFieldError = (state: RootState): string | null => getFieldBuilderState(state).error;
+// Memoized selector for field error state
+export const selectFieldError = createSelector(
+  [getFieldBuilderState],
+  (fieldBuilderState) => fieldBuilderState.error
+);
 
-// Selector for fields by a list of IDs
-export const selectFieldsByIds = (state: RootState, fieldIds: string[]): FieldBuilder[] => {
-  return fieldIds
-    .map(id => selectFieldById(state, id))
-    .filter((field): field is FieldBuilder => field !== null);
-};
+// Memoized selector for fields by a list of IDs
+export const selectFieldsByIds = createSelector(
+  [
+    getFieldBuilderState,
+    (_state: RootState, fieldIds: string[]) => fieldIds
+  ],
+  (fieldBuilderState, fieldIds) => {
+    return fieldIds
+      .map(id => fieldBuilderState.fields[id])
+      .filter((field): field is FieldBuilder => field !== null);
+  }
+);
 
-// Selector for fields of a specific component type
-export const selectFieldsByComponentType = (state: RootState, componentType: string): FieldBuilder[] => {
-  return selectAllFields(state).filter(field => field.component === componentType);
-}; 
+// Memoized selector for fields of a specific component type
+export const selectFieldsByComponentType = createSelector(
+  [
+    selectAllFields,
+    (_state: RootState, componentType: string) => componentType
+  ],
+  (fields, componentType) => fields.filter(field => field.component === componentType)
+);
+
+// Memoized selector for dirty fields
+export const selectDirtyFields = createSelector(
+  [selectAllFields],
+  (fields) => fields.filter(field => field.isDirty === true)
+);
+
+// Memoized selector to check if there are any unsaved changes
+export const selectHasUnsavedChanges = createSelector(
+  [selectAllFields],
+  (fields) => fields.some(field => field.isDirty === true)
+);
+
+// Memoized selector for local fields
+export const selectLocalFields = createSelector(
+  [selectAllFields],
+  (fields) => fields.filter(field => field.isLocal === true)
+);
+
+// Explicit selectors for each FieldBuilder property
+export const selectFieldId = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.id : null)
+);
+
+export const selectFieldLabel = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.label : null)
+);
+
+export const selectFieldDescription = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.description : null)
+);
+
+export const selectFieldHelpText = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.helpText : null)
+);
+
+export const selectFieldGroup = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.group : null)
+);
+
+export const selectFieldIconName = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.iconName : null)
+);
+
+export const selectFieldComponent = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.component : null)
+);
+
+export const selectFieldRequired = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.required : null)
+);
+
+export const selectFieldDisabled = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.disabled : null)
+);
+
+export const selectFieldPlaceholder = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.placeholder : null)
+);
+
+export const selectFieldDefaultValue = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.defaultValue : null)
+);
+
+export const selectFieldOptions = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.options : null)
+);
+
+export const selectFieldComponentProps = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps : null)
+);
+
+export const selectFieldIncludeOther = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.includeOther : null)
+);
+
+export const selectFieldIsPublic = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.isPublic : null)
+);
+
+export const selectFieldIsDirty = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.isDirty : null)
+);
+
+export const selectFieldIsLocal = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.isLocal : null)
+);

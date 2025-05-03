@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -18,17 +18,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
-import { getAllCustomAppConfigs, getCustomAppConfigById } from '@/lib/redux/app-builder/service/customAppService';
+import { useAppDispatch, useAppSelector, useAppStore } from '@/lib/redux';
+import { fetchAppsThunk } from '@/lib/redux/app-builder/thunks/appBuilderThunks';
+import { 
+  selectAllApps, 
+  selectAppLoading, 
+  selectAppError,
+  selectAppsByIds 
+} from '@/lib/redux/app-builder/selectors/appSelectors';
 import { IconPicker } from '@/components/ui/IconPicker';
 import { COLOR_VARIANTS } from '@/features/applet/layouts/helpers/StyledComponents';
-import { CustomAppConfig } from '@/features/applet/builder/modules/app-builder/AppBuilder';
+import { CustomAppConfig } from '@/features/applet/builder/builder.types';
 
-// Define type for appIds
-type AppId = string;
-
-// Define SmartAppListRefType here as an exported type
 export type SmartAppListRefType = {
-  refresh: (specificAppIds?: AppId[]) => Promise<CustomAppConfig[]>;
+  refresh: () => Promise<void>;
 };
 
 /**
@@ -42,12 +45,12 @@ export type SmartAppListRefType = {
  * @param {Function} props.onRefreshComplete - Optional callback when refresh completes
  */
 const SmartAppList = forwardRef<SmartAppListRefType, {
-  onSelectApp: any, 
+  onSelectApp?: (app: CustomAppConfig) => void, 
   showCreateButton?: boolean, 
-  onCreateApp: any,
+  onCreateApp?: () => void,
   className?: string,
-  appIds: any,
-  onRefreshComplete: any
+  appIds?: string[],
+  onRefreshComplete?: (apps: CustomAppConfig[]) => void
 }>(({ 
   onSelectApp, 
   showCreateButton = true, 
@@ -57,73 +60,45 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
   onRefreshComplete
 }, ref) => {
   const { toast } = useToast();
-  const [apps, setApps] = useState([]);
-  const [filteredApps, setFilteredApps] = useState([]);
+  const dispatch = useAppDispatch();
+  const store = useAppStore();
+  
+  // Local UI state
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [sortBy, setSortBy] = useState('name-asc'); // 'name-asc', 'name-desc', 'date-asc', 'date-desc'
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Ref to store appIds for comparison - now with proper typing
-  const prevAppIdsRef = useRef<AppId[] | undefined>(undefined);
-
-  // Function to load all apps
-  const loadAllApps = useCallback(async (showLoading = true) => {
-    if (showLoading) setIsLoading(true);
-    try {
-      const fetchedApps = await getAllCustomAppConfigs();
-      setApps(fetchedApps);
-      setFilteredApps(applyFiltersAndSort(fetchedApps, searchTerm, sortBy));
-      return fetchedApps;
-    } catch (error) {
-      console.error('Failed to load apps:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load apps",
-        variant: "destructive",
-      });
+  // Redux state
+  const allApps = useAppSelector(selectAllApps);
+  const isLoading = useAppSelector(selectAppLoading);
+  const error = useAppSelector(selectAppError);
+  
+  
+  // Derived state
+  const apps = appIds 
+    ? useAppSelector(state => {
+        if (!appIds.length) {
+          return allApps;
+        }
+        const filteredApps = allApps.filter(app => appIds.includes(app.id));
+        const selectorResult = selectAppsByIds(state, appIds);
+        return filteredApps.length ? filteredApps : allApps;
+      })
+    : allApps;
+  
+  // Apply filters and sorting to apps from Redux
+  const filteredApps = React.useMemo(() => {
+    if (!apps || apps.length === 0) {
       return [];
-    } finally {
-      if (showLoading) setIsLoading(false);
     }
-  }, [toast, searchTerm, sortBy]);
-
-  // Function to load specific apps by ID
-  const loadAppsByIds = useCallback(async (ids: AppId[] | undefined, showLoading = true) => {
-    if (!ids || ids.length === 0) return [];
     
-    if (showLoading) setIsLoading(true);
-    try {
-      const appPromises = ids.map(id => getCustomAppConfigById(id));
-      const fetchedApps = await Promise.all(appPromises);
-      // Filter out any null results (failed fetches)
-      const validApps = fetchedApps.filter(app => app);
-      
-      setApps(validApps);
-      setFilteredApps(applyFiltersAndSort(validApps, searchTerm, sortBy));
-      return validApps;
-    } catch (error) {
-      console.error('Failed to load specific apps:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load apps",
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      if (showLoading) setIsLoading(false);
-    }
-  }, [toast, searchTerm, sortBy]);
-
-  // Helper function to apply filters and sorting
-  const applyFiltersAndSort = (appList, term, sort) => {
-    // First apply search term filter
-    let result = appList;
+    let result = [...apps];
     
-    if (term.trim()) {
-      const lowercaseTerm = term.toLowerCase();
-      result = appList.filter(app => 
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const lowercaseTerm = searchTerm.toLowerCase();
+      result = result.filter(app => 
         app.name?.toLowerCase().includes(lowercaseTerm) || 
         app.description?.toLowerCase().includes(lowercaseTerm) ||
         app.creator?.toLowerCase().includes(lowercaseTerm) ||
@@ -131,8 +106,8 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
       );
     }
     
-    // Then apply sorting
-    switch (sort) {
+    // Apply sorting
+    switch (sortBy) {
       case 'name-asc':
         result.sort((a, b) => a.name?.localeCompare(b.name));
         break;
@@ -140,110 +115,58 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
         result.sort((a, b) => b.name?.localeCompare(a.name));
         break;
       case 'date-asc':
-        // Assuming there is a createdAt field, or use id as a fallback
-        result.sort((a, b) => (a.createdAt || a.id)?.localeCompare(b.createdAt || b.id));
+        // Sort by ID as a fallback since createdAt might not be available
+        result.sort((a, b) => a.id?.localeCompare(b.id || ''));
         break;
       case 'date-desc':
-        result.sort((a, b) => (b.createdAt || b.id)?.localeCompare(a.createdAt || a.id));
+        result.sort((a, b) => b.id?.localeCompare(a.id || ''));
         break;
       default:
         break;
     }
     
     return result;
-  };
+  }, [apps, searchTerm, sortBy]);
   
-  // Initial load
+  // Initial data fetch
   useEffect(() => {
-    if (appIds && appIds.length > 0) {
-      loadAppsByIds(appIds);
-      prevAppIdsRef.current = [...appIds];
-    } else {
-      loadAllApps();
+    // Only fetch if we have no apps or we're showing all apps (no specific IDs)
+    if (allApps.length === 0 || !appIds) {
+      dispatch(fetchAppsThunk());
     }
-  }, [loadAllApps, loadAppsByIds, appIds]);
+  }, [dispatch, allApps.length, appIds]);
   
-  // Watch for changes in appIds prop
-  useEffect(() => {
-    const prevAppIds = prevAppIdsRef.current;
-    
-    // Check if appIds has changed
-    const hasChanged = () => {
-      if (!prevAppIds && appIds) return true;
-      if (prevAppIds && !appIds) return true;
-      if (!prevAppIds && !appIds) return false;
-      if (prevAppIds.length !== appIds?.length) return true;
-      
-      // Check if any ids are different - only run if appIds exists
-      return appIds?.some(id => !prevAppIds.includes(id)) || false;
-    };
-    
-    if (hasChanged()) {
-      if (appIds && appIds.length > 0) {
-        loadAppsByIds(appIds);
-      } else {
-        loadAllApps();
-      }
-      
-      prevAppIdsRef.current = appIds ? [...appIds] : undefined;
-    }
-  }, [appIds, loadAllApps, loadAppsByIds]);
-
-  // Handle search term changes
-  useEffect(() => {
-    setFilteredApps(applyFiltersAndSort(apps, searchTerm, sortBy));
-  }, [searchTerm, apps, sortBy]);
-
-  // Handle sort changes
-  useEffect(() => {
-    setFilteredApps(applyFiltersAndSort(apps, searchTerm, sortBy));
-  }, [sortBy, apps, searchTerm]);
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleSortChange = (value) => {
-    setSortBy(value);
-  };
-
-  // Public refresh method for specific apps
-  const refreshApps = async (specificAppIds?: AppId[]) => {
+  // Handle refresh - now using redux directly
+  const refreshApps = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      let refreshedApps;
+      // Dispatch the fetchAppsThunk to refresh all apps data
+      await dispatch(fetchAppsThunk()).unwrap();
       
-      if (specificAppIds && specificAppIds.length > 0) {
-        refreshedApps = await loadAppsByIds(specificAppIds, false);
-      } else if (appIds && appIds.length > 0) {
-        refreshedApps = await loadAppsByIds(appIds, false);
-      } else {
-        refreshedApps = await loadAllApps(false);
-      }
-      
-      if (onRefreshComplete) {
-        onRefreshComplete(refreshedApps);
-      }
-      
-      return refreshedApps;
+      // After redux state has updated, call the onRefreshComplete callback with the latest data
+      // We'll need to wait for the next render cycle to get the updated state
+      setTimeout(() => {
+        if (onRefreshComplete) {
+          // By this time, apps state should be updated from Redux
+          onRefreshComplete(apps);
+        }
+      }, 0);
     } catch (error) {
-      console.error('Error refreshing apps:', error);
       toast({
         title: "Refresh Failed",
         description: "Could not refresh app data",
         variant: "destructive",
       });
-      return [];
     } finally {
       setIsRefreshing(false);
     }
-  };
-
+  }, [dispatch, toast, onRefreshComplete, apps]);
+  
   // Expose the refresh method via ref
   useImperativeHandle(ref, () => ({
     refresh: refreshApps
   }), [refreshApps]);
-
+  
   // Handle manual refresh button click
   const handleRefreshClick = () => {
     refreshApps();
@@ -251,6 +174,31 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
       title: "Refreshing",
       description: "Updating app list...",
     });
+  };
+  
+  // Handle search term changes
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Handle sort changes
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
+  };
+
+  // Debug function to check Redux store
+  const debugReduxStore = () => {
+    try {
+      // Access the Redux store directly
+      const state = store.getState();
+      
+      toast({
+        title: "Redux Store Debugged",
+        description: "Check the console for details",
+      });
+    } catch (err) {
+      console.error("Error debugging Redux store:", err);
+    }
   };
 
   // Renders skeleton cards during loading state
@@ -394,6 +342,25 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
     };
   };
 
+  // Show error state if Redux has an error
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-lg inline-block mb-4">
+          <RefreshCw className="h-6 w-6 text-red-500 dark:text-red-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Error Loading Apps</h3>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">{error}</p>
+        <Button 
+          className="mt-4 bg-red-500 hover:bg-red-600 text-white"
+          onClick={handleRefreshClick}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" /> Try Again
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Search and controls */}
@@ -414,10 +381,20 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
             size="sm"
             className="flex items-center gap-1"
             onClick={handleRefreshClick}
-            disabled={isRefreshing}
+            disabled={isLoading || isRefreshing}
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${isLoading || isRefreshing ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
+          </Button>
+          
+          {/* Debug button - only shown in development */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-1 bg-yellow-100 text-yellow-900 dark:bg-yellow-800 dark:text-yellow-200"
+            onClick={debugReduxStore}
+          >
+            <span>Debug</span>
           </Button>
           
           <DropdownMenu>
@@ -462,7 +439,7 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
             </Button>
           </div>
           
-          {showCreateButton && (
+          {showCreateButton && onCreateApp && (
             <Button 
               className="bg-blue-500 hover:bg-blue-600 text-white"
               size="sm"
@@ -491,7 +468,7 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
             <p className="text-gray-500 dark:text-gray-400 mt-1">
               {searchTerm ? "Try a different search term" : "Create your first app to get started"}
             </p>
-            {showCreateButton && (
+            {showCreateButton && onCreateApp && (
               <Button 
                 className="bg-blue-500 hover:bg-blue-600 text-white mt-4"
                 onClick={onCreateApp}
@@ -622,13 +599,15 @@ const SmartAppList = forwardRef<SmartAppListRefType, {
                       ${colorClasses.cardFooterBg}
                       ${viewMode === 'list' ? 'w-24 border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center' : ''}
                     `}>
-                      <Button
-                        className={`w-full ${COLOR_VARIANTS.buttonBg[app.accentColor || 'blue']}`}
-                        size="sm"
-                        onClick={() => onSelectApp(app)}
-                      >
-                        Select
-                      </Button>
+                      {onSelectApp && (
+                        <Button
+                          className={`w-full ${COLOR_VARIANTS.buttonBg[app.accentColor || 'blue']}`}
+                          size="sm"
+                          onClick={() => onSelectApp(app)}
+                        >
+                          Select
+                        </Button>
+                      )}
                     </CardFooter>
                   </Card>
                 </motion.div>

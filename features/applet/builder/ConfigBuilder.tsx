@@ -20,6 +20,11 @@ import { PreviewConfig } from '@/features/applet/builder/previews/PreviewConfig'
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from '@/components/ui/spinner';
+import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { selectAppById, selectAppLoading, selectAppError } from '@/lib/redux/app-builder/selectors/appSelectors';
+import { fetchAppsThunk } from '@/lib/redux/app-builder/thunks/appBuilderThunks';
+import { addAppletThunk, removeAppletThunk } from '@/lib/redux/app-builder/thunks/appBuilderThunks';
+import { createAppletThunk, updateAppletThunk } from '@/lib/redux/app-builder/thunks/appletBuilderThunks';
 
 // Import database services
 import { 
@@ -79,13 +84,21 @@ const DEFAULT_APP_CONFIG: Partial<CustomAppConfig> = {
 
 export const ConfigBuilder = () => {
   const { toast } = useToast();
+  const dispatch = useAppDispatch();
   const [activeStep, setActiveStep] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Loading...');
   
+  // Redux state
+  const appLoading = useAppSelector(selectAppLoading);
+  const appError = useAppSelector(selectAppError);
+  
   // App configuration state
-  const [appConfig, setAppConfig] = useState<Partial<CustomAppConfig>>(DEFAULT_APP_CONFIG);
-  const [savedApp, setSavedApp] = useState<CustomAppConfig | null>(null);
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const selectedApp = useAppSelector(state => 
+    selectedAppId ? selectAppById(state, selectedAppId) : null
+  );
+  const [isCreatingNewApp, setIsCreatingNewApp] = useState(false);
+  const [tempNewAppConfig, setTempNewAppConfig] = useState<Partial<CustomAppConfig>>(DEFAULT_APP_CONFIG);
   
   // Applet state
   const [applets, setApplets] = useState<CustomAppletConfig[]>([]);
@@ -97,14 +110,12 @@ export const ConfigBuilder = () => {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   
   // Loading states for specific operations
-  const [isSavingApp, setIsSavingApp] = useState(false);
   const [isLoadingApplets, setIsLoadingApplets] = useState(false);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
   
   // When the component mounts, fetch available applets and groups
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
       setLoadingMessage('Loading available resources...');
       try {
         // Fetch available applets and groups for selection
@@ -113,6 +124,9 @@ export const ConfigBuilder = () => {
         
         setAvailableApplets(fetchedApplets);
         setAvailableGroups(fetchedGroups);
+        
+        // Also fetch apps via Redux
+        dispatch(fetchAppsThunk());
       } catch (error) {
         console.error('Error fetching initial data:', error);
         toast({
@@ -120,34 +134,32 @@ export const ConfigBuilder = () => {
           description: "Failed to load initial data. Please refresh the page.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
       }
     };
     
     fetchData();
-  }, [toast]);
+  }, [toast, dispatch]);
   
   // When app changes, fetch its applets
   useEffect(() => {
-    if (savedApp?.id && savedApp.appletList && savedApp.appletList.length > 0) {
+    if (selectedApp?.id && selectedApp.appletIds && selectedApp.appletIds.length > 0) {
       const fetchApplets = async () => {
         setIsLoadingApplets(true);
         setLoadingMessage('Loading applets...');
         try {
-          console.log('Fetching applets for app:', savedApp.id, 'appletList:', savedApp.appletList);
+          console.log('Fetching applets for app:', selectedApp.id, 'appletIds:', selectedApp.appletIds);
           
-          const appletsPromises = savedApp.appletList.map(async (item) => {
+          const appletsPromises = selectedApp.appletIds.map(async (appletId) => {
             try {
-              const applet = await getCustomAppletConfigById(item.appletId);
+              const applet = await getCustomAppletConfigById(appletId);
               if (!applet) {
-                console.warn(`No applet found with ID ${item.appletId}`);
+                console.warn(`No applet found with ID ${appletId}`);
                 return null;
               }
-              console.log(`Successfully loaded applet: ${item.appletId}`);
+              console.log(`Successfully loaded applet: ${appletId}`);
               return applet;
             } catch (error) {
-              console.error(`Error fetching applet ${item.appletId}:`, error);
+              console.error(`Error fetching applet ${appletId}:`, error);
               return null;
             }
           });
@@ -181,8 +193,8 @@ export const ConfigBuilder = () => {
       setApplets([]);
       setActiveApplet(null);
     }
-  }, [savedApp, toast, activeApplet]);
-  
+  }, [selectedApp, toast, activeApplet]);
+
   const steps = [
     { id: 'select-app', title: 'Select App', description: 'Select an existing app or create a new one' },
     { id: 'app-info', title: 'App Information', description: 'Basic information about your app' },
@@ -195,33 +207,18 @@ export const ConfigBuilder = () => {
   const handleNext = async () => {
     if (activeStep === 0) {
       // For the first step (Select App), we don't need validation as the user
-      // either selects an app (which sets savedApp) or creates a new one (moving to step 1)
-      if (!savedApp && activeStep === 0) {
+      // either selects an app (which sets selectedAppId) or creates a new one (moving to step 1)
+      if (!selectedAppId && activeStep === 0) {
         // If no app is selected, move to App Info step to create a new one
         setActiveStep(1);
-        // Reset to default state for new app creation
-        setAppConfig(DEFAULT_APP_CONFIG);
+        setIsCreatingNewApp(true);
         return;
       }
       setActiveStep(1);
     } else if (activeStep === 1) {
-      // Validate app info before moving to the next step
-      if (!appConfig.name || !appConfig.slug) {
-        toast({
-          title: "Required Fields Missing",
-          description: "Please fill out all required fields before proceeding.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Save/update the app before moving to applet configuration
-      try {
-        await handleSaveApp();
-      } catch (error) {
-        // Error is already handled in handleSaveApp
-        return;
-      }
+      // App Info step - validation is now handled within the AppInfoStep component
+      // The AppInfoStep component will call saveApp() which will handle the progression
+      setActiveStep(2);
     } else if (activeStep === 2) {
       // Verify we have at least one applet before proceeding
       if (applets.length === 0) {
@@ -232,6 +229,7 @@ export const ConfigBuilder = () => {
         });
         return;
       }
+      setActiveStep(3);
     } else if (activeStep === 3) {
       // Ensure all applets have at least one group
       const hasEmptyApplet = applets.some(applet => !applet.containers || applet.containers.length === 0);
@@ -243,9 +241,8 @@ export const ConfigBuilder = () => {
         });
         return;
       }
-    }
-    
-    if (activeStep < steps.length - 1) {
+      setActiveStep(4);
+    } else if (activeStep < steps.length - 1) {
       setActiveStep(activeStep + 1);
     }
   };
@@ -254,78 +251,6 @@ export const ConfigBuilder = () => {
     if (activeStep > 0) {
       setActiveStep(activeStep - 1);
     }
-  };
-
-  const handleSaveApp = async () => {
-    if (!appConfig.name || !appConfig.slug) {
-      toast({
-        title: "Required Fields Missing",
-        description: "Please fill out name and slug fields.",
-        variant: "destructive",
-      });
-      throw new Error("Required fields missing");
-    }
-    
-    setIsSavingApp(true);
-    setLoadingMessage('Saving app information...');
-    try {
-      // Check if the slug is available (unless we're updating an existing app)
-      if (!savedApp || savedApp.slug !== appConfig.slug) {
-        const slugAvailable = await isAppSlugAvailable(
-          appConfig.slug, 
-          savedApp?.id
-        );
-        
-        if (!slugAvailable) {
-          toast({
-            title: "Slug Already Used",
-            description: "This slug is already in use. Please choose another.",
-            variant: "destructive",
-          });
-          throw new Error("Slug already in use");
-        }
-      }
-      
-      if (savedApp?.id) {
-        // Update the existing app
-        const updatedApp = await updateCustomAppConfig(
-          savedApp.id, 
-          appConfig as CustomAppConfig
-        );
-        setSavedApp(updatedApp);
-        toast({
-          title: "App Updated",
-          description: "Your app has been updated successfully.",
-        });
-      } else {
-        // Create a new app
-        const newApp = await createCustomAppConfig(appConfig as CustomAppConfig);
-        setSavedApp(newApp);
-        toast({
-          title: "App Created",
-          description: "Your app has been created successfully.",
-        });
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error saving app:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save app. Please try again.",
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setIsSavingApp(false);
-    }
-  };
-
-  const updateAppConfig = (updates: Partial<CustomAppConfig>) => {
-    setAppConfig(prev => ({
-      ...prev,
-      ...updates
-    }));
   };
 
   const updateActiveApplet = (appletId: string) => {
@@ -337,9 +262,14 @@ export const ConfigBuilder = () => {
     setActiveGroup(groupId);
   };
 
+  // Function to update the temporary new app config (when creating a new app)
+  const updateTempNewAppConfig = (updates: Partial<CustomAppConfig>) => {
+    setTempNewAppConfig(prev => ({ ...prev, ...updates }));
+  };
+
   const addApplet = async (appletConfig: CustomAppletConfig) => {
     // Check if we have a saved app first
-    if (!savedApp?.id) {
+    if (!selectedAppId) {
       toast({
         title: "No App Found",
         description: "Please save app information first.",
@@ -348,19 +278,40 @@ export const ConfigBuilder = () => {
       return;
     }
     
-    setIsLoading(true);
     setLoadingMessage('Adding applet to app...');
     try {
-      // Ensure applet has containers array
+      // Check if applet is already in the app
+      const isAppletInApp = selectedApp?.appletIds?.includes(appletConfig.id as string);
+      if (isAppletInApp) {
+        toast({
+          title: "Applet Already Added",
+          description: "This applet is already in your app.",
+          variant: "default",
+        });
+        return;
+      }
+      
+      // Ensure applet has containers array and is associated with this app
       const appletWithContainers = {
         ...appletConfig,
-        containers: appletConfig.containers || []
+        containers: appletConfig.containers || [],
+        appId: selectedAppId
       };
       
-      // If applet doesn't have an ID, create a new one
       let applet: CustomAppletConfig;
-      if (!appletConfig.id) {
-        // Check slug availability
+      
+      // If this is an existing applet (from the pool of available applets)
+      if (appletConfig.id && availableApplets.some(a => a.id === appletConfig.id)) {
+        console.log('Adding existing applet with direct API call:', appletConfig.id);
+        
+        // For existing applets, create a new DB entry using the service directly
+        // Let the DB generate a new ID by setting id to null
+        const appletData = {
+          ...appletWithContainers,
+          id: null // Let the DB generate a new ID
+        };
+        
+        // Check slug availability first
         const slugAvailable = await isAppletSlugAvailable(appletConfig.slug);
         if (!slugAvailable) {
           toast({
@@ -371,51 +322,38 @@ export const ConfigBuilder = () => {
           throw new Error("Applet slug already in use");
         }
         
-        console.log('Creating new applet with data:', JSON.stringify(appletWithContainers, null, 2));
-        applet = await createCustomAppletConfig(appletWithContainers);
-        console.log('Created new applet:', applet);
+        // Create a new applet based on the existing one
+        applet = await createCustomAppletConfig(appletData);
       } else {
-        console.log('Using existing applet:', appletConfig.id);
-        applet = appletConfig;
+        // For new applets created in the builder
+        console.log('Creating new applet with Redux thunk');
+        
+        // Check slug availability first
+        const slugAvailable = await isAppletSlugAvailable(appletConfig.slug);
+        if (!slugAvailable) {
+          toast({
+            title: "Applet Slug Already Used",
+            description: "This applet slug is already in use. Please choose another.",
+            variant: "destructive",
+          });
+          throw new Error("Applet slug already in use");
+        }
+        
+        // Create via Redux
+        const createdApplet = await dispatch(createAppletThunk(appletWithContainers as any)).unwrap();
+        applet = createdApplet;
       }
       
-      // Check if applet is already in the app
-      const isAppletInApp = appConfig.appletList?.some(item => item.appletId === applet.id);
-      if (isAppletInApp) {
-        toast({
-          title: "Applet Already Added",
-          description: "This applet is already in your app.",
-          variant: "default",
-        });
-        return;
-      }
+      console.log('Successfully created applet:', applet);
       
-      // Update the app's appletList
-      const updatedAppletList = [
-        ...(appConfig.appletList || []),
-        { appletId: applet.id as string, label: applet.name }
-      ];
+      // Add applet to app in Redux
+      await dispatch(addAppletThunk({
+        appId: selectedAppId,
+        appletId: applet.id as string
+      })).unwrap();
       
-      // Update app config with new applet
-      const updatedAppConfig = {
-        ...appConfig,
-        appletList: updatedAppletList
-      };
-      
-      // Save to database
-      const updatedApp = await updateCustomAppConfig(
-        savedApp.id, 
-        updatedAppConfig as CustomAppConfig
-      );
-      
-      // Update state
-      setAppConfig(updatedAppConfig);
-      setSavedApp(updatedApp);
-      
-      // Add the newly added applet to the applets array
+      // Add the newly added applet to the applets array for local state
       setApplets(prev => {
-        // Log to check if the applet is correctly being added
-        console.log('Adding applet to state:', applet);
         // Check if the applet is already in the array to avoid duplicates
         const isAppletAlreadyInArray = prev.some(a => a.id === applet.id);
         if (isAppletAlreadyInArray) {
@@ -438,8 +376,6 @@ export const ConfigBuilder = () => {
         description: "Failed to add applet to app.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -453,7 +389,6 @@ export const ConfigBuilder = () => {
       return;
     }
     
-    setIsLoading(true);
     setLoadingMessage('Adding group to applet...');
     try {
       // Get the current applet
@@ -490,8 +425,6 @@ export const ConfigBuilder = () => {
         description: "Failed to add group to applet.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -505,7 +438,6 @@ export const ConfigBuilder = () => {
       return;
     }
     
-    setIsLoading(true);
     setLoadingMessage('Adding field to group...');
     try {
       // Add the field to the group
@@ -541,15 +473,12 @@ export const ConfigBuilder = () => {
         description: "Failed to add field to group.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const removeField = async (fieldId: string, groupId: string) => {
     if (!activeApplet || !groupId) return;
     
-    setIsLoading(true);
     setLoadingMessage('Removing field from group...');
     try {
       // Remove the field from the group
@@ -582,8 +511,6 @@ export const ConfigBuilder = () => {
         description: "Failed to remove field from group.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -591,7 +518,6 @@ export const ConfigBuilder = () => {
   const refreshAppletGroups = async (appletId: string) => {
     if (!appletId) return;
     
-    setIsLoading(true);
     setLoadingMessage('Refreshing applet groups...');
     try {
       const success = await recompileAllGroupsInApplet(appletId);
@@ -620,8 +546,6 @@ export const ConfigBuilder = () => {
         description: "Failed to refresh applet groups.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -629,7 +553,6 @@ export const ConfigBuilder = () => {
   const refreshGroupFields = async (groupId: string, appletId: string) => {
     if (!groupId || !appletId) return;
     
-    setIsLoading(true);
     setLoadingMessage('Refreshing group fields...');
     try {
       // Refresh all fields in the group
@@ -666,60 +589,30 @@ export const ConfigBuilder = () => {
         description: "Failed to refresh group fields.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleAppSelected = (app: CustomAppConfig) => {
-    setIsSavingApp(true);
-    setLoadingMessage('Loading selected app...');
+    // Set the selected app ID
+    setSelectedAppId(app.id);
+    setIsCreatingNewApp(false);
     
-    try {
-      // Set the selected app as the current app
-      setSavedApp(app);
-      setAppConfig(app);
-      
-      toast({
-        title: "App Selected",
-        description: `You've selected ${app.name} to edit.`,
-      });
-      
-      // Move to the next step (App Info)
-      setActiveStep(1);
-    } catch (error) {
-      console.error('Error selecting app:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load selected app. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSavingApp(false);
-    }
+    toast({
+      title: "App Selected",
+      description: `You've selected ${app.name} to edit.`,
+    });
+    
+    // Move to the next step (App Info)
+    setActiveStep(1);
   };
 
   const handleCreateNewApp = () => {
     // Reset app state to defaults for a new app
-    setSavedApp(null);
-    setAppConfig({
-      ...DEFAULT_APP_CONFIG,
-      id: undefined, // Ensure no ID is carried over
-      name: '',
-      description: '',
-      slug: '',
-      mainAppIcon: 'LayoutTemplate',
-      mainAppSubmitIcon: 'Search',
-      creator: '',
-      primaryColor: 'gray',
-      accentColor: 'rose',
-      appletList: [],
-      extraButtons: [],
-      layoutType: 'open',
-      imageUrl: '',    
-    });
+    setSelectedAppId(null);
+    setIsCreatingNewApp(true);
     setApplets([]);
     setActiveApplet(null);
+    setTempNewAppConfig(DEFAULT_APP_CONFIG);
     
     // Move to App Info step
     setActiveStep(1);
@@ -741,16 +634,16 @@ export const ConfigBuilder = () => {
 
   // Initial welcome message
   useEffect(() => {
-    if (!savedApp) {
+    if (!selectedAppId && !isCreatingNewApp) {
       toast({
         title: "Welcome to App Builder",
         description: "Select an existing app to edit or create a new one.",
       });
     }
-  }, [savedApp, toast]);
+  }, [selectedAppId, isCreatingNewApp, toast]);
 
   const isStepLoading = () => {
-    return isLoading || isSavingApp || isLoadingApplets || isLoadingGroups;
+    return appLoading || isLoadingApplets || isLoadingGroups;
   };
 
   // Footer rendering with conditional reset button
@@ -793,6 +686,63 @@ export const ConfigBuilder = () => {
     );
   };
 
+  // Handler for when an app is saved (called from AppInfoStep)
+  const handleAppSaved = (appId: string) => {
+    // Update the selectedAppId if it's a new app
+    if (!selectedAppId) {
+      setSelectedAppId(appId);
+      setIsCreatingNewApp(false);
+    }
+    
+    // Move to the next step
+    setActiveStep(2);
+  };
+
+  const handleRemoveApplet = async (appletId: string) => {
+    if (!selectedAppId) {
+      toast({
+        title: "No App Selected",
+        description: "Cannot remove applet as no app is selected.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLoadingMessage('Removing applet from app...');
+    try {
+      // Remove applet from app in Redux
+      await dispatch(removeAppletThunk({
+        appId: selectedAppId,
+        appletId
+      })).unwrap();
+      
+      // Remove the applet from local state array
+      setApplets(prev => prev.filter(a => a.id !== appletId));
+      
+      // If the active applet is the one being removed, select another one
+      if (activeApplet === appletId) {
+        const remainingApplets = applets.filter(a => a.id !== appletId);
+        if (remainingApplets.length > 0) {
+          setActiveApplet(remainingApplets[0].id as string);
+        } else {
+          setActiveApplet(null);
+        }
+      }
+      
+      toast({
+        title: "Applet Removed",
+        description: "The applet has been removed from your app.",
+      });
+    } catch (error) {
+      console.error('Error removing applet:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove applet from app.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="w-full h-full px-4 bg-white dark:bg-gray-900">
       <div className="w-full max-w-[1600px] mx-auto">
@@ -825,29 +775,22 @@ export const ConfigBuilder = () => {
                 <SelectAppStep 
                   onAppSelected={handleAppSelected}
                   onCreateNewApp={handleCreateNewApp}
-                  selectedApp={savedApp}
+                  selectedApp={selectedApp as CustomAppConfig}
                 />
               )}
               
               {activeStep === 1 && (
                 <AppInfoStep 
-                  config={appConfig} 
-                  updateConfig={updateAppConfig}
-                  saveApp={handleSaveApp}
-                  isEdit={!!savedApp?.id}
+                  config={isCreatingNewApp ? tempNewAppConfig : (selectedApp || {}) as Partial<CustomAppConfig>}
+                  updateConfig={isCreatingNewApp ? updateTempNewAppConfig : () => {}} 
+                  saveApp={handleAppSaved}
+                  isEdit={!isCreatingNewApp && !!selectedAppId}
                 />
               )}
               
               {activeStep === 2 && (
                 <AppletsConfigStep 
-                  applets={applets}
-                  availableApplets={availableApplets}
-                  addApplet={addApplet}
-                  updateConfig={updateAppConfig}
-                  activeApplet={activeApplet}
-                  setActiveApplet={updateActiveApplet}
-                  config={appConfig}
-                  savedApp={savedApp}
+                  appId={selectedAppId}
                 />
               )}
               
@@ -877,7 +820,7 @@ export const ConfigBuilder = () => {
               
               {activeStep === 5 && (
                 <PreviewConfig 
-                  config={savedApp} 
+                  config={selectedApp as CustomAppConfig} 
                   applets={applets}
                   refreshAppletGroups={refreshAppletGroups}
                   refreshGroupFields={refreshGroupFields}

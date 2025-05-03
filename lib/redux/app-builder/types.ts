@@ -1,3 +1,5 @@
+import { CustomAppConfig, CustomApplet } from "@/features/applet/builder/builder.types";
+
 export type ComponentType =
     | "input"
     | "textarea"
@@ -51,7 +53,11 @@ export interface FieldDefinition {
     includeOther?: boolean;
 }
 
-export type FieldBuilder = FieldDefinition;
+export interface FieldBuilder extends FieldDefinition {
+    isPublic?: boolean;
+    isDirty?: boolean;
+    isLocal?: boolean;
+}
 
 export type AppletContainer = {
     id: string;
@@ -67,43 +73,24 @@ export interface ContainerBuilder extends AppletContainer {
     isPublic?: boolean;
     authenticatedRead?: boolean;
     publicRead?: boolean;
+    isDirty?: boolean;
+    isLocal?: boolean;
 }
 
-export interface AppletBuilder {
-    id: string;
-    name: string;
-    description?: string;
-    slug: string;
-    appletIcon?: string;
-    appletSubmitText?: string;
-    creator?: string;
-    primaryColor?: string;
-    accentColor?: string;
-    layoutType?: string;
-    containers: ContainerBuilder[];
-    dataSourceConfig?: any;
-    resultComponentConfig?: any;
-    nextStepConfig?: any;
-    compiledRecipeId?: string;
-    subcategoryId?: string;
-    imageUrl?: string;
-    appId?: string;
+export interface AppletBuilder extends CustomApplet {
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+    isDirty?: boolean;
+    isLocal?: boolean;
+    slugStatus?: 'unchecked' | 'unique' | 'notUnique';
 }
 
-export interface AppBuilder {
-    id: string;
-    name: string;
-    description: string;
-    slug: string;
-    mainAppIcon?: string;
-    mainAppSubmitIcon?: string;
-    creator?: string;
-    primaryColor?: string;
-    accentColor?: string;
-    layoutType?: string;
-    extraButtons?: CustomActionButton[];
-    imageUrl?: string;
+export interface AppBuilder extends CustomAppConfig {
     appletIds: string[];
+    isDirty?: boolean;
+    isLocal?: boolean;
+    slugStatus?: 'unchecked' | 'unique' | 'notUnique';
 }
 
 export interface CustomActionButton {

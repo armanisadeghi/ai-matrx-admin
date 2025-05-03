@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback, useRef } from 'react';
 import { Search, Plus, Grid, List, ArrowUpDown, RefreshCw, LayersIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -21,19 +21,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
-import { getAllComponentGroups, getComponentGroupById } from '@/lib/redux/app-builder/service';
+import { useAppDispatch, useAppSelector, useAppStore } from '@/lib/redux';
+import { fetchContainersThunk } from '@/lib/redux/app-builder/thunks/containerBuilderThunks';
+import { 
+  selectAllContainers, 
+  selectContainerLoading, 
+  selectContainerError,
+  selectContainersByIds 
+} from '@/lib/redux/app-builder/selectors/containerSelectors';
 import { ComponentGroup } from '@/features/applet/builder/builder.types';
+import { RootState } from '@/lib/redux';
 
 // Define type for groupIds
 type GroupId = string;
 
 // Define and export the ref type
-export type SmartGroupListRefType = {
-  refresh: (specificGroupIds?: GroupId[]) => Promise<ComponentGroup[]>;
+export type SmartContainerListRefType = {
+  refresh: (specificGroupIds?: string[]) => Promise<ComponentGroup[]>;
 };
 
 /**
- * A modern, standalone SmartGroupList component that fetches and displays component groups
+ * A modern, standalone SmartContainerList component that fetches and displays component groups
  * @param {Object} props
  * @param {Function} props.onSelectGroup - Callback when group is selected
  * @param {boolean} props.showCreateButton - Whether to show the create button
@@ -45,16 +53,16 @@ export type SmartGroupListRefType = {
  * @param {string[]} props.groupIds - Optional list of group IDs to fetch and display
  * @param {Function} props.onRefreshComplete - Optional callback when refresh completes
  */
-const SmartGroupList = forwardRef<SmartGroupListRefType, {
-  onSelectGroup: any, 
+const SmartContainerList = forwardRef<SmartContainerListRefType, {
+  onSelectGroup?: (group: ComponentGroup) => void, 
   showCreateButton?: boolean, 
-  onCreateGroup: any,
-  onRefreshGroup: any,
-  onDeleteGroup: any,
-  onEditGroup: any,
+  onCreateGroup?: () => void,
+  onRefreshGroup?: (group: ComponentGroup) => void,
+  onDeleteGroup?: (group: ComponentGroup) => void,
+  onEditGroup?: (group: ComponentGroup) => void,
   className?: string,
-  groupIds: any,
-  onRefreshComplete: any
+  groupIds?: string[],
+  onRefreshComplete?: (groups: ComponentGroup[]) => void
 }>(({ 
   onSelectGroup, 
   showCreateButton = true, 
@@ -67,73 +75,43 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
   onRefreshComplete
 }, ref) => {
   const { toast } = useToast();
-  const [groups, setGroups] = useState<ComponentGroup[]>([]);
-  const [filteredGroups, setFilteredGroups] = useState<ComponentGroup[]>([]);
+  const dispatch = useAppDispatch();
+  const store = useAppStore();
+  
+  // Local UI state
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   const [sortBy, setSortBy] = useState('label-asc'); // 'label-asc', 'label-desc', 'fields-asc', 'fields-desc'
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Ref to store groupIds for comparison
-  const prevGroupIdsRef = useRef<GroupId[] | undefined>(undefined);
+  // Redux state
+  const allContainers = useAppSelector(selectAllContainers);
+  const isLoading = useAppSelector(selectContainerLoading);
+  const error = useAppSelector(selectContainerError);
+  
+  // Derived state - create a memoized selector function
+  const selectGroups = React.useCallback(
+    (state: RootState) => {
+      if (groupIds && groupIds.length > 0) {
+        return selectContainersByIds(state, groupIds);
+      } else {
+        return allContainers;
+      }
+    },
+    [groupIds, allContainers]
+  );
 
-  // Function to load all groups
-  const loadAllGroups = useCallback(async (showLoading = true) => {
-    if (showLoading) setIsLoading(true);
-    try {
-      const fetchedGroups = await getAllComponentGroups();
-      setGroups(fetchedGroups);
-      setFilteredGroups(applyFiltersAndSort(fetchedGroups, searchTerm, sortBy));
-      return fetchedGroups;
-    } catch (error) {
-      console.error('Failed to load groups:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load groups",
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      if (showLoading) setIsLoading(false);
-    }
-  }, [toast, searchTerm, sortBy]);
-
-  // Function to load specific groups by ID
-  const loadGroupsByIds = useCallback(async (ids: GroupId[] | undefined, showLoading = true) => {
-    if (!ids || ids.length === 0) return [];
+  // Use the memoized selector
+  const groups = useAppSelector(selectGroups);
+  
+  // Apply filters and sorting to groups from Redux
+  const filteredGroups = React.useMemo(() => {
+    let result = [...groups];
     
-    if (showLoading) setIsLoading(true);
-    try {
-      const groupPromises = ids.map(id => getComponentGroupById(id));
-      const fetchedGroups = await Promise.all(groupPromises);
-      // Filter out any null results (failed fetches)
-      const validGroups = fetchedGroups.filter(group => group);
-      
-      setGroups(validGroups);
-      setFilteredGroups(applyFiltersAndSort(validGroups, searchTerm, sortBy));
-      return validGroups;
-    } catch (error) {
-      console.error('Failed to load specific groups:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load groups",
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      if (showLoading) setIsLoading(false);
-    }
-  }, [toast, searchTerm, sortBy]);
-
-  // Helper function to apply filters and sorting
-  const applyFiltersAndSort = (groupList: ComponentGroup[], term: string, sort: string) => {
-    // First apply search term filter
-    let result = groupList;
-    
-    if (term.trim()) {
-      const lowercaseTerm = term.toLowerCase();
-      result = groupList.filter(group => 
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const lowercaseTerm = searchTerm.toLowerCase();
+      result = result.filter(group => 
         group.label?.toLowerCase().includes(lowercaseTerm) || 
         group.description?.toLowerCase().includes(lowercaseTerm) ||
         group.id?.toLowerCase().includes(lowercaseTerm) ||
@@ -141,8 +119,8 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
       );
     }
     
-    // Then apply sorting
-    switch (sort) {
+    // Apply sorting
+    switch (sortBy) {
       case 'label-asc':
         result.sort((a, b) => a.label?.localeCompare(b.label));
         break;
@@ -160,106 +138,78 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
     }
     
     return result;
-  };
-  
-  // Initial load
+  }, [groups, searchTerm, sortBy]);
+
+  // Initial data fetch
   useEffect(() => {
-    if (groupIds && groupIds.length > 0) {
-      loadGroupsByIds(groupIds);
-      prevGroupIdsRef.current = [...groupIds];
-    } else {
-      loadAllGroups();
-    }
-  }, [loadAllGroups, loadGroupsByIds, groupIds]);
-  
-  // Watch for changes in groupIds prop
-  useEffect(() => {
-    const prevGroupIds = prevGroupIdsRef.current;
-    
-    // Check if groupIds has changed
-    const hasChanged = () => {
-      if (!prevGroupIds && groupIds) return true;
-      if (prevGroupIds && !groupIds) return true;
-      if (!prevGroupIds && !groupIds) return false;
-      if (prevGroupIds.length !== groupIds?.length) return true;
-      
-      // Check if any ids are different - only run if groupIds exists
-      return groupIds?.some(id => !prevGroupIds.includes(id)) || false;
-    };
-    
-    if (hasChanged()) {
-      if (groupIds && groupIds.length > 0) {
-        loadGroupsByIds(groupIds);
-      } else {
-        loadAllGroups();
-      }
-      
-      prevGroupIdsRef.current = groupIds ? [...groupIds] : undefined;
-    }
-  }, [groupIds, loadAllGroups, loadGroupsByIds]);
+    // Fetch containers regardless of whether we have them already, as we need to ensure the store is updated
+    dispatch(fetchContainersThunk());
+  }, [dispatch]); // Don't include allContainers.length or groupIds in dependencies
 
-  // Handle search term changes
-  useEffect(() => {
-    setFilteredGroups(applyFiltersAndSort(groups, searchTerm, sortBy));
-  }, [searchTerm, groups, sortBy]);
-
-  // Handle sort changes
-  useEffect(() => {
-    setFilteredGroups(applyFiltersAndSort(groups, searchTerm, sortBy));
-  }, [sortBy, groups, searchTerm]);
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleSortChange = (value) => {
-    setSortBy(value);
-  };
-
-  // Public refresh method for specific groups
-  const refreshGroups = async (specificGroupIds?: GroupId[]) => {
-    setIsRefreshing(true);
-    try {
-      let refreshedGroups;
-      
-      if (specificGroupIds && specificGroupIds.length > 0) {
-        refreshedGroups = await loadGroupsByIds(specificGroupIds, false);
-      } else if (groupIds && groupIds.length > 0) {
-        refreshedGroups = await loadGroupsByIds(groupIds, false);
-      } else {
-        refreshedGroups = await loadAllGroups(false);
-      }
-      
-      if (onRefreshComplete) {
-        onRefreshComplete(refreshedGroups);
-      }
-      
-      return refreshedGroups;
-    } catch (error) {
-      console.error('Error refreshing groups:', error);
-      toast({
-        title: "Refresh Failed",
-        description: "Could not refresh group data",
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+  // Create a refresh function using useRef to always access the latest implementation
+  const refreshRef = useRef<(specificGroupIds?: string[]) => Promise<ComponentGroup[]>>(null!);
 
   // Expose the refresh method via ref
-  useImperativeHandle(ref, () => ({
-    refresh: refreshGroups
-  }), [refreshGroups]);
+  useImperativeHandle(ref, () => {
+    // Create the function once
+    const refreshFn = async (specificGroupIds?: string[]) => {
+      setIsRefreshing(true);
+      try {
+        // Use specificGroupIds if provided, otherwise use the component's groupIds
+        const groupsToRefresh = specificGroupIds || groupIds;
+        await dispatch(fetchContainersThunk()).unwrap();
+        
+        // Get the current state immediately after the fetch
+        const currentState = store.getState();
+        const currentAllContainers = selectAllContainers(currentState);
+        const currentGroups = groupsToRefresh 
+          ? selectContainersByIds(currentState, groupsToRefresh) 
+          : currentAllContainers;
+        
+        // Call the callback if provided
+        if (onRefreshComplete) {
+          onRefreshComplete(currentGroups);
+        }
+        
+        return currentGroups;
+      } catch (error) {
+        toast({
+          title: "Refresh Failed",
+          description: "Could not refresh group data",
+          variant: "destructive",
+        });
+        return [];
+      } finally {
+        setIsRefreshing(false);
+      }
+    };
+    
+    // Store the function in our ref for internal use
+    refreshRef.current = refreshFn;
+    
+    // Return the interface
+    return {
+      refresh: refreshFn
+    };
+  }, [dispatch, toast, groupIds, store, onRefreshComplete, selectGroups]);
 
   // Handle manual refresh button click
   const handleRefreshClick = () => {
-    refreshGroups();
+    refreshRef.current();
     toast({
       title: "Refreshing",
       description: "Updating group list...",
     });
+  };
+
+  // Handle search term changes
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Handle sort changes
+  const handleSortChange = (value: string) => {
+    setSortBy(value);
   };
 
   // Handle refresh for a specific group
@@ -271,7 +221,9 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
     if (onRefreshGroup) {
       onRefreshGroup(group);
     } else {
-      refreshGroups([group.id]);
+      // Instead of refreshing just one group, refresh all groups
+      // A more targeted approach would require a specific thunk for single group refresh
+      refreshRef.current();
       toast({
         title: "Group Refreshed",
         description: `Group "${group.label}" has been refreshed.`,
@@ -366,6 +318,25 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
     };
   };
 
+  // Show error state if Redux has an error
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-lg inline-block mb-4">
+          <LayersIcon className="h-6 w-6 text-red-500 dark:text-red-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Error Loading Groups</h3>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">{error}</p>
+        <Button 
+          className="mt-4 bg-red-500 hover:bg-red-600 text-white"
+          onClick={handleRefreshClick}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" /> Try Again
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Search and controls */}
@@ -386,9 +357,9 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
             size="sm"
             className="flex items-center gap-1"
             onClick={handleRefreshClick}
-            disabled={isRefreshing}
+            disabled={isLoading || isRefreshing}
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 ${isLoading || isRefreshing ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>
           </Button>
           
@@ -434,7 +405,7 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
             </Button>
           </div>
           
-          {showCreateButton && (
+          {showCreateButton && onCreateGroup && (
             <Button 
               className="bg-amber-500 hover:bg-amber-600 text-white"
               size="sm"
@@ -463,7 +434,7 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
             <p className="text-gray-500 dark:text-gray-400 mt-1">
               {searchTerm ? "Try a different search term" : "Create your first group to get started"}
             </p>
-            {showCreateButton && (
+            {showCreateButton && onCreateGroup && (
               <Button 
                 className="bg-amber-500 hover:bg-amber-600 text-white mt-4"
                 onClick={onCreateGroup}
@@ -506,9 +477,6 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
                             {group.label}
                           </CardTitle>
                         </div>
-                        <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                          {group.id}
-                        </CardDescription>
                       </CardHeader>
                       
                       <CardContent className="pt-0">
@@ -566,14 +534,16 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
                     `}>
                       {viewMode === 'list' ? (
                         <>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => handleEditGroup(group, e)}
-                            className="w-full border-gray-300 dark:border-gray-600"
-                          >
-                            Edit
-                          </Button>
+                          {onEditGroup && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => handleEditGroup(group, e)}
+                              className="w-full border-gray-300 dark:border-gray-600"
+                            >
+                              Edit
+                            </Button>
+                          )}
                           
                           <Button
                             className="w-full bg-amber-500 hover:bg-amber-600 text-white"
@@ -585,23 +555,27 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
                         </>
                       ) : (
                         <>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => handleDeleteGroup(group, e)}
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          >
-                            Delete
-                          </Button>
+                          {onDeleteGroup && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => handleDeleteGroup(group, e)}
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                            >
+                              Delete
+                            </Button>
+                          )}
                           
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => handleEditGroup(group, e)}
-                            className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-                          >
-                            Edit
-                          </Button>
+                          {onEditGroup && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => handleEditGroup(group, e)}
+                              className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+                            >
+                              Edit
+                            </Button>
+                          )}
                         </>
                       )}
                     </CardFooter>
@@ -627,6 +601,6 @@ const SmartGroupList = forwardRef<SmartGroupListRefType, {
 });
 
 // Add display name for debugging
-SmartGroupList.displayName = 'SmartGroupList';
+SmartContainerList.displayName = 'SmartContainerList';
 
-export default SmartGroupList;
+export default SmartContainerList;

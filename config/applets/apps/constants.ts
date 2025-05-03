@@ -564,3 +564,23 @@ export const getCategoryPath = (categorySlug: CategorySlug) => {
 export const getSubcategoryPath = (categorySlug: CategorySlug, subcategorySlug: SubcategorySlug) => {
     return `/apps/${categorySlug}/${subcategorySlug}`;
 };
+
+
+export const FORBIDDEN_SLUGS = ['matrx', 'matrix', 'app', 'applet'];
+
+export const isSlugInUse = (slug: string): boolean => {
+    // Check if slug is in forbidden list
+    if (FORBIDDEN_SLUGS.includes(slug.toLowerCase())) {
+        return true;
+    }
+
+    // Check if slug is used as a category slug
+    if (slug in APP_CATEGORIES) {
+        return true;
+    }
+
+    // Check if slug is used as a subcategory slug in any category
+    return Object.values(APP_CATEGORIES).some(category => 
+        slug in category.subcategories
+    );
+};
