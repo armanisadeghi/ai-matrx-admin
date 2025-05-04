@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk, fetchAppsThunk, checkAppSlugUniqueness, FetchAppByIdSuccessAction } from "../thunks/appBuilderThunks";
+import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk, fetchAppsThunk, checkAppSlugUniqueness, FetchAppByIdSuccessAction, saveAppThunk } from "../thunks/appBuilderThunks";
 import { AppBuilder } from "../types";
+import { v4 as uuidv4 } from "uuid";
+import { AppLayoutOptions, CustomActionButton } from "@/features/applet/builder/builder.types";
 
 // Helper function to check if an app exists in state
 const checkAppExists = (state: AppsState, id: string): boolean => {
@@ -11,22 +13,91 @@ const checkAppExists = (state: AppsState, id: string): boolean => {
     return true;
 };
 
+// Default app configuration
+export const DEFAULT_APP: Partial<AppBuilder> = {
+    name: "",
+    description: "",
+    slug: "",
+    appletIds: [],
+    isPublic: false,
+    authenticatedRead: true,
+    publicRead: false,
+    isDirty: false,
+    isLocal: true,
+    slugStatus: "unchecked",
+};
+
 export interface AppsState {
     apps: Record<string, AppBuilder>;
     isLoading: boolean;
     error: string | null;
+    activeAppId: string | null;
+    newAppId: string | null;
 }
 
 const initialState: AppsState = {
     apps: {},
     isLoading: false,
     error: null,
+    activeAppId: null,
+    newAppId: null,
 };
 
 export const appBuilderSlice = createSlice({
     name: "appBuilder",
     initialState,
     reducers: {
+        // Initialize a new app
+        startNewApp: (state, action: PayloadAction<{ id?: string; appData?: Partial<AppBuilder> } | Partial<AppBuilder> | undefined>) => {
+            // Handle different parameter formats for backward compatibility
+            let providedId: string | undefined;
+            let appData: Partial<AppBuilder> = {};
+            
+            if (action.payload) {
+                if ('id' in action.payload && 'appData' in action.payload) {
+                    // New format: { id, appData }
+                    providedId = action.payload.id;
+                    appData = action.payload.appData || {};
+                } else {
+                    // Old format: Partial<AppBuilder> directly
+                    appData = action.payload as Partial<AppBuilder>;
+                }
+            }
+            
+            const id = providedId || uuidv4();
+            state.apps[id] = {
+                ...DEFAULT_APP,
+                id: id,
+                ...appData,
+            } as AppBuilder;
+            state.newAppId = id;
+            state.activeAppId = id;
+        },
+        // Cancel creation of a local app
+        cancelNewApp: (state, action: PayloadAction<string>) => {
+            const id = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            if (state.apps[id].isLocal) {
+                delete state.apps[id];
+                if (state.newAppId === id) {
+                    state.newAppId = null;
+                }
+                if (state.activeAppId === id) {
+                    state.activeAppId = null;
+                }
+            }
+        },
+        // Set the active app for editing
+        setActiveApp: (state, action: PayloadAction<string | null>) => {
+            const id = action.payload;
+            if (id !== null && !state.apps[id]) {
+                console.error(`App with ID ${id} not found in state`);
+            }
+            state.activeAppId = id;
+        },
+        
+        // Existing actions - preserve these
         setApp: (state, action: PayloadAction<AppBuilder>) => {
             state.apps[action.payload.id] = { ...action.payload, isDirty: action.payload.isDirty || true, isLocal: action.payload.isLocal || true, slugStatus: action.payload.slugStatus || 'unchecked' };
         },
@@ -42,6 +113,12 @@ export const appBuilderSlice = createSlice({
             if (!checkAppExists(state, id)) return;
             
             delete state.apps[id];
+            if (state.activeAppId === id) {
+                state.activeAppId = null;
+            }
+            if (state.newAppId === id) {
+                state.newAppId = null;
+            }
         },
         addApplet: (state, action: PayloadAction<{ appId: string; appletId: string }>) => {
             const { appId, appletId } = action.payload;
@@ -59,6 +136,118 @@ export const appBuilderSlice = createSlice({
             state.apps[appId].appletIds = state.apps[appId].appletIds.filter((id) => id !== appletId);
             state.apps[appId].isDirty = true;
         },
+        
+        // Individual property setters - add these 
+        setName: (state, action: PayloadAction<{ id: string; name: string }>) => {
+            const { id, name } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], name, isDirty: true };
+        },
+        setDescription: (state, action: PayloadAction<{ id: string; description?: string }>) => {
+            const { id, description } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], description, isDirty: true };
+        },
+        setSlug: (state, action: PayloadAction<{ id: string; slug: string }>) => {
+            const { id, slug } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], slug, isDirty: true, slugStatus: 'unchecked' };
+        },
+        setMainAppIcon: (state, action: PayloadAction<{ id: string; mainAppIcon?: string }>) => {
+            const { id, mainAppIcon } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], mainAppIcon, isDirty: true };
+        },
+        setMainAppSubmitIcon: (state, action: PayloadAction<{ id: string; mainAppSubmitIcon?: string }>) => {
+            const { id, mainAppSubmitIcon } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], mainAppSubmitIcon, isDirty: true };
+        },
+        setCreator: (state, action: PayloadAction<{ id: string; creator?: string }>) => {
+            const { id, creator } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], creator, isDirty: true };
+        },
+        setPrimaryColor: (state, action: PayloadAction<{ id: string; primaryColor?: string }>) => {
+            const { id, primaryColor } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], primaryColor, isDirty: true };
+        },
+        setAccentColor: (state, action: PayloadAction<{ id: string; accentColor?: string }>) => {
+            const { id, accentColor } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], accentColor, isDirty: true };
+        },
+        setAppletList: (state, action: PayloadAction<{ id: string; appletList?: { appletId: string; label: string }[] }>) => {
+            const { id, appletList } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], appletList, isDirty: true };
+        },
+        setExtraButtons: (state, action: PayloadAction<{ id: string; extraButtons?: CustomActionButton[] }>) => {
+            const { id, extraButtons } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], extraButtons, isDirty: true };
+        },
+        setLayoutType: (state, action: PayloadAction<{ id: string; layoutType?: AppLayoutOptions }>) => {
+            const { id, layoutType } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], layoutType, isDirty: true };
+        },
+        setImageUrl: (state, action: PayloadAction<{ id: string; imageUrl?: string }>) => {
+            const { id, imageUrl } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], imageUrl, isDirty: true };
+        },
+        setIsPublic: (state, action: PayloadAction<{ id: string; isPublic?: boolean }>) => {
+            const { id, isPublic } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], isPublic, isDirty: true };
+        },
+        setAuthenticatedRead: (state, action: PayloadAction<{ id: string; authenticatedRead?: boolean }>) => {
+            const { id, authenticatedRead } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], authenticatedRead, isDirty: true };
+        },
+        setPublicRead: (state, action: PayloadAction<{ id: string; publicRead?: boolean }>) => {
+            const { id, publicRead } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], publicRead, isDirty: true };
+        },
+        setIsDirty: (state, action: PayloadAction<{ id: string; isDirty?: boolean }>) => {
+            const { id, isDirty } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], isDirty };
+        },
+        setIsLocal: (state, action: PayloadAction<{ id: string; isLocal?: boolean }>) => {
+            const { id, isLocal } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], isLocal };
+        },
+        setSlugStatus: (state, action: PayloadAction<{ id: string; slugStatus: 'unchecked' | 'unique' | 'notUnique' }>) => {
+            const { id, slugStatus } = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            state.apps[id] = { ...state.apps[id], slugStatus, isDirty: true };
+        },
+        
+        // Keep the existing actions
         setLoading: (state, action: PayloadAction<boolean>) => {
             state.isLoading = action.payload;
         },
@@ -74,6 +263,11 @@ export const appBuilderSlice = createSlice({
         });
         builder.addCase(createAppThunk.fulfilled, (state, action) => {
             state.apps[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: 'unique' };
+            if (state.newAppId) {
+                delete state.apps[state.newAppId];
+                state.newAppId = null;
+            }
+            state.activeAppId = action.payload.id;
             state.isLoading = false;
         });
         builder.addCase(createAppThunk.rejected, (state, action) => {
@@ -95,6 +289,26 @@ export const appBuilderSlice = createSlice({
             state.error = action.error.message || "Failed to update app";
         });
 
+        // Save App (unified thunk for create/update)
+        builder.addCase(saveAppThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(saveAppThunk.fulfilled, (state, action) => {
+            const app = action.payload;
+            state.apps[app.id] = { ...app, isDirty: false, isLocal: false, slugStatus: 'unique' };
+            if (state.newAppId && app.id !== state.newAppId) {
+                delete state.apps[state.newAppId];
+                state.newAppId = null;
+            }
+            state.activeAppId = app.id;
+            state.isLoading = false;
+        });
+        builder.addCase(saveAppThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to save app";
+        });
+
         // Delete App
         builder.addCase(deleteAppThunk.pending, (state) => {
             state.isLoading = true;
@@ -102,6 +316,9 @@ export const appBuilderSlice = createSlice({
         });
         builder.addCase(deleteAppThunk.fulfilled, (state, action) => {
             delete state.apps[action.meta.arg];
+            if (state.activeAppId === action.meta.arg) {
+                state.activeAppId = null;
+            }
             state.isLoading = false;
         });
         builder.addCase(deleteAppThunk.rejected, (state, action) => {
@@ -202,11 +419,48 @@ export const appBuilderSlice = createSlice({
         // Handle fetchAppByIdSuccess (used by setActiveAppWithFetchThunk)
         builder.addCase("appBuilder/fetchAppByIdSuccess", (state, action: FetchAppByIdSuccessAction) => {
             state.apps[action.payload.id!] = action.payload;
+            state.activeAppId = action.payload.id!;
             state.isLoading = false;
         });
     },
 });
 
-export const { setApp, updateApp, deleteApp, addApplet, removeApplet, setLoading, setError } = appBuilderSlice.actions;
+export const {
+    // Existing actions
+    setApp, 
+    updateApp, 
+    deleteApp, 
+    addApplet, 
+    removeApplet, 
+    setLoading, 
+    setError,
+    
+    // New slice-style actions
+    setActiveApp,
+    cancelNewApp,
+    setName,
+    setDescription,
+    setSlug,
+    setMainAppIcon,
+    setMainAppSubmitIcon,
+    setCreator,
+    setPrimaryColor,
+    setAccentColor,
+    setAppletList,
+    setExtraButtons,
+    setLayoutType,
+    setImageUrl,
+    setIsPublic,
+    setAuthenticatedRead,
+    setPublicRead,
+    setIsDirty,
+    setIsLocal,
+    setSlugStatus,
+} = appBuilderSlice.actions;
+
+// Export startNewApp with proper typing for backward compatibility
+export const startNewApp = (
+    payload?: { id?: string; appData?: Partial<AppBuilder> } | Partial<AppBuilder>
+) => appBuilderSlice.actions.startNewApp(payload);
 
 export default appBuilderSlice.reducer;

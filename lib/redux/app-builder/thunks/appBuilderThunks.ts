@@ -197,5 +197,44 @@ export const setActiveAppWithFetchThunk = createAsyncThunk<
         }
     }
 );
+
+// Add the unified saveAppThunk after the other app thunks
+export const saveAppThunk = createAsyncThunk<
+    AppBuilder,
+    string,
+    { state: RootState }
+>(
+    "appBuilder/saveApp",
+    async (appId, { getState, rejectWithValue }) => {
+        try {
+            const app = selectAppById(getState() as RootState, appId);
+            if (!app) {
+                throw new Error(`App with ID ${appId} not found`);
+            }
+            
+            let savedApp;
+            
+            // Determine if this is a new app (isLocal) or an existing one
+            if (app.isLocal) {
+                // Create new app
+                savedApp = await createCustomAppConfig(app);
+            } else {
+                // Update existing app
+                savedApp = await updateCustomAppConfig(appId, app);
+            }
+            
+            // Return consistently formatted result
+            return {
+                ...savedApp,
+                appletIds: savedApp.appletIds || [],
+                isDirty: false,
+                isLocal: false,
+                slugStatus: 'unique',
+            };
+        } catch (error: any) {
+            return rejectWithValue(error.message || "Failed to save app");
+        }
+    }
+);
   
   

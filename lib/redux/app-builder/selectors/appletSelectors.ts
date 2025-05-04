@@ -2,6 +2,8 @@ import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux/store";
 import { AppletBuilder } from "../types";
 
+// ================================ Base Selectors ================================
+
 // Base selector for the appletBuilder state
 export const getAppletBuilderState = (state: RootState) => state.appletBuilder;
 
@@ -17,6 +19,8 @@ export const selectAppletById = createSelector(
   (applet) => applet || null
 );
 
+// ================================ Status Selectors ================================
+
 // Memoized selector for applet loading state
 export const selectAppletLoading = createSelector(
   [getAppletBuilderState],
@@ -28,6 +32,8 @@ export const selectAppletError = createSelector(
   [getAppletBuilderState],
   (appletBuilderState) => appletBuilderState.error
 );
+
+// ================================ Applet Collection Selectors ================================
 
 // Memoized selector for applets by a list of IDs
 export const selectAppletsByIds = createSelector(
@@ -57,6 +63,22 @@ export const selectUnassignedApplets = createSelector(
   (applets) => applets.filter(applet => !applet.appId)
 );
 
+// Memoized selector for local applets
+export const selectLocalApplets = createSelector(
+  [selectAllApplets],
+  (applets) => applets.filter(applet => applet.isLocal === true)
+);
+
+// ================================ Applet Container Selectors ================================
+
+// Memoized selector for containers associated with an applet
+export const selectContainersForApplet = createSelector(
+  [(state: RootState, appletId: string) => selectAppletById(state, appletId)],
+  (applet) => (applet ? applet.containers : [])
+);
+
+// ================================ Dirty State Management ================================
+
 // Memoized selector for dirty applets
 export const selectDirtyApplets = createSelector(
   [selectAllApplets],
@@ -69,17 +91,7 @@ export const selectHasUnsavedAppletChanges = createSelector(
   (applets) => applets.some(applet => applet.isDirty === true)
 );
 
-// Memoized selector for local applets
-export const selectLocalApplets = createSelector(
-  [selectAllApplets],
-  (applets) => applets.filter(applet => applet.isLocal === true)
-);
-
-// Memoized selector for containers associated with an applet
-export const selectContainersForApplet = createSelector(
-  [(state: RootState, appletId: string) => selectAppletById(state, appletId)],
-  (applet) => (applet ? applet.containers : [])
-);
+// ================================ Active/New Applet Selectors ================================
 
 // Memoized selector for new applet ID
 export const selectNewAppletId = createSelector(
@@ -92,6 +104,8 @@ export const selectActiveAppletId = createSelector(
   [getAppletBuilderState],
   (appletBuilderState) => appletBuilderState.activeAppletId
 );
+
+// ================================ Applet Property Selectors ================================
 
 // Explicit selectors for each AppletBuilder property
 export const selectAppletId = createSelector(
@@ -188,6 +202,8 @@ export const selectAppletBrokerMappings = createSelector(
   [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
   (applet) => (applet ? applet.brokerMappings : null)
 );
+
+// ================================ Security and Status Selectors ================================
 
 export const selectAppletIsPublic = createSelector(
   [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],

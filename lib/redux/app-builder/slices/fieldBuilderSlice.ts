@@ -40,7 +40,7 @@ export const DEFAULT_FIELD: Partial<FieldBuilder> = {
     componentProps: {},
     includeOther: false,
     isPublic: false,
-    isDirty: true,
+    isDirty: false,
     isLocal: true,
 };
 
@@ -65,12 +65,27 @@ export const fieldBuilderSlice = createSlice({
     initialState,
     reducers: {
         // Initialize a new field for creation
-        startFieldCreation: (state, action: PayloadAction<Partial<FieldBuilder> | undefined>) => {
-            const id = uuidv4();
+        startFieldCreation: (state, action: PayloadAction<{ id?: string; fieldData?: Partial<FieldBuilder> } | Partial<FieldBuilder> | undefined>) => {
+            // Handle different parameter formats for backward compatibility
+            let providedId: string | undefined;
+            let fieldData: Partial<FieldBuilder> = {};
+            
+            if (action.payload) {
+                if ('id' in action.payload && 'fieldData' in action.payload) {
+                    // New format: { id, fieldData }
+                    providedId = action.payload.id;
+                    fieldData = action.payload.fieldData || {};
+                } else {
+                    // Old format: Partial<FieldBuilder> directly
+                    fieldData = action.payload as Partial<FieldBuilder>;
+                }
+            }
+            
+            const id = providedId || uuidv4();
             state.fields[id] = {
                 ...DEFAULT_FIELD,
                 id: id,
-                ...(action.payload || {}),
+                ...fieldData,
             } as FieldBuilder;
             state.newFieldId = id;
             state.activeFieldId = id;
@@ -287,7 +302,7 @@ export const fieldBuilderSlice = createSlice({
         });
         builder.addCase(fetchFieldsThunk.fulfilled, (state, action) => {
             state.fields = action.payload.reduce((acc, field) => {
-                acc[field.id] = field;
+                acc[field.id] = { ...field, isDirty: false };
                 return acc;
             }, {} as Record<string, FieldBuilder>);
             state.isLoading = false;
@@ -398,7 +413,7 @@ export const fieldBuilderSlice = createSlice({
 
         // Handle fetchFieldByIdSuccess (used by setActiveFieldWithFetchThunk)
         builder.addCase("fieldBuilder/fetchFieldByIdSuccess", (state, action: FetchFieldByIdSuccessAction) => {
-            state.fields[action.payload.id] = action.payload;
+            state.fields[action.payload.id] = { ...action.payload, isDirty: false };
             state.isLoading = false;
         });
     },
@@ -430,8 +445,9 @@ export const {
     setError,
 } = fieldBuilderSlice.actions;
 
-// Export startFieldCreation with proper typing for no arguments case
-export const startFieldCreation = (payload?: Partial<FieldBuilder>) => 
-    fieldBuilderSlice.actions.startFieldCreation(payload);
+// Export startFieldCreation with proper typing for backward compatibility
+export const startFieldCreation = (
+    payload?: { id?: string; fieldData?: Partial<FieldBuilder> } | Partial<FieldBuilder>
+) => fieldBuilderSlice.actions.startFieldCreation(payload);
 
 export default fieldBuilderSlice.reducer;

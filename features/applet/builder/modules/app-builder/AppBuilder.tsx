@@ -24,26 +24,7 @@ import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
 import { IconPicker } from "@/components/ui/IconPicker";
 import SmartAppList, { SmartAppListRefType } from "@/features/applet/builder/components/smart-parts/apps/SmartAppList";
-
-export type CustomAppConfig = {
-    id?: string;
-    name: string;
-    description: string;
-    slug: string;
-    mainAppIcon?: string;
-    mainAppSubmitIcon?: string;
-    creator?: string;
-    primaryColor?: string;
-    accentColor?: string;
-    appletList?: { appletId: string; label: string }[];
-    extraButtons?: {
-        label: string;
-        actionType: string;
-        knownMethod: string;
-    }[];
-    layoutType?: string;
-    imageUrl?: string;
-};
+import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 
 // SINGLE SOURCE OF TRUTH FOR DEFAULT VALUES
 export const DEFAULT_APP_CONFIG: CustomAppConfig = {
@@ -57,7 +38,7 @@ export const DEFAULT_APP_CONFIG: CustomAppConfig = {
     accentColor: "rose",
     appletList: [],
     extraButtons: [],
-    layoutType: "oneColumn",
+    layoutType: "tabbedApplets",
     imageUrl: "",
 };
 

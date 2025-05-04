@@ -41,7 +41,7 @@ export const DEFAULT_CONTAINER: Partial<ContainerBuilder> = {
     isPublic: true,
     authenticatedRead: true,
     publicRead: false,
-    isDirty: true,
+    isDirty: false,
     isLocal: true,
 };
 
@@ -66,12 +66,27 @@ export const containerBuilderSlice = createSlice({
     initialState,
     reducers: {
         // Initialize a new container
-        startNewContainer: (state, action: PayloadAction<Partial<ContainerBuilder> | undefined>) => {
-            const id = uuidv4();
+        startNewContainer: (state, action: PayloadAction<{ id?: string; containerData?: Partial<ContainerBuilder> } | Partial<ContainerBuilder> | undefined>) => {
+            // Handle different parameter formats for backward compatibility
+            let providedId: string | undefined;
+            let containerData: Partial<ContainerBuilder> = {};
+            
+            if (action.payload) {
+                if ('id' in action.payload && 'containerData' in action.payload) {
+                    // New format: { id, containerData }
+                    providedId = action.payload.id;
+                    containerData = action.payload.containerData || {};
+                } else {
+                    // Old format: Partial<ContainerBuilder> directly
+                    containerData = action.payload as Partial<ContainerBuilder>;
+                }
+            }
+            
+            const id = providedId || uuidv4();
             state.containers[id] = {
                 ...DEFAULT_CONTAINER,
                 id: id,
-                ...(action.payload || {}),
+                ...containerData,
             } as ContainerBuilder;
             state.newContainerId = id;
             state.activeContainerId = id;
@@ -235,7 +250,6 @@ export const containerBuilderSlice = createSlice({
                 ...DEFAULT_CONTAINER,
                 id: newId,
                 isLocal: true,
-                isDirty: true,
             } as ContainerBuilder;
             state.newContainerId = newId;
             state.activeContainerId = newId;
@@ -520,7 +534,7 @@ export const containerBuilderSlice = createSlice({
 
         // Handle fetchContainerByIdSuccess (used by setActiveContainerWithFetchThunk)
         builder.addCase("containerBuilder/fetchContainerByIdSuccess", (state, action: FetchContainerByIdSuccessAction) => {
-            state.containers[action.payload.id] = action.payload;
+            state.containers[action.payload.id] = { ...action.payload, isDirty: false };
             state.isLoading = false;
         });
     },
@@ -550,8 +564,9 @@ export const {
     createNewContainer,
 } = containerBuilderSlice.actions;
 
-// Export startNewContainer with proper typing for no arguments case
-export const startNewContainer = (payload?: Partial<ContainerBuilder>) => 
-    containerBuilderSlice.actions.startNewContainer(payload);
+// Export startNewContainer with proper typing for backward compatibility
+export const startNewContainer = (
+    payload?: { id?: string; containerData?: Partial<ContainerBuilder> } | Partial<ContainerBuilder>
+) => containerBuilderSlice.actions.startNewContainer(payload);
 
 export default containerBuilderSlice.reducer;

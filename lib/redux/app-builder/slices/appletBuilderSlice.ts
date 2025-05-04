@@ -28,6 +28,19 @@ const checkAppletExists = (state: AppletsState, id: string): boolean => {
     return true;
 };
 
+// Default applet configuration
+export const DEFAULT_APPLET: Partial<AppletBuilder> = {
+    name: "",
+    slug: "",
+    containers: [],
+    isPublic: false,
+    authenticatedRead: true,
+    publicRead: false,
+    isDirty: false,
+    isLocal: true,
+    slugStatus: "unchecked",
+};
+
 interface AppletsState {
     applets: Record<string, AppletBuilder>;
     isLoading: boolean;
@@ -49,20 +62,27 @@ export const appletBuilderSlice = createSlice({
     initialState,
     reducers: {
         // Initialize a new applet
-        startNewApplet: (state, action: PayloadAction<Partial<AppletBuilder> | undefined>) => {
-            const id = uuidv4();
+        startNewApplet: (state, action: PayloadAction<{ id?: string; appletData?: Partial<AppletBuilder> } | Partial<AppletBuilder> | undefined>) => {
+            // Handle different parameter formats for backward compatibility
+            let providedId: string | undefined;
+            let appletData: Partial<AppletBuilder> = {};
+            
+            if (action.payload) {
+                if ('id' in action.payload && 'appletData' in action.payload) {
+                    // New format: { id, appletData }
+                    providedId = action.payload.id;
+                    appletData = action.payload.appletData || {};
+                } else {
+                    // Old format: Partial<AppletBuilder> directly
+                    appletData = action.payload as Partial<AppletBuilder>;
+                }
+            }
+            
+            const id = providedId || uuidv4();
             state.applets[id] = {
+                ...DEFAULT_APPLET,
                 id: id,
-                name: "",
-                slug: "",
-                containers: [],
-                isPublic: false,
-                authenticatedRead: true,
-                publicRead: false,
-                isDirty: true,
-                isLocal: true,
-                slugStatus: "unchecked",
-                ...(action.payload || {}),
+                ...appletData,
             } as AppletBuilder;
             state.newAppletId = id;
             state.activeAppletId = id;
@@ -515,7 +535,7 @@ export const appletBuilderSlice = createSlice({
 
         // Handling fetchAppletById success (used by setActiveAppletWithFetchThunk)
         builder.addCase("appletBuilder/fetchAppletByIdSuccess", (state, action: FetchAppletByIdSuccessAction) => {
-            state.applets[action.payload.id] = action.payload;
+            state.applets[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: 'unique' };
             state.isLoading = false;
         });
     },
@@ -555,8 +575,9 @@ export const {
     setError,
 } = appletBuilderSlice.actions;
 
-// Export startNewApplet with proper typing for no arguments case
-export const startNewApplet = (payload?: Partial<AppletBuilder>) => 
-    appletBuilderSlice.actions.startNewApplet(payload);
+// Export startNewApplet with proper typing for backward compatibility
+export const startNewApplet = (
+    payload?: { id?: string; appletData?: Partial<AppletBuilder> } | Partial<AppletBuilder>
+) => appletBuilderSlice.actions.startNewApplet(payload);
 
 export default appletBuilderSlice.reducer;
