@@ -14,18 +14,16 @@ import {
   selectAppletAccentColor
 } from '@/lib/redux/app-builder/selectors/appletSelectors';
 import { setActiveApplet } from '@/lib/redux/app-builder/slices/appletBuilderSlice';
+import { setActiveAppletWithFetchThunk } from '@/lib/redux/app-builder/thunks/appletBuilderThunks';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
 
-interface AppletViewPageProps {
-  params: {
-    id: string;
-  };
-}
+export default function AppletViewPage({ params }: { params: Promise<{ id: string }> }) {
+  // Use React.use() to unwrap the params Promise
+  const resolvedParams = React.use(params);
+  const { id } = resolvedParams;
 
-export default function AppletViewPage({ params }: AppletViewPageProps) {
-  const { id } = params;
   const dispatch = useAppDispatch();
   const router = useRouter();
   
@@ -43,7 +41,7 @@ export default function AppletViewPage({ params }: AppletViewPageProps) {
   // Set active applet when component mounts
   useEffect(() => {
     if (id) {
-      dispatch(setActiveApplet(id));
+      dispatch(setActiveAppletWithFetchThunk(id));
     }
   }, [id, dispatch]);
   

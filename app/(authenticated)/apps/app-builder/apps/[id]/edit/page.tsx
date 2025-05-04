@@ -3,20 +3,23 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectAppById, selectAppLoading, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
-import { setActiveApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
+import { setActiveAppWithFetchThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import AppEditor from '@/features/applet/builder/modules/app-builder/AppEditor';
 
 interface AppEditPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export default function AppEditPage({ params }: AppEditPageProps) {
-    const { id } = params;
+    // Use React.use() to unwrap the params Promise
+    const resolvedParams = React.use(params);
+    const { id } = resolvedParams;
+    
     const dispatch = useAppDispatch();
     const router = useRouter();
     const { toast } = useToast();
@@ -29,7 +32,7 @@ export default function AppEditPage({ params }: AppEditPageProps) {
     // Set the active app when the component loads
     useEffect(() => {
         if (id) {
-            dispatch(setActiveApp(id));
+            dispatch(setActiveAppWithFetchThunk(id));
         }
 
         // Clean up when unmounting

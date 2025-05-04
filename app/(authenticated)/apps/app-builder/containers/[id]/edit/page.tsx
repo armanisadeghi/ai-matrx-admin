@@ -25,7 +25,8 @@ import {
   addFieldThunk,
   removeFieldThunk,
   moveFieldUpThunk,
-  moveFieldDownThunk
+  moveFieldDownThunk,
+  setActiveContainerWithFetchThunk
 } from '@/lib/redux/app-builder/thunks/containerBuilderThunks';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
@@ -93,7 +94,7 @@ export default function ContainerEditPage({ params }: { params: Promise<{ id: st
         if (!container) {
           await dispatch(fetchContainerByIdThunk(id)).unwrap();
         }
-        dispatch(setActiveContainer(id));
+        dispatch(setActiveContainerWithFetchThunk(id));
       } catch (error) {
         toast({
           title: 'Error',

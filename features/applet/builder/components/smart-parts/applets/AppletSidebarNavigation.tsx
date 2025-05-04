@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectAppletsByAppId, selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectActiveContainerId, selectAllContainerIds } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { setActiveAppletWithFetchThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { setActiveContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 import { setActiveContainerWithFetchThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import GroupSelectorOverlay from "../../smart-parts/containers/GroupSelectorOverlay";
@@ -42,39 +43,39 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
     const allContainerIds = useAppSelector(selectAllContainerIds);
 
     const handleExistingContainerSelect = async (group: ComponentGroup) => {
-            const containerExists = allContainerIds.includes(group.id);
+        const containerExists = allContainerIds.includes(group.id);
 
-            try {
-                // Fetch the container if it's not in state
-                if (!containerExists) {
-                    await dispatch(fetchContainerByIdThunk(group.id)).unwrap();
-                }
+        try {
+            // Fetch the container if it's not in state
+            if (!containerExists) {
+                await dispatch(fetchContainerByIdThunk(group.id)).unwrap();
+            }
 
-                // First select the container so the form updates
-                dispatch(setActiveContainer(group.id));
+            // First select the container so the form updates
+            dispatch(setActiveContainerWithFetchThunk(group.id));
 
-                // Add the container to the applet using the thunk that handles database updates
-                await dispatch(
-                    saveContainerAndUpdateAppletThunk({
-                        containerId: group.id,
-                        appletId: activeAppletId,
-                    })
-                ).unwrap();
+            // Add the container to the applet using the thunk that handles database updates
+            await dispatch(
+                saveContainerAndUpdateAppletThunk({
+                    containerId: group.id,
+                    appletId: activeAppletId,
+                })
+            ).unwrap();
 
-                // After successfully adding the container to the applet in the database,
-                // save and recompile the applet to ensure everything is in sync
-                await dispatch(saveAppletThunk(activeAppletId)).unwrap();
-            
-                // After saving, recompile the applet to ensure all container relationships are updated
-                await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
-    
-                    toast({
-                        title: "Success",
-                        description: "Group added to applet successfully.",
-                    });
-            } catch (error) {
-                toast({
-                    title: "Error",
+            // After successfully adding the container to the applet in the database,
+            // save and recompile the applet to ensure everything is in sync
+            await dispatch(saveAppletThunk(activeAppletId)).unwrap();
+        
+            // After saving, recompile the applet to ensure all container relationships are updated
+            await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
+
+            toast({
+                title: "Success",
+                description: "Group added to applet successfully.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
                 description: typeof error === "string" ? error : "Failed to add group to applet.",
                 variant: "destructive",
             });
@@ -82,7 +83,7 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
     };
 
     const handleAppletChange = (value: string) => {
-        dispatch(setActiveApplet(value));
+        dispatch(setActiveAppletWithFetchThunk(value));
 
         // When changing applet, clear the active container
         dispatch(setActiveContainer(null));
@@ -90,7 +91,7 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
 
     const handleGroupChange = (appletId: string, containerId: string) => {
         // Make sure the applet is set as active
-        dispatch(setActiveApplet(appletId));
+        dispatch(setActiveAppletWithFetchThunk(appletId));
 
         // Set the active container
         dispatch(setActiveContainerWithFetchThunk(containerId));

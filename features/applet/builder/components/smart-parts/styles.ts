@@ -2,105 +2,110 @@ import { COLOR_VARIANTS } from "@/features/applet/layouts/helpers/StyledComponen
 import { CustomAppConfig, CustomAppletConfig } from "../../builder.types";
 
 
-export const getFieldComponentStyle = (componentType: string) => {
-    const types = {
-        text: {
-            bg: "bg-blue-100 dark:bg-blue-900/30",
-            text: "text-blue-700 dark:text-blue-300",
-            border: "border-blue-200 dark:border-blue-800",
-        },
-        number: {
-            bg: "bg-amber-100 dark:bg-amber-900/30",
-            text: "text-amber-700 dark:text-amber-300",
-            border: "border-amber-200 dark:border-amber-800",
-        },
-        select: {
-            bg: "bg-purple-100 dark:bg-purple-900/30",
-            text: "text-purple-700 dark:text-purple-300",
-            border: "border-purple-200 dark:border-purple-800",
-        },
-        checkbox: {
-            bg: "bg-green-100 dark:bg-green-900/30",
-            text: "text-green-700 dark:text-green-300",
-            border: "border-green-200 dark:border-green-800",
-        },
-        radio: {
-            bg: "bg-red-100 dark:bg-red-900/30",
-            text: "text-red-700 dark:text-red-300",
-            border: "border-red-200 dark:border-red-800",
-        },
-        date: {
-            bg: "bg-indigo-100 dark:bg-indigo-900/30",
-            text: "text-indigo-700 dark:text-indigo-300",
-            border: "border-indigo-200 dark:border-indigo-800",
-        },
-        textarea: {
-            bg: "bg-teal-100 dark:bg-teal-900/30",
-            text: "text-teal-700 dark:text-teal-300",
-            border: "border-teal-200 dark:border-teal-800",
-        },
-        toggle: {
-            bg: "bg-pink-100 dark:bg-pink-900/30",
-            text: "text-pink-700 dark:text-pink-300",
-            border: "border-pink-200 dark:border-pink-800",
-        },
-        file: {
-            bg: "bg-orange-100 dark:bg-orange-900/30",
-            text: "text-orange-700 dark:text-orange-300",
-            border: "border-orange-200 dark:border-orange-800",
-        },
-        richtext: {
-            bg: "bg-cyan-100 dark:bg-cyan-900/30",
-            text: "text-cyan-700 dark:text-cyan-300",
-            border: "border-cyan-200 dark:border-cyan-800",
-        },
-        multiselect: {
-            bg: "bg-violet-100 dark:bg-violet-900/30",
-            text: "text-violet-700 dark:text-violet-300",
-            border: "border-violet-200 dark:border-violet-800",
-        },
-        slider: {
-            bg: "bg-lime-100 dark:bg-lime-900/30",
-            text: "text-lime-700 dark:text-lime-300",
-            border: "border-lime-200 dark:border-lime-800",
-        },
-        signature: {
-            bg: "bg-rose-100 dark:bg-rose-900/30",
-            text: "text-rose-700 dark:text-rose-300",
-            border: "border-rose-200 dark:border-rose-800",
-        },
-        calendar: {
-            bg: "bg-sky-100 dark:bg-sky-900/30",
-            text: "text-sky-700 dark:text-sky-300",
-            border: "border-sky-200 dark:border-sky-800",
-        },
-        autocomplete: {
-            bg: "bg-emerald-100 dark:bg-emerald-900/30",
-            text: "text-emerald-700 dark:text-emerald-300",
-            border: "border-emerald-200 dark:border-emerald-800",
-        },
-        color: {
-            bg: "bg-fuchsia-100 dark:bg-fuchsia-900/30",
-            text: "text-fuchsia-700 dark:text-fuchsia-300",
-            border: "border-fuchsia-200 dark:border-fuchsia-800",
-        },
+export const getFieldComponentStyle = (componentType?: string) => {
+    if (!componentType) return {
+        bg: "bg-gray-100 dark:bg-gray-800",
+        text: "text-gray-700 dark:text-gray-300",
+        border: "border-gray-200 dark:border-gray-700",
+        iconBg: "bg-gray-200 dark:bg-gray-700",
+        iconColor: "text-gray-500 dark:text-gray-400"
     };
 
-    // Default to a neutral color if the component type isn't recognized
-    return (
-        types[componentType.toLowerCase()] || {
-            bg: "bg-gray-100 dark:bg-gray-900/30",
-            text: "text-gray-700 dark:text-gray-300",
-            border: "border-gray-200 dark:border-gray-800",
-        }
-    );
+    switch (componentType.toLowerCase()) {
+        case "text":
+            return {
+                bg: "bg-blue-50 dark:bg-blue-900/20",
+                text: "text-blue-700 dark:text-blue-300",
+                border: "border-blue-200 dark:border-blue-800",
+                iconBg: "bg-blue-100 dark:bg-blue-800",
+                iconColor: "text-blue-600 dark:text-blue-300"
+            };
+        case "textarea":
+            return {
+                bg: "bg-indigo-50 dark:bg-indigo-900/20",
+                text: "text-indigo-700 dark:text-indigo-300",
+                border: "border-indigo-200 dark:border-indigo-800",
+                iconBg: "bg-indigo-100 dark:bg-indigo-800",
+                iconColor: "text-indigo-600 dark:text-indigo-300"
+            };
+        case "select":
+        case "multiselect":
+            return {
+                bg: "bg-purple-50 dark:bg-purple-900/20",
+                text: "text-purple-700 dark:text-purple-300",
+                border: "border-purple-200 dark:border-purple-800",
+                iconBg: "bg-purple-100 dark:bg-purple-800",
+                iconColor: "text-purple-600 dark:text-purple-300"
+            };
+        case "checkbox":
+            return {
+                bg: "bg-green-50 dark:bg-green-900/20",
+                text: "text-green-700 dark:text-green-300",
+                border: "border-green-200 dark:border-green-800",
+                iconBg: "bg-green-100 dark:bg-green-800",
+                iconColor: "text-green-600 dark:text-green-300"
+            };
+        case "radio":
+            return {
+                bg: "bg-pink-50 dark:bg-pink-900/20",
+                text: "text-pink-700 dark:text-pink-300",
+                border: "border-pink-200 dark:border-pink-800",
+                iconBg: "bg-pink-100 dark:bg-pink-800",
+                iconColor: "text-pink-600 dark:text-pink-300"
+            };
+        case "date":
+        case "datetime":
+            return {
+                bg: "bg-amber-50 dark:bg-amber-900/20",
+                text: "text-amber-700 dark:text-amber-300",
+                border: "border-amber-200 dark:border-amber-800",
+                iconBg: "bg-amber-100 dark:bg-amber-800",
+                iconColor: "text-amber-600 dark:text-amber-300"
+            };
+        case "slider":
+            return {
+                bg: "bg-cyan-50 dark:bg-cyan-900/20",
+                text: "text-cyan-700 dark:text-cyan-300",
+                border: "border-cyan-200 dark:border-cyan-800", 
+                iconBg: "bg-cyan-100 dark:bg-cyan-800",
+                iconColor: "text-cyan-600 dark:text-cyan-300"
+            };
+        case "toggle":
+        case "switch":
+            return {
+                bg: "bg-teal-50 dark:bg-teal-900/20",
+                text: "text-teal-700 dark:text-teal-300",
+                border: "border-teal-200 dark:border-teal-800",
+                iconBg: "bg-teal-100 dark:bg-teal-800",
+                iconColor: "text-teal-600 dark:text-teal-300"
+            };
+        case "file":
+        case "fileupload":
+        case "image":
+        case "imageupload":
+            return {
+                bg: "bg-orange-50 dark:bg-orange-900/20",
+                text: "text-orange-700 dark:text-orange-300",
+                border: "border-orange-200 dark:border-orange-800",
+                iconBg: "bg-orange-100 dark:bg-orange-800",
+                iconColor: "text-orange-600 dark:text-orange-300"
+            };
+        default:
+            return {
+                bg: "bg-gray-100 dark:bg-gray-800",
+                text: "text-gray-700 dark:text-gray-300",
+                border: "border-gray-200 dark:border-gray-700",
+                iconBg: "bg-gray-200 dark:bg-gray-700", 
+                iconColor: "text-gray-600 dark:text-gray-400"
+            };
+    }
 };
 
 
 
   // Get color classes based on applet's primary color
   export const getAppletColorClasses = (applet: CustomAppletConfig, viewMode: string) => {
-    const color = applet.primaryColor || 'emerald';
+    const color = applet?.primaryColor || 'emerald';
     
     // Default text and card background colors
     const defaultTextClass = 'text-gray-900 dark:text-gray-100';

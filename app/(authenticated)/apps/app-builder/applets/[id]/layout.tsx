@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import StructuredSectionCard from '@/components/official/StructuredSectionCard';
 import { useAppSelector } from '@/lib/redux';
 import { selectAppletName } from '@/lib/redux/app-builder/selectors/appletSelectors';
@@ -13,13 +13,17 @@ export default function AppletViewLayout({
   params 
 }: { 
   children: ReactNode;
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  // Use React.use() to unwrap the params Promise
+  const resolvedParams = React.use(params);
+  const { id } = resolvedParams;
+  
   const router = useRouter();
-  const appletName = useAppSelector((state) => selectAppletName(state, params.id)) || 'Applet';
+  const appletName = useAppSelector((state) => selectAppletName(state, id)) || 'Applet';
   
   const handleEdit = () => {
-    router.push(`/apps/app-builder/applets/${params.id}/edit`);
+    router.push(`/apps/app-builder/applets/${id}/edit`);
   };
   
   return (

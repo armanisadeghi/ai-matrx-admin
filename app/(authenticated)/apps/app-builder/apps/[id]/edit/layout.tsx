@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import StructuredSectionCard from '@/components/official/StructuredSectionCard';
 import { useAppSelector } from '@/lib/redux';
 import { selectAppName } from '@/lib/redux/app-builder/selectors/appSelectors';
@@ -10,9 +10,13 @@ export default function AppEditLayout({
   params 
 }: { 
   children: ReactNode;
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const appName = useAppSelector((state) => selectAppName(state, params.id)) || 'App';
+  // Use React.use() to unwrap the params Promise
+  const resolvedParams = React.use(params);
+  const { id } = resolvedParams;
+  
+  const appName = useAppSelector((state) => selectAppName(state, id)) || 'App';
   
   return (
     <StructuredSectionCard

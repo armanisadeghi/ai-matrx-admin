@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
-import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, LayoutIcon, CopyIcon, FileEditIcon, Trash2Icon } from "lucide-react";
+import { Search, Plus, Filter, Grid, List, ArrowUpDown, RefreshCw, LayoutIcon, CopyIcon, FileEditIcon, Trash2Icon, 
+    AlignLeftIcon, BoxSelectIcon, CalendarIcon, CheckSquareIcon, ClipboardCheckIcon, ListIcon, TextIcon, TypeIcon,
+    ImageIcon, ToggleLeftIcon, SlidersIcon, FileTextIcon, RadioIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,40 @@ type FieldId = string;
 // Define and export the ref type
 export type SmartFieldsListRefType = {
     refresh: (specificFieldIds?: string[]) => Promise<FieldDefinition[]>;
+};
+
+// Add a field icon mapping function to determine which icon to show based on component type
+const getFieldIcon = (componentType: string) => {
+    switch (componentType?.toLowerCase()) {
+        case "text":
+            return <TextIcon className="h-full w-full" />;
+        case "textarea":
+            return <AlignLeftIcon className="h-full w-full" />;
+        case "select":
+            return <ListIcon className="h-full w-full" />;
+        case "checkbox":
+            return <CheckSquareIcon className="h-full w-full" />;
+        case "radio":
+            return <RadioIcon className="h-full w-full" />;
+        case "date":
+        case "datetime":
+            return <CalendarIcon className="h-full w-full" />;
+        case "toggle":
+        case "switch":
+            return <ToggleLeftIcon className="h-full w-full" />;
+        case "slider":
+            return <SlidersIcon className="h-full w-full" />;
+        case "file":
+        case "fileupload":
+            return <FileTextIcon className="h-full w-full" />;
+        case "image":
+        case "imageupload":
+            return <ImageIcon className="h-full w-full" />;
+        case "multiselect":
+            return <BoxSelectIcon className="h-full w-full" />;
+        default:
+            return <TypeIcon className="h-full w-full" />;
+    }
 };
 
 /**
@@ -434,41 +470,57 @@ const SmartFieldsList = forwardRef<
                                                         `}
                                             onClick={selectable ? () => handleFieldSelect(field) : undefined}
                                         >
+                                            {viewMode === "grid" && (
+                                                <div className={`h-28 w-full flex items-center justify-center ${componentStyle.iconBg}`}>
+                                                    <div className={`h-12 w-12 ${componentStyle.iconColor}`}>
+                                                        {getFieldIcon(field.component || "")}
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             <CardContent
                                                 className={`
-                                                        ${viewMode === "list" ? "flex-1 p-4" : "p-4"}
+                                                        ${viewMode === "list" ? "flex-1 p-4" : "p-4 pt-4"}
                                                         `}
                                             >
-                                                <div className="flex justify-between items-center mb-3">
-                                                    <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[150px]">
-                                                        {field.label}
-                                                    </h3>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    {viewMode === "list" && (
+                                                        <div className={`p-2 rounded-md mr-3 ${componentStyle.iconBg} ${componentStyle.iconColor}`}>
+                                                            {getFieldIcon(field.component || "")}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div className={viewMode === "list" ? "flex-1" : ""}>
+                                                        <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                            {field.label}
+                                                        </h3>
+                                                        {field.description && (
+                                                            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                                                                {field.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    
                                                     <Badge
-                                                        className={`${componentStyle.bg} ${componentStyle.text} ${componentStyle.border} capitalize`}
+                                                        className={`ml-2 ${componentStyle.bg} ${componentStyle.text} ${componentStyle.border} capitalize text-xs whitespace-nowrap`}
                                                     >
                                                         {field.component}
                                                     </Badge>
                                                 </div>
 
-                                                {field.description && (
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                                                        {field.description}
-                                                    </p>
-                                                )}
-
-                                                <div className="flex flex-wrap gap-2 mt-auto">
+                                                <div className="flex flex-wrap gap-1 mt-2">
                                                     {field.required && (
                                                         <Badge
                                                             variant="outline"
-                                                            className="text-xs bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800"
+                                                            className="text-xs px-1.5 py-0 h-5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800"
                                                         >
                                                             Required
                                                         </Badge>
                                                     )}
-                                                    {field.includeOther && (
+                                                    {field.includeOther && viewMode === "list" && (
                                                         <Badge
                                                             variant="outline"
-                                                            className="text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                                            className="text-xs px-1.5 py-0 h-5 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800"
                                                         >
                                                             Has "Other"
                                                         </Badge>
@@ -479,58 +531,69 @@ const SmartFieldsList = forwardRef<
                                             {!hideActions && (
                                                 <CardFooter
                                                     className={`
-                                                                bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3
-                                                                ${
-                                                                    viewMode === "list"
-                                                                        ? "w-auto border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center"
-                                                                        : ""
-                                                                }
-                                                            `}
+                                                            border-t border-gray-200 dark:border-gray-700 p-3
+                                                            ${
+                                                                viewMode === "list"
+                                                                    ? "w-auto border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center"
+                                                                    : ""
+                                                            }
+                                                        `}
                                                 >
-                                                    <div className="flex justify-between w-full">
-                                                        {onDuplicateField && (
+                                                    <div className="flex flex-col w-full gap-2">
+                                                        {onSelectField && (
                                                             <Button
-                                                                variant="ghost"
+                                                                className={`w-full ${componentStyle.bg} text-gray-800 dark:text-white hover:opacity-90`}
                                                                 size="sm"
                                                                 onClick={(e) => {
-                                                                    e.stopPropagation(); // Prevent triggering selection in selectable mode
-                                                                    onDuplicateField(field);
+                                                                    e.stopPropagation();
+                                                                    onSelectField(field);
                                                                 }}
-                                                                className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
                                                             >
-                                                                <CopyIcon className="h-4 w-4" />
+                                                                Select
                                                             </Button>
                                                         )}
-
-                                                        <div className="flex gap-1">
-                                                            {onEditField && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation(); // Prevent triggering selection in selectable mode
-                                                                        onEditField(field);
-                                                                    }}
-                                                                    className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                                                >
-                                                                    <FileEditIcon className="h-4 w-4" />
-                                                                </Button>
-                                                            )}
-
-                                                            {onDeleteField && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation(); // Prevent triggering selection in selectable mode
-                                                                        onDeleteField(field);
-                                                                    }}
-                                                                    className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                                                >
-                                                                    <Trash2Icon className="h-4 w-4" />
-                                                                </Button>
-                                                            )}
-                                                        </div>
+                                                        
+                                                        {onEditField && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onEditField(field);
+                                                                }}
+                                                                className="w-full bg-transparent border border-current hover:bg-opacity-10 font-bold text-gray-700 dark:text-gray-300"
+                                                            >
+                                                                Edit
+                                                            </Button>
+                                                        )}
+                                                        
+                                                        {onDuplicateField && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onDuplicateField(field);
+                                                                }}
+                                                                className="w-full bg-transparent border border-current hover:bg-opacity-10 font-bold text-gray-500 dark:text-gray-400"
+                                                            >
+                                                                Duplicate
+                                                            </Button>
+                                                        )}
+                                                        
+                                                        {onDeleteField && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onDeleteField(field);
+                                                                }}
+                                                                className="w-full bg-transparent border border-current hover:bg-opacity-10 font-bold text-red-600 dark:text-red-400"
+                                                            >
+                                                                Delete
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </CardFooter>
                                             )}

@@ -10,19 +10,23 @@ import {
 import { 
   setActiveApplet
 } from '@/lib/redux/app-builder/slices/appletBuilderSlice';
+import { setActiveAppletWithFetchThunk } from '@/lib/redux/app-builder/thunks/appletBuilderThunks';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { Toaster } from '@/components/ui/toaster';
 import AppletEditor from '@/features/applet/builder/modules/applet-builder/AppletEditor';
 
 interface AppletEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function AppletEditPage({ params }: AppletEditPageProps) {
-  const { id } = params;
+  // Use React.use() to unwrap the params Promise
+  const resolvedParams = React.use(params);
+  const { id } = resolvedParams;
+  
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { toast } = useToast();
@@ -35,7 +39,7 @@ export default function AppletEditPage({ params }: AppletEditPageProps) {
   // Set the active applet when the component loads
   useEffect(() => {
     if (id) {
-      dispatch(setActiveApplet(id));
+      dispatch(setActiveAppletWithFetchThunk(id));
     }
     
     // Clean up when unmounting

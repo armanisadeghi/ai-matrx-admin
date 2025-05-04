@@ -71,6 +71,7 @@ import {
     ShoppingBag,
     Star,
     AppWindowIcon,
+    AppWindow,
     LayoutTemplate,
     Target,
     Ticket,
@@ -124,6 +125,7 @@ export const ICON_OPTIONS = {
     FaMagic,
     ArrowBigRightDash,
     AppWindowIcon,
+    AppWindow,
     LayoutTemplate,
     CheckIcon,
     CircleArrowRight,
@@ -612,7 +614,7 @@ export const getAppIconOptions = () => {
         "Zap",
         "HelpCircle",
         "TreePalm",
-
+        "AppWindow",
         // React Icons
         "FaChartBar",
         "FaClipboard",

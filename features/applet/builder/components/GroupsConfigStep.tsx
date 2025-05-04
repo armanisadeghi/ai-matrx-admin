@@ -20,13 +20,13 @@ import {
     selectAllContainerIds,
     selectContainerById,
 } from "@/lib/redux/app-builder/selectors/containerSelectors";
-import { setActiveApplet, setIsDirty as setAppletIsDirty } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { setIsDirty as setAppletIsDirty } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { 
     setActiveContainer,
     startNewContainer,
 } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
-import { saveContainerAndUpdateAppletThunk, fetchContainerByIdThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
-import { saveAppletThunk, recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+import { saveContainerAndUpdateAppletThunk, fetchContainerByIdThunk, setActiveContainerWithFetchThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { saveAppletThunk, recompileAppletThunk, setActiveAppletWithFetchThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import GroupSelectorOverlay from "./smart-parts/containers/GroupSelectorOverlay";
 import ContainerFormComponent from "./smart-parts/containers/ContainerFormComponent";
 import { ComponentGroup } from "../builder.types";
@@ -81,7 +81,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
     // Initialize on component mount - set the first applet as active if there are applets and none is selected
     useEffect(() => {
         if (applets.length > 0 && !initialLoadComplete) {
-            dispatch(setActiveApplet(applets[0].id));
+            dispatch(setActiveAppletWithFetchThunk(applets[0].id));
             setInitialLoadComplete(true);
         }
     }, [applets, dispatch, initialLoadComplete]);
@@ -102,7 +102,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
         }
         
         if (appletId) {
-            dispatch(setActiveApplet(appletId));
+            dispatch(setActiveAppletWithFetchThunk(appletId));
             // Clear the active container when switching applets
             dispatch(setActiveContainer(null));
         }
@@ -121,13 +121,13 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
         
         if (containerExists) {
             // Container already in state, just set it as active
-            dispatch(setActiveContainer(containerId));
+            dispatch(setActiveContainerWithFetchThunk(containerId));
         } else {
             // Container not in state, need to fetch it first
             setFetchingContainer(true);
             try {
                 await dispatch(fetchContainerByIdThunk(containerId)).unwrap();
-                dispatch(setActiveContainer(containerId));
+                dispatch(setActiveContainerWithFetchThunk(containerId));
                 
                 toast({
                     title: "Success",
@@ -187,7 +187,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
                 }
                 
                 // First select the container so the form updates
-                dispatch(setActiveContainer(group.id));
+                dispatch(setActiveContainerWithFetchThunk(group.id));
                 
                 // Add the container to the applet using the thunk that handles database updates
                 await dispatch(

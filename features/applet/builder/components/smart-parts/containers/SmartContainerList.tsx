@@ -1,6 +1,8 @@
 'use client';
 import React, { useState, useEffect, forwardRef, useImperativeHandle, useCallback, useRef } from 'react';
-import { Search, Plus, Grid, List, ArrowUpDown, RefreshCw, LayersIcon } from 'lucide-react';
+import { Search, Plus, Grid, List, ArrowUpDown, RefreshCw, LayersIcon, SquareStackIcon, BoxIcon, PackageIcon, BoxesIcon,
+  LayoutGridIcon, Boxes, LayoutPanelTopIcon, LayoutTemplateIcon, FolderKanbanIcon, PanelTopIcon, TablePropertiesIcon, 
+  TableIcon, BoxSelectIcon, TriangleIcon, CircleIcon, SquareIcon, DiamondIcon, PanelsTopLeftIcon, ArrowUpRightSquareIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Card, 
@@ -277,7 +279,76 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
     ));
   };
 
-  // Get color classes based on group status
+  // Add a function to generate varied container icons based on the group ID
+  const getContainerIcon = (groupId: string) => {
+    // List of possible icons
+    const icons = [
+      LayersIcon, SquareStackIcon, BoxIcon, PackageIcon, BoxesIcon, LayoutGridIcon, 
+      Boxes, LayoutPanelTopIcon, LayoutTemplateIcon, FolderKanbanIcon, PanelTopIcon, 
+      TablePropertiesIcon, TableIcon, BoxSelectIcon, TriangleIcon, CircleIcon, 
+      SquareIcon, DiamondIcon, PanelsTopLeftIcon, ArrowUpRightSquareIcon
+    ];
+    
+    // List of possible colors
+    const colors = [
+      'amber', 'orange', 'yellow', 'green', 'emerald', 'teal', 'cyan', 
+      'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'
+    ];
+    
+    // Use the group ID to deterministically select an icon and color
+    // This ensures the same group always gets the same icon and color
+    const charSum = groupId.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const iconIndex = charSum % icons.length;
+    const colorIndex = (charSum * 13) % colors.length; // Use a different formula for color to reduce collisions
+    
+    const IconComponent = icons[iconIndex];
+    const color = colors[colorIndex];
+    
+    // Generate tailwind classes for the icon and background
+    const getColorClasses = (colorName: string) => {
+      switch(colorName) {
+        case 'amber':
+          return { bg: 'bg-amber-100 dark:bg-amber-800/30', text: 'text-amber-600 dark:text-amber-300' };
+        case 'orange':
+          return { bg: 'bg-orange-100 dark:bg-orange-800/30', text: 'text-orange-600 dark:text-orange-300' };
+        case 'yellow':
+          return { bg: 'bg-yellow-100 dark:bg-yellow-800/30', text: 'text-yellow-600 dark:text-yellow-300' };
+        case 'green':
+          return { bg: 'bg-green-100 dark:bg-green-800/30', text: 'text-green-600 dark:text-green-300' };
+        case 'emerald':
+          return { bg: 'bg-emerald-100 dark:bg-emerald-800/30', text: 'text-emerald-600 dark:text-emerald-300' };
+        case 'teal':
+          return { bg: 'bg-teal-100 dark:bg-teal-800/30', text: 'text-teal-600 dark:text-teal-300' };
+        case 'cyan':
+          return { bg: 'bg-cyan-100 dark:bg-cyan-800/30', text: 'text-cyan-600 dark:text-cyan-300' };
+        case 'blue':
+          return { bg: 'bg-blue-100 dark:bg-blue-800/30', text: 'text-blue-600 dark:text-blue-300' };
+        case 'indigo':
+          return { bg: 'bg-indigo-100 dark:bg-indigo-800/30', text: 'text-indigo-600 dark:text-indigo-300' };
+        case 'violet':
+          return { bg: 'bg-violet-100 dark:bg-violet-800/30', text: 'text-violet-600 dark:text-violet-300' };
+        case 'purple':
+          return { bg: 'bg-purple-100 dark:bg-purple-800/30', text: 'text-purple-600 dark:text-purple-300' };
+        case 'fuchsia':
+          return { bg: 'bg-fuchsia-100 dark:bg-fuchsia-800/30', text: 'text-fuchsia-600 dark:text-fuchsia-300' };
+        case 'pink':
+          return { bg: 'bg-pink-100 dark:bg-pink-800/30', text: 'text-pink-600 dark:text-pink-300' };
+        case 'rose':
+          return { bg: 'bg-rose-100 dark:bg-rose-800/30', text: 'text-rose-600 dark:text-rose-300' };
+        default:
+          return { bg: 'bg-gray-100 dark:bg-gray-800/30', text: 'text-gray-600 dark:text-gray-300' };
+      }
+    };
+    
+    const colorClasses = getColorClasses(color);
+    
+    return {
+      Icon: IconComponent,
+      colorClasses
+    };
+  };
+
+  // Re-add the getColorClasses function that was removed
   const getColorClasses = (group: ComponentGroup) => {
     // Default to amber as primary color for groups
     const primaryColor = 'amber';
@@ -447,6 +518,8 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
           <AnimatePresence mode="popLayout">
             {filteredGroups.map(group => {
               const colorClasses = getColorClasses(group);
+              const iconData = getContainerIcon(group.id || '');
+              const IconComponent = iconData.Icon;
               
               return (
                 <motion.div
@@ -467,59 +540,49 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                     `}
                     onClick={() => onSelectGroup && onSelectGroup(group)}
                   >
+                    {viewMode === 'grid' && (
+                      <div className={`h-24 w-full flex items-center justify-center ${iconData.colorClasses.bg}`}>
+                        <div className={`h-12 w-12 ${iconData.colorClasses.text}`}>
+                          <IconComponent className="h-full w-full" />
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className={viewMode === 'list' ? 'flex-1' : ''}>
                       <CardHeader className="pb-2">
                         <div className="flex items-center space-x-2">
-                          <div className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-md">
-                            <LayersIcon className="h-5 w-5 text-amber-500 dark:text-amber-400" />
-                          </div>
-                          <CardTitle className={`text-lg font-medium ${colorClasses.titleClass}`}>
-                            {group.label}
+                          {viewMode === 'list' && (
+                            <div className={`p-1.5 rounded-md ${iconData.colorClasses.bg}`}>
+                              <IconComponent className={`h-5 w-5 ${iconData.colorClasses.text}`} />
+                            </div>
+                          )}
+                          <CardTitle className={`text-lg font-medium truncate ${colorClasses.titleClass}`}>
+                            {group.label || "No Label"}
                           </CardTitle>
                         </div>
                       </CardHeader>
                       
                       <CardContent className="pt-0">
                         <div className={`text-sm ${colorClasses.descriptionClass}`}>
-                          {group.description && (
-                            <p className="mb-2 truncate">{group.description}</p>
-                          )}
+                          <p className="mb-2 truncate">{group.description || "No Description"}</p>
                           
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1">
                               <span className="font-medium">Fields:</span> 
                               <span>{group.fields?.length || 0}</span>
                             </div>
-                            
-                            {group.fields && group.fields.length > 0 && viewMode === 'grid' && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => handleRefreshGroup(group, e)}
-                                className="h-7 px-2 text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                                title="Refresh fields"
-                              >
-                                <RefreshCw className="h-3.5 w-3.5" />
-                              </Button>
-                            )}
                           </div>
                           
                           <div className="flex flex-wrap gap-1.5 mt-2">
                             {group.isPublic && (
-                              <Badge variant="outline" className="text-xs bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800">
                                 Public
                               </Badge>
                             )}
                             
-                            {group.authenticatedRead && (
-                              <Badge variant="outline" className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                            {viewMode === 'list' && group.authenticatedRead && (
+                              <Badge variant="outline" className="text-xs px-1.5 py-0 h-5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                                 Auth Required
-                              </Badge>
-                            )}
-                            
-                            {group.hideDescription && (
-                              <Badge variant="outline" className="text-xs bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-800">
-                                Hidden Description
                               </Badge>
                             )}
                           </div>
@@ -529,22 +592,10 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                     
                     <CardFooter className={`
                       border-t border-gray-200 dark:border-gray-700 p-3
-                      ${colorClasses.cardFooterBg}
-                      ${viewMode === 'list' ? 'w-48 border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center flex-col gap-2' : 'flex justify-between'}
+                      ${viewMode === 'list' ? 'w-48 border-l border-l-gray-200 dark:border-l-gray-700 flex items-center justify-center flex-col gap-2' : ''}
                     `}>
-                      {viewMode === 'list' ? (
-                        <>
-                          {onEditGroup && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => handleEditGroup(group, e)}
-                              className="w-full border-gray-300 dark:border-gray-600"
-                            >
-                              Edit
-                            </Button>
-                          )}
-                          
+                      <div className="flex flex-col w-full gap-2">
+                        {onSelectGroup && (
                           <Button
                             className="w-full bg-amber-500 hover:bg-amber-600 text-white"
                             size="sm"
@@ -552,32 +603,30 @@ const SmartContainerList = forwardRef<SmartContainerListRefType, {
                           >
                             Select
                           </Button>
-                        </>
-                      ) : (
-                        <>
-                          {onDeleteGroup && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => handleDeleteGroup(group, e)}
-                              className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                            >
-                              Delete
-                            </Button>
-                          )}
-                          
-                          {onEditGroup && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => handleEditGroup(group, e)}
-                              className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
-                            >
-                              Edit
-                            </Button>
-                          )}
-                        </>
-                      )}
+                        )}
+                        
+                        {onEditGroup && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => handleEditGroup(group, e)}
+                            className="w-full bg-transparent border border-current hover:bg-opacity-10 font-bold text-gray-700 dark:text-gray-300"
+                          >
+                            Edit
+                          </Button>
+                        )}
+                        
+                        {onDeleteGroup && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => handleDeleteGroup(group, e)}
+                            className="w-full bg-transparent border border-current hover:bg-opacity-10 font-bold text-red-500 dark:text-red-400"
+                          >
+                            Delete
+                          </Button>
+                        )}
+                      </div>
                     </CardFooter>
                   </Card>
                 </motion.div>

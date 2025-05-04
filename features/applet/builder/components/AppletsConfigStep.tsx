@@ -10,7 +10,8 @@ import { startNewApplet, cancelNewApplet, setActiveApplet } from "@/lib/redux/ap
 import { 
     fetchAppletsThunk, 
     saveAppletThunk, 
-    addAppletToAppThunk 
+    addAppletToAppThunk,
+    setActiveAppletWithFetchThunk 
 } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { fetchAppletsForAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import {
@@ -133,7 +134,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                 .unwrap()
                 .then(() => {
                     // Set selected applet as active
-                    dispatch(setActiveApplet(applet.id));
+                    dispatch(setActiveAppletWithFetchThunk(applet.id));
                     
                     // Refresh applet list
                     dispatch(fetchAppletsForAppThunk(appId));
@@ -152,7 +153,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                 });
         } else if (applet.id) {
             // Just set as active if no app context
-            dispatch(setActiveApplet(applet.id));
+            dispatch(setActiveAppletWithFetchThunk(applet.id));
         }
     };
 
@@ -304,7 +305,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId }) =
                                 <div className="space-y-4 max-h-[500px] overflow-y-auto">
                                     <SmartAppletListWrapper
                                         appId={appId}
-                                        onSelectApplet={(applet) => dispatch(setActiveApplet(applet.id))}
+                                        onSelectApplet={(applet) => dispatch(setActiveAppletWithFetchThunk(applet.id))}
                                         showCreateButton={false}
                                         onRefreshComplete={handleAppletRefreshComplete}
                                     />

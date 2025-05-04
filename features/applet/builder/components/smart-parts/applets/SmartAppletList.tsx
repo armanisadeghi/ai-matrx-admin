@@ -30,6 +30,7 @@ export type SmartAppletListRefType = {
  * A modern, standalone SmartAppletList component that fetches and displays applets
  * @param {Object} props
  * @param {Function} props.onSelectApplet - Callback when applet is selected
+ * @param {Function} props.onEditApplet - Callback when applet is edited
  * @param {boolean} props.showCreateButton - Whether to show the create button
  * @param {Function} props.onCreateApplet - Callback when create button is clicked
  * @param {string} props.className - Additional CSS classes
@@ -41,6 +42,7 @@ const SmartAppletList = forwardRef<
     SmartAppletListRefType,
     {
         onSelectApplet?: (applet: CustomAppletConfig) => void;
+        onEditApplet?: (applet: CustomAppletConfig) => void;
         showCreateButton?: boolean;
         onCreateApplet?: () => void;
         className?: string;
@@ -52,6 +54,7 @@ const SmartAppletList = forwardRef<
     (
         {
             onSelectApplet,
+            onEditApplet,
             showCreateButton = true,
             onCreateApplet,
             className = "",
@@ -264,15 +267,11 @@ const SmartAppletList = forwardRef<
                     </div>
 
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex items-center gap-1"
+                        <Button className="bg-emerald-500 hover:bg-emerald-600 text-white" size="sm" 
                             onClick={handleRefreshClick}
                             disabled={isLoading || isRefreshing}
                         >
                             <RefreshCw className={`h-4 w-4 ${isLoading || isRefreshing ? "animate-spin" : ""}`} />
-                            <span className="hidden sm:inline">Refresh</span>
                         </Button>
 
                         <DropdownMenu>
@@ -473,15 +472,27 @@ const SmartAppletList = forwardRef<
                       }
                     `}
                                             >
-                                                {onSelectApplet && (
-                                                    <Button
-                                                        className={`w-full ${COLOR_VARIANTS.buttonBg[applet.accentColor || "emerald"]}`}
-                                                        size="sm"
-                                                        onClick={() => onSelectApplet(applet)}
-                                                    >
-                                                        Select
-                                                    </Button>
-                                                )}
+                                                <div className={`flex w-full gap-2 ${viewMode === "list" ? "flex-col" : ""}`}>
+                                                    {onSelectApplet && (
+                                                        <Button
+                                                            className={`flex-1 ${COLOR_VARIANTS.buttonBg[applet.accentColor || "emerald"]}`}
+                                                            size="sm"
+                                                            onClick={() => onSelectApplet(applet)}
+                                                        >
+                                                            Select
+                                                        </Button>
+                                                    )}
+                                                    {onEditApplet && (
+                                                        <Button
+                                                            className={`flex-1 bg-transparent border border-current hover:bg-opacity-10 font-bold ${COLOR_VARIANTS.text[applet.accentColor || "emerald"]}`}
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => onEditApplet(applet)}
+                                                        >
+                                                            Edit
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </CardFooter>
                                         </Card>
                                     </motion.div>

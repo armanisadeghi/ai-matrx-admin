@@ -30,8 +30,7 @@ import {
 } from "@/features/applet/builder/components/smart-parts";
 
 // Import types
-import { CustomAppConfig } from "@/features/applet/builder/modules/app-builder/AppBuilder";
-import { ComponentGroup, CustomAppletConfig, FieldDefinition } from "@/features/applet/builder/builder.types";
+import { ComponentGroup, CustomAppConfig, CustomAppletConfig, FieldDefinition } from "@/features/applet/builder/builder.types";
 
 /**
  * A comprehensive demo that showcases both App and Applet components:
@@ -316,10 +315,12 @@ const SmartAppListsDemo = () => {
 
                 <CardContent className="p-6">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-8 mb-6">
+                        <TabsList className="grid w-full grid-cols-10 mb-6">
                             <TabsTrigger value="comparison">Comparison</TabsTrigger>
                             <TabsTrigger value="apps">Apps</TabsTrigger>
                             <TabsTrigger value="applets">Applets</TabsTrigger>
+                            <TabsTrigger value="containers">Containers</TabsTrigger>
+                            <TabsTrigger value="fields">Fields</TabsTrigger>
                             <TabsTrigger value="multi-applets">Multi Applets</TabsTrigger>
                             <TabsTrigger value="multi-groups">Multi Groups</TabsTrigger>
                             <TabsTrigger value="multi-fields">Multi Fields</TabsTrigger>
@@ -373,12 +374,12 @@ const SmartAppListsDemo = () => {
                                     </div>
                                 </div>
 
-                                {/* Groups */}
+                                {/* Containers */}
                                 <div className="space-y-4">
                                     <div className="p-4 bg-amber-50 dark:bg-amber-950 rounded-lg border border-amber-200 dark:border-amber-800">
                                         <h4 className="text-amber-600 dark:text-amber-400 font-medium mb-4 flex items-center">
                                             <LayoutGrid className="mr-2 h-5 w-5" />
-                                            Groups
+                                            Containers
                                         </h4>
                                         <SmartGroupList
                                             ref={groupListRef}
@@ -463,7 +464,72 @@ const SmartAppListsDemo = () => {
                             </div>
                         </TabsContent>
 
-                        {/* Tab 4: Multi Applets */}
+                        {/* Tab 4: Containers */}
+                        <TabsContent value="containers" className="rounded-lg">
+                            <div className="flex justify-between mb-6">
+                                <h3 className="text-lg font-medium text-amber-600 dark:text-amber-400 flex items-center">
+                                    <LayoutGrid className="mr-2 h-5 w-5" />
+                                    SmartGroupList Component
+                                </h3>
+                                <Button onClick={() => groupListRef.current?.refresh?.()} className="bg-amber-500 hover:bg-amber-600">
+                                    Refresh Groups
+                                </Button>
+                            </div>
+
+                            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <SmartGroupList
+                                    ref={groupListRef}
+                                    onSelectGroup={handleGroupSelect}
+                                    onCreateGroup={handleCreateGroup}
+                                    onRefreshGroup={handleRefreshGroup}
+                                    onDeleteGroup={handleDeleteGroup}
+                                    onEditGroup={handleEditGroup}
+                                    onRefreshComplete={handleGroupRefreshComplete}
+                                    showCreateButton={true}
+                                    className="grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                                    groupIds={[]}
+                                />
+                            </div>
+
+                            <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
+                                <p>This component displays field groups with search, sorting, and filtering capabilities.</p>
+                            </div>
+                        </TabsContent>
+
+                        {/* Tab 5: Fields */}
+                        <TabsContent value="fields" className="rounded-lg">
+                            <div className="flex justify-between mb-6">
+                                <h3 className="text-lg font-medium text-purple-600 dark:text-purple-400 flex items-center">
+                                    <FormInput className="mr-2 h-5 w-5" />
+                                    SmartFieldsList Component
+                                </h3>
+                                <Button onClick={() => fieldListRef.current?.refresh?.()} className="bg-purple-500 hover:bg-purple-600">
+                                    Refresh Fields
+                                </Button>
+                            </div>
+
+                            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                <SmartFieldsList
+                                    ref={fieldListRef}
+                                    onSelectField={handleFieldSelect}
+                                    onCreateField={handleCreateField}
+                                    onDeleteField={handleDeleteField}
+                                    onEditField={handleEditField}
+                                    onDuplicateField={() => {}}
+                                    onRefreshComplete={handleFieldRefreshComplete}
+                                    showCreateButton={true}
+                                    className="grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
+                                    fieldIds={[]}
+                                    onSelectionChange={() => {}}
+                                />
+                            </div>
+
+                            <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
+                                <p>This component displays form fields with search, sorting, and filtering capabilities.</p>
+                            </div>
+                        </TabsContent>
+
+                        {/* Tab 6: Multi Applets */}
                         <TabsContent value="multi-applets" className="rounded-lg">
                             <Tabs defaultValue="basic" className="w-full">
                                 <TabsList className="grid w-full grid-cols-3 mb-6">
@@ -703,7 +769,7 @@ const SmartAppListsDemo = () => {
                             </Tabs>
                         </TabsContent>
 
-                        {/* Tab 5: Multi Groups */}
+                        {/* Tab 7: Multi Groups */}
                         <TabsContent value="multi-groups" className="rounded-lg">
                             <div className="flex justify-between mb-6">
                                 <h3 className="text-lg font-medium text-amber-600 dark:text-amber-400 flex items-center">
@@ -766,7 +832,7 @@ const SmartAppListsDemo = () => {
                             </div>
                         </TabsContent>
 
-                        {/* Tab 6: Multi Fields */}
+                        {/* Tab 8: Multi Fields */}
                         <TabsContent value="multi-fields" className="rounded-lg">
                             <div className="flex justify-between mb-6">
                                 <h3 className="text-lg font-medium text-purple-600 dark:text-purple-400 flex items-center">
@@ -835,7 +901,7 @@ const SmartAppListsDemo = () => {
                             </div>
                         </TabsContent>
 
-                        {/* Tab 7: Wrappers */}
+                        {/* Tab 9: Wrappers */}
                         <TabsContent value="wrappers" className="rounded-lg">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* App Wrapper */}
@@ -986,7 +1052,7 @@ const SmartAppListsDemo = () => {
                             </div>
                         </TabsContent>
 
-                        {/* Tab 8: Overlays */}
+                        {/* Tab 10: Overlays */}
                         <TabsContent value="overlays" className="rounded-lg">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* App Selector Overlay */}

@@ -4,7 +4,7 @@ import { createCustomAppConfig, updateCustomAppConfig, deleteCustomAppConfig, ge
 import { updateCustomAppletConfig, getCustomAppletConfigsByAppId, getAllCustomAppletConfigs } from "../service/customAppletService";
 import { AppBuilder, AppletBuilder } from "../types";
 import { RootState } from "../../store";
-import { setApp } from "../slices/appBuilderSlice";
+import { setApp, setActiveApp } from "../slices/appBuilderSlice";
 import { selectAppById } from "../selectors/appSelectors";
 
 export const createAppThunk = createAsyncThunk<AppBuilder, AppBuilder>(
@@ -162,8 +162,8 @@ export const setActiveAppWithFetchThunk = createAsyncThunk<
             const app = selectAppById(getState() as RootState, appId);
             
             if (app) {
-                // If it exists, just dispatch the setApp action
-                dispatch(setApp(app));
+                // If it exists, just dispatch the setActiveApp action
+                dispatch(setActiveApp(appId));
             } else {
                 // Otherwise, fetch it first
                 try {
@@ -183,11 +183,16 @@ export const setActiveAppWithFetchThunk = createAsyncThunk<
                             isLocal: false,
                             slugStatus: 'unique'
                         }));
+                        
+                        // Set it as active
+                        dispatch(setActiveApp(appId));
                     } else {
                         console.error(`App with ID ${appId} not found on server`);
+                        dispatch(setActiveApp(null));
                     }
                 } catch (error: any) {
                     console.error(`Failed to fetch app with ID ${appId}: ${error.message}`);
+                    dispatch(setActiveApp(null));
                     return rejectWithValue(error.message || "Failed to fetch app");
                 }
             }
