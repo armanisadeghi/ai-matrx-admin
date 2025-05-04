@@ -1,11 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { PlusIcon, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { PlusIcon, Loader2, SaveIcon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
@@ -16,60 +13,58 @@ import {
     selectAppletById,
     selectContainersForApplet,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import {
-    selectAllContainers,
+import { 
     selectActiveContainerId,
-    selectContainerLoading,
     selectContainerError,
+    selectNewContainerId,
+    selectAllContainerIds,
     selectContainerById,
 } from "@/lib/redux/app-builder/selectors/containerSelectors";
-import { setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
-import {
+import { setActiveApplet, setIsDirty as setAppletIsDirty } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { 
     setActiveContainer,
     startNewContainer,
-    setLabel as setContainerLabel,
-    setShortLabel,
-    setDescription as setContainerDescription,
 } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
-import { saveContainerAndUpdateAppletThunk, saveContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
-import { v4 as uuidv4 } from "uuid";
+import { saveContainerAndUpdateAppletThunk, fetchContainerByIdThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { saveAppletThunk, recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import GroupSelectorOverlay from "./smart-parts/containers/GroupSelectorOverlay";
+import ContainerFormComponent from "./smart-parts/containers/ContainerFormComponent";
 import { ComponentGroup } from "../builder.types";
 
 interface GroupsConfigStepProps {
-    appId?: string;
+    appId: string;
 }
 
 export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => {
-    const dispatch = useAppDispatch();
     const { toast } = useToast();
+    const dispatch = useAppDispatch();
 
     // Simple UI toggle state - keep as React state
-    const [showExistingGroups, setShowExistingGroups] = useState(false);
-    const [processingGroupId, setProcessingGroupId] = useState<string | null>(null);
+    const [processingContainerId, setProcessingContainerId] = useState<string | null>(null);
+    const [isAddingToApplet, setIsAddingToApplet] = useState<boolean>(false);
+    const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
+    const [savingApplet, setSavingApplet] = useState<boolean>(false);
+    const [fetchingContainer, setFetchingContainer] = useState<boolean>(false);
 
     // Get data directly from Redux using individual selectors
     const activeAppletId = useAppSelector(selectActiveAppletId);
-    const activeContainerId = useAppSelector(selectActiveContainerId);
-    const containerLoading = useAppSelector(selectContainerLoading);
     const containerError = useAppSelector(selectContainerError);
-
-    // Get the active container directly using a selector
-    const activeContainer = useAppSelector((state) => (activeContainerId ? selectContainerById(state, activeContainerId) : null));
-
-    // Get values for form fields directly from Redux
-    const containerLabel = activeContainer?.label || "";
-    const containerShortLabel = activeContainer?.shortLabel || "";
-    const containerDescription = activeContainer?.description || "";
-
+    const activeContainerId = useAppSelector(selectActiveContainerId);
+    const newContainerId = useAppSelector(selectNewContainerId);
+    const allContainerIds = useAppSelector(selectAllContainerIds);
+    
     // Get applets directly from Redux
     const applets = useAppSelector((state) => (appId ? selectAppletsByAppId(state, appId) : []));
 
-    // Get all available containers for selection
-    const allContainers = useAppSelector(selectAllContainers);
-
     // Get containers for the active applet
     const appletContainers = useAppSelector((state) => (activeAppletId ? selectContainersForApplet(state, activeAppletId) : []));
+
+    // Get the active applet to check if it's dirty
+    const activeApplet = useAppSelector(state => 
+        activeAppletId ? selectAppletById(state, activeAppletId) : null
+    );
+    const isAppletDirty = activeApplet?.isDirty || false;
+    const activeAppletName = activeApplet?.name || "";
 
     // Show error toasts when they occur
     useEffect(() => {
@@ -82,150 +77,233 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
         }
     }, [containerError, toast]);
 
-    // Set the active applet if not set and there are applets
+    // Initialize on component mount - set the first applet as active if there are applets and none is selected
     useEffect(() => {
-        if (!activeAppletId && applets.length > 0) {
+        if (applets.length > 0 && !initialLoadComplete) {
             dispatch(setActiveApplet(applets[0].id));
+            setInitialLoadComplete(true);
         }
-    }, [activeAppletId, applets, dispatch]);
+    }, [applets, dispatch, initialLoadComplete]);
 
-    // Filter available containers that haven't been added to this applet
-    const appletContainerIds = appletContainers.map((container) => container.id);
-    const availableContainers = allContainers.filter((container) => !appletContainerIds.includes(container.id));
+    // Always ensure we have a container to work with
+    useEffect(() => {
+        // If we have an active applet but no active container, create one
+        if (activeAppletId && !activeContainerId && !newContainerId && initialLoadComplete) {
+            dispatch(startNewContainer());
+        }
+    }, [activeAppletId, activeContainerId, newContainerId, initialLoadComplete, dispatch]);
 
-    // Individual handlers for each action
-    const handleAppletChange = (value: string) => {
-        dispatch(setActiveApplet(value));
-        dispatch(setActiveContainer(null));
+    // Handle applet tab selection
+    const handleAppletChange = (appletId: string) => {
+        // If current applet is dirty, save it first
+        if (activeAppletId && isAppletDirty) {
+            saveActiveApplet();
+        }
+        
+        if (appletId) {
+            dispatch(setActiveApplet(appletId));
+            // Clear the active container when switching applets
+            dispatch(setActiveContainer(null));
+        }
     };
 
-    const handleGroupSelect = (groupId: string) => {
-        dispatch(setActiveContainer(groupId));
-    };
-
-    const handleCreateNewGroup = useCallback(() => {
-        const id = uuidv4();
-        dispatch(
-            startNewContainer({
-                id,
-                label: "",
-                shortLabel: "",
-                description: "",
-                fields: [],
-            })
-        );
-        dispatch(setActiveContainer(id));
+    // Create a new container
+    const handleCreateNewContainer = useCallback(() => {
+        // Simply dispatch the createNewContainer action to create a fresh container
+        dispatch(startNewContainer());
     }, [dispatch]);
 
-    // Initialize a new container if none is active
-    useEffect(() => {
-        if (activeAppletId && !activeContainerId && !containerLoading) {
-            handleCreateNewGroup();
-        }
-    }, [activeAppletId, activeContainerId, containerLoading, handleCreateNewGroup]);
-
-    const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (activeContainerId) {
-            dispatch(
-                setContainerLabel({
-                    id: activeContainerId,
-                    label: e.target.value,
-                })
-            );
-        }
-    };
-
-    const handleShortLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (activeContainerId) {
-            dispatch(
-                setShortLabel({
-                    id: activeContainerId,
-                    shortLabel: e.target.value,
-                })
-            );
-        }
-    };
-
-    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        if (activeContainerId) {
-            dispatch(
-                setContainerDescription({
-                    id: activeContainerId,
-                    description: e.target.value,
-                })
-            );
-        }
-    };
-
-    const handleExistingGroupSelect = (group: ComponentGroup) => {
-        if (activeAppletId) {
-            setProcessingGroupId(group.id);
-            dispatch(
-                saveContainerAndUpdateAppletThunk({
-                    containerId: group.id,
-                    appletId: activeAppletId,
-                })
-            )
-                .unwrap()
-                .then(() => {
-                    toast({
-                        title: "Success",
-                        description: "Group added to applet successfully.",
-                    });
-                    setShowExistingGroups(false);
-                })
-                .catch((error) => {
-                    toast({
-                        title: "Error",
-                        description: typeof error === "string" ? error : "Failed to add group to applet.",
-                        variant: "destructive",
-                    });
-                })
-                .finally(() => {
-                    setProcessingGroupId(null);
-                });
-        }
-    };
-
-    const handleAddGroup = () => {
-        if (!activeContainerId || !activeAppletId) return;
-
-        dispatch(
-            saveContainerAndUpdateAppletThunk({
-                containerId: activeContainerId,
-                appletId: activeAppletId,
-            })
-        )
-            .unwrap()
-            .then(() => {
+    // Select a container to edit
+    const handleContainerSelect = async (containerId: string) => {
+        // Check if the container already exists in state
+        const containerExists = allContainerIds.includes(containerId);
+        
+        if (containerExists) {
+            // Container already in state, just set it as active
+            dispatch(setActiveContainer(containerId));
+        } else {
+            // Container not in state, need to fetch it first
+            setFetchingContainer(true);
+            try {
+                await dispatch(fetchContainerByIdThunk(containerId)).unwrap();
+                dispatch(setActiveContainer(containerId));
+                
                 toast({
                     title: "Success",
-                    description: "Group created and added to applet successfully.",
+                    description: "Container loaded successfully.",
                 });
-                handleCreateNewGroup();
-            })
-            .catch((error) => {
+            } catch (error) {
                 toast({
                     title: "Error",
-                    description: typeof error === "string" ? error : "Failed to save group.",
+                    description: "Failed to load container from database.",
                     variant: "destructive",
                 });
-            });
+            } finally {
+                setFetchingContainer(false);
+            }
+        }
     };
 
-    // Compute validation state for the add button
-    const canCreateContainer = Boolean(containerLabel && containerShortLabel);
+    // Filter containers that are already in the applet
+    const appletContainerIds = appletContainers.map((container) => container.id);
+    
+    // Check if the current container is already in the applet
+    const isContainerInApplet = activeContainerId 
+        ? appletContainerIds.includes(activeContainerId)
+        : false;
+    
+    // Handle container save completion
+    const handleContainerSaved = (containerId: string) => {
+        // If the container is part of an applet, mark the applet as dirty
+        if (activeAppletId && isContainerInApplet) {
+            dispatch(
+                setAppletIsDirty({
+                    id: activeAppletId,
+                    isDirty: true,
+                })
+            );
+        }
+        
+        // If this was a new container, create a new one to replace it
+        if (containerId === newContainerId) {
+            handleCreateNewContainer();
+        }
+    };
+
+    // Add an existing container to the current applet
+    const handleExistingContainerSelect = async (group: ComponentGroup) => {
+        if (activeAppletId) {
+            setIsAddingToApplet(true);
+            setProcessingContainerId(group.id);
+            
+            // Check if container exists in state
+            const containerExists = allContainerIds.includes(group.id);
+            
+            try {
+                // Fetch the container if it's not in state
+                if (!containerExists) {
+                    await dispatch(fetchContainerByIdThunk(group.id)).unwrap();
+                }
+                
+                // First select the container so the form updates
+                dispatch(setActiveContainer(group.id));
+                
+                // Add the container to the applet using the thunk that handles database updates
+                await dispatch(
+                    saveContainerAndUpdateAppletThunk({
+                        containerId: group.id,
+                        appletId: activeAppletId,
+                    })
+                ).unwrap();
+                
+                // After successfully adding the container to the applet in the database,
+                // save and recompile the applet to ensure everything is in sync
+                await saveAndRecompileApplet(activeAppletId);
+                
+                toast({
+                    title: "Success",
+                    description: "Group added to applet successfully.",
+                });
+            } catch (error) {
+                toast({
+                    title: "Error",
+                    description: typeof error === "string" ? error : "Failed to add group to applet.",
+                    variant: "destructive",
+                });
+            } finally {
+                setProcessingContainerId(null);
+                setIsAddingToApplet(false);
+            }
+        }
+    };
+
+    // Save active applet and recompile it
+    const saveAndRecompileApplet = async (appletId: string) => {
+        if (!appletId) return;
+        
+        setSavingApplet(true);
+        
+        try {
+            // First, save the applet to ensure all changes are persisted
+            await dispatch(saveAppletThunk(appletId)).unwrap();
+            
+            // After saving, recompile the applet to ensure all container relationships are updated
+            await dispatch(recompileAppletThunk(appletId)).unwrap();
+            
+            toast({
+                title: "Success",
+                description: "Applet containers recompiled successfully.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: typeof error === "string" ? error : "Failed to recompile applet containers.",
+                variant: "destructive",
+            });
+        } finally {
+            setSavingApplet(false);
+        }
+    };
+
+    // Save the active applet
+    const saveActiveApplet = () => {
+        if (activeAppletId && isAppletDirty) {
+            saveAndRecompileApplet(activeAppletId);
+        }
+    };
+
+    // Add container to applet (if not already added)
+    const handleAddContainerToApplet = async () => {
+        if (!activeContainerId || !activeAppletId) return;
+        
+        setIsAddingToApplet(true);
+        setProcessingContainerId(activeContainerId);
+        
+        try {
+            // Add the container to the applet and update the database
+            await dispatch(
+                saveContainerAndUpdateAppletThunk({
+                    containerId: activeContainerId,
+                    appletId: activeAppletId,
+                })
+            ).unwrap();
+            
+            // After successfully adding the container, save and recompile the applet
+            await saveAndRecompileApplet(activeAppletId);
+            
+            toast({
+                title: "Success",
+                description: "Container added to applet and saved successfully.",
+            });
+            
+            // Create a new container form after successful add
+            handleCreateNewContainer();
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: typeof error === "string" ? error : "Failed to add container to applet.",
+                variant: "destructive",
+            });
+        } finally {
+            setProcessingContainerId(null);
+            setIsAddingToApplet(false);
+        }
+    };
+
+    const currentContainerId = activeContainerId || newContainerId;
 
     return (
         <div className="space-y-6">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Configure Groups for App</h2>
+
             {applets.length === 0 ? (
                 <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
                     <CardContent className="flex flex-col items-center justify-center py-10">
                         <p className="text-gray-600 dark:text-gray-400 mb-4">
                             No applets have been created yet. Please go back and add applets first.
                         </p>
-                        <Button
-                            variant="outline"
+                        <Button 
+                            variant="outline" 
                             onClick={() => window.history.back()}
                             className="border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
@@ -238,10 +316,10 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
                     <Tabs value={activeAppletId || ""} onValueChange={handleAppletChange} className="w-full">
                         <TabsList className="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md">
                             {applets.map((applet) => (
-                                <TabsTrigger
-                                    key={applet.id}
+                                <TabsTrigger 
+                                    key={applet.id} 
                                     value={applet.id}
-                                    className="flex-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-rose-600 dark:data-[state=active]:text-rose-400 data-[state=active]:shadow-sm"
+                                    className={`flex-1 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-900 data-[state=active]:text-blue-600 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-sm ${applet.isDirty ? 'font-bold before:content-["⬤"] before:mr-1 before:text-amber-500 before:text-xs' : ''}`}
                                 >
                                     {applet.name}
                                 </TabsTrigger>
@@ -251,124 +329,116 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
                         {applets.map((applet) => (
                             <TabsContent key={applet.id} value={applet.id} className="mt-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Add new group form */}
+                                    {/* Container form card */}
+                                    <div>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+                                                {isContainerInApplet ? `Edit Container for ${applet.name}` : `Add Container to ${applet.name}`}
+                                            </h3>
+                                            <div className="flex space-x-2">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    className="border-emerald-500 text-emerald-500" 
+                                                    onClick={handleCreateNewContainer}
+                                                >
+                                                    Create New
+                                                </Button>
+
+                                                <GroupSelectorOverlay
+                                                    buttonLabel="Select Existing"
+                                                    buttonVariant="outline"
+                                                    buttonSize="sm"
+                                                    buttonClassName="border-blue-500 text-blue-500"
+                                                    onGroupSelected={handleExistingContainerSelect}
+                                                    onCreateGroup={handleCreateNewContainer}
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        {fetchingContainer ? (
+                                            <div className="flex items-center justify-center p-6 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                                                <Loader2 className="mr-2 h-5 w-5 animate-spin text-blue-500" />
+                                                <span className="text-gray-600 dark:text-gray-400">Loading container...</span>
+                                            </div>
+                                        ) : (
+                                            /* Container Form Component - pass the current container ID */
+                                            <ContainerFormComponent 
+                                                containerId={currentContainerId}
+                                                onSaveSuccess={handleContainerSaved}
+                                                title={isContainerInApplet ? "Edit Container" : "New Container"}
+                                            />
+                                        )}
+                                        
+                                        {/* Add to applet button - only shown if not already in the applet */}
+                                        {currentContainerId && !isContainerInApplet && !fetchingContainer && (
+                                            <div className="mt-4">
+                                                <Button
+                                                    onClick={handleAddContainerToApplet}
+                                                    disabled={isAddingToApplet}
+                                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                                >
+                                                    {isAddingToApplet ? (
+                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <PlusIcon className="mr-2 h-4 w-4" />
+                                                    )}
+                                                    Add to {activeAppletName}
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* List of containers */}
                                     <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
                                         <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                                             <div className="flex justify-between items-center">
                                                 <div>
                                                     <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
-                                                        Add Group
+                                                        {applet.name} Containers
                                                     </CardTitle>
-                                                    <CardDescription className="text-gray-500 dark:text-gray-400">
-                                                        Create or select a group for {applet.name}
+                                                    <CardDescription className="text-gray-500 dark:text-gray-400 pl-2">
+                                                        {appletContainers.length === 0
+                                                            ? "No Containers Added"
+                                                            : appletContainers.length === 1
+                                                            ? "1 Container"
+                                                            : `${appletContainers.length} Containers`}
                                                     </CardDescription>
                                                 </div>
-                                                <GroupSelectorOverlay
-                                                    buttonLabel="Select a Group"
-                                                    buttonVariant="outline"
-                                                    buttonSize="sm"
-                                                    buttonClassName="border-blue-500 text-blue-500"
-                                                    onGroupSelected={handleExistingGroupSelect}
-                                                    onCreateGroup={handleCreateNewGroup}
-                                                />
+                                                
+                                                {applet.isDirty && (
+                                                    <Button
+                                                        onClick={() => saveAndRecompileApplet(applet.id)}
+                                                        disabled={savingApplet}
+                                                        size="sm"
+                                                        className="bg-amber-500 hover:bg-amber-600 text-white"
+                                                    >
+                                                        {savingApplet ? (
+                                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <RefreshCw className="mr-2 h-4 w-4" />
+                                                        )}
+                                                        Recompile Containers
+                                                    </Button>
+                                                )}
                                             </div>
                                         </CardHeader>
-                                        <CardContent className="p-6">
-                                            <div className="space-y-4">
-                                                <div className="space-y-2">
-                                                    <Label htmlFor="label" className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                                                        Group Label
-                                                    </Label>
-                                                    <Input
-                                                        id="label"
-                                                        name="label"
-                                                        placeholder="e.g. Location"
-                                                        value={containerLabel}
-                                                        onChange={handleLabelChange}
-                                                        className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <Label
-                                                        htmlFor="shortLabel"
-                                                        className="text-sm font-medium text-gray-800 dark:text-gray-200"
-                                                    >
-                                                        Short Label / Placeholder
-                                                    </Label>
-                                                    <Input
-                                                        id="shortLabel"
-                                                        name="shortLabel"
-                                                        placeholder="e.g. Where are you going?"
-                                                        value={containerShortLabel}
-                                                        onChange={handleShortLabelChange}
-                                                        className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <Label
-                                                        htmlFor="description"
-                                                        className="text-sm font-medium text-gray-800 dark:text-gray-200"
-                                                    >
-                                                        Description (Optional)
-                                                    </Label>
-                                                    <Textarea
-                                                        id="description"
-                                                        name="description"
-                                                        placeholder="Enter a description for this group"
-                                                        value={containerDescription}
-                                                        onChange={handleDescriptionChange}
-                                                        rows={3}
-                                                        className="resize-none border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200"
-                                                    />
-                                                </div>
-
-                                                <Button
-                                                    onClick={handleAddGroup}
-                                                    disabled={!canCreateContainer || containerLoading}
-                                                    className="w-full mt-2 bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-700"
-                                                >
-                                                    {containerLoading ? (
-                                                        <>
-                                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                            Adding...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <PlusIcon className="h-4 w-4 mr-2" />
-                                                            Add Group
-                                                        </>
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* List of groups */}
-                                    <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
-                                        <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                                            <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
-                                                Configured Groups
-                                            </CardTitle>
-                                            <CardDescription className="text-gray-500 dark:text-gray-400">
-                                                Groups for the {applet.name} applet
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="p-6">
+                                        <CardContent className="p-4">
                                             {appletContainers.length === 0 ? (
                                                 <div className="text-center py-10 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-                                                    <p className="text-gray-500 dark:text-gray-400">No groups added to this applet yet</p>
+                                                    <p className="text-gray-500 dark:text-gray-400">
+                                                        No containers added to this applet yet
+                                                    </p>
                                                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                                                        Use the form to add your first group
+                                                        Use the form to add your first container
                                                     </p>
                                                 </div>
                                             ) : (
-                                                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                                                <div className="space-y-2 max-h-[500px] overflow-y-auto">
                                                     {appletContainers.map((container) => (
-                                                        <div
+                                                        <div 
                                                             key={container.id}
-                                                            onClick={() => handleGroupSelect(container.id)}
+                                                            onClick={() => handleContainerSelect(container.id)}
                                                             className={`p-3 border rounded-lg cursor-pointer transition-all ${
                                                                 activeContainerId === container.id
                                                                     ? "border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20"
@@ -384,8 +454,15 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
                                                                         {container.shortLabel}
                                                                     </p>
                                                                 </div>
-                                                                <div className="text-xs text-gray-400 dark:text-gray-500 font-mono">
-                                                                    {container.fields?.length || 0} fields
+                                                                <div className="flex items-center">
+                                                                    <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 py-1 px-2 rounded-full">
+                                                                        {container.fields?.length || 0} field{container.fields?.length !== 1 ? 's' : ''}
+                                                                    </span>
+                                                                    {!allContainerIds.includes(container.id) && (
+                                                                        <span className="ml-2 text-xs bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 py-1 px-2 rounded-full">
+                                                                            Compiled Version
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -404,4 +481,4 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
     );
 };
 
-export default GroupsConfigStep;
+export default GroupsConfigStep; 

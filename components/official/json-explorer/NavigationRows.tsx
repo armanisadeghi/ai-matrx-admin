@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { NavigationRowsProps } from "./types";
 import { getKeysAtPath } from "./json-utils";
 
-const NavigationRows: React.FC<NavigationRowsProps> = ({ originalData, currentPath, onKeySelect }) => {
+const NavigationRows: React.FC<NavigationRowsProps> = ({ 
+  originalData, 
+  currentPath, 
+  onKeySelect, 
+  onContextMenu, 
+  isPathHidden 
+}) => {
   if (!originalData) return null;
 
   // Create array of rows to render (including placeholders)
@@ -18,17 +24,25 @@ const NavigationRows: React.FC<NavigationRowsProps> = ({ originalData, currentPa
 
     rowsToRender.push(
       <div key={`row-${rowIndex}`} className="flex flex-wrap gap-2 mb-2">
-        {keysForThisRow.map((key) => (
-          <Button
-            key={key}
-            size="sm"
-            variant={selectedKey === key ? "default" : "outline"}
-            onClick={() => onKeySelect(rowIndex, key)}
-            className="text-xs"
-          >
-            {key}
-          </Button>
-        ))}
+        {keysForThisRow.map((key) => {
+          // Create the path for this button
+          const buttonPath = currentPath.slice(0, idx).concat([[rowIndex, key]]);
+          const isSelected = selectedKey === key;
+          const isHidden = isPathHidden && isPathHidden(buttonPath);
+          
+          return (
+            <Button
+              key={key}
+              size="sm"
+              variant={isSelected ? "default" : "outline"}
+              onClick={() => onKeySelect(rowIndex, key)}
+              onContextMenu={(e) => onContextMenu && onContextMenu(e, buttonPath)}
+              className={`text-xs ${isHidden ? 'bg-yellow-200 dark:bg-yellow-800 hover:bg-yellow-300 dark:hover:bg-yellow-900 text-gray-800 dark:text-gray-300' : ''}`}
+            >
+              {key}
+            </Button>
+          );
+        })}
       </div>
     );
   });

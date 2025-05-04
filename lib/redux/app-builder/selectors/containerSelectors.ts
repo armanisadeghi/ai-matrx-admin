@@ -11,6 +11,15 @@ export const selectAllContainers = createSelector(
   (containerBuilderState) => Object.values(containerBuilderState.containers)
 );
 
+// Memoized selector for all container IDs with stable reference
+export const selectAllContainerIds = createSelector(
+  [getContainerBuilderState],
+  (containerBuilderState) => {
+    const { containers } = containerBuilderState;
+    return Object.keys(containers);
+  }
+);
+
 // Memoized selector for a specific container by ID
 export const selectContainerById = createSelector(
   [(state: RootState, id: string) => getContainerBuilderState(state).containers[id]],

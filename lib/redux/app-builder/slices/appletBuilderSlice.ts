@@ -18,6 +18,14 @@ import { v4 as uuidv4 } from "uuid";
 import { BrokerMapping } from "@/features/applet/builder/builder.types";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 
+// Helper function to check if an applet exists in state
+const checkAppletExists = (state: AppletsState, id: string): boolean => {
+    if (!state.applets[id]) {
+        console.error(`Applet with ID ${id} not found in state`);
+        return false;
+    }
+    return true;
+};
 
 interface AppletsState {
     applets: Record<string, AppletBuilder>;
@@ -53,7 +61,7 @@ export const appletBuilderSlice = createSlice({
                 isDirty: true,
                 isLocal: true,
                 slugStatus: "unchecked",
-                ...action.payload,
+                ...(action.payload || {}),
             } as AppletBuilder;
             state.newAppletId = id;
             state.activeAppletId = id;
@@ -61,7 +69,9 @@ export const appletBuilderSlice = createSlice({
         // Cancel creation of a local applet
         cancelNewApplet: (state, action: PayloadAction<string>) => {
             const id = action.payload;
-            if (state.applets[id] && state.applets[id].isLocal) {
+            if (!checkAppletExists(state, id)) return;
+            
+            if (state.applets[id].isLocal) {
                 delete state.applets[id];
                 if (state.newAppletId === id) {
                     state.newAppletId = null;
@@ -73,175 +83,183 @@ export const appletBuilderSlice = createSlice({
         },
         // Set the active applet for editing
         setActiveApplet: (state, action: PayloadAction<string | null>) => {
-            state.activeAppletId = action.payload;
+            const id = action.payload;
+            if (id !== null && !state.applets[id]) {
+                console.error(`Applet with ID ${id} not found in state`);
+            }
+            state.activeAppletId = id;
         },
         // Specific actions for AppletBuilder properties
         setName: (state, action: PayloadAction<{ id: string; name: string }>) => {
             const { id, name } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], name, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], name, isDirty: true };
         },
         setDescription: (state, action: PayloadAction<{ id: string; description?: string }>) => {
             const { id, description } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], description, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], description, isDirty: true };
         },
         setSlug: (state, action: PayloadAction<{ id: string; slug: string }>) => {
             const { id, slug } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], slug, isDirty: true, slugStatus: "unchecked" };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], slug, isDirty: true, slugStatus: "unchecked" };
         },
         setAppletIcon: (state, action: PayloadAction<{ id: string; appletIcon?: string }>) => {
             const { id, appletIcon } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], appletIcon, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], appletIcon, isDirty: true };
         },
         setAppletSubmitText: (state, action: PayloadAction<{ id: string; appletSubmitText?: string }>) => {
             const { id, appletSubmitText } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], appletSubmitText, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], appletSubmitText, isDirty: true };
         },
         setCreator: (state, action: PayloadAction<{ id: string; creator?: string }>) => {
             const { id, creator } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], creator, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], creator, isDirty: true };
         },
         setPrimaryColor: (state, action: PayloadAction<{ id: string; primaryColor?: string }>) => {
             const { id, primaryColor } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], primaryColor, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], primaryColor, isDirty: true };
         },
         setAccentColor: (state, action: PayloadAction<{ id: string; accentColor?: string }>) => {
             const { id, accentColor } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], accentColor, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], accentColor, isDirty: true };
         },
         setLayoutType: (state, action: PayloadAction<{ id: string; layoutType?: AppletLayoutOption }>) => {
             const { id, layoutType } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], layoutType, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], layoutType, isDirty: true };
         },
         setDataSourceConfig: (state, action: PayloadAction<{ id: string; dataSourceConfig?: any }>) => {
             const { id, dataSourceConfig } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], dataSourceConfig, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], dataSourceConfig, isDirty: true };
         },
         setResultComponentConfig: (state, action: PayloadAction<{ id: string; resultComponentConfig?: any }>) => {
             const { id, resultComponentConfig } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], resultComponentConfig, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], resultComponentConfig, isDirty: true };
         },
         setNextStepConfig: (state, action: PayloadAction<{ id: string; nextStepConfig?: any }>) => {
             const { id, nextStepConfig } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], nextStepConfig, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], nextStepConfig, isDirty: true };
         },
         setCompiledRecipeId: (state, action: PayloadAction<{ id: string; compiledRecipeId?: string }>) => {
             const { id, compiledRecipeId } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], compiledRecipeId, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], compiledRecipeId, isDirty: true };
         },
         setSubcategoryId: (state, action: PayloadAction<{ id: string; subcategoryId?: string }>) => {
             const { id, subcategoryId } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], subcategoryId, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], subcategoryId, isDirty: true };
         },
         setImageUrl: (state, action: PayloadAction<{ id: string; imageUrl?: string }>) => {
             const { id, imageUrl } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], imageUrl, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], imageUrl, isDirty: true };
         },
         setAppId: (state, action: PayloadAction<{ id: string; appId?: string }>) => {
             const { id, appId } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], appId, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], appId, isDirty: true };
         },
         setBrokerMappings: (state, action: PayloadAction<{ id: string; brokerMappings?: BrokerMapping[] }>) => {
             const { id, brokerMappings } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], brokerMappings, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], brokerMappings, isDirty: true };
         },
         setIsPublic: (state, action: PayloadAction<{ id: string; isPublic?: boolean }>) => {
             const { id, isPublic } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], isPublic, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], isPublic, isDirty: true };
         },
         setAuthenticatedRead: (state, action: PayloadAction<{ id: string; authenticatedRead?: boolean }>) => {
             const { id, authenticatedRead } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], authenticatedRead, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], authenticatedRead, isDirty: true };
         },
         setPublicRead: (state, action: PayloadAction<{ id: string; publicRead?: boolean }>) => {
             const { id, publicRead } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], publicRead, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], publicRead, isDirty: true };
         },
         setIsDirty: (state, action: PayloadAction<{ id: string; isDirty?: boolean }>) => {
             const { id, isDirty } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], isDirty };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], isDirty };
         },
         setIsLocal: (state, action: PayloadAction<{ id: string; isLocal?: boolean }>) => {
             const { id, isLocal } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], isLocal };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], isLocal };
         },
         setSlugStatus: (state, action: PayloadAction<{ id: string; slugStatus: 'unchecked' | 'unique' | 'notUnique' }>) => {
             const { id, slugStatus } = action.payload;
-            if (state.applets[id]) {
-                state.applets[id] = { ...state.applets[id], slugStatus, isDirty: true };
-            }
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { ...state.applets[id], slugStatus, isDirty: true };
         },
         // Container management actions
         addContainer: (state, action: PayloadAction<{ appletId: string; container: ContainerBuilder }>) => {
             const { appletId, container } = action.payload;
-            if (state.applets[appletId]) {
-                state.applets[appletId].containers = [...state.applets[appletId].containers, container];
-                state.applets[appletId].isDirty = true;
-            }
+            if (!checkAppletExists(state, appletId)) return;
+            
+            state.applets[appletId].containers = [...state.applets[appletId].containers, container];
+            state.applets[appletId].isDirty = true;
         },
         removeContainer: (state, action: PayloadAction<{ appletId: string; containerId: string }>) => {
             const { appletId, containerId } = action.payload;
-            if (state.applets[appletId]) {
-                state.applets[appletId].containers = state.applets[appletId].containers.filter(c => c.id !== containerId);
-                state.applets[appletId].isDirty = true;
-            }
+            if (!checkAppletExists(state, appletId)) return;
+            
+            state.applets[appletId].containers = state.applets[appletId].containers.filter(c => c.id !== containerId);
+            state.applets[appletId].isDirty = true;
         },
         recompileContainer: (state, action: PayloadAction<{ appletId: string; containerId: string; updatedContainer: ContainerBuilder }>) => {
             const { appletId, containerId, updatedContainer } = action.payload;
-            if (state.applets[appletId]) {
-                const containerIndex = state.applets[appletId].containers.findIndex(c => c.id === containerId);
-                if (containerIndex >= 0) {
-                    state.applets[appletId].containers[containerIndex] = updatedContainer;
-                    state.applets[appletId].isDirty = true;
-                }
+            if (!checkAppletExists(state, appletId)) return;
+            
+            const containerIndex = state.applets[appletId].containers.findIndex(c => c.id === containerId);
+            if (containerIndex >= 0) {
+                state.applets[appletId].containers[containerIndex] = updatedContainer;
+                state.applets[appletId].isDirty = true;
+            } else {
+                console.error(`Container with ID ${containerId} not found in applet ${appletId}`);
             }
         },
         // Other actions
         deleteApplet: (state, action: PayloadAction<string>) => {
             const id = action.payload;
+            if (!checkAppletExists(state, id)) return;
+            
             delete state.applets[id];
             if (state.activeAppletId === id) {
                 state.activeAppletId = null;
@@ -497,7 +515,6 @@ export const appletBuilderSlice = createSlice({
 });
 
 export const {
-    startNewApplet,
     cancelNewApplet,
     setActiveApplet,
     setName,
@@ -530,5 +547,9 @@ export const {
     setLoading,
     setError,
 } = appletBuilderSlice.actions;
+
+// Export startNewApplet with proper typing for no arguments case
+export const startNewApplet = (payload?: Partial<AppletBuilder>) => 
+    appletBuilderSlice.actions.startNewApplet(payload);
 
 export default appletBuilderSlice.reducer;

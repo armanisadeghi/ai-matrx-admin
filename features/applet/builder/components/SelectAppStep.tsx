@@ -43,8 +43,8 @@ export const SelectAppStep: React.FC<SelectAppStepProps> = ({ onAppSelected, onC
                 </CardHeader>
                 <CardContent className="p-6">
                     {selectedApp && (
-                        <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg">
-                            <h3 className="text-rose-600 dark:text-rose-400 font-medium mb-1">Currently Selected App</h3>
+                        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <h3 className="text-blue-600 dark:text-blue-400 font-medium mb-1">Currently Selected App</h3>
                             <p className="text-gray-700 dark:text-gray-300 text-sm mb-1">
                                 <span className="font-medium">{selectedApp.name} - Continue with this or select a different one below</span>
                             </p>

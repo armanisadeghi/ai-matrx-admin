@@ -89,11 +89,12 @@ export const getValueByPath = (data, pathString) => {
  */
 export const createPathBookmark = (pathString, name = '', description = '') => {
   return {
+    id: crypto.randomUUID ? crypto.randomUUID() : `bookmark-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     path: pathString,
     segments: parsePathString(pathString),
     name: name || pathString,
     description,
-    createdAt: new Date().toISOString()
+    createdAt: Date.now()
   };
 };
 

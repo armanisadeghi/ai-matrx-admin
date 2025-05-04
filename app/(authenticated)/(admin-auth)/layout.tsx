@@ -25,7 +25,6 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
         return redirect("/dashboard");
     }
 
-    console.log("isAdmin", isAdmin);
 
     return (
         <>

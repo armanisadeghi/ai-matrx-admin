@@ -2,6 +2,15 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk, fetchAppsThunk, checkAppSlugUniqueness } from "../thunks/appBuilderThunks";
 import { AppBuilder } from "../types";
 
+// Helper function to check if an app exists in state
+const checkAppExists = (state: AppsState, id: string): boolean => {
+    if (!state.apps[id]) {
+        console.error(`App with ID ${id} not found in state`);
+        return false;
+    }
+    return true;
+};
+
 export interface AppsState {
     apps: Record<string, AppBuilder>;
     isLoading: boolean;
@@ -23,27 +32,32 @@ export const appBuilderSlice = createSlice({
         },
         updateApp: (state, action: PayloadAction<{ id: string; changes: Partial<AppBuilder> }>) => {
             const { id, changes } = action.payload;
-            if (state.apps[id]) {
-                const isSlugChanged = changes.slug && changes.slug !== state.apps[id].slug;
-                state.apps[id] = { ...state.apps[id], ...changes, isDirty: true, slugStatus: isSlugChanged ? 'unchecked' : state.apps[id].slugStatus };
-            }
+            if (!checkAppExists(state, id)) return;
+            
+            const isSlugChanged = changes.slug && changes.slug !== state.apps[id].slug;
+            state.apps[id] = { ...state.apps[id], ...changes, isDirty: true, slugStatus: isSlugChanged ? 'unchecked' : state.apps[id].slugStatus };
         },
         deleteApp: (state, action: PayloadAction<string>) => {
-            delete state.apps[action.payload];
+            const id = action.payload;
+            if (!checkAppExists(state, id)) return;
+            
+            delete state.apps[id];
         },
         addApplet: (state, action: PayloadAction<{ appId: string; appletId: string }>) => {
             const { appId, appletId } = action.payload;
-            if (state.apps[appId] && !state.apps[appId].appletIds.includes(appletId)) {
+            if (!checkAppExists(state, appId)) return;
+            
+            if (!state.apps[appId].appletIds.includes(appletId)) {
                 state.apps[appId].appletIds.push(appletId);
                 state.apps[appId].isDirty = true;
             }
         },
         removeApplet: (state, action: PayloadAction<{ appId: string; appletId: string }>) => {
             const { appId, appletId } = action.payload;
-            if (state.apps[appId]) {
-                state.apps[appId].appletIds = state.apps[appId].appletIds.filter((id) => id !== appletId);
-                state.apps[appId].isDirty = true;
-            }
+            if (!checkAppExists(state, appId)) return;
+            
+            state.apps[appId].appletIds = state.apps[appId].appletIds.filter((id) => id !== appletId);
+            state.apps[appId].isDirty = true;
         },
         setLoading: (state, action: PayloadAction<boolean>) => {
             state.isLoading = action.payload;

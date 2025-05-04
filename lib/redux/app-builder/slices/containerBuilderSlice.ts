@@ -20,6 +20,14 @@ import { ContainerBuilder } from "../types";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 import { v4 as uuidv4 } from "uuid";
 
+// Helper function to check if a container exists in state
+const checkContainerExists = (state: ContainersState, id: string): boolean => {
+    if (!state.containers[id]) {
+        console.error(`Container with ID ${id} not found in state`);
+        return false;
+    }
+    return true;
+};
 
 // Default container configuration
 export const DEFAULT_CONTAINER: Partial<ContainerBuilder> = {
@@ -62,7 +70,7 @@ export const containerBuilderSlice = createSlice({
             state.containers[id] = {
                 ...DEFAULT_CONTAINER,
                 id: id,
-                ...action.payload,
+                ...(action.payload || {}),
             } as ContainerBuilder;
             state.newContainerId = id;
             state.activeContainerId = id;
@@ -70,7 +78,9 @@ export const containerBuilderSlice = createSlice({
         // Cancel creation of a local container
         cancelNewContainer: (state, action: PayloadAction<string>) => {
             const id = action.payload;
-            if (state.containers[id] && state.containers[id].isLocal) {
+            if (!checkContainerExists(state, id)) return;
+            
+            if (state.containers[id].isLocal) {
                 delete state.containers[id];
                 if (state.newContainerId === id) {
                     state.newContainerId = null;
@@ -82,117 +92,127 @@ export const containerBuilderSlice = createSlice({
         },
         // Set the active container for editing
         setActiveContainer: (state, action: PayloadAction<string | null>) => {
-            state.activeContainerId = action.payload;
+            const id = action.payload;
+            if (id !== null && !state.containers[id]) {
+                console.error(`Container with ID ${id} not found in state`);
+            }
+            state.activeContainerId = id;
         },
         // Specific actions for ContainerBuilder properties
         setLabel: (state, action: PayloadAction<{ id: string; label: string }>) => {
             const { id, label } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], label, isDirty: true };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], label, isDirty: true };
         },
         setShortLabel: (state, action: PayloadAction<{ id: string; shortLabel?: string }>) => {
             const { id, shortLabel } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], shortLabel, isDirty: true };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], shortLabel, isDirty: true };
         },
         setDescription: (state, action: PayloadAction<{ id: string; description?: string }>) => {
             const { id, description } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], description, isDirty: true };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], description, isDirty: true };
         },
         setHideDescription: (state, action: PayloadAction<{ id: string; hideDescription?: boolean }>) => {
             const { id, hideDescription } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], hideDescription, isDirty: true };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], hideDescription, isDirty: true };
         },
         setHelpText: (state, action: PayloadAction<{ id: string; helpText?: string }>) => {
             const { id, helpText } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], helpText, isDirty: true };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], helpText, isDirty: true };
         },
         setIsPublic: (state, action: PayloadAction<{ id: string; isPublic?: boolean }>) => {
             const { id, isPublic } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], isPublic, isDirty: true };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], isPublic, isDirty: true };
         },
         setAuthenticatedRead: (state, action: PayloadAction<{ id: string; authenticatedRead?: boolean }>) => {
             const { id, authenticatedRead } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], authenticatedRead, isDirty: true };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], authenticatedRead, isDirty: true };
         },
         setPublicRead: (state, action: PayloadAction<{ id: string; publicRead?: boolean }>) => {
             const { id, publicRead } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], publicRead, isDirty: true };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], publicRead, isDirty: true };
         },
         setIsDirty: (state, action: PayloadAction<{ id: string; isDirty?: boolean }>) => {
             const { id, isDirty } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], isDirty };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], isDirty };
         },
         setIsLocal: (state, action: PayloadAction<{ id: string; isLocal?: boolean }>) => {
             const { id, isLocal } = action.payload;
-            if (state.containers[id]) {
-                state.containers[id] = { ...state.containers[id], isLocal };
-            }
+            if (!checkContainerExists(state, id)) return;
+            
+            state.containers[id] = { ...state.containers[id], isLocal };
         },
         // Field management actions
         addField: (state, action: PayloadAction<{ containerId: string; field: FieldDefinition }>) => {
             const { containerId, field } = action.payload;
-            if (state.containers[containerId]) {
-                state.containers[containerId].fields = [...state.containers[containerId].fields, field];
-                state.containers[containerId].isDirty = true;
-            }
+            if (!checkContainerExists(state, containerId)) return;
+            
+            state.containers[containerId].fields = [...state.containers[containerId].fields, field];
+            state.containers[containerId].isDirty = true;
         },
         updateField: (state, action: PayloadAction<{ containerId: string; fieldId: string; changes: Partial<FieldDefinition> }>) => {
             const { containerId, fieldId, changes } = action.payload;
-            if (state.containers[containerId]) {
-                const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === fieldId);
-                if (fieldIndex >= 0) {
-                    state.containers[containerId].fields[fieldIndex] = {
-                        ...state.containers[containerId].fields[fieldIndex],
-                        ...changes,
-                    };
-                    state.containers[containerId].isDirty = true;
-                }
+            if (!checkContainerExists(state, containerId)) return;
+            
+            const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === fieldId);
+            if (fieldIndex >= 0) {
+                state.containers[containerId].fields[fieldIndex] = {
+                    ...state.containers[containerId].fields[fieldIndex],
+                    ...changes,
+                };
+                state.containers[containerId].isDirty = true;
+            } else {
+                console.error(`Field with ID ${fieldId} not found in container ${containerId}`);
             }
         },
         removeField: (state, action: PayloadAction<{ containerId: string; fieldId: string }>) => {
             const { containerId, fieldId } = action.payload;
-            if (state.containers[containerId]) {
-                state.containers[containerId].fields = state.containers[containerId].fields.filter(f => f.id !== fieldId);
-                state.containers[containerId].isDirty = true;
-            }
+            if (!checkContainerExists(state, containerId)) return;
+            
+            state.containers[containerId].fields = state.containers[containerId].fields.filter(f => f.id !== fieldId);
+            state.containers[containerId].isDirty = true;
         },
         recompileField: (state, action: PayloadAction<{ containerId: string; fieldId: string; updatedField: FieldDefinition }>) => {
             const { containerId, fieldId, updatedField } = action.payload;
-            if (state.containers[containerId]) {
-                const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === fieldId);
-                if (fieldIndex >= 0) {
-                    state.containers[containerId].fields[fieldIndex] = updatedField;
-                    state.containers[containerId].isDirty = true;
-                }
+            if (!checkContainerExists(state, containerId)) return;
+            
+            const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === fieldId);
+            if (fieldIndex >= 0) {
+                state.containers[containerId].fields[fieldIndex] = updatedField;
+                state.containers[containerId].isDirty = true;
+            } else {
+                console.error(`Field with ID ${fieldId} not found in container ${containerId}`);
             }
         },
         recompileAllFields: (state, action: PayloadAction<{ containerId: string; updatedFields: FieldDefinition[] }>) => {
             const { containerId, updatedFields } = action.payload;
-            if (state.containers[containerId]) {
-                state.containers[containerId].fields = updatedFields;
-                state.containers[containerId].isDirty = true;
-            }
+            if (!checkContainerExists(state, containerId)) return;
+            
+            state.containers[containerId].fields = updatedFields;
+            state.containers[containerId].isDirty = true;
         },
         // Other actions
         deleteContainer: (state, action: PayloadAction<string>) => {
             const id = action.payload;
+            if (!checkContainerExists(state, id)) return;
+            
             delete state.containers[id];
             if (state.activeContainerId === id) {
                 state.activeContainerId = null;
@@ -207,7 +227,7 @@ export const containerBuilderSlice = createSlice({
         setError: (state, action: PayloadAction<string | null>) => {
             state.error = action.payload;
         },
-        // Create a new container in local state
+        // Create a new container in local state: THIS SHOULD NOT BE USED! Use Start new container.
         createNewContainer: (state) => {
             const newId = uuidv4();
             state.containers[newId] = {
@@ -500,7 +520,6 @@ export const containerBuilderSlice = createSlice({
 });
 
 export const {
-    startNewContainer,
     cancelNewContainer,
     setActiveContainer,
     setLabel,
@@ -523,5 +542,9 @@ export const {
     setError,
     createNewContainer,
 } = containerBuilderSlice.actions;
+
+// Export startNewContainer with proper typing for no arguments case
+export const startNewContainer = (payload?: Partial<ContainerBuilder>) => 
+    containerBuilderSlice.actions.startNewContainer(payload);
 
 export default containerBuilderSlice.reducer;

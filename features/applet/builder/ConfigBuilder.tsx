@@ -23,6 +23,7 @@ import {
     getAllCustomAppletConfigs,
     getCustomAppletConfigById,
 } from "@/lib/redux/app-builder/service/customAppletService";
+import AppBuilderDebugOverlay from "@/components/admin/AppBuilderDebugOverlay";
 
 // Default app configuration values
 const DEFAULT_APP_CONFIG: Partial<CustomAppConfig> = {
@@ -326,10 +327,7 @@ export const ConfigBuilder = () => {
             <div className="w-full max-w-[1600px] mx-auto">
                 <Card className="border-none bg-white dark:bg-gray-900 shadow-lg space-y-2">
                     <CardHeader>
-                        <CardTitle className="text-2xl font-bold text-rose-500">App Configuration Builder</CardTitle>
-                        <CardDescription className="text-gray-500 dark:text-gray-400">
-                            Create configurations for your Applet
-                        </CardDescription>
+                        <CardTitle className="text-2xl font-bold text-rose-500 pt-4">App Configuration Builder</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Stepper
@@ -386,6 +384,7 @@ export const ConfigBuilder = () => {
                 </Card>
             </div>
             <Toaster />
+            <AppBuilderDebugOverlay position="middle-right" />
         </div>
     );
 };
