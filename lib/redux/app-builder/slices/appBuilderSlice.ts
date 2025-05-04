@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk, fetchAppsThunk, checkAppSlugUniqueness } from "../thunks/appBuilderThunks";
+import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk, fetchAppsThunk, checkAppSlugUniqueness, FetchAppByIdSuccessAction } from "../thunks/appBuilderThunks";
 import { AppBuilder } from "../types";
 
 // Helper function to check if an app exists in state
@@ -197,6 +197,12 @@ export const appBuilderSlice = createSlice({
         builder.addCase(fetchAppsThunk.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.error.message || "Failed to fetch apps";
+        });
+
+        // Handle fetchAppByIdSuccess (used by setActiveAppWithFetchThunk)
+        builder.addCase("appBuilder/fetchAppByIdSuccess", (state, action: FetchAppByIdSuccessAction) => {
+            state.apps[action.payload.id!] = action.payload;
+            state.isLoading = false;
         });
     },
 });

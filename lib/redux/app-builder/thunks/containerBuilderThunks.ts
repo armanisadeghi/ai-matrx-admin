@@ -18,6 +18,7 @@ import { selectContainerById } from "../selectors/containerSelectors";
 import { addContainersToApplet, recompileContainerInAppletById, recompileAllContainersInApplet } from "../service/customAppletService";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 import { saveFieldAndUpdateContainerThunk } from "./fieldBuilderThunks";
+import { setActiveContainer } from "../slices/containerBuilderSlice";
 
 /**
  * Unified thunk for saving a container - handles both create and update
@@ -403,3 +404,61 @@ export const moveFieldDownThunk = createAsyncThunk<
         return rejectWithValue(error.message || "Failed to move field down");
     }
 });
+
+// Define action creator for fetchContainerByIdSuccess
+export const fetchContainerByIdSuccess = (container: ContainerBuilder) => ({
+    type: "containerBuilder/fetchContainerByIdSuccess" as const,
+    payload: container
+});
+
+// Use this type for proper typing in the slice
+export type FetchContainerByIdSuccessAction = ReturnType<typeof fetchContainerByIdSuccess>;
+
+/**
+ * Thunk that sets a container as active, fetching it first if not in state
+ */
+export const setActiveContainerWithFetchThunk = createAsyncThunk<
+    void,
+    string,
+    { state: RootState }
+>(
+    "containerBuilder/setActiveContainerWithFetch",
+    async (containerId, { getState, dispatch, rejectWithValue }) => {
+        try {
+            // Check if container already exists in state
+            const container = selectContainerById(getState() as RootState, containerId);
+            
+            if (container) {
+                // If it exists, just set it as active
+                dispatch(setActiveContainer(containerId));
+            } else {
+                // Otherwise, fetch it first
+                try {
+                    const fetchedContainer = await getComponentGroupById(containerId);
+                    
+                    if (fetchedContainer) {
+                        // Add the fetched container to state with required type properties
+                        dispatch(fetchContainerByIdSuccess({
+                            ...fetchedContainer,
+                            isDirty: false,
+                            isLocal: false
+                        }));
+                        
+                        // Set it as active
+                        dispatch(setActiveContainer(containerId));
+                    } else {
+                        console.error(`Container with ID ${containerId} not found on server`);
+                        dispatch(setActiveContainer(null));
+                    }
+                } catch (error: any) {
+                    console.error(`Failed to fetch container with ID ${containerId}: ${error.message}`);
+                    dispatch(setActiveContainer(null));
+                    return rejectWithValue(error.message || "Failed to fetch container");
+                }
+            }
+        } catch (error: any) {
+            console.error(`Error in setActiveContainerWithFetchThunk: ${error.message}`);
+            return rejectWithValue(error.message || "Failed to set active container");
+        }
+    }
+);

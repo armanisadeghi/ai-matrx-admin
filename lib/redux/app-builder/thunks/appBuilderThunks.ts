@@ -4,6 +4,8 @@ import { createCustomAppConfig, updateCustomAppConfig, deleteCustomAppConfig, ge
 import { updateCustomAppletConfig, getCustomAppletConfigsByAppId, getAllCustomAppletConfigs } from "../service/customAppletService";
 import { AppBuilder, AppletBuilder } from "../types";
 import { RootState } from "../../store";
+import { setApp } from "../slices/appBuilderSlice";
+import { selectAppById } from "../selectors/appSelectors";
 
 export const createAppThunk = createAsyncThunk<AppBuilder, AppBuilder>(
     "appBuilder/createApp",
@@ -135,5 +137,65 @@ export const checkAppSlugUniqueness = createAsyncThunk<boolean, { slug: string; 
       }
     }
   );
+
+// Define action creator for fetchAppByIdSuccess
+export const fetchAppByIdSuccess = (app: AppBuilder) => ({
+    type: "appBuilder/fetchAppByIdSuccess" as const,
+    payload: app
+});
+
+// Use this type for proper typing in the slice
+export type FetchAppByIdSuccessAction = ReturnType<typeof fetchAppByIdSuccess>;
+
+/**
+ * Thunk that sets an app as active, fetching it first if not in state
+ */
+export const setActiveAppWithFetchThunk = createAsyncThunk<
+    void,
+    string,
+    { state: RootState }
+>(
+    "appBuilder/setActiveAppWithFetch",
+    async (appId, { getState, dispatch, rejectWithValue }) => {
+        try {
+            // Check if app already exists in state
+            const app = selectAppById(getState() as RootState, appId);
+            
+            if (app) {
+                // If it exists, just dispatch the setApp action
+                dispatch(setApp(app));
+            } else {
+                // Otherwise, fetch it first
+                try {
+                    const fetchedApp = await getCustomAppConfigById(appId);
+                    
+                    if (fetchedApp) {
+                        // Extract appletIds from appletList for AppBuilder type compatibility
+                        const appletIds = fetchedApp.appletList 
+                            ? fetchedApp.appletList.map(item => item.appletId) 
+                            : [];
+                            
+                        // Add the fetched app to state
+                        dispatch(fetchAppByIdSuccess({
+                            ...fetchedApp,
+                            appletIds,
+                            isDirty: false,
+                            isLocal: false,
+                            slugStatus: 'unique'
+                        }));
+                    } else {
+                        console.error(`App with ID ${appId} not found on server`);
+                    }
+                } catch (error: any) {
+                    console.error(`Failed to fetch app with ID ${appId}: ${error.message}`);
+                    return rejectWithValue(error.message || "Failed to fetch app");
+                }
+            }
+        } catch (error: any) {
+            console.error(`Error in setActiveAppWithFetchThunk: ${error.message}`);
+            return rejectWithValue(error.message || "Failed to set active app");
+        }
+    }
+);
   
   

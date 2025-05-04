@@ -14,6 +14,7 @@ import {
     moveFieldDownThunk,
     saveContainerThunk,
     saveContainerAndUpdateAppletThunk,
+    FetchContainerByIdSuccessAction,
 } from "../thunks/containerBuilderThunks";
 import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
 import { ContainerBuilder } from "../types";
@@ -515,6 +516,12 @@ export const containerBuilderSlice = createSlice({
                     state.containers[containerId].isDirty = true;
                 }
             }
+        });
+
+        // Handle fetchContainerByIdSuccess (used by setActiveContainerWithFetchThunk)
+        builder.addCase("containerBuilder/fetchContainerByIdSuccess", (state, action: FetchContainerByIdSuccessAction) => {
+            state.containers[action.payload.id] = action.payload;
+            state.isLoading = false;
         });
     },
 });

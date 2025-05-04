@@ -10,6 +10,7 @@ import {
     checkAppletSlugUniqueness,
     saveAppletThunk,
     addAppletToAppThunk,
+    FetchAppletByIdSuccessAction
 } from "../thunks/appletBuilderThunks";
 import { saveContainerAndUpdateAppletThunk } from "../thunks/containerBuilderThunks";
 import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
@@ -510,6 +511,12 @@ export const appletBuilderSlice = createSlice({
                     }
                 });
             }
+        });
+
+        // Handling fetchAppletById success (used by setActiveAppletWithFetchThunk)
+        builder.addCase("appletBuilder/fetchAppletByIdSuccess", (state, action: FetchAppletByIdSuccessAction) => {
+            state.applets[action.payload.id] = action.payload;
+            state.isLoading = false;
         });
     },
 });

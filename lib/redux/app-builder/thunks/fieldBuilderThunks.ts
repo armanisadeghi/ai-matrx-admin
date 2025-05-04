@@ -9,9 +9,9 @@ import {
 } from "../service/fieldComponentService";
 import { FieldBuilder } from "../types";
 import { RootState } from "@/lib/redux";
-import { v4 as uuidv4 } from "uuid";
 import { selectFieldById } from "../selectors/fieldSelectors";
 import { refreshFieldInGroup, refreshAllFieldsInGroup } from "../service/fieldContainerService";
+import { setActiveField } from "../slices/fieldBuilderSlice";
 
 /**
  * Unified thunk for saving a field - handles both create and update
@@ -28,7 +28,7 @@ export const saveFieldThunk = createAsyncThunk<
             throw new Error(`Field with ID ${fieldId} not found`);
         }
         
-        let savedField;
+        let savedField: FieldBuilder;
         
         // Determine if this is a new field (isLocal) or an existing one
         if (field.isLocal) {
@@ -180,3 +180,61 @@ export const saveFieldToContainerThunk = createAsyncThunk<
         return rejectWithValue(error.message || "Failed to save field to container");
     }
 });
+
+// Define action creator for fetchFieldByIdSuccess
+export const fetchFieldByIdSuccess = (field: FieldBuilder) => ({
+    type: "fieldBuilder/fetchFieldByIdSuccess" as const,
+    payload: field
+});
+
+// Use this type for proper typing in the slice
+export type FetchFieldByIdSuccessAction = ReturnType<typeof fetchFieldByIdSuccess>;
+
+/**
+ * Thunk that sets a field as active, fetching it first if not in state
+ */
+export const setActiveFieldWithFetchThunk = createAsyncThunk<
+    void,
+    string,
+    { state: RootState }
+>(
+    "fieldBuilder/setActiveFieldWithFetch",
+    async (fieldId, { getState, dispatch, rejectWithValue }) => {
+        try {
+            // Check if field already exists in state
+            const field = selectFieldById(getState() as RootState, fieldId);
+            
+            if (field) {
+                // If it exists, just set it as active
+                dispatch(setActiveField(fieldId));
+            } else {
+                // Otherwise, fetch it first
+                try {
+                    const fetchedField = await getFieldComponentById(fieldId);
+                    
+                    if (fetchedField) {
+                        // Add the fetched field to state with required type properties
+                        dispatch(fetchFieldByIdSuccess({
+                            ...fetchedField,
+                            isDirty: false,
+                            isLocal: false
+                        }));
+                        
+                        // Set it as active
+                        dispatch(setActiveField(fieldId));
+                    } else {
+                        console.error(`Field with ID ${fieldId} not found on server`);
+                        dispatch(setActiveField(null));
+                    }
+                } catch (error: any) {
+                    console.error(`Failed to fetch field with ID ${fieldId}: ${error.message}`);
+                    dispatch(setActiveField(null));
+                    return rejectWithValue(error.message || "Failed to fetch field");
+                }
+            }
+        } catch (error: any) {
+            console.error(`Error in setActiveFieldWithFetchThunk: ${error.message}`);
+            return rejectWithValue(error.message || "Failed to set active field");
+        }
+    }
+);

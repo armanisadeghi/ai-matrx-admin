@@ -32,11 +32,8 @@ import {
   setComponent, 
   setIncludeOther, 
   setComponentProps, 
-  startFieldCreation, 
-  addOption,
-  updateOption
+  startFieldCreation
 } from '@/lib/redux/app-builder/slices/fieldBuilderSlice';
-import { v4 as uuidv4 } from 'uuid';
 
 interface SmartFieldBuilderProps {
   fieldId: string;
@@ -122,19 +119,6 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId })
         ...componentProps,
         [name]: newValue
       }
-    }));
-  };
-
-  const handleAddOption = () => {
-    const newOption = {
-      id: uuidv4(),
-      label: `Option ${(field.options?.length || 0) + 1}`,
-      description: ''
-    };
-    
-    dispatch(addOption({
-      id: fieldId,
-      option: newOption
     }));
   };
 
@@ -279,7 +263,6 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId })
         {hasOptions && (
           <SmartOptionsManager 
             fieldId={fieldId}
-            onAddOption={handleAddOption}
           />
         )}
         

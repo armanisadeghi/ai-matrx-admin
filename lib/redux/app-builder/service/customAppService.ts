@@ -1,5 +1,5 @@
 import { supabase } from "@/utils/supabase/client";
-import { CustomAppConfig } from "@/features/applet/builder/builder.types";
+import { AppLayoutOptions, CustomAppConfig } from "@/features/applet/builder/builder.types";
 import { isSlugInUse } from "@/config/applets/apps/constants";
 
 // Define the database type for CustomAppConfig
@@ -42,7 +42,7 @@ export const normalizeCustomAppConfig = (config: Partial<CustomAppConfig>): Cust
     accentColor: config.accentColor || 'blue',
     appletList: config.appletList || [],
     extraButtons: config.extraButtons || [],
-    layoutType: config.layoutType || 'oneColumn',
+    layoutType: config.layoutType || 'tabbedApplets',
     imageUrl: config.imageUrl || null,
     createdAt: config.createdAt || null,
     updatedAt: config.updatedAt || null,
@@ -101,7 +101,7 @@ export const dbToCustomAppConfig = (dbRecord: CustomAppConfigDB): CustomAppConfi
     accentColor: dbRecord.accent_color,
     appletList: dbRecord.applet_list,
     extraButtons: dbRecord.extra_buttons,
-    layoutType: dbRecord.layout_type,
+    layoutType: dbRecord.layout_type as AppLayoutOptions,
     imageUrl: dbRecord.image_url,
     createdAt: dbRecord.created_at,
     updatedAt: dbRecord.updated_at,

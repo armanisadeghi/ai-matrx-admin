@@ -30,6 +30,7 @@ import { saveAppletThunk, recompileAppletThunk } from "@/lib/redux/app-builder/t
 import GroupSelectorOverlay from "./smart-parts/containers/GroupSelectorOverlay";
 import ContainerFormComponent from "./smart-parts/containers/ContainerFormComponent";
 import { ComponentGroup } from "../builder.types";
+import { AppletBuilder } from "@/lib/redux/app-builder/types";
 
 interface GroupsConfigStepProps {
     appId: string;
@@ -54,7 +55,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId }) => 
     const allContainerIds = useAppSelector(selectAllContainerIds);
     
     // Get applets directly from Redux
-    const applets = useAppSelector((state) => (appId ? selectAppletsByAppId(state, appId) : []));
+    const applets = useAppSelector((state) => (appId ? selectAppletsByAppId(state, appId) : [])) as AppletBuilder[];
 
     // Get containers for the active applet
     const appletContainers = useAppSelector((state) => (activeAppletId ? selectContainersForApplet(state, activeAppletId) : []));

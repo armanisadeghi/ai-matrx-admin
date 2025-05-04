@@ -6,11 +6,11 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { ComponentType } from "../../builder.types";
 import FieldRenderer from "./FieldRenderer";
 import SmartFieldBuilder from "./SmartFieldBuilder";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import SectionCard from "./components/SectionCard";
 import {
     selectFieldById,
     selectFieldError,
@@ -41,7 +41,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
     const component = useAppSelector((state) => selectFieldComponent(state, localFieldId));
 
     // Preview state for component type selection (kept as local state)
-    const [selectedComponentType, setSelectedComponentType] = useState<ComponentType | null>(null);
+    const [selectedComponentType, setSelectedComponentType] = useState<ComponentType | null>("textarea");
 
     // Initialize field in Redux if creating new
     useEffect(() => {
@@ -122,110 +122,97 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Left side: Field Builder */}
                 <div className="w-full lg:w-1/2">
-                    <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-                        <CardHeader className="bg-gray-100 dark:bg-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
-                            <CardTitle className="text-rose-500 dark:text-rose-600">
-                                {isCreatingNew ? "Create New Component" : "Edit Component"}
-                            </CardTitle>
-                            <CardDescription>
-                                    <p className="text-gray-600 dark:text-gray-300 text-sm">
-                                        Configure all aspects of this field component.
-                                    </p>
-                            </CardDescription>
-                        </CardHeader>
-
-                        <CardContent>
-                            <SmartFieldBuilder fieldId={localFieldId} />
-                        </CardContent>
-
-                        <CardFooter className="flex justify-end gap-3 pt-0 border-t border-gray-200 dark:border-gray-800">
-                            <Button
-                                variant="outline"
-                                onClick={handleCancel}
-                                className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={handleSave}
-                                disabled={isLoading}
-                                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
-                            >
-                                {isLoading ? "Saving..." : isCreatingNew ? "Create Component" : "Update Component"}
-                            </Button>
-                        </CardFooter>
-                    </Card>
+                    <SectionCard 
+                        title={isCreatingNew ? "Create New Component" : "Edit Component"}
+                        description="Configure all aspects of this field component."
+                        footer={
+                            <>
+                                <Button
+                                    variant="outline"
+                                    onClick={handleCancel}
+                                    className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={handleSave}
+                                    disabled={isLoading}
+                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
+                                >
+                                    {isLoading ? "Saving..." : isCreatingNew ? "Create Component" : "Update Component"}
+                                </Button>
+                            </>
+                        }
+                    >
+                        <SmartFieldBuilder fieldId={localFieldId} />
+                    </SectionCard>
                 </div>
 
                 {/* Right side: Preview area */}
                 <div className="w-full lg:w-1/2">
-                    <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">Component Preview</CardTitle>
-                            <CardDescription className="text-gray-500 dark:text-gray-400">
-                                Live preview of your field component
-                            </CardDescription>
-                        </CardHeader>
+                    <SectionCard
+                        title="Component Preview"
+                        description="Live preview of your field component"
+                    >
+                        {/* Current component preview */}
+                        <div className="mt-6 mb-8 border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
+                            <h3 className="text-md font-semibold mb-6 capitalize text-gray-900 dark:text-gray-100">
+                                Your New <span className="text-blue-600 dark:text-blue-500 font-bold"> {"  "}{component} {"  "}</span> Component
+                            </h3>
+                            {field && <FieldRenderer field={field} />}
+                        </div>
 
-                        <CardContent>
-                            {/* Current component preview */}
-                            <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm mb-6">
-                                <h3 className="text-md font-semibold mb-3 capitalize text-gray-900 dark:text-gray-100">
-                                    {component} Component
-                                </h3>
-                                {field && <FieldRenderer field={field} />}
-                            </div>
-
-                            {/* Component type selector */}
-                            <div className="space-y-3">
-                                <Label className="text-gray-900 dark:text-gray-100">View As Different Component Type</Label>
-                                <div className="flex flex-wrap gap-2">
-                                    {componentTypes.map((type) => (
-                                        <Button
-                                            key={type}
-                                            variant={selectedComponentType === type ? "default" : "outline"}
-                                            size="sm"
-                                            onClick={() => setSelectedComponentType(type)}
-                                            className={
-                                                selectedComponentType === type
-                                                    ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
-                                                    : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
-                                            }
-                                        >
-                                            {type.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
-                                        </Button>
-                                    ))}
-                                </div>
-
-                                {selectedComponentType && (
+                        {/* Component type selector */}
+                        <div className="mb-8 space-y-3">
+                            <Label className="text-gray-900 dark:text-gray-100">View As Different Component Type</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {componentTypes.map((type) => (
                                     <Button
-                                        variant="outline"
+                                        key={type}
+                                        variant={selectedComponentType === type ? "default" : "outline"}
                                         size="sm"
-                                        onClick={() => setSelectedComponentType(null)}
-                                        className="border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        onClick={() => setSelectedComponentType(type)}
+                                        className={
+                                            selectedComponentType === type
+                                                ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
+                                                : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                                        }
                                     >
-                                        Clear Type Selection
+                                        {type.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
                                     </Button>
-                                )}
+                                ))}
                             </div>
 
-                            {/* Additional component view when a type is selected */}
-                            {field && selectedComponentType && (
-                                <div className="mt-6 border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm">
-                                    <h3 className="text-md font-semibold mb-3 capitalize text-gray-900 dark:text-gray-100">
-                                        Rendered as{" "}
-                                        {selectedComponentType.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
-                                    </h3>
-                                    <FieldRenderer
-                                        field={{
-                                            ...field,
-                                            component: selectedComponentType,
-                                        }}
-                                    />
-                                </div>
+                            {selectedComponentType && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelectedComponentType(null)}
+                                    className="mt-2 border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                >
+                                    Clear Type Selection
+                                </Button>
                             )}
-                        </CardContent>
-                    </Card>
+                        </div>
+
+                        {/* Additional component view when a type is selected */}
+                        {field && selectedComponentType && (
+                            <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
+                                <h3 className="text-md font-semibold mb-4 capitalize text-gray-900 dark:text-gray-100">
+                                    Rendered as{"  "}
+                                    <span className="text-blue-600 dark:text-blue-500 font-bold">
+                                        {selectedComponentType.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
+                                    </span>
+                                </h3>
+                                <FieldRenderer
+                                    field={{
+                                        ...field,
+                                        component: selectedComponentType,
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </SectionCard>
                 </div>
             </div>
 

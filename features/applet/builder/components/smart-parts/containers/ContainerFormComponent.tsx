@@ -157,7 +157,7 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
             <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                 <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
                     {title} 
-                    {isDirty && <span className="text-xs text-red-500 ml-2">(unsaved changes)</span>}
+                    {isDirty && container?.label && <span className="text-xs text-red-500 ml-2">(unsaved changes)</span>}
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-6">

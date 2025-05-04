@@ -12,6 +12,66 @@ import {
 import { AppletBuilder, ContainerBuilder } from "../types";
 import { RootState } from "@/lib/redux/store";
 import { selectAppletById } from "../selectors/appletSelectors";
+import { setActiveApplet } from "../slices/appletBuilderSlice";
+
+// Define action creator for fetchAppletByIdSuccess
+export const fetchAppletByIdSuccess = (applet: AppletBuilder) => ({
+    type: "appletBuilder/fetchAppletByIdSuccess" as const,
+    payload: applet
+});
+
+// Use this type for proper typing in the slice
+export type FetchAppletByIdSuccessAction = ReturnType<typeof fetchAppletByIdSuccess>;
+
+/**
+ * Thunk that sets an applet as active, fetching it first if not in state
+ */
+export const setActiveAppletWithFetchThunk = createAsyncThunk<
+    void,
+    string,
+    { state: RootState }
+>(
+    "appletBuilder/setActiveAppletWithFetch",
+    async (appletId, { getState, dispatch, rejectWithValue }) => {
+        try {
+            // Check if applet already exists in state
+            const applet = selectAppletById(getState() as RootState, appletId);
+            
+            if (applet) {
+                // If it exists, just set it as active
+                dispatch(setActiveApplet(appletId));
+            } else {
+                // Otherwise, fetch it first
+                try {
+                    const fetchedApplet = await getCustomAppletConfigById(appletId);
+                    
+                    if (fetchedApplet) {
+                        // Add the fetched applet to state with required type properties
+                        dispatch(fetchAppletByIdSuccess({
+                            ...fetchedApplet,
+                            isDirty: false,
+                            isLocal: false,
+                            slugStatus: "unique"
+                        }));
+                        
+                        // Set it as active
+                        dispatch(setActiveApplet(appletId));
+                    } else {
+                        console.error(`Applet with ID ${appletId} not found on server`);
+                        dispatch(setActiveApplet(null));
+                    }
+                } catch (error: any) {
+                    console.error(`Failed to fetch applet with ID ${appletId}: ${error.message}`);
+                    dispatch(setActiveApplet(null));
+                    return rejectWithValue(error.message || "Failed to fetch applet");
+                }
+            }
+        } catch (error: any) {
+            console.error(`Error in setActiveAppletWithFetchThunk: ${error.message}`);
+            return rejectWithValue(error.message || "Failed to set active applet");
+        }
+    }
+);
 
 /**
  * Associate an applet with an app by updating the applet's appId field

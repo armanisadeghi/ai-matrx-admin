@@ -9,6 +9,7 @@ import {
     saveFieldThunk,
     saveFieldAndUpdateContainerThunk,
     saveFieldToContainerThunk,
+    FetchFieldByIdSuccessAction
 } from "../thunks/fieldBuilderThunks";
 import { FieldBuilder } from "../types";
 import { FieldOption } from "@/features/applet/builder/builder.types";
@@ -393,6 +394,12 @@ export const fieldBuilderSlice = createSlice({
         builder.addCase(saveFieldToContainerThunk.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.error.message || "Failed to save field to container";
+        });
+
+        // Handle fetchFieldByIdSuccess (used by setActiveFieldWithFetchThunk)
+        builder.addCase("fieldBuilder/fetchFieldByIdSuccess", (state, action: FetchFieldByIdSuccessAction) => {
+            state.fields[action.payload.id] = action.payload;
+            state.isLoading = false;
         });
     },
 });
