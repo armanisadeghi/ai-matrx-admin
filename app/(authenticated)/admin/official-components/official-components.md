@@ -115,6 +115,15 @@ components\official\image-cropper\index.tsx
  - Lightweight and integrates seamlessly with Next.js
  - Maintains consistent light and dark mode styling across the app
 
+## Structured Section Card
+components\official\StructuredSectionCard.tsx
+ - A structured card layout with title, description, optional header actions, and a configurable three-column footer
+ - Perfect for form sections, settings panels, or any content that needs clear organization
+ - Features a clean, consistent design that works in both light and dark mode
+ - Responsive layout that adapts well to different screen sizes
+ - Highly customizable with support for various content types in all sections
+ - Footer columns automatically stack on mobile for better usability
+
 ## Multi Applet Selector
 features\applet\builder\components\smart-parts\applets\MultiAppletSelector.tsx
  - Interactive component for selecting and managing multiple applets

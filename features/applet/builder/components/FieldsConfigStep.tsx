@@ -15,8 +15,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import FieldEditor from "../modules/field-builder/FieldEditor";
-import SectionCard from "../modules/field-builder/components/SectionCard";
-import EmptyStateCard from "../modules/field-builder/components/EmptyStateCard";
+import SectionCard from "../../../../components/official/cards/SectionCard";
+import EmptyStateCard from "../../../../components/official/cards/EmptyStateCard";
 import { AppWindow, Component, PanelRight } from "lucide-react";
 
 interface FieldsConfigStepProps {

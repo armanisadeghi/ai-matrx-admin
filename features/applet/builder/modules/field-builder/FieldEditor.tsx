@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import SectionCard from "./components/SectionCard";
+import SectionCard from "../../../../../components/official/cards/SectionCard";
 import {
     selectFieldById,
     selectFieldError,

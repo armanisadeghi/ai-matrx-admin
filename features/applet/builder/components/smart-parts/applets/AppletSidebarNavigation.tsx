@@ -17,7 +17,7 @@ import { saveContainerAndUpdateAppletThunk } from "@/lib/redux/app-builder/thunk
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { selectAppById } from "@/lib/redux/app-builder/selectors/appSelectors";
-import SectionCard from "@/features/applet/builder/modules/field-builder/components/SectionCard";
+import SectionCard from "@/components/official/cards/SectionCard";
 
 interface AppletSidebarNavigationProps {
     appId: string;

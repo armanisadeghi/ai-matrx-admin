@@ -1,53 +1,101 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { ComponentEntry } from '../parts/component-list';
-import { ComponentDisplayWrapper } from '../component-usage';
-import MultiAppletSelectDemo from '@/features/applet/demo/MultiAppletSelectDemo';
+import React from "react";
+import { ComponentEntry } from "../parts/component-list";
+import { ComponentDisplayWrapper } from "../component-usage";
+import SmartAppListsDemo from "@/features/applet/demo/SmartAppListsDemo";
 
 interface ComponentDisplayProps {
-  component?: ComponentEntry;
+    component?: ComponentEntry;
 }
 
 export default function MultiAppletSelectorDemo({ component }: ComponentDisplayProps) {
-  if (!component) return null;
-  
-  // Example code to show how to use the component
-  const usageCode = `import MultiAppletSelector from '@/features/applet/builder/components/smart-parts/applets/MultiAppletSelector';
+    if (!component) return null;
+
+    // Example code to show how to use the various components
+    const usageCode = `// 1. SmartAppList - For displaying and selecting a single app
+import { SmartAppList } from '@/features/applet/builder/components/smart-parts';
+import { CustomAppConfig } from '@/features/applet/builder/modules/app-builder/AppBuilder';
+
+<SmartAppList 
+  onSelect={(app: CustomAppConfig) => handleAppSelect(app)}
+  onCreate={handleCreateApp}
+  onRefreshComplete={handleAppRefreshComplete}
+  ref={appListRef}
+/>
+
+// 2. SmartAppletList - For displaying and selecting a single applet
+import { SmartAppletList } from '@/features/applet/builder/components/smart-parts';
 import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
 
-// Set up state for selected applets
-const [selectedApplets, setSelectedApplets] = useState<CustomAppletConfig[]>([]);
+<SmartAppletList
+  onSelect={(applet: CustomAppletConfig) => handleAppletSelect(applet)}
+  onCreate={handleCreateApplet}
+  onRefreshComplete={handleAppletRefreshComplete}
+  ref={appletListRef}
+/>
 
-// Handle selection changes
-const handleAppletsChange = (applets: CustomAppletConfig[]) => {
-  setSelectedApplets(applets);
-};
+// 3. MultiAppletSelector - For selecting multiple applets
+import { MultiAppletSelector } from '@/features/applet/builder/components/smart-parts';
 
-// Render the component
 <MultiAppletSelector
   selectedApplets={selectedApplets}
   onAppletsChange={handleAppletsChange}
-  onCreateApplet={() => {
-    // Handle new applet creation
-    console.log('Creating a new applet');
-  }}
-  // Optional props below
-  buttonLabel="Choose Applets"        // Customize button text
-  buttonVariant="outline"             // UI variant: default, outline, secondary, ghost
-  emptySelectionText="No applets selected"  // Custom text for empty state
-  maxSelections={3}                   // Optional limit on number of selections
+  onCreateApplet={handleCreateApplet}
+  buttonLabel="Choose Applets"
+  buttonVariant="outline"
+  emptySelectionText="No applets selected"
+  maxSelections={3}
+/>
+
+// 4. SmartGroupList - For displaying and selecting a single component group
+import { SmartGroupList } from '@/features/applet/builder/components/smart-parts';
+import { ComponentGroup } from '@/features/applet/builder/builder.types';
+
+<SmartGroupList
+  onSelect={(group: ComponentGroup) => handleGroupSelect(group)}
+  onEdit={handleEditGroup}
+  onRefresh={handleRefreshGroup}
+  onDelete={handleDeleteGroup}
+  onCreate={handleCreateGroup}
+  onRefreshComplete={handleGroupRefreshComplete}
+  ref={groupListRef}
+/>
+
+// 5. MultiGroupSelector - For selecting multiple component groups
+import { MultiGroupSelector } from '@/features/applet/builder/components/smart-parts';
+
+<MultiGroupSelector
+  selectedGroups={selectedGroups}
+  onGroupsChange={handleGroupsChange}
+  onCreateGroup={handleCreateGroup}
+  buttonLabel="Choose Groups"
+  buttonVariant="outline"
+  emptySelectionText="No groups selected"
+/>
+
+// 6. MultiFieldSelector - For selecting multiple fields
+import { MultiFieldSelector } from '@/features/applet/builder/components/smart-parts';
+import { FieldDefinition } from '@/features/applet/builder/builder.types';
+
+<MultiFieldSelector
+  selectedFields={selectedFields}
+  onFieldsChange={handleFieldsChange}
+  onCreateField={handleCreateField}
+  buttonLabel="Choose Fields"
+  buttonVariant="outline"
+  emptySelectionText="No fields selected"
 />`;
 
-  return (
-    <ComponentDisplayWrapper
-      component={component}
-      code={usageCode}
-      description="A versatile component for selecting and managing multiple applets. Provides various configuration options including limiting selections, customizing button appearance, and handling applet creation."
-    >
-      <div className="w-full">
-        <MultiAppletSelectDemo />
-      </div>
-    </ComponentDisplayWrapper>
-  );
-} 
+    return (
+        <ComponentDisplayWrapper
+            component={component}
+            code={usageCode}
+            description="A suite of components for handling app, applet, group, and field selection and management. Includes single-selection lists, multi-selection interfaces, and wrappers with refresh and create capabilities."
+        >
+            <div className="w-full">
+                <SmartAppListsDemo />
+            </div>
+        </ComponentDisplayWrapper>
+    );
+}

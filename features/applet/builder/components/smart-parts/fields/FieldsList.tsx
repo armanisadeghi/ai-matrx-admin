@@ -8,8 +8,8 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { selectFieldLoading } from '@/lib/redux/app-builder/selectors/fieldSelectors';
 import { deleteFieldThunk } from '@/lib/redux/app-builder/thunks/fieldBuilderThunks';
 import { useToast } from '@/components/ui/use-toast';
-import SectionCard from '@/features/applet/builder/modules/field-builder/components/SectionCard';
-import EmptyStateCard from '@/features/applet/builder/modules/field-builder/components/EmptyStateCard';
+import SectionCard from '@/components/official/cards/SectionCard';
+import EmptyStateCard from '@/components/official/cards/EmptyStateCard';
 import { ListX } from 'lucide-react';
 
 interface FieldsListProps {

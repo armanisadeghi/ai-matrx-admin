@@ -221,6 +221,14 @@ export const componentList: ComponentEntry[] = [
     description: 'Component for selecting and managing multiple applets with various configuration options',
     category: 'inputs',
     tags: ['applet', 'select', 'multiple', 'management', 'configuration', 'dropdown']
+  },
+  {
+    id: 'structured-section-card',
+    name: 'Structured Section Card',
+    path: 'components/official/StructuredSectionCard.tsx',
+    description: 'A structured card layout with title, description, optional header actions, and a three-column footer',
+    category: 'layout',
+    tags: ['card', 'section', 'layout', 'header', 'footer', 'actions', 'form']
   }
 ]; 
 
