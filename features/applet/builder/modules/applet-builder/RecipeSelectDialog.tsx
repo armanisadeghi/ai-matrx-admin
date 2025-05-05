@@ -23,12 +23,12 @@ import {
   RecipeInfo, 
   getCompiledRecipeByVersion, 
   checkCompiledRecipeVersionExists 
-} from '../../../../../lib/redux/app-builder/service/customAppletService';
+} from '@/lib/redux/app-builder/service/customAppletService';
 
 // Extended RecipeInfo interface with extracted tags
 interface ExtendedRecipeInfo extends Omit<RecipeInfo, 'tags'> {
   tags?: string[];
-  originalTags?: Record<string, unknown>;
+  originalTags?: { tags: string[] };
 }
 
 interface RecipeSelectDialogProps {
@@ -38,7 +38,7 @@ interface RecipeSelectDialogProps {
   selectedRecipe: RecipeInfo | null;
   setSelectedRecipe: (recipe: RecipeInfo | null) => void;
   setCompiledRecipeId: (id: string | null) => void;
-  setNewApplet: React.Dispatch<React.SetStateAction<any>>;
+  setNewApplet?: React.Dispatch<React.SetStateAction<any>>;
 }
 
 export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
@@ -63,9 +63,7 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
   const extendedRecipes = userRecipes.map(recipe => ({
     ...recipe,
     originalTags: recipe.tags,
-    tags: recipe.tags ? 
-      Object.keys(recipe.tags) : 
-      ['recipe', recipe.status].filter(Boolean) // Fallback tags
+    tags: recipe.tags?.tags || ['recipe', recipe.status].filter(Boolean), // Fallback tags
   })) as ExtendedRecipeInfo[];
 
   // Get all unique tags
@@ -230,10 +228,12 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
         setCompiledRecipeId(recipeId);
         
         // Update the applet with the compiled recipe ID
-        setNewApplet(prev => ({ 
-          ...prev, 
-          compiledRecipeId: recipeId 
-        }));
+        if (setNewApplet) {
+          setNewApplet(prev => ({ 
+            ...prev, 
+            compiledRecipeId: recipeId 
+          }));
+        }
         
         toast({
           title: "Recipe Selected",

@@ -130,37 +130,6 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved 
         dispatch(setImageUrl({ id: appId, imageUrl: "" }));
     };
 
-    const checkSlugUniqueness = async () => {
-        if (slugStatus === "unchecked" && slug) {
-            try {
-                await dispatch(
-                    checkAppSlugUniqueness({
-                        slug,
-                        appId,
-                    })
-                ).unwrap();
-            } catch (error) {
-                console.error("Error checking slug uniqueness:", error);
-                toast({
-                    title: "Error",
-                    description: "Failed to check slug availability. Please try again.",
-                    variant: "destructive",
-                });
-            }
-        }
-    };
-
-    // Check slug uniqueness when slug changes
-    useEffect(() => {
-        if (slug && slugStatus === "unchecked") {
-            const timer = setTimeout(() => {
-                checkSlugUniqueness();
-            }, 500);
-
-            return () => clearTimeout(timer);
-        }
-    }, [slug, slugStatus]);
-
     const handleSaveApp = async () => {
         if (!name || !slug) {
             toast({
@@ -183,8 +152,8 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved 
 
                 if (!checkResult) {
                     toast({
-                        title: "Slug Already In Use",
-                        description: "This slug is already in use. Please choose a different one.",
+                        title: "Slug Not Available",
+                        description: "This slug is not available. Please choose a different one.",
                         variant: "destructive",
                     });
                     return;
@@ -200,8 +169,8 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved 
             }
         } else if (slugStatus === "notUnique") {
             toast({
-                title: "Slug Already In Use",
-                description: "This slug is already in use. Please choose a different one.",
+                title: "Slug Not Available",
+                description: "This slug is not available. Please choose a different one.",
                 variant: "destructive",
             });
             return;
@@ -314,12 +283,11 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved 
                                                 className={`border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 ${
                                                     slugStatus === "notUnique" ? "border-red-500 dark:border-red-500" : ""
                                                 } pr-10`}
-                                                onBlur={checkSlugUniqueness}
                                             />
                                             <AppSlugChecker appId={appId} slug={slug} />
                                         </div>
                                         {slugStatus === "notUnique" && (
-                                            <p className="text-red-500 text-xs mt-1">This slug is already in use</p>
+                                            <p className="text-red-500 text-xs mt-1">This slug is not available</p>
                                         )}
                                     </div>
                                 </div>

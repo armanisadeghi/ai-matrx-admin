@@ -354,7 +354,6 @@ export const appBuilderSlice = createSlice({
 
         // Check Slug Uniqueness
         builder.addCase(checkAppSlugUniqueness.pending, (state) => {
-            state.isLoading = true;
             state.error = null;
         });
         builder.addCase(checkAppSlugUniqueness.fulfilled, (state, action) => {
@@ -368,10 +367,8 @@ export const appBuilderSlice = createSlice({
                     }
                 });
             }
-            state.isLoading = false;
         });
         builder.addCase(checkAppSlugUniqueness.rejected, (state, action) => {
-            state.isLoading = false;
             state.error = action.error.message || "Failed to check slug uniqueness";
         });
 

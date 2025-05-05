@@ -177,12 +177,12 @@ export const selectAppError = createSelector(
 // Memoized selector for applet IDs associated with an app
 export const selectAppletIdsForApp = createSelector(
   [(state: RootState, appId: string) => selectAppById(state, appId)],
-  (app) => app ? app.appletIds : []
+  (app) => app && app.appletIds ? app.appletIds : []
 );
 
 export const selectAppletsForAppCount = createSelector(
   [(state: RootState, appId: string) => selectAppById(state, appId)],
-  (app) => app ? app.appletIds.length : 0
+  (app) => app && app.appletIds ? app.appletIds.length : 0
 );
 
 // Memoized selector for apps by a list of IDs

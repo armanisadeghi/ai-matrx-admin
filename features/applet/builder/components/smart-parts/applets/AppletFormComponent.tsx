@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { PlusIcon, XIcon, LinkIcon, SaveIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
     setAccentColor,
     setImageUrl,
     setAppId,
+    setCompiledRecipeId,
 } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import {
@@ -37,6 +38,7 @@ import {
     selectAppletLoading,
     selectHasUnsavedAppletChanges,
     selectAppletAppId,
+    selectAppletCompiledRecipeId,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { useToast } from "@/components/ui/use-toast";
 import { AppletSlugChecker } from "@/features/applet/builder/components/smart-parts/applets/AppletSlugChecker";
@@ -53,6 +55,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { AppletLayoutSelection } from "@/features/applet/builder/parts/AppletLayoutSelection";
+import { RecipeSelector } from "@/features/applet/builder/components/smart-parts/applets";
 
 // Default values for new applets
 export const DEFAULT_APPLET_CONFIG: AppletBuilder = {
@@ -75,12 +78,13 @@ export interface AppletFormProps {
     appId?: string; // Optional app ID for the applet
     isNew?: boolean; // Flag to indicate if this is a new applet form
     onSaveApplet?: () => void; // Callback for saving the applet
+    onRemoveApplet?: () => void; // Callback for removing the applet
 }
 
-export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId, isNew = false, onSaveApplet }) => {
+export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId, isNew = false, onSaveApplet, onRemoveApplet }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
-    const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     // Redux selectors for the current applet
     const applet = useAppSelector((state: RootState) => selectAppletById(state, appletId || ""));
@@ -93,11 +97,18 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     const appletPrimaryColor = useAppSelector((state: RootState) => selectAppletPrimaryColor(state, appletId || ""));
     const appletAccentColor = useAppSelector((state: RootState) => selectAppletAccentColor(state, appletId || ""));
     const appletImageUrl = useAppSelector((state: RootState) => selectAppletImageUrl(state, appletId || ""));
+    const appletCompiledRecipeId = useAppSelector((state: RootState) => selectAppletCompiledRecipeId(state, appletId || ""));
     const appletLoading = useAppSelector(selectAppletLoading);
     const hasUnsavedChanges = useAppSelector(selectHasUnsavedAppletChanges);
     const appletAppId = useAppSelector((state: RootState) => selectAppletAppId(state, appletId || ""));
 
     const isAssociated = appletAppId === appId;
+
+    const handleRecipeSelected = (compiledRecipeId: string) => {
+        if (appletId) {
+            dispatch(setCompiledRecipeId({ id: appletId, compiledRecipeId }));
+        }
+    };
 
     const handleDeleteApplet = () => {
         if (appletId) {
@@ -122,6 +133,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     const handleRemoveFromApp = () => {
         if (appletId) {
             dispatch(setAppId({ id: appletId, appId: "" }));
+            onRemoveApplet?.();
         }
     };
 
@@ -255,6 +267,12 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             </div>
                         )}
                     </div>
+
+                    <RecipeSelector 
+                        compiledRecipeId={appletCompiledRecipeId} 
+                        onRecipeSelect={handleRecipeSelected} 
+                    />
+
                     <div className="space-y-2">
                         <Label
                             htmlFor={`${isNew ? "new" : "edit"}-description`}

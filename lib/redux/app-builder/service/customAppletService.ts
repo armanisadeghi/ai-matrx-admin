@@ -306,7 +306,10 @@ export type RecipeInfo = {
     description?: string;
     version: number;
     status: string;
-    tags?: Record<string, unknown>;
+    post_result_options?: Record<string, unknown>;
+    tags?: {
+        tags: string[];
+    }
 };
 
 /**
