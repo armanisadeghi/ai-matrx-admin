@@ -14,8 +14,8 @@ export default function BookingLayout({ children }: { children: ReactNode }) {
     
     return (
         <div className="w-full h-full">
-            <CustomAppHeader config={fullAppConfig} />
-            <AppletUserInputBar config={allSystemWideMockApplets} />
+            {/* <CustomAppHeader config={fullAppConfig} />
+            <AppletUserInputBar config={allSystemWideMockApplets} /> */}
             <div className="w-full h-full">{children}</div>
         </div>
     );

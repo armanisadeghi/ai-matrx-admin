@@ -49,6 +49,7 @@ const SmartAppletList = forwardRef<
         appletIds?: string[];
         onRefreshComplete?: (applets: CustomAppletConfig[]) => void;
         appId?: string; // Add appId prop
+        initialViewMode?: "grid" | "list";
     }
 >(
     (
@@ -61,6 +62,7 @@ const SmartAppletList = forwardRef<
             appletIds,
             onRefreshComplete,
             appId, // New prop
+            initialViewMode = "grid",
         },
         ref
     ) => {
@@ -70,7 +72,7 @@ const SmartAppletList = forwardRef<
 
         // Local UI state
         const [searchTerm, setSearchTerm] = useState("");
-        const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
+        const [viewMode, setViewMode] = useState(initialViewMode); // 'grid' or 'list'
         const [sortBy, setSortBy] = useState("name-asc"); // 'name-asc', 'name-desc', 'date-asc', 'date-desc'
         const [isRefreshing, setIsRefreshing] = useState(false);
 

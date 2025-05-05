@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { PlusIcon, XIcon, LinkIcon } from "lucide-react";
+import { PlusIcon, XIcon, LinkIcon, SaveIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import {
     setPrimaryColor,
     setAccentColor,
     setImageUrl,
+    setAppId,
 } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import {
@@ -32,17 +33,26 @@ import {
     selectAppletSubmitText,
     selectAppletPrimaryColor,
     selectAppletAccentColor,
-    selectAppletLayoutType,
     selectAppletImageUrl,
     selectAppletLoading,
+    selectHasUnsavedAppletChanges,
+    selectAppletAppId,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { useToast } from "@/components/ui/use-toast";
 import { AppletSlugChecker } from "@/features/applet/builder/components/smart-parts/applets/AppletSlugChecker";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogFooter,
+    AlertDialogAction,
+    AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { AppletLayoutSelection } from "@/features/applet/builder/parts/AppletLayoutSelection";
-
 
 // Default values for new applets
 export const DEFAULT_APPLET_CONFIG: AppletBuilder = {
@@ -64,9 +74,10 @@ export interface AppletFormProps {
     appletId?: string; // Existing applet ID
     appId?: string; // Optional app ID for the applet
     isNew?: boolean; // Flag to indicate if this is a new applet form
+    onSaveApplet?: () => void; // Callback for saving the applet
 }
 
-export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId, isNew = false }) => {
+export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId, isNew = false, onSaveApplet }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
     const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
@@ -83,8 +94,12 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     const appletAccentColor = useAppSelector((state: RootState) => selectAppletAccentColor(state, appletId || ""));
     const appletImageUrl = useAppSelector((state: RootState) => selectAppletImageUrl(state, appletId || ""));
     const appletLoading = useAppSelector(selectAppletLoading);
+    const hasUnsavedChanges = useAppSelector(selectHasUnsavedAppletChanges);
+    const appletAppId = useAppSelector((state: RootState) => selectAppletAppId(state, appletId || ""));
 
-    const handleRemoveApplet = () => {
+    const isAssociated = appletAppId === appId;
+
+    const handleDeleteApplet = () => {
         if (appletId) {
             dispatch(deleteAppletThunk(appletId))
                 .unwrap()
@@ -101,6 +116,12 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                         variant: "destructive",
                     });
                 });
+        }
+    };
+
+    const handleRemoveFromApp = () => {
+        if (appletId) {
+            dispatch(setAppId({ id: appletId, appId: "" }));
         }
     };
 
@@ -137,7 +158,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     };
 
     const generateSlug = (name: string): string => {
-        if (!name) return '';
+        if (!name) return "";
         return name
             .toLowerCase()
             .replace(/([a-z])([A-Z])/g, "$1-$2") // Convert camelCase to kebab
@@ -146,7 +167,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     };
 
     const getAppletUrl = (appName: string = "", slug: string = ""): string => {
-        if (!slug) return '';
+        if (!slug) return "";
         return `aimatrx.com/applets/${slug}`;
     };
 
@@ -180,11 +201,9 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
 
     return (
         <div className="space-y-5">
-            <h3 className="text-gray-900 dark:text-gray-100 font-medium">{isNew ? "Add New Applet" : `Edit Applet: ${appletName}`}</h3>
-
             <div className="flex flex-col md:flex-row gap-6">
                 {/* Form section */}
-                <div className="w-full md:w-2/3 space-y-4">
+                <div className="w-full space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor={`${isNew ? "new" : "edit"}-name`} className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             Applet Name
@@ -229,10 +248,12 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             />
                             <AppletSlugChecker appletId={appletId} slug={appletSlug || ""} />
                         </div>
-                        <div className="flex items-center mt-1 space-x-1 text-xs text-gray-500 dark:text-gray-400">
-                            <LinkIcon className="w-3 h-3" />
-                            <span>{getAppletUrl(appletName, appletSlug)}</span>
-                        </div>
+                        {appletSlug && (
+                            <div className="flex items-center mt-1 space-x-1 text-xs text-gray-500 dark:text-gray-400">
+                                <LinkIcon className="w-3 h-3" />
+                                <span>{getAppletUrl(appletName, appletSlug)}</span>
+                            </div>
+                        )}
                     </div>
                     <div className="space-y-2">
                         <Label
@@ -253,81 +274,106 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                     </div>
                     <div className="space-y-2">
                         <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Submit Button</Label>
-                        <div className="flex items-center gap-2">
-                            <IconPicker
-                                selectedIcon={appletIcon || DEFAULT_APPLET_CONFIG.appletIcon}
-                                onIconSelect={handleAppletIconSelect}
-                                dialogTitle="Select Submit Button"
-                                dialogDescription="Choose an icon to represent your submit button"
-                                className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg"
-                                primaryColor={appletPrimaryColor || DEFAULT_APPLET_CONFIG.primaryColor}
-                                accentColor={appletAccentColor || DEFAULT_APPLET_CONFIG.accentColor}
-                                iconType="submitIcon"
-                            />
-                            <Input
-                                id={`${isNew ? "new" : "edit"}-submit-text`}
-                                value={appletSubmitText || DEFAULT_APPLET_CONFIG.appletSubmitText}
-                                onChange={handleAppletSubmitTextChange}
-                                className="flex-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
-                                placeholder="Optional button text"
-                            />
-                        </div>
-                    </div>
-                    
-                    {/* Replace manual layout implementation with AppletLayoutSelection component */}
-                    {appletId && <AppletLayoutSelection appletId={appletId} label="Layout Type" />}
-                </div>
-
-                {/* Image section */}
-                <div className="w-full md:w-1/3 space-y-4">
-                    <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Applet Image</Label>
-                        <SingleImageSelect
-                            size="sm"
-                            aspectRatio="landscape"
-                            placeholder="Select Applet Image"
-                            onImageSelected={handleImageSelected}
-                            onImageRemoved={handleImageRemoved}
-                            initialTab="public-search"
-                            initialSearchTerm={appletName}
-                            preselectedImageUrl={appletImageUrl}
-                            className="w-full"
-                            instanceId={`applet-image-${appletId}`}
-                            saveTo="public"
-                        />
-                        <div className="flex items-center gap-6 pt-4">
-                            <div className="flex items-center gap-2">
-                                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Primary Color</Label>
-                                <TailwindColorPicker
-                                    selectedColor={appletPrimaryColor || DEFAULT_APPLET_CONFIG.primaryColor}
-                                    onColorChange={(color) => handleAppletColorChange("primary", color)}
-                                    size="sm"
+                        <div className="flex flex-col md:flex-row items-center gap-4">
+                            <div className="flex items-center gap-2 w-full md:w-auto">
+                                <IconPicker
+                                    selectedIcon={appletIcon || DEFAULT_APPLET_CONFIG.appletIcon}
+                                    onIconSelect={handleAppletIconSelect}
+                                    dialogTitle="Select Submit Button"
+                                    dialogDescription="Choose an icon to represent your submit button"
+                                    className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg"
+                                    primaryColor={appletPrimaryColor || DEFAULT_APPLET_CONFIG.primaryColor}
+                                    accentColor={appletAccentColor || DEFAULT_APPLET_CONFIG.accentColor}
+                                    iconType="submitIcon"
+                                />
+                                <Input
+                                    id={`${isNew ? "new" : "edit"}-submit-text`}
+                                    value={appletSubmitText || DEFAULT_APPLET_CONFIG.appletSubmitText}
+                                    onChange={handleAppletSubmitTextChange}
+                                    className="flex-1 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
+                                    placeholder="Optional button text"
                                 />
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Accent Color</Label>
-                                <TailwindColorPicker
-                                    selectedColor={appletAccentColor || DEFAULT_APPLET_CONFIG.accentColor}
-                                    onColorChange={(color) => handleAppletColorChange("accent", color)}
-                                    size="sm"
-                                />
+                            <div className="flex items-center gap-4 w-full md:w-auto justify-start">
+                                <div className="flex items-center gap-2">
+                                    <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Primary</Label>
+                                    <TailwindColorPicker
+                                        selectedColor={appletPrimaryColor || DEFAULT_APPLET_CONFIG.primaryColor}
+                                        onColorChange={(color) => handleAppletColorChange("primary", color)}
+                                        size="sm"
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Accent</Label>
+                                    <TailwindColorPicker
+                                        selectedColor={appletAccentColor || DEFAULT_APPLET_CONFIG.accentColor}
+                                        onColorChange={(color) => handleAppletColorChange("accent", color)}
+                                        size="sm"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {!isNew && (
-                        <div className="pt-4">
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="w-full md:w-1/2 space-y-2">
+                            <AppletLayoutSelection appletId={appletId} label="Layout Type" />
+                        </div>
+                        <div className="w-full md:w-1/2 space-y-2">
+                            <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Applet Image</Label>
+                            <SingleImageSelect
+                                size="sm"
+                                aspectRatio="landscape"
+                                placeholder="Select Applet Image"
+                                onImageSelected={handleImageSelected}
+                                onImageRemoved={handleImageRemoved}
+                                initialTab="public-search"
+                                initialSearchTerm={appletName}
+                                preselectedImageUrl={appletImageUrl}
+                                className="w-full"
+                                instanceId={`applet-image-${appletId}`}
+                                saveTo="public"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 mt-4">
+                        {!isNew && (
                             <Button
-                                variant="destructive"
+                                variant="outline"
+                                size="sm"
+                                className="border-red-500 text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
                                 onClick={() => setShowDeleteDialog(true)}
-                                className="w-full sm:w-auto"
                                 disabled={appletLoading}
                             >
-                                <XIcon className="w-4 h-4 mr-2" />
-                                Remove Applet
+                                <XIcon className="w-4 h-4 mr-1" />
+                                Delete Applet
                             </Button>
-                        </div>
-                    )}
+                        )}
+                        {isAssociated && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-yellow-500 text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-950"
+                                onClick={() => handleRemoveFromApp()}
+                                disabled={appletLoading}
+                            >
+                                <XIcon className="w-4 h-4 mr-1" />
+                                Remove From App
+                            </Button>
+                        )}
+                        {hasUnsavedChanges && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-emerald-500 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                                onClick={onSaveApplet}
+                                disabled={appletLoading}
+                            >
+                                <SaveIcon className="w-4 h-4 mr-1" />
+                                Save
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -342,10 +388,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={handleRemoveApplet}
-                            className="bg-red-500 text-white hover:bg-red-600"
-                        >
+                        <AlertDialogAction onClick={handleDeleteApplet} className="bg-red-500 text-white hover:bg-red-600">
                             Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -356,4 +399,3 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
 };
 
 export default AppletFormComponent;
-

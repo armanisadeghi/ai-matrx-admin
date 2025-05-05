@@ -54,7 +54,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
             color: accentColor,
             primaryColor: primaryColor,
             icon: selectedIcon || defaultIcon,
-            size: 48
+            size: 24
         })
         : getSubmitButton({
             color: accentColor,
@@ -64,9 +64,12 @@ export const IconPicker: React.FC<IconPickerProps> = ({
 
     return (
         <>
-            <Button onClick={() => setIsOpen(true)} className={`p-0 ${className}`}>
+            <div 
+                onClick={() => setIsOpen(true)} 
+                className={`cursor-pointer ${className}`}
+            >
                 {currentIcon}
-            </Button>
+            </div>
 
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent>
@@ -93,7 +96,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                                     color: accentColor,
                                     primaryColor: primaryColor,
                                     icon: name,
-                                    size: 36
+                                    size: 24
                                 })
                                 : getSubmitButton({
                                     color: accentColor,

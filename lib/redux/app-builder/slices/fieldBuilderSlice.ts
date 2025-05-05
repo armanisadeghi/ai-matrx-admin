@@ -65,27 +65,11 @@ export const fieldBuilderSlice = createSlice({
     initialState,
     reducers: {
         // Initialize a new field for creation
-        startFieldCreation: (state, action: PayloadAction<{ id?: string; fieldData?: Partial<FieldBuilder> } | Partial<FieldBuilder> | undefined>) => {
-            // Handle different parameter formats for backward compatibility
-            let providedId: string | undefined;
-            let fieldData: Partial<FieldBuilder> = {};
-            
-            if (action.payload) {
-                if ('id' in action.payload && 'fieldData' in action.payload) {
-                    // New format: { id, fieldData }
-                    providedId = action.payload.id;
-                    fieldData = action.payload.fieldData || {};
-                } else {
-                    // Old format: Partial<FieldBuilder> directly
-                    fieldData = action.payload as Partial<FieldBuilder>;
-                }
-            }
-            
-            const id = providedId || uuidv4();
+        startFieldCreation: (state, action: PayloadAction<{ id: string }>) => {
+            const id = action.payload.id;
             state.fields[id] = {
                 ...DEFAULT_FIELD,
-                id: id,
-                ...fieldData,
+                id,
             } as FieldBuilder;
             state.newFieldId = id;
             state.activeFieldId = id;
@@ -244,6 +228,12 @@ export const fieldBuilderSlice = createSlice({
         },
         setError: (state, action: PayloadAction<string | null>) => {
             state.error = action.payload;
+        },
+        startWithData: (state, action: PayloadAction<FieldBuilder>) => {
+            const field = action.payload;
+            state.fields[field.id] = field;
+            state.newFieldId = field.id;
+            state.activeFieldId = field.id;
         },
     },
     extraReducers: (builder) => {
@@ -420,6 +410,7 @@ export const fieldBuilderSlice = createSlice({
 });
 
 export const {
+    startFieldCreation,
     cancelFieldCreation,
     setActiveField,
     setLabel,
@@ -443,11 +434,7 @@ export const {
     deleteField,
     setLoading,
     setError,
+    startWithData,
 } = fieldBuilderSlice.actions;
-
-// Export startFieldCreation with proper typing for backward compatibility
-export const startFieldCreation = (
-    payload?: { id?: string; fieldData?: Partial<FieldBuilder> } | Partial<FieldBuilder>
-) => fieldBuilderSlice.actions.startFieldCreation(payload);
 
 export default fieldBuilderSlice.reducer;

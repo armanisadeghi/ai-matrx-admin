@@ -3,6 +3,10 @@ description:
 globs: 
 alwaysApply: false
 ---
+Read the following very very carefully and ensure that everything you do follows these guidelins.
+
+Any generated code that does not meet these guidelines will be rejected.
+
 # App Builder Redux Implementation
 
 "@/lib/redux/app-builder/

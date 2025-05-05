@@ -31,8 +31,8 @@ import {
   setDisabled, 
   setComponent, 
   setIncludeOther, 
-  setComponentProps, 
-  startFieldCreation
+  setComponentProps,
+  startFieldCreation, 
 } from '@/lib/redux/app-builder/slices/fieldBuilderSlice';
 
 interface SmartFieldBuilderProps {

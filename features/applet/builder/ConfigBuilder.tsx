@@ -14,140 +14,54 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import { selectAppById, selectAppLoading, selectAppError } from "@/lib/redux/app-builder/selectors/appSelectors";
-import { fetchAppsThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
-// Import database services
+import { selectAppById, selectAppLoading, selectAppError, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { CustomAppConfig, CustomAppletConfig } from "@/features/applet/builder/builder.types";
-
-import {
-    getAllCustomAppletConfigs,
-    getCustomAppletConfigById,
-} from "@/lib/redux/app-builder/service/customAppletService";
 import AppBuilderDebugOverlay from "@/components/admin/AppBuilderDebugOverlay";
+import { selectAppletError, selectAppletLoading, selectHasUnsavedAppletChanges } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { selectContainerError, selectContainerLoading, selectHasUnsavedContainerChanges } from "@/lib/redux/app-builder/selectors/containerSelectors";
+import { selectFieldError, selectFieldLoading, selectHasUnsavedFieldChanges } from "@/lib/redux/app-builder/selectors/fieldSelectors";
+import { v4 as uuidv4 } from "uuid";
+import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 
-// Default app configuration values
-const DEFAULT_APP_CONFIG: Partial<CustomAppConfig> = {
-    name: "",
-    description: "",
-    slug: "",
-    mainAppIcon: "LayoutTemplate",
-    mainAppSubmitIcon: "Search",
-    creator: "",
-    primaryColor: "gray",
-    accentColor: "rose",
-    appletList: [],
-    extraButtons: [],
-    layoutType: "tabbedApplets",
-    imageUrl: "",
-};
 
 export const ConfigBuilder = () => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
     const [activeStep, setActiveStep] = useState(0);
-    const [loadingMessage, setLoadingMessage] = useState("Loading...");
-
-    // Redux state
-    const appLoading = useAppSelector(selectAppLoading);
-    const appError = useAppSelector(selectAppError);
-
-    // App configuration state
     const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
-    const selectedApp = useAppSelector((state) => (selectedAppId ? selectAppById(state, selectedAppId) : null));
-    const [isCreatingNewApp, setIsCreatingNewApp] = useState(false);
-    const [tempNewAppConfig, setTempNewAppConfig] = useState<Partial<CustomAppConfig>>(DEFAULT_APP_CONFIG);
+
+    const [nextAppRecompile, setNextAppRecompile] = useState(false);
+    const [nextAppletRecompile, setNextAppletRecompile] = useState(false);
+    const [nextContainerRecompile, setNextContainerRecompile] = useState(false);
+
+
+
+
+
+    const isAppletLoading = useAppSelector(selectAppletLoading);
+    const isAppLoading = useAppSelector(selectAppLoading);
+    const isContainerLoading = useAppSelector(selectContainerLoading);
+    const isFieldLoading = useAppSelector(selectFieldLoading);
+    const isAppError = useAppSelector(selectAppError);
+    const isAppletError = useAppSelector(selectAppletError);
+    const isContainerError = useAppSelector(selectContainerError);
+    const isFieldError = useAppSelector(selectFieldError);
+
+    const hasUnsavedAppChanges = useAppSelector(selectHasUnsavedAppChanges);
+    const hasUnsavedAppletChanges = useAppSelector(selectHasUnsavedAppletChanges);
+    const hasUnsavedContainerChanges = useAppSelector(selectHasUnsavedContainerChanges);
+    const hasUnsavedFieldChanges = useAppSelector(selectHasUnsavedFieldChanges);
+
+    const isLoading = isAppletLoading || isAppLoading || isContainerLoading || isFieldLoading;
+    const isError = isAppletError || isAppError || isContainerError || isFieldError;
+    const hasUnsavedChanges = hasUnsavedAppChanges || hasUnsavedAppletChanges || hasUnsavedContainerChanges || hasUnsavedFieldChanges;
+    const needsRecompile = nextAppRecompile || nextAppletRecompile || nextContainerRecompile;
+
 
     // Applet state
     const [applets, setApplets] = useState<CustomAppletConfig[]>([]);
-    const [availableApplets, setAvailableApplets] = useState<CustomAppletConfig[]>([]);
     const [activeApplet, setActiveApplet] = useState<string | null>(null);
 
-    // Loading states for specific operations
-    const [isLoadingApplets, setIsLoadingApplets] = useState(false);
-
-    // When the component mounts, fetch available applets
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoadingMessage("Loading available resources...");
-            try {
-                // Fetch available applets for selection
-                const fetchedApplets = await getAllCustomAppletConfigs();
-                setAvailableApplets(fetchedApplets);
-
-                // Also fetch apps via Redux
-                dispatch(fetchAppsThunk());
-            } catch (error) {
-                console.error("Error fetching initial data:", error);
-                toast({
-                    title: "Error",
-                    description: "Failed to load initial data. Please refresh the page.",
-                    variant: "destructive",
-                });
-            }
-        };
-
-        fetchData();
-    }, [toast, dispatch]);
-
-    // When app changes, fetch its applets
-    useEffect(() => {
-        if (selectedApp?.id && selectedApp.appletIds && selectedApp.appletIds.length > 0) {
-            const fetchApplets = async () => {
-                setIsLoadingApplets(true);
-                setLoadingMessage("Loading applets...");
-                try {
-                    console.log("Fetching applets for app:", selectedApp.id, "appletIds:", selectedApp.appletIds);
-
-                    const appletsPromises = selectedApp.appletIds.map(async (appletId) => {
-                        try {
-                            const applet = await getCustomAppletConfigById(appletId);
-                            if (!applet) {
-                                console.warn(`No applet found with ID ${appletId}`);
-                                return null;
-                            }
-                            console.log(`Successfully loaded applet: ${appletId}`);
-                            return applet;
-                        } catch (error) {
-                            console.error(`Error fetching applet ${appletId}:`, error);
-                            return null;
-                        }
-                    });
-
-                    const fetchedApplets = (await Promise.all(appletsPromises)).filter(
-                        (applet): applet is CustomAppletConfig => applet !== null
-                    );
-
-                    console.log(
-                        "Loaded applets:",
-                        fetchedApplets.length,
-                        fetchedApplets.map((a) => a.id)
-                    );
-                    setApplets(fetchedApplets);
-
-                    // Set the first applet as active if none is selected
-                    if (fetchedApplets.length > 0 && !activeApplet) {
-                        setActiveApplet(fetchedApplets[0].id as string);
-                    }
-                } catch (error) {
-                    console.error("Error fetching applets for app:", error);
-                    toast({
-                        title: "Error",
-                        description: "Failed to load applets. Some data may be missing.",
-                        variant: "destructive",
-                    });
-                } finally {
-                    setIsLoadingApplets(false);
-                }
-            };
-
-            fetchApplets();
-        } else {
-            // Reset applets if no app is selected or no applets in the app
-            console.log("No applets to load or no saved app");
-            setApplets([]);
-            setActiveApplet(null);
-        }
-    }, [selectedApp, toast, activeApplet]);
 
     const steps = [
         { id: "select-app", title: "Select App", description: "Create new or select existing" },
@@ -158,43 +72,22 @@ export const ConfigBuilder = () => {
         { id: "preview", title: "Deploy App", description: "Finalize & Launch your app" },
     ];
 
+
+    const handleCreateNewApp = () => {
+        const newAppId = uuidv4();
+        dispatch(startNewApp({ id: newAppId }));
+        setSelectedAppId(newAppId);
+        setActiveStep(1);
+    };
+
     const handleNext = async () => {
         if (activeStep === 0) {
-            // For the first step (Select App), we don't need validation as the user
-            // either selects an app (which sets selectedAppId) or creates a new one (moving to step 1)
-            if (!selectedAppId && activeStep === 0) {
-                // If no app is selected, move to App Info step to create a new one
-                setActiveStep(1);
-                setIsCreatingNewApp(true);
-                return;
-            }
             setActiveStep(1);
         } else if (activeStep === 1) {
-            // App Info step - validation is now handled within the AppInfoStep component
-            // The AppInfoStep component will call saveApp() which will handle the progression
             setActiveStep(2);
         } else if (activeStep === 2) {
-            // Verify we have at least one applet before proceeding
-            if (applets.length === 0) {
-                toast({
-                    title: "No Applets Added",
-                    description: "Please add at least one applet before proceeding.",
-                    variant: "destructive",
-                });
-                return;
-            }
             setActiveStep(3);
         } else if (activeStep === 3) {
-            // Ensure all applets have at least one group
-            const hasEmptyApplet = applets.some((applet) => !applet.containers || applet.containers.length === 0);
-            if (hasEmptyApplet) {
-                toast({
-                    title: "Missing Groups",
-                    description: "Please ensure all applets have at least one group before proceeding.",
-                    variant: "destructive",
-                });
-                return;
-            }
             setActiveStep(4);
         } else if (activeStep < steps.length - 1) {
             setActiveStep(activeStep + 1);
@@ -211,40 +104,14 @@ export const ConfigBuilder = () => {
         setActiveApplet(appletId);
     };
 
-    // Function to update the temporary new app config (when creating a new app)
-    const updateTempNewAppConfig = (updates: Partial<CustomAppConfig>) => {
-        setTempNewAppConfig((prev) => ({ ...prev, ...updates }));
+    const handleAppSaved = (appId: string) => {
+        setSelectedAppId(appId);
+        setActiveStep(2);
     };
 
     const handleAppSelected = (app: CustomAppConfig) => {
-        // Set the selected app ID
         setSelectedAppId(app.id);
-        setIsCreatingNewApp(false);
-
-        toast({
-            title: "App Selected",
-            description: `You've selected ${app.name} to edit.`,
-        });
-
-        // Move to the next step (App Info)
         setActiveStep(1);
-    };
-
-    const handleCreateNewApp = () => {
-        // Reset app state to defaults for a new app
-        setSelectedAppId(null);
-        setIsCreatingNewApp(true);
-        setApplets([]);
-        setActiveApplet(null);
-        setTempNewAppConfig(DEFAULT_APP_CONFIG);
-
-        // Move to App Info step
-        setActiveStep(1);
-
-        toast({
-            title: "Create New App",
-            description: "Let's start by entering your app's basic information.",
-        });
     };
 
     // Reset to the app selection step
@@ -256,19 +123,7 @@ export const ConfigBuilder = () => {
         });
     };
 
-    // Initial welcome message
-    useEffect(() => {
-        if (!selectedAppId && !isCreatingNewApp) {
-            toast({
-                title: "Welcome to App Builder",
-                description: "Select an existing app to edit or create a new one.",
-            });
-        }
-    }, [selectedAppId, isCreatingNewApp, toast]);
 
-    const isStepLoading = () => {
-        return appLoading || isLoadingApplets;
-    };
 
     // Footer rendering with conditional reset button
     const renderFooter = () => {
@@ -279,7 +134,7 @@ export const ConfigBuilder = () => {
                         <Button
                             variant="outline"
                             onClick={handleBack}
-                            disabled={isStepLoading()}
+                            disabled={isLoading}
                             className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
                             Back
@@ -288,7 +143,7 @@ export const ConfigBuilder = () => {
                             <Button
                                 variant="ghost"
                                 onClick={resetToSelectStep}
-                                disabled={isStepLoading()}
+                                disabled={isLoading}
                                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                             >
                                 Select Different App
@@ -296,12 +151,12 @@ export const ConfigBuilder = () => {
                         )}
                     </div>
                 ) : (
-                    <div></div> // Empty div to maintain space in flex layout
+                    <div></div>
                 )}
 
                 <Button
                     onClick={handleNext}
-                    disabled={activeStep === steps.length - 1 || isStepLoading()}
+                    disabled={activeStep === steps.length - 1 || isLoading || !selectedAppId}
                     className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
                 >
                     {activeStep === steps.length - 2 ? "Preview" : "Next"}
@@ -310,17 +165,6 @@ export const ConfigBuilder = () => {
         );
     };
 
-    // Handler for when an app is saved (called from AppInfoStep)
-    const handleAppSaved = (appId: string) => {
-        // Update the selectedAppId if it's a new app
-        if (!selectedAppId) {
-            setSelectedAppId(appId);
-            setIsCreatingNewApp(false);
-        }
-
-        // Move to the next step
-        setActiveStep(2);
-    };
 
     return (
         <div className="w-full h-full px-4 bg-white dark:bg-gray-900">
@@ -342,10 +186,10 @@ export const ConfigBuilder = () => {
                         />
 
                         <div className="mt-8 relative">
-                            {isStepLoading() && (
+                            {isLoading && (
                                 <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 flex flex-col items-center justify-center z-10">
                                     <LoadingSpinner size="lg" />
-                                    <p className="mt-2 text-gray-600 dark:text-gray-300">{loadingMessage}</p>
+                                    <p className="mt-2 text-gray-600 dark:text-gray-300">Loading...</p>
                                 </div>
                             )}
 
@@ -353,16 +197,14 @@ export const ConfigBuilder = () => {
                                 <SelectAppStep
                                     onAppSelected={handleAppSelected}
                                     onCreateNewApp={handleCreateNewApp}
-                                    selectedApp={selectedApp as CustomAppConfig}
+                                    selectedAppId={selectedAppId}
                                 />
                             )}
 
                             {activeStep === 1 && (
                                 <AppConfigStep
-                                    config={isCreatingNewApp ? tempNewAppConfig : ((selectedApp || {}) as Partial<CustomAppConfig>)}
-                                    updateConfig={isCreatingNewApp ? updateTempNewAppConfig : () => {}}
-                                    saveApp={handleAppSaved}
-                                    isEdit={!isCreatingNewApp && !!selectedAppId}
+                                    appId={selectedAppId}
+                                    onAppSaved={handleAppSaved}
                                 />
                             )}
 

@@ -1,6 +1,6 @@
 import { AppThunk } from "@/lib/redux/store";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
-import { selectComponentToBrokerMap, selectComponentInstance } from "../selectors/appletSelectors";
+import { selectComponentToBrokerMap, selectComponentInstance } from "../selectors/appletRuntimeSelectors";
 import { setAppropriateValueForComponent } from "./componentValues";
 
 export const handleComponentChange =

@@ -1,6 +1,6 @@
 import { AppThunk } from "@/lib/redux/store";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
-import { selectBrokerValues } from "../selectors/appletSelectors";
+import { selectBrokerValues } from "../selectors/appletRuntimeSelectors";
 
 export const getBrokerValuesForWorkflow =
     ({ appId, brokerIds }: { appId: string; brokerIds: string[] }): AppThunk<Record<string, any>> =>

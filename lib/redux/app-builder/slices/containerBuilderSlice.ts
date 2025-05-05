@@ -66,27 +66,11 @@ export const containerBuilderSlice = createSlice({
     initialState,
     reducers: {
         // Initialize a new container
-        startNewContainer: (state, action: PayloadAction<{ id?: string; containerData?: Partial<ContainerBuilder> } | Partial<ContainerBuilder> | undefined>) => {
-            // Handle different parameter formats for backward compatibility
-            let providedId: string | undefined;
-            let containerData: Partial<ContainerBuilder> = {};
-            
-            if (action.payload) {
-                if ('id' in action.payload && 'containerData' in action.payload) {
-                    // New format: { id, containerData }
-                    providedId = action.payload.id;
-                    containerData = action.payload.containerData || {};
-                } else {
-                    // Old format: Partial<ContainerBuilder> directly
-                    containerData = action.payload as Partial<ContainerBuilder>;
-                }
-            }
-            
-            const id = providedId || uuidv4();
+        startNewContainer: (state, action: PayloadAction<{ id: string }>) => {
+            const id = action.payload.id;
             state.containers[id] = {
                 ...DEFAULT_CONTAINER,
-                id: id,
-                ...containerData,
+                id,
             } as ContainerBuilder;
             state.newContainerId = id;
             state.activeContainerId = id;
@@ -253,6 +237,12 @@ export const containerBuilderSlice = createSlice({
             } as ContainerBuilder;
             state.newContainerId = newId;
             state.activeContainerId = newId;
+        },
+        startWithData: (state, action: PayloadAction<ContainerBuilder>) => {
+            const container = action.payload;
+            state.containers[container.id] = container;
+            state.newContainerId = container.id;
+            state.activeContainerId = container.id;
         },
     },
     extraReducers: (builder) => {
@@ -541,6 +531,7 @@ export const containerBuilderSlice = createSlice({
 });
 
 export const {
+    startNewContainer,
     cancelNewContainer,
     setActiveContainer,
     setLabel,
@@ -562,11 +553,8 @@ export const {
     setLoading,
     setError,
     createNewContainer,
+    startWithData,
 } = containerBuilderSlice.actions;
 
-// Export startNewContainer with proper typing for backward compatibility
-export const startNewContainer = (
-    payload?: { id?: string; containerData?: Partial<ContainerBuilder> } | Partial<ContainerBuilder>
-) => containerBuilderSlice.actions.startNewContainer(payload);
 
 export default containerBuilderSlice.reducer;

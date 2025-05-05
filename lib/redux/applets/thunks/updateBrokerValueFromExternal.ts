@@ -1,6 +1,6 @@
 import { AppThunk } from "@/lib/redux/store";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
-import { selectBrokerValues } from "../selectors/appletSelectors";
+import { selectBrokerValues } from "../selectors/appletRuntimeSelectors";
 
 export const updateBrokerValueFromExternal =
     ({ appId, brokerId, value, source, metadata = {} }: { appId: string; brokerId: string; value: any; source: string; metadata?: Record<string, any> }): AppThunk =>

@@ -206,7 +206,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
             <TabsContent value="preview" className="p-6">
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="w-full md:w-1/2 lg:w-1/3">
-                  <AppPreviewCard app={config} />
+                  <AppPreviewCard appId={appId} />
                 </div>
                 
                 <div className="w-full md:w-1/2 lg:w-2/3">

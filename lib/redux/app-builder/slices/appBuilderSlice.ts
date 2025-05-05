@@ -18,14 +18,22 @@ export const DEFAULT_APP: Partial<AppBuilder> = {
     name: "",
     description: "",
     slug: "",
-    appletIds: [],
-    isPublic: false,
+    mainAppIcon: "LayoutTemplate",
+    mainAppSubmitIcon: "Search",
+    creator: "",
+    primaryColor: "gray",
+    accentColor: "rose",
+    appletList: [],
+    extraButtons: [],
+    layoutType: "tabbedApplets",
+    imageUrl: "",
     authenticatedRead: true,
     publicRead: false,
     isDirty: false,
     isLocal: true,
     slugStatus: "unchecked",
 };
+
 
 export interface AppsState {
     apps: Record<string, AppBuilder>;
@@ -48,27 +56,11 @@ export const appBuilderSlice = createSlice({
     initialState,
     reducers: {
         // Initialize a new app
-        startNewApp: (state, action: PayloadAction<{ id?: string; appData?: Partial<AppBuilder> } | Partial<AppBuilder> | undefined>) => {
-            // Handle different parameter formats for backward compatibility
-            let providedId: string | undefined;
-            let appData: Partial<AppBuilder> = {};
-            
-            if (action.payload) {
-                if ('id' in action.payload && 'appData' in action.payload) {
-                    // New format: { id, appData }
-                    providedId = action.payload.id;
-                    appData = action.payload.appData || {};
-                } else {
-                    // Old format: Partial<AppBuilder> directly
-                    appData = action.payload as Partial<AppBuilder>;
-                }
-            }
-            
-            const id = providedId || uuidv4();
+        startNewApp: (state, action: PayloadAction<{ id: string }>) => {
+            const id = action.payload.id;
             state.apps[id] = {
                 ...DEFAULT_APP,
-                id: id,
-                ...appData,
+                id,
             } as AppBuilder;
             state.newAppId = id;
             state.activeAppId = id;
@@ -436,6 +428,7 @@ export const {
     setError,
     
     // New slice-style actions
+    startNewApp,
     setActiveApp,
     cancelNewApp,
     setName,
@@ -457,10 +450,5 @@ export const {
     setIsLocal,
     setSlugStatus,
 } = appBuilderSlice.actions;
-
-// Export startNewApp with proper typing for backward compatibility
-export const startNewApp = (
-    payload?: { id?: string; appData?: Partial<AppBuilder> } | Partial<AppBuilder>
-) => appBuilderSlice.actions.startNewApp(payload);
 
 export default appBuilderSlice.reducer;

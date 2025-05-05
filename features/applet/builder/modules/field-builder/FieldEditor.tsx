@@ -19,15 +19,17 @@ import {
 } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { startFieldCreation, setActiveField } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { saveFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
+import { addFieldThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 
 interface FieldEditorProps {
     fieldId?: string;
     isCreatingNew?: boolean;
     onSaveSuccess?: (fieldId: string) => void;
     onCancel?: () => void;
+    containerId?: string;
 }
 
-const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel }) => {
+const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel, containerId }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
 
@@ -104,6 +106,14 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         }
     };
 
+    // Compile and add to container
+    const handleCompileAndAdd = () => {
+        handleSave();
+        if (containerId) {
+            addFieldThunk({ containerId, field: field });
+        }
+    };
+
     // Cancel editing
     const handleCancel = () => {
         if (onCancel) {
@@ -122,7 +132,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
             <div className="flex flex-col lg:flex-row gap-6">
                 {/* Left side: Field Builder */}
                 <div className="w-full lg:w-1/2">
-                    <SectionCard 
+                    <SectionCard
                         title={isCreatingNew ? "Create New Component" : "Edit Component"}
                         description="Configure all aspects of this field component."
                         footer={
@@ -141,6 +151,15 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
                                 >
                                     {isLoading ? "Saving..." : isCreatingNew ? "Create Component" : "Update Component"}
                                 </Button>
+                                {containerId && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleCompileAndAdd}
+                                        className="border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
+                                    >
+                                        Compile and Add to Container
+                                    </Button>
+                                )}
                             </>
                         }
                     >
@@ -150,14 +169,17 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
 
                 {/* Right side: Preview area */}
                 <div className="w-full lg:w-1/2">
-                    <SectionCard
-                        title="Component Preview"
-                        description="Live preview of your field component"
-                    >
+                    <SectionCard title="Component Preview" description="Live preview of your field component">
                         {/* Current component preview */}
                         <div className="mt-6 mb-8 border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
                             <h3 className="text-md font-semibold mb-6 capitalize text-gray-900 dark:text-gray-100">
-                                Your New <span className="text-blue-600 dark:text-blue-500 font-bold"> {"  "}{component} {"  "}</span> Component
+                                Your New{" "}
+                                <span className="text-blue-600 dark:text-blue-500 font-bold">
+                                    {" "}
+                                    {"  "}
+                                    {component} {"  "}
+                                </span>{" "}
+                                Component
                             </h3>
                             {field && <FieldRenderer field={field} />}
                         </div>

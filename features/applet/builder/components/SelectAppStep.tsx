@@ -1,21 +1,26 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import SmartAppListWrapper from "@/features/applet/builder/components/smart-parts/apps/SmartAppListWrapper";
 import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 import { SmartAppListRefType } from "./smart-parts/apps/SmartAppList";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectAppById } from "@/lib/redux/app-builder/selectors/appSelectors";
 
 interface SelectAppStepProps {
     onAppSelected: (app: CustomAppConfig) => void;
     onCreateNewApp: () => void;
-    selectedApp: CustomAppConfig | null;
+    selectedAppId: string | null;
 }
 
-export const SelectAppStep: React.FC<SelectAppStepProps> = ({ onAppSelected, onCreateNewApp, selectedApp }) => {
+export const SelectAppStep: React.FC<SelectAppStepProps> = ({ onAppSelected, onCreateNewApp, selectedAppId }) => {
     const appListRef = useRef<SmartAppListRefType | null>(null);
+    
+    // Get selected app information from Redux state
+    const selectedApp = useAppSelector(state => selectAppById(state, selectedAppId));
 
     // If we already have a selected app, we should still show it in the list
     // but indicate it's selected

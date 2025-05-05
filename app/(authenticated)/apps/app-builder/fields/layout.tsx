@@ -4,7 +4,7 @@ import React, { ReactNode, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
-  selectHasUnsavedChanges,
+  selectHasUnsavedFieldChanges,
   selectDirtyFields,
   selectActiveFieldId
 } from '@/lib/redux/app-builder/selectors/fieldSelectors';
@@ -33,7 +33,7 @@ export default function FieldsLayout({ children }: FieldsLayoutProps) {
   const isMobile = useIsMobile();
 
   // Get global state from Redux
-  const hasUnsavedChanges = useAppSelector(selectHasUnsavedChanges);
+  const hasUnsavedChanges = useAppSelector(selectHasUnsavedFieldChanges);
   const dirtyFields = useAppSelector(selectDirtyFields);
   const activeFieldId = useAppSelector(selectActiveFieldId);
   

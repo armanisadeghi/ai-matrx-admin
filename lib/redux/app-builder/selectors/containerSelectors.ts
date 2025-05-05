@@ -2,6 +2,21 @@ import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux";
 import { ContainerBuilder } from "../types";
 
+// ================================ Constants for Reference Stability ================================
+// Use these constants to ensure reference stability with proper typing
+const EMPTY_OBJECT = {} as Record<string, never>;
+const EMPTY_ARRAY = [] as const;
+
+// Type-safe empty object function to preserve return types
+function emptyObject<T>(): T {
+  return {} as T;
+}
+
+// Type-safe empty array function to preserve return types
+function emptyArray<T>(): T[] {
+  return [] as T[];
+}
+
 // ================================ Base Selectors ================================
 
 // Base selector for the containerBuilder state
@@ -24,8 +39,8 @@ export const selectAllContainerIds = createSelector(
 
 // Memoized selector for a specific container by ID
 export const selectContainerById = createSelector(
-  [(state: RootState, id: string) => getContainerBuilderState(state).containers[id]],
-  (container) => container || null
+  [(state: RootState, id?: string | null) => id ? getContainerBuilderState(state).containers[id] : undefined],
+  (container) => container || emptyObject<ContainerBuilder>()
 );
 
 // ================================ Status Selectors ================================
@@ -46,17 +61,18 @@ export const selectContainerError = createSelector(
 
 // Memoized selector for fields associated with a container
 export const selectFieldsForContainer = createSelector(
-  [(state: RootState, containerId: string) => selectContainerById(state, containerId)],
-  (container) => container ? container.fields : []
+  [(state: RootState, containerId?: string | null) => containerId ? selectContainerById(state, containerId) : null],
+  (container) => container?.fields || emptyArray()
 );
 
 // Memoized selector for a specific field within a container
 export const selectFieldById = createSelector(
-  [(state: RootState, containerId: string, fieldId: string) => {
+  [(state: RootState, containerId?: string | null, fieldId?: string | null) => {
+    if (!containerId || !fieldId) return null;
     const container = getContainerBuilderState(state).containers[containerId];
     return container ? container.fields.find(field => field.id === fieldId) : null;
   }],
-  (field) => field || null
+  (field) => field || emptyObject()
 );
 
 // ================================ Container Collection Selectors ================================
@@ -65,25 +81,37 @@ export const selectFieldById = createSelector(
 export const selectContainersByIds = createSelector(
   [
     getContainerBuilderState,
-    (_state: RootState, containerIds: string[]) => containerIds
+    (_state: RootState, containerIds?: string[] | null) => containerIds || emptyArray<string>()
   ],
   (containerBuilderState, containerIds) => {
-    return containerIds
+    if (!containerIds || containerIds.length === 0) {
+      return emptyArray<ContainerBuilder>();
+    }
+    
+    const result = containerIds
       .map(id => containerBuilderState.containers[id])
-      .filter((container): container is ContainerBuilder => container !== null);
+      .filter((container): container is ContainerBuilder => container !== null && container !== undefined);
+      
+    return result.length ? result : emptyArray<ContainerBuilder>();
   }
 );
 
 // Memoized selector for public containers
 export const selectPublicContainers = createSelector(
   [selectAllContainers],
-  (containers) => containers.filter(container => container.isPublic)
+  (containers) => {
+    const result = containers.filter(container => container.isPublic);
+    return result.length ? result : emptyArray<ContainerBuilder>();
+  }
 ); 
 
 // Memoized selector for local containers
 export const selectLocalContainers = createSelector(
   [selectAllContainers],
-  (containers) => containers.filter(container => container.isLocal === true)
+  (containers) => {
+    const result = containers.filter(container => container.isLocal === true);
+    return result.length ? result : emptyArray<ContainerBuilder>();
+  }
 );
 
 // ================================ Dirty State Management ================================
@@ -91,7 +119,10 @@ export const selectLocalContainers = createSelector(
 // Memoized selector for dirty containers
 export const selectDirtyContainers = createSelector(
   [selectAllContainers],
-  (containers) => containers.filter(container => container.isDirty === true)
+  (containers) => {
+    const result = containers.filter(container => container.isDirty === true);
+    return result.length ? result : emptyArray<ContainerBuilder>();
+  }
 );
 
 // Memoized selector for checking if there are unsaved changes
@@ -102,7 +133,7 @@ export const selectHasUnsavedContainerChanges = createSelector(
 
 // Memoized selector for container dirty status
 export const selectContainerDirtyStatus = createSelector(
-  [(state: RootState, id: string) => getContainerBuilderState(state).containers[id]],
+  [(state: RootState, id?: string | null) => id ? getContainerBuilderState(state).containers[id] : undefined],
   (container) => container?.isDirty || false
 );
 
@@ -111,13 +142,14 @@ export const selectContainerDirtyStatus = createSelector(
 // Memoized selector for the active container ID
 export const selectActiveContainerId = createSelector(
   [getContainerBuilderState],
-  (containerBuilderState) => containerBuilderState.activeContainerId
+  (containerBuilderState) => containerBuilderState.activeContainerId || null
 );
 
 // Memoized selector for the active container
 export const selectActiveContainer = createSelector(
   [getContainerBuilderState, selectActiveContainerId],
-  (containerBuilderState, activeId) => activeId ? containerBuilderState.containers[activeId] : null
+  (containerBuilderState, activeId) => 
+    (activeId && containerBuilderState.containers[activeId]) || emptyObject<ContainerBuilder>()
 );
 
 // ================================ New Container Selectors ================================
@@ -125,12 +157,13 @@ export const selectActiveContainer = createSelector(
 // Memoized selector for the new container ID
 export const selectNewContainerId = createSelector(
   [getContainerBuilderState],
-  (containerBuilderState) => containerBuilderState.newContainerId
+  (containerBuilderState) => containerBuilderState.newContainerId || null
 );
 
 // Memoized selector for the new container
 export const selectNewContainer = createSelector(
   [getContainerBuilderState, selectNewContainerId],
-  (containerBuilderState, newId) => newId ? containerBuilderState.containers[newId] : null
+  (containerBuilderState, newId) => 
+    (newId && containerBuilderState.containers[newId]) || emptyObject<ContainerBuilder>()
 );
 

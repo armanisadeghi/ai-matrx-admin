@@ -4,16 +4,40 @@ import { CalendarIcon, CogIcon, UsersIcon, StarIcon, ImageIcon, User } from 'luc
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CustomAppConfig } from '@/features/applet/builder/builder.types';
 import { cn } from '@/lib/utils';
 import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/layouts/helpers/StyledComponents';
+import { useAppSelector } from '@/lib/redux';
+import { 
+  selectAppName,
+  selectAppDescription,
+  selectAppSlug,
+  selectAppMainAppIcon,
+  selectAppCreator,
+  selectAppPrimaryColor,
+  selectAppAccentColor,
+  selectAppLayoutType,
+  selectAppImageUrl,
+  selectAppAppletList,
+} from '@/lib/redux/app-builder/selectors/appSelectors';
 
 interface AppPreviewCardProps {
-  app: Partial<CustomAppConfig>;
+  appId: string;
   className?: string;
 }
 
-const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
+const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ appId, className }) => {
+  // Use Redux selectors to get app data directly
+  const name = useAppSelector(state => selectAppName(state, appId)) || '';
+  const description = useAppSelector(state => selectAppDescription(state, appId)) || '';
+  const slug = useAppSelector(state => selectAppSlug(state, appId)) || '';
+  const mainAppIcon = useAppSelector(state => selectAppMainAppIcon(state, appId)) || '';
+  const creator = useAppSelector(state => selectAppCreator(state, appId)) || 'Unknown';
+  const primaryColor = useAppSelector(state => selectAppPrimaryColor(state, appId)) || 'gray';
+  const accentColor = useAppSelector(state => selectAppAccentColor(state, appId)) || 'rose';
+  const layoutType = useAppSelector(state => selectAppLayoutType(state, appId)) || 'Standard';
+  const imageUrl = useAppSelector(state => selectAppImageUrl(state, appId)) || '';
+  const appletList = useAppSelector(state => selectAppAppletList(state, appId)) || [];
+
   const getInitials = (name: string) => {
     if (!name) return '?';
     return name
@@ -26,18 +50,15 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
 
   // Render the app icon
   const renderAppIcon = () => {
-    if (!app.mainAppIcon) return <CogIcon className="h-5 w-5" />;
+    if (!mainAppIcon) return <CogIcon className="h-5 w-5" />;
     
-    const IconComponent = ICON_OPTIONS[app.mainAppIcon];
+    const IconComponent = ICON_OPTIONS[mainAppIcon];
     if (!IconComponent) return <CogIcon className="h-5 w-5" />;
     
     return <IconComponent className="h-5 w-5" />;
   };
 
   // Get color classes using exact variants
-  const primaryColor = app.primaryColor || 'gray';
-  const accentColor = app.accentColor || 'rose';
-
   const primaryBgClass = COLOR_VARIANTS.primaryBg[primaryColor];
   const primaryTextClass = COLOR_VARIANTS.primaryText[primaryColor];
   const primaryBorderClass = COLOR_VARIANTS.primaryBorder[primaryColor];
@@ -50,11 +71,11 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
     <div className={cn("w-full", className)}>
       <Card className="border border-gray-200 dark:border-gray-700 overflow-hidden">
         {/* App Banner Image */}
-        {app.imageUrl ? (
+        {imageUrl ? (
           <div className="w-full h-36 relative">
             <img
-              src={app.imageUrl}
-              alt={app.name || 'App Banner'}
+              src={imageUrl}
+              alt={name || 'App Banner'}
               className="w-full h-full object-cover"
             />
           </div>
@@ -78,10 +99,10 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
               
               <div>
                 <CardTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                  {app.name || 'App Name'}
+                  {name || 'App Name'}
                 </CardTitle>
                 <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  {app.slug ? `matrx.com/apps/${app.slug}` : 'matrx.com/apps/your-slug'}
+                  {slug ? `matrx.com/apps/${slug}` : 'matrx.com/apps/your-slug'}
                 </CardDescription>
               </div>
             </div>
@@ -97,7 +118,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
         {/* Apply primary background color to content section */}
         <CardContent className={`p-4 pt-0 ${primaryBgClass}`}>
           <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-            {app.description || 'App description will appear here.'}
+            {description || 'App description will appear here.'}
           </p>
           
           {/* App Features/Statistics */}
@@ -106,7 +127,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
               <div className="flex items-center space-x-2">
                 <UsersIcon className={`h-4 w-4 ${primaryTextClass}`} />
                 <span className="text-xs text-gray-600 dark:text-gray-300">
-                  {(app.appletList?.length || 0)} Applets
+                  {appletList.length} Applets
                 </span>
               </div>
             </div>
@@ -115,7 +136,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
               <div className="flex items-center space-x-2">
                 <StarIcon className={`h-4 w-4 ${primaryTextClass}`} />
                 <span className="text-xs text-gray-600 dark:text-gray-300">
-                  <span className="capitalize">{app.layoutType || 'Standard'}</span> Layout
+                  <span className="capitalize">{layoutType}</span> Layout
                 </span>
               </div>
             </div>
@@ -128,7 +149,7 @@ const AppPreviewCard: React.FC<AppPreviewCardProps> = ({ app, className }) => {
             <div className="flex items-center space-x-2">
               <CalendarIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                Created by {app.creator || 'Unknown'}
+                Created by {creator}
               </span>
             </div>
             

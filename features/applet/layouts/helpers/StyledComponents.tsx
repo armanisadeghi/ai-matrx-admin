@@ -503,7 +503,7 @@ export const COMPONENT_STYLES = {
         colorType: "text", // References the text color group
     },
     appIconWithBg: {
-        base: "w-96 h-12 p-2 rounded-none flex items-center justify-center",
+        base: "w-48 h-12 p-2 rounded-none flex items-center justify-center",
         colorType: "text", // Icon color from text color group
         bgColorType: "background", // Background color from background color group
     },

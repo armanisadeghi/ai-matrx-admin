@@ -21,6 +21,7 @@ export type SmartAppletListWrapperProps = {
   onRefreshComplete?: (applets: CustomAppletConfig[]) => void;
   // New prop for appId filtering
   appId?: string;
+  initialViewMode?: "grid" | "list";
 };
 
 /**
@@ -37,6 +38,7 @@ const SmartAppletListWrapper = forwardRef<SmartAppletListRefType, SmartAppletLis
   appletIds,
   onRefreshComplete,
   appId, // New prop
+  initialViewMode = "grid",
 }, ref) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Use proper typing for the ref
@@ -94,6 +96,7 @@ const SmartAppletListWrapper = forwardRef<SmartAppletListRefType, SmartAppletLis
           appletIds={appletIds}
           onRefreshComplete={onRefreshComplete}
           appId={appId} // Pass appId to SmartAppletList
+          initialViewMode={initialViewMode}
         />
       </div>
     );

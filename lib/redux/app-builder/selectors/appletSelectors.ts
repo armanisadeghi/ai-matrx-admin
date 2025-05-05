@@ -234,3 +234,9 @@ export const selectAppletSlugStatus = createSelector(
   [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
   (applet) => (applet ? applet.slugStatus : 'unchecked')
 );
+
+export const hasUnsavedChanges = createSelector(
+  [selectAllApplets],
+  (applets) => applets.some(applet => applet.isDirty === true)
+);
+

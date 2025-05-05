@@ -3,7 +3,7 @@ import { componentDefinitionsSlice } from "../slices/componentDefinitionsSlice";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 import { setAppropriateValueForComponent } from "./componentValues";
-import { selectComponentInstance } from "../selectors/appletSelectors";
+import { selectComponentInstance } from "../selectors/appletRuntimeSelectors";
 
 export const createComponentWithBroker =
     ({

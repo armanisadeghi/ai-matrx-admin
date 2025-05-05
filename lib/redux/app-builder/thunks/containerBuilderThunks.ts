@@ -183,8 +183,8 @@ export const addFieldThunk = createAsyncThunk<
         // Add the field to the container
         await addFieldToGroup(containerId, fieldWithId.id);
         
-        // Refresh the field in the group to ensure it's properly added
-        await refreshFieldInGroup(containerId, fieldWithId.id);
+        // // Refresh the field in the group to ensure it's properly added
+        // await refreshFieldInGroup(containerId, fieldWithId.id);
         
         return { containerId, field: fieldWithId };
     } catch (error: any) {

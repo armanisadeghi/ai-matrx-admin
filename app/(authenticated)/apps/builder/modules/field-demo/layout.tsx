@@ -8,7 +8,7 @@ import { ArrowLeft, Save, Plus, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { 
-  selectHasUnsavedChanges, 
+  selectHasUnsavedFieldChanges, 
   selectActiveFieldId, 
   selectDirtyFields
 } from "@/lib/redux/app-builder/selectors/fieldSelectors";
@@ -32,7 +32,7 @@ export default function FieldDemoLayout({ children }: FieldDemoLayoutProps) {
   const { toast } = useToast();
   
   // Use Redux selectors instead of context
-  const hasUnsavedChanges = useAppSelector(selectHasUnsavedChanges);
+  const hasUnsavedChanges = useAppSelector(selectHasUnsavedFieldChanges);
   const activeFieldId = useAppSelector(selectActiveFieldId);
   const dirtyFields = useAppSelector(selectDirtyFields);
   

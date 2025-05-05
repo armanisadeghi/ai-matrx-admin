@@ -25,10 +25,7 @@ export default function AppletCreatePage() {
   // Initialize applet creation if there's no active applet
   useEffect(() => {
     if (!activeAppletId) {
-      // Generate a new UUID for the applet
       const newId = uuidv4();
-      
-      // Start applet creation in Redux
       dispatch(startNewApplet({ id: newId }));
     }
   }, [activeAppletId, dispatch]);

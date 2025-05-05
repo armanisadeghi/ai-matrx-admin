@@ -27,12 +27,26 @@ const checkAppletExists = (state: AppletsState, id: string): boolean => {
     }
     return true;
 };
-
 // Default applet configuration
 export const DEFAULT_APPLET: Partial<AppletBuilder> = {
     name: "",
+    description: "",
     slug: "",
+    appletIcon: "",
+    appletSubmitText: "",
+    creator: "",
+    primaryColor: "gray",
+    accentColor: "rose",
+    layoutType: "open",
     containers: [],
+    dataSourceConfig: {},
+    resultComponentConfig: {},
+    nextStepConfig: {},
+    compiledRecipeId: "",
+    subcategoryId: "",
+    imageUrl: "",
+    appId: "",
+    brokerMappings: [],
     isPublic: false,
     authenticatedRead: true,
     publicRead: false,
@@ -62,27 +76,11 @@ export const appletBuilderSlice = createSlice({
     initialState,
     reducers: {
         // Initialize a new applet
-        startNewApplet: (state, action: PayloadAction<{ id?: string; appletData?: Partial<AppletBuilder> } | Partial<AppletBuilder> | undefined>) => {
-            // Handle different parameter formats for backward compatibility
-            let providedId: string | undefined;
-            let appletData: Partial<AppletBuilder> = {};
-            
-            if (action.payload) {
-                if ('id' in action.payload && 'appletData' in action.payload) {
-                    // New format: { id, appletData }
-                    providedId = action.payload.id;
-                    appletData = action.payload.appletData || {};
-                } else {
-                    // Old format: Partial<AppletBuilder> directly
-                    appletData = action.payload as Partial<AppletBuilder>;
-                }
-            }
-            
-            const id = providedId || uuidv4();
+        startNewApplet: (state, action: PayloadAction<{ id: string }>) => {
+            const id = action.payload.id;
             state.applets[id] = {
                 ...DEFAULT_APPLET,
-                id: id,
-                ...appletData,
+                id,
             } as AppletBuilder;
             state.newAppletId = id;
             state.activeAppletId = id;
@@ -294,6 +292,12 @@ export const appletBuilderSlice = createSlice({
         },
         setError: (state, action: PayloadAction<string | null>) => {
             state.error = action.payload;
+        },
+        startWithData: (state, action: PayloadAction<AppletBuilder>) => {
+            const applet = action.payload;
+            state.applets[applet.id] = applet;
+            state.newAppletId = applet.id;
+            state.activeAppletId = applet.id;
         },
     },
     extraReducers: (builder) => {
@@ -542,6 +546,7 @@ export const appletBuilderSlice = createSlice({
 });
 
 export const {
+    startNewApplet,
     cancelNewApplet,
     setActiveApplet,
     setName,
@@ -573,11 +578,7 @@ export const {
     deleteApplet,
     setLoading,
     setError,
+    startWithData,
 } = appletBuilderSlice.actions;
-
-// Export startNewApplet with proper typing for backward compatibility
-export const startNewApplet = (
-    payload?: { id?: string; appletData?: Partial<AppletBuilder> } | Partial<AppletBuilder>
-) => appletBuilderSlice.actions.startNewApplet(payload);
 
 export default appletBuilderSlice.reducer;
