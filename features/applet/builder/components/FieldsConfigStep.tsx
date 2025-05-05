@@ -7,7 +7,7 @@ import { selectAppletsByAppId, selectActiveAppletId, selectAppletById } from "@/
 import { selectActiveContainerId, selectContainerById, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { selectActiveFieldId, selectNewFieldId } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { setActiveField, startFieldCreation } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
-import { setActiveFieldWithFetchThunk, saveFieldAndUpdateContainerThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
+import { setActiveFieldWithFetchThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import AppletSidebarNavigation from "./smart-parts/applets/AppletSidebarNavigation";
 import FieldsList from "./smart-parts/fields/FieldsList";
 import { FieldSelectorOverlay } from "./smart-parts";
@@ -15,9 +15,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import FieldEditor from "../modules/field-builder/FieldEditor";
-import SectionCard from "../../../../components/official/cards/SectionCard";
-import EmptyStateCard from "../../../../components/official/cards/EmptyStateCard";
+import SectionCard from "@/components/official/cards/SectionCard";
+import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import { AppWindow, Component, PanelRight } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
+import { updateFieldThunk, addFieldThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+
 
 interface FieldsConfigStepProps {
     appId: string;
@@ -41,7 +45,8 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId }) => 
 
     // Get active container info
     const activeContainer = useAppSelector((state) => (activeContainerId ? selectContainerById(state, activeContainerId) : null));
-    const activeGroupLabel = activeContainer?.label || "";
+    const activeContainerLabel = activeContainer?.label || "";
+    const activeContainerFieldCount = activeContainer?.fields?.length || 0;
 
     // Helper to get fields from active container
     const getFieldsFromContainer = () => {
@@ -54,10 +59,20 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId }) => 
         dispatch(setActiveField(null));
     };
 
-    // Handler for field operations (refetch container to update UI)
+
+    const handleFieldClicked = (fieldId: string) => {
+        dispatch(setActiveFieldWithFetchThunk(fieldId));
+    };
+
+    // Handler for field operations (called after field removal)
+    // This should NOT recompile anything, just trigger UI refresh as needed
     const handleFieldOperationCompleted = () => {
-        // No need to do anything here as the Redux state will be updated automatically
-        // and the container data will be refreshed
+        // Simply refresh the UI with whatever is already in state
+        // No database operations needed here as the specific field operations
+        // already handled their own database updates
+        
+        // We could consider refreshing the container from the database,
+        // but that should be an explicit user action, not automatic
     };
 
     const handleCreateNewField = () => {
@@ -73,46 +88,80 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId }) => 
         // Initialize a new field in the Redux store
         dispatch(
             startFieldCreation({
-                // Default values for new field
-                label: "New Field",
-                component: "input",
-                componentProps: {},
+                id: uuidv4(),
             })
         );
     };
 
-    const handleExistingFieldSelect = (field: FieldDefinition) => {
+    const handleExistingFieldSelect = async (field: FieldDefinition) => {
         if (!field.id) {
             console.error("Field ID is missing");
             return;
         }
 
-        // Use the thunk to set the active field with fetching if needed
-        dispatch(setActiveFieldWithFetchThunk(field.id));
+        if (!activeContainerId || !activeAppletId) {
+            toast({
+                title: "Container or Applet not selected",
+                description: "Please select a container and applet before selecting a field",
+                variant: "destructive",
+            });
+            return;
+        }
 
-        toast({
-            title: "Field Selected",
-            description: `You selected the field "${field.label}"`,
-        });
+        try {
+            // Use the thunk to set the active field with fetching if needed
+            await dispatch(setActiveFieldWithFetchThunk(field.id));
+
+            // Add the field to the container using the proper container thunk
+            await dispatch(
+                addFieldThunk({
+                    containerId: activeContainerId,
+                    field: field
+                })
+            ).unwrap();
+            
+            // Recompile the applet to ensure container changes are propagated
+            await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
+
+            toast({
+                title: "Field Selected",
+                description: `Field "${field.label}" added to the container and applet recompiled`,
+            });
+        } catch (error) {
+            console.error('Error adding field to container:', error);
+            toast({
+                title: "Error",
+                description: typeof error === "string" ? error : "Failed to add field to container",
+                variant: "destructive",
+            });
+        }
     };
 
     // Handler for when a field is successfully saved
     const handleFieldSaved = async (fieldId: string) => {
-        if (activeContainerId) {
+        if (activeContainerId && activeAppletId) {
             try {
-                // Save the field and update the container
+                // First, make sure the field is saved (this is handled by FieldEditor directly)
+                // We don't need to call saveFieldThunk here since FieldEditor already does that
+                
+                // Now, we need to refresh the field in the container (proper separation of concerns)
                 await dispatch(
-                    saveFieldAndUpdateContainerThunk({
-                        fieldId,
+                    updateFieldThunk({
                         containerId: activeContainerId,
+                        fieldId: fieldId,
+                        changes: {} // No direct changes needed, we're just triggering a refresh
                     })
                 ).unwrap();
+                
+                // Recompile the applet to ensure container changes are propagated
+                await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
 
                 toast({
                     title: "Success",
-                    description: "Field saved and container updated successfully",
+                    description: "Field saved, container updated, and applet recompiled successfully",
                 });
             } catch (error) {
+                console.error('Error updating container with saved field:', error);
                 toast({
                     title: "Error",
                     description: "Failed to update container with the saved field",
@@ -171,7 +220,12 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId }) => 
 
                     {/* Fields List - now underneath the sidebar */}
                     <div className="min-h-[400px] flex flex-col">
-                        <FieldsList fields={getFieldsFromContainer()} onFieldRemoved={handleFieldOperationCompleted} />
+                        <FieldsList 
+                            fields={getFieldsFromContainer()} 
+                            onFieldRemoved={handleFieldOperationCompleted}
+                            containerId={activeContainerId || undefined}
+                            onFieldClicked={handleFieldClicked}
+                        />
                     </div>
                 </div>
 
@@ -187,11 +241,13 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId }) => 
                                         isCreatingNew={isCreatingNew}
                                         onSaveSuccess={handleFieldSaved}
                                         onCancel={handleFieldEditCancel}
+                                        containerId={activeContainerId}
+
                                     />
                                 ) : (
-                                    <SectionCard title="Field Configuration" description="Select or create a field to configure it">
+                                    <SectionCard title={`Container: ${activeContainerLabel}`} description="Select or create a field to configure it">
                                         <EmptyStateCard
-                                            title="No Field Selected"
+                                            title={`No Field Selected. Total Fields: ${activeContainerFieldCount}`}
                                             description="Choose an existing field from the list on the left to edit its settings, or create a new field component."
                                             icon={Component}
                                             buttonText="Create New Field"

@@ -239,27 +239,32 @@ export const addFieldToGroup = async (groupId: string, fieldId: string): Promise
 };
 
 /**
- * Refreshes a single field in a component group
+ * Adds or refreshes a single field in a component group
+ * Now returns the updated component group instead of a boolean
  */
-export const refreshFieldInGroup = async (groupId: string, fieldId: string): Promise<boolean> => {
+export const addOrRefreshFieldInGroup = async (groupId: string, fieldId: string): Promise<ContainerBuilder> => {
     try {
         const { data, error } = await supabase.rpc("refresh_field_in_group", {
             p_group_id: groupId,
             p_field_id: fieldId,
         });
-
+        
         if (error) {
             console.error("Error refreshing field in group:", error);
             throw error;
         }
-
-        return !!data;
+        
+        if (!data) {
+            throw new Error("No data returned from refresh_field_in_group operation");
+        }
+        
+        // Convert the returned jsonb data to our application format
+        return dbToComponentGroup(data as ComponentGroupDB);
     } catch (err) {
-        console.error("Exception in refreshFieldInGroup:", err);
+        console.error("Exception in addOrRefreshFieldInGroup:", err);
         throw err;
     }
 };
-
 /**
  * Refreshes all fields in a component group
  */

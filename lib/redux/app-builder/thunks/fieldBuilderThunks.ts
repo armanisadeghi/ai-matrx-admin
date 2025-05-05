@@ -8,9 +8,10 @@ import {
     setFieldComponentPublic,
 } from "../service/fieldComponentService";
 import { FieldBuilder } from "../types";
+import { ContainerBuilder } from "../types";
 import { RootState } from "@/lib/redux";
 import { selectFieldById } from "../selectors/fieldSelectors";
-import { refreshFieldInGroup, refreshAllFieldsInGroup } from "../service/fieldContainerService";
+import { addOrRefreshFieldInGroup, refreshAllFieldsInGroup } from "../service/fieldContainerService";
 import { setActiveField } from "../slices/fieldBuilderSlice";
 
 /**
@@ -66,8 +67,22 @@ export const saveFieldAndUpdateContainerThunk = createAsyncThunk(
             
             // If successful, refresh the field in its container
             if (containerId) {
-                // Refresh the specific field in the container
-                await refreshFieldInGroup(containerId, saveResult.id);
+                // Refresh the specific field in the container and get the updated container
+                const updatedContainer = await addOrRefreshFieldInGroup(containerId, saveResult.id);
+                
+                // Verify we got a valid container back
+                if (!updatedContainer || typeof updatedContainer !== 'object' || !updatedContainer.id) {
+                    console.error('Invalid container returned from addOrRefreshFieldInGroup:', updatedContainer);
+                    throw new Error("Failed to get updated container from database");
+                }
+                
+                console.log('Container successfully updated:', updatedContainer);
+                
+                return {
+                    field: saveResult,
+                    containerId,
+                    updatedContainer
+                };
             }
             
             return {
@@ -75,6 +90,7 @@ export const saveFieldAndUpdateContainerThunk = createAsyncThunk(
                 containerId
             };
         } catch (error: any) {
+            console.error('Error in saveFieldAndUpdateContainerThunk:', error);
             return rejectWithValue(
                 error.message || "Failed to save field and update container"
             );
@@ -164,17 +180,19 @@ export const setFieldPublicThunk = createAsyncThunk<void, { id: string; isPublic
  * Thunk to save a field to a container
  */
 export const saveFieldToContainerThunk = createAsyncThunk<
-    void,
+    { containerId: string; updatedContainer: ContainerBuilder },
     { containerId: string; fieldId: string },
     { state: RootState }
 >("fieldBuilder/saveFieldToContainer", async ({ containerId, fieldId }, { rejectWithValue }) => {
     try {
-        // Refresh the field in the container
-        const success = await refreshFieldInGroup(containerId, fieldId);
+        // Refresh the field in the container and get the updated container
+        const updatedContainer = await addOrRefreshFieldInGroup(containerId, fieldId);
         
-        if (!success) {
-            throw new Error("Failed to add field to container");
-        }
+        // Return the updated container for the reducer to update state
+        return { 
+            containerId,
+            updatedContainer 
+        };
     } catch (error: any) {
         console.error("Error saving field to container:", error);
         return rejectWithValue(error.message || "Failed to save field to container");

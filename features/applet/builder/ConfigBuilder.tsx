@@ -17,11 +17,13 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectAppById, selectAppLoading, selectAppError, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { CustomAppConfig, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 import AppBuilderDebugOverlay from "@/components/admin/AppBuilderDebugOverlay";
-import { selectAppletError, selectAppletLoading, selectHasUnsavedAppletChanges } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { selectAppletError, selectAppletLoading, selectAppletsByAppId, selectHasUnsavedAppletChanges } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectContainerError, selectContainerLoading, selectHasUnsavedContainerChanges } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { selectFieldError, selectFieldLoading, selectHasUnsavedFieldChanges } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { v4 as uuidv4 } from "uuid";
 import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
+import { AppletBuilder } from "@/lib/redux/app-builder/types";
+import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 
 
 export const ConfigBuilder = () => {
@@ -33,10 +35,11 @@ export const ConfigBuilder = () => {
     const [nextAppRecompile, setNextAppRecompile] = useState(false);
     const [nextAppletRecompile, setNextAppletRecompile] = useState(false);
     const [nextContainerRecompile, setNextContainerRecompile] = useState(false);
+    const [isCompiling, setIsCompiling] = useState(false);
+    const [compilingErrors, setCompilingErrors] = useState<string[]>([]);
 
 
-
-
+    const allAppApplets = useAppSelector((state) => selectAppletsByAppId(state, selectedAppId)) as AppletBuilder[];
 
     const isAppletLoading = useAppSelector(selectAppletLoading);
     const isAppLoading = useAppSelector(selectAppLoading);
@@ -52,14 +55,13 @@ export const ConfigBuilder = () => {
     const hasUnsavedContainerChanges = useAppSelector(selectHasUnsavedContainerChanges);
     const hasUnsavedFieldChanges = useAppSelector(selectHasUnsavedFieldChanges);
 
-    const isLoading = isAppletLoading || isAppLoading || isContainerLoading || isFieldLoading;
-    const isError = isAppletError || isAppError || isContainerError || isFieldError;
+    const isLoading = isAppletLoading || isAppLoading || isContainerLoading || isFieldLoading || isCompiling;
+    const isError = isAppletError || isAppError || isContainerError || isFieldError || compilingErrors.length > 0;
     const hasUnsavedChanges = hasUnsavedAppChanges || hasUnsavedAppletChanges || hasUnsavedContainerChanges || hasUnsavedFieldChanges;
     const needsRecompile = nextAppRecompile || nextAppletRecompile || nextContainerRecompile;
 
 
     // Applet state
-    const [applets, setApplets] = useState<CustomAppletConfig[]>([]);
     const [activeApplet, setActiveApplet] = useState<string | null>(null);
 
 
@@ -89,8 +91,72 @@ export const ConfigBuilder = () => {
             setActiveStep(3);
         } else if (activeStep === 3) {
             setActiveStep(4);
+        } else if (activeStep === 4) {
+            // Recompile all applets before showing the preview
+            await recompileAllApplets();
         } else if (activeStep < steps.length - 1) {
             setActiveStep(activeStep + 1);
+        }
+    };
+
+    const recompileAllApplets = async () => {
+        if (!selectedAppId || !allAppApplets.length) {
+            toast({
+                title: "No applets found",
+                description: "There are no applets to compile for this app.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        try {
+            setIsCompiling(true);
+            setCompilingErrors([]);
+            
+            // Show toast to indicate compilation is starting
+            toast({
+                title: "Compiling Your App",
+                description: "Please wait while we compile all applets..."
+            });
+            
+            // Create array of promises for all recompile operations
+            const recompilePromises = allAppApplets.map(applet => 
+                dispatch(recompileAppletThunk(applet.id)).unwrap()
+                    .catch(error => {
+                        // Track individual applet compilation errors
+                        setCompilingErrors(prev => [...prev, `Failed to compile ${applet.name || applet.id}: ${error.message || 'Unknown error'}`]);
+                        return null;
+                    })
+            );
+            
+            // Wait for all recompilations to complete
+            const results = await Promise.all(recompilePromises);
+            
+            // Check if any compilation failed
+            if (compilingErrors.length > 0) {
+                toast({
+                    title: "Compilation Failed",
+                    description: `Failed to compile some applets. Please check the errors and try again.`,
+                    variant: "destructive"
+                });
+                return;
+            }
+            
+            // Success case, move to the next step
+            toast({
+                title: "Compilation Complete",
+                description: "Your app is ready for preview!"
+            });
+            
+            setActiveStep(activeStep + 1);
+        } catch (error: any) {
+            toast({
+                title: "Compilation Failed",
+                description: error.message || "An unexpected error occurred during compilation.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsCompiling(false);
         }
     };
 
@@ -98,10 +164,6 @@ export const ConfigBuilder = () => {
         if (activeStep > 0) {
             setActiveStep(activeStep - 1);
         }
-    };
-
-    const updateActiveApplet = (appletId: string) => {
-        setActiveApplet(appletId);
     };
 
     const handleAppSaved = (appId: string) => {
@@ -123,7 +185,21 @@ export const ConfigBuilder = () => {
         });
     };
 
-
+    // Error display component
+    const renderCompilationErrors = () => {
+        if (compilingErrors.length === 0) return null;
+        
+        return (
+            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                <h3 className="text-red-600 dark:text-red-400 font-medium mb-2">Compilation Errors:</h3>
+                <ul className="list-disc pl-5 text-sm text-red-600 dark:text-red-400">
+                    {compilingErrors.map((error, index) => (
+                        <li key={index}>{error}</li>
+                    ))}
+                </ul>
+            </div>
+        );
+    };
 
     // Footer rendering with conditional reset button
     const renderFooter = () => {
@@ -189,9 +265,13 @@ export const ConfigBuilder = () => {
                             {isLoading && (
                                 <div className="absolute inset-0 bg-white/70 dark:bg-gray-900/70 flex flex-col items-center justify-center z-10">
                                     <LoadingSpinner size="lg" />
-                                    <p className="mt-2 text-gray-600 dark:text-gray-300">Loading...</p>
+                                    <p className="mt-2 text-gray-600 dark:text-gray-300">
+                                        {isCompiling ? "Compiling Your App..." : "Loading..."}
+                                    </p>
                                 </div>
                             )}
+
+                            {renderCompilationErrors()}
 
                             {activeStep === 0 && (
                                 <SelectAppStep

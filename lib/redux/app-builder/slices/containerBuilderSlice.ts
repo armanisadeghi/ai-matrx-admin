@@ -16,7 +16,7 @@ import {
     saveContainerAndUpdateAppletThunk,
     FetchContainerByIdSuccessAction,
 } from "../thunks/containerBuilderThunks";
-import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
+import { saveFieldAndUpdateContainerThunk, saveFieldToContainerThunk } from "../thunks/fieldBuilderThunks";
 import { ContainerBuilder } from "../types";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 import { v4 as uuidv4 } from "uuid";
@@ -383,12 +383,21 @@ export const containerBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(updateFieldThunk.fulfilled, (state, action) => {
-            const { containerId, fieldId, updatedField } = action.payload;
+            const { containerId, fieldId, updatedField, updatedContainer } = action.payload;
             if (state.containers[containerId]) {
-                const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === fieldId);
-                if (fieldIndex >= 0) {
-                    state.containers[containerId].fields[fieldIndex] = updatedField;
-                    state.containers[containerId].isDirty = true;
+                if (updatedContainer) {
+                    // Use the complete updated container from the database
+                    state.containers[containerId] = {
+                        ...updatedContainer,
+                        isDirty: false
+                    };
+                } else {
+                    // Fallback to just updating the specific field (legacy support)
+                    const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === fieldId);
+                    if (fieldIndex >= 0) {
+                        state.containers[containerId].fields[fieldIndex] = updatedField;
+                        state.containers[containerId].isDirty = false;
+                    }
                 }
             }
             state.isLoading = false;
@@ -508,16 +517,24 @@ export const containerBuilderSlice = createSlice({
 
         // Handle saveFieldAndUpdateContainerThunk
         builder.addCase(saveFieldAndUpdateContainerThunk.fulfilled, (state, action) => {
-            const { field, containerId } = action.payload;
+            const { field, containerId, updatedContainer } = action.payload;
             
-            if (field && containerId && state.containers[containerId]) {
-                // Find if the field already exists in the container
-                const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === field.id);
-                
-                if (fieldIndex >= 0) {
-                    // Update existing field
-                    state.containers[containerId].fields[fieldIndex] = field;
-                    state.containers[containerId].isDirty = true;
+            if (containerId && state.containers[containerId]) {
+                if (updatedContainer) {
+                    // Use the complete updated container from the database
+                    state.containers[containerId] = {
+                        ...updatedContainer,
+                        isDirty: false
+                    };
+                } else if (field) {
+                    // Fallback to just updating the specific field (legacy support)
+                    const fieldIndex = state.containers[containerId].fields.findIndex(f => f.id === field.id);
+                    
+                    if (fieldIndex >= 0) {
+                        // Update existing field
+                        state.containers[containerId].fields[fieldIndex] = field;
+                        state.containers[containerId].isDirty = false;
+                    }
                 }
             }
         });
@@ -526,6 +543,28 @@ export const containerBuilderSlice = createSlice({
         builder.addCase("containerBuilder/fetchContainerByIdSuccess", (state, action: FetchContainerByIdSuccessAction) => {
             state.containers[action.payload.id] = { ...action.payload, isDirty: false };
             state.isLoading = false;
+        });
+        
+        // Handle saveFieldToContainerThunk
+        builder.addCase(saveFieldToContainerThunk.fulfilled, (state, action) => {
+            const { containerId, updatedContainer } = action.payload;
+            
+            if (containerId && updatedContainer) {
+                console.log('Updating container state with:', updatedContainer);
+                
+                // Make sure we always have a fields array
+                const fields = updatedContainer.fields || [];
+                
+                // Update the container in state
+                state.containers[containerId] = {
+                    ...updatedContainer,
+                    fields, // Ensure fields is properly populated
+                    isDirty: false,
+                    isLocal: false
+                };
+            } else {
+                console.warn('saveFieldToContainerThunk succeeded but missing data:', action.payload);
+            }
         });
     },
 });

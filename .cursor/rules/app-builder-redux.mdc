@@ -100,3 +100,54 @@ Any generated code that does not meet these guidelines will be rejected.
 - All new entity IDs are generated using UUID v4
 - This ensures consistency and prevents conflicts when creating multiple items locally
 - This applies to apps, applets, containers, and fields
+
+
+
+## Correct Architecture: (Field/Container Relationship)
+
+1. **Fields**: Core library components that users configure extensively
+2. **Containers/Groups**: Collections of field snapshots
+3. **Key Insight**: When adding a field to a container, a **compiled snapshot** is created and stored in the container - not just a reference
+
+## Field-Container Relationship:
+
+1. Each container has its own independent copy of a field
+2. Changes to the original field in the library don't automatically affect containers
+3. Updates to a field within a specific container context should only affect that container's copy
+
+## Correct Operations:
+
+1. **Adding a field to container**: Creates a compiled snapshot of the current field state
+   ```typescript
+   // This correctly associates a field with a container by creating a compiled copy
+   saveFieldToContainerThunk({fieldId, containerId});
+   ```
+
+2. **Updating a field in container context**: Only updates that container's copy
+   ```typescript
+   // This correctly updates the specific field and recompiles just that field in this container
+   saveFieldAndUpdateContainerThunk({fieldId, containerId});
+   ```
+
+3. **Removing a field from container**: Only removes that container's copy
+   ```typescript
+   // This correctly removes only this container's copy of the field
+   removeFieldFromGroup(containerIdToUse, fieldId);
+   ```
+
+4. **Creating a new field in container context**: Creates and adds a compiled copy
+   ```typescript
+   // First save the new field to the library
+   saveFieldThunk(fieldId)
+   // Then create a compiled copy in the container
+   saveFieldToContainerThunk({fieldId, containerId});
+   ```
+
+## Context Awareness:
+
+In the UI we're currently reviewing, the user is working within a specific container context, so:
+1. Field edits should update both the library version and this container's copy
+2. We need to maintain the connection between the field in the library and this container's copy
+3. Operations are scoped to this specific container - not affecting other containers with copies of the same field
+
+This makes complete sense architecturally - it allows flexibility while preserving container-specific customizations. Thank you for helping me understand this critical distinction!

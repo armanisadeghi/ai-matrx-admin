@@ -11,7 +11,7 @@ import {
     createComponentGroup,
     deleteComponentGroup,
     updateComponentGroup,
-    refreshFieldInGroup,
+    addOrRefreshFieldInGroup,
     refreshAllFieldsInGroup,
     addFieldToGroup,
     removeFieldFromGroup,
@@ -455,11 +455,43 @@ export const GroupBuilder = () => {
         if (!groupToRefresh) return;
         setLoading(true);
         try {
-          let refreshSuccess = false;
-          
           if (refreshOption === "all") {
             // Refresh all fields in the group
-            refreshSuccess = await refreshAllFieldsInGroup(groupToRefresh);
+            const refreshSuccess = await refreshAllFieldsInGroup(groupToRefresh);
+            
+            if (refreshSuccess) {
+              // After refresh, fetch updated group directly from database
+              const updatedGroup = await getComponentGroupById(groupToRefresh);
+              
+              if (updatedGroup) {
+                // Update the local state with fresh data from database
+                setSavedGroups(prevGroups => 
+                  prevGroups.map(group => 
+                    group.id === groupToRefresh ? updatedGroup : group
+                  )
+                );
+                
+                // Update form if editing this group
+                if (selectedGroup?.id === groupToRefresh) {
+                  setNewGroup({
+                    ...newGroup,
+                    fields: updatedGroup.fields,
+                  });
+                  setSelectedGroup(updatedGroup);
+                }
+                
+                toast({
+                  title: "Fields Refreshed",
+                  description: "All fields in the group have been refreshed."
+                });
+              }
+            } else {
+              toast({
+                title: "Refresh Warning",
+                description: "Some fields could not be refreshed. Please try again.",
+                variant: "destructive",
+              });
+            }
           } else {
             // Refresh only selected fields
             if (fieldsToRefresh.length === 0) {
@@ -472,24 +504,26 @@ export const GroupBuilder = () => {
               return;
             }
             
-            // Refresh each selected field
-            let allSuccess = true;
-            for (const fieldId of fieldsToRefresh) {
-              const success = await refreshFieldInGroup(groupToRefresh, fieldId);
-              if (!success) allSuccess = false;
-            }
-            refreshSuccess = allSuccess;
-          }
-          
-          if (refreshSuccess) {
-            // After refresh, fetch updated group directly from database
-            const updatedGroup = await getComponentGroupById(groupToRefresh);
+            // Get the most recent version of the updated container after all refreshes
+            let finalUpdatedContainer = null;
             
-            if (updatedGroup) {
-              // Update the local state with fresh data from database
+            // Refresh each selected field
+            for (const fieldId of fieldsToRefresh) {
+              try {
+                // Each call returns the updated container
+                const updatedContainer = await addOrRefreshFieldInGroup(groupToRefresh, fieldId);
+                finalUpdatedContainer = updatedContainer;
+              } catch (error) {
+                console.error(`Error refreshing field ${fieldId}:`, error);
+              }
+            }
+            
+            // If we got an updated container from any of the operations
+            if (finalUpdatedContainer) {
+              // Update the local state with the updated container
               setSavedGroups(prevGroups => 
                 prevGroups.map(group => 
-                  group.id === groupToRefresh ? updatedGroup : group
+                  group.id === groupToRefresh ? finalUpdatedContainer : group
                 )
               );
               
@@ -497,24 +531,22 @@ export const GroupBuilder = () => {
               if (selectedGroup?.id === groupToRefresh) {
                 setNewGroup({
                   ...newGroup,
-                  fields: updatedGroup.fields,
+                  fields: finalUpdatedContainer.fields,
                 });
-                setSelectedGroup(updatedGroup);
+                setSelectedGroup(finalUpdatedContainer);
               }
               
               toast({
                 title: "Fields Refreshed",
-                description: refreshOption === "all" 
-                  ? "All fields in the group have been refreshed." 
-                  : `${fieldsToRefresh.length} fields have been refreshed.`,
+                description: `${fieldsToRefresh.length} fields have been refreshed.`
+              });
+            } else {
+              toast({
+                title: "Refresh Warning",
+                description: "Could not refresh any fields. Please try again.",
+                variant: "destructive",
               });
             }
-          } else {
-            toast({
-              title: "Refresh Warning",
-              description: "Some fields could not be refreshed. Please try again.",
-              variant: "destructive",
-            });
           }
         } catch (error) {
           console.error("Error refreshing fields:", error);

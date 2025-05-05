@@ -5,7 +5,7 @@ import {
     deleteComponentGroup,
     addFieldToGroup,
     removeFieldFromGroup,
-    refreshFieldInGroup,
+    addOrRefreshFieldInGroup,
     refreshAllFieldsInGroup,
     getAllComponentGroups,
     getComponentGroupById,
@@ -209,7 +209,7 @@ export const removeFieldThunk = createAsyncThunk<
 
 // Update a field within a container
 export const updateFieldThunk = createAsyncThunk<
-    { containerId: string; fieldId: string; updatedField: FieldDefinition },
+    { containerId: string; fieldId: string; updatedField: FieldDefinition; updatedContainer: ContainerBuilder },
     { containerId: string; fieldId: string; changes: Partial<FieldDefinition> },
     { state: RootState }
 >("containerBuilder/updateField", async ({ containerId, fieldId, changes }, { getState, rejectWithValue }) => {
@@ -234,11 +234,10 @@ export const updateFieldThunk = createAsyncThunk<
             ...changes,
         };
         
-        // This will need to leverage your existing systems
-        // For now we'll just refresh the field to ensure consistency
-        await refreshFieldInGroup(containerId, fieldId);
+        // Refresh the field to ensure consistency and get the updated container
+        const updatedContainer = await addOrRefreshFieldInGroup(containerId, fieldId);
         
-        return { containerId, fieldId, updatedField };
+        return { containerId, fieldId, updatedField, updatedContainer };
     } catch (error: any) {
         console.error("Error updating field:", error);
         return rejectWithValue(error.message || "Failed to update field");

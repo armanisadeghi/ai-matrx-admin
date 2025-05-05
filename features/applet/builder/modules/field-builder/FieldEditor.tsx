@@ -10,16 +10,19 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import SectionCard from "../../../../../components/official/cards/SectionCard";
+import SectionCard from "@/components/official/cards/SectionCard";
 import {
     selectFieldById,
     selectFieldError,
     selectFieldLoading,
     selectFieldComponent,
 } from "@/lib/redux/app-builder/selectors/fieldSelectors";
+import { selectActiveContainerId } from "@/lib/redux/app-builder/selectors/containerSelectors";
+import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { startFieldCreation, setActiveField } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { saveFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { addFieldThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 
 interface FieldEditorProps {
     fieldId?: string;
@@ -41,6 +44,8 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
     const isLoading = useAppSelector(selectFieldLoading);
     const error = useAppSelector(selectFieldError);
     const component = useAppSelector((state) => selectFieldComponent(state, localFieldId));
+    const activeContainerId = useAppSelector(selectActiveContainerId);
+    const activeAppletId = useAppSelector(selectActiveAppletId);
 
     // Preview state for component type selection (kept as local state)
     const [selectedComponentType, setSelectedComponentType] = useState<ComponentType | null>("textarea");
@@ -86,11 +91,30 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         if (!localFieldId) return;
 
         try {
+            // First save the field
             const savedComponent = await dispatch(saveFieldThunk(localFieldId)).unwrap();
+            
+            // Determine the container ID to use
+            const containerIdToUse = containerId || activeContainerId;
+            
+            // If we have a container ID, add the field to the container
+            if (containerIdToUse) {
+                await dispatch(
+                    addFieldThunk({
+                        containerId: containerIdToUse,
+                        field: savedComponent
+                    })
+                ).unwrap();
+                
+                // Recompile the applet if we have an active applet ID
+                if (activeAppletId) {
+                    await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
+                }
+            }
 
             toast({
                 title: "Success",
-                description: `Field component ${isCreatingNew ? "created" : "updated"} successfully`,
+                description: `Field component ${isCreatingNew ? "created" : "updated"} successfully${containerIdToUse ? ' and associated with container' : ''}${(containerIdToUse && activeAppletId) ? ', applet recompiled' : ''}`,
             });
 
             if (onSaveSuccess) {
@@ -107,10 +131,37 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
     };
 
     // Compile and add to container
-    const handleCompileAndAdd = () => {
-        handleSave();
-        if (containerId) {
-            addFieldThunk({ containerId, field: field });
+    const handleCompileAndAdd = async () => {
+        // Save the field first
+        await handleSave();
+        
+        // Only proceed if we have a container ID and a valid field
+        if (containerId && field) {
+            try {
+                // Use the appropriate container thunk to add the field
+                await dispatch(
+                    addFieldThunk({
+                        containerId: containerId,
+                        field: field
+                    })
+                ).unwrap();
+                
+                // Recompile the applet if we have an active applet ID
+                if (activeAppletId) {
+                    await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
+                }
+                
+                toast({
+                    title: "Success",
+                    description: `Field compiled and added to container successfully${activeAppletId ? ', applet recompiled' : ''}`,
+                });
+            } catch (err: any) {
+                toast({
+                    title: "Error",
+                    description: err.message || "Failed to compile and add field",
+                    variant: "destructive",
+                });
+            }
         }
     };
 

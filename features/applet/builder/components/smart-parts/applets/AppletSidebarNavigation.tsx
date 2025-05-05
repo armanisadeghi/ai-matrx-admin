@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectAppletsByAppId, selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
@@ -34,6 +34,7 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
     onAddContainer,
 }) => {
     const dispatch = useAppDispatch();
+    const initialSelectionMade = useRef(false);
 
     // Redux state
     const applets = useAppSelector((state) => selectAppletsByAppId(state, appId));
@@ -41,6 +42,20 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
     const activeAppletId = useAppSelector(selectActiveAppletId);
     const activeContainerId = useAppSelector(selectActiveContainerId);
     const allContainerIds = useAppSelector(selectAllContainerIds);
+
+    // Auto-select first container on initial render
+    useEffect(() => {
+        if (applets.length > 0 && !initialSelectionMade.current) {
+            initialSelectionMade.current = true;
+            const firstApplet = applets[0];
+            if (firstApplet?.containers && firstApplet.containers.length > 0) {
+                const firstContainer = firstApplet.containers[0];
+                handleGroupChange(firstApplet.id, firstContainer.id);
+            } else if (firstApplet?.id) {
+                dispatch(setActiveAppletWithFetchThunk(firstApplet.id));
+            }
+        }
+    }, [applets, dispatch]);
 
     const handleExistingContainerSelect = async (group: ComponentGroup) => {
         const containerExists = allContainerIds.includes(group.id);
@@ -89,16 +104,32 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
         dispatch(setActiveContainer(null));
     };
 
-    const handleGroupChange = (appletId: string, containerId: string) => {
-        // Make sure the applet is set as active
-        dispatch(setActiveAppletWithFetchThunk(appletId));
+    const handleGroupChange = async (appletId: string, containerId: string) => {
+        // Check if container exists in state
+        const containerExists = allContainerIds.includes(containerId);
 
-        // Set the active container
-        dispatch(setActiveContainerWithFetchThunk(containerId));
+        try {
+            // Make sure the applet is set as active
+            dispatch(setActiveAppletWithFetchThunk(appletId));
 
-        // Notify parent component if callback provided
-        if (onSelectContainer) {
-            onSelectContainer(appletId, containerId);
+            // Fetch the container if it's not in state
+            if (!containerExists) {
+                await dispatch(fetchContainerByIdThunk(containerId)).unwrap();
+            }
+
+            // Set the active container
+            dispatch(setActiveContainerWithFetchThunk(containerId));
+
+            // Notify parent component if callback provided
+            if (onSelectContainer) {
+                onSelectContainer(appletId, containerId);
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: typeof error === "string" ? error : "Failed to load container.",
+                variant: "destructive",
+            });
         }
     };
 
@@ -148,7 +179,7 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
                                         <GroupSelectorOverlay
                                             triggerComponent={
                                                 <button className="w-full flex items-center justify-between px-2 py-1.5 text-sm rounded-md my-1 border border-dashed border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
-                                                    <span>Add Existing Container</span>
+                                                    <span>Add another existing container</span>
                                                     <PlusCircle className="h-4 w-4" />
                                                 </button>
                                             }

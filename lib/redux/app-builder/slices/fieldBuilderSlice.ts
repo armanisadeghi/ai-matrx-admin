@@ -393,7 +393,9 @@ export const fieldBuilderSlice = createSlice({
             state.isLoading = true;
             state.error = null;
         });
-        builder.addCase(saveFieldToContainerThunk.fulfilled, (state) => {
+        builder.addCase(saveFieldToContainerThunk.fulfilled, (state, action) => {
+            // Only handles the field state loading status
+            // The container state is updated in containerBuilderSlice
             state.isLoading = false;
         });
         builder.addCase(saveFieldToContainerThunk.rejected, (state, action) => {

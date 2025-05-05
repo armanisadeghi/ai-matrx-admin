@@ -424,10 +424,13 @@ export const recompileContainerInAppletById = async (appletId: string, groupId: 
  */
 export const recompileAllContainersInApplet = async (appletId: string): Promise<boolean> => {
     try {
+        console.log("Recompiling all containers in applet:", appletId);
         const { data, error } = await supabase.rpc("refresh_all_groups_in_applet", {
             p_applet_id: appletId,
         });
 
+        console.log("Recompiled all containers in applet:", data);
+        
         if (error) {
             console.error("Error recompiling all groups in applet:", error);
             throw error;

@@ -6,40 +6,65 @@ import { Button } from '@/components/ui/button';
 import { FieldDefinition } from '@/features/applet/builder/builder.types';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { selectFieldLoading } from '@/lib/redux/app-builder/selectors/fieldSelectors';
-import { deleteFieldThunk } from '@/lib/redux/app-builder/thunks/fieldBuilderThunks';
 import { useToast } from '@/components/ui/use-toast';
 import SectionCard from '@/components/official/cards/SectionCard';
 import EmptyStateCard from '@/components/official/cards/EmptyStateCard';
 import { ListX } from 'lucide-react';
+import { selectActiveContainerId } from '@/lib/redux/app-builder/selectors/containerSelectors';
+import { removeFieldThunk } from '@/lib/redux/app-builder/thunks/containerBuilderThunks';
+import { selectActiveAppletId } from '@/lib/redux/app-builder/selectors/appletSelectors';
+import { recompileAppletThunk } from '@/lib/redux/app-builder/thunks/appletBuilderThunks';
 
 interface FieldsListProps {
   fields: FieldDefinition[];
   title?: string;
   description?: string;
   onFieldRemoved?: () => void;
+  containerId?: string; // Allow overriding the container ID
+  onFieldClicked?: (fieldId: string) => void;
 }
 
 const FieldsList: React.FC<FieldsListProps> = ({ 
   fields, 
   title = "Configured Fields",
   description = "Fields in this group",
-  onFieldRemoved
+  onFieldRemoved,
+  containerId,
+  onFieldClicked,
 }) => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   
   // Redux state
   const fieldLoading = useAppSelector(selectFieldLoading);
+  const activeContainerId = useAppSelector(selectActiveContainerId);
+  const activeAppletId = useAppSelector(selectActiveAppletId);
 
   const handleRemoveField = async (fieldId: string) => {
     if (fieldId) {
       try {
-        // Delete the field
-        await dispatch(deleteFieldThunk(fieldId)).unwrap();
+        const containerIdToUse = containerId || activeContainerId;
+        
+        // First, remove the field from the container using the appropriate thunk
+        if (containerIdToUse) {
+          await dispatch(
+            removeFieldThunk({
+              containerId: containerIdToUse,
+              fieldId: fieldId
+            })
+          ).unwrap();
+          
+          // Recompile the applet if we have an active applet
+          if (activeAppletId) {
+            await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
+          }
+        }
+        
+        // Note: We intentionally do NOT delete the actual field component, just its connection to this container
         
         toast({
           title: "Field Removed",
-          description: "Field has been removed from the container."
+          description: "Field has been removed from the container and applet recompiled",
         });
         
         // Notify parent component if callback provided
@@ -47,12 +72,12 @@ const FieldsList: React.FC<FieldsListProps> = ({
           onFieldRemoved();
         }
       } catch (error) {
+        console.error("Error removing field:", error);
         toast({
           title: "Error",
           description: "Failed to remove field. Please try again.",
-          variant: "destructive"
+          variant: "destructive",
         });
-        console.error("Error removing field:", error);
       }
     }
   };
@@ -75,7 +100,8 @@ const FieldsList: React.FC<FieldsListProps> = ({
             {fields.map((field, index) => (
               <div 
                 key={field.id || index}
-                className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900"
+                className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                onClick={() => onFieldClicked && field.id && onFieldClicked(field.id)}
               >
                 <div className="flex justify-between items-start">
                   <div>
@@ -93,7 +119,10 @@ const FieldsList: React.FC<FieldsListProps> = ({
                   <Button
                     variant="ghost" 
                     size="sm"
-                    onClick={() => handleRemoveField(field.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveField(field.id);
+                    }}
                     disabled={fieldLoading}
                     className="h-6 w-6 p-0 rounded-full text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
                   >
