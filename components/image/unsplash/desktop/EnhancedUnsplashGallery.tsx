@@ -2,12 +2,11 @@
 import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useUnsplashGallery } from '@/hooks/images/useUnsplashGallery';
-import { ImageCard } from './ImageCard';
+import { DesktopImageCard } from '../../shared/DesktopImageCard';
 import { EnhancedImageViewer } from './EnhancedImageViewer';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Grid, Grid3X3 } from 'lucide-react';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { SearchBar } from '@/components/image/gallery/SearchBar';
+import { Loader2 } from 'lucide-react';
+import { UnsplashSearch } from '../UnsplashSearch';
 
 export interface Photo {
     id: string;
@@ -33,7 +32,11 @@ export interface Photo {
     };
 }
 
-export function EnhancedUnsplashGallery() {
+export interface EnhancedUnsplashGalleryProps {
+    initialSearchTerm?: string;
+}
+
+export function EnhancedUnsplashGallery({ initialSearchTerm }: EnhancedUnsplashGalleryProps) {
     const {
         photos,
         loading,
@@ -47,12 +50,18 @@ export function EnhancedUnsplashGallery() {
         closePhotoView,
         toggleFavorite,
         downloadImage,
+        currentSortOrder,
+        currentOrientation,
+        currentPremiumFilter,
+        sortOrderOptions,
+        orientationOptions,
+        premiumFilterOptions
     } = useUnsplashGallery();
 
     const [viewMode, setViewMode] = useState<'grid' | 'natural'>('grid');
     const { toast } = useToast();
     const observer = useRef<IntersectionObserver | null>(null);
-    const [searchQuery, setSearchQuery] = useState('ai');
+    const [searchQuery, setSearchQuery] = useState(initialSearchTerm || 'ai');
     const [isSharing, setIsSharing] = useState(false);
 
     const lastPhotoElementRef = useCallback(
@@ -71,11 +80,12 @@ export function EnhancedUnsplashGallery() {
 
     const handleShare = async (photo: Photo) => {
         try {
-            await navigator.clipboard.writeText(photo.links.html);
+            const imageUrl = photo.urls.full || photo.urls.regular;
+            await navigator.clipboard.writeText(imageUrl);
             setIsSharing(true);
             toast({
-                title: 'Link copied',
-                description: 'The image link has been copied to your clipboard.',
+                title: 'Image link copied',
+                description: 'The direct image URL has been copied to your clipboard.',
             });
             setTimeout(() => setIsSharing(false), 2000);
         } catch (err) {
@@ -100,52 +110,45 @@ export function EnhancedUnsplashGallery() {
         });
     };
 
-    const handleSearchChange = (query: string) => {
+    const handleSearchChange = (query: string, options: any = {}) => {
         setSearchQuery(query);
-        handleSearch(query);
+        handleSearch(query, options);
+    };
+
+    const handleViewModeChange = (mode: 'grid' | 'natural') => {
+        setViewMode(mode);
     };
 
     useEffect(() => {
-        handleSearch('ai');
+        handleSearch(searchQuery);
     }, []);
 
     return (
-        <div className="container mx-auto p-4 space-y-8">
-            <h1 className="text-4xl font-bold text-foreground mb-6">Public Image Gallery</h1>
-
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-                <SearchBar
+        <div className="w-full p-4 space-y-8">
+            <div className="w-full mb-6">
+                <UnsplashSearch
                     onSearch={handleSearchChange}
                     loading={loading}
-                    placeholder="Search Unsplash..."
-                    defaultValue={searchQuery}
-                    className="max-w-3xl w-full"
-                    debounceTime={300}
-                    showClearButton={true}
-                    autoFocus={false}
-                    onFocus={() => console.log("Search focused")}
-                    onBlur={() => console.log("Search blurred")}
+                    initialSearchTerm={searchQuery}
+                    className="w-full"
+                    currentSortOrder={currentSortOrder}
+                    currentOrientation={currentOrientation}
+                    currentPremiumFilter={currentPremiumFilter}
+                    sortOrderOptions={sortOrderOptions}
+                    orientationOptions={orientationOptions}
+                    premiumFilterOptions={premiumFilterOptions}
+                    viewMode={viewMode}
+                    onViewModeChange={handleViewModeChange}
                 />
-                
-                <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as 'grid' | 'natural')}>
-                    <ToggleGroupItem value="grid" aria-label="Grid view">
-                        <Grid3X3 className="h-4 w-4 mr-1" />
-                        <span className="hidden sm:inline">Grid</span>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="natural" aria-label="Natural view">
-                        <Grid className="h-4 w-4 mr-1" />
-                        <span className="hidden sm:inline">Natural</span>
-                    </ToggleGroupItem>
-                </ToggleGroup>
             </div>
 
-            <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 ${viewMode === 'natural' ? 'items-start' : ''}`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 ${viewMode === 'natural' ? 'items-start' : ''}`}>
                 {photos.map((photo, index) => (
                     <div
-                        key={photo.id}
+                        key={`${photo.id}-${index}`}
                         ref={index === photos.length - 1 ? lastPhotoElementRef : undefined}
                     >
-                        <ImageCard 
+                        <DesktopImageCard 
                             photo={photo} 
                             onClick={() => handlePhotoClick(photo)}
                             viewMode={viewMode}

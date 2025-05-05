@@ -1,6 +1,6 @@
 // SearchGroupField.tsx
 import React from 'react';
-import SearchField from '../../components/search-bar/field/SearchField';
+import SearchField from '@/features/applet/runner/components/search-bar/field/SearchField';
 import { ButtonField, SelectField, InputField, TextareaField } from './index';
 import { ButtonFieldConfig, GroupFieldConfig, SelectFieldConfig, TextareaFieldConfig } from './types';
 

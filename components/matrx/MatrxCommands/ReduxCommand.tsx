@@ -1,7 +1,7 @@
 import {ReactNode} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {Dispatch} from '@reduxjs/toolkit';
-import IconButton from "@/components/ui/IconButton";
+import IconButton from "@/components/official/IconButton";
 import {TrashIcon} from "lucide-react";
 import {CommandContext, BaseCommandConfig, CommandResult} from "@/components/matrx/MatrxCommands/types";
 import {showConfirmDialog, showErrorToast} from "@/components/matrx/MatrxCommands/helpers";

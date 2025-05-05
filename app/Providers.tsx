@@ -10,7 +10,7 @@ import { ThemeProvider } from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { InitialReduxState } from "@/types/reduxTypes";
-import { SocketProvider } from "@/providers/SocketProvider";
+// import { SocketProvider } from "@/providers/SocketProvider";
 import { RefProvider } from "@/lib/refs";
 import { RecoilRoot } from "recoil";
 import { ToastProvider } from "@/providers";
@@ -25,11 +25,14 @@ import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 import { ChipMenuProvider } from "@/features/rich-text-editor/components/ChipContextMenu";
 import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
 import { EditorProvider } from "@/providers/rich-text-editor/Provider";
-import { SearchTabProvider } from "@/context/SearchTabContext";
+import { AppletDataProvider } from "@/context/AppletDataContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
+import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
+import { UniformHeightProvider } from "@/features/applet/layouts/core";
+
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
 let globalUserId: string | null = null;
@@ -56,42 +59,46 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                     <ThemeProvider defaultTheme="dark" enableSystem={false}>
                         <PersistentComponentProvider>
                             <EntityProvider>
-                                <SocketProvider>
-                                    <DialogProvider>
-                                        <ContextMenuProvider>
-                                            <ChipMenuProvider>
-                                                <ToastProvider>
-                                                    <PreferenceSyncProvider>
-                                                        <RefProvider>
-                                                            <EditorProvider>
-                                                                <FileSystemProvider initialBucket="Audio" allowedBuckets={allowedBuckets}>
-                                                                    <OldFileSystemProvider>
-                                                                        <FileSystemDialogs />
-                                                                        <HeroUIProvider>
-                                                                            <TooltipProvider delayDuration={200}>
-                                                                                <AudioModalProvider>
-                                                                                    <ModuleHeaderProvider>
-                                                                                        <GoogleAPIProvider>
-                                                                                            <SearchTabProvider isMobile={isMobile}>
-                                                                                                <PersistentDOMConnector />
-                                                                                                {children}
-                                                                                            </SearchTabProvider>
-                                                                                        </GoogleAPIProvider>
-                                                                                    </ModuleHeaderProvider>
-                                                                                    <Toaster />
-                                                                                </AudioModalProvider>
-                                                                            </TooltipProvider>
-                                                                        </HeroUIProvider>
-                                                                    </OldFileSystemProvider>
-                                                                </FileSystemProvider>
-                                                            </EditorProvider>
-                                                        </RefProvider>
-                                                    </PreferenceSyncProvider>
-                                                </ToastProvider>
-                                            </ChipMenuProvider>
-                                        </ContextMenuProvider>
-                                    </DialogProvider>
-                                </SocketProvider>
+                                {/* <SocketProvider> */}
+                                <DialogProvider>
+                                    <ContextMenuProvider>
+                                        <ChipMenuProvider>
+                                            <ToastProvider>
+                                                <PreferenceSyncProvider>
+                                                    <RefProvider>
+                                                        <EditorProvider>
+                                                            <FileSystemProvider initialBucket="Audio" allowedBuckets={allowedBuckets}>
+                                                                <OldFileSystemProvider>
+                                                                    <FileSystemDialogs />
+                                                                    <HeroUIProvider>
+                                                                        <TooltipProvider delayDuration={200}>
+                                                                            <AudioModalProvider>
+                                                                                <ModuleHeaderProvider>
+                                                                                    <GoogleAPIProvider>
+                                                                                        <AppletDataProvider isMobile={isMobile}>
+                                                                                            <UniformHeightProvider>
+                                                                                                <SelectedImagesProvider>
+                                                                                                    <PersistentDOMConnector />
+                                                                                                    {children}
+                                                                                                </SelectedImagesProvider>
+                                                                                            </UniformHeightProvider>
+                                                                                        </AppletDataProvider>
+                                                                                    </GoogleAPIProvider>
+                                                                                </ModuleHeaderProvider>
+                                                                                <Toaster />
+                                                                            </AudioModalProvider>
+                                                                        </TooltipProvider>
+                                                                    </HeroUIProvider>
+                                                                </OldFileSystemProvider>
+                                                            </FileSystemProvider>
+                                                        </EditorProvider>
+                                                    </RefProvider>
+                                                </PreferenceSyncProvider>
+                                            </ToastProvider>
+                                        </ChipMenuProvider>
+                                    </ContextMenuProvider>
+                                </DialogProvider>
+                                {/* </SocketProvider> */}
                             </EntityProvider>
                         </PersistentComponentProvider>
                     </ThemeProvider>

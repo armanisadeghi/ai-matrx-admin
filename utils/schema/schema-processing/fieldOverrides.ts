@@ -426,6 +426,10 @@ const toolFieldOverrides: AllFieldOverrides = {};
 
 const transformerFieldOverrides: AllFieldOverrides = {};
 
+const userListItemsFieldOverrides: AllFieldOverrides = {};
+
+const userListsFieldOverrides: AllFieldOverrides = {};
+
 const userPreferencesFieldOverrides: AllFieldOverrides = {};
 
 const userTablesFieldOverrides: AllFieldOverrides = {};
@@ -527,6 +531,8 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     tasks: tasksFieldOverrides,
     tool: toolFieldOverrides,
     transformer: transformerFieldOverrides,
+    userListItems: userListItemsFieldOverrides,
+    userLists: userListsFieldOverrides,
     userPreferences: userPreferencesFieldOverrides,
     userTables: userTablesFieldOverrides,
     wcClaim: wcClaimFieldOverrides,

@@ -1,0 +1,369 @@
+/* Base styles */
+.card {
+  @apply border bg-white shadow-sm rounded-xl overflow-hidden;
+}
+
+/* Dark mode for card - we're setting these explicitly rather than using dark: variants */
+.card:global(.dark) {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.header {
+  @apply px-4 py-3 border-b flex items-center justify-between;
+}
+
+/* Apply dark mode to header when parent has dark class */
+.card:global(.dark) .header {
+  @apply border-gray-700;
+}
+
+.title {
+  @apply font-medium;
+}
+
+.description {
+  @apply text-sm;
+}
+
+.content {
+  @apply p-4;
+}
+
+/* Apply dark mode to content */
+.card:global(.dark) .content {
+  @apply text-gray-200;
+}
+
+.footer {
+  @apply px-4 py-3 border-t flex flex-wrap items-center;
+}
+
+/* Apply dark mode to footer */
+.card:global(.dark) .footer {
+  @apply border-gray-700;
+}
+
+.footerLeft {
+  @apply flex-1 flex justify-start space-x-2 min-w-[33%] sm:min-w-0;
+}
+
+.footerCenter {
+  @apply flex-1 flex justify-center space-x-2 min-w-[33%] sm:min-w-0 mt-2 sm:mt-0;
+}
+
+.footerRight {
+  @apply flex-1 flex justify-end space-x-2 min-w-[33%] sm:min-w-0 mt-2 sm:mt-0;
+}
+
+.headerActions {
+  @apply flex items-center space-x-2 ml-4 flex-shrink-0;
+}
+
+/* Main base colors - for backgrounds, borders, etc. */
+
+/* Slate */
+.mainSlate .header {
+  @apply bg-slate-100 border-slate-200;
+}
+.mainSlate:global(.dark) .header {
+  @apply bg-slate-800 border-slate-700;
+}
+.mainSlate .footer {
+  @apply border-slate-200;
+}
+.mainSlate:global(.dark) .footer {
+  @apply border-slate-700;
+}
+.mainSlate.card {
+  @apply border-slate-200;
+}
+.mainSlate.card:global(.dark) {
+  @apply border-slate-700;
+}
+
+/* Gray */
+.mainGray .header {
+  @apply bg-gray-100 border-gray-200;
+}
+.mainGray:global(.dark) .header {
+  @apply bg-gray-700 border-gray-600;
+}
+.mainGray .footer {
+  @apply border-gray-200;
+}
+.mainGray:global(.dark) .footer {
+  @apply border-gray-800;
+}
+.mainGray.card {
+  @apply border-gray-200;
+}
+.mainGray.card:global(.dark) {
+  @apply border-gray-700;
+}
+
+/* Zinc */
+.mainZinc .header {
+  @apply bg-zinc-100 border-zinc-200;
+}
+.mainZinc:global(.dark) .header {
+  @apply bg-zinc-800 border-zinc-700;
+}
+.mainZinc .footer {
+  @apply border-zinc-200;
+}
+.mainZinc:global(.dark) .footer {
+  @apply border-zinc-700;
+}
+.mainZinc.card {
+  @apply border-zinc-200;
+}
+.mainZinc.card:global(.dark) {
+  @apply border-zinc-700;
+}
+
+/* Neutral */
+.mainNeutral .header {
+  @apply bg-neutral-100 border-neutral-200;
+}
+.mainNeutral:global(.dark) .header {
+  @apply bg-neutral-800 border-neutral-700;
+}
+.mainNeutral .footer {
+  @apply border-neutral-200;
+}
+.mainNeutral:global(.dark) .footer {
+  @apply border-neutral-700;
+}
+.mainNeutral.card {
+  @apply border-neutral-200;
+}
+.mainNeutral.card:global(.dark) {
+  @apply border-neutral-700;
+}
+
+/* Stone */
+.mainStone .header {
+  @apply bg-stone-100 border-stone-200;
+}
+.mainStone:global(.dark) .header {
+  @apply bg-stone-800 border-stone-700;
+}
+.mainStone .footer {
+  @apply border-stone-200;
+}
+.mainStone:global(.dark) .footer {
+  @apply border-stone-700;
+}
+.mainStone.card {
+  @apply border-stone-200;
+}
+.mainStone.card:global(.dark) {
+  @apply border-stone-700;
+}
+
+/* Accent colors - for titles, highlights */
+
+/* Slate accent */
+.accentSlate .title {
+  @apply text-slate-700;
+}
+.accentSlate:global(.dark) .title {
+  @apply text-slate-300;
+}
+.accentSlate .description {
+  @apply text-slate-600/90;
+}
+.accentSlate:global(.dark) .description {
+  @apply text-slate-400/90;
+}
+
+/* Rose */
+.accentRose .title {
+  @apply text-rose-500;
+}
+.accentRose:global(.dark) .title {
+  @apply text-rose-600;
+}
+.accentRose .description {
+  @apply text-gray-600;
+}
+.accentRose:global(.dark) .description {
+  @apply text-gray-300;
+}
+
+/* Red */
+.accentRed .title {
+  @apply text-red-600;
+}
+.accentRed:global(.dark) .title {
+  @apply text-red-400;
+}
+.accentRed .description {
+  @apply text-red-600/70;
+}
+.accentRed:global(.dark) .description {
+  @apply text-red-400/70;
+}
+
+/* Orange */
+.accentOrange .title {
+  @apply text-orange-600 dark:text-orange-400;
+}
+.accentOrange .description {
+  @apply text-orange-600/70 dark:text-orange-400/70;
+}
+
+/* Amber */
+.accentAmber .title {
+  @apply text-amber-600 dark:text-amber-400;
+}
+.accentAmber .description {
+  @apply text-amber-600/70 dark:text-amber-400/70;
+}
+
+/* Yellow */
+.accentYellow .title {
+  @apply text-yellow-600 dark:text-yellow-400;
+}
+.accentYellow .description {
+  @apply text-yellow-600/70 dark:text-yellow-400/70;
+}
+
+/* Lime */
+.accentLime .title {
+  @apply text-lime-600 dark:text-lime-400;
+}
+.accentLime .description {
+  @apply text-lime-600/70 dark:text-lime-400/70;
+}
+
+/* Green */
+.accentGreen .title {
+  @apply text-green-600;
+}
+.accentGreen:global(.dark) .title {
+  @apply text-green-400;
+}
+.accentGreen .description {
+  @apply text-green-600/70;
+}
+.accentGreen:global(.dark) .description {
+  @apply text-green-400/70;
+}
+
+/* Emerald */
+.accentEmerald .title {
+  @apply text-emerald-600 dark:text-emerald-400;
+}
+.accentEmerald .description {
+  @apply text-emerald-600/70 dark:text-emerald-400/70;
+}
+
+/* Teal */
+.accentTeal .title {
+  @apply text-teal-600 dark:text-teal-400;
+}
+.accentTeal .description {
+  @apply text-teal-600/70 dark:text-teal-400/70;
+}
+
+/* Cyan */
+.accentCyan .title {
+  @apply text-cyan-600 dark:text-cyan-400;
+}
+.accentCyan .description {
+  @apply text-cyan-600/70 dark:text-cyan-400/70;
+}
+
+/* Sky */
+.accentSky .title {
+  @apply text-sky-600 dark:text-sky-400;
+}
+.accentSky .description {
+  @apply text-sky-600/70 dark:text-sky-400/70;
+}
+
+/* Blue */
+.accentBlue .title {
+  @apply text-blue-600;
+}
+.accentBlue:global(.dark) .title {
+  @apply text-blue-400;
+}
+.accentBlue .description {
+  @apply text-blue-600/70;
+}
+.accentBlue:global(.dark) .description {
+  @apply text-blue-400/70;
+}
+
+/* Indigo */
+.accentIndigo .title {
+  @apply text-indigo-600 dark:text-indigo-400;
+}
+.accentIndigo .description {
+  @apply text-indigo-600/70 dark:text-indigo-400/70;
+}
+
+/* Violet */
+.accentViolet .title {
+  @apply text-violet-600 dark:text-violet-400;
+}
+.accentViolet .description {
+  @apply text-violet-600/70 dark:text-violet-400/70;
+}
+
+/* Purple */
+.accentPurple .title {
+  @apply text-purple-600;
+}
+.accentPurple:global(.dark) .title {
+  @apply text-purple-400;
+}
+.accentPurple .description {
+  @apply text-purple-600/70;
+}
+.accentPurple:global(.dark) .description {
+  @apply text-purple-400/70;
+}
+
+/* Fuchsia */
+.accentFuchsia .title {
+  @apply text-fuchsia-600 dark:text-fuchsia-400;
+}
+.accentFuchsia .description {
+  @apply text-fuchsia-600/70 dark:text-fuchsia-400/70;
+}
+
+/* Pink */
+.accentPink .title {
+  @apply text-pink-600 dark:text-pink-400;
+}
+.accentPink .description {
+  @apply text-pink-600/70 dark:text-pink-400/70;
+}
+
+/* Color combinations - for backwards compatibility */
+.themeRose {
+  composes: mainGray accentRose;
+}
+
+.themeBlue {
+  composes: mainSlate accentBlue;
+}
+
+.themeGreen {
+  composes: mainSlate accentGreen;
+}
+
+.themePurple {
+  composes: mainSlate accentPurple;
+}
+
+.themeAmber {
+  composes: mainSlate accentAmber;
+}
+
+.themeSlate {
+  composes: mainSlate accentSlate;
+} 

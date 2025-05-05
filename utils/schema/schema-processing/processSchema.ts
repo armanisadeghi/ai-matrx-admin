@@ -116,7 +116,7 @@ export function initializeSchemaSystem<TEntity extends EntityKeys>(trace: string
             fullEntityRelationships: asEntityRelationships(entityRelationships),
         };
 
-        console.log('INITIALIZING SCHEMA SYSTEM');
+        // console.log('INITIALIZING SCHEMA SYSTEM');
 
         return globalCache;
     } catch (error) {

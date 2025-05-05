@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import RawJsonExplorer from "@/features/scraper/parts/RawJsonExplorer";
+import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import BookmarkViewer from "@/features/scraper/parts/BookmarkViewer";
 
 // Example data - replace with your own data source

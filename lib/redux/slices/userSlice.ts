@@ -1,5 +1,4 @@
 // File: lib/redux/slices/userSlice.ts
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface Identity {
@@ -34,6 +33,8 @@ interface UserState {
         picture: string | null;
     };
     identities: Identity[];
+    isAdmin: boolean;
+    accessToken: string | null;
 }
 
 const initialState: UserState = {
@@ -54,6 +55,8 @@ const initialState: UserState = {
         picture: null,
     },
     identities: [],
+    isAdmin: false,
+    accessToken: null,
 };
 
 const userSlice = createSlice({
@@ -63,9 +66,37 @@ const userSlice = createSlice({
         setUser: (state, action: PayloadAction<UserState>) => {
             return { ...state, ...action.payload };
         },
+        setAccessToken: (state, action: PayloadAction<string | null>) => {
+            state.accessToken = action.payload;
+        },
         clearUser: () => initialState,
     },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, setAccessToken, clearUser } = userSlice.actions;
 export default userSlice.reducer;
+
+// Selectors
+export const selectUser = (state: any) => state.user;
+
+export const selectDisplayName = (state: any) => {
+  const user = state.user;
+  return user.userMetadata.name || 
+         user.userMetadata.fullName || 
+         (user.email ? user.email.split('@')[0] : null) || 
+         "User";
+};
+
+export const selectProfilePhoto = (state: any) => {
+  const user = state.user;
+  return user.userMetadata.picture || null;
+};
+
+export const selectIsAdmin = (state: any) => {
+  const user = state.user;
+  return user.isAdmin || false;
+};
+
+export const selectAccessToken = (state: any) => {
+  return state.user.accessToken || null;
+};

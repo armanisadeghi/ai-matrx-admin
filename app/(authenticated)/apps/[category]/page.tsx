@@ -1,7 +1,7 @@
 // app/apps/[category]/page.tsx
 import { SubcategoryGrid } from '@/components/applet/apps/SubcategoryGrid';
 import { APP_CATEGORIES, isValidCategory } from '@/config/applets/apps/constants';
-import { notFound } from 'next/navigation';
+import AppRendererTest from '../AppRendererTest';
 
 interface CategoryPageParams {
     category: string;
@@ -15,7 +15,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     const { category } = await params;
     
     if (!isValidCategory(category)) {
-        notFound();
+        return <AppRendererTest slug={category} />
     }
 
     const categoryConfig = APP_CATEGORIES[category];

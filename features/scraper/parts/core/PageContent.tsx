@@ -13,7 +13,7 @@ import MetadataContent from "../MetadataContent";
 import RemovalDetails from "../RemovalDetails";
 import HashesContent from "../HashesContent";
 import RawJSON from "../RawJSON";
-import RawJsonExplorer from "../RawJsonExplorer";
+import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import ActionButtons from "../ActionButtons";
 import FancyJsonExplorer from "../FancyJsonExplorer";
 import BookmarkViewer from "../BookmarkViewer";
@@ -25,6 +25,8 @@ import FactChecker from "../recipes/FactChecker";
 import KeywordAnalysis from "../recipes/KeywordAnalysis";
 import FeatureDisabledPlaceholder from "../reusable/FeatureDisabledPlaceholder";
 import ImageGallery from "../tabs/images/ImageGallery";
+
+
 interface PageContentProps {
     pageData: any;
     activeTab: string;

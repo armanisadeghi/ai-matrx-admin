@@ -1483,6 +1483,40 @@ const transformerEntityOverrides: EntityOverrides<'transformer'> = {
 
 
 
+const userListItemsEntityOverrides: EntityOverrides<'userListItems'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const userListsEntityOverrides: EntityOverrides<'userLists'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const userPreferencesEntityOverrides: EntityOverrides<'userPreferences'> = {
     schemaType: null,
     entityName: null,
@@ -1672,6 +1706,8 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     tasks: tasksEntityOverrides,
     tool: toolEntityOverrides,
     transformer: transformerEntityOverrides,
+    userListItems: userListItemsEntityOverrides,
+    userLists: userListsEntityOverrides,
     userPreferences: userPreferencesEntityOverrides,
     userTables: userTablesEntityOverrides,
     wcClaim: wcClaimEntityOverrides,

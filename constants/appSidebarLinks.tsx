@@ -43,6 +43,9 @@ import { TbBrandSocketIo } from "react-icons/tb";
 import { LuWebhook } from "react-icons/lu";
 import { BsFillChatRightFill, BsChatRight } from "react-icons/bs";
 import { TbRelationManyToMany } from "react-icons/tb";
+import { AiFillAudio } from "react-icons/ai";
+import { SiMagic, SiSocketdotio } from "react-icons/si";
+import { SiCodemagic } from "react-icons/si";
 
 //brokers/component-editor
 
@@ -80,6 +83,11 @@ export const primaryLinks = [
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+        label: "Voices",
+        icon: <AiFillAudio className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+        href: "/demo/voice/voice-manager",
+    },
+    {
         label: "Component Editor",
         href: "/brokers/component-editor",
         icon: <IoLogoReact className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
@@ -94,6 +102,26 @@ export const primaryLinks = [
         href: "/flashcard",
         icon: <CreditCard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
+    {
+        label: "Color Converter",
+        href: "/tests/tailwind-test/color-converter",
+        icon: <Palette className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Image Gallery",
+        href: "/image-editing/public-image-search", // https://lucide.dev/icons/
+        icon: <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Scrape & Analyze",
+        href: "/demo/component-demo/socket-form-builder/scraper-ui/scraper-one",
+        icon: <LuWebhook className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Entities",
+        href: "/entity-crud", // https://lucide.dev/icons/
+        icon: <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
     // {
     //     label: 'Camera',
     //     href: '/tests/camera-test',
@@ -101,12 +129,6 @@ export const primaryLinks = [
     //         <Camera className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0"/>
     //     ),
     // },
-
-    {
-        label: "Color Converter",
-        href: "/tests/tailwind-test/color-converter",
-        icon: <Palette className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
     // {
     //     label: 'AI Audio',
     //     href: '/demo/aiAudio',
@@ -158,21 +180,7 @@ export const primaryLinks = [
     //     ),
     // },
 
-    {
-        label: "Image Gallery",
-        href: "/image-editing/unsplash", // https://lucide.dev/icons/
-        icon: <Images className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-        label: "Scrape & Analyze",
-        href: "/demo/component-demo/socket-form-builder/scraper-ui/scraper-one",
-        icon: <LuWebhook className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-        label: "Entities",
-        href: "/entity-crud", // https://lucide.dev/icons/
-        icon: <Grid2x2Plus className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    },
+
     // {
     //     label: 'Entity Data Table',
     //     href: '/tests/table-test/simple-entity', // https://lucide.dev/icons/
@@ -216,14 +224,53 @@ export const primaryLinks = [
 
 export const secondaryLinks = [
     {
+        label: "New Admin Dashboard",
+        href: "/administration",
+        icon: <ShieldEllipsis className="text-rose-500 dark:text-rose-600 h-5 w-5 flex-shrink-0" />,
+    },    {
         label: "Admin Dashboard",
         href: "/admin",
         icon: <ShieldEllipsis className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
+        label: "Official Components",
+        href: "/admin/official-components",
+        icon: <Puzzle className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "New Socket Admin",
+        href: "/tests/socket-tests/redux-form-test",
+        icon: <SiSocketdotio className="text-blue-500 h-5 w-5 flex-shrink-0" />,
+    },
+    {
         label: "Matrx Table",
         href: "/tests/table-test/advanced-data-table",
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Applet demo",
+        href: "/apps/demo", // https://lucide.dev/icons/
+        icon: <LayoutPanelLeft className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Dynamic Layout Demo",
+        href: "/apps/dynamic-layouts/options", // app\(authenticated)\apps\dynamic-layouts
+        icon: <LayoutPanelLeft className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "All Layouts",
+        href: "/apps/all-layouts", // https://lucide.dev/icons/
+        icon: <LayoutPanelLeft className="text-blue-500 dark:text-blue-600 hover:text-blue-600 dark:hover:text-blue-700 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "App Builder",
+        href: "/apps/builder", // https://lucide.dev/icons/
+        icon: <SiCodemagic className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "App Builder Hub",
+        href: "/apps/builder/hub", // https://lucide.dev/icons/
+        icon: <SiMagic className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Applet Components",
@@ -235,6 +282,7 @@ export const secondaryLinks = [
         href: "/tests/forms/entity-final-test", // https://lucide.dev/icons/
         icon: <LandPlot className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
+
     {
         label: "Socket Admin",
         href: "/admin/socketio",
@@ -296,6 +344,11 @@ export const secondaryLinks = [
         label: "InteliTable",
         href: "/tests/matrx-table",
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    {
+        label: "Prompt Builder",
+        href: "/demo/prompt-builder",
+        icon: <ClipboardType className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     //
     // {

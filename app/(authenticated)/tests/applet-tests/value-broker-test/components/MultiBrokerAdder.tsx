@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ALL_BROKER_IDS } from "../../input-components-4/constants";
+import { ALL_BROKER_IDS } from "../../../../../../features/applet/sample-mock-data/constants";
 
 export const MultiBrokerAdder = ({ onAddBrokers }) => {
   const [selectedBrokers, setSelectedBrokers] = useState([]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import SearchField from '../../components/search-bar/field/SearchField';
+import SearchField from '@/features/applet/runner/components/search-bar/field/SearchField';
 import { useValueBroker } from '@/hooks/applets/useValueBroker';
 import { FieldProps, ButtonFieldConfig } from './types';
 

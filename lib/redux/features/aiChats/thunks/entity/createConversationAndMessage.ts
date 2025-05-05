@@ -6,6 +6,7 @@ import { createAppThunk } from "@/lib/redux/utils";
 import { EntityKeys, MatrxRecordId } from "@/types";
 import { saveRecordsInOrder } from "@/lib/redux/entity/thunks/createRecordThunk";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
+import { setTaskFields, submitTask } from "@/lib/redux/socket-io";
 
 const INFO = true;
 const DEBUG = false;
@@ -94,6 +95,7 @@ export const createConversationAndMessage = createAppThunk<
 interface SaveConversationAndMessagePayload {
     conversationTempId: MatrxRecordId;
     messageTempId: MatrxRecordId;
+    taskId: string;
 }
 
 interface SaveConversationAndMessageResult {
@@ -110,44 +112,74 @@ interface SaveConversationAndMessageResult {
     };
 }
 
+
 export const saveConversationAndMessage = createAppThunk<
-    SaveConversationAndMessageResult,
-    SaveConversationAndMessagePayload,
-    { rejectValue: string }
->("chat/saveConversationAndMessage", async ({ conversationTempId, messageTempId }, { dispatch, rejectWithValue }) => {
+  SaveConversationAndMessageResult,
+  SaveConversationAndMessagePayload,
+  { rejectValue: string }
+>(
+  "chat/saveConversationAndMessage",
+  async ({ conversationTempId, messageTempId, taskId }, { dispatch, rejectWithValue }) => {
     try {
-        const payloads = [
-            { entityKey: "conversation" as EntityKeys, matrxRecordId: conversationTempId },
-            { entityKey: "message" as EntityKeys, matrxRecordId: messageTempId },
-        ];
+      const payloads = [
+        { entityKey: "conversation" as EntityKeys, matrxRecordId: conversationTempId },
+        { entityKey: "message" as EntityKeys, matrxRecordId: messageTempId },
+      ];
 
-        const chatActions = getChatActionsWithThunks();
-        dispatch(chatActions.updateMessageStatus({ status: "processing" }));
+      const chatActions = getChatActionsWithThunks();
+      dispatch(chatActions.updateMessageStatus({ status: "processing" }));
 
-        const results = await dispatch(saveRecordsInOrder(payloads)).unwrap();
+      const results = await dispatch(saveRecordsInOrder(payloads)).unwrap();
 
-        if (DEBUG) console.log("\x1b[34m[SAVE_CONVERSATION_AND_MESSAGE] Results:\x1b[0m", JSON.stringify(results, null, 2));
+      if (DEBUG) console.log("\x1b[34m[SAVE_CONVERSATION_AND_MESSAGE] Results:\x1b[0m", JSON.stringify(results, null, 2));
 
-        const [conversationResult, messageResult] = results;
+      const [conversationResult, messageResult] = results;
 
-        dispatch(
-            chatActions.updateNextOrderData({
-                keyOrId: conversationResult.data.data.id,
-                nextDisplayOrderToUse: messageResult.data.data.displayOrder + 2,
-                nextSystemOrderToUse: messageResult.data.data.systemOrder + 2,
-                isNewChat: false,
-            })
-        );
+      dispatch(
+        chatActions.updateNextOrderData({
+          keyOrId: conversationResult.data.data.id,
+          nextDisplayOrderToUse: messageResult.data.data.displayOrder + 2,
+          nextSystemOrderToUse: messageResult.data.data.systemOrder + 2,
+          isNewChat: false,
+        })
+      );
 
-        const returnValue = {
-            success: true,
-            conversationData: conversationResult.data,
-            messageData: messageResult.data,
-        };
-        return returnValue;
+      if (!taskId) {
+        console.error("SAVE_CONVERSATION_AND_MESSAGE: No taskId provided");
+        return rejectWithValue("No taskId provided");
+      }
+
+      dispatch(
+        setTaskFields({
+          taskId,
+          fields: {
+            conversation_id: conversationResult.data.data.id,
+            message_object: messageResult.data.data,
+          },
+        })
+      );
+
+      dispatch(submitTask({taskId}))
+
+      if (DEBUG) console.log(
+        "SAVE_CONVERSATION_AND_MESSAGE: Set task fields with taskId:",
+        taskId,
+        "conversation_id:",
+        conversationResult.data.data.id,
+        "message_object:",
+        messageResult.data.data
+      );
+
+      const returnValue = {
+        success: true,
+        conversationData: conversationResult.data,
+        messageData: messageResult.data,
+      };
+      return returnValue;
     } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : "Failed to save conversation and message";
-        console.error("SAVE_CONVERSATION_AND_MESSAGE: Error:", errorMsg);
-        return rejectWithValue(errorMsg);
+      const errorMsg = error instanceof Error ? error.message : "Failed to save conversation and message";
+      console.error("SAVE_CONVERSATION_AND_MESSAGE: Error:", errorMsg);
+      return rejectWithValue(errorMsg);
     }
-});
+  }
+);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ButtonField, SelectField, InputField, TextareaField } from './index';
 import { GroupFieldConfig, FieldGroupProps } from './types';
-import SearchField from '../../components/search-bar/field/SearchField';
+import SearchField from '@/features/applet/runner/components/search-bar/field/SearchField';
 
 const FieldGroup: React.FC<FieldGroupProps> = ({
   id,

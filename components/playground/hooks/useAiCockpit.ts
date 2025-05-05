@@ -30,7 +30,7 @@ export function useAiCockpit() {
     } = useDoubleJoinedActiveParentProcessing("recipeMessage", "aiAgent");
     
     const recipeMessageHook = useProcessedRecipeMessages(firstRelHook);
-    const { messages, deleteMessage, addMessage, handleDragDrop, recipeMessageIsLoading } = recipeMessageHook;
+    const { messages, deleteMessage, addMessage, handleDragDrop, recipeMessageIsLoading, addAssistantResponse } = recipeMessageHook;
     const recipeAgentSettingsHook = useRecipeAgentSettings(secondRelHook);
     const { generateTabs, createNewSettingsData, processedSettings } = recipeAgentSettingsHook;
 
@@ -154,6 +154,7 @@ export function useAiCockpit() {
         isSaving,
         tools,
         recipeMessageIsLoading,
+        addAssistantResponse,
     };
 }
 

@@ -4,18 +4,20 @@ export type NavItem = {
     path: string;
     relative?: boolean;
     description?: string;
+    icon?: React.ReactNode;
+    badge?: string;
+    color?: string;
 };
 
-export type NavCardProps = {
+export interface NavCardProps {
     items: NavItem[];
     basePath?: string;
-};
-
-export interface ModulePage {
-    title: string;
-    path: string;
-    relative: boolean;
-    description: string;
+    columns?: number | "auto";
+    variant?: "default" | "compact" | "feature";
+    showPath?: boolean;
+    className?: string;
+    cardClassName?: string;
+    animated?: boolean;
 }
 
 export interface ModulePage {
@@ -23,6 +25,9 @@ export interface ModulePage {
     path: string;
     relative: boolean;
     description: string;
+    icon?: React.ReactNode;
+    color?: string;
+    layout?: string;
 }
 
 export interface ModuleHeaderProps {
@@ -32,4 +37,3 @@ export interface ModuleHeaderProps {
     className?: string;
     moduleName?: string;
 }
-

@@ -1,6 +1,6 @@
 import React from "react";
-import { FancyInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FancyInput } from "@/components/ui/input";
 import { FancyTextarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,6 +26,7 @@ export type FieldType =
     | "fileupload"
     | "multifileupload"
     | "jsoneditor";
+    
 export interface FieldOverride {
     type: FieldType;
     props?: Record<string, any>;

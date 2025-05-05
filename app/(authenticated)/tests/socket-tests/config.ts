@@ -4,28 +4,16 @@ import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Redux Socket Form Test',
+        path: 'redux-form-test',
         relative: true,
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Original Full Redux Test',
+        path: 'full-redux',
         relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
-    },
-    {
-        title: 'Not Implemented',
-        path: 'link-here',
-        relative: true,
-        description: ''
+        description: 'This has now been replaced by the Task Field Demo.'
     },
     {
         title: 'Very Simple Chat Socket Test',

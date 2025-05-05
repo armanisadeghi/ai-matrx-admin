@@ -9,6 +9,7 @@ import { RelationshipHook } from '@/app/entities/hooks/relationships/useRelation
 import { RelationshipProcessingHook } from '@/app/entities/hooks/relationships/useRelationshipsWithProcessing';
 import { useDebounce } from '@uidotdev/usehooks';
 import { useNewMessageReordering } from '@/hooks/aiCockpit/newMessageRecordering';
+import { generateMessageFromAssitantResponse } from '@/components/playground/messages/prompts';
 
 type CoreMessage = {
     id?: string;
@@ -105,6 +106,30 @@ export function useProcessedRecipeMessages(recipeMessagesProcessingHook: Relatio
         [createMessage, processedMessages]
     );
 
+    const addAssistantResponse = useCallback(
+        (response: string, onComplete?: (success: boolean) => void) => {
+            const nextOrder = processedMessages.length + 1;
+            const newMessage = generateMessageFromAssitantResponse(response, nextOrder) as NewMessageEntry;
+            createMessage(
+                {
+                    child: newMessage,
+                    joining: { order: nextOrder },
+                },
+                {
+                    onSuccess: () => {
+                        onComplete?.(true);
+                    },
+                    onError: (error) => {
+                        console.error('Failed to create relationship:', error);
+                        onComplete?.(false);
+                    },
+                }
+            );
+        },
+        [createMessage, processedMessages]
+    );
+
+
     const validateMessagesCallback = useCallback(() => {
         if (recipeMessageIsLoading) return;
         if (!validateMessages) return;
@@ -138,6 +163,7 @@ export function useProcessedRecipeMessages(recipeMessagesProcessingHook: Relatio
         deleteMessage,
         handleDragDrop,
         addMessage,
+        addAssistantResponse,
     };
 }
 

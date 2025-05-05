@@ -1,9 +1,12 @@
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useFileUploadWithStorage } from './useFileUploadWithStorage';
 
+type SaveToOption = 'public' | 'private'; // New type for saveTo prop
+
 type PasteImageUploadProps = {
     bucket?: string;
     path?: string;
+    saveTo?: SaveToOption; // New optional prop to override bucket and path
     targetRef: React.RefObject<HTMLElement>;
     onImagePasted?: (result: { url: string; type: string }) => void;
     disabled?: boolean;
@@ -13,12 +16,18 @@ type PasteImageUploadProps = {
 export const usePasteImageUpload = ({
     bucket = 'userContent',
     path,
+    saveTo, // Add saveTo to destructured props
     targetRef,
     onImagePasted,
     disabled = false,
     onProcessingChange
 }: PasteImageUploadProps) => {
-    const { uploadFile } = useFileUploadWithStorage(bucket, path);
+    // Initialize useFileUploadWithStorage with default bucket and path
+    const {
+        uploadFile,
+        uploadToPublicUserAssets,
+        uploadToPrivateUserAssets
+    } = useFileUploadWithStorage(bucket, path);
     const isProcessingRef = useRef(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -89,8 +98,15 @@ export const usePasteImageUpload = ({
                     }
                 }, 100);
 
-                // Upload the file
-                const result = await uploadFile(namedFile);
+                // Upload the file based on saveTo prop
+                let result;
+                if (saveTo === 'public') {
+                    result = await uploadToPublicUserAssets(namedFile);
+                } else if (saveTo === 'private') {
+                    result = await uploadToPrivateUserAssets(namedFile);
+                } else {
+                    result = await uploadFile(namedFile); // Fallback to default behavior
+                }
                 
                 // Clear the cancellation check
                 clearInterval(checkCancellation);
@@ -112,7 +128,16 @@ export const usePasteImageUpload = ({
                 }
             }
         }
-    }, [disabled, uploadFile, onImagePasted, updateProcessingState, createProcessRef]);
+    }, [
+        disabled,
+        uploadFile,
+        uploadToPublicUserAssets, // Add new upload methods to dependencies
+        uploadToPrivateUserAssets,
+        saveTo, // Add saveTo to dependencies
+        onImagePasted,
+        updateProcessingState,
+        createProcessRef
+    ]);
 
     useEffect(() => {
         const element = targetRef.current;

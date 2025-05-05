@@ -3,20 +3,15 @@ import ChatStreamDisplay from "./ChatStreamDisplay";
 import { ChevronDoubleDown } from "@mynaui/icons-react";
 
 interface AssistantStreamProps {
-    eventName: string;
+    taskId: string;
     handleVisibility?: (isVisible: boolean) => void;
     scrollToBottom?: () => void;
 }
 
-const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName, handleVisibility, scrollToBottom }) => {
+const AssistantStream: React.FC<AssistantStreamProps> = ({ taskId, handleVisibility, scrollToBottom }) => {
     const observerRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [isInvisible, setIsInvisible] = useState(false);
-
-
-    useEffect(() => {
-        console.log("-> AssistantStream eventName", eventName);
-    }, [eventName]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -44,7 +39,7 @@ const AssistantStream: React.FC<AssistantStreamProps> = ({ eventName, handleVisi
     return (
         <div className="flex">
             <div ref={containerRef} className="max-w-full w-full relative">
-                <ChatStreamDisplay key={eventName} eventName={eventName} className="bg-transparent dark:bg-transparent"/>
+                <ChatStreamDisplay key={taskId} taskId={taskId} className="bg-transparent dark:bg-transparent"/>
                 {isInvisible && (
                     <button
                         onClick={scrollToBottom}

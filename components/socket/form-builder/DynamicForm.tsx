@@ -4,12 +4,13 @@
 import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCcw, Send, Copy } from "lucide-react";
-import { Schema, SchemaField } from "@/constants/socket-constants";
+import { Schema, SchemaField } from "@/constants/socket-schema";
 import { getTaskSchema } from "@/constants/socket-schema";
 import FormField, { FieldOverrides } from "./FormField";
 import { useDynamicForm } from "./useDynamicForm";
+import { FIELD_OVERRIDES } from "@/constants/socket-constants";
 
-interface FormFieldsProps {
+interface FormFieldGroupProps {
     schema: Schema;
     formData: Record<string, any>;
     errors: Record<string, boolean>;
@@ -21,7 +22,7 @@ interface FormFieldsProps {
     testMode?: boolean;
 }
 
-const FormFields = React.memo(
+export const FormFieldGroup = React.memo(
     ({
         schema,
         formData,
@@ -30,26 +31,19 @@ const FormFields = React.memo(
         onChange,
         onBlur,
         onDeleteArrayItem,
-        fieldOverrides = {},
+        fieldOverrides = FIELD_OVERRIDES,
         testMode = false,
-    }: FormFieldsProps) => {
-        // Ensure we're using React.useMemo for any calculated values inside a memo component
-        const visibleFields = React.useMemo(() => {
-            return Object.entries(schema).filter(
-                ([_, field]) => !(typeof field.DEFAULT === "string" && field.DEFAULT.startsWith("socket_internal_"))
-            );
-        }, [schema]);
-
+    }: FormFieldGroupProps) => {
+        const fields = React.useMemo(() => Object.entries(schema), [schema]);
         return (
             <div className="w-full space-y-4">
-                {visibleFields.map(([key, field]) => (
+                {fields.map(([key, field]) => (
                     <FormField
                         key={key}
                         fieldKey={key}
                         field={field}
                         path=""
-                        // Safely access the value with proper fallback
-                        value={formData[key] !== undefined ? formData[key] : field.DEFAULT}
+                        value={formData[key] ?? field.DEFAULT}
                         errors={errors}
                         notices={notices}
                         formData={formData}
@@ -65,7 +59,7 @@ const FormFields = React.memo(
     }
 );
 
-FormFields.displayName = "FormFields";
+FormFieldGroup.displayName = "FormFields";
 
 interface DynamicFormProps {
     taskType: string;
@@ -161,7 +155,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     return (
         <div className="w-full bg-slate-100 dark:bg-slate-800 p-4 pb-2 rounded">
             {Object.keys(schema).length > 0 ? (
-                <FormFields
+                <FormFieldGroup
                     schema={schema}
                     formData={formData}
                     errors={errors}

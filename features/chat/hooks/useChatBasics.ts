@@ -15,6 +15,7 @@ export const useChatBasics = () => {
     const eventName = useAppSelector(chatSelectors.conversationSocketEventName)
     const initialLoadComplete = useAppSelector(chatSelectors.initialLoadComplete)
     const routeLoadComplete = useAppSelector(chatSelectors.routeLoadComplete)
+    const taskId = useAppSelector(chatSelectors.taskId)
 
     if (DEBUG) {console.log("useChatBasics", {
             conversationId,
@@ -38,6 +39,7 @@ export const useChatBasics = () => {
         initialLoadComplete,
         routeLoadComplete,
         eventName,
+        taskId,
     };
 };
 

@@ -14,6 +14,7 @@ import { MarkdownAnalysisData } from "./analyzer/types";
 import { splitContentIntoBlocks } from "./utils/content-splitter";
 import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
+import MatrxBrokerBlock from "../blocks/brokers/MatrxBrokerBlock";
 
 interface ChatMarkdownDisplayProps {
     content: string;
@@ -24,14 +25,16 @@ interface ChatMarkdownDisplayProps {
     onContentChange?: (newContent: string) => void;
     analysisData?: MarkdownAnalysisData;
     messageId?: string;
+    allowFullScreenEditor?: boolean;
 }
 
 export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | string;
+    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | string;
     content: string;
     language?: string;
     src?: string;
     alt?: string;
+    metadata?: any;
 }
 
 const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
@@ -43,6 +46,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     onContentChange,
     analysisData,
     messageId,
+    allowFullScreenEditor = true,
 }) => {
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [currentContent, setCurrentContent] = useState(content);
@@ -52,11 +56,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         setCurrentContent(content);
     }, [content]);
 
-    const preprocessContent = (mdContent: string): string => {
-        // Match the format [Image URL: https://example.com/image.png]
-        const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
-        return mdContent.replace(imageUrlRegex, "![Image]($1)");
-    };
     
     const handleOpenEditor = () => {
         if (isStreamActive) return;
@@ -98,10 +97,25 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
         }
     };
 
+    const handleMatrxBrokerChange = (updatedBrokerContent: string, originalBrokerContent: string) => {
+        console.log("Updating matrx broker content:", updatedBrokerContent);
+        console.log("Original content:", originalBrokerContent);
+        const updatedContent = currentContent.replace(originalBrokerContent, updatedBrokerContent);
+        setCurrentContent(updatedContent);
+        onContentChange?.(updatedContent);
+    };
+
+    const preprocessContent = (mdContent: string): string => {
+        // Match the format [Image URL: https://example.com/image.png]
+        const imageUrlRegex = /\[Image URL: (https?:\/\/[^\s\]]+)\]/g;
+        return mdContent.replace(imageUrlRegex, "![Image]($1)");
+    };
+
     const processedContent = preprocessContent(currentContent);
     const blocks = splitContentIntoBlocks(processedContent);
 
     const renderBlock = (block: ContentBlock, index: number) => {
+        console.log("Rendering block:", block, "index:", index);
         switch (block.type) {
             case "image":
                 return <ImageBlock key={index} src={block.src!} alt={block.alt} />;
@@ -138,6 +152,9 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
                 return <TasksBlock key={index} content={block.content} />;
             case "structured_info":
                 return <StructuredPlanBlock key={index} content={block.content} />;
+            case "matrxBroker":
+                console.log("--> Rendering matrx broker block:", block);
+                return <MatrxBrokerBlock key={index} content={block.content} metadata={block.metadata} onUpdate={handleMatrxBrokerChange} />;
             case "text":
             case "info":
             case "task":
@@ -186,16 +203,18 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     return (
         <div className={`${type === "message" ? "mb-3 w-full" : ""} ${role === "user" ? "text-right" : "text-left"}`}>
             <div className={containerStyles}>{blocks.map((block, index) => renderBlock(block, index))}</div>
-            <InlineCopyButton content={currentContent} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
+            <InlineCopyButton markdownContent={currentContent} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>
 
-            <FullScreenMarkdownEditor
-                isOpen={isEditorOpen}
-                initialContent={currentContent}
-                onSave={handleSaveEdit}
-                onCancel={handleCancelEdit}
-                analysisData={analysisData}
-                messageId={messageId}
-            />
+            {allowFullScreenEditor && (
+                <FullScreenMarkdownEditor
+                    isOpen={isEditorOpen}
+                    initialContent={currentContent}
+                    onSave={handleSaveEdit}
+                    onCancel={handleCancelEdit}
+                    analysisData={analysisData}
+                    messageId={messageId}
+                />
+            )}
         </div>
     );
 };

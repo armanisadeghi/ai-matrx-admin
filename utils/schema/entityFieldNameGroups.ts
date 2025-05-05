@@ -124,9 +124,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["recipeId", "version", "compiledRecipe", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead"]
 },
   conversation: {
-  nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords"],
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords", "group"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords", "group"]
 },
   dataBroker: {
   nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent"],
@@ -434,9 +434,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["taskId", "userId", "content", "createdAt", "updatedAt"]
 },
   tasks: {
-  nativeFields: ["id", "title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "createdBy"],
+  nativeFields: ["id", "title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "userId", "authenticatedRead"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "createdBy"]
+  nativeFieldsNoPk: ["title", "description", "projectId", "status", "dueDate", "createdAt", "updatedAt", "userId", "authenticatedRead"]
 },
   tool: {
   nativeFields: ["id", "name", "source", "description", "parameters", "requiredArgs", "systemFunction", "additionalParams"],
@@ -447,6 +447,16 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "name", "inputParams", "outputParams"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "inputParams", "outputParams"]
+},
+  userListItems: {
+  nativeFields: ["id", "createdAt", "updatedAt", "label", "description", "helpText", "groupName", "userId", "isPublic", "authenticatedRead", "publicRead", "listId"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "label", "description", "helpText", "groupName", "userId", "isPublic", "authenticatedRead", "publicRead", "listId"]
+},
+  userLists: {
+  nativeFields: ["id", "createdAt", "updatedAt", "listName", "description", "userId", "isPublic", "authenticatedRead", "publicRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "listName", "description", "userId", "isPublic", "authenticatedRead", "publicRead"]
 },
   userPreferences: {
   nativeFields: ["userId", "preferences", "createdAt", "updatedAt"],

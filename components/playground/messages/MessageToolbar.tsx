@@ -14,8 +14,9 @@ import {
     Code,
     MessageSquare,
     FileText,
+    Diamond,
 } from "lucide-react";
-import { RiMarkdownFill } from "react-icons/ri";
+import { IoDiamondOutline } from "react-icons/io5";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MatrxRecordId } from "@/types";
 import { useSelector } from "react-redux";
@@ -44,6 +45,7 @@ export interface MessageToolbarProps {
     onDebugClick?: (messageRecordId: MatrxRecordId) => void;
     onDisplayOptionChange: (messageRecordId: MatrxRecordId, displayOption: DisplayOption) => void;
     currentDisplayOption?: DisplayOption;
+    onToggleFullDisplay?: (messageRecordId: MatrxRecordId) => void;
 }
 
 // Super simple action button without tooltip
@@ -106,6 +108,7 @@ const MessageToolbar = ({
     onDebugClick,
     onDisplayOptionChange,
     currentDisplayOption = "textChat",
+    onToggleFullDisplay = () => {},
 }) => {
     const [isDragOver, setIsDragOver] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -126,6 +129,16 @@ const MessageToolbar = ({
     // Display options - defined inline to avoid any memoization issues
     const displayOptions = [
         {
+            value: "richText",
+            label: "Rich Text",
+            icon: <FileText className="h-4 w-4" />,
+        },
+        {
+            value: "markdown",
+            label: "Markdown",
+            icon: <IoDiamondOutline className="h-4 w-4 text-blue-500 hover:text-blue-600 hover:h-5 hover:w-5 transition-all" />,
+        },
+        {
             value: "brokerEditor",
             label: "Broker Editor",
             icon: <Code className="h-4 w-4" />,
@@ -135,16 +148,7 @@ const MessageToolbar = ({
             label: "Text Chat",
             icon: <MessageSquare className="h-4 w-4" />,
         },
-        {
-            value: "richText",
-            label: "Rich Text",
-            icon: <FileText className="h-4 w-4" />,
-        },
-        {
-            value: "markdown",
-            label: "Markdown",
-            icon: <RiMarkdownFill className="h-4 w-4" />,
-        },
+
     ];
     
     // Define actions - defined inline to avoid any memoization issues

@@ -1,14 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChatTaskManager } from "@/lib/redux/socket/task-managers/ChatTaskManager";
 import { useRouter } from "next/navigation";
 import useChatBasics from "@/features/chat/hooks/useChatBasics";
 import { useAppDispatch } from "@/lib/redux";
 import { saveMessageThunk } from "@/lib/redux/features/aiChats/thunks/entity/createMessageThunk";
+import { createAndSubmitTask } from "@/lib/redux/socket-io";
 
 const INFO = true;
-const DEBUG = true;
+const DEBUG = false;
 const VERBOSE = false;
 
 interface ExistingChatProps {
@@ -19,8 +19,6 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
     const [firstLoadComplete, setFirstLoadComplete] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const dispatch = useAppDispatch();
-
-    const chatManager = new ChatTaskManager(dispatch);
     const router = useRouter();
 
     const { chatActions, conversationId, routeLoadComplete, messageKey } = useChatBasics();
@@ -51,39 +49,52 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
 
     const submitChatMessage = useCallback(async () => {
         try {
-            setIsSubmitting(true);
-
-            if (!messageKey) {
-                console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", "Message key was not found");
-                return false;
-            }
-
-            const result = await dispatch(saveMessageThunk({ messageTempId: messageKey })).unwrap();
-
-            if (VERBOSE) console.log("🚀 ~ submitChatMessage ~ result:", JSON.stringify(result, null, 2));
-
-            if (result && result.success) {
-                const message = result.messageData.data;
-
-                const eventName = await chatManager.streamMessage({ conversationId, message });
-                if (eventName) {
-                    chatActions.setIsStreaming();
-                }
-
-                if (DEBUG) console.log("SUBMIT MESSAGE eventName:", eventName);
-                return true;
-            } else {
-                console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", result);
-                return false;
-            }
-        } catch (error) {
-            console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", error);
+          setIsSubmitting(true);
+    
+          if (!messageKey) {
+            console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", "Message key was not found");
             return false;
+          }
+    
+          const result = await dispatch(saveMessageThunk({ messageTempId: messageKey })).unwrap();
+    
+          if (VERBOSE) console.log("🚀 ~ submitChatMessage ~ result:", JSON.stringify(result, null, 2));
+    
+          if (result && result.success) {
+            const message = result.messageData.data;
+    
+            const { taskId } = await dispatch(
+              createAndSubmitTask({
+                service: "chat_service",
+                taskName: "ai_chat",
+                taskData: {
+                  conversation_id: conversationId,
+                  message_object: message,
+                },
+              })
+            ).unwrap();
+    
+            dispatch(
+              chatActions.updateConversationCustomData({
+                keyOrId: conversationId,
+                customData: { taskId },
+              })
+            );
+        
+            if (DEBUG) console.log("USE EXISTING CHAT: Task created and submitted with taskId:", taskId, "for conversationId:", conversationId);
+            return true;
+          } else {
+            console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", result);
+            return false;
+          }
+        } catch (error) {
+          console.error("USE EXISTING CHAT ERROR! submitChatMessage failed:", error);
+          return false;
         } finally {
-            setIsSubmitting(false);
+          setIsSubmitting(false);
         }
-    }, [dispatch, chatActions, chatManager, router]);
-
+      }, [dispatch, chatActions, conversationId, messageKey]);
+        
     return {
         submitChatMessage,
         isSubmitting,

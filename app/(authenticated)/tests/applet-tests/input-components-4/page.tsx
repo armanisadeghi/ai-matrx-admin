@@ -1,10 +1,10 @@
 // app/booking/page.tsx
 'use client';
 
-import { useSearchTab } from '@/context/SearchTabContext';
+import { useAppletData } from '@/context/AppletDataContext';
 
 export default function BookingPage() {
-  const { activeTab } = useSearchTab();
+  const { activeTab } = useAppletData();
 
   return (
     <div className="px-6">

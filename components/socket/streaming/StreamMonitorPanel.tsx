@@ -1,40 +1,22 @@
 "use client";
-import { useSelector } from "react-redux";
-import { RootState } from "@/lib/redux/store";
-import {
-    selectStreamText,
-    selectStreamData,
-    selectStreamInfo,
-    selectStreamError,
-    selectAllStreamInfo,
-    selectStreamTextContent,
-} from "@/lib/redux/socket/streamingSlice";
+
 import StreamTextDisplay from "./StreamTextDisplay";
-import StreamObjectDisplay from "./StreamObjectDisplay";
-
-interface StreamData {
-    text: string;
-    data: any[];
-    message: string;
-    info: string;
-    error: string;
-    end: boolean;
-    isStreaming: boolean;
-}
-
-interface StreamingState {
-    [eventId: string]: StreamData;
-}
+import ResponseDataDisplay from "./SocketResponseDataDisplay";
+import { useAppSelector } from "@/lib/redux";
+import { selectResponseByListenerId } from "@/lib/redux/socket-io";
+import ResponseInfoDisplay from "./SocketResponseInfoDisplay";
+import ResponseErrorDisplay from "./SocketResponsErrorDisplay";
+import FullResponseDisplay from "./SocketFullResponseDisplay";
 
 interface StreamMonitorPanelProps {
-    eventId: string;
+    listenerId: string;
 }
 
-export const StreamMonitorPanel = ({ eventId }: StreamMonitorPanelProps) => {
-    const streamingState = useSelector<RootState, StreamingState>((state) => (state.streaming || {}) as StreamingState);
-    const eventExists = eventId && streamingState && !!streamingState[eventId];
+export const StreamMonitorPanel = ({ listenerId }: StreamMonitorPanelProps) => {
+    const streamingState = useAppSelector(selectResponseByListenerId(listenerId));
+    const eventExists = listenerId && streamingState && !!streamingState;
 
-    if (!eventId) {
+    if (!listenerId) {
         return (
             <div className="w-full p-6 text-center">
                 <p className="text-gray-500 dark:text-gray-400">Please select or enter an event ID to monitor.</p>
@@ -46,7 +28,7 @@ export const StreamMonitorPanel = ({ eventId }: StreamMonitorPanelProps) => {
         return (
             <div className="w-full p-6 text-center">
                 <p className="text-gray-500 dark:text-gray-400">
-                    No data found for event ID: <code className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded">{eventId}</code>
+                    No data found for event ID: <code className="bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded">{listenerId}</code>
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                     This event ID may not exist or hasn't received any data yet.
@@ -59,34 +41,33 @@ export const StreamMonitorPanel = ({ eventId }: StreamMonitorPanelProps) => {
         <div className="w-full space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-1">
                 {/* Text Stream */}
-                <StreamTextDisplay title="Stream Text" selector={(state: RootState) => selectStreamText(state, eventId) || ""} />
+                <StreamTextDisplay title="Stream Text" listenerId={listenerId}/>
 
                 {/* Stream Data */}
-                <StreamObjectDisplay title="Stream Data" selector={(state: RootState) => selectStreamData(state, eventId) || []} />
+                <ResponseDataDisplay title="Stream Data" listenerId={listenerId} />
 
                 {/* Info Stream */}
-                <StreamTextDisplay title="Stream Info" selector={(state: RootState) => selectStreamInfo(state, eventId) || ""} />
+                <ResponseInfoDisplay title="Stream Info" listenerId={listenerId} />
 
                 {/* Error Stream */}
-                <StreamTextDisplay
-                    title="Stream Error"
-                    selector={(state: RootState) => selectStreamError(state, eventId) || ""}
-                    errorDisplay={true}
+                <ResponseErrorDisplay
+                    title="Stream Errors"
+                    listenerId={listenerId}
                 />
 
                 {/* All Stream Info */}
                 <div className="md:col-span-2">
-                    <StreamObjectDisplay
-                        title="All Stream Info"
-                        selector={(state: RootState) => selectAllStreamInfo(state, eventId) || {}}
+                    <FullResponseDisplay
+                        title="All Response Data"
+                        listenerId={listenerId}
                     />
                 </div>
 
                 {/* Stream Text Content */}
                 <div className="md:col-span-2">
-                    <StreamObjectDisplay
+                    <ResponseDataDisplay
                         title="Stream Text Content"
-                        selector={(state: RootState) => selectStreamTextContent(state, eventId) || {}}
+                        listenerId={listenerId}
                     />
                 </div>
             </div>

@@ -1,9 +1,9 @@
 // Pattern definitions
 export const MATRX_PATTERN = /<<<MATRX_START>>>(.*?)<<<MATRX_END>>>/gs;
-export const DEFAULT_VALUE_PATTERN = /<DEFAULT_VALUE>(.*?)<DEFAULT_VALUE_END>/gs;
 export const MATRX_RECORD_ID_PATTERN = /<MATRX_KEY>(.*?)<MATRX_KEY_END>/gs;
-export const MATRX_ID_PATTERN = /<ID>(.*?)<ID_END>/gs;
+export const DEFAULT_VALUE_PATTERN = /<DEFAULT_VALUE>(.*?)<DEFAULT_VALUE_END>/gs;
 export const MATRX_NAME_PATTERN = /<NAME>(.*?)<NAME_END>/gs;
+export const MATRX_ID_PATTERN = /<ID>(.*?)<ID_END>/gs;
 export const MATRX_STATUS_PATTERN = /<STATUS>(.*?)<STATUS_END>/gs;
 export const MATRX_COLOR_PATTERN = /<COLOR>(.*?)<COLOR_END>/gs;
 export const MATRX_DEFAULT_COMPONENT_PATTERN = /<COMPONENT>(.*?)<COMPONENT_END>/gs;
@@ -99,11 +99,13 @@ export const encodeMatrxMetadata = (metadata: MatrxMetadata): string => {
 
 // Utility functions
 export const findMatrxMatches = (content: string): string[] => {
+    if (!content) return [];
     MATRX_PATTERN.lastIndex = 0;
     return Array.from(content.matchAll(MATRX_PATTERN), (match) => match[1]);
 };
 
 export const transformMatrxText = (text: string, mode: DisplayMode): string => {
+    if (!text) return "";
     MATRX_PATTERN.lastIndex = 0;
 
     return text.replace(MATRX_PATTERN, (fullMatch, content) => {
@@ -127,10 +129,12 @@ export const transformMatrxText = (text: string, mode: DisplayMode): string => {
 };
 
 export const transformEncodedToSimpleIdNotEncoded = (text: string): string => {
+    if (!text) return "";
     return transformMatrxText(text, DisplayMode.SIMPLE_ID);
 };
 
 export const transformEncodedToSimpleIdPattern = (text: string): string => {
+    if (!text) return "";
     MATRX_PATTERN.lastIndex = 0;
 
     return text.replace(MATRX_PATTERN, (fullMatch, content) => {
@@ -140,6 +144,7 @@ export const transformEncodedToSimpleIdPattern = (text: string): string => {
 };
 
 export const getMetadataFromText = (text: string): MatrxMetadata[] => {
+    if (!text) return [];
     MATRX_PATTERN.lastIndex = 0;
     const matches = Array.from(text.matchAll(MATRX_PATTERN), (match) => match[1]);
     return matches.map(parseMatrxMetadata);
@@ -168,18 +173,23 @@ export const getAllMetadata = (text?: string): MatrxMetadata[] => {
     }));
 };
 
-export const getAllMatrxRecordIds = (text: string): string[] =>
-    getAllMetadata(text)
+export const getAllMatrxRecordIds = (text: string | null | undefined): string[] => {
+    if (!text) return [];
+    return getAllMetadata(text)
         .map((metadata) => metadata.matrxRecordId)
         .filter((id): id is string => Boolean(id));
+};
 
-export const getAllSimpleIds = (text: string): string[] =>
-    getAllMetadata(text)
+
+export const getAllSimpleIds = (text: string | null | undefined): string[] => {
+    if (!text) return [];
+    return getAllMetadata(text)
         .map((metadata) => metadata.id)
         .filter((id): id is string => Boolean(id));
-
+};
 
 export const getAllMatrxRecordIdsFromMessages = (messages: Message[]): string[] => {
+    if (!messages) return [];
     return messages
         .map((message) => message.content || '')
         .flatMap((content) => getAllMatrxRecordIds(content))
@@ -212,6 +222,7 @@ export const encodeMatrxMetadataArray = (metadataArray: MatrxMetadata[]): string
 };
 
 export const insertMatrxPatterns = (text: string, patterns: MatrxMetadata[]): string => {
+    if (!text) return "";
     let result = text;
     patterns.forEach((pattern, index) => {
         const placeholder = `[MATRX_PATTERN_${index}]`;

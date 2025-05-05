@@ -110,7 +110,6 @@ export class SocketManager {
         
         // Simple global error handler that forwards errors to all active events
         this.socket.on("global_error", (errorData: any) => {
-            if (DEBUG) console.log("[SOCKET MANAGER] Global error received:", errorData);
             this.propagateToAllActiveEvents(errorData);
         });
     }
@@ -162,12 +161,10 @@ export class SocketManager {
         if (!socket) return [];
 
         const tasks = Array.isArray(data) ? data : [data];
-        if (DEBUG) console.log("-> SocketManager createTask tasks", JSON.stringify(tasks, null, 2));
 
         const eventNames = await this.startTask(serviceName, tasks, (response) => {
             if (DEBUG) console.log(`[createTask] Response for service ${serviceName}:`, response);
         });
-        if (DEBUG) console.log("-> SocketManager createTask eventNames", eventNames);
 
         return eventNames;
     }
@@ -176,17 +173,12 @@ export class SocketManager {
         const socket = await this.getSocket();
         if (!socket) return [];
         const sid = socket.id || "pending";
-        if (DEBUG) {
-            console.log(`[SOCKET MANAGER] Starting task: ${serviceName} with data: ${JSON.stringify(data)}`);
-        }
         return new Promise((resolve) => {
             socket.emit(serviceName, data, (response: { response_listener_events?: string[] }) => {
                 let eventNames: string[] = [];
                 if (response?.response_listener_events) {
                     eventNames = response.response_listener_events;
-                    if (DEBUG) console.log("--> SocketManager startTask eventNames", eventNames);
                     
-                    // Initialize streams in Redux for each event
                     if (this.dispatch) {
                         eventNames.forEach((eventName) => {
                             // Track active events
@@ -199,7 +191,6 @@ export class SocketManager {
                     
                     eventNames.forEach((eventName: string) => {
                         const listenerLogic = (response: any) => {
-                            if (DEBUG) console.log("--> SocketManager startTask response for event", eventName, response);
                             
                             if (this.dispatch) {
                                 if (typeof response === "string") {
@@ -227,22 +218,9 @@ export class SocketManager {
                                         this.dispatch(markStreamEnd(eventName, true));
                                         this.dispatch(completeStream(eventName));
                                     }
-
-                                    // Python needs to have these exact types of emit events
-
-                                    // _send_chunk(text)
-                                    // _send_data(data)
-                                    // _send_message(message)
-                                    // _send_info(info)
-                                    // _send_error(error)
-                                    // _send_end(end)
-
-                                    // Alternative: use the convenience function to handle all properties at once
-                                    // this.dispatch(handleStreamEvent(eventName, response));
                                 }
                             }
                             
-                            // Original callback logic
                             if (typeof response === "string") {
                                 this.updateStreamingStatus(eventName, response);
                                 callback(response);
@@ -254,7 +232,6 @@ export class SocketManager {
                                 return;
                             }
                             if (response?.action === "add_event" && response?.event_name) {
-                                if (DEBUG) console.log(`[SOCKET MANAGER] Adding listener for new event: ${response.event_name}`);
                                 eventNames.push(response.event_name);
                                 // Track this new event too
                                 this.activeEventNames.add(response.event_name);
@@ -275,7 +252,6 @@ export class SocketManager {
                                 callback(response.error);
                                 return;
                             }
-                            if (DEBUG) console.warn(`[SOCKET MANAGER] Unexpected response for event ${eventName}:`, response);
                             this.updateStreamingStatus(eventName, response);
                         };
                         this.addDynamicEventListener(eventName, listenerLogic);
@@ -290,14 +266,12 @@ export class SocketManager {
         const socket = await this.getSocket();
         if (!socket) return [];
         const eventNames: string[] = [];
-        let DEBUG = true;
         for (let index = 0; index < tasks.length; index++) {
             const taskData = tasks[index];
             const singleTaskPayload = [{ ...taskData, index, stream: true }];
             const eventNames = await this.startTask(event, singleTaskPayload, (response) => {
                 if (response?.data) onStreamUpdate(index, response.data);
                 else if (typeof response === "string") onStreamUpdate(index, response);
-                if (DEBUG) console.log(response);
             });
             eventNames.push(...eventNames);
         }
@@ -385,17 +359,12 @@ export class SocketManager {
     async emit(eventName: string, data: any, callback?: (response: any) => void): Promise<void> {
         const socket = await this.getSocket();
         if (!socket) {
-            if (DEBUG) console.warn("[SOCKET MANAGER] Cannot emit: No socket available");
             return;
         }
 
         if (!eventName || typeof eventName !== "string") {
             console.error("[SOCKET MANAGER] Invalid eventName: Must be a non-empty string");
             return;
-        }
-
-        if (DEBUG) {
-            console.log(`[SOCKET MANAGER] Emitting event: ${eventName}`, data);
         }
 
         if (callback && typeof callback === "function") {

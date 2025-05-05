@@ -1,35 +1,21 @@
-// app/booking/layout.tsx
+// app\(authenticated)\tests\applet-tests\input-components-4\layout.tsx
 "use client";
 
-import AppletSearchBar from "./components/search-bar/bar/AppletSearchBar";
-import { AppletHeader, HeaderConfig } from "./components/header/AppletHeader";
 import { ReactNode } from "react";
-import { TabConfig } from "./components/header/HeaderTabs";
-import { ButtonConfig } from "./components/header/HeaderButtons";
-import { searchConfig } from "./constants";
+import AppletUserInputBar from "@/features/applet/runner/components/search-bar/bar/AppletSearchBar";
+import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
+import { allSystemWideMockApplets, everythingCombinedAppConfig } from "@/features/applet/sample-mock-data/constants";
 
-export const tabConfig: TabConfig[] = [
-    { value: "stays", label: "Stays" },
-    { value: "vegas-nightlife", label: "Vegas Nightlife" },
-    { value: "restaurants", label: "Restaurants" },
-    { value: "activities", label: "Activities" },
-    { value: "shopping", label: "Shopping" },
-    { value: "transportation", label: "Transportation" },
-    { value: "events", label: "Events" },
-];
 
-const buttonsConfig: ButtonConfig[] = [{ label: "Build Applets", onClick: () => {} }];
 
-const headerConfig: HeaderConfig = {
-    tabs: tabConfig,
-    buttons: buttonsConfig,
-};
 
 export default function BookingLayout({ children }: { children: ReactNode }) {
+    const fullAppConfig = everythingCombinedAppConfig
+    
     return (
         <div className="w-full h-full">
-            <AppletHeader config={headerConfig} />
-            <AppletSearchBar config={searchConfig} />
+            {/* <CustomAppHeader config={fullAppConfig} />
+            <AppletUserInputBar config={allSystemWideMockApplets} /> */}
             <div className="w-full h-full">{children}</div>
         </div>
     );

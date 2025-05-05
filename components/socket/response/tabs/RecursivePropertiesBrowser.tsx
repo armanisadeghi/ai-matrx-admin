@@ -14,7 +14,7 @@ interface Property {
 }
 
 interface PropertiesBrowserTabProps {
-  responses: any[];
+  responses: any;
   selectedObjectIndex: number;
   setSelectedObjectIndex: (index: number) => void;
   selectedObject: any;
@@ -33,6 +33,26 @@ const RecursivePropertiesBrowser = ({
   safeStringify
 }: PropertiesBrowserTabProps) => {
   const [expandedPaths, setExpandedPaths] = useState<Record<string, boolean>>({});
+  
+  // Function to convert non-array responses to array format for compatibility
+  const getResponsesArray = () => {
+    if (Array.isArray(responses)) {
+      return responses;
+    } else if (responses && typeof responses === 'object') {
+      // Convert object to array format with entries
+      return Object.entries(responses).map(([key, value]) => ({
+        key,
+        value
+      }));
+    } else if (responses) {
+      // Handle primitive value
+      return [responses];
+    }
+    return [];
+  };
+
+  // Convert responses to array format for rendering
+  const responsesArray = getResponsesArray();
   
   // Function to expand or collapse all properties
   const expandAll = (expand: boolean) => {
@@ -170,7 +190,7 @@ const RecursivePropertiesBrowser = ({
       <div className="flex-grow overflow-hidden">
         {displayModes[prop.path] ? (
           <Textarea
-            className="text-xs font-mono h-24 resize-y w-full"
+            className="text-xs font-mono h-36 resize-y w-full"
             value={
               typeof prop.value === "object"
                 ? safeStringify(prop.value)
@@ -217,14 +237,14 @@ const RecursivePropertiesBrowser = ({
   const renderObjectParent = (prop: Property, idx: number) => (
     <div 
       key={`${prop.path}-${idx}`} 
-      className="flex items-center py-2 border-b border-gray-400 dark:border-gray-500 last:border-b-0 w-full"
+      className="flex items-center py-1 px-0 border-b border-gray-400 dark:border-gray-500 last:border-b-0 w-full"
       style={{ paddingLeft: `${prop.depth * 12}px` }}
     >
-      <div className="flex items-center flex-grow">
+      <div className="flex items-center flex-grow px-0">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-6 w-6 p-0 mr-2 text-xs flex items-center justify-center" 
+          className="h-4 w-4 p-0 mr-0 text-xs flex items-center justify-start" 
           onClick={() => toggleExpand(prop.path)}
         >
           {expandedPaths[prop.path] ? '▼' : '►'}
@@ -250,22 +270,43 @@ const RecursivePropertiesBrowser = ({
     </div>
   );
 
+  // Determine if we should render the selector dropdown
+  const showSelector = responsesArray.length > 1;
+
+  // Generate labels for the dropdown options based on response type
+  const getOptionLabel = (index: number) => {
+    if (Array.isArray(responses)) {
+      return `Response ${index + 1}`;
+    } else if (responses && typeof responses === 'object') {
+      // For objects, use the key as the label
+      const keys = Object.keys(responses);
+      if (index < keys.length) {
+        return keys[index];
+      }
+    }
+    return `Item ${index + 1}`;
+  };
+
   return (
-    <TabsContent value="properties" className="w-full">
-      <div className="flex justify-between items-center mb-3 w-full">
+    <TabsContent value="properties" className="w-full h-full">
+      <div className="flex justify-between items-center mb-3 w-full h-full">
         <div className="flex items-center">
-          <Label className="mr-2 text-xs">Select Object:</Label>
-          <select
-            className="px-2 py-1 text-xs border rounded bg-gray-100 dark:bg-gray-700"
-            value={selectedObjectIndex}
-            onChange={(e) => setSelectedObjectIndex(Number(e.target.value))}
-          >
-            {responses.map((_, index) => (
-              <option key={index} value={index}>
-                Response {index + 1}
-              </option>
-            ))}
-          </select>
+          {showSelector && (
+            <>
+              <Label className="mr-2 text-xs">Select Item:</Label>
+              <select
+                className="px-2 py-1 text-xs border rounded bg-gray-100 dark:bg-gray-700"
+                value={selectedObjectIndex}
+                onChange={(e) => setSelectedObjectIndex(Number(e.target.value))}
+              >
+                {responsesArray.map((_, index) => (
+                  <option key={index} value={index}>
+                    {getOptionLabel(index)}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -289,9 +330,9 @@ const RecursivePropertiesBrowser = ({
           <CopyButton content={safeStringify(selectedObject)} label="Copy All" />
         </div>
       </div>
-      <ScrollArea className="w-full rounded-md border border-gray-400 dark:border-gray-500 p-3 h-96">
+      <ScrollArea className="w-full rounded-md border border-gray-400 dark:border-gray-500 p-1 h-full">
         {objectProperties.length > 0 ? (
-          <div className="space-y-1 w-full">
+          <div className="space-y-1 w-full p-0">
             {objectProperties.map((prop, idx) => 
               prop.hasChildren 
                 ? renderObjectParent(prop, idx) 

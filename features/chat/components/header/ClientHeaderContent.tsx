@@ -17,7 +17,7 @@ interface ClientHeaderContentProps {
     baseRoute?: string;
 }
 
-const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "/chat" }) => {
+const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "/dashboard" }) => {
     const dispatch = useAppDispatch();
     const chatActions = getChatActionsWithThunks();
     const isMobile = useIsMobile();
@@ -44,34 +44,42 @@ const ClientHeaderContent: React.FC<ClientHeaderContentProps> = ({ baseRoute = "
     
     return (
         <>
-            <div className={`flex items-center ${isMobile ? 'pr-10 -pt-2 space-x-2' : 'space-x-3'}`}>
+            <div className={`flex items-center ${isMobile ? 'pr-10 -pt-2 space-x-3' : 'space-x-3'}`}>
                 {/* New Chat Button */}
                 <Link href={`${baseRoute}`}>
-                    <button className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800">
-                        <IoCreateOutline size={22} />
+                    <button className={`rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800 ${
+                        isMobile ? 'p-3' : 'p-1.5'
+                    }`}>
+                        <IoCreateOutline size={24} />
                     </button>
                 </Link>
                 
-                {/* Theme Switcher */}
-                <ThemeSwitcherIcon className="p-0.5" />
-                
                 {/* Search Button - Opens the Search Overlay */}
                 <button 
-                    className="p-1.5 rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800"
+                    className={`rounded-full text-gray-800 dark:text-gray-200 hover:text-gray-800 hover:bg-zinc-200 dark:hover:text-gray-200 dark:hover:bg-zinc-800 ${
+                        isMobile ? 'p-3' : 'p-1.5'
+                    }`}
                     onClick={handleOpenSearch}
                     aria-label="Search conversations"
                 >
-                    <TbListSearch size={22} />
+                    <TbListSearch size={24} />
                 </button>
                 
+                {/* Theme Switcher */}
+                <div className={`${isMobile ? 'p-1.5' : 'p-0'}`}>
+                    <ThemeSwitcherIcon className={`${isMobile ? 'p-1.5' : 'p-0.5'}`} />
+                </div>
+                
                 {/* Profile */}
-                <button className="p-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800">
+                <button className={`rounded-full bg-zinc-200 dark:bg-zinc-800 ${
+                    isMobile ? 'p-3' : 'p-1.5'
+                }`}>
                     {profilePhoto ? (
                         <Image
                             src={profilePhoto || "/happy-robot-avatar.jpg"}
                             className="h-5 w-5 rounded-full"
-                            width={22}
-                            height={22}
+                            width={24}
+                            height={24}
                             alt={`${displayName}'s profile`}
                         />
                     ) : (

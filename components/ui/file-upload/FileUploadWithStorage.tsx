@@ -1,29 +1,39 @@
 import React, { useState, useEffect } from "react";
-import { MultiFileUpload, MiniFileUpload } from "./file-upload";
-import { useFileUploadWithStorage } from "./useFileUploadWithStorage";
+import { MultiFileUpload, MiniFileUpload } from "@/components/ui/file-upload/file-upload";
+import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUploadWithStorage";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import { motion } from "framer-motion";
+
+type SaveToOption = "public" | "private"; // New type for saveTo prop
 
 type FileUploadWithStorageProps = {
     bucket?: string;
     path?: string;
+    saveTo?: SaveToOption; // New optional prop to override bucket and path
     onUploadComplete?: (results: { url: string; type: string; details?: EnhancedFileDetails }[]) => void;
     onUploadStatusChange?: (isUploading: boolean) => void;
     multiple?: boolean;
-    useMiniUploader?: boolean; // New prop to toggle between normal and mini uploader
-    maxHeight?: string; // Added to support the maxHeight prop for both uploaders
+    useMiniUploader?: boolean;
+    maxHeight?: string;
 };
 
 export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
     bucket = "userContent",
     path,
+    saveTo, // Add saveTo to props
     onUploadComplete,
     onUploadStatusChange,
     multiple = false,
-    useMiniUploader = false, // Default to regular uploader for backward compatibility
-    maxHeight, // Pass this down to either uploader component
+    useMiniUploader = false,
+    maxHeight,
 }) => {
-    const { uploadFiles, isLoading } = useFileUploadWithStorage(bucket, path);
+    // Destructure the necessary upload methods from useFileUploadWithStorage
+    const {
+        uploadFiles,
+        uploadMultipleToPublicUserAssets,
+        uploadMultipleToPrivateUserAssets,
+        isLoading
+    } = useFileUploadWithStorage(bucket, path);
     const [uploadingFiles, setUploadingFiles] = useState<File[]>([]);
 
     useEffect(() => {
@@ -37,7 +47,15 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
         setUploadingFiles(files);
         
         try {
-            const results = await uploadFiles(files);
+            let results;
+            // Choose upload method based on saveTo prop
+            if (saveTo === "public") {
+                results = await uploadMultipleToPublicUserAssets(files);
+            } else if (saveTo === "private") {
+                results = await uploadMultipleToPrivateUserAssets(files);
+            } else {
+                results = await uploadFiles(files); // Fallback to default behavior
+            }
             
             if (results.length > 0 && onUploadComplete) {
                 onUploadComplete(results);

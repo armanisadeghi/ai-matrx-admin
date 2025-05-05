@@ -26,7 +26,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
@@ -36,12 +36,13 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         REQUIRED: false,
         DEFAULT: "latest",
         VALIDATION: null,
-        DATA_TYPE: "integer",
+        DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
+        TEST_VALUE: "latest",
         DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
     },
     user_id: {
@@ -99,7 +100,7 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         TEST_VALUE: "10168527-4d6b-456f-ab07-a889223ba3a9",
@@ -151,7 +152,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the name of the broker.",
         ICON_NAME: "User",
@@ -163,7 +164,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the broker.",
         ICON_NAME: "Key",
@@ -176,7 +177,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the value of the broker.",
         ICON_NAME: "LetterText",
@@ -189,7 +190,7 @@ export const BROKER_DEFINITION: Schema = {
         DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Whether the broker's value is DIRECTLY ready exactly as it is.",
         ICON_NAME: "Check",
@@ -204,7 +205,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the message id.",
@@ -216,7 +217,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the conversation id.",
@@ -228,7 +229,7 @@ export const MESSAGE_OBJECT_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "TextArea",
+        COMPONENT: "textarea",
         COMPONENT_PROPS: {"rows": 10},
         ICON_NAME: "Text",
         DESCRIPTION: "Enter the message content.",
@@ -291,7 +292,7 @@ export const OVERRIDE_DEFINITION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the model to use.",
         ICON_NAME: "Key",
@@ -402,7 +403,7 @@ export const READ_LOGS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Search",
         DESCRIPTION: "A search term to filter log lines (case-insensitive).",
@@ -417,7 +418,7 @@ export const CONVERT_RECIPE_TO_CHAT: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the chat to be converted to a recipe.",
@@ -432,7 +433,7 @@ export const SAMPLE_SERVICE: Schema = {
         DATA_TYPE: "number",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Slider",
+        COMPONENT: "slider",
         COMPONENT_PROPS: {"min": 0, "max": 100, "step": 1, "range": "False"},
         ICON_NAME: "Sliders",
         DESCRIPTION: "Adjust the value between 0 and 100",
@@ -564,7 +565,7 @@ export const CONVERT_NORMALIZED_DATA_TO_USER_DATA: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Baseline",
         DESCRIPTION: "Enter the name of the table to be created.",
@@ -576,7 +577,7 @@ export const CONVERT_NORMALIZED_DATA_TO_USER_DATA: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Text",
         DESCRIPTION: "Enter the description of the table to be created.",
@@ -591,7 +592,7 @@ export const PREPARE_BATCH_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: CHAT_CONFIG_DEFINITION,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the chat configs to be used in the recipe.",
@@ -603,7 +604,7 @@ export const PREPARE_BATCH_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -630,7 +631,7 @@ export const RUN_BATCH_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: CHAT_CONFIG_DEFINITION,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the chat configs to be used in the recipe.",
@@ -642,7 +643,7 @@ export const RUN_BATCH_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -669,9 +670,9 @@ export const RUN_RECIPE_TO_CHAT: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: CHAT_CONFIG_DEFINITION,
-        COMPONENT: "Input",
+        COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
+        ICON_NAME: "Settings",
         DESCRIPTION: "Enter the chat config to be used in the recipe.",
     },
     broker_values: {
@@ -681,7 +682,7 @@ export const RUN_RECIPE_TO_CHAT: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -696,7 +697,7 @@ export const PREP_CONVERSATION: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the conversation to be fetched, cached and ready for fast usage.",
@@ -711,7 +712,7 @@ export const AI_CHAT: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the conversation id.",
@@ -723,7 +724,7 @@ export const AI_CHAT: Schema = {
         DATA_TYPE: "object",
         CONVERSION: "convert_message_object",
         REFERENCE: MESSAGE_OBJECT_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
         ICON_NAME: "Messages",
         DESCRIPTION: "Enter the message object with message id, conversation id, content, role, type, and files.",
@@ -738,6 +739,10 @@ export const EDIT_WC_INJURY: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "ID of the injury to edit",
+        ICON_NAME: "FileText",
     },
     digit: {
         REQUIRED: false,
@@ -746,6 +751,10 @@ export const EDIT_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0},
+        DESCRIPTION: "Updated digit impairment rating",
+        ICON_NAME: "Hash",
     },
     wpi: {
         REQUIRED: false,
@@ -754,6 +763,10 @@ export const EDIT_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0, "max": 100},
+        DESCRIPTION: "Updated whole person impairment percentage",
+        ICON_NAME: "Hash",
     },
     le: {
         REQUIRED: false,
@@ -762,6 +775,10 @@ export const EDIT_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0},
+        DESCRIPTION: "Updated lower extremity impairment rating",
+        ICON_NAME: "Hash",
     },
     ue: {
         REQUIRED: false,
@@ -770,6 +787,10 @@ export const EDIT_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0},
+        DESCRIPTION: "Updated upper extremity impairment rating",
+        ICON_NAME: "Hash",
     },
     industrial: {
         REQUIRED: false,
@@ -778,6 +799,10 @@ export const EDIT_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0, "max": 100},
+        DESCRIPTION: "Updated industrial apportionment percentage",
+        ICON_NAME: "Hash",
     },
     pain: {
         REQUIRED: false,
@@ -786,6 +811,10 @@ export const EDIT_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0},
+        DESCRIPTION: "Updated pain add-on rating",
+        ICON_NAME: "Hash",
     },
     side: {
         REQUIRED: false,
@@ -794,6 +823,10 @@ export const EDIT_WC_INJURY: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"label": "Left", "value": "left"}, {"label": "Right", "value": "right"}, {"label": "Bilateral", "value": "bilateral"}]},
+        DESCRIPTION: "Updated side of the injury (left, right, or bilateral)",
+        ICON_NAME: "ArrowLeftRight",
     },
 };
 
@@ -805,6 +838,10 @@ export const EDIT_WC_CLAIM: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "ID of the claim to edit",
+        ICON_NAME: "FileText",
     },
     date_of_injury: {
         REQUIRED: false,
@@ -813,6 +850,10 @@ export const EDIT_WC_CLAIM: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {"placeholder": "YYYY-MM-DD"},
+        DESCRIPTION: "Updated date of injury in YYYY-MM-DD format",
+        ICON_NAME: "Calendar",
     },
     date_of_birth: {
         REQUIRED: false,
@@ -821,6 +862,10 @@ export const EDIT_WC_CLAIM: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {"placeholder": "YYYY-MM-DD"},
+        DESCRIPTION: "Updated date of birth in YYYY-MM-DD format",
+        ICON_NAME: "Calendar",
     },
     age_at_doi: {
         REQUIRED: false,
@@ -829,6 +874,10 @@ export const EDIT_WC_CLAIM: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0, "max": 120},
+        DESCRIPTION: "Updated age at the date of injury",
+        ICON_NAME: "Hash",
     },
     occupational_code: {
         REQUIRED: false,
@@ -837,6 +886,10 @@ export const EDIT_WC_CLAIM: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Updated occupational code",
+        ICON_NAME: "Briefcase",
     },
     weekly_earnings: {
         REQUIRED: false,
@@ -845,6 +898,10 @@ export const EDIT_WC_CLAIM: Schema = {
         DATA_TYPE: "float",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"step": 0.01, "min": 0},
+        DESCRIPTION: "Updated weekly earnings in dollars",
+        ICON_NAME: "DollarSign",
     },
     applicant_name: {
         REQUIRED: false,
@@ -853,6 +910,10 @@ export const EDIT_WC_CLAIM: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Updated full name of the applicant",
+        ICON_NAME: "User",
     },
 };
 
@@ -864,6 +925,10 @@ export const CALCULATE_WC_RATINGS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "ID of the report to calculate ratings for",
+        ICON_NAME: "FileText",
     },
 };
 
@@ -875,6 +940,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "ID of the associated report",
+        ICON_NAME: "FileText",
     },
     impairment_definition_id: {
         REQUIRED: true,
@@ -883,6 +952,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "ID of the impairment definition",
+        ICON_NAME: "FileText",
     },
     digit: {
         REQUIRED: false,
@@ -891,6 +964,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0},
+        DESCRIPTION: "Digit impairment rating",
+        ICON_NAME: "Hash",
     },
     wpi: {
         REQUIRED: false,
@@ -899,6 +976,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0, "max": 100},
+        DESCRIPTION: "Whole person impairment percentage",
+        ICON_NAME: "Hash",
     },
     le: {
         REQUIRED: false,
@@ -907,6 +988,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0},
+        DESCRIPTION: "Lower extremity impairment rating",
+        ICON_NAME: "Hash",
     },
     ue: {
         REQUIRED: false,
@@ -915,6 +1000,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0},
+        DESCRIPTION: "Upper extremity impairment rating",
+        ICON_NAME: "Hash",
     },
     industrial: {
         REQUIRED: false,
@@ -923,6 +1012,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0, "max": 100},
+        DESCRIPTION: "Industrial apportionment percentage",
+        ICON_NAME: "Hash",
     },
     pain: {
         REQUIRED: false,
@@ -931,6 +1024,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0},
+        DESCRIPTION: "Pain add-on rating",
+        ICON_NAME: "Hash",
     },
     side: {
         REQUIRED: false,
@@ -939,6 +1036,10 @@ export const CREATE_WC_INJURY: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"label": "Left", "value": "left"}, {"label": "Right", "value": "right"}, {"label": "Bilateral", "value": "bilateral"}]},
+        DESCRIPTION: "Side of the injury (left, right, or bilateral)",
+        ICON_NAME: "ArrowLeftRight",
     },
 };
 
@@ -950,6 +1051,10 @@ export const CREATE_WC_REPORT: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "ID of the associated claim",
+        ICON_NAME: "FileText",
     },
 };
 
@@ -961,6 +1066,10 @@ export const CREATE_WC_CLAIM: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {"placeholder": "YYYY-MM-DD"},
+        DESCRIPTION: "Date of injury in YYYY-MM-DD format",
+        ICON_NAME: "Calendar",
     },
     date_of_birth: {
         REQUIRED: false,
@@ -969,6 +1078,10 @@ export const CREATE_WC_CLAIM: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {"placeholder": "YYYY-MM-DD"},
+        DESCRIPTION: "Date of birth in YYYY-MM-DD format",
+        ICON_NAME: "Calendar",
     },
     age_at_doi: {
         REQUIRED: false,
@@ -977,6 +1090,10 @@ export const CREATE_WC_CLAIM: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 0, "max": 120},
+        DESCRIPTION: "Age at the date of injury",
+        ICON_NAME: "Hash",
     },
     occupational_code: {
         REQUIRED: true,
@@ -985,6 +1102,10 @@ export const CREATE_WC_CLAIM: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Occupational code",
+        ICON_NAME: "Briefcase",
     },
     weekly_earnings: {
         REQUIRED: false,
@@ -993,6 +1114,10 @@ export const CREATE_WC_CLAIM: Schema = {
         DATA_TYPE: "float",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"step": 0.01, "min": 0},
+        DESCRIPTION: "Weekly earnings in dollars",
+        ICON_NAME: "DollarSign",
     },
     applicant_name: {
         REQUIRED: true,
@@ -1001,6 +1126,64 @@ export const CREATE_WC_CLAIM: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
+        COMPONENT: "TextInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Full name of the applicant",
+        ICON_NAME: "User",
+    },
+};
+
+export const SEARCH_KEYWORDS: Schema = {
+    keywords: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "arrayField",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the queries to search for.",
+        ICON_NAME: "WholeWord",
+        TEST_VALUE: ["apple stock price", "apple stock best time to buy", "apple stock forecast"],
+    },
+    country_code: {
+        REQUIRED: false,
+        DEFAULT: "all",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Select",
+        COMPONENT_PROPS: {"options": [{"label": "Argentina", "value": "AR"}, {"label": "Australia", "value": "AU"}, {"label": "Austria", "value": "AT"}, {"label": "Belgium", "value": "BE"}, {"label": "Brazil", "value": "BR"}, {"label": "Canada", "value": "CA"}, {"label": "Chile", "value": "CL"}, {"label": "Denmark", "value": "DK"}, {"label": "Finland", "value": "FI"}, {"label": "France", "value": "FR"}, {"label": "Germany", "value": "DE"}, {"label": "Hong Kong", "value": "HK"}, {"label": "India", "value": "IN"}, {"label": "Indonesia", "value": "ID"}, {"label": "Italy", "value": "IT"}, {"label": "Japan", "value": "JP"}, {"label": "Korea", "value": "KR"}, {"label": "Malaysia", "value": "MY"}, {"label": "Mexico", "value": "MX"}, {"label": "Netherlands", "value": "NL"}, {"label": "New Zealand", "value": "NZ"}, {"label": "Norway", "value": "NO"}, {"label": "Peoples Republic of China", "value": "CN"}, {"label": "Poland", "value": "PL"}, {"label": "Portugal", "value": "PT"}, {"label": "Republic of the Philippines", "value": "PH"}, {"label": "Russia", "value": "RU"}, {"label": "Saudi Arabia", "value": "SA"}, {"label": "South Africa", "value": "ZA"}, {"label": "Spain", "value": "ES"}, {"label": "Sweden", "value": "SE"}, {"label": "Switzerland", "value": "CH"}, {"label": "Taiwan", "value": "TW"}, {"label": "Turkey", "value": "TR"}, {"label": "United Kingdom", "value": "GB"}, {"label": "United States", "value": "US"}, {"label": "All Regions", "value": "ALL"}]},
+        DESCRIPTION: "Enter the country code to get search results for.",
+        ICON_NAME: "Flag",
+        TEST_VALUE: "US",
+    },
+    total_results_per_keyword: {
+        REQUIRED: false,
+        DEFAULT: 5,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "slider",
+        COMPONENT_PROPS: {"min": 1, "max": 100, "step": 1, "range": "False"},
+        DESCRIPTION: "Enter the number of results per keyword to get. Note: Total results per keyword may deviate from this number due to the search engine results.",
+        ICON_NAME: "SlidersHorizontal",
+        TEST_VALUE: 5,
+    },
+    search_type: {
+        REQUIRED: false,
+        DEFAULT: "All",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "RadioGroup",
+        COMPONENT_PROPS: {"options": [{"label": "All", "value": "all"}, {"label": "Web", "value": "web"}, {"label": "News", "value": "news"}], "orientation": "vertical"},
+        DESCRIPTION: "Kind of search type to scrape, 'web', 'news', or 'all'.",
+        ICON_NAME: "Rss",
     },
 };
 
@@ -1014,8 +1197,9 @@ export const SEARCH_AND_SCRAPE: Schema = {
         REFERENCE: null,
         COMPONENT: "ArrayField",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the keywords to search for.",
+        DESCRIPTION: "Enter the queries to search for.",
         ICON_NAME: "WholeWord",
+        TEST_VALUE: ["apple stock price", "apple stock best time to buy", "apple stock forecast"],
     },
     country_code: {
         REQUIRED: false,
@@ -1028,6 +1212,7 @@ export const SEARCH_AND_SCRAPE: Schema = {
         COMPONENT_PROPS: {"options": [{"label": "Argentina", "value": "AR"}, {"label": "Australia", "value": "AU"}, {"label": "Austria", "value": "AT"}, {"label": "Belgium", "value": "BE"}, {"label": "Brazil", "value": "BR"}, {"label": "Canada", "value": "CA"}, {"label": "Chile", "value": "CL"}, {"label": "Denmark", "value": "DK"}, {"label": "Finland", "value": "FI"}, {"label": "France", "value": "FR"}, {"label": "Germany", "value": "DE"}, {"label": "Hong Kong", "value": "HK"}, {"label": "India", "value": "IN"}, {"label": "Indonesia", "value": "ID"}, {"label": "Italy", "value": "IT"}, {"label": "Japan", "value": "JP"}, {"label": "Korea", "value": "KR"}, {"label": "Malaysia", "value": "MY"}, {"label": "Mexico", "value": "MX"}, {"label": "Netherlands", "value": "NL"}, {"label": "New Zealand", "value": "NZ"}, {"label": "Norway", "value": "NO"}, {"label": "Peoples Republic of China", "value": "CN"}, {"label": "Poland", "value": "PL"}, {"label": "Portugal", "value": "PT"}, {"label": "Republic of the Philippines", "value": "PH"}, {"label": "Russia", "value": "RU"}, {"label": "Saudi Arabia", "value": "SA"}, {"label": "South Africa", "value": "ZA"}, {"label": "Spain", "value": "ES"}, {"label": "Sweden", "value": "SE"}, {"label": "Switzerland", "value": "CH"}, {"label": "Taiwan", "value": "TW"}, {"label": "Turkey", "value": "TR"}, {"label": "United Kingdom", "value": "GB"}, {"label": "United States", "value": "US"}, {"label": "All Regions", "value": "ALL"}]},
         DESCRIPTION: "Enter the country code to get search results for.",
         ICON_NAME: "Flag",
+        TEST_VALUE: "US",
     },
     total_results_per_keyword: {
         REQUIRED: false,
@@ -1036,10 +1221,11 @@ export const SEARCH_AND_SCRAPE: Schema = {
         DATA_TYPE: "integer",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Slider",
+        COMPONENT: "slider",
         COMPONENT_PROPS: {"min": 10, "max": 30, "step": 1, "range": "False"},
         DESCRIPTION: "Enter the number of results per keyword to get.",
         ICON_NAME: "SlidersHorizontal",
+        TEST_VALUE: 10,
     },
     search_type: {
         REQUIRED: false,
@@ -1053,19 +1239,7 @@ export const SEARCH_AND_SCRAPE: Schema = {
         DESCRIPTION: "Kind of search type to scrape, 'web', 'news', or 'all'.",
         ICON_NAME: "Rss",
     },
-    clean_output: {
-        REQUIRED: true,
-        DEFAULT: false,
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Switch",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Clean text formatting.",
-        ICON_NAME: "Eraser",
-    },
-    get_raw_json_content: {
+    get_organized_data: {
         REQUIRED: false,
         DEFAULT: false,
         VALIDATION: null,
@@ -1074,8 +1248,350 @@ export const SEARCH_AND_SCRAPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Switch",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "Get raw json content with results.",
+        DESCRIPTION: "Get organized json content for the scrape page.",
         ICON_NAME: "Braces",
+        TEST_VALUE: false,
+    },
+    get_structured_data: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get structured data json content for the scrape page.",
+        ICON_NAME: "Braces",
+        TEST_VALUE: false,
+    },
+    get_overview: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get overview content for the scraped page. Overview contains basic information for the page like title, other metadata etc.",
+        ICON_NAME: "Target",
+        TEST_VALUE: false,
+    },
+    get_text_data: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get parsed text data for the scraped page. Generated from 'organized data'.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: true,
+    },
+    get_main_image: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get main image for the scraped page. Main image is usually the biggest or most relevant image on the page. Extracted from OG metadata or other meta tags.",
+        ICON_NAME: "Image",
+        TEST_VALUE: true,
+    },
+    get_links: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get all the links from the scraped page. Links are categorized as internal, external, document, archive etc.",
+        ICON_NAME: "Link",
+        TEST_VALUE: false,
+    },
+    get_content_filter_removal_details: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get list of objects that were ignored during parsing page based on settings.",
+        ICON_NAME: "RemoveFormatting",
+        TEST_VALUE: false,
+    },
+    include_highlighting_markers: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include /exclude highlighting markers like 'underline', 'list markers' etc... from text.",
+        ICON_NAME: "Underline",
+        TEST_VALUE: false,
+    },
+    include_media: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media content in text output.",
+        ICON_NAME: "TvMinimalPlay",
+        TEST_VALUE: true,
+    },
+    include_media_links: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media links (image , video, audio) in text. Triggered when include_media is turned on.",
+        ICON_NAME: "Link",
+        TEST_VALUE: true,
+    },
+    include_media_description: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media description (media caption etc.) in text. Triggers when include_media is turned on.",
+        ICON_NAME: "WholeWord",
+        TEST_VALUE: true,
+    },
+    include_anchors: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include hyperlinks in scraped text",
+        ICON_NAME: "ExternalLink",
+        TEST_VALUE: true,
+    },
+    anchor_size: {
+        REQUIRED: false,
+        DEFAULT: 100,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 10, "max": 500},
+        DESCRIPTION: "Size of hyperlinks in scraped text",
+        ICON_NAME: "Ruler",
+        TEST_VALUE: 100,
+    },
+};
+
+export const QUICK_SCRAPE_STREAM: Schema = {
+    urls: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "arrayField",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the urls to be scraped.",
+        ICON_NAME: "Link",
+        TEST_VALUE: ["https://en.wikipedia.org/wiki/Donald_Trump", "https://titaniumsuccess.com/arman-sadeghi/business-coach/"],
+    },
+    get_organized_data: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get organized json content for the scrape page.",
+        ICON_NAME: "Braces",
+        TEST_VALUE: false,
+    },
+    get_structured_data: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get structured data json content for the scrape page.",
+        ICON_NAME: "Braces",
+        TEST_VALUE: false,
+    },
+    get_overview: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get overview content for the scraped page. Overview contains basic information for the page like title, other metadata etc.",
+        ICON_NAME: "Target",
+        TEST_VALUE: false,
+    },
+    get_text_data: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get parsed text data for the scraped page. Generated from 'organized data'.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: true,
+    },
+    get_main_image: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get main image for the scraped page. Main image is usually the biggest or most relevant image on the page. Extracted from OG metadata or other meta tags.",
+        ICON_NAME: "Image",
+        TEST_VALUE: true,
+    },
+    get_links: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get all the links from the scraped page. Links are categorized as internal, external, document, archive etc.",
+        ICON_NAME: "Link",
+        TEST_VALUE: false,
+    },
+    get_content_filter_removal_details: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get list of objects that were ignored during parsing page based on settings.",
+        ICON_NAME: "RemoveFormatting",
+        TEST_VALUE: false,
+    },
+    include_highlighting_markers: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include /exclude highlighting markers like 'underline', 'list markers' etc... from text.",
+        ICON_NAME: "Underline",
+        TEST_VALUE: false,
+    },
+    include_media: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media content in text output.",
+        ICON_NAME: "TvMinimalPlay",
+        TEST_VALUE: true,
+    },
+    include_media_links: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media links (image , video, audio) in text. Triggered when include_media is turned on.",
+        ICON_NAME: "Link",
+        TEST_VALUE: true,
+    },
+    include_media_description: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media description (media caption etc.) in text. Triggers when include_media is turned on.",
+        ICON_NAME: "WholeWord",
+        TEST_VALUE: true,
+    },
+    include_anchors: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include hyperlinks in scraped text",
+        ICON_NAME: "ExternalLink",
+        TEST_VALUE: true,
+    },
+    anchor_size: {
+        REQUIRED: false,
+        DEFAULT: 100,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 10, "max": 500},
+        DESCRIPTION: "Size of hyperlinks in scraped text",
+        ICON_NAME: "Ruler",
+        TEST_VALUE: 100,
     },
 };
 
@@ -1156,7 +1672,7 @@ export const GET_PARSED_PAGES: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the cursor to be used for the scrape.",
         ICON_NAME: "Key",
@@ -1303,7 +1819,7 @@ export const GET_SCRAPE_HISTORY_BY_URL: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the url to be scraped.",
         ICON_NAME: "Link",
@@ -1369,7 +1885,7 @@ export const PARSE_RESPONSE_BY_ID: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the scrape task id to be parsed.",
         ICON_NAME: "Key",
@@ -1393,7 +1909,7 @@ export const PARSE_RESPONSE_BY_ID: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the noise config id to be used for the scrape.",
         ICON_NAME: "Key",
@@ -1420,7 +1936,7 @@ export const SCRAPE_PAGE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the url to be scraped.",
         ICON_NAME: "Link",
@@ -1432,7 +1948,7 @@ export const SCRAPE_PAGE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the mode to be used for the scrape.",
         ICON_NAME: "Blend",
@@ -1483,7 +1999,7 @@ export const CREATE_SCRAPE_TASKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the mode to be used for the scrape.",
         ICON_NAME: "Blend",
@@ -1510,12 +2026,13 @@ export const QUICK_SCRAPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "ArrayField",
+        COMPONENT: "arrayField",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the urls to be scraped.",
         ICON_NAME: "Link",
+        TEST_VALUE: ["https://en.wikipedia.org/wiki/Donald_Trump", "https://titaniumsuccess.com/arman-sadeghi/business-coach/"],
     },
-    clean_output: {
+    get_organized_data: {
         REQUIRED: false,
         DEFAULT: false,
         VALIDATION: null,
@@ -1524,20 +2041,165 @@ export const QUICK_SCRAPE: Schema = {
         REFERENCE: null,
         COMPONENT: "Switch",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "Clean text formatting.",
-        ICON_NAME: "Eraser",
-    },
-    get_raw_json_content: {
-        REQUIRED: false,
-        DEFAULT: false,
-        VALIDATION: null,
-        DATA_TYPE: "boolean",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "Switch",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "Get raw json content with results.",
+        DESCRIPTION: "Get organized json content for the scrape page.",
         ICON_NAME: "Braces",
+        TEST_VALUE: false,
+    },
+    get_structured_data: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get structured data json content for the scrape page.",
+        ICON_NAME: "Braces",
+        TEST_VALUE: false,
+    },
+    get_overview: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get overview content for the scraped page. Overview contains basic information for the page like title, other metadata etc.",
+        ICON_NAME: "Target",
+        TEST_VALUE: false,
+    },
+    get_text_data: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get parsed text data for the scraped page. Generated from 'organized data'.",
+        ICON_NAME: "LetterText",
+        TEST_VALUE: true,
+    },
+    get_main_image: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get main image for the scraped page. Main image is usually the biggest or most relevant image on the page. Extracted from OG metadata or other meta tags.",
+        ICON_NAME: "Image",
+        TEST_VALUE: true,
+    },
+    get_links: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get all the links from the scraped page. Links are categorized as internal, external, document, archive etc.",
+        ICON_NAME: "Link",
+        TEST_VALUE: false,
+    },
+    get_content_filter_removal_details: {
+        REQUIRED: false,
+        DEFAULT: false,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Get list of objects that were ignored during parsing page based on settings.",
+        ICON_NAME: "RemoveFormatting",
+        TEST_VALUE: false,
+    },
+    include_highlighting_markers: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include /exclude highlighting markers like 'underline', 'list markers' etc... from text.",
+        ICON_NAME: "Underline",
+        TEST_VALUE: false,
+    },
+    include_media: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media content in text output.",
+        ICON_NAME: "TvMinimalPlay",
+        TEST_VALUE: true,
+    },
+    include_media_links: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media links (image , video, audio) in text. Triggered when include_media is turned on.",
+        ICON_NAME: "Link",
+        TEST_VALUE: true,
+    },
+    include_media_description: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include media description (media caption etc.) in text. Triggers when include_media is turned on.",
+        ICON_NAME: "WholeWord",
+        TEST_VALUE: true,
+    },
+    include_anchors: {
+        REQUIRED: false,
+        DEFAULT: true,
+        VALIDATION: null,
+        DATA_TYPE: "boolean",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "Switch",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include hyperlinks in scraped text",
+        ICON_NAME: "ExternalLink",
+        TEST_VALUE: true,
+    },
+    anchor_size: {
+        REQUIRED: false,
+        DEFAULT: 100,
+        VALIDATION: null,
+        DATA_TYPE: "integer",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "NumberInput",
+        COMPONENT_PROPS: {"min": 10, "max": 500},
+        DESCRIPTION: "Size of hyperlinks in scraped text",
+        ICON_NAME: "Ruler",
+        TEST_VALUE: 100,
     },
 };
 
@@ -1561,7 +2223,7 @@ export const SAVE_INTERACTION_SETTINGS: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the new interaction settings to be used for the domain.",
         ICON_NAME: "Key",
@@ -1588,7 +2250,7 @@ export const SAVE_FILTER_CONFIG: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the new filter config to be used for the domain.",
         ICON_NAME: "Key",
@@ -1615,7 +2277,7 @@ export const SAVE_NOISE_CONFIG: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the new noise config to be used for the domain.",
         ICON_NAME: "Key",
@@ -1630,7 +2292,7 @@ export const CREATE_FILTER_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the name of the filter config to be created.",
         ICON_NAME: "Key",
@@ -1711,7 +2373,7 @@ export const CREATE_INTERACTION_SETTINGS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the name of the interaction settings to be created.",
         ICON_NAME: "Key",
@@ -1726,7 +2388,7 @@ export const CREATE_DOMAIN: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the domain to be created.",
         ICON_NAME: "Key",
@@ -1753,7 +2415,7 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the path pattern to be used for the domain.",
         ICON_NAME: "Key",
@@ -1813,7 +2475,7 @@ export const UPDATE_DOMAIN_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the mode to be used for the domain.",
         ICON_NAME: "Key",
@@ -1840,7 +2502,7 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the path pattern to be used for the domain.",
         ICON_NAME: "Key",
@@ -1900,7 +2562,7 @@ export const CREATE_DOMAIN_CONFIG: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the mode to be used for the domain.",
         ICON_NAME: "Key",
@@ -1990,7 +2652,7 @@ export const GET_PYTHON_DICTS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the variable name of the dictionary to be created.",
         ICON_NAME: "Key",
@@ -2032,7 +2694,7 @@ export const GET_SEGMENTS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the type of segment to be extracted.",
         ICON_NAME: "Key",
@@ -2059,7 +2721,7 @@ export const GET_SECTION_GROUPS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the type of section group to be extracted.",
         ICON_NAME: "Key",
@@ -2086,7 +2748,7 @@ export const GET_SECTION_BLOCKS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the type of section to be extracted.",
         ICON_NAME: "Key",
@@ -2155,7 +2817,7 @@ export const GET_CODE_BLOCKS_BY_LANGUAGE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the language of the code blocks to be extracted.",
         ICON_NAME: "Key",
@@ -2191,13 +2853,13 @@ export const CLASSIFY_MARKDOWN: Schema = {
 
 export const MIC_CHECK: Schema = {
     mic_check_message: {
-        REQUIRED: true,
-        DEFAULT: null,
+        REQUIRED: false,
+        DEFAULT: "",
         VALIDATION: null,
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Check",
         DESCRIPTION: "Enter any message and the same message will be streamed back to you as a test of the mic.",
@@ -2212,19 +2874,20 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the recipe to be fetched, cached and ready for fast usage.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     version: {
         REQUIRED: false,
         DEFAULT: null,
         VALIDATION: null,
-        DATA_TYPE: "integer",
+        DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
@@ -2236,7 +2899,7 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -2296,7 +2959,7 @@ export const RUN_CHAT_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the AI Model or leave blank to use the default model.",
@@ -2347,19 +3010,20 @@ export const GET_NEEDED_RECIPE_BROKERS: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
-        ICON_NAME: "Key",
         DESCRIPTION: "Enter the ID of the recipe to be fetched, cached and ready for fast usage.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     version: {
         REQUIRED: false,
         DEFAULT: null,
         VALIDATION: null,
-        DATA_TYPE: "integer",
+        DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         ICON_NAME: "Key",
         DESCRIPTION: "Enter the version of the recipe or blank to get the latest version.",
@@ -2374,7 +3038,7 @@ export const GET_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the compiled recipe to get.",
         ICON_NAME: "Key",
@@ -2389,10 +3053,11 @@ export const GET_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the recipe to get.",
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
 };
 
@@ -2404,10 +3069,11 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the recipe to add.",
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     compiled_id: {
         REQUIRED: true,
@@ -2416,7 +3082,7 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the compiled recipe to add.",
         ICON_NAME: "Key",
@@ -2428,7 +3094,7 @@ export const ADD_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the compiled recipe to add.",
         ICON_NAME: "Key",
@@ -2443,10 +3109,11 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the recipe to run.",
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     compiled_id: {
         REQUIRED: true,
@@ -2455,7 +3122,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the compiled recipe to run.",
         ICON_NAME: "Key",
@@ -2467,7 +3134,7 @@ export const RUN_COMPILED_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the compiled recipe to run.",
         ICON_NAME: "Key",
@@ -2494,10 +3161,11 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the id of the recipe to run.",
         ICON_NAME: "Key",
+        TEST_VALUE: "e2049ce6-c340-4ff7-987e-deb24a977853",
     },
     broker_values: {
         REQUIRED: false,
@@ -2506,7 +3174,7 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -2518,7 +3186,7 @@ export const RUN_RECIPE: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: OVERRIDE_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the overrides to be applied. These will override the 'settings' for the recipe, if overrides are allowed for the recipe.",
         ICON_NAME: "Parentheses",
@@ -2545,7 +3213,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "string",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "Input",
+        COMPONENT: "input",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Not sure what this is for yet.",
         ICON_NAME: "Key",
@@ -2557,7 +3225,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "array",
         CONVERSION: "convert_broker_data",
         REFERENCE: BROKER_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the broker values to be used in the recipe.",
         ICON_NAME: "Parentheses",
@@ -2569,7 +3237,7 @@ export const COCKPIT_INSTANT: Schema = {
         DATA_TYPE: "object",
         CONVERSION: null,
         REFERENCE: OVERRIDE_DEFINITION,
-        COMPONENT: "relatedFieldsDisplay",
+        COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the overrides to be applied. These will override the 'settings' for the recipe, if overrides are allowed for the recipe.",
         ICON_NAME: "Parentheses",
@@ -2641,7 +3309,9 @@ export const SERVICE_TASKS = {
     },
     scraper_service_v2: {
         quick_scrape: QUICK_SCRAPE,
+        quick_scrape_stream: QUICK_SCRAPE_STREAM,
         search_and_scrape: SEARCH_AND_SCRAPE,
+        search_keywords: SEARCH_KEYWORDS,
         mic_check: MIC_CHECK,
     },
     california_worker_compensation_service: {
@@ -2691,6 +3361,34 @@ export const AVAILABLE_NAMESPACES = {
     "/custom": "Custom Namespace",
 } as const;
 
+export type FieldType =
+    | "input"
+    | "textarea"
+    | "switch"
+    | "checkbox"
+    | "slider"
+    | "select"
+    | "radiogroup"
+    | "fileupload"
+    | "multifileupload"
+    | "jsoneditor";
+
+export interface FieldOverride {
+    type: FieldType;
+    props?: Record<string, any>;
+}
+
+export type FieldOverrides = Record<string, FieldOverride>;
+
+export const FIELD_OVERRIDES: FieldOverrides = {
+    raw_markdown: {
+        type: "textarea",
+        props: {
+            rows: 10,
+        },
+    },
+};
+
 
 
 
@@ -2738,3 +3436,307 @@ export const getAvailableNamespaces = (): Array<{ value: string; label: string }
 export const getTaskSchema = (taskName: string): Schema | undefined => {
     return SOCKET_TASKS[taskName];
 };
+
+export const initializeTaskDataWithDefaults = (taskName: string): Record<string, any> => {
+    const taskSchema = getTaskSchema(taskName);
+    if (!taskSchema) {
+        return {};
+    }
+
+    const taskData: Record<string, any> = {};
+
+    Object.entries(taskSchema).forEach(([fieldName, fieldSpec]) => {
+        if (fieldSpec.DEFAULT !== undefined) {
+            taskData[fieldName] = fieldSpec.DEFAULT;
+        }
+    });
+
+    return taskData;
+};
+
+export const validateTaskData = (taskName: string, taskData: Record<string, any>): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    const schema = getTaskSchema(taskName);
+
+    if (!schema) {
+        return { isValid: false, errors: [`No schema found for task '${taskName}'`] };
+    }
+
+    Object.entries(schema).forEach(([fieldName, fieldSpec]) => {
+        const providedValue = taskData[fieldName];
+        const isProvided = providedValue !== undefined && providedValue !== null;
+
+        if (fieldSpec.REQUIRED && !isProvided) {
+            errors.push(`Field '${fieldName}' is required but was not provided.`);
+        }
+    });
+
+    return {
+        isValid: errors.length === 0,
+        errors,
+    };
+};
+
+export const getFieldDefinition = (taskName: string, fieldPath: string, traverseNested: boolean = true): SchemaField | undefined => {
+    const taskSchema = getTaskSchema(taskName);
+    if (!taskSchema) {
+        return undefined;
+    }
+
+    // Split the field path into parts (e.g., "broker_values.name" -> ["broker_values", "name"])
+    const pathParts = fieldPath.split(".");
+
+    // If not traversing nested fields, return the root field directly
+    if (!traverseNested || pathParts.length === 1) {
+        return taskSchema[pathParts[0]];
+    }
+
+    // Traverse the path for nested fields
+    let currentSchema: Schema = taskSchema;
+    let currentField: SchemaField | undefined;
+
+    for (let i = 0; i < pathParts.length; i++) {
+        const part = pathParts[i];
+        currentField = currentSchema[part];
+        if (!currentField) {
+            return undefined; // Field not found
+        }
+
+        // If there's a REFERENCE and more parts to process, switch to the referenced schema
+        if (currentField.REFERENCE && i < pathParts.length - 1) {
+            if (!currentField.REFERENCE || typeof currentField.REFERENCE !== "object") {
+                return undefined; // Invalid REFERENCE
+            }
+            currentSchema = currentField.REFERENCE as Schema;
+        }
+    }
+
+    return currentField;
+};
+
+export const getAllFieldPaths = (taskName: string): string[] => {
+    const taskSchema = getTaskSchema(taskName);
+    if (!taskSchema) {
+        return [];
+    }
+
+    const fieldPaths: string[] = [];
+
+    const traverseSchema = (schema: Schema, prefix: string = "") => {
+        Object.entries(schema).forEach(([fieldName, fieldDefinition]) => {
+            const currentPath = prefix ? `${prefix}.${fieldName}` : fieldName;
+
+            // Add the current field path
+            fieldPaths.push(currentPath);
+
+            // Handle nested objects via REFERENCE
+            if (fieldDefinition.REFERENCE && typeof fieldDefinition.REFERENCE === "object") {
+                if (fieldDefinition.DATA_TYPE === "array") {
+                    // For arrays, append [index] to the path and traverse the referenced schema
+                    const arrayItemPath = `${currentPath}[index]`;
+                    traverseSchema(fieldDefinition.REFERENCE as Schema, arrayItemPath);
+                } else {
+                    // For non-array objects, traverse the referenced schema directly
+                    traverseSchema(fieldDefinition.REFERENCE as Schema, currentPath);
+                }
+            }
+        });
+    };
+
+    traverseSchema(taskSchema);
+    return fieldPaths;
+};
+
+export interface FieldDefinitionInfo {
+    path: string;
+    dataType: string;
+    defaultValue: any;
+    reference?: Schema;
+  }
+
+  export const getFieldDefinitions = (taskName: string): FieldDefinitionInfo[] => {
+    const taskSchema = getTaskSchema(taskName);
+    if (!taskSchema) {
+      return [];
+    }
+
+    const fieldDefinitions: FieldDefinitionInfo[] = [];
+
+    const traverseSchema = (schema: Schema, prefix: string = "") => {
+      Object.entries(schema).forEach(([fieldName, fieldDefinition]) => {
+        const currentPath = prefix ? `${prefix}.${fieldName}` : fieldName;
+
+        // Add field definition info
+        fieldDefinitions.push({
+          path: currentPath,
+          dataType: fieldDefinition.DATA_TYPE,
+          defaultValue: fieldDefinition.DEFAULT,
+          reference: fieldDefinition.REFERENCE,
+        });
+
+        // Handle nested objects via REFERENCE
+        if (fieldDefinition.REFERENCE && typeof fieldDefinition.REFERENCE === "object") {
+          if (fieldDefinition.DATA_TYPE === "array") {
+            const arrayItemPath = `${currentPath}[index]`;
+            traverseSchema(fieldDefinition.REFERENCE as Schema, arrayItemPath);
+          } else {
+            traverseSchema(fieldDefinition.REFERENCE as Schema, currentPath);
+          }
+        }
+      });
+    };
+
+    traverseSchema(taskSchema);
+    return fieldDefinitions;
+  };
+
+
+// Define the eUUID function that was missing
+const eUUID = (value: any): boolean => {
+    // UUID regex pattern
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return typeof value === 'string' && uuidPattern.test(value);
+  };
+
+export const validateTextLength = (value: any): boolean => {
+    if (typeof value !== "string") {
+        return false;
+    }
+    return value.length > 5;
+};
+
+export const validateMarkdown = (value: any): boolean => {
+    if (typeof value !== "string") {
+        return false;
+    }
+    // Check for common markdown patterns: headers, bold, italic, lists, links, or code
+    const markdownRegex = /(#+\s|[-*+]\s|\*\*.*?\*\*|__.*?__|\*.*?\*|_.*?_|`.*?`|\[.*?\]\(.*?\))/;
+    return markdownRegex.test(value);
+};
+
+export const validToolNames = [
+    "code_python_execute",
+    "code_web_store_html",
+    "code_fetcher_fetch",
+    "api_news_fetch_headlines",
+    "core_math_calculate",
+    "core_web_search",
+    "core_web_read_web_pages",
+    "core_web_search_and_read",
+    "data_sql_execute_query",
+    "data_sql_list_tables",
+    "data_sql_get_table_schema",
+    "data_sql_create_user_generated_table_data",
+    "text_analyze",
+    "text_regex_extract",
+];
+export const validateToolNames = (value: any): boolean => {
+    // Check if value is an array
+    if (!Array.isArray(value)) {
+        return false;
+    }
+
+    // Check if every item in the array is a string and exists in validToolNames
+    return value.every((item) => typeof item === "string" && validToolNames.includes(item));
+};
+
+const validationFunctions: Record<string, (value: any) => boolean> = {
+    eUUID,
+    validateTextLength,
+    validateMarkdown,
+    validateToolNames,
+};
+
+export const isValidField = (taskName: string, fieldPath: string, value: any, traverseNested: boolean = true): { isValid: boolean; errorMessage: string } => {
+    const fieldDefinition = getFieldDefinition(taskName, fieldPath, traverseNested);
+    if (!fieldDefinition) {
+      return { isValid: false, errorMessage: `Field definition not found for ${fieldPath}` };
+    }
+
+    const isEmpty = value === null || value === undefined;
+
+    if (!fieldDefinition.REQUIRED && isEmpty) {
+      console.log(`Field is not required and empty, returning true`);
+      return { isValid: true, errorMessage: "" };
+    }
+
+    if (fieldDefinition.REQUIRED && isEmpty) {
+      console.log(`Field is required but empty, returning false`);
+      return { isValid: false, errorMessage: `${fieldPath} is required` };
+    }
+
+    const expectedType = fieldDefinition.DATA_TYPE;
+    console.log(`Expected data type: ${expectedType}`);
+    if (!isEmpty) {
+      console.log(`Validating data type for value:`, value);
+      switch (expectedType) {
+        case "string":
+          if (typeof value !== "string") {
+            console.log(`Type mismatch: expected string, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected a string for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        case "number":
+        case "integer": // Add integer type
+          if (typeof value !== "number" || (expectedType === "integer" && !Number.isInteger(value))) {
+            console.log(`Type mismatch: expected ${expectedType}, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected an ${expectedType} for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        case "boolean":
+          if (typeof value !== "boolean") {
+            console.log(`Type mismatch: expected boolean, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected a boolean for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        case "array":
+          if (!Array.isArray(value)) {
+            console.log(`Type mismatch: expected array, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected an array for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        case "object":
+          if (typeof value !== "object" || value === null || Array.isArray(value)) {
+            console.log(`Type mismatch: expected object, got ${typeof value}`);
+            return { isValid: false, errorMessage: `Expected an object for ${fieldPath}, got ${typeof value}` };
+          }
+          break;
+        default:
+          console.log(`Unknown data type: ${expectedType}`);
+          return { isValid: false, errorMessage: `Unknown data type ${expectedType} for ${fieldPath}` };
+      }
+      console.log(`Data type validation passed`);
+    }
+
+    if (!isEmpty && fieldDefinition.VALIDATION) {
+      console.log(`Running validation function: ${fieldDefinition.VALIDATION}`);
+      const validationFn = validationFunctions[fieldDefinition.VALIDATION];
+      if (typeof validationFn === "function") {
+        const validationResult = validationFn(value);
+        console.log(`Validation function result: ${validationResult}`);
+        if (!validationResult) {
+          return { isValid: false, errorMessage: `Validation failed for ${fieldPath}: ${getValidationErrorMessage(fieldDefinition.VALIDATION, value)}` };
+        }
+        return { isValid: true, errorMessage: "" };
+      }
+      return { isValid: false, errorMessage: `Validation function ${fieldDefinition.VALIDATION} not found for ${fieldPath}` };
+    }
+
+    return { isValid: true, errorMessage: "" };
+  };
+
+  // Helper to provide specific error messages for validation failures
+  const getValidationErrorMessage = (validationName: string, value: any): string => {
+    switch (validationName) {
+      case "eUUID":
+        return `Expected a valid UUID, got "${value}"`;
+      case "validateTextLength":
+        return `Expected a string longer than 5 characters, got "${value}"`;
+      case "validateMarkdown":
+        return `Expected valid Markdown content, got "${value}"`;
+      case "validateToolNames":
+        return `Expected an array of valid tool names, got ${JSON.stringify(value)}`;
+      default:
+        return `Invalid value "${value}"`;
+    }
+  };

@@ -1,7 +1,7 @@
 'use client';
 
 import DynamicForm from "@/components/socket/form-builder/DynamicForm";
-import { SOCKET_TASKS } from "@/constants/socket-constants";
+import { SOCKET_TASKS } from "@/constants/socket-schema"
 
 export default function SocketFormBuilder() {
     const quickScrapeTask = SOCKET_TASKS.quick_scrape;

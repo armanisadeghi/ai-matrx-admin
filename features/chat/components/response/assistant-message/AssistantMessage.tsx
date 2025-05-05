@@ -6,7 +6,7 @@ import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown
 import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "@/features/chat/components/response/MessageItem";
 import { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
-import { parseMarkdownToText } from "@/hooks/tts/simple/parse-markdown-for-speech";
+import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
 
 interface AssistantMessageProps {
     message: localMessage;

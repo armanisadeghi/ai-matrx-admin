@@ -278,6 +278,13 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
     onClose();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && tableName.trim() && !isSaving && stage === "form") {
+      e.preventDefault();
+      handleSave();
+    }
+  };
+
   const renderFormContent = () => (
     <div className="grid gap-4 py-4">
       <div className="grid gap-2">
@@ -291,6 +298,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           placeholder="Enter table name"
           className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
           disabled={isSaving}
+          onKeyDown={handleKeyDown}
         />
       </div>
       
@@ -306,6 +314,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           rows={3}
           className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 resize-none"
           disabled={isSaving}
+          onKeyDown={handleKeyDown}
         />
       </div>
     </div>

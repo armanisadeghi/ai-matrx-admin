@@ -1,24 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { copyToClipboard } from "./markdown-copy-utils";
 import { Copy, CheckCircle2, FileText, FileType2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
+import { FaMicrosoft } from "react-icons/fa";
+import { Microsoft } from '@lobehub/icons';
 
 /**
  * Simple Copy Button Component
  */
-export function SimpleCopyButton({ content, label = "Copy", className = "" }) {
+export function SimpleCopyButton({ markdownContent, label = "Copy", className = "" }) {
     const [copied, setCopied] = useState(false);
-
     const handleCopy = async () => {
-        const success = await copyToClipboard(content, {
+        const success = await copyToClipboard(markdownContent, {
             onSuccess: () => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
             },
         });
     };
-
     return (
         <button
             onClick={handleCopy}
@@ -42,12 +42,27 @@ export function SimpleCopyButton({ content, label = "Copy", className = "" }) {
 /**
  * Markdown Format Copy Button
  */
-export function MarkdownCopyButton({ content, className = "" }) {
+export function MarkdownCopyButton({ markdownContent, className = "" }) {
     const [copied, setCopied] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState("below");
+    const buttonRef = useRef(null);
+    
+    useEffect(() => {
+        if (showOptions && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            // If space below is less than 100px, show dropdown above
+            if (spaceBelow < 100) {
+                setDropdownPosition("above");
+            } else {
+                setDropdownPosition("below");
+            }
+        }
+    }, [showOptions]);
 
     const handleRegularCopy = async () => {
-        const success = await copyToClipboard(content, {
+        const success = await copyToClipboard(markdownContent, {
             isMarkdown: true,
             formatForGoogleDocs: false,
             onSuccess: () => {
@@ -59,7 +74,7 @@ export function MarkdownCopyButton({ content, className = "" }) {
     };
 
     const handleGoogleDocsCopy = async () => {
-        const success = await copyToClipboard(content, {
+        const success = await copyToClipboard(markdownContent, {
             isMarkdown: true,
             formatForGoogleDocs: true,
             onSuccess: () => {
@@ -80,15 +95,21 @@ export function MarkdownCopyButton({ content, className = "" }) {
             ) : (
                 <>
                     <button
+                        ref={buttonRef}
                         onClick={() => setShowOptions(!showOptions)}
                         className="flex items-center gap-2 px-3 py-1.5 rounded bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
                     >
                         <Copy className="w-4 h-4" />
                         <span>Copy</span>
                     </button>
-
                     {showOptions && (
-                        <div className="absolute top-full mt-1 min-w-48 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30">
+                        <div 
+                            className={`absolute ${
+                                dropdownPosition === "above" 
+                                    ? "bottom-full mb-1" 
+                                    : "top-full mt-1"
+                            } min-w-48 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
+                        >
                             <button
                                 onClick={handleRegularCopy}
                                 className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"
@@ -103,6 +124,13 @@ export function MarkdownCopyButton({ content, className = "" }) {
                                 <FcGoogle className="h-4 w-4 mr-2" />
                                 Google Docs
                             </button>
+                            <button
+                                onClick={handleGoogleDocsCopy}
+                                className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"
+                            >
+                                <FaMicrosoft className="h-4 w-4 mr-2 text-blue-500" />
+                                Microsoft Word
+                            </button>
                         </div>
                     )}
                 </>
@@ -112,10 +140,10 @@ export function MarkdownCopyButton({ content, className = "" }) {
 }
 
 /**
- * Inline Copy Button (similar to your original component but using utilities)
+ * Inline Copy Button with smart positioning
  */
 export function InlineCopyButton({
-    content,
+    markdownContent,
     position = "top-right",
     size = "sm",
     className = "",
@@ -125,6 +153,22 @@ export function InlineCopyButton({
     const [copied, setCopied] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
     const [showOptions, setShowOptions] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState("below");
+    const buttonRef = useRef(null);
+    
+    // Check viewport constraints when showing options
+    useEffect(() => {
+        if (showOptions && buttonRef.current) {
+            const rect = buttonRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            // If space below is less than 100px, show dropdown above
+            if (spaceBelow < 100) {
+                setDropdownPosition("above");
+            } else {
+                setDropdownPosition("below");
+            }
+        }
+    }, [showOptions]);
 
     // Size mapping
     const sizeClasses = {
@@ -134,7 +178,7 @@ export function InlineCopyButton({
         lg: "h-7 w-7",
         xl: "h-8 w-8",
     };
-
+    
     // Position mapping
     const positionClasses = {
         "top-right": "absolute top-1 right-1",
@@ -142,15 +186,15 @@ export function InlineCopyButton({
         "bottom-right": "absolute bottom-1 right-1",
         "bottom-left": "absolute bottom-1 left-1",
     };
-
+    
     const handleMouseEnter = () => {
         setShowTooltip(true);
     };
-
+    
     const handleMouseLeave = () => {
         setShowTooltip(false);
     };
-
+    
     const handleButtonClick = () => {
         if (isMarkdown) {
             setShowOptions(!showOptions);
@@ -158,9 +202,9 @@ export function InlineCopyButton({
             handleRegularCopy();
         }
     };
-
+    
     const handleRegularCopy = async () => {
-        await copyToClipboard(content, {
+        await copyToClipboard(markdownContent, {
             isMarkdown,
             formatForGoogleDocs: false,
             onSuccess: () => {
@@ -170,9 +214,9 @@ export function InlineCopyButton({
         });
         setShowOptions(false);
     };
-
+    
     const handleGoogleDocsCopy = async () => {
-        await copyToClipboard(content, {
+        await copyToClipboard(markdownContent, {
             isMarkdown,
             formatForGoogleDocs: true,
             onSuccess: () => {
@@ -182,7 +226,7 @@ export function InlineCopyButton({
         });
         setShowOptions(false);
     };
-
+    
     return (
         <div
             className={`${positionClasses[position]} ${className} inline-flex z-10`}
@@ -190,6 +234,7 @@ export function InlineCopyButton({
             onMouseLeave={handleMouseLeave}
         >
             <button
+                ref={buttonRef}
                 onClick={handleButtonClick}
                 className="bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded-md transition-colors duration-200 z-10"
                 aria-label={tooltipText}
@@ -202,21 +247,29 @@ export function InlineCopyButton({
                     />
                 )}
             </button>
-
+            
+            {/* Tooltip */}
             {showTooltip && !copied && !showOptions && (
                 <div className="absolute top-full mt-1 right-0 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
                     {tooltipText}
                 </div>
             )}
-
+            
             {copied && showTooltip && (
                 <div className="absolute top-full mt-1 right-0 bg-green-600 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
                     Copied!
                 </div>
             )}
-
+            
+            {/* Smart positioning dropdown */}
             {showOptions && isMarkdown && (
-                <div className="absolute top-full mt-1 min-w-48 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30">
+                <div 
+                    className={`absolute ${
+                        dropdownPosition === "above" 
+                            ? "bottom-full mb-1" 
+                            : "top-full mt-1"
+                    } min-w-48 right-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded shadow-lg z-30`}
+                >
                     <button
                         onClick={handleRegularCopy}
                         className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"
@@ -230,6 +283,13 @@ export function InlineCopyButton({
                     >
                         <FcGoogle className="h-4 w-4 mr-2" />
                         Google Docs
+                    </button>
+                    <button
+                        onClick={handleGoogleDocsCopy}
+                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center"
+                    >
+                        <FaMicrosoft className="h-4 w-4 mr-2" />
+                        Microsoft Word
                     </button>
                 </div>
             )}

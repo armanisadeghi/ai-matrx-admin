@@ -1,10 +1,10 @@
 // app/(authenticated)/tests/selector-test/dynamic-test/SaveButtons.tsx
-'use client';
+"use client";
 
-import { saveJson } from '@/actions/json.actions';
-import { savePublicText, savePublicImage } from '@/actions/file.actions';
-import React, { useState } from 'react';
-import { Button } from '@/components/ui';
+import { saveJson } from "@/actions/json.actions";
+import { savePublicText, savePublicImage } from "@/actions/file.actions";
+import React, { useState } from "react";
+import { Button } from "@/components/ui";
 
 interface SaveButtonProps {
     content: any;
@@ -36,102 +36,82 @@ const SaveButtonLayout: React.FC<{
     </div>
 );
 
-export const AdminSaveJsonButton = ({
-                                        content,
-                                        filename,
-                                        path = ['json-exports']
-                                    }: SaveButtonProps) => {
+export const AdminSaveJsonButton = ({ content, filename, path = ["json-exports"] }: SaveButtonProps) => {
     const [state, setState] = useState<SaveButtonState>({ status: null, fileLink: null });
 
     const saveJsonData = async () => {
-        setState({ status: 'Saving...', fileLink: null });
+        setState({ status: "Saving...", fileLink: null });
 
         try {
             const result = await saveJson({
                 filename,
                 jsonData: content,
-                directoryType: 'app',
-                path: ['(authenticated)', 'tests', ...path]
+                directoryType: "app",
+                path: ["(authenticated)", "tests", ...path],
             });
 
             if (result.success) {
                 setState({
                     status: "File saved successfully",
-                    fileLink: result.clickableLink || result.filePath
+                    fileLink: result.clickableLink || result.filePath,
                 });
             } else {
                 setState({
                     status: `Failed to save file: ${result.error}`,
-                    fileLink: null
+                    fileLink: null,
                 });
             }
         } catch (error) {
             setState({
-                status: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                fileLink: null
+                status: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+                fileLink: null,
             });
         }
     };
 
-    return <SaveButtonLayout
-        onClick={saveJsonData}
-        buttonText="Save JSON"
-        state={state}
-    />;
+    return <SaveButtonLayout onClick={saveJsonData} buttonText="Save JSON" state={state} />;
 };
 
-export const AdminSaveTextButton = ({
-                                        content,
-                                        filename,
-                                        path = ['text-files']
-                                    }: SaveButtonProps) => {
+export const AdminSaveTextButton = ({ content, filename, path = ["text-files"] }: SaveButtonProps) => {
     const [state, setState] = useState<SaveButtonState>({ status: null, fileLink: null });
 
     const saveTextData = async () => {
-        setState({ status: 'Saving...', fileLink: null });
+        setState({ status: "Saving...", fileLink: null });
 
         try {
             const result = await savePublicText({
                 filename,
                 content: String(content),
-                path
+                path,
             });
 
             if (result.success) {
                 setState({
                     status: "File saved successfully",
-                    fileLink: result.clickableLink || result.filePath
+                    fileLink: result.clickableLink || result.filePath,
                 });
             } else {
                 setState({
                     status: `Failed to save file: ${result.error}`,
-                    fileLink: null
+                    fileLink: null,
                 });
             }
         } catch (error) {
             setState({
-                status: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                fileLink: null
+                status: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+                fileLink: null,
             });
         }
     };
 
-    return <SaveButtonLayout
-        onClick={saveTextData}
-        buttonText="Save Text"
-        state={state}
-    />;
+    return <SaveButtonLayout onClick={saveTextData} buttonText="Save Text" state={state} />;
 };
 
-export const AdminSaveImageButton = ({
-                                         content,
-                                         filename,
-                                         path = ['images']
-                                     }: SaveButtonProps) => {
+export const AdminSaveImageButton = ({ content, filename, path = ["images"] }: SaveButtonProps) => {
     const [state, setState] = useState<SaveButtonState>({ status: null, fileLink: null });
 
     const saveImageData = async () => {
-        setState({ status: 'Saving...', fileLink: null });
+        setState({ status: "Saving...", fileLink: null });
 
         try {
             const buffer = content instanceof Buffer ? content : Buffer.from(content);
@@ -139,31 +119,27 @@ export const AdminSaveImageButton = ({
             const result = await savePublicImage({
                 filename,
                 content: buffer,
-                path
+                path,
             });
 
             if (result.success) {
                 setState({
                     status: "File saved successfully",
-                    fileLink: result.clickableLink || result.filePath
+                    fileLink: result.clickableLink || result.filePath,
                 });
             } else {
                 setState({
                     status: `Failed to save file: ${result.error}`,
-                    fileLink: null
+                    fileLink: null,
                 });
             }
         } catch (error) {
             setState({
-                status: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                fileLink: null
+                status: `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+                fileLink: null,
             });
         }
     };
 
-    return <SaveButtonLayout
-        onClick={saveImageData}
-        buttonText="Save Image"
-        state={state}
-    />;
+    return <SaveButtonLayout onClick={saveImageData} buttonText="Save Image" state={state} />;
 };

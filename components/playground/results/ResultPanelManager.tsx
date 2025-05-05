@@ -12,7 +12,7 @@ interface ResultPanelManagerProps {
 }
 
 export function ResultPanelManager({ cockpitControls: playgroundControls }: ResultPanelManagerProps) {
-    const { generateTabs, socketHook } = playgroundControls.aiCockpitHook;
+    const { generateTabs, socketHook, addAssistantResponse } = playgroundControls.aiCockpitHook;
     const { deleteSettings } = playgroundControls.aiCockpitHook.recipeAgentSettingsHook;
     const tabs = generateTabs();
 
@@ -78,7 +78,8 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
                             onDelete: deleteSettings,
                             debug: process.env.NODE_ENV === 'development',
                             onDebugClick: (id) => console.log('Debug clicked:', id),
-                            minSize: minPanelSize
+                            minSize: minPanelSize,
+                            addAssistantResponse: addAssistantResponse,
                         })
                     )}
                 </PanelGroup>

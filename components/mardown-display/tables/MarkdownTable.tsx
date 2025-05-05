@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
@@ -29,13 +29,29 @@ import { THEMES } from "../themes";
 import SaveTableModal from "./SaveTableModal";
 import ViewTableModal from "./ViewTableModal";
 
+// Custom debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 interface SavedTableInfo {
   table_id: string;
   table_name: string;
   row_count: string;
   field_count: string;
 }
-
 interface MarkdownTableProps {
     data: {
         headers: string[];
@@ -49,7 +65,6 @@ interface MarkdownTableProps {
     content?: string;
     onContentChange?: (updatedMarkdown: string) => void;
 }
-
 const MarkdownTable: React.FC<MarkdownTableProps> = ({
     data,
     className = "",
@@ -77,8 +92,10 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const [showViewModal, setShowViewModal] = useState(false);
     const [savedTableInfo, setSavedTableInfo] = useState<SavedTableInfo | null>(null);
 
+    // Debounce the tableData to delay control rendering
+    const debouncedTableData = useDebounce(tableData, 500);
+
     useEffect(() => {
-        // Use the raw data with Markdown intact
         if (data) {
             setTableData({
                 headers: data.headers || [],
@@ -91,15 +108,13 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     // Simple Markdown renderer for bold and italic
     const renderMarkdown = (text: string) => {
         let html = text
-            .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>") // Bold with **
-            .replace(/\*([^*]+)\*/g, "<em>$1</em>") // Italic with *
-            .replace(/_([^_]+)_/g, "<em>$1</em>"); // Italic with _
-        // Handle cases where bold and italic overlap (e.g., ***text***)
-        html = html.replace(/<em><strong>([^<]+)<\/strong><\/em>/g, "<strong><em>$1</em></strong>");
-        return <span dangerouslySetInnerHTML={{ __html: html }} />;
+            .replace(/\*\*([^*]+)\*\*/g, "$1") // Bold with **
+            .replace(/\*([^*]+)\*/g, "$1") // Italic with *
+            .replace(/_([^_]+)_/g, "$1"); // Italic with _
+        html = html.replace(/([^<]+)<\/strong><\/em>/g, "$1");
+        return html;
     };
 
-    // Helper function to generate markdown table from current state
     const generateMarkdownTable = () => {
         const maxLengths = Array(tableData.headers.length).fill(0);
         [tableData.headers, ...tableData.rows].forEach((row) => {
@@ -112,12 +127,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
         return [formatRow(tableData.headers), separator, ...tableData.rows.map((row) => formatRow(row))].join("\n");
     };
 
-    // Function to notify parent of content changes
     const notifyContentChange = () => {
         if (onContentChange && content) {
-            // If we have the original content string, we need to replace the table portion
-            // This is a simplified approach - in a real implementation, you might need more sophisticated
-            // parsing to correctly locate and replace the table in the markdown
             const updatedMarkdown = generateMarkdownTable();
             onContentChange(updatedMarkdown);
         }
@@ -148,7 +159,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                 await navigator.clipboard.writeText(content);
                 toast.success("Markdown copied to clipboard");
             } else {
-                // Fallback if content isn't provided
                 copyTableToClipboard();
             }
         } catch (err: any) {
@@ -194,7 +204,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             const fileName = tableData.headers && tableData.headers[0] 
                 ? `${tableData.headers[0].replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md` 
                 : 'table_data.md';
-            
             const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -204,7 +213,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            
             toast.success("Markdown file downloaded", {
                 action: {
                     label: "Download Again",
@@ -223,7 +231,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
             toast.error(err.message || "Failed to download Markdown");
         }
     };
-    
+
     const toggleGlobalEditMode = () => {
         if (editMode !== "none") {
             onSave(tableData);
@@ -284,17 +292,14 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     const editingBorderStyle = "overflow-x-auto rounded-xl border-3 border-dashed border-red-500 rounded-xl";
     const normalBorderStyle = `overflow-x-auto rounded-xl border-3 ${tableTheme.border}`;
 
-    // Handle save table completion
     const handleSaveComplete = (tableInfo: SavedTableInfo) => {
         setSavedTableInfo(tableInfo);
         setShowSaveModal(false);
         setShowViewModal(true);
     };
 
-    // Render either a Save or View button based on whether the table is already saved
     const renderTableActionButton = () => {
-        if (!tableData.normalizedData) return null;
-        
+        if (!debouncedTableData.normalizedData) return null;
         if (savedTableInfo) {
             return (
                 <Button
@@ -303,7 +308,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     onClick={() => setShowViewModal(true)}
                     className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
                 >
-                    <ExternalLink className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <ExternalLink className="h-4 w-4" />
                     View Saved Table
                 </Button>
             );
@@ -315,7 +320,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     onClick={() => setShowSaveModal(true)}
                     className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
                 >
-                    <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <Database className="h-4 w-4" />
                     Save
                 </Button>
             );
@@ -323,39 +328,27 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
     };
 
     return (
-        <div className="w-full space-y-4 my-4">
-            {showNormalized && tableData.normalizedData ? (
-                <div className="relative">
-                    <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto">
-                        {JSON.stringify(tableData.normalizedData, null, 2)}
-                    </pre>
+        <div className={cn("relative", className)}>
+            {showNormalized && debouncedTableData.normalizedData ? (
+                <div className="relative p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <pre className="text-sm overflow-auto">{JSON.stringify(debouncedTableData.normalizedData, null, 2)}</pre>
                     <Button
-                        variant="default"
+                        variant="outline"
                         size="sm"
                         onClick={() => setShowNormalized(false)}
                         className="absolute top-2 right-2 opacity-90 hover:opacity-100 flex items-center gap-1 shadow-md"
                     >
                         <Eye className="h-4 w-4" />
-                        <span>View Table</span>
+                        View Table
                     </Button>
                 </div>
             ) : (
-                <div className={cn(isEditingEnabled ? editingBorderStyle : normalBorderStyle)}>
-                    <table className={cn("w-full border-collapse", className)} style={{ fontSize: `${tableFontsize}px` }}>
-                        <thead>
-                            <tr
-                                className={cn("border-b", tableTheme.border, tableTheme.header, isEditingEnabled && "cursor-pointer")}
-                                onClick={isEditingEnabled ? handleHeaderClick : undefined}
-                            >
+                <div className={isEditingEnabled ? editingBorderStyle : normalBorderStyle}>
+                    <table className="w-full border-collapse" style={{ fontSize: `${tableFontsize}px` }}>
+                        <thead className={tableTheme.header}>
+                            <tr onClick={handleHeaderClick}>
                                 {tableData.headers.map((header, i) => (
-                                    <th
-                                        key={i}
-                                        className={cn(
-                                            "px-1 py-2 text-left font-semibold",
-                                            tableTheme.headerText,
-                                            i < tableData.headers.length - 1 && "border-r border-gray-300 dark:border-gray-700"
-                                        )}
-                                    >
+                                    <th key={i} className={cn("p-2 text-left", tableTheme.headerText)}>
                                         {isEditingHeader ? (
                                             <input
                                                 type="text"
@@ -378,25 +371,11 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                             {tableData.rows.map((row, rowIndex) => (
                                 <tr
                                     key={rowIndex}
-                                    className={cn(
-                                        "border-b transition-colors",
-                                        tableTheme.border,
-                                        tableTheme.row.hover,
-                                        rowIndex % 2 === 0 ? tableTheme.row.even : tableTheme.row.odd,
-                                        isEditingEnabled && "cursor-pointer",
-                                        editMode === rowIndex && "bg-blue-50 dark:bg-blue-900/20"
-                                    )}
-                                    onClick={isEditingEnabled ? () => handleRowClick(rowIndex) : undefined}
+                                    className={cn("border-t", tableTheme.row, editMode === rowIndex && "bg-blue-50 dark:bg-blue-900/20")}
+                                    onClick={() => handleRowClick(rowIndex)}
                                 >
                                     {row.map((cell, colIndex) => (
-                                        <td
-                                            key={colIndex}
-                                            className={cn(
-                                                "px-1 pt-1 pb-0",
-                                                colIndex < row.length - 1 && "border-r border-gray-300 dark:border-gray-700",
-                                                colIndex === 0 && "font-semibold"
-                                            )}
-                                        >
+                                        <td key={colIndex} className={cn("p-2", colIndex === 0 && "font-semibold")}>
                                             {editMode === rowIndex ? (
                                                 <textarea
                                                     value={cell}
@@ -420,8 +399,8 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                     </table>
                 </div>
             )}
-            <div className="flex justify-end gap-2">
-                {tableData.normalizedData && (
+            <div className="flex justify-end gap-2 mt-2">
+                {debouncedTableData.normalizedData && (
                     <Button
                         variant="outline"
                         size="sm"
@@ -432,11 +411,7 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         {showNormalized ? "Table" : "Data"}
                     </Button>
                 )}
-                
-                {/* Render either Save or View button */}
                 {renderTableActionButton()}
-                
-                {/* Export dropdown menu replacing individual buttons */}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30">
@@ -446,34 +421,27 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-64">
-                        {/* Copy section */}
                         <DropdownMenuItem onClick={copyTableToClipboard} className="flex items-center gap-2 cursor-pointer">
                             <FileText className="h-4 w-4 text-green-500" />
                             <span>Copy as Text</span>
                         </DropdownMenuItem>
-                        
                         {content && (
                             <DropdownMenuItem onClick={copyMarkdownToClipboard} className="flex items-center gap-2 cursor-pointer">
                                 <FileDown className="h-4 w-4 text-purple-500" />
                                 <span>Copy as Markdown</span>
                             </DropdownMenuItem>
                         )}
-                        
-                        {tableData.normalizedData && (
+                        {debouncedTableData.normalizedData && (
                             <DropdownMenuItem onClick={copyJsonToClipboard} className="flex items-center gap-2 cursor-pointer">
                                 <FileJson className="h-4 w-4 text-blue-500" />
                                 <span>Copy as JSON</span>
                             </DropdownMenuItem>
                         )}
-                        
                         <DropdownMenuSeparator />
-                        
-                        {/* Download section */}
                         <DropdownMenuItem onClick={downloadCSV} className="flex items-center gap-2 cursor-pointer">
                             <FileSpreadsheet className="h-4 w-4 text-orange-500" />
                             <span>Download as CSV</span>
                         </DropdownMenuItem>
-                        
                         {content && (
                             <DropdownMenuItem onClick={downloadMarkdown} className="flex items-center gap-2 cursor-pointer">
                                 <FileDown className="h-4 w-4 text-indigo-500" />
@@ -482,7 +450,6 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         )}
                     </DropdownMenuContent>
                 </DropdownMenu>
-                
                 {isEditingEnabled ? (
                     <>
                         <Button
@@ -505,24 +472,25 @@ const MarkdownTable: React.FC<MarkdownTableProps> = ({
                         </Button>
                     </>
                 ) : (
-                    <Button variant="outline" size="sm" onClick={toggleGlobalEditMode} className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={toggleGlobalEditMode}
+                        className="flex items-center gap-2 hover:bg-blue-100 dark:hover:bg-blue-800/30"
+                    >
                         <Edit className="h-4 w-4" />
                         Edit
                     </Button>
                 )}
             </div>
-            
-            {/* Save Modal */}
             {showSaveModal && (
                 <SaveTableModal
                     isOpen={showSaveModal}
                     onClose={() => setShowSaveModal(false)}
                     onSaveComplete={handleSaveComplete}
-                    tableData={tableData.normalizedData}
+                    tableData={debouncedTableData.normalizedData}
                 />
             )}
-            
-            {/* View Modal */}
             {showViewModal && savedTableInfo && (
                 <ViewTableModal
                     isOpen={showViewModal}

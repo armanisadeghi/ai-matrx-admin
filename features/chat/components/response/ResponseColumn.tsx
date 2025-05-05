@@ -7,10 +7,10 @@ import AssistantStream from "@/features/chat/components/response/assistant-messa
 import useCartesiaControls from "@/hooks/tts/simple/useCartesiaControls";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 import { RootState } from "@/lib/redux/store";
-import { selectIsStreaming, selectStreamEnd, selectStreamError } from "@/lib/redux/socket/streamingSlice";
 import { DebugInfo } from "./DebugInfo";
 import ErrorCard from "./assistant-message/stream/ErrorCard";
-
+import { selectTaskStreamingById } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import { selectPrimaryResponseEndedByTaskId, selectPrimaryResponseErrorsByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 const INFO = true;
 const DEBUG = true;
 const VERBOSE = false;
@@ -21,7 +21,7 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
 
     const chatSelectors = createChatSelectors();
-    const eventName = useAppSelector(chatSelectors.conversationSocketEventName);
+    const taskId = useAppSelector(chatSelectors.taskId)
     const messagesToDisplay = useAppSelector(chatSelectors.messageRelationFilteredRecords);
     const messageCount = messagesToDisplay.length;
 
@@ -30,15 +30,22 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
     const bottomRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const audioControls = useCartesiaControls();
-    const isStreaming = useAppSelector((state: RootState) => selectIsStreaming(state, eventName));
-    const isStreamEnded = useAppSelector((state: RootState) => selectStreamEnd(state, eventName));
-    const streamError = useAppSelector((state: RootState) => selectStreamError(state, eventName));
+
+
+    const isStreaming = useAppSelector((state: RootState) => selectTaskStreamingById(state, taskId));
+    const isStreamEnded = useAppSelector(selectPrimaryResponseEndedByTaskId(taskId));
+    const streamError = useAppSelector(selectPrimaryResponseErrorsByTaskId(taskId));
+    
+    
+    
+    
     const activeMessageStatus = useAppSelector((state: RootState) => chatSelectors.activeMessageStatus(state));
     const shouldShowLoader = useAppSelector((state: RootState) => chatSelectors.shouldShowLoader(state));
     const isDebugMode = useAppSelector((state: RootState) => chatSelectors.isDebugMode(state));
 
     const isStreamError = streamError !== null;
-    const hasUserVisibleMessage = streamError?.user_visible_message !== null && streamError?.user_visible_message.length > 5;
+    const hasUserVisibleMessage = streamError && Array.isArray(streamError) && streamError.length > 0 && 
+        streamError[0]?.user_visible_message !== null && streamError[0]?.user_visible_message?.length > 5;
 
     const handleScrollToBottom = () => {
         for (let i = 0; i < 3; i++) {
@@ -158,17 +165,17 @@ const ResponseColumn: React.FC<{ isOverlay?: boolean }> = ({ isOverlay = false }
                         isStreamError={isStreamError}
                         streamError={streamError}
                         streamKey={streamKey}
-                        eventName={eventName}
+                        taskId={taskId}
                         settings={settings}
                     />
                 )}
                 <AssistantStream
                     key={streamKey}
-                    eventName={eventName}
+                    taskId={taskId}
                     handleVisibility={handleAutoScrollToBottom}
                     scrollToBottom={handleScrollToBottom}
                 />
-                {hasUserVisibleMessage && <ErrorCard message={streamError.user_visible_message} onRetry={handleRetry} onClose={handleClose}  />}
+                {hasUserVisibleMessage && <ErrorCard message={streamError[0].user_visible_message} onRetry={handleRetry} onClose={handleClose}  />}
 
                 <div ref={bottomRef} style={{ height: "1px" }} />
             </div>

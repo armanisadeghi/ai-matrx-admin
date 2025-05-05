@@ -1,114 +1,98 @@
 // File: components/socket/admin/SocketAdmin.tsx
 "use client";
 import { Card, CardContent } from "@/components/ui";
-import { useSocket } from "@/lib/redux/socket/hooks/useSocket";
-import { FIELD_OVERRIDES } from "@/constants/socket-constants";
-import DynamicForm from "../form-builder/DynamicForm";
+import DynamicForm from "@/components/socket-io/form-builder/DynamicForm";
 import AccordionWrapper from "../../matrx/matrx-collapsible/AccordionWrapper";
 import { cn } from "@/lib/utils";
-import { SocketHeader } from "@/components/socket/headers/SocketHeader";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
-import SocketDebugPanel from "../SocketDebugPanel";
 import { SocketTaskBuilder } from "../SocketTaskBuilder";
 import { useState } from "react";
 import SocketStreamMonitor from "../streaming/SocketStreamMonitor";
+import { ResponsiveSocketHeader } from "@/components/socket-io/headers/ResponsiveSocketHeader";
+import { useAppSelector } from "@/lib/redux";
+import { selectAllTasks, selectTaskById } from "@/lib/redux/socket-io";
 
 interface SocketAdminProps {
     className?: string;
 }
 
 export const SocketAdmin = ({ className }: SocketAdminProps) => {
-    const socketHook = useSocket();
-    const { taskType, tasks, setTaskData, handleSend } = socketHook;
     const [testMode, setTestMode] = useState(false);
+    const [taskId, setTaskId] = useState<string>("");
 
-    const handleChange = (data: any) => {
-        setTaskData(data);
-    };
-
-    const handleSubmit = (data: any) => {
-        setTaskData(data);
-        handleSend();
-    };
-
-    const handleConfigChange = (config: any) => {
-        setTaskData(config);
-    };
+    const tasks = useAppSelector(selectAllTasks);
+    const taskState = useAppSelector((state) => selectTaskById(state, taskId));
+    const taskName = taskState?.taskName || "";
 
     const handleTestModeChange = (testMode: boolean) => {
         setTestMode(testMode);
     };
 
+    const handleTaskCreate = (taskId: string) => {
+        setTaskId(taskId);
+    };
+
     return (
-        <div className={cn("w-full h-full py-4 px-2 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-2xl", className)}>
-            <Card className="bg-gray-100 dark:bg-gray-800 rounded-2xl">
-                <CardContent className="space-y-8">
-                    <div className="space-y-6">
-                        <SocketHeader socketHook={socketHook} testMode={testMode} onTestModeChange={handleTestModeChange} />
+        <div className={cn("w-full h-full flex flex-col bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-2xl", className)}>
+            {/* Sticky header outside of card content */}
+            <div className="sticky top-0 z-50 bg-gray-100 dark:bg-gray-800 pt-0 px-2 pb-2">
+                <ResponsiveSocketHeader 
+                    onTestModeChange={handleTestModeChange} 
+                    onTaskCreate={handleTaskCreate} 
+                    debugMode={true} 
+                />
+            </div>
+            
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto px-2 pb-4">
+                <Card className="bg-gray-100 dark:bg-gray-800 rounded-2xl mb-8">
+                    <CardContent className="space-y-8 pt-6">
                         <div className="space-y-6">
-                            {tasks.map((task, taskIndex) => (
+                            {Object.values(tasks).map((task, taskIndex) => (
                                 <div
                                     key={taskIndex}
                                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 p-4 shadow-sm"
                                 >
                                     <AccordionWrapper
-                                        title={`Task ${taskIndex + 1}: ${taskType || "Select a task"}`}
-                                        value={`task-${taskIndex}`}
-                                        defaultOpen={taskIndex === 0}
+                                        title={`Config Builder for ${taskName || "Selected Task"}`}
+                                        value="config-builder"
+                                        defaultOpen={true}
                                     >
-                                        <div className="space-y-6 pt-4">
-                                            {taskType ? (
-                                                <DynamicForm
-                                                    taskType={taskType}
-                                                    onChange={handleChange}
-                                                    onSubmit={handleSubmit}
-                                                    fieldOverrides={FIELD_OVERRIDES}
-                                                    testMode={testMode}
-                                                />
-                                            ) : (
-                                                <div className="text-gray-500 dark:text-gray-400 text-center py-4">
-                                                    Please select a task type from the header
-                                                </div>
-                                            )}
+                                        <div
+                                            className="w-1/2 overflow-y-auto pr-4 h-full scrollbar-none"
+                                        >
+                                            <DynamicForm taskId={taskId} showDebug={false} />
                                         </div>
                                     </AccordionWrapper>
                                 </div>
                             ))}
                             <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 p-4 shadow-sm">
                                 <AccordionWrapper
-                                    title={`Config Builder for ${taskType || "Selected Task"}`}
+                                    title={`Config Builder for ${taskName || "Selected Task"}`}
                                     value="config-builder"
                                     defaultOpen={false}
                                 >
                                     <div className="space-y-6 pt-4">
                                         <SocketTaskBuilder
-                                            socketHook={socketHook}
-                                            onConfigChange={handleConfigChange}
+                                            taskId={taskId}
                                             className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200"
                                         />
                                     </div>
                                 </AccordionWrapper>
                             </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
-            {/* Stream Monitor Panel */}
-            <div className="mt-8">
-                <SocketStreamMonitor socketHook={socketHook} />
-            </div>
-            <div className="mt-8 px-2">
-                <SocketAccordionResponse socketHook={socketHook} />
-            </div>
-
-
-            {/* Debug Panel */}
-            <div className="mt-8 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 shadow-sm">
-                <AccordionWrapper title="Socket Debug Panel" value="socket-debug" defaultOpen={false}>
-                    <div className="pt-4">
-                        <SocketDebugPanel socketHook={socketHook} />
-                    </div>
-                </AccordionWrapper>
+                    </CardContent>
+                </Card>
+                
+                {/* Stream Monitor Panel */}
+                <div className="mb-8">
+                    <SocketStreamMonitor taskId={taskId} />
+                </div>
+                
+                {/* Response Panel */}
+                <div className="px-2 mb-4">
+                    <SocketAccordionResponse taskId={taskId} />
+                </div>
             </div>
         </div>
     );
