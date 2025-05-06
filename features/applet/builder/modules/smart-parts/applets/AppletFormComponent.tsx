@@ -288,13 +288,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             </div>
                         )}
                     </div>
-
-                    <RecipeSelector 
-                        compiledRecipeId={appletCompiledRecipeId} 
-                        onRecipeSelect={handleRecipeSelected} 
-                        onGetCompiledRecipeWithNeededBrokers={handleGetCompiledRecipeWithNeededBrokers}
-                    />
-
+                    
                     <div className="space-y-2">
                         <Label
                             htmlFor={`${isNew ? "new" : "edit"}-description`}

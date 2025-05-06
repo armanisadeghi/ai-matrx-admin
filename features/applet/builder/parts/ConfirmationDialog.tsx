@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface DeleteConfirmationDialogProps {
+interface ConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   handleDeleteGroup: () => Promise<void>;
@@ -29,7 +29,7 @@ interface DeleteConfirmationDialogProps {
   secondStepCancelText?: string;
 }
 
-export const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
+export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   open,
   onOpenChange,
   handleDeleteGroup,

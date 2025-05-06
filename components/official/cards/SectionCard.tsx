@@ -1,30 +1,76 @@
 "use client";
-
 import React, { ReactNode } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { classColorOptions } from "@/components/official/styles";
+
+
 
 interface SectionCardProps {
-  title: string;
-  description: string;
-  children: ReactNode;
-  footer?: ReactNode;
+    title: string;
+    description?: string;
+    descriptionNode?: ReactNode;
+    children: ReactNode;
+    footer?: ReactNode;
+    gridCols?: number; // Number of columns for the grid
+    gridGap?: string; // Gap between grid items
+    autoGrid?: boolean; // Whether to enable auto grid or not
+    headerActions?: ReactNode; // Add header actions support for buttons
+    color?: keyof typeof classColorOptions;
 }
 
-const SectionCard: React.FC<SectionCardProps> = ({ title, description, children, footer }) => {
-  return (
-    <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
-      <CardHeader className="bg-gray-100 dark:bg-gray-700 p-4 border-b border-gray-200 dark:border-gray-600 rounded-t-xl">
-        <CardTitle className="text-rose-500 dark:text-rose-600">{title}</CardTitle>
-        <CardDescription className="text-gray-600 dark:text-gray-300 text-sm">
-          {description}
-        </CardDescription>
-      </CardHeader>
+const SectionCard: React.FC<SectionCardProps> = ({
+    title,
+    description,
+    descriptionNode,
+    children,
+    footer,
+    gridCols = 3,
+    gridGap = "1rem",
+    autoGrid = false,
+    headerActions,
+    color = "rose",
+}) => {
+    
+    const getGridClasses = () => {
+        if (!autoGrid) return "";
 
-      <CardContent>{children}</CardContent>
+        // Tailwind grid classes based on columns
+        const gridColsClass =
+            {
+                1: "grid-cols-1",
+                2: "grid-cols-1 sm:grid-cols-2",
+                3: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3",
+                4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+                5: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5",
+                6: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6",
+            }[gridCols] || "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
 
-      {footer && <CardFooter className="flex justify-end gap-3 pt-0 border-t border-gray-200 dark:border-gray-800">{footer}</CardFooter>}
-    </Card>
-  );
+        return `grid ${gridColsClass} gap-${gridGap}`;
+    };
+
+    const getCardClasses = () => {
+        return classColorOptions[color];
+    };
+    
+
+    return (
+        <Card className={getCardClasses().card}>
+            <CardHeader className={getCardClasses().cardHeader}>
+                <div className="grid md:grid-cols-[1fr_auto] gap-4 md:items-center">
+                    <div className="flex flex-col gap-1">
+                        <CardTitle className={getCardClasses().cardTitle}>{title}</CardTitle>
+                        {description && !descriptionNode && <div className={getCardClasses().cardDescription}>{description}</div>}
+                        {descriptionNode && <div className={getCardClasses().cardDescriptionNode}>{descriptionNode}</div>}
+                    </div>
+                    {headerActions && <div className="flex items-center">{headerActions}</div>}
+                </div>
+            </CardHeader>
+            <CardContent className={autoGrid ? getGridClasses() : ""}>{children}</CardContent>
+            {footer && (
+                <CardFooter className={getCardClasses().cardFooter}>{footer}</CardFooter>
+            )}
+        </Card>
+    );
 };
 
-export default SectionCard; 
+export default SectionCard;

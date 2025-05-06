@@ -283,7 +283,7 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved,
                 </div>
             ) : (
                 <Card className="bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl border border-rose-200 dark:border-rose-600">
-                    <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-rose-200 dark:border-rose-600 p-3 rounded-t-3xl">
+                    <CardHeader className="bg-gray-100 dark:bg-gray-700 border border-rose-200 dark:border-rose-600 p-3 rounded-t-3xl">
                         <div className="grid md:grid-cols-[1fr_auto] gap-4 md:items-center">
                             <div className="flex flex-col gap-1">
                                 <h2 className="text-rose-500 font-medium text-lg">Primary App Information</h2>

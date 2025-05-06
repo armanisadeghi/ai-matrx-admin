@@ -42,7 +42,7 @@ import { Badge } from '@/components/ui/badge';
 import { FieldBuilder } from '@/lib/redux/app-builder/types';
 import StructuredSectionCard from '@/components/official/StructuredSectionCard';
 import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
-import { DeleteConfirmationDialog } from '@/features/applet/builder/parts/DeleteConfirmationDialog';
+import { ConfirmationDialog } from '@/features/applet/builder/parts/ConfirmationDialog';
 
 export default function FieldsListPage() {
   const router = useRouter();
@@ -393,7 +393,7 @@ export default function FieldsListPage() {
         </div>
       )}
       
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={!!fieldToDelete}
         onOpenChange={(open) => !open && setFieldToDelete(null)}
         handleDeleteGroup={handleDeleteField}

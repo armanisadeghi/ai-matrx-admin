@@ -78,7 +78,6 @@ export const ConfigBuilder = () => {
     const hasUnsavedChanges = hasUnsavedAppChanges || hasUnsavedAppletChanges || hasUnsavedContainerChanges || hasUnsavedFieldChanges;
     const needsRecompile = nextAppRecompile || nextAppletRecompile || nextContainerRecompile;
 
-
     // Applet state
     const [activeApplet, setActiveApplet] = useState<string | null>(null);
 
@@ -89,7 +88,7 @@ export const ConfigBuilder = () => {
         { id: "applets-config", title: "Add Applets", description: "Define & Configure Applets" },
         { id: "groups-config", title: "Add Containers", description: "Create groups of Custom Fields" },
         { id: "fields-config", title: "Add Fields", description: "Define fields for each Container" },
-        { id: "source-config", title: "Add Source", description: "Add source code for your app" },
+        { id: "source-config", title: "Add Intelligence", description: "Connect to Intelligence sources" },
         { id: "preview", title: "Deploy App", description: "Finalize & Launch your app" },
     ];
 

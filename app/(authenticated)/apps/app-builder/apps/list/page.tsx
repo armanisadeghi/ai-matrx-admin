@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { AppBuilder } from '@/lib/redux/app-builder/types';
 import StructuredSectionCard from '@/components/official/StructuredSectionCard';
 import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
-import { DeleteConfirmationDialog } from '@/features/applet/builder/parts/DeleteConfirmationDialog';
+import { ConfirmationDialog } from '@/features/applet/builder/parts/ConfirmationDialog';
 
 export default function AppsListPage() {
   const router = useRouter();
@@ -324,7 +324,7 @@ export default function AppsListPage() {
         </div>
       )}
       
-      <DeleteConfirmationDialog
+      <ConfirmationDialog
         open={!!appToDelete}
         onOpenChange={(open) => !open && setAppToDelete(null)}
         handleDeleteGroup={handleDeleteApp}

@@ -1,9 +1,9 @@
 "use client";
-
 import React, { useRef, useEffect } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import SectionCard from "@/components/official/cards/SectionCard"; // Make sure to import the updated SectionCard
 import AppletSourceSelection from "../parts/SourceSelector";
 import SourceConfigCardSelector from "../parts/SourceConfigCardSelector";
 import { RecipeSelector } from "@/features/applet/builder/modules/smart-parts/applets";
@@ -13,13 +13,12 @@ import { RootState } from "@/lib/redux/store";
 import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletCompiledRecipeId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { AppletSourceConfig } from "@/lib/redux/app-builder/service/customAppletService";
-
-
-import {
-    setCompiledRecipeId,
-    setActiveApplet,
-} from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { selectAppletsByAppId } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { setCompiledRecipeId, setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { BrokerMapping } from "@/features/applet/builder/builder.types";
+import { AppletBuilder } from "@/lib/redux/app-builder/types";
+import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
+
 
 interface SelectAppStepProps {
     appId?: string;
@@ -35,16 +34,14 @@ export const SourceConfigStep: React.FC<SelectAppStepProps> = ({ appId, onUpdate
     const dispatch = useAppDispatch();
     const activeAppletId = useAppSelector((state: RootState) => selectActiveAppletId(state));
     const appletCompiledRecipeId = useAppSelector((state: RootState) => selectAppletCompiledRecipeId(state, activeAppletId || ""));
+    const applets = useAppSelector((state) => (appId ? selectAppletsByAppId(state, appId) : [])) as AppletBuilder[];
 
-    // useEffect(() => {
-    //     onUpdateCompletion?.({
-    //         isComplete: !!selectedAppId,
-    //         canProceed: !!selectedAppId,
-    //         message: selectedAppId
-    //             ? `"${selectedApp?.name || "Unknown"}" selected`
-    //             : "Please select an app or create a new one to continue",
-    //     });
-    // }, [selectedAppId, selectedApp]);
+    const { quickReferenceRecords, quickReferenceKeyDisplayPairs, loadingState, getRecordIdByRecord } = useFetchQuickRef('recipe');
+    const quickRefCount = quickReferenceRecords.length;
+
+    const handleAppletChange = (value: string) => {
+        dispatch(setActiveApplet(value));
+    };
 
     const handleSourceTypeSelected = (sourceType: string) => {
         console.log(sourceType);
@@ -68,44 +65,67 @@ export const SourceConfigStep: React.FC<SelectAppStepProps> = ({ appId, onUpdate
         console.log("mapping", mapping);
     };
 
+    // Create a button for "Create New Applet" if needed
+    const headerActions = (
+        <Button
+            variant="outline"
+            className="rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 border text-blue-500 dark:text-blue-300 border-blue-500 dark:border-blue-600 hover:text-white flex items-center gap-2"
+        >
+            <PlusCircle className="h-4 w-4" />
+            Create New Applet
+        </Button>
+    );
 
+    // Create tabs for description
+    const appletTabs = (
+        <TabsList className="bg-transparent border-none">
+            {applets.map((applet) => (
+                <TabsTrigger key={applet.id} value={applet.id} className="border border-blue-500 dark:border-blue-700">
+                    {applet.name}
+                </TabsTrigger>
+            ))}
+        </TabsList>
+    );
+
+
+    const itemCounts = {
+        "ai-recipe": quickRefCount,
+        "ai-agent": 0,
+        "action": 0,
+        "api-integration": 0
+    };
+    
     return (
         <div className="w-full">
-            <Card className="bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl border border-rose-200 dark:border-rose-600">
-                <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-rose-200 dark:border-rose-600 p-3 rounded-t-3xl">
-                    <div className="grid md:grid-cols-[1fr_auto] gap-4 md:items-center">
-                        <div className="flex flex-col gap-1">
-                            <h2 className="text-rose-500 font-medium text-lg">Connect Applets to Intelligence</h2>
-                            <p className="text-gray-600 dark:text-gray-300 text-sm">
-                                Time to make real-life magic happen! Select a source for each applet.
-                            </p>
+            <Tabs value={activeAppletId || ""} onValueChange={handleAppletChange} className="w-full">
+                <SectionCard
+                    title="Connect Applets to Intelligence"
+                    description="Time to make real-life magic happen! Select a source for each applet."
+                    descriptionNode={applets.length > 0 ? appletTabs : undefined}
+                    headerActions={headerActions}
+                >
+                    {applets.map((applet) => (
+                        <TabsContent key={applet.id} value={applet.id} className="mt-6">
+                            <AppletSourceSelection onSelect={handleSourceTypeSelected} itemCounts={itemCounts} />
+                            <RecipeSelector
+                                compiledRecipeId={appletCompiledRecipeId}
+                                onRecipeSelect={handleRecipeSelected}
+                                onGetCompiledRecipeWithNeededBrokers={handleGetCompiledRecipeWithNeededBrokers}
+                            />
+                            <SourceConfigCardSelector
+                                appletId={activeAppletId}
+                                onSourceConfigSelected={handleSourceConfigSelected}
+                                onMappingCreated={handleMappingCreated}
+                            />
+                        </TabsContent>
+                    ))}
+                    {applets.length === 0 && (
+                        <div className="p-6 text-center">
+                            <p className="text-gray-500 dark:text-gray-400">No applets found. Create a new applet to get started.</p>
                         </div>
-                        {/* <Button
-                            onClick={onCreateNewApp}
-                            variant="outline"
-                            className="rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 border text-blue-500 dark:text-blue-300 border-blue-500 dark:border-blue-600 hover:text-white flex items-center gap-2"
-                        >
-                            <PlusCircle className="h-4 w-4" />
-                            Create New App
-                        </Button> */}
-                    </div>
-                </CardHeader>
-                <CardContent className="p-4">
-                    <AppletSourceSelection onSelect={handleSourceTypeSelected} />
-
-                    <RecipeSelector
-                        compiledRecipeId={appletCompiledRecipeId}
-                        onRecipeSelect={handleRecipeSelected}
-                        onGetCompiledRecipeWithNeededBrokers={handleGetCompiledRecipeWithNeededBrokers}
-                    />
-
-                    <SourceConfigCardSelector
-                        appletId={activeAppletId}
-                        onSourceConfigSelected={handleSourceConfigSelected}
-                        onMappingCreated={handleMappingCreated}
-                    />
-                </CardContent>
-            </Card>
+                    )}
+                </SectionCard>
+            </Tabs>
         </div>
     );
 };

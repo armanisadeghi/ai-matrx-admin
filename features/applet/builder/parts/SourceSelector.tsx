@@ -49,8 +49,8 @@ const AppletSourceSelection = ({ onSelect, itemCounts = {} }) => {
   };
 
   return (
-    <div className="w-full py-4">
-      <div className="flex flex-row space-x-3 overflow-x-auto pb-2">
+    <div className="w-full py-0 border-none">
+      <div className="flex flex-row space-x-3 overflow-x-auto pb-1">
         {sources.map((source) => {
           const count = itemCounts[source.id] || 0;
           const isDisabled = count === 0;

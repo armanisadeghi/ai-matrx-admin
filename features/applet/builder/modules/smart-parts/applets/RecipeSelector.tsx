@@ -53,7 +53,7 @@ export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
 
   return (
     <div className={`${className}`}>
-      <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">AI Recipe</Label>
           {compiledRecipeId && (

@@ -34,7 +34,7 @@ import { ComponentGroup } from "../builder.types";
 import { AppletBuilder, ContainerBuilder } from "@/lib/redux/app-builder/types";
 import { v4 as uuidv4 } from "uuid";
 import AppInfoCard from "@/features/applet/builder/previews/AppInfoCard";
-import { DeleteConfirmationDialog } from "@/features/applet/builder/parts/DeleteConfirmationDialog";
+import { ConfirmationDialog } from "@/features/applet/builder/parts/ConfirmationDialog";
 
 interface GroupsConfigStepProps {
     appId: string;
@@ -56,7 +56,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId, onUpd
     const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
     const [savingApplet, setSavingApplet] = useState<boolean>(false);
     const [fetchingContainer, setFetchingContainer] = useState<boolean>(false);
-    
+
     // Delete dialog state
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
     const [containerToDelete, setContainerToDelete] = useState<string | null>(null);
@@ -383,24 +383,24 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId, onUpd
 
     const handleDeleteContainer = async () => {
         if (!containerToDelete || !activeAppletId) return;
-        
+
         setIsDeletingContainer(true);
-        
+
         try {
             // Dispatch the remove container action
             dispatch(removeContainer({ appletId: activeAppletId, containerId: containerToDelete }));
-            
+
             // If this was the active container, clear it
             if (activeContainerId === containerToDelete) {
                 dispatch(setActiveContainer(null));
             }
-            
+
             // Notify the user
             toast({
                 title: "Success",
                 description: "Container removed from applet.",
             });
-            
+
             // Return a resolved promise to indicate success
             return Promise.resolve();
         } catch (error) {
@@ -415,10 +415,10 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId, onUpd
             setIsDeletingContainer(false);
         }
     };
-    
+
     const handleSaveAfterDelete = async () => {
         if (!activeAppletId) return Promise.resolve();
-        
+
         try {
             return saveAndRecompileApplet(activeAppletId);
         } catch (error) {
@@ -430,7 +430,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId, onUpd
     return (
         <div className="w-full">
             {/* DeleteConfirmationDialog component */}
-            <DeleteConfirmationDialog
+            <ConfirmationDialog
                 open={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}
                 handleDeleteGroup={handleDeleteContainer}
@@ -475,10 +475,7 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId, onUpd
                         <Tabs value={activeAppletId || ""} onValueChange={handleAppletChange} className="w-full p-4">
                             <TabsList className="bg-transparent border-none">
                                 {applets.map((applet) => (
-                                    <TabsTrigger
-                                        key={applet.id}
-                                        value={applet.id}
-                                    >
+                                    <TabsTrigger key={applet.id} value={applet.id}>
                                         {applet.name}
                                     </TabsTrigger>
                                 ))}
@@ -627,9 +624,9 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId, onUpd
                                                                                 Compiled Version
                                                                             </span>
                                                                         )}
-                                                                        <Button 
-                                                                            variant="ghost" 
-                                                                            size="icon" 
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
                                                                             onClick={(e) => openDeleteDialog(container.id, e)}
                                                                             className="h-7 w-7 rounded-full hover:bg-red-100 dark:hover:bg-red-900/20 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
                                                                         >

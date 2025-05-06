@@ -23,7 +23,7 @@ import { CreateGroupForm } from "./CreateGroupForm";
 import { SavedGroupsList } from "./SavedGroupsList";
 import { AddFieldsDialog } from "./AddFieldsDialog";
 import { RefreshFieldsDialog } from "./RefreshFieldsDialog";
-import { DeleteConfirmationDialog } from "../../parts/DeleteConfirmationDialog";
+import { ConfirmationDialog } from "../../parts/ConfirmationDialog";
 
 // Helper function to generate ID
 const generateGroupId = (label: string) => {
@@ -657,7 +657,7 @@ export const GroupBuilder = () => {
                 loading={loading}
             />
             
-            <DeleteConfirmationDialog
+            <ConfirmationDialog
                 open={showDeleteDialog}
                 onOpenChange={setShowDeleteDialog}
                 handleDeleteGroup={handleDeleteGroup}
