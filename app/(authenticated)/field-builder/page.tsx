@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckboxFieldBuilder } from '@/features/applet/builder/components/field-builders/CheckboxFieldBuilder';
+
 import { GroupFieldConfig } from '@/features/applet/runner/components/field-components/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckSquare, Plus } from 'lucide-react';
+import CheckboxFieldBuilder from '@/features/applet/builder/modules/field-builder/field-builders/CheckboxFieldBuilder';
 
 export default function FieldBuilderPage() {
     const [isCheckboxBuilderOpen, setIsCheckboxBuilderOpen] = useState(false);
