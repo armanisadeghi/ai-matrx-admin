@@ -1963,6 +1963,92 @@ export const useCompiledRecipeWithFetch = (): UseCompiledRecipeWithFetchReturn =
 
 
 
+type UseComponentGroupsWithFetchReturn = {
+    componentGroupsSelectors: EntitySelectors<"componentGroups">;
+    componentGroupsActions: EntityActions<"componentGroups">;
+    componentGroupsRecords: Record<MatrxRecordId, ComponentGroupsData>;
+    componentGroupsUnsavedRecords: Record<MatrxRecordId, Partial<ComponentGroupsData>>;
+    componentGroupsSelectedRecordIds: MatrxRecordId[];
+    componentGroupsIsLoading: boolean;
+    componentGroupsIsError: boolean;
+    componentGroupsQuickRefRecords: QuickReferenceRecord[];
+    addComponentGroupsMatrxId: (recordId: MatrxRecordId) => void;
+    addComponentGroupsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeComponentGroupsMatrxId: (recordId: MatrxRecordId) => void;
+    removeComponentGroupsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addComponentGroupsPkValue: (pkValue: string) => void;
+    addComponentGroupsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeComponentGroupsPkValue: (pkValue: string) => void;
+    removeComponentGroupsPkValues: (pkValues: Record<string, unknown>) => void;
+    isComponentGroupsMissingRecords: boolean;
+    setComponentGroupsShouldFetch: (shouldFetch: boolean) => void;
+    setComponentGroupsFetchMode: (fetchMode: FetchMode) => void;
+    fetchComponentGroupsQuickRefs: () => void;
+    fetchComponentGroupsOne: (recordId: MatrxRecordId) => void;
+    fetchComponentGroupsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchComponentGroupsAll: () => void;
+    fetchComponentGroupsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useComponentGroupsWithFetch = (): UseComponentGroupsWithFetchReturn => {
+    const {
+        selectors: componentGroupsSelectors,
+        actions: componentGroupsActions,
+        allRecords: componentGroupsRecords,
+        unsavedRecords: componentGroupsUnsavedRecords,
+        selectedRecordIds: componentGroupsSelectedRecordIds,
+        isLoading: componentGroupsIsLoading,
+        isError: componentGroupsIsError,
+        quickRefRecords: componentGroupsQuickRefRecords,
+        addMatrxId: addComponentGroupsMatrxId,
+        addMatrxIds: addComponentGroupsMatrxIds,
+        removeMatrxId: removeComponentGroupsMatrxId,
+        removeMatrxIds: removeComponentGroupsMatrxIds,
+        addPkValue: addComponentGroupsPkValue,
+        addPkValues: addComponentGroupsPkValues,
+        removePkValue: removeComponentGroupsPkValue,
+        removePkValues: removeComponentGroupsPkValues,
+        isMissingRecords: isComponentGroupsMissingRecords,
+        setShouldFetch: setComponentGroupsShouldFetch,
+        setFetchMode: setComponentGroupsFetchMode,
+        fetchQuickRefs: fetchComponentGroupsQuickRefs,
+        fetchOne: fetchComponentGroupsOne,
+        fetchOneWithFkIfk: fetchComponentGroupsOneWithFkIfk,
+        fetchAll: fetchComponentGroupsAll,
+        fetchPaginated: fetchComponentGroupsPaginated,
+
+    } = useEntityWithFetch("componentGroups");
+
+    return {
+        componentGroupsSelectors,
+        componentGroupsActions,
+        componentGroupsRecords,
+        componentGroupsUnsavedRecords,
+        componentGroupsSelectedRecordIds,
+        componentGroupsIsLoading,
+        componentGroupsIsError,
+        componentGroupsQuickRefRecords,
+        addComponentGroupsMatrxId,
+        addComponentGroupsMatrxIds,
+        removeComponentGroupsMatrxId,
+        removeComponentGroupsMatrxIds,
+        addComponentGroupsPkValue,
+        addComponentGroupsPkValues,
+        removeComponentGroupsPkValue,
+        removeComponentGroupsPkValues,
+        isComponentGroupsMissingRecords,
+        setComponentGroupsShouldFetch,
+        setComponentGroupsFetchMode,
+        fetchComponentGroupsQuickRefs,
+        fetchComponentGroupsOne,
+        fetchComponentGroupsOneWithFkIfk,
+        fetchComponentGroupsAll,
+        fetchComponentGroupsPaginated,
+    };
+};
+
+
+
 type UseConversationWithFetchReturn = {
     conversationSelectors: EntitySelectors<"conversation">;
     conversationActions: EntityActions<"conversation">;
@@ -2044,6 +2130,178 @@ export const useConversationWithFetch = (): UseConversationWithFetchReturn => {
         fetchConversationOneWithFkIfk,
         fetchConversationAll,
         fetchConversationPaginated,
+    };
+};
+
+
+
+type UseCustomAppConfigsWithFetchReturn = {
+    customAppConfigsSelectors: EntitySelectors<"customAppConfigs">;
+    customAppConfigsActions: EntityActions<"customAppConfigs">;
+    customAppConfigsRecords: Record<MatrxRecordId, CustomAppConfigsData>;
+    customAppConfigsUnsavedRecords: Record<MatrxRecordId, Partial<CustomAppConfigsData>>;
+    customAppConfigsSelectedRecordIds: MatrxRecordId[];
+    customAppConfigsIsLoading: boolean;
+    customAppConfigsIsError: boolean;
+    customAppConfigsQuickRefRecords: QuickReferenceRecord[];
+    addCustomAppConfigsMatrxId: (recordId: MatrxRecordId) => void;
+    addCustomAppConfigsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCustomAppConfigsMatrxId: (recordId: MatrxRecordId) => void;
+    removeCustomAppConfigsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCustomAppConfigsPkValue: (pkValue: string) => void;
+    addCustomAppConfigsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCustomAppConfigsPkValue: (pkValue: string) => void;
+    removeCustomAppConfigsPkValues: (pkValues: Record<string, unknown>) => void;
+    isCustomAppConfigsMissingRecords: boolean;
+    setCustomAppConfigsShouldFetch: (shouldFetch: boolean) => void;
+    setCustomAppConfigsFetchMode: (fetchMode: FetchMode) => void;
+    fetchCustomAppConfigsQuickRefs: () => void;
+    fetchCustomAppConfigsOne: (recordId: MatrxRecordId) => void;
+    fetchCustomAppConfigsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCustomAppConfigsAll: () => void;
+    fetchCustomAppConfigsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useCustomAppConfigsWithFetch = (): UseCustomAppConfigsWithFetchReturn => {
+    const {
+        selectors: customAppConfigsSelectors,
+        actions: customAppConfigsActions,
+        allRecords: customAppConfigsRecords,
+        unsavedRecords: customAppConfigsUnsavedRecords,
+        selectedRecordIds: customAppConfigsSelectedRecordIds,
+        isLoading: customAppConfigsIsLoading,
+        isError: customAppConfigsIsError,
+        quickRefRecords: customAppConfigsQuickRefRecords,
+        addMatrxId: addCustomAppConfigsMatrxId,
+        addMatrxIds: addCustomAppConfigsMatrxIds,
+        removeMatrxId: removeCustomAppConfigsMatrxId,
+        removeMatrxIds: removeCustomAppConfigsMatrxIds,
+        addPkValue: addCustomAppConfigsPkValue,
+        addPkValues: addCustomAppConfigsPkValues,
+        removePkValue: removeCustomAppConfigsPkValue,
+        removePkValues: removeCustomAppConfigsPkValues,
+        isMissingRecords: isCustomAppConfigsMissingRecords,
+        setShouldFetch: setCustomAppConfigsShouldFetch,
+        setFetchMode: setCustomAppConfigsFetchMode,
+        fetchQuickRefs: fetchCustomAppConfigsQuickRefs,
+        fetchOne: fetchCustomAppConfigsOne,
+        fetchOneWithFkIfk: fetchCustomAppConfigsOneWithFkIfk,
+        fetchAll: fetchCustomAppConfigsAll,
+        fetchPaginated: fetchCustomAppConfigsPaginated,
+
+    } = useEntityWithFetch("customAppConfigs");
+
+    return {
+        customAppConfigsSelectors,
+        customAppConfigsActions,
+        customAppConfigsRecords,
+        customAppConfigsUnsavedRecords,
+        customAppConfigsSelectedRecordIds,
+        customAppConfigsIsLoading,
+        customAppConfigsIsError,
+        customAppConfigsQuickRefRecords,
+        addCustomAppConfigsMatrxId,
+        addCustomAppConfigsMatrxIds,
+        removeCustomAppConfigsMatrxId,
+        removeCustomAppConfigsMatrxIds,
+        addCustomAppConfigsPkValue,
+        addCustomAppConfigsPkValues,
+        removeCustomAppConfigsPkValue,
+        removeCustomAppConfigsPkValues,
+        isCustomAppConfigsMissingRecords,
+        setCustomAppConfigsShouldFetch,
+        setCustomAppConfigsFetchMode,
+        fetchCustomAppConfigsQuickRefs,
+        fetchCustomAppConfigsOne,
+        fetchCustomAppConfigsOneWithFkIfk,
+        fetchCustomAppConfigsAll,
+        fetchCustomAppConfigsPaginated,
+    };
+};
+
+
+
+type UseCustomAppletConfigsWithFetchReturn = {
+    customAppletConfigsSelectors: EntitySelectors<"customAppletConfigs">;
+    customAppletConfigsActions: EntityActions<"customAppletConfigs">;
+    customAppletConfigsRecords: Record<MatrxRecordId, CustomAppletConfigsData>;
+    customAppletConfigsUnsavedRecords: Record<MatrxRecordId, Partial<CustomAppletConfigsData>>;
+    customAppletConfigsSelectedRecordIds: MatrxRecordId[];
+    customAppletConfigsIsLoading: boolean;
+    customAppletConfigsIsError: boolean;
+    customAppletConfigsQuickRefRecords: QuickReferenceRecord[];
+    addCustomAppletConfigsMatrxId: (recordId: MatrxRecordId) => void;
+    addCustomAppletConfigsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeCustomAppletConfigsMatrxId: (recordId: MatrxRecordId) => void;
+    removeCustomAppletConfigsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addCustomAppletConfigsPkValue: (pkValue: string) => void;
+    addCustomAppletConfigsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeCustomAppletConfigsPkValue: (pkValue: string) => void;
+    removeCustomAppletConfigsPkValues: (pkValues: Record<string, unknown>) => void;
+    isCustomAppletConfigsMissingRecords: boolean;
+    setCustomAppletConfigsShouldFetch: (shouldFetch: boolean) => void;
+    setCustomAppletConfigsFetchMode: (fetchMode: FetchMode) => void;
+    fetchCustomAppletConfigsQuickRefs: () => void;
+    fetchCustomAppletConfigsOne: (recordId: MatrxRecordId) => void;
+    fetchCustomAppletConfigsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchCustomAppletConfigsAll: () => void;
+    fetchCustomAppletConfigsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useCustomAppletConfigsWithFetch = (): UseCustomAppletConfigsWithFetchReturn => {
+    const {
+        selectors: customAppletConfigsSelectors,
+        actions: customAppletConfigsActions,
+        allRecords: customAppletConfigsRecords,
+        unsavedRecords: customAppletConfigsUnsavedRecords,
+        selectedRecordIds: customAppletConfigsSelectedRecordIds,
+        isLoading: customAppletConfigsIsLoading,
+        isError: customAppletConfigsIsError,
+        quickRefRecords: customAppletConfigsQuickRefRecords,
+        addMatrxId: addCustomAppletConfigsMatrxId,
+        addMatrxIds: addCustomAppletConfigsMatrxIds,
+        removeMatrxId: removeCustomAppletConfigsMatrxId,
+        removeMatrxIds: removeCustomAppletConfigsMatrxIds,
+        addPkValue: addCustomAppletConfigsPkValue,
+        addPkValues: addCustomAppletConfigsPkValues,
+        removePkValue: removeCustomAppletConfigsPkValue,
+        removePkValues: removeCustomAppletConfigsPkValues,
+        isMissingRecords: isCustomAppletConfigsMissingRecords,
+        setShouldFetch: setCustomAppletConfigsShouldFetch,
+        setFetchMode: setCustomAppletConfigsFetchMode,
+        fetchQuickRefs: fetchCustomAppletConfigsQuickRefs,
+        fetchOne: fetchCustomAppletConfigsOne,
+        fetchOneWithFkIfk: fetchCustomAppletConfigsOneWithFkIfk,
+        fetchAll: fetchCustomAppletConfigsAll,
+        fetchPaginated: fetchCustomAppletConfigsPaginated,
+
+    } = useEntityWithFetch("customAppletConfigs");
+
+    return {
+        customAppletConfigsSelectors,
+        customAppletConfigsActions,
+        customAppletConfigsRecords,
+        customAppletConfigsUnsavedRecords,
+        customAppletConfigsSelectedRecordIds,
+        customAppletConfigsIsLoading,
+        customAppletConfigsIsError,
+        customAppletConfigsQuickRefRecords,
+        addCustomAppletConfigsMatrxId,
+        addCustomAppletConfigsMatrxIds,
+        removeCustomAppletConfigsMatrxId,
+        removeCustomAppletConfigsMatrxIds,
+        addCustomAppletConfigsPkValue,
+        addCustomAppletConfigsPkValues,
+        removeCustomAppletConfigsPkValue,
+        removeCustomAppletConfigsPkValues,
+        isCustomAppletConfigsMissingRecords,
+        setCustomAppletConfigsShouldFetch,
+        setCustomAppletConfigsFetchMode,
+        fetchCustomAppletConfigsQuickRefs,
+        fetchCustomAppletConfigsOne,
+        fetchCustomAppletConfigsOneWithFkIfk,
+        fetchCustomAppletConfigsAll,
+        fetchCustomAppletConfigsPaginated,
     };
 };
 
@@ -2560,6 +2818,92 @@ export const useExtractorWithFetch = (): UseExtractorWithFetchReturn => {
         fetchExtractorOneWithFkIfk,
         fetchExtractorAll,
         fetchExtractorPaginated,
+    };
+};
+
+
+
+type UseFieldComponentsWithFetchReturn = {
+    fieldComponentsSelectors: EntitySelectors<"fieldComponents">;
+    fieldComponentsActions: EntityActions<"fieldComponents">;
+    fieldComponentsRecords: Record<MatrxRecordId, FieldComponentsData>;
+    fieldComponentsUnsavedRecords: Record<MatrxRecordId, Partial<FieldComponentsData>>;
+    fieldComponentsSelectedRecordIds: MatrxRecordId[];
+    fieldComponentsIsLoading: boolean;
+    fieldComponentsIsError: boolean;
+    fieldComponentsQuickRefRecords: QuickReferenceRecord[];
+    addFieldComponentsMatrxId: (recordId: MatrxRecordId) => void;
+    addFieldComponentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeFieldComponentsMatrxId: (recordId: MatrxRecordId) => void;
+    removeFieldComponentsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addFieldComponentsPkValue: (pkValue: string) => void;
+    addFieldComponentsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeFieldComponentsPkValue: (pkValue: string) => void;
+    removeFieldComponentsPkValues: (pkValues: Record<string, unknown>) => void;
+    isFieldComponentsMissingRecords: boolean;
+    setFieldComponentsShouldFetch: (shouldFetch: boolean) => void;
+    setFieldComponentsFetchMode: (fetchMode: FetchMode) => void;
+    fetchFieldComponentsQuickRefs: () => void;
+    fetchFieldComponentsOne: (recordId: MatrxRecordId) => void;
+    fetchFieldComponentsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchFieldComponentsAll: () => void;
+    fetchFieldComponentsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useFieldComponentsWithFetch = (): UseFieldComponentsWithFetchReturn => {
+    const {
+        selectors: fieldComponentsSelectors,
+        actions: fieldComponentsActions,
+        allRecords: fieldComponentsRecords,
+        unsavedRecords: fieldComponentsUnsavedRecords,
+        selectedRecordIds: fieldComponentsSelectedRecordIds,
+        isLoading: fieldComponentsIsLoading,
+        isError: fieldComponentsIsError,
+        quickRefRecords: fieldComponentsQuickRefRecords,
+        addMatrxId: addFieldComponentsMatrxId,
+        addMatrxIds: addFieldComponentsMatrxIds,
+        removeMatrxId: removeFieldComponentsMatrxId,
+        removeMatrxIds: removeFieldComponentsMatrxIds,
+        addPkValue: addFieldComponentsPkValue,
+        addPkValues: addFieldComponentsPkValues,
+        removePkValue: removeFieldComponentsPkValue,
+        removePkValues: removeFieldComponentsPkValues,
+        isMissingRecords: isFieldComponentsMissingRecords,
+        setShouldFetch: setFieldComponentsShouldFetch,
+        setFetchMode: setFieldComponentsFetchMode,
+        fetchQuickRefs: fetchFieldComponentsQuickRefs,
+        fetchOne: fetchFieldComponentsOne,
+        fetchOneWithFkIfk: fetchFieldComponentsOneWithFkIfk,
+        fetchAll: fetchFieldComponentsAll,
+        fetchPaginated: fetchFieldComponentsPaginated,
+
+    } = useEntityWithFetch("fieldComponents");
+
+    return {
+        fieldComponentsSelectors,
+        fieldComponentsActions,
+        fieldComponentsRecords,
+        fieldComponentsUnsavedRecords,
+        fieldComponentsSelectedRecordIds,
+        fieldComponentsIsLoading,
+        fieldComponentsIsError,
+        fieldComponentsQuickRefRecords,
+        addFieldComponentsMatrxId,
+        addFieldComponentsMatrxIds,
+        removeFieldComponentsMatrxId,
+        removeFieldComponentsMatrxIds,
+        addFieldComponentsPkValue,
+        addFieldComponentsPkValues,
+        removeFieldComponentsPkValue,
+        removeFieldComponentsPkValues,
+        isFieldComponentsMissingRecords,
+        setFieldComponentsShouldFetch,
+        setFieldComponentsFetchMode,
+        fetchFieldComponentsQuickRefs,
+        fetchFieldComponentsOne,
+        fetchFieldComponentsOneWithFkIfk,
+        fetchFieldComponentsAll,
+        fetchFieldComponentsPaginated,
     };
 };
 

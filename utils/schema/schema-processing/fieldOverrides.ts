@@ -230,7 +230,13 @@ const categoryFieldOverrides: AllFieldOverrides = {};
 
 const compiledRecipeFieldOverrides: AllFieldOverrides = {};
 
+const componentGroupsFieldOverrides: AllFieldOverrides = {};
+
 const conversationFieldOverrides: AllFieldOverrides = {};
+
+const customAppConfigsFieldOverrides: AllFieldOverrides = {};
+
+const customAppletConfigsFieldOverrides: AllFieldOverrides = {};
 
 const dataBrokerFieldOverrides: AllFieldOverrides = {};
 
@@ -272,6 +278,8 @@ const displayOptionFieldOverrides: AllFieldOverrides = {};
 const emailsFieldOverrides: AllFieldOverrides = {};
 
 const extractorFieldOverrides: AllFieldOverrides = {};
+
+const fieldComponentsFieldOverrides: AllFieldOverrides = {};
 
 const fileStructureFieldOverrides: AllFieldOverrides = {};
 
@@ -466,13 +474,17 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     bucketTreeStructures: bucketTreeStructuresFieldOverrides,
     category: categoryFieldOverrides,
     compiledRecipe: compiledRecipeFieldOverrides,
+    componentGroups: componentGroupsFieldOverrides,
     conversation: conversationFieldOverrides,
+    customAppConfigs: customAppConfigsFieldOverrides,
+    customAppletConfigs: customAppletConfigsFieldOverrides,
     dataBroker: dataBrokerFieldOverrides,
     dataInputComponent: dataInputComponentFieldOverrides,
     dataOutputComponent: dataOutputComponentFieldOverrides,
     displayOption: displayOptionFieldOverrides,
     emails: emailsFieldOverrides,
     extractor: extractorFieldOverrides,
+    fieldComponents: fieldComponentsFieldOverrides,
     fileStructure: fileStructureFieldOverrides,
     flashcardData: flashcardDataFieldOverrides,
     flashcardHistory: flashcardHistoryFieldOverrides,

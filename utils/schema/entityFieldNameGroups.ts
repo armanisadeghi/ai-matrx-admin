@@ -123,10 +123,25 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["recipeId", "version", "compiledRecipe", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead"]
 },
+  componentGroups: {
+  nativeFields: ["id", "createdAt", "updatedAt", "label", "shortLabel", "description", "hideDescription", "helpText", "fields", "userId", "isPublic", "authenticatedRead", "publicRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "label", "shortLabel", "description", "hideDescription", "helpText", "fields", "userId", "isPublic", "authenticatedRead", "publicRead"]
+},
   conversation: {
   nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords", "group"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords", "group"]
+},
+  customAppConfigs: {
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "mainAppIcon", "mainAppSubmitIcon", "creator", "primaryColor", "accentColor", "appletList", "extraButtons", "layoutType", "imageUrl"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "mainAppIcon", "mainAppSubmitIcon", "creator", "primaryColor", "accentColor", "appletList", "extraButtons", "layoutType", "imageUrl"]
+},
+  customAppletConfigs: {
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId"]
 },
   dataBroker: {
   nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent"],
@@ -157,6 +172,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "name", "outputType", "defaultIdentifier", "defaultIndex"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "outputType", "defaultIdentifier", "defaultIndex"]
+},
+  fieldComponents: {
+  nativeFields: ["id", "createdAt", "updatedAt", "label", "description", "helpText", "componentGroup", "iconName", "component", "required", "placeholder", "defaultValue", "includeOther", "options", "componentProps", "userId", "isPublic", "authenticatedRead", "publicRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "label", "description", "helpText", "componentGroup", "iconName", "component", "required", "placeholder", "defaultValue", "includeOther", "options", "componentProps", "userId", "isPublic", "authenticatedRead", "publicRead"]
 },
   fileStructure: {
   nativeFields: ["id", "bucketId", "path", "isFolder", "fileId", "parentPath", "name", "metadata", "createdAt", "updatedAt"],
@@ -449,9 +469,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["name", "inputParams", "outputParams"]
 },
   userListItems: {
-  nativeFields: ["id", "createdAt", "updatedAt", "label", "description", "helpText", "groupName", "userId", "isPublic", "authenticatedRead", "publicRead", "listId"],
+  nativeFields: ["id", "createdAt", "updatedAt", "label", "description", "helpText", "groupName", "userId", "isPublic", "authenticatedRead", "publicRead", "listId", "iconName"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "label", "description", "helpText", "groupName", "userId", "isPublic", "authenticatedRead", "publicRead", "listId"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "label", "description", "helpText", "groupName", "userId", "isPublic", "authenticatedRead", "publicRead", "listId", "iconName"]
 },
   userLists: {
   nativeFields: ["id", "createdAt", "updatedAt", "listName", "description", "userId", "isPublic", "authenticatedRead", "publicRead"],

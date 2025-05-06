@@ -246,6 +246,22 @@ export type CompiledRecipe = {
     authenticatedRead: boolean;
 }
 
+export type ComponentGroups = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    label: string;
+    shortLabel?: string;
+    description?: string;
+    hideDescription?: boolean;
+    helpText?: string;
+    fields?: Record<string, unknown>;
+    userId?: string;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+}
+
 export type Conversation = {
     id: string;
     createdAt: Date;
@@ -257,6 +273,55 @@ export type Conversation = {
     description?: string;
     keywords?: Record<string, unknown>;
     group?: string;
+}
+
+export type CustomAppConfigs = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    userId?: string;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+    name: string;
+    description?: string;
+    slug: string;
+    mainAppIcon?: string;
+    mainAppSubmitIcon?: string;
+    creator?: string;
+    primaryColor?: string;
+    accentColor?: string;
+    appletList?: Record<string, unknown>;
+    extraButtons?: Record<string, unknown>;
+    layoutType?: string;
+    imageUrl?: string;
+}
+
+export type CustomAppletConfigs = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    userId?: string;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+    name: string;
+    description?: string;
+    slug: string;
+    appletIcon?: string;
+    appletSubmitText?: string;
+    creator?: string;
+    primaryColor?: string;
+    accentColor?: string;
+    layoutType?: string;
+    containers?: Record<string, unknown>;
+    dataSourceConfig?: Record<string, unknown>;
+    resultComponentConfig?: Record<string, unknown>;
+    nextStepConfig?: Record<string, unknown>;
+    compiledRecipeId?: string;
+    subcategoryId?: string;
+    imageUrl?: string;
+    appId?: string;
 }
 
 export type DataBroker = {
@@ -332,6 +397,28 @@ export type Extractor = {
     outputType?: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
     defaultIdentifier?: string;
     defaultIndex?: number;
+}
+
+export type FieldComponents = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    label?: string;
+    description?: string;
+    helpText?: string;
+    componentGroup?: string;
+    iconName?: string;
+    component?: string;
+    required?: boolean;
+    placeholder?: string;
+    defaultValue?: string;
+    includeOther?: boolean;
+    options?: Record<string, unknown>;
+    componentProps?: Record<string, unknown>;
+    userId?: string;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
 }
 
 export type FileStructure = {
@@ -1006,6 +1093,7 @@ export type UserListItems = {
     authenticatedRead?: boolean;
     publicRead?: boolean;
     listId?: string;
+    iconName?: string;
 }
 
 export type UserLists = {

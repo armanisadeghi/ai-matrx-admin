@@ -565,3 +565,9 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         }
     }
 }
+
+/* 3D transform for draggable cards */
+.transform-3d {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
