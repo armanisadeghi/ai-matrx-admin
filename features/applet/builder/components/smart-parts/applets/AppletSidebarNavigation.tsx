@@ -52,7 +52,15 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
                 const firstContainer = firstApplet.containers[0];
                 handleGroupChange(firstApplet.id, firstContainer.id);
             } else if (firstApplet?.id) {
-                dispatch(setActiveAppletWithFetchThunk(firstApplet.id));
+                dispatch(setActiveAppletWithFetchThunk(firstApplet.id)).unwrap()
+                    .catch(error => {
+                        console.error("Failed to set active applet:", error);
+                        toast({
+                            title: "Error",
+                            description: "Failed to set active applet.",
+                            variant: "destructive",
+                        });
+                    });
             }
         }
     }, [applets, dispatch]);
@@ -98,7 +106,15 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
     };
 
     const handleAppletChange = (value: string) => {
-        dispatch(setActiveAppletWithFetchThunk(value));
+        dispatch(setActiveAppletWithFetchThunk(value)).unwrap()
+            .catch(error => {
+                console.error("Failed to set active applet:", error);
+                toast({
+                    title: "Error",
+                    description: "Failed to set active applet.",
+                    variant: "destructive",
+                });
+            });
 
         // When changing applet, clear the active container
         dispatch(setActiveContainer(null));
@@ -110,7 +126,15 @@ const AppletSidebarNavigation: React.FC<AppletSidebarNavigationProps> = ({
 
         try {
             // Make sure the applet is set as active
-            dispatch(setActiveAppletWithFetchThunk(appletId));
+            dispatch(setActiveAppletWithFetchThunk(appletId)).unwrap()
+                .catch(error => {
+                    console.error("Failed to set active applet:", error);
+                    toast({
+                        title: "Error",
+                        description: "Failed to set active applet.",
+                        variant: "destructive",
+                    });
+                });
 
             // Fetch the container if it's not in state
             if (!containerExists) {

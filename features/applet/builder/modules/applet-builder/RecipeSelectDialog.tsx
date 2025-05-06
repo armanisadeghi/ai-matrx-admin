@@ -22,7 +22,9 @@ import { useToast } from '@/components/ui/use-toast';
 import { 
   RecipeInfo, 
   getCompiledRecipeByVersion, 
-  checkCompiledRecipeVersionExists 
+  checkCompiledRecipeVersionExists, 
+  getCompiledRecipeByVersionWithNeededBrokers,
+  AppletSourceConfig
 } from '@/lib/redux/app-builder/service/customAppletService';
 
 // Extended RecipeInfo interface with extracted tags
@@ -39,6 +41,7 @@ interface RecipeSelectDialogProps {
   setSelectedRecipe: (recipe: RecipeInfo | null) => void;
   setCompiledRecipeId: (id: string | null) => void;
   setNewApplet?: React.Dispatch<React.SetStateAction<any>>;
+  setCompiledRecipeWithNeededBrokers?: (sourceConfig: AppletSourceConfig | null) => void;
 }
 
 export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
@@ -48,7 +51,8 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
   selectedRecipe,
   setSelectedRecipe,
   setCompiledRecipeId,
-  setNewApplet
+  setNewApplet,
+  setCompiledRecipeWithNeededBrokers
 }) => {
   const { toast } = useToast();
   
@@ -176,6 +180,12 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
         // If the version exists, fetch the compiled recipe ID
         const id = await getCompiledRecipeByVersion(selectedRecipe.id, specificVersion);
         setCompiledRecipeId(id);
+
+        const compiledRecipeWithBrokerMapping = await getCompiledRecipeByVersionWithNeededBrokers(selectedRecipe.id, specificVersion);
+        if (setCompiledRecipeWithNeededBrokers) {
+          setCompiledRecipeWithNeededBrokers(compiledRecipeWithBrokerMapping);
+        }
+        
       } else {
         setCompiledRecipeId(null);
       }

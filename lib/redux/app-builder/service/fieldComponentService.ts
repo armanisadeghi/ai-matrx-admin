@@ -1,5 +1,6 @@
 import { supabase } from "@/utils/supabase/client";
-import { FieldDefinition, normalizeFieldDefinition } from "@/features/applet/builder/builder.types";
+import { normalizeFieldDefinition } from "@/features/applet/builder/builder.types";
+import { FieldBuilder } from "../types";
 
 export type FieldComponentDB = {
     id: string;
@@ -24,12 +25,19 @@ export type FieldComponentDB = {
 }
 
 /**
- * Converts a FieldDefinition to the database format
+ * Converts a FieldBuilder to the database format
  */
 export const fieldDefinitionToDBFormat = async (
-    field: FieldDefinition
-): Promise<Omit<FieldComponentDB, "id" | "created_at" | "updated_at" | "user_id" | "is_public" | "authenticated_read" | "public_read">> => {
+    field: FieldBuilder
+): Promise<Omit<FieldComponentDB, "created_at" | "updated_at">> => {
+    const { data } = await supabase.auth.getUser();
+    const userId = data.user?.id;
+
+    if (!userId) {
+        throw new Error("User not authenticated");
+    }
     return {
+        id: field.id || null,
         label: field.label || "",
         description: field.description || null,
         help_text: field.helpText || null,
@@ -42,13 +50,17 @@ export const fieldDefinitionToDBFormat = async (
         include_other: field.includeOther !== undefined ? field.includeOther : null,
         options: field.options || null,
         component_props: field.componentProps || null,
+        user_id: userId,
+        is_public: field.isPublic !== undefined ? field.isPublic : false,
+        authenticated_read: field.authenticatedRead !== undefined ? field.authenticatedRead : true,
+        public_read: field.publicRead !== undefined ? field.publicRead : true,
     };
 };
 
 /**
- * Converts a database record to a FieldDefinition
+ * Converts a database record to a FieldBuilder
  */
-export const dbToFieldDefinition = (dbRecord: FieldComponentDB): FieldDefinition => {
+export const dbToFieldDefinition = (dbRecord: FieldComponentDB): FieldBuilder => {
     return normalizeFieldDefinition({
         id: dbRecord.id,
         label: dbRecord.label,
@@ -63,13 +75,16 @@ export const dbToFieldDefinition = (dbRecord: FieldComponentDB): FieldDefinition
         includeOther: dbRecord.include_other,
         options: dbRecord.options,
         componentProps: dbRecord.component_props,
+        isPublic: dbRecord.is_public,
+        authenticatedRead: dbRecord.authenticated_read,
+        publicRead: dbRecord.public_read,
     });
 };
 
 /**
  * Fetches all field components for the current user
  */
-export const getAllFieldComponents = async (): Promise<FieldDefinition[]> => {
+export const getAllFieldComponents = async (): Promise<FieldBuilder[]> => {
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
 
@@ -90,7 +105,7 @@ export const getAllFieldComponents = async (): Promise<FieldDefinition[]> => {
 /**
  * Fetches a specific field component by ID
  */
-export const getFieldComponentById = async (id: string): Promise<FieldDefinition | null> => {
+export const getFieldComponentById = async (id: string): Promise<FieldBuilder | null> => {
     const { data, error } = await supabase.from("field_components").select("*").eq("id", id).single();
 
     if (error) {
@@ -107,8 +122,9 @@ export const getFieldComponentById = async (id: string): Promise<FieldDefinition
 /**
  * Creates a new field component
  */
-export const createFieldComponent = async (fieldDefinition: FieldDefinition): Promise<FieldDefinition> => {
+export const createFieldComponent = async (fieldDefinition: FieldBuilder): Promise<FieldBuilder> => {
     const dbData = await fieldDefinitionToDBFormat(fieldDefinition);
+
 
     console.log("Creating field component with data:", JSON.stringify(dbData, null, 2));
 
@@ -134,7 +150,7 @@ export const createFieldComponent = async (fieldDefinition: FieldDefinition): Pr
 /**
  * Updates an existing field component
  */
-export const updateFieldComponent = async (id: string, fieldDefinition: FieldDefinition): Promise<FieldDefinition> => {
+export const updateFieldComponent = async (id: string, fieldDefinition: FieldBuilder): Promise<FieldBuilder> => {
     const dbData = await fieldDefinitionToDBFormat(fieldDefinition);
 
     try {
@@ -176,7 +192,7 @@ export const deleteFieldComponent = async (id: string): Promise<void> => {
 /**
  * Duplicates a field component
  */
-export const duplicateFieldComponent = async (id: string): Promise<FieldDefinition> => {
+export const duplicateFieldComponent = async (id: string): Promise<FieldBuilder> => {
     const component = await getFieldComponentById(id);
 
     if (!component) {
@@ -199,7 +215,7 @@ export const duplicateFieldComponent = async (id: string): Promise<FieldDefiniti
 /**
  * Fetches public field components
  */
-export const getPublicFieldComponents = async (): Promise<FieldDefinition[]> => {
+export const getPublicFieldComponents = async (): Promise<FieldBuilder[]> => {
     const { data, error } = await supabase.from("field_components").select("*").eq("is_public", true);
 
     if (error) {

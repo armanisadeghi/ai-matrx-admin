@@ -2,17 +2,19 @@ import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/redux/store";
 import { ComponentToBrokerMapping } from "../types";
 
-// ================================ Constants for Reference Stability ================================
-// Use these constants to ensure reference stability with proper typing
-const EMPTY_OBJECT = {} as Record<string, never>;
-const EMPTY_ARRAY = [] as const;
+// ================================ Constants and Utility Functions ================================
+// Typed empty values with proper generics for type safety
 
-// Type-safe empty object function to preserve return types
+/**
+ * Type-safe empty object function that preserves return types
+ */
 function emptyObject<T>(): T {
   return {} as T;
 }
 
-// Type-safe empty array function to preserve return types
+/**
+ * Type-safe empty array function that preserves return types
+ */
 function emptyArray<T>(): T[] {
   return [] as T[];
 }
@@ -20,18 +22,18 @@ function emptyArray<T>(): T[] {
 // ================================ Base Selectors ================================
 
 // Component Definitions Selectors
-export const selectAppConfigs = (state: RootState) => state.componentDefinitions.appConfigs || EMPTY_OBJECT;
-export const selectComponentDefinitions = (state: RootState) => state.componentDefinitions.definitions || EMPTY_OBJECT;
-export const selectComponentInstances = (state: RootState) => state.componentDefinitions.instances || EMPTY_OBJECT;
-export const selectContainers = (state: RootState) => state.componentDefinitions.containers || EMPTY_OBJECT;
-export const selectApplets = (state: RootState) => state.componentDefinitions.applets || EMPTY_OBJECT;
-export const selectComponentToBrokerMap = (state: RootState) => state.componentDefinitions.componentToBrokerMap || EMPTY_OBJECT;
+export const selectAppConfigs = (state: RootState) => state.componentDefinitions.appConfigs || emptyObject<RootState['componentDefinitions']['appConfigs']>();
+export const selectComponentDefinitions = (state: RootState) => state.componentDefinitions.definitions || emptyObject<RootState['componentDefinitions']['definitions']>();
+export const selectComponentInstances = (state: RootState) => state.componentDefinitions.instances || emptyObject<RootState['componentDefinitions']['instances']>();
+export const selectContainers = (state: RootState) => state.componentDefinitions.containers || emptyObject<RootState['componentDefinitions']['containers']>();
+export const selectApplets = (state: RootState) => state.componentDefinitions.applets || emptyObject<RootState['componentDefinitions']['applets']>();
+export const selectComponentToBrokerMap = (state: RootState) => state.componentDefinitions.componentToBrokerMap || emptyObject<RootState['componentDefinitions']['componentToBrokerMap']>();
 
 // Broker Selectors
-export const selectBrokerValues = (state: RootState) => state.brokerValues.values || EMPTY_OBJECT;
-export const selectBrokerHistoryMap = (state: RootState) => state.brokerValues.history || EMPTY_OBJECT;
-export const selectNeededBrokers = (state: RootState) => state.brokerValues.neededBrokers || EMPTY_OBJECT;
-export const selectBrokerDefinitions = (state: RootState) => state.brokerValues.brokerDefinitions || EMPTY_OBJECT;
+export const selectBrokerValues = (state: RootState) => state.brokerValues.values || emptyObject<RootState['brokerValues']['values']>();
+export const selectBrokerHistoryMap = (state: RootState) => state.brokerValues.history || emptyObject<RootState['brokerValues']['history']>();
+export const selectNeededBrokers = (state: RootState) => state.brokerValues.neededBrokers || emptyObject<RootState['brokerValues']['neededBrokers']>();
+export const selectBrokerDefinitions = (state: RootState) => state.brokerValues.brokerDefinitions || emptyObject<RootState['brokerValues']['brokerDefinitions']>();
 
 // ================================ App Selectors ================================
 
@@ -40,13 +42,13 @@ export const selectAppConfig = createSelector(
     [selectAppConfigs, (_: RootState, appId?: string | null) => appId || ""],
     (appConfigs, appId) => {
         const result = appId && appConfigs[appId];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof appConfigs[string]>>();
     }
 );
 
 export const selectAppAppletList = createSelector(
     [selectAppConfig],
-    (appConfig) => appConfig?.appletList || emptyArray()
+    (appConfig) => appConfig?.appletList || emptyArray<NonNullable<typeof appConfig.appletList>[number]>()
 );
 
 // ================================ Component Selectors ================================
@@ -62,7 +64,7 @@ export const selectComponentDefinition = createSelector(
     ],
     (definitions, { appId, id }) => {
         const result = appId && id && definitions[appId]?.[id];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof definitions[string]>[string]>();
     }
 );
 
@@ -76,7 +78,7 @@ export const selectComponentInstance = createSelector(
     ],
     (instances, { appId, id }) => {
         const result = appId && id && instances[appId]?.[id];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof instances[string]>[string]>();
     }
 );
 
@@ -92,7 +94,7 @@ export const selectContainer = createSelector(
     ],
     (containers, { appId, id }) => {
         const result = appId && id && containers[appId]?.[id];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof containers[string]>[string]>();
     }
 );
 
@@ -100,7 +102,7 @@ export const selectAllContainers = createSelector(
     [selectContainers, (_: RootState, appId?: string | null) => appId || ""],
     (containers, appId) => {
         const result = appId && containers[appId];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof containers[string]>>();
     }
 );
 
@@ -114,10 +116,10 @@ export const selectComponentInstancesForContainer = createSelector(
         })
     ],
     (containers, instances, { appId, containerId }) => {
-        if (!appId || !containerId) return emptyArray();
+        if (!appId || !containerId) return emptyArray<any>();
         
         const container = containers[appId]?.[containerId];
-        if (!container || !container.fields) return emptyArray();
+        if (!container || !container.fields) return emptyArray<any>();
 
         const result = container.fields
             .map((field) =>
@@ -127,7 +129,7 @@ export const selectComponentInstancesForContainer = createSelector(
             )
             .flat();
             
-        return result.length ? result : emptyArray();
+        return result.length ? result : emptyArray<any>();
     }
 );
 
@@ -143,7 +145,7 @@ export const selectApplet = createSelector(
     ],
     (applets, { appId, id }) => {
         const result = appId && id && applets[appId]?.[id];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof applets[string]>[string]>();
     }
 );
 
@@ -151,7 +153,7 @@ export const selectAllApplets = createSelector(
     [selectApplets, (_: RootState, appId?: string | null) => appId || ""],
     (applets, appId) => {
         const result = appId && applets[appId];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof applets[string]>>();
     }
 );
 
@@ -167,7 +169,7 @@ export const selectBrokerHistory = createSelector(
     [selectBrokerHistoryMap, (_: RootState, id?: string | null) => id || ""],
     (history, id) => {
         const result = id && history[id];
-        return result || emptyArray();
+        return result || emptyArray<NonNullable<typeof history[string]>[number]>();
     }
 );
 
@@ -181,21 +183,21 @@ export const selectBrokerDefinition = createSelector(
     ],
     (definitions, { appId, brokerId }) => {
         const result = appId && brokerId && definitions[appId]?.[brokerId];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof definitions[string]>[string]>();
     }
 );
 
 // Broker Collection Selectors
 export const selectAllBrokerValues = createSelector(
     [selectBrokerValues],
-    (values) => values || emptyObject()
+    (values) => values || emptyObject<NonNullable<typeof values>>()
 );
 
 export const selectAllBrokerDefinitions = createSelector(
     [selectBrokerDefinitions, (_: RootState, appId?: string | null) => appId || ""],
     (definitions, appId) => {
         const result = appId && definitions[appId];
-        return result || emptyObject();
+        return result || emptyObject<NonNullable<typeof definitions[string]>>();
     }
 );
 
@@ -225,7 +227,7 @@ export const selectAllBrokerMappings = createSelector(
     [selectComponentToBrokerMap, (_: RootState, appId?: string | null) => appId || ""],
     (mappings, appId) => {
         const result = appId && mappings[appId];
-        return result || emptyArray();
+        return result || emptyArray<ComponentToBrokerMapping>();
     }
 );
 
@@ -239,7 +241,7 @@ export const selectBrokerValueStatus = createSelector(
         if (!neededBrokers) return status;
         
         const brokers = appId 
-            ? (neededBrokers[appId || ""] || emptyArray()) 
+            ? (neededBrokers[appId || ""] || emptyArray<string>()) 
             : Object.values(neededBrokers).flat();
             
         brokers.forEach((brokerId) => {
@@ -255,14 +257,14 @@ export const selectBrokerValueStatus = createSelector(
 export const selectMissingNeededBrokers = createSelector(
     [selectBrokerValues, selectNeededBrokers, (_: RootState, appId?: string | null) => appId],
     (values, neededBrokers, appId) => {
-        if (!neededBrokers) return emptyArray();
+        if (!neededBrokers) return emptyArray<string>();
         
         const brokers = appId 
-            ? (neededBrokers[appId || ""] || emptyArray()) 
+            ? (neededBrokers[appId || ""] || emptyArray<string>()) 
             : Object.values(neededBrokers).flat();
             
         const result = brokers.filter((brokerId) => brokerId && !values[brokerId]);
         
-        return result.length ? result : emptyArray();
+        return result.length ? result : emptyArray<string>();
     }
 );

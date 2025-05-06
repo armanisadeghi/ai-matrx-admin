@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectAppletsByAppId, selectActiveAppletId, selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
@@ -8,16 +8,16 @@ import { selectActiveContainerId, selectContainerById, selectContainerLoading } 
 import { selectActiveFieldId, selectNewFieldId } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { setActiveField, startFieldCreation } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { setActiveFieldWithFetchThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
-import AppletSidebarNavigation from "./smart-parts/applets/AppletSidebarNavigation";
-import FieldsList from "./smart-parts/fields/FieldsList";
-import { FieldSelectorOverlay } from "./smart-parts";
+import AppletSidebarNavigation from "../components/smart-parts/applets/AppletSidebarNavigation";
+import FieldsList from "../components/smart-parts/fields/FieldsList";
+import { FieldSelectorOverlay } from "../components/smart-parts";
 import { useToast } from "@/components/ui/use-toast";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import FieldEditor from "../modules/field-builder/FieldEditor";
 import SectionCard from "@/components/official/cards/SectionCard";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
-import { AppWindow, Component, PanelRight } from "lucide-react";
+import { AppWindow, Component, PanelRight, SaveIcon } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { updateFieldThunk, addFieldThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
@@ -25,9 +25,10 @@ import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuild
 
 interface FieldsConfigStepProps {
     appId: string;
+    onUpdateCompletion?: (completion: { isComplete: boolean; canProceed: boolean; message?: string; footerButtons?: React.ReactNode }) => void;
 }
 
-export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId }) => {
+export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpdateCompletion }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
 
@@ -179,6 +180,34 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId }) => 
     // Determine if we're editing an existing field or creating a new one
     const currentFieldId = activeFieldId || newFieldId;
     const isCreatingNew = Boolean(newFieldId && currentFieldId === newFieldId);
+
+    // Update completion status
+    useEffect(() => {
+        const hasApplets = applets.length > 0;
+        const hasContainer = !!activeContainer;
+        const hasFields = hasContainer && activeContainerFieldCount > 0;
+        
+        let message = '';
+        if (!hasApplets) {
+            message = "No applets found. Please go back and add an applet first.";
+        } else if (!hasContainer) {
+            message = "No container selected. Please select a container to add fields.";
+        } else if (!hasFields) {
+            message = "No fields added yet. You can add fields to your container.";
+        } else {
+            message = `Container "${activeContainerLabel}" has ${activeContainerFieldCount} field${activeContainerFieldCount === 1 ? '' : 's'}.`;
+        }
+
+        // For simplicity, we don't add any footer buttons since field editing is handled in the UI
+        // and there's no global "save all" for fields that would make sense here
+
+        onUpdateCompletion?.({
+            isComplete: hasApplets && hasContainer && hasFields,
+            canProceed: true, // Allow proceeding even without fields, as they might not be needed
+            message
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [applets.length, activeContainer, activeContainerFieldCount, activeContainerLabel]);
 
     if (applets.length === 0) {
         return (

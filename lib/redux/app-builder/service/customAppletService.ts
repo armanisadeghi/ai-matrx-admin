@@ -2,6 +2,7 @@ import { isSlugInUse } from "@/config/applets/apps/constants";
 import { AppletContainer, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import { supabase } from "@/utils/supabase/client";
+import { RuntimeCompiledRecipe } from "../../applets/types";
 
 export type CustomAppletConfigDB = {
     id: string;
@@ -377,6 +378,118 @@ export const checkCompiledRecipeVersionExists = async (recipeId: string, version
 
     return !!data;
 };
+
+export const getCompiledRecipeById = async (id: string): Promise<RuntimeCompiledRecipe | null> => {
+    const { data, error } = await supabase.from("compiled_recipe").select("*").eq("id", id).single();
+    if (error) {
+        console.error("Error fetching compiled recipe:", error);
+        throw error;
+    }
+    return data ? data : null;
+};
+
+
+
+export interface NeededBroker {
+    id: string;
+    name: string;
+    required: boolean;
+    dataType: string;
+    defaultValue: string;
+}
+
+export interface CompiledRecipeWithNeededBrokers {
+    id: string;
+    compiledId: string;
+    version: number;
+    neededBrokers: NeededBroker[];
+}
+
+export interface WorkflowSourceConfig {
+    sourceType: "workflow";
+    id: string;
+    workflowId: string;
+    [key: string]: any;
+}
+
+export interface ApiSourceConfig {
+    sourceType: "api";
+    id: string;
+    [key: string]: any;
+}
+
+export interface DatabaseSourceConfig {
+    sourceType: "database";
+    id: string;
+    [key: string]: any;
+}
+
+export interface OtherSourceConfig {
+    sourceType: "other";
+    id: string;
+    [key: string]: any;
+}
+
+export interface AppletSourceConfig {
+    sourceType: "recipe" | "workflow" | "api" | "database" | "other" | string;
+    config: CompiledRecipeWithNeededBrokers | WorkflowSourceConfig | ApiSourceConfig | DatabaseSourceConfig | OtherSourceConfig;
+}
+
+const convertDbResponseForSourceConfigs = (data: any) => {
+    const compiled_id = data.id;
+    const recipe_id = data.recipe_id;
+    const version = data.version;
+    const compiled_data = data.compiled_recipe;
+    const raw_brokers = compiled_data.brokers || [];
+
+    const needed_brokers = raw_brokers.map((broker: any) => {
+        return {
+            id: broker.id,
+            name: broker.name || "Name Missing",
+            required: broker.required || true,
+            dataType: broker.data_type || null,
+            defaultValue: broker.default_value || null,
+            inputComponent: broker.inputComponent || null,
+        }
+    });
+
+    return {
+        sourceType: "recipe",
+        config: {
+            id: recipe_id,
+            compiledId: compiled_id,
+            version: version,
+            neededBrokers: needed_brokers,
+        }
+    }
+}
+
+
+/**
+ * Fetches a specific compiled recipe by recipe ID and version
+ */
+export const getCompiledRecipeByVersionWithNeededBrokers = async (recipeId: string, version?: number): Promise<AppletSourceConfig | null> => {
+    let query = supabase.from("compiled_recipe").select("*").eq("recipe_id", recipeId);
+
+    if (version) {
+        query = query.eq("version", version);
+    } else {
+        query = query.order("version", { ascending: false }).limit(1);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error("Error fetching compiled recipe:", error);
+        throw error;
+    }
+    console.log("data", data);
+
+    return convertDbResponseForSourceConfigs(data[0]);
+};
+
+
+
 
 /**
  * Adds Containers to an applet as containers

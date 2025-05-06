@@ -15,9 +15,9 @@ import {
 import { saveContainerAndUpdateAppletThunk } from "../thunks/containerBuilderThunks";
 import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
 import { AppletBuilder, ContainerBuilder } from "../types";
-import { v4 as uuidv4 } from "uuid";
-import { BrokerMapping } from "@/features/applet/builder/builder.types";
+import { BrokerMapping, SourceConfig } from "@/features/applet/builder/builder.types";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { AppletSourceConfig } from "../service";
 
 // Helper function to check if an applet exists in state
 const checkAppletExists = (state: AppletsState, id: string): boolean => {
@@ -61,6 +61,7 @@ interface AppletsState {
     error: string | null;
     activeAppletId: string | null;
     newAppletId: string | null;
+    tempSourceConfigList: AppletSourceConfig[];
 }
 
 const initialState: AppletsState = {
@@ -69,6 +70,7 @@ const initialState: AppletsState = {
     error: null,
     activeAppletId: null,
     newAppletId: null,
+    tempSourceConfigList: [],
 };
 
 export const appletBuilderSlice = createSlice({
@@ -163,7 +165,7 @@ export const appletBuilderSlice = createSlice({
             
             state.applets[id] = { ...state.applets[id], layoutType, isDirty: true };
         },
-        setDataSourceConfig: (state, action: PayloadAction<{ id: string; dataSourceConfig?: any }>) => {
+        setDataSourceConfig: (state, action: PayloadAction<{ id: string; dataSourceConfig?: SourceConfig }>) => {
             const { id, dataSourceConfig } = action.payload;
             if (!checkAppletExists(state, id)) return;
             
@@ -298,6 +300,14 @@ export const appletBuilderSlice = createSlice({
             state.applets[applet.id] = applet;
             state.newAppletId = applet.id;
             state.activeAppletId = applet.id;
+        },
+        setTempAppletSourceConfig: (state, action: PayloadAction<AppletSourceConfig | null>) => {
+            const sourceConfig = action.payload;
+            if (sourceConfig) {
+                state.tempSourceConfigList.push(sourceConfig);
+            } else {
+                state.error = "Failed to set temp source config";
+            }
         },
     },
     extraReducers: (builder) => {
@@ -480,7 +490,6 @@ export const appletBuilderSlice = createSlice({
 
         // Check Slug Uniqueness
         builder.addCase(checkAppletSlugUniqueness.pending, (state) => {
-            state.isLoading = true;
             state.error = null;
         });
         builder.addCase(checkAppletSlugUniqueness.fulfilled, (state, action) => {
@@ -494,10 +503,8 @@ export const appletBuilderSlice = createSlice({
                     }
                 });
             }
-            state.isLoading = false;
         });
         builder.addCase(checkAppletSlugUniqueness.rejected, (state, action) => {
-            state.isLoading = false;
             state.error = action.error.message || "Failed to check slug uniqueness";
         });
 
@@ -579,6 +586,7 @@ export const {
     setLoading,
     setError,
     startWithData,
+    setTempAppletSourceConfig,
 } = appletBuilderSlice.actions;
 
 export default appletBuilderSlice.reducer;

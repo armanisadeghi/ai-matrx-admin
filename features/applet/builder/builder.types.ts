@@ -1,4 +1,6 @@
+import { FieldBuilder } from "@/lib/redux/app-builder/types";
 import { AppletLayoutOption } from "../layouts/options/layout.types";
+import { AppletSourceConfig } from "@/lib/redux/app-builder/service/customAppletService";
 
 export type ComponentType = 
   | 'input' 
@@ -78,6 +80,11 @@ export interface BrokerMapping {
   brokerId: string;
 }
 
+export type SourceConfig = {
+  sourceConfig?: AppletSourceConfig[];
+  brokerMappings?: BrokerMapping[];
+}
+
 
 export type CustomApplet = {
   id: string;
@@ -91,7 +98,7 @@ export type CustomApplet = {
   accentColor?: string;
   layoutType?: AppletLayoutOption;
   containers?: AppletContainer[];
-  dataSourceConfig?: any;
+  dataSourceConfig?: SourceConfig;
   resultComponentConfig?: any;
   nextStepConfig?: any;
   compiledRecipeId?: string;
@@ -131,8 +138,7 @@ export type CustomAppRuntimeConfig = {
 
 
 // Function to normalize a field definition by adding missing properties
-export function normalizeFieldDefinition(field: Partial<FieldDefinition>): FieldDefinition {
-  // Create default component props based on component type
+export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Partial<FieldBuilder>): FieldDefinition {
   const componentType = field.component || 'input';
   const defaultComponentProps: ComponentProps = {
     // Number defaults

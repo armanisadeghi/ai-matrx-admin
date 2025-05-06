@@ -22,8 +22,9 @@ import {
     setImageUrl,
     setAppId,
     setCompiledRecipeId,
+    setActiveApplet,
 } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
-import { deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+import { deleteAppletThunk, saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import {
     selectAppletById,
     selectAppletName,
@@ -56,6 +57,9 @@ import {
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { AppletLayoutSelection } from "@/features/applet/builder/parts/AppletLayoutSelection";
 import { RecipeSelector } from "@/features/applet/builder/components/smart-parts/applets";
+import { convertToKebabCase } from "@/utils/text/stringUtils";
+import { AppletSourceConfig } from "@/lib/redux/app-builder/service/customAppletService";
+import { setTempAppletSourceConfig } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 
 // Default values for new applets
 export const DEFAULT_APPLET_CONFIG: AppletBuilder = {
@@ -102,6 +106,8 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     const hasUnsavedChanges = useAppSelector(selectHasUnsavedAppletChanges);
     const appletAppId = useAppSelector((state: RootState) => selectAppletAppId(state, appletId || ""));
 
+    const [sourceConfig, setSourceConfig] = useState<AppletSourceConfig | null>(null);
+
     const isAssociated = appletAppId === appId;
 
     const handleRecipeSelected = (compiledRecipeId: string) => {
@@ -133,6 +139,8 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     const handleRemoveFromApp = () => {
         if (appletId) {
             dispatch(setAppId({ id: appletId, appId: "" }));
+            dispatch(saveAppletThunk(appletId));
+            dispatch(setActiveApplet(null));
             onRemoveApplet?.();
         }
     };
@@ -149,33 +157,39 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
         }
     };
 
-    const handleAppletChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
         if (appletId) {
-            if (name === "name") {
-                dispatch(setName({ id: appletId, name: value }));
-                // Auto-generate slug from name if this is a new applet
-                if (isNew && !appletSlug) {
-                    const slug = generateSlug(value);
-                    dispatch(setSlug({ id: appletId, slug }));
-                }
-            } else if (name === "slug") {
-                dispatch(setSlug({ id: appletId, slug: value }));
-            } else if (name === "description") {
-                dispatch(setDescription({ id: appletId, description: value }));
-            } else if (name === "creator") {
-                dispatch(setCreator({ id: appletId, creator: value }));
-            }
+            dispatch(setName({ id: appletId, name: value }));
         }
     };
 
-    const generateSlug = (name: string): string => {
-        if (!name) return "";
-        return name
-            .toLowerCase()
-            .replace(/([a-z])([A-Z])/g, "$1-$2") // Convert camelCase to kebab
-            .replace(/\s+/g, "-") // Replace spaces with hyphens
-            .replace(/[^a-z0-9-]/g, ""); // Remove special characters
+    const handleNameBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        if (appletId && isNew && !appletSlug) {
+            const slug = convertToKebabCase(e.target.value);
+            dispatch(setSlug({ id: appletId, slug }));
+        }
+    };
+
+    const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        if (appletId) {
+            dispatch(setSlug({ id: appletId, slug: value }));
+        }
+    };
+
+    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+        if (appletId) {
+            dispatch(setDescription({ id: appletId, description: value }));
+        }
+    };
+
+    const handleCreatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        if (appletId) {
+            dispatch(setCreator({ id: appletId, creator: value }));
+        }
     };
 
     const getAppletUrl = (appName: string = "", slug: string = ""): string => {
@@ -206,6 +220,12 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
         }
     };
 
+    const handleGetCompiledRecipeWithNeededBrokers = (sourceConfig: AppletSourceConfig | null) => {
+        if (sourceConfig) {
+            dispatch(setTempAppletSourceConfig(sourceConfig));
+        }
+    };
+
     // Ensure we have a valid applet before rendering
     if (!appletId) {
         return <div className="p-4 text-gray-500 dark:text-gray-400">No applet selected</div>;
@@ -224,7 +244,8 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             id={`${isNew ? "new" : "edit"}-name`}
                             name="name"
                             value={appletName || ""}
-                            onChange={handleAppletChange}
+                            onChange={handleNameChange}
+                            onBlur={handleNameBlur}
                             placeholder="Enter applet name"
                             className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
                         />
@@ -240,7 +261,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             id={`${isNew ? "new" : "edit"}-creator`}
                             name="creator"
                             value={appletCreator || ""}
-                            onChange={handleAppletChange}
+                            onChange={handleCreatorChange}
                             placeholder="Enter creator name"
                             className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
                         />
@@ -254,7 +275,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                                 id={`${isNew ? "new" : "edit"}-slug`}
                                 name="slug"
                                 value={appletSlug || ""}
-                                onChange={handleAppletChange}
+                                onChange={handleSlugChange}
                                 placeholder="Enter URL slug"
                                 className="border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500 pr-10"
                             />
@@ -271,6 +292,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                     <RecipeSelector 
                         compiledRecipeId={appletCompiledRecipeId} 
                         onRecipeSelect={handleRecipeSelected} 
+                        onGetCompiledRecipeWithNeededBrokers={handleGetCompiledRecipeWithNeededBrokers}
                     />
 
                     <div className="space-y-2">
@@ -284,7 +306,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             id={`${isNew ? "new" : "edit"}-description`}
                             name="description"
                             value={appletDescription || ""}
-                            onChange={handleAppletChange}
+                            onChange={handleDescriptionChange}
                             placeholder="Enter applet description"
                             rows={5}
                             className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-rose-500"
@@ -417,3 +439,4 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
 };
 
 export default AppletFormComponent;
+

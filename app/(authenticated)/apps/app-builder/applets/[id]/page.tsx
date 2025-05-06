@@ -18,6 +18,7 @@ import { setActiveAppletWithFetchThunk } from '@/lib/redux/app-builder/thunks/ap
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
+import { toast } from '@/components/ui/use-toast';
 
 export default function AppletViewPage({ params }: { params: Promise<{ id: string }> }) {
   // Use React.use() to unwrap the params Promise
@@ -41,7 +42,15 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
   // Set active applet when component mounts
   useEffect(() => {
     if (id) {
-      dispatch(setActiveAppletWithFetchThunk(id));
+      dispatch(setActiveAppletWithFetchThunk(id)).unwrap()
+        .catch(error => {
+          console.error("Failed to set active applet:", error);
+          toast({
+            title: "Error",
+            description: "Failed to set active applet.",
+            variant: "destructive",
+          });
+        });
     }
   }, [id, dispatch]);
   

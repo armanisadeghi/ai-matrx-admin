@@ -37,6 +37,7 @@ import {
 import { getAllComponentGroups } from '@/lib/redux/app-builder/service/fieldContainerService';
 import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
 import { CustomAppletConfig, AppletContainer, ComponentGroup } from '../../builder.types';
+import { AppletSourceConfig } from '@/lib/redux/app-builder/service/customAppletService';
 
 // Import our modular components
 import CreateAppletTab from './CreateAppletTab';
@@ -79,6 +80,7 @@ export const AppletBuilder = () => {
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeInfo | null>(null);
   const [compiledRecipeId, setCompiledRecipeId] = useState<string | null>(null);
+  const [compiledRecipeWithNeededBrokers, setCompiledRecipeWithNeededBrokers] = useState<AppletSourceConfig | null>(null);
 
   // List of available colors
   const availableColors = useMemo(() => [
@@ -568,6 +570,7 @@ export const AppletBuilder = () => {
         setSelectedRecipe={setSelectedRecipe}
         setCompiledRecipeId={setCompiledRecipeId}
         setNewApplet={setNewApplet}
+        setCompiledRecipeWithNeededBrokers={setCompiledRecipeWithNeededBrokers}
       />
       
       <GroupSelector

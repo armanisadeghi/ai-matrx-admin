@@ -465,7 +465,7 @@ export const COLOR_VARIANTS = {
         pink: "text-pink-500 dark:text-pink-400",
         rose: "text-rose-500 dark:text-rose-400",
     },
-    // Accent color borders
+    // Accent color 
     accentBorder: {
         gray: "border-gray-500 dark:border-gray-600",
         slate: "border-slate-500 dark:border-slate-600",

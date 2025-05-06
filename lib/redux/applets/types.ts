@@ -13,7 +13,7 @@ export interface BrokerValue {
   export interface ComponentToBrokerMapping {
     componentId: string;         // Component instance ID
     brokerId: string;            // Associated broker ID
-    instanceId: string;          // Unique instance ID for the component
+    instanceId: string;          // Unique instance ID for the component assigned at runtime
   }
   
   export interface RuntimeBrokerDefinition {

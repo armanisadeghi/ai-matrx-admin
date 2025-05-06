@@ -2,11 +2,10 @@
 
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
@@ -14,7 +13,7 @@ import AppPreviewCard from "@/features/applet/builder/previews/AppPreviewCard";
 import AppInfoCard from "@/features/applet/builder/previews/AppInfoCard";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { IconPicker } from "@/components/ui/IconPicker";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, SaveIcon } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/spinner";
 
 // Redux imports
@@ -54,12 +53,17 @@ import { AppSlugChecker } from "@/features/applet/builder/components/smart-parts
 interface AppConfigStepProps {
     appId: string;
     onAppSaved: (appId: string) => void;
+    onUpdateCompletion?: (completion: {
+        isComplete: boolean;
+        canProceed: boolean;
+        message?: string;
+        footerButtons?: React.ReactNode;
+    }) => void;
 }
 
-export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved }) => {
+export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved, onUpdateCompletion }) => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
-
 
     // Redux state selectors
     const appLoading = useAppSelector(selectAppLoading);
@@ -79,6 +83,47 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved 
     const accentColor = useAppSelector((state) => selectAppAccentColor(state, appId));
     const layoutType = useAppSelector((state) => selectAppLayoutType(state, appId));
     const imageUrl = useAppSelector((state) => selectAppImageUrl(state, appId));
+
+    // Effect to update completion status
+    useEffect(() => {
+        const hasRequiredFields = !!name && !!slug;
+        const isValid = hasRequiredFields && slugStatus !== "notUnique";
+        const canProceed = !isLocal && !isDirty && isValid;
+
+        // Create a dynamic message based on current state
+        let message = "";
+        if (!hasRequiredFields) {
+            message = "Please complete all required fields";
+        } else if (slugStatus === "notUnique") {
+            message = "Slug is not unique. Please change it";
+        } else if (isDirty) {
+            message = "Please save your changes before continuing";
+        } else if (!isLocal) {
+            message = "App configuration is complete";
+        }
+
+        // Add a save button to the footer if there are unsaved changes
+        const footerButtons =
+            isDirty || isLocal ? (
+                <Button
+                    onClick={handleSaveApp}
+                    disabled={appLoading || slugStatus === "notUnique" || !name || !slug}
+                    className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    variant="outline"
+                >
+                    <SaveIcon className="w-4 h-4 mr-1" />
+                    {isLocal ? "Save App" : "Save Changes"}
+                </Button>
+            ) : undefined;
+
+        onUpdateCompletion?.({
+            isComplete: !isLocal && hasRequiredFields,
+            canProceed,
+            message,
+            footerButtons,
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [name, slug, slugStatus, isDirty, isLocal, appLoading]);
 
     // Individual handlers for each field
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -230,21 +275,24 @@ export const AppConfigStep: React.FC<AppConfigStepProps> = ({ appId, onAppSaved 
     return (
         <div className="w-full">
             {/* Add loading state check here */}
-            {!appId ? (
+            {!appId || appLoading ? (
                 <div className="flex flex-col items-center justify-center h-96">
                     <LoadingSpinner size="lg" />
                     <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">Loading app configuration...</p>
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">Debug: appId is missing or invalid</p>
                 </div>
             ) : (
-                <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden mb-6">
-                    {/* Header */}
-                    <div className="bg-gray-100 dark:bg-gray-700 p-4 border-b border-gray-200 dark:border-gray-600">
-                        <h2 className="text-rose-500 font-medium text-lg">Primary App Information</h2>
-                        <p className="text-gray-600 dark:text-gray-300 text-sm">
-                            Please provide information about your app. This can be updated later.
-                        </p>
-                    </div>
+                <Card className="bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl border border-rose-200 dark:border-rose-600">
+                    <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-rose-200 dark:border-rose-600 p-3 rounded-t-3xl">
+                        <div className="grid md:grid-cols-[1fr_auto] gap-4 md:items-center">
+                            <div className="flex flex-col gap-1">
+                                <h2 className="text-rose-500 font-medium text-lg">Primary App Information</h2>
+                                <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                    Please provide information about your app. This can be updated later
+                                </p>
+                            </div>
+                        </div>
+                    </CardHeader>
 
                     {/* Content */}
                     <div className="flex flex-col md:flex-row">

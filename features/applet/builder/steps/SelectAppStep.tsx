@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import SmartAppListWrapper from "@/features/applet/builder/components/smart-parts/apps/SmartAppListWrapper";
 import { CustomAppConfig } from "@/features/applet/builder/builder.types";
-import { SmartAppListRefType } from "./smart-parts/apps/SmartAppList";
+import { SmartAppListRefType } from "../components/smart-parts/apps/SmartAppList";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppById } from "@/lib/redux/app-builder/selectors/appSelectors";
 
@@ -14,24 +14,36 @@ interface SelectAppStepProps {
     onAppSelected: (app: CustomAppConfig) => void;
     onCreateNewApp: () => void;
     selectedAppId: string | null;
+    onUpdateCompletion?: (completion: {
+        isComplete: boolean;
+        canProceed: boolean;
+        message?: string;
+        footerButtons?: React.ReactNode;
+    }) => void;
 }
 
-export const SelectAppStep: React.FC<SelectAppStepProps> = ({ onAppSelected, onCreateNewApp, selectedAppId }) => {
+export const SelectAppStep: React.FC<SelectAppStepProps> = ({ onAppSelected, onCreateNewApp, selectedAppId, onUpdateCompletion }) => {
     const appListRef = useRef<SmartAppListRefType | null>(null);
-    
-    // Get selected app information from Redux state
-    const selectedApp = useAppSelector(state => selectAppById(state, selectedAppId));
+    const selectedApp = useAppSelector((state) => selectAppById(state, selectedAppId));
 
-    // If we already have a selected app, we should still show it in the list
-    // but indicate it's selected
+    useEffect(() => {
+        onUpdateCompletion?.({
+            isComplete: !!selectedAppId,
+            canProceed: !!selectedAppId,
+            message: selectedAppId
+                ? `"${selectedApp?.name || "Unknown"}" selected`
+                : "Please select an app or create a new one to continue",
+        });
+    }, [selectedAppId, selectedApp]);
+
     const handleAppSelected = (app: CustomAppConfig) => {
         onAppSelected(app);
     };
 
     return (
         <div className="w-full">
-            <Card className="border border-rose-200 dark:border-rose-600 bg-white dark:bg-gray-800 shadow-lg overflow-hidden rounded-lg">
-                <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 px-6 py-4 rounded-t-lg">
+            <Card className="bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl border border-rose-200 dark:border-rose-600">
+                <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-rose-200 dark:border-rose-600 p-3 rounded-t-3xl">
                     <div className="grid md:grid-cols-[1fr_auto] gap-4 md:items-center">
                         <div className="flex flex-col gap-1">
                             <h2 className="text-rose-500 font-medium text-lg">Select or Create an App</h2>
@@ -39,23 +51,17 @@ export const SelectAppStep: React.FC<SelectAppStepProps> = ({ onAppSelected, onC
                                 Choose an existing app to edit or create a new one from scratch
                             </p>
                         </div>
-
-                        <Button onClick={onCreateNewApp} className="bg-rose-500 hover:bg-rose-600 text-white flex items-center gap-2">
+                        <Button
+                            onClick={onCreateNewApp}
+                            variant="outline"
+                            className="rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 border text-blue-500 dark:text-blue-300 border-blue-500 dark:border-blue-600 hover:text-white flex items-center gap-2"
+                        >
                             <PlusCircle className="h-4 w-4" />
                             Create New App
                         </Button>
                     </div>
                 </CardHeader>
-                <CardContent className="p-6">
-                    {selectedApp && (
-                        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                            <h3 className="text-blue-600 dark:text-blue-400 font-medium mb-1">Currently Selected App</h3>
-                            <p className="text-gray-700 dark:text-gray-300 text-sm mb-1">
-                                <span className="font-medium">{selectedApp.name} - Continue with this or select a different one below</span>
-                            </p>
-                        </div>
-                    )}
-
+                <CardContent className="p-4">
                     <SmartAppListWrapper
                         ref={appListRef}
                         onSelectApp={handleAppSelected}

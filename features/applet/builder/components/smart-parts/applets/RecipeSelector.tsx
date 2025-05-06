@@ -7,17 +7,21 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { getUserRecipes, RecipeInfo } from '@/lib/redux/app-builder/service/customAppletService';
 import { RecipeSelectDialog } from '@/features/applet/builder/modules/applet-builder/RecipeSelectDialog';
+import { AppletSourceConfig } from '@/lib/redux/app-builder/service/customAppletService';
+
 
 interface RecipeSelectorProps {
   compiledRecipeId: string | null;
   onRecipeSelect: (compiledRecipeId: string) => void;
   className?: string;
+  onGetCompiledRecipeWithNeededBrokers: (mapping: AppletSourceConfig | null) => void;
 }
 
 export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
   compiledRecipeId,
   onRecipeSelect,
-  className
+  className,
+  onGetCompiledRecipeWithNeededBrokers
 }) => {
   const { toast } = useToast();
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
@@ -131,6 +135,7 @@ export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
         selectedRecipe={selectedRecipe}
         setSelectedRecipe={setSelectedRecipe}
         setCompiledRecipeId={onRecipeSelect}
+        setCompiledRecipeWithNeededBrokers={onGetCompiledRecipeWithNeededBrokers}
       />
     </div>
   );

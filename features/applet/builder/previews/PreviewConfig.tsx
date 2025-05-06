@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -37,9 +37,10 @@ import {
 
 interface PreviewConfigProps {
   appId: string;
+  onUpdateCompletion?: (completion: { isComplete: boolean; canProceed: boolean; message?: string; footerButtons?: React.ReactNode }) => void;
 }
 
-export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
+export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCompletion }) => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState('preview');
@@ -49,6 +50,51 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
   // Get data from Redux store
   const config = useAppSelector((state) => selectAppById(state, appId));
   const applets = useAppSelector((state) => selectAppletsByAppId(state, appId));
+  
+  // Update step completion status
+  useEffect(() => {
+    const hasConfig = !!config;
+    const hasApplets = applets.length > 0;
+    
+    let message = '';
+    if (!hasConfig) {
+      message = "No app configuration found. Please complete the previous steps.";
+    } else if (!hasApplets) {
+      message = "App configuration found but no applets. You might want to add applets.";
+    } else {
+      message = `App is ready for review with ${applets.length} applet${applets.length === 1 ? '' : 's'}.`;
+    }
+
+    // This is the final step, so we provide buttons to export or copy the configuration
+    const footerButtons = hasConfig ? (
+      <div className="flex gap-2">
+        <Button 
+          variant="outline" 
+          onClick={handleCopyJSON}
+          className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+        >
+          <Copy className="h-4 w-4 mr-2" />
+          Copy JSON
+        </Button>
+        <Button 
+          variant="default" 
+          onClick={handleExportConfig}
+          className="bg-emerald-500 hover:bg-emerald-600 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export
+        </Button>
+      </div>
+    ) : undefined;
+
+    onUpdateCompletion?.({
+      isComplete: hasConfig && hasApplets,
+      canProceed: false, // This is the last step, so there's nowhere to proceed to
+      message,
+      footerButtons
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, applets.length]);
   
   if (!config) {
     return (

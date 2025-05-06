@@ -57,6 +57,15 @@ export const selectAppletsByAppId = createSelector(
   (applets, appId) => applets.filter(applet => applet.appId === appId)
 );
 
+// Memoized selector for applets NOT associated with a specific app ID
+export const selectAppletsExcludingAppId = createSelector(
+  [
+    selectAllApplets,
+    (_state: RootState, appId: string) => appId
+  ],
+  (applets, appId) => applets.filter(applet => applet.appId !== appId)
+);
+
 // Memoized selector for applets without an app assignment
 export const selectUnassignedApplets = createSelector(
   [selectAllApplets],
@@ -103,6 +112,29 @@ export const selectNewAppletId = createSelector(
 export const selectActiveAppletId = createSelector(
   [getAppletBuilderState],
   (appletBuilderState) => appletBuilderState.activeAppletId
+);
+
+
+// Memoized selector for the active applet
+export const selectActiveApplet = createSelector(
+  [
+    getAppletBuilderState,
+    selectActiveAppletId
+  ],
+  (appletBuilderState, activeAppletId) => 
+    activeAppletId ? appletBuilderState.applets[activeAppletId] || null : null
+);
+
+// Memoized selector to check if active applet is dirty
+export const selectIsActiveAppletDirty = createSelector(
+  [selectActiveApplet],
+  (activeApplet) => activeApplet ? activeApplet.isDirty === true : false
+);
+
+// Memoized selector to check if a specific applet is dirty by ID
+export const selectIsAppletDirtyById = createSelector(
+  [(state: RootState, id: string) => selectAppletById(state, id)],
+  (applet) => applet ? applet.isDirty === true : false
 );
 
 // ================================ Applet Property Selectors ================================
@@ -163,10 +195,6 @@ export const selectAppletContainers = createSelector(
   (applet) => (applet ? applet.containers : null)
 );
 
-export const selectAppletDataSourceConfig = createSelector(
-  [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
-  (applet) => (applet ? applet.dataSourceConfig : null)
-);
 
 export const selectAppletResultComponentConfig = createSelector(
   [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
@@ -235,8 +263,22 @@ export const selectAppletSlugStatus = createSelector(
   (applet) => (applet ? applet.slugStatus : 'unchecked')
 );
 
-export const hasUnsavedChanges = createSelector(
-  [selectAllApplets],
-  (applets) => applets.some(applet => applet.isDirty === true)
+export const selectAppletSourceConfigList = createSelector(
+  [getAppletBuilderState],
+  (appletBuilderState) => appletBuilderState.tempSourceConfigList
 );
 
+export const selectAppletSourceConfigById = createSelector(
+  [selectAppletSourceConfigList, (_state: RootState, id: string) => id],
+  (sourceConfigList, id) => sourceConfigList.find(config => config.config.id === id)
+);
+
+export const selectAppletSourceConfigBySourceType = createSelector(
+  [selectAppletSourceConfigList, (_state: RootState, sourceType: string) => sourceType],
+  (sourceConfigList, sourceType) => sourceConfigList.find(config => config.sourceType === sourceType)
+);
+
+export const selectAppletDataSourceConfig = createSelector(
+  [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
+  (applet) => (applet ? applet.dataSourceConfig : null)
+);

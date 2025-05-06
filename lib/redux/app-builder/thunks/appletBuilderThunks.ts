@@ -27,19 +27,20 @@ export type FetchAppletByIdSuccessAction = ReturnType<typeof fetchAppletByIdSucc
  * Thunk that sets an applet as active, fetching it first if not in state
  */
 export const setActiveAppletWithFetchThunk = createAsyncThunk<
-    void,
+    { success: boolean; exists: boolean },
     string,
     { state: RootState }
 >(
     "appletBuilder/setActiveAppletWithFetch",
     async (appletId, { getState, dispatch, rejectWithValue }) => {
         try {
-            // Check if applet already exists in state
-            const applet = selectAppletById(getState() as RootState, appletId);
+            // Check if applet already exists in state - using getState directly instead of a selector
+            const appletState = getState().appletBuilder.applets[appletId];
             
-            if (applet) {
+            if (appletState) {
                 // If it exists, just set it as active
                 dispatch(setActiveApplet(appletId));
+                return { success: true, exists: true };
             } else {
                 // Otherwise, fetch it first
                 try {
@@ -56,9 +57,11 @@ export const setActiveAppletWithFetchThunk = createAsyncThunk<
                         
                         // Set it as active
                         dispatch(setActiveApplet(appletId));
+                        return { success: true, exists: false };
                     } else {
                         console.error(`Applet with ID ${appletId} not found on server`);
                         dispatch(setActiveApplet(null));
+                        return rejectWithValue(`Applet with ID ${appletId} not found on server`);
                     }
                 } catch (error: any) {
                     console.error(`Failed to fetch applet with ID ${appletId}: ${error.message}`);

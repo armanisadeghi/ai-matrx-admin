@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Stepper } from "@/features/applet/builder/components/Stepper";
-import { AppConfigStep } from "@/features/applet/builder/components/AppConfigStep";
-import { AppletsConfigStep } from "@/features/applet/builder/components/AppletsConfigStep";
-import { GroupsConfigStep } from "@/features/applet/builder/components/GroupsConfigStep";
-import { FieldsConfigStep } from "@/features/applet/builder/components/FieldsConfigStep";
-import { SelectAppStep } from "@/features/applet/builder/components/SelectAppStep";
+import { Stepper } from "@/features/applet/builder/steps/Stepper";
+import { AppConfigStep } from "@/features/applet/builder/steps/AppConfigStep";
+import { AppletsConfigStep } from "@/features/applet/builder/steps/AppletsConfigStep";
+import { GroupsConfigStep } from "@/features/applet/builder/steps/GroupsConfigStep";
+import { FieldsConfigStep } from "@/features/applet/builder/steps/FieldsConfigStep";
+import { SelectAppStep } from "@/features/applet/builder/steps/SelectAppStep";
 import { PreviewConfig } from "@/features/applet/builder/previews/PreviewConfig";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -25,12 +25,28 @@ import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 
+// Interface for step completion and validation
+interface StepCompletion {
+    isComplete: boolean;
+    canProceed: boolean;
+    message?: string;
+    footerButtons?: ReactNode;
+}
 
 export const ConfigBuilder = () => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
     const [activeStep, setActiveStep] = useState(0);
     const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+    // Track completion status for each step
+    const [stepCompletions, setStepCompletions] = useState<StepCompletion[]>([
+        { isComplete: false, canProceed: true }, // Select App step - always can proceed
+        { isComplete: false, canProceed: false }, // App Config step
+        { isComplete: false, canProceed: true }, // Applets Config step
+        { isComplete: false, canProceed: true }, // Groups Config step
+        { isComplete: false, canProceed: true }, // Fields Config step
+        { isComplete: true, canProceed: false }, // Preview step - no next step
+    ]);
 
     const [nextAppRecompile, setNextAppRecompile] = useState(false);
     const [nextAppletRecompile, setNextAppletRecompile] = useState(false);
@@ -185,6 +201,27 @@ export const ConfigBuilder = () => {
         });
     };
 
+    // Method for steps to report their completion status
+    const updateStepCompletion = (stepIndex: number, completion: Partial<StepCompletion>) => {
+        // Use a function form to ensure we're working with the latest state
+        // and to prevent unnecessary re-renders
+        setStepCompletions(prev => {
+            // Check if the values are actually different before updating state
+            const current = prev[stepIndex];
+            const hasChanges = 
+                completion.isComplete !== current.isComplete ||
+                completion.canProceed !== current.canProceed ||
+                completion.message !== current.message;
+            
+            // Only update state if there are actual changes
+            if (!hasChanges) return prev;
+            
+            const updated = [...prev];
+            updated[stepIndex] = { ...updated[stepIndex], ...completion };
+            return updated;
+        });
+    };
+
     // Error display component
     const renderCompilationErrors = () => {
         if (compilingErrors.length === 0) return null;
@@ -201,42 +238,67 @@ export const ConfigBuilder = () => {
         );
     };
 
-    // Footer rendering with conditional reset button
+    // Footer rendering with conditional reset button and additional buttons
     const renderFooter = () => {
-        return (
-            <CardFooter className="flex justify-between">
-                {activeStep > 0 ? (
-                    <div className="flex gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={handleBack}
-                            disabled={isLoading}
-                            className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        >
-                            Back
-                        </Button>
-                        {activeStep > 0 && (
-                            <Button
-                                variant="ghost"
-                                onClick={resetToSelectStep}
-                                disabled={isLoading}
-                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            >
-                                Select Different App
-                            </Button>
-                        )}
-                    </div>
-                ) : (
-                    <div></div>
-                )}
+        const currentStepCompletion = stepCompletions[activeStep];
+        const footerButtons = currentStepCompletion?.footerButtons;
+        const statusMessage = currentStepCompletion?.message;
 
-                <Button
-                    onClick={handleNext}
-                    disabled={activeStep === steps.length - 1 || isLoading || !selectedAppId}
-                    className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
-                >
-                    {activeStep === steps.length - 2 ? "Preview" : "Next"}
-                </Button>
+        return (
+            <CardFooter className="flex flex-col md:flex-row space-y-3 md:space-y-0 pb-6">
+                <div className="w-full md:w-1/3 flex items-center">
+                    {activeStep > 0 ? (
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={handleBack}
+                                disabled={isLoading}
+                                className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            >
+                                Back
+                            </Button>
+                            {activeStep > 0 && (
+                                <Button
+                                    variant="ghost"
+                                    onClick={resetToSelectStep}
+                                    disabled={isLoading}
+                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700"
+                                >
+                                    Select Different App
+                                </Button>
+                            )}
+                        </div>
+                    ) : (
+                        <div></div>
+                    )}
+                </div>
+
+                {/* Status Message */}
+                <div className="w-full md:w-1/3 text-center">
+                    {statusMessage && (
+                        <p className={`text-sm ${!currentStepCompletion?.canProceed ? "text-amber-600 dark:text-amber-400" : "text-blue-600 dark:text-blue-400"}`}>
+                            {statusMessage}
+                        </p>
+                    )}
+                </div>
+
+                <div className="w-full md:w-1/3 flex justify-end gap-2 items-center">
+                    {/* Additional button area - render any step-specific buttons */}
+                    {footerButtons}
+                    
+                    <Button
+                        onClick={handleNext}
+                        disabled={
+                            activeStep === steps.length - 1 || 
+                            isLoading || 
+                            !selectedAppId || 
+                            !currentStepCompletion?.canProceed
+                        }
+                        className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
+                    >
+                        {activeStep === steps.length - 2 ? "Preview" : "Next"}
+                    </Button>
+                </div>
             </CardFooter>
         );
     };
@@ -245,7 +307,7 @@ export const ConfigBuilder = () => {
     return (
         <div className="w-full h-full px-4 bg-white dark:bg-gray-900">
             <div className="w-full max-w-[1600px] mx-auto">
-                <Card className="border-none bg-white dark:bg-gray-900 shadow-lg space-y-2">
+                <Card className="border-none bg-white dark:bg-gray-900 space-y-2">
                     <CardHeader>
                         <CardTitle className="text-2xl font-bold text-rose-500 pt-4">App Configuration Builder</CardTitle>
                     </CardHeader>
@@ -274,31 +336,61 @@ export const ConfigBuilder = () => {
                             {renderCompilationErrors()}
 
                             {activeStep === 0 && (
-                                <SelectAppStep
-                                    onAppSelected={handleAppSelected}
-                                    onCreateNewApp={handleCreateNewApp}
-                                    selectedAppId={selectedAppId}
-                                />
+                                <div className="w-full shadow-lg">
+                                    <SelectAppStep
+                                        onAppSelected={handleAppSelected}
+                                        onCreateNewApp={handleCreateNewApp}
+                                        selectedAppId={selectedAppId}
+                                        onUpdateCompletion={(completion) => updateStepCompletion(0, completion)}
+                                    />
+                                </div>
                             )}
 
                             {activeStep === 1 && (
-                                <AppConfigStep
-                                    appId={selectedAppId}
-                                    onAppSaved={handleAppSaved}
-                                />
+                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
+                                    <AppConfigStep
+                                        appId={selectedAppId}
+                                        onAppSaved={handleAppSaved}
+                                        onUpdateCompletion={(completion) => updateStepCompletion(1, completion)}
+                                    />
+                                </div>
                             )}
 
-                            {activeStep === 2 && <AppletsConfigStep appId={selectedAppId} />}
+                            {activeStep === 2 && (
+                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
+                                    <AppletsConfigStep 
+                                        appId={selectedAppId} 
+                                        onUpdateCompletion={(completion) => updateStepCompletion(2, completion)}
+                                    />
+                                </div>
+                            )}
 
-                            {activeStep === 3 && <GroupsConfigStep appId={selectedAppId} />}
+                            {activeStep === 3 && (
+                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
+                                    <GroupsConfigStep 
+                                        appId={selectedAppId} 
+                                        onUpdateCompletion={(completion) => updateStepCompletion(3, completion)}
+                                    />
+                                </div>
+                            )}
 
-                            {activeStep === 4 && <FieldsConfigStep appId={selectedAppId} />}
+                            {activeStep === 4 && (
+                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
+                                    <FieldsConfigStep 
+                                        appId={selectedAppId} 
+                                        onUpdateCompletion={(completion) => updateStepCompletion(4, completion)}
+                                    />
+                                </div>
+                            )}
 
                             {/* PreviewConfig has been updated to use Redux directly and only needs an appId */}
                             {activeStep === 5 && (
-                                <PreviewConfig 
-                                    appId={selectedAppId}
-                                />
+                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
+                                    <PreviewConfig 
+                                        appId={selectedAppId}
+                                        onUpdateCompletion={(completion) => updateStepCompletion(5, completion)}
+                                    />
+                                </div>
                             )}
                         </div>
                     </CardContent>

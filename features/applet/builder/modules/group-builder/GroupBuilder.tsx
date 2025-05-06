@@ -23,7 +23,7 @@ import { CreateGroupForm } from "./CreateGroupForm";
 import { SavedGroupsList } from "./SavedGroupsList";
 import { AddFieldsDialog } from "./AddFieldsDialog";
 import { RefreshFieldsDialog } from "./RefreshFieldsDialog";
-import { DeleteConfirmationDialog } from "./DeleteConfirmationDialog";
+import { DeleteConfirmationDialog } from "../../parts/DeleteConfirmationDialog";
 
 // Helper function to generate ID
 const generateGroupId = (label: string) => {
