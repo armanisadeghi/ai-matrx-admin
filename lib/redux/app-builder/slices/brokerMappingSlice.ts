@@ -1,4 +1,4 @@
-import { ComponentToBrokerMapping, RuntimeBrokerDefinition } from "../../applets/types";
+import { ComponentToBrokerMapping, RuntimeBrokerDefinition } from "../../app-runner/types";
 
 
 interface BrokerMappingState {

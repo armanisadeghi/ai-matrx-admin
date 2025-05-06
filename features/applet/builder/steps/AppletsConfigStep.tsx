@@ -25,9 +25,9 @@ import {
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import AppletFormComponent from "@/features/applet/builder/components/smart-parts/applets/AppletFormComponent";
-import AppletSelectorOverlay from "@/features/applet/builder/components/smart-parts/applets/AppletSelectorOverlay";
-import SmartAppletListWrapper from "@/features/applet/builder/components/smart-parts/applets/SmartAppletListWrapper";
+import AppletFormComponent from "@/features/applet/builder/modules/smart-parts/applets/AppletFormComponent";
+import AppletSelectorOverlay from "@/features/applet/builder/modules/smart-parts/applets/AppletSelectorOverlay";
+import SmartAppletListWrapper from "@/features/applet/builder/modules/smart-parts/applets/SmartAppletListWrapper";
 import { CustomAppletConfig } from "@/features/applet/builder/builder.types";
 import { v4 as uuidv4 } from "uuid";
 import AppInfoCard from "@/features/applet/builder/previews/AppInfoCard";

@@ -15,7 +15,7 @@ import { selectAllApps, selectAppLoading, selectAppError, selectAppsByIds } from
 import { IconPicker } from "@/components/ui/IconPicker";
 import { COLOR_VARIANTS } from "@/features/applet/layouts/helpers/StyledComponents";
 import { CustomAppConfig } from "@/features/applet/builder/builder.types";
-import { getAppColorClasses } from "../styles";
+import { getAppColorClasses } from "../../../styles";
 
 export type SmartAppListRefType = {
     refresh: () => Promise<void>;

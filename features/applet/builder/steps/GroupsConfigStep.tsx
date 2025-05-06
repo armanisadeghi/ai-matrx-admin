@@ -28,8 +28,8 @@ import {
     setActiveContainerWithFetchThunk,
 } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { saveAppletThunk, recompileAppletThunk, setActiveAppletWithFetchThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import GroupSelectorOverlay from "../components/smart-parts/containers/GroupSelectorOverlay";
-import ContainerFormComponent from "../components/smart-parts/containers/ContainerFormComponent";
+import GroupSelectorOverlay from "../modules/smart-parts/containers/GroupSelectorOverlay";
+import ContainerFormComponent from "../modules/smart-parts/containers/ContainerFormComponent";
 import { ComponentGroup } from "../builder.types";
 import { AppletBuilder, ContainerBuilder } from "@/lib/redux/app-builder/types";
 import { v4 as uuidv4 } from "uuid";

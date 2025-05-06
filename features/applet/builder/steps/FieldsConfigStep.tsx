@@ -8,9 +8,9 @@ import { selectActiveContainerId, selectContainerById, selectContainerLoading } 
 import { selectActiveFieldId, selectNewFieldId } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { setActiveField, startFieldCreation } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { setActiveFieldWithFetchThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
-import AppletSidebarNavigation from "../components/smart-parts/applets/AppletSidebarNavigation";
-import FieldsList from "../components/smart-parts/fields/FieldsList";
-import { FieldSelectorOverlay } from "../components/smart-parts";
+import AppletSidebarNavigation from "../modules/smart-parts/applets/AppletSidebarNavigation";
+import FieldsList from "../modules/smart-parts/fields/FieldsList";
+import { FieldSelectorOverlay } from "../modules/smart-parts";
 import { useToast } from "@/components/ui/use-toast";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";

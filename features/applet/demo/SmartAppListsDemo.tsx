@@ -27,7 +27,7 @@ import {
     SmartGroupListWrapper,
     SmartFieldsList,
     SmartFieldsListWrapper,
-} from "@/features/applet/builder/components/smart-parts";
+} from "@/features/applet/builder/modules/smart-parts";
 
 // Import types
 import { ComponentGroup, CustomAppConfig, CustomAppletConfig, FieldDefinition } from "@/features/applet/builder/builder.types";

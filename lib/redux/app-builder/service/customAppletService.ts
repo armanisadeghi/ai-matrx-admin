@@ -2,7 +2,7 @@ import { isSlugInUse } from "@/config/applets/apps/constants";
 import { AppletContainer, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import { supabase } from "@/utils/supabase/client";
-import { RuntimeCompiledRecipe } from "../../applets/types";
+import { RuntimeCompiledRecipe } from "../../app-runner/types";
 
 export type CustomAppletConfigDB = {
     id: string;

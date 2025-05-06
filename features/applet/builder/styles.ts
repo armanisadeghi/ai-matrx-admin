@@ -1,5 +1,5 @@
 import { COLOR_VARIANTS } from "@/features/applet/layouts/helpers/StyledComponents";
-import { CustomAppConfig, CustomAppletConfig } from "../../builder.types";
+import { CustomAppConfig, CustomAppletConfig } from "./builder.types";
 
 
 export const getFieldComponentStyle = (componentType?: string) => {

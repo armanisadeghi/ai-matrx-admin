@@ -48,7 +48,7 @@ import {
 } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { convertToKebabCase } from "@/utils/text/stringUtils";
 import { AppLayoutSelection } from "@/features/applet/builder/parts/AppLayoutSelection";
-import { AppSlugChecker } from "@/features/applet/builder/components/smart-parts/apps/AppSlugChecker";
+import { AppSlugChecker } from "@/features/applet/builder/modules/smart-parts/apps/AppSlugChecker";
 
 interface AppConfigStepProps {
     appId: string;

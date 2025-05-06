@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { SmartFieldsList } from "@/features/applet/builder/components/smart-parts";
+import { SmartFieldsList } from "@/features/applet/builder/modules/smart-parts";
 import { FieldDefinition } from "@/features/applet/builder/builder.types";
 
 export default function FieldsPage() {

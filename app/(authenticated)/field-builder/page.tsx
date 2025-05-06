@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { GroupFieldConfig } from '@/features/applet/runner/components/field-components/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckSquare, Plus } from 'lucide-react';
-import CheckboxFieldBuilder from '@/features/applet/builder/modules/field-builder/field-builders/CheckboxFieldBuilder';
+import CheckboxFieldBuilder from '@/features/applet/builder/modules/field-builder/CheckboxFieldBuilder';
 
 export default function FieldBuilderPage() {
     const [isCheckboxBuilderOpen, setIsCheckboxBuilderOpen] = useState(false);

@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import SmartAppList, { SmartAppListRefType } from './SmartAppList';
-import { CustomAppConfig } from '@/features/applet/builder/modules/app-builder/AppBuilder';
+import { CustomAppConfig } from "@/features/applet/builder/builder.types";
+
 
 // Define type for appIds
 type AppId = string;

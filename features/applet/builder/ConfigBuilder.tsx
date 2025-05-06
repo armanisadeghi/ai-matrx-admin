@@ -24,6 +24,8 @@ import { v4 as uuidv4 } from "uuid";
 import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+import SourceConfigStep from "@/features/applet/builder/steps/SourceConfigStep";
+
 
 // Interface for step completion and validation
 interface StepCompletion {
@@ -87,6 +89,7 @@ export const ConfigBuilder = () => {
         { id: "applets-config", title: "Add Applets", description: "Define & Configure Applets" },
         { id: "groups-config", title: "Add Containers", description: "Create groups of Custom Fields" },
         { id: "fields-config", title: "Add Fields", description: "Define fields for each Container" },
+        { id: "source-config", title: "Add Source", description: "Add source code for your app" },
         { id: "preview", title: "Deploy App", description: "Finalize & Launch your app" },
     ];
 
@@ -108,7 +111,8 @@ export const ConfigBuilder = () => {
         } else if (activeStep === 3) {
             setActiveStep(4);
         } else if (activeStep === 4) {
-            // Recompile all applets before showing the preview
+            setActiveStep(5);
+        } else if (activeStep === 5) {
             await recompileAllApplets();
         } else if (activeStep < steps.length - 1) {
             setActiveStep(activeStep + 1);
@@ -383,16 +387,26 @@ export const ConfigBuilder = () => {
                                 </div>
                             )}
 
-                            {/* PreviewConfig has been updated to use Redux directly and only needs an appId */}
                             {activeStep === 5 && (
                                 <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
-                                    <PreviewConfig 
-                                        appId={selectedAppId}
+                                    <SourceConfigStep 
+                                        appId={selectedAppId} 
                                         onUpdateCompletion={(completion) => updateStepCompletion(5, completion)}
                                     />
                                 </div>
                             )}
+
+                            {/* PreviewConfig has been updated to use Redux directly and only needs an appId */}
+                            {activeStep === 6 && (
+                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
+                                    <PreviewConfig 
+                                        appId={selectedAppId}
+                                        onUpdateCompletion={(completion) => updateStepCompletion(6, completion)}
+                                    />
+                                </div>
+                            )}
                         </div>
+                        
                     </CardContent>
                     {renderFooter()}
                 </Card>

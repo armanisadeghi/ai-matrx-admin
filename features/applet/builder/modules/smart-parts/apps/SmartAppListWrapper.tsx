@@ -4,7 +4,7 @@ import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import SmartAppList, { SmartAppListRefType } from './SmartAppList';
-import { CustomAppConfig } from '@/features/applet/builder/modules/app-builder/AppBuilder';
+import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 
 // Define type for appIds
 type AppId = string;

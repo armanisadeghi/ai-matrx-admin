@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { SmartAppletList } from "@/features/applet/builder/components/smart-parts";
+import { SmartAppletList } from "@/features/applet/builder/modules/smart-parts";
 import { CustomAppletConfig } from "@/features/applet/builder/builder.types";
 
 export default function AppletsPage() {

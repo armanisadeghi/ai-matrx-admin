@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import AppletSourceSelection from "../parts/SourceSelector";
 import SourceConfigCardSelector from "../parts/SourceConfigCardSelector";
-import { RecipeSelector } from "@/features/applet/builder/components/smart-parts/applets";
+import { RecipeSelector } from "@/features/applet/builder/modules/smart-parts/applets";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
@@ -22,6 +22,7 @@ import {
 import { BrokerMapping } from "@/features/applet/builder/builder.types";
 
 interface SelectAppStepProps {
+    appId?: string;
     onUpdateCompletion?: (completion: {
         isComplete: boolean;
         canProceed: boolean;
@@ -30,7 +31,7 @@ interface SelectAppStepProps {
     }) => void;
 }
 
-export const SourceConfigStep: React.FC<SelectAppStepProps> = ({ onUpdateCompletion }) => {
+export const SourceConfigStep: React.FC<SelectAppStepProps> = ({ appId, onUpdateCompletion }) => {
     const dispatch = useAppDispatch();
     const activeAppletId = useAppSelector((state: RootState) => selectActiveAppletId(state));
     const appletCompiledRecipeId = useAppSelector((state: RootState) => selectAppletCompiledRecipeId(state, activeAppletId || ""));

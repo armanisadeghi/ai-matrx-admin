@@ -23,7 +23,7 @@ import { appletLayoutOptionsArray } from "@/features/applet/layouts/options/layo
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
 import { IconPicker } from "@/components/ui/IconPicker";
-import SmartAppList, { SmartAppListRefType } from "@/features/applet/builder/components/smart-parts/apps/SmartAppList";
+import SmartAppList, { SmartAppListRefType } from "@/features/applet/builder/modules/smart-parts/apps/SmartAppList";
 import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 
 // SINGLE SOURCE OF TRUTH FOR DEFAULT VALUES

@@ -9,7 +9,7 @@ import { setActiveApplet } from "@/lib/redux/app-builder/slices/appletBuilderSli
 import { setActiveAppletWithFetchThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { setActiveContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 import { setActiveContainerWithFetchThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
-import GroupSelectorOverlay from "../../smart-parts/containers/GroupSelectorOverlay";
+import GroupSelectorOverlay from "../containers/GroupSelectorOverlay";
 import { PlusCircle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { ComponentGroup } from "../../../builder.types";

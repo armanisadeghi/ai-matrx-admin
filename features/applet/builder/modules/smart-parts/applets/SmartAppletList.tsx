@@ -19,7 +19,7 @@ import {
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { COLOR_VARIANTS, ICON_OPTIONS } from "@/features/applet/layouts/helpers/StyledComponents";
 import { CustomAppletConfig } from "@/features/applet/builder/builder.types";
-import { getAppletColorClasses } from "@/features/applet/builder/components/smart-parts/styles";
+import { getAppletColorClasses } from "@/features/applet/builder/styles";
 
 
 export type SmartAppletListRefType = {

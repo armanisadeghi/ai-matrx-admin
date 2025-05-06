@@ -10,7 +10,7 @@ import {
 import { saveAppletThunk } from '@/lib/redux/app-builder/thunks/appletBuilderThunks';
 import { setActiveApplet } from '@/lib/redux/app-builder/slices/appletBuilderSlice';
 import { Button } from '@/components/ui/button';
-import { AppletFormComponent } from '@/features/applet/builder/components/smart-parts/applets/AppletFormComponent';
+import { AppletFormComponent } from '@/features/applet/builder/modules/smart-parts/applets/AppletFormComponent';
 import { useToast } from '@/components/ui/use-toast';
 import { Save, X, Loader2 } from 'lucide-react';
 
