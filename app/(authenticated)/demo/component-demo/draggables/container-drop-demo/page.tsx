@@ -86,10 +86,18 @@ const CardPositionListener = ({
   const { positions, containers, updatePosition } = useDraggableCard();
   const position = positions[cardId];
   const prevContainerIdRef = useRef<string | null>(null);
+  // Reference to the draggable area
+  const draggableAreaRef = useRef<HTMLDivElement | null>(null);
+
+  // Find and store the draggable area on mount
+  useEffect(() => {
+    // Find the draggable area element (the parent div with class 'relative bg-gray-100')
+    draggableAreaRef.current = document.querySelector('.relative.bg-gray-100.dark\\:bg-gray-800') as HTMLDivElement;
+  }, []);
 
   // Watch for changes in containerId and snap to container center
   useEffect(() => {
-    if (!position) return;
+    if (!position || !draggableAreaRef.current) return;
 
     const containerId = position.containerId;
     
@@ -98,21 +106,35 @@ const CardPositionListener = ({
       const container = containers[containerId];
       
       if (container) {
-        // Calculate center of container
-        const centerX = (container.bounds.left + container.bounds.right) / 2;
-        const centerY = (container.bounds.top + container.bounds.bottom) / 2;
+        // Get the draggable area's position
+        const draggableAreaRect = draggableAreaRef.current.getBoundingClientRect();
         
-        // Calculate offset from the document to the draggable area
-        // (we need this because our position is relative to the draggable area)
-        const offsetX = container.bounds.left - position.x - 160; // 160 is half card width
-        const offsetY = container.bounds.top - position.y - 160; // 160 is half card height
+        // Get the card dimensions
+        const cardWidth = 320;
+        const cardHeight = 320;
         
-        // Calculate target position (center of container)
-        const targetX = (container.bounds.right - container.bounds.left) / 2 - 160;
-        const targetY = (container.bounds.bottom - container.bounds.top) / 2 - 160;
+        // Calculate the container's position relative to the draggable area
+        const containerRelativeLeft = container.bounds.left - draggableAreaRect.left;
+        const containerRelativeTop = container.bounds.top - draggableAreaRect.top;
+        const containerWidth = container.bounds.right - container.bounds.left;
+        const containerHeight = container.bounds.bottom - container.bounds.top;
         
-        // Animate to container center
-        animate(position.x, targetX, {
+        // Calculate the target position (center of container)
+        const containerCenterX = containerRelativeLeft + (containerWidth / 2) - (cardWidth / 2);
+        const containerCenterY = containerRelativeTop + (containerHeight / 2) - (cardHeight / 2);
+        
+        console.log('Snapping card to container center:', {
+          cardId,
+          containerId,
+          draggableAreaRect,
+          containerBounds: container.bounds,
+          containerRelative: { x: containerRelativeLeft, y: containerRelativeTop },
+          cardCurrentPos: { x: position.x, y: position.y },
+          targetPos: { x: containerCenterX, y: containerCenterY }
+        });
+        
+        // Animate to container center with physics
+        animate(position.x, containerCenterX, {
           type: "spring",
           stiffness: 300,
           damping: 30,
@@ -121,7 +143,7 @@ const CardPositionListener = ({
           }
         });
         
-        animate(position.y, targetY, {
+        animate(position.y, containerCenterY, {
           type: "spring",
           stiffness: 300,
           damping: 30,

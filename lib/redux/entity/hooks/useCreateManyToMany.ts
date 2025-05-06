@@ -3,24 +3,8 @@ import { useEntityFetch } from "./useEntityFetch";
 import { useDirectCreateRecord } from "@/app/entities/hooks/crud/useDirectCreateRecord";
 import { RelationshipDefinition } from "@/types/relationshipTypes";
 import { useDeleteRecord } from "@/app/entities/hooks/crud/useDeleteRecord";
-import { MatrxRecordId } from "@/types";
+import { EntityKeys, MatrxRecordId } from "@/types";
 
-const aiModelEndpointRelationshipDefinition: RelationshipDefinition = {
-    joiningTable: "aiModelEndpoint",
-    relationshipCount: 2,
-    additionalFields: ["available", "configuration", "createdAt", "endpointPriority", "notes"],
-    joiningTablePks: ["id"],
-    ReferenceFieldOne: "aiEndpointId",
-    entityOne: "aiEndpoint",
-    entityOneField: "id",
-    entityOnePks: ["id"],
-    ReferenceFieldTwo: "aiModelId",
-    entityTwo: "aiModel",
-    entityTwoField: "id",
-    entityTwoPks: ["id"],
-};
-
-// Add optional onSuccess parameter with default empty function
 export const useCreateManyToMany = (
     relationshipDefinition: RelationshipDefinition,
     options: { onSuccess?: (recordId: string) => void } = {}
@@ -33,19 +17,19 @@ export const useCreateManyToMany = (
         fetchAll: fetchAllParent,
         allFetchedRecords: allParentRecords,
         allFetchedRecordsArray: allParentRecordsArray,
-    } = useEntityFetch(parentEntity);
+    } = useEntityFetch(parentEntity as EntityKeys);
 
     const {
         fetchAll: fetchAllChild,
         allFetchedRecords: allChildRecords,
         allFetchedRecordsArray: allChildRecordsArray,
-    } = useEntityFetch(childEntity);
+    } = useEntityFetch(childEntity as EntityKeys);
 
     const {
         fetchAll: fetchAllJoin,
         allFetchedRecords: allJoinRecords,
         allFetchedRecordsArray: allJoinRecordsArray,
-    } = useEntityFetch(joiningEntity);
+    } = useEntityFetch(joiningEntity as EntityKeys);
 
     useEffect(() => {
         fetchAllParent();
@@ -54,13 +38,13 @@ export const useCreateManyToMany = (
     }, [fetchAllParent, fetchAllChild, fetchAllJoin]);
 
     const createRecord = useDirectCreateRecord({
-        entityKey: joiningEntity,
+        entityKey: joiningEntity as EntityKeys,
         onSuccess: options.onSuccess,
         onError: () => {},
         showToast: true,
     });
 
-    const { deleteRecord } = useDeleteRecord(joiningEntity);
+    const { deleteRecord } = useDeleteRecord(joiningEntity as EntityKeys);
 
     const createManyToMany = useCallback(
         (parentRefValue: string, childRefValue: string, additionalData?: Record<string, any>) => {
@@ -133,8 +117,6 @@ export const useCreateManyToMany = (
         [deleteRecord, allJoinRecordsArray, relationshipDefinition]
     );
 
-
-
     return {
         allParentRecords,
         allChildRecords,
@@ -147,3 +129,5 @@ export const useCreateManyToMany = (
         getGroupedChildrenByParent,
     };
 };
+
+export type UseCreateManyToManyReturn = ReturnType<typeof useCreateManyToMany>;

@@ -32,10 +32,10 @@ export interface DraggableCardContextValue {
   assignToGroup: (id: string, group: string | null) => void;
   assignToContainer: (id: string, containerId: string | null) => void;
   getCardPosition: (id: string) => CardPosition | undefined;
-  registerContainer: (id: string, label: string, bounds: { left: number; top: number; right: number; bottom: number }) => void;
+  registerContainer: (id: string, container: Omit<Container, 'id'>) => void;
   unregisterContainer: (id: string) => void;
   updateContainerBounds: (id: string, bounds: { left: number; top: number; right: number; bottom: number }) => void;
-  checkContainerIntersection: (cardId: string, cardPosition: { x: number; y: number, width: number, height: number }) => string | null;
+  checkContainerIntersection: (cardId: string, cardPosition: { x: number; y: number, width: number, height: number }, cardRef: React.RefObject<HTMLDivElement>) => string | null;
 }
 
 const DraggableCardContext = createContext<DraggableCardContextValue | undefined>(undefined);
@@ -133,19 +133,14 @@ export function DraggableCardProvider({ children }: { children: ReactNode }) {
     return positions[id];
   }, [positions]);
 
-  const registerContainer = useCallback((id: string, label: string, bounds: { left: number; top: number; right: number; bottom: number }) => {
-    setContainers(prev => {
-      if (prev[id]) return prev;
-      
-      return {
-        ...prev,
-        [id]: {
-          id,
-          label,
-          bounds
-        }
-      };
-    });
+  const registerContainer = useCallback((id: string, container: Omit<Container, 'id'>) => {
+    setContainers(prev => ({
+      ...prev,
+      [id]: {
+        ...container,
+        id
+      }
+    }));
   }, []);
 
   const unregisterContainer = useCallback((id: string) => {
@@ -185,10 +180,15 @@ export function DraggableCardProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Check if a card intersects with any container and return the container ID if it does
-  const checkContainerIntersection = useCallback((cardId: string, cardPosition: { x: number; y: number, width: number, height: number }) => {
-    // Calculate the center of the card
-    const cardCenterX = cardPosition.x + cardPosition.width / 2;
-    const cardCenterY = cardPosition.y + cardPosition.height / 2;
+  const checkContainerIntersection = useCallback((cardId: string, cardPosition: { x: number; y: number, width: number, height: number }, cardRef: React.RefObject<HTMLDivElement>) => {
+    if (!cardRef.current) return null;
+    
+    // Get the card's actual DOM position
+    const cardRect = cardRef.current.getBoundingClientRect();
+    
+    // Calculate the center of the card using its actual DOM position
+    const cardCenterX = cardRect.left + cardRect.width / 2;
+    const cardCenterY = cardRect.top + cardRect.height / 2;
     
     // Check each container to see if the card's center is inside it
     for (const containerId in containers) {

@@ -179,46 +179,50 @@ export const EnhancedDraggableCardBody = ({
       },
     });
     
-    // Get current position and dimensions
-    const currentX = x.get();
-    const currentY = y.get();
-    let cardWidth = 320;
-    let cardHeight = 320;
+    // Only check container intersection if we have a card ref
+    if (!cardRef.current) return;
     
-    // Get actual card dimensions if possible
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      cardWidth = rect.width;
-      cardHeight = rect.height;
-    }
+    // Get actual card dimensions
+    const cardRect = cardRef.current.getBoundingClientRect();
+    const cardWidth = cardRect.width;
+    const cardHeight = cardRect.height;
     
-    // Check if the card is inside any container
-    const intersectingContainerId = checkContainerIntersection(id, {
-      x: currentX,
-      y: currentY,
-      width: cardWidth,
-      height: cardHeight
+    // Check if the card is inside any container using DOM positions
+    const intersectingContainerId = checkContainerIntersection(
+      id, 
+      { 
+        x: x.get(), 
+        y: y.get(), 
+        width: cardWidth, 
+        height: cardHeight 
+      },
+      cardRef
+    );
+    
+    // Log for debugging
+    console.log('Card position:', { 
+      cardRect,
+      cssPosition: { x: x.get(), y: y.get() } 
     });
     
     // Update the container assignment
     setCurrentContainerId(intersectingContainerId);
     
-    // If inside a container, snap to it (center of container)
+    // If inside a container, let the page handle any container-specific snap behavior
     if (intersectingContainerId) {
-      // A container-specific snap will be handled by the demo page
       return;
     }
     
     // Otherwise, use regular snap points if enabled
     if (snapPoints && snapPoints.length > 0) {
       // Find the closest snap point
-      let closestPoint = { x: currentX, y: currentY };
+      let closestPoint = { x: x.get(), y: y.get() };
       let minDistance = Number.MAX_VALUE;
       
       snapPoints.forEach(point => {
         const distance = Math.sqrt(
-          Math.pow(currentX - point.x, 2) + 
-          Math.pow(currentY - point.y, 2)
+          Math.pow(x.get() - point.x, 2) + 
+          Math.pow(y.get() - point.y, 2)
         );
         
         if (distance < minDistance) {
@@ -262,7 +266,7 @@ export const EnhancedDraggableCardBody = ({
     const dragVelocityY = info.velocity.y * 0.05;
     
     // Apply gentle physics deceleration
-    animate(x, currentX + dragVelocityX, {
+    animate(x, x.get() + dragVelocityX, {
       type: "spring",
       stiffness: 300,
       damping: 25,
@@ -270,21 +274,21 @@ export const EnhancedDraggableCardBody = ({
         if (isNaN(latest) || !isFinite(latest)) {
           // Fallback to last valid position if calculation went wrong
           x.set(lastValidPos.x);
-          updatePosition(id, { x: lastValidPos.x, y: y.get() });
+          updatePosition(id, { x: lastValidPos.x });
           if (onPositionChange) {
             onPositionChange({ x: lastValidPos.x, y: y.get() });
           }
           return;
         }
         
-        updatePosition(id, { x: latest, y: y.get() });
+        updatePosition(id, { x: latest });
         if (onPositionChange) {
           onPositionChange({ x: latest, y: y.get() });
         }
       },
     });
     
-    animate(y, currentY + dragVelocityY, {
+    animate(y, y.get() + dragVelocityY, {
       type: "spring",
       stiffness: 300,
       damping: 25,
@@ -292,20 +296,26 @@ export const EnhancedDraggableCardBody = ({
         if (isNaN(latest) || !isFinite(latest)) {
           // Fallback to last valid position if calculation went wrong
           y.set(lastValidPos.y);
-          updatePosition(id, { x: x.get(), y: lastValidPos.y });
+          updatePosition(id, { y: lastValidPos.y });
           if (onPositionChange) {
             onPositionChange({ x: x.get(), y: lastValidPos.y });
           }
           return;
         }
         
-        updatePosition(id, { x: x.get(), y: latest });
+        updatePosition(id, { y: latest });
         if (onPositionChange) {
           onPositionChange({ x: x.get(), y: latest });
         }
       },
     });
   }, [controls, id, lastValidPos.x, lastValidPos.y, onPositionChange, snapPoints, springConfig, updatePosition, x, y, checkContainerIntersection]);
+
+  // Reset the velocity after a release
+  const decelerate = useCallback(() => {
+    mouseX.set(0);
+    mouseY.set(0);
+  }, [mouseX, mouseY]);
 
   return (
     <div ref={containerRef} className={cn("[perspective:3000px]", className)}>
@@ -372,55 +382,87 @@ export interface DropContainerProps {
   onCardAssigned?: (cardId: string) => void;
 }
 
-export const DropContainer = ({ 
+export const DropContainer: React.FC<DropContainerProps> = ({ 
   id, 
-  label,
-  className, 
+  label, 
   children,
-  onCardAssigned
-}: DropContainerProps) => {
+  className
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { registerContainer, unregisterContainer, updateContainerBounds } = useDraggableCard();
   
-  // Register container and update bounds when mounted or resized
+  const updateBounds = useCallback(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      
+      // Ensure we're using viewport-relative coordinates for consistent positioning
+      updateContainerBounds(id, {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom
+      });
+    }
+  }, [id, updateContainerBounds]);
+  
+  // Register the container when mounted
   useEffect(() => {
-    const updateBounds = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const bounds = {
-          left: rect.left,
-          top: rect.top,
-          right: rect.right,
-          bottom: rect.bottom
-        };
-        
-        registerContainer(id, label, bounds);
-        updateContainerBounds(id, bounds);
-      }
-    };
-    
-    // Initial registration
-    updateBounds();
-    
-    // Update on resize
+    if (containerRef.current) {
+      registerContainer(id, {
+        bounds: {
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0
+        },
+        label: label || id
+      });
+      
+      // Update bounds after registration
+      updateBounds();
+      
+      // Clean up on unmount
+      return () => unregisterContainer(id);
+    }
+  }, [id, label, registerContainer, unregisterContainer, updateBounds]);
+  
+  // Update bounds more aggressively to ensure accurate positioning
+  useEffect(() => {
+    // Update bounds on all relevant events
     window.addEventListener('resize', updateBounds);
+    document.addEventListener('scroll', updateBounds, true);
     
-    // Cleanup
+    // Create an intersection observer to detect when container becomes visible
+    const observer = new IntersectionObserver(updateBounds, { threshold: 0.1 });
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
+    // Update bounds periodically to catch any layout changes
+    const interval = setInterval(updateBounds, 500);
+    
+    // Initial updates at staggered intervals for various layout timings
+    setTimeout(updateBounds, 0);
+    setTimeout(updateBounds, 100);
+    setTimeout(updateBounds, 500);
+    
     return () => {
       window.removeEventListener('resize', updateBounds);
-      unregisterContainer(id);
+      document.removeEventListener('scroll', updateBounds, true);
+      clearInterval(interval);
+      observer.disconnect();
     };
-  }, [id, label, registerContainer, unregisterContainer, updateContainerBounds]);
+  }, [updateBounds]);
   
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className={cn(
-        "border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-4 min-h-[400px] bg-gray-50 dark:bg-gray-800/50",
+        "p-4 bg-white dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 min-h-[250px] relative z-0 shadow-sm",
         className
       )}
     >
-      <div className="font-medium text-gray-700 dark:text-gray-300 mb-2">{label}</div>
+      <div className="font-medium text-lg mb-2 text-gray-800 dark:text-gray-200">{label || id}</div>
       {children}
     </div>
   );
