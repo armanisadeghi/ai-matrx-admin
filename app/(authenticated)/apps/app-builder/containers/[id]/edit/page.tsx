@@ -22,7 +22,7 @@ import {
 import { 
   fetchContainerByIdThunk,
   saveContainerThunk,
-  addFieldThunk,
+  addFieldAndCompileContainerThunk,
   removeFieldThunk,
   moveFieldUpThunk,
   moveFieldDownThunk,

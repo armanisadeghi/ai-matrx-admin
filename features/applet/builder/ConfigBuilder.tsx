@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, ReactNode } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Stepper } from "@/features/applet/builder/steps/Stepper";
+import { Stepper } from "@/features/applet/builder/parts/Stepper";
+import { StepperFooter } from "@/features/applet/builder/parts/StepperFooter";
 import { AppConfigStep } from "@/features/applet/builder/steps/AppConfigStep";
 import { AppletsConfigStep } from "@/features/applet/builder/steps/AppletsConfigStep";
 import { GroupsConfigStep } from "@/features/applet/builder/steps/GroupsConfigStep";
@@ -14,18 +14,26 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import { selectAppById, selectAppLoading, selectAppError, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
-import { CustomAppConfig, CustomAppletConfig } from "@/features/applet/builder/builder.types";
+import { selectAppLoading, selectAppError, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
+import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 import AppBuilderDebugOverlay from "@/components/admin/AppBuilderDebugOverlay";
-import { selectAppletError, selectAppletLoading, selectAppletsByAppId, selectHasUnsavedAppletChanges } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { selectContainerError, selectContainerLoading, selectHasUnsavedContainerChanges } from "@/lib/redux/app-builder/selectors/containerSelectors";
+import {
+    selectAppletError,
+    selectAppletLoading,
+    selectAppletsByAppId,
+    selectHasUnsavedAppletChanges,
+} from "@/lib/redux/app-builder/selectors/appletSelectors";
+import {
+    selectContainerError,
+    selectContainerLoading,
+    selectHasUnsavedContainerChanges,
+} from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { selectFieldError, selectFieldLoading, selectHasUnsavedFieldChanges } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { v4 as uuidv4 } from "uuid";
 import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import SourceConfigStep from "@/features/applet/builder/steps/SourceConfigStep";
-
 
 // Interface for step completion and validation
 interface StepCompletion {
@@ -56,6 +64,11 @@ export const ConfigBuilder = () => {
     const [isCompiling, setIsCompiling] = useState(false);
     const [compilingErrors, setCompilingErrors] = useState<string[]>([]);
 
+    // Add a state for action feedback
+    const [actionFeedback, setActionFeedback] = useState<{
+        message: string;
+        type: "success" | "error" | "info" | "warning";
+    } | null>(null);
 
     const allAppApplets = useAppSelector((state) => selectAppletsByAppId(state, selectedAppId)) as AppletBuilder[];
 
@@ -81,17 +94,15 @@ export const ConfigBuilder = () => {
     // Applet state
     const [activeApplet, setActiveApplet] = useState<string | null>(null);
 
-
     const steps = [
         { id: "select-app", title: "Select App", description: "Create new or select existing" },
         { id: "app-info", title: "Configure App", description: "Basic information about your app" },
         { id: "applets-config", title: "Add Applets", description: "Define & Configure Applets" },
+        { id: "source-config", title: "Add Intelligence", description: "Connect to Intelligence sources" },
         { id: "groups-config", title: "Add Containers", description: "Create groups of Custom Fields" },
         { id: "fields-config", title: "Add Fields", description: "Define fields for each Container" },
-        { id: "source-config", title: "Add Intelligence", description: "Connect to Intelligence sources" },
         { id: "preview", title: "Deploy App", description: "Finalize & Launch your app" },
     ];
-
 
     const handleCreateNewApp = () => {
         const newAppId = uuidv4();
@@ -112,7 +123,12 @@ export const ConfigBuilder = () => {
         } else if (activeStep === 4) {
             setActiveStep(5);
         } else if (activeStep === 5) {
+            setActionFeedback({
+                message: "Preparing to compile your app...",
+                type: "info",
+            });
             await recompileAllApplets();
+            // The feedback message will be updated in the recompileAllApplets function
         } else if (activeStep < steps.length - 1) {
             setActiveStep(activeStep + 1);
         }
@@ -120,10 +136,14 @@ export const ConfigBuilder = () => {
 
     const recompileAllApplets = async () => {
         if (!selectedAppId || !allAppApplets.length) {
+            setActionFeedback({
+                message: "No applets found to compile",
+                type: "error",
+            });
             toast({
                 title: "No applets found",
                 description: "There are no applets to compile for this app.",
-                variant: "destructive"
+                variant: "destructive",
             });
             return;
         }
@@ -131,48 +151,69 @@ export const ConfigBuilder = () => {
         try {
             setIsCompiling(true);
             setCompilingErrors([]);
-            
+
+            setActionFeedback({
+                message: "Compiling your app, please wait...",
+                type: "info",
+            });
+
             // Show toast to indicate compilation is starting
             toast({
                 title: "Compiling Your App",
-                description: "Please wait while we compile all applets..."
+                description: "Please wait while we compile all applets...",
             });
-            
+
             // Create array of promises for all recompile operations
-            const recompilePromises = allAppApplets.map(applet => 
-                dispatch(recompileAppletThunk(applet.id)).unwrap()
-                    .catch(error => {
+            const recompilePromises = allAppApplets.map((applet) =>
+                dispatch(recompileAppletThunk(applet.id))
+                    .unwrap()
+                    .catch((error) => {
                         // Track individual applet compilation errors
-                        setCompilingErrors(prev => [...prev, `Failed to compile ${applet.name || applet.id}: ${error.message || 'Unknown error'}`]);
+                        setCompilingErrors((prev) => [
+                            ...prev,
+                            `Failed to compile ${applet.name || applet.id}: ${error.message || "Unknown error"}`,
+                        ]);
                         return null;
                     })
             );
-            
+
             // Wait for all recompilations to complete
             const results = await Promise.all(recompilePromises);
-            
+
             // Check if any compilation failed
             if (compilingErrors.length > 0) {
+                setActionFeedback({
+                    message: "Compilation failed. Check the errors above.",
+                    type: "error",
+                });
                 toast({
                     title: "Compilation Failed",
                     description: `Failed to compile some applets. Please check the errors and try again.`,
-                    variant: "destructive"
+                    variant: "destructive",
                 });
                 return;
             }
-            
+
             // Success case, move to the next step
+            setActionFeedback({
+                message: "Compilation successful! Your app is ready.",
+                type: "success",
+            });
             toast({
                 title: "Compilation Complete",
-                description: "Your app is ready for preview!"
+                description: "Your app is ready for preview!",
             });
-            
+
             setActiveStep(activeStep + 1);
         } catch (error: any) {
+            setActionFeedback({
+                message: error.message || "Compilation failed unexpectedly",
+                type: "error",
+            });
             toast({
                 title: "Compilation Failed",
                 description: error.message || "An unexpected error occurred during compilation.",
-                variant: "destructive"
+                variant: "destructive",
             });
         } finally {
             setIsCompiling(false);
@@ -208,17 +249,17 @@ export const ConfigBuilder = () => {
     const updateStepCompletion = (stepIndex: number, completion: Partial<StepCompletion>) => {
         // Use a function form to ensure we're working with the latest state
         // and to prevent unnecessary re-renders
-        setStepCompletions(prev => {
+        setStepCompletions((prev) => {
             // Check if the values are actually different before updating state
             const current = prev[stepIndex];
-            const hasChanges = 
+            const hasChanges =
                 completion.isComplete !== current.isComplete ||
                 completion.canProceed !== current.canProceed ||
                 completion.message !== current.message;
-            
+
             // Only update state if there are actual changes
             if (!hasChanges) return prev;
-            
+
             const updated = [...prev];
             updated[stepIndex] = { ...updated[stepIndex], ...completion };
             return updated;
@@ -228,7 +269,7 @@ export const ConfigBuilder = () => {
     // Error display component
     const renderCompilationErrors = () => {
         if (compilingErrors.length === 0) return null;
-        
+
         return (
             <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
                 <h3 className="text-red-600 dark:text-red-400 font-medium mb-2">Compilation Errors:</h3>
@@ -241,71 +282,31 @@ export const ConfigBuilder = () => {
         );
     };
 
-    // Footer rendering with conditional reset button and additional buttons
-    const renderFooter = () => {
-        const currentStepCompletion = stepCompletions[activeStep];
-        const footerButtons = currentStepCompletion?.footerButtons;
-        const statusMessage = currentStepCompletion?.message;
+    // Handle app launch
+    const handleLaunchApp = () => {
+        if (!selectedAppId) {
+            toast({
+                title: "No App Selected",
+                description: "Cannot launch an app that hasn't been selected.",
+                variant: "destructive",
+            });
+            return;
+        }
 
-        return (
-            <CardFooter className="flex flex-col md:flex-row space-y-3 md:space-y-0 pb-6">
-                <div className="w-full md:w-1/3 flex items-center">
-                    {activeStep > 0 ? (
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={handleBack}
-                                disabled={isLoading}
-                                className="border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
-                            >
-                                Back
-                            </Button>
-                            {activeStep > 0 && (
-                                <Button
-                                    variant="ghost"
-                                    onClick={resetToSelectStep}
-                                    disabled={isLoading}
-                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 border border-gray-200 dark:border-gray-700"
-                                >
-                                    Select Different App
-                                </Button>
-                            )}
-                        </div>
-                    ) : (
-                        <div></div>
-                    )}
-                </div>
+        setActionFeedback({
+            message: "Launching your app...",
+            type: "info",
+        });
 
-                {/* Status Message */}
-                <div className="w-full md:w-1/3 text-center">
-                    {statusMessage && (
-                        <p className={`text-sm ${!currentStepCompletion?.canProceed ? "text-amber-600 dark:text-amber-400" : "text-blue-600 dark:text-blue-400"}`}>
-                            {statusMessage}
-                        </p>
-                    )}
-                </div>
+        // Here you'd normally redirect to the app or perform some launch action
+        toast({
+            title: "App Launch Initiated",
+            description: "Your app is being launched in a new window.",
+        });
 
-                <div className="w-full md:w-1/3 flex justify-end gap-2 items-center">
-                    {/* Additional button area - render any step-specific buttons */}
-                    {footerButtons}
-                    
-                    <Button
-                        onClick={handleNext}
-                        disabled={
-                            activeStep === steps.length - 1 || 
-                            isLoading || 
-                            !selectedAppId || 
-                            !currentStepCompletion?.canProceed
-                        }
-                        className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white"
-                    >
-                        {activeStep === steps.length - 2 ? "Preview" : "Next"}
-                    </Button>
-                </div>
-            </CardFooter>
-        );
+        // Open the app in a new window/tab (placeholder URL - update with actual URL)
+        window.open(`/app/${selectedAppId}/view`, "_blank");
     };
-
 
     return (
         <div className="w-full h-full px-4 bg-white dark:bg-gray-900">
@@ -325,6 +326,22 @@ export const ConfigBuilder = () => {
                                 }
                             }}
                         />
+
+                        {actionFeedback && (
+                            <div
+                                className={`mt-4 p-3 rounded-md ${
+                                    actionFeedback.type === "success"
+                                        ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300"
+                                        : actionFeedback.type === "error"
+                                        ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300"
+                                        : actionFeedback.type === "warning"
+                                        ? "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300"
+                                        : "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300"
+                                }`}
+                            >
+                                <p>{actionFeedback.message}</p>
+                            </div>
+                        )}
 
                         <div className="mt-8 relative">
                             {isLoading && (
@@ -350,7 +367,7 @@ export const ConfigBuilder = () => {
                             )}
 
                             {activeStep === 1 && (
-                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
+                                <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
                                     <AppConfigStep
                                         appId={selectedAppId}
                                         onAppSaved={handleAppSaved}
@@ -360,36 +377,35 @@ export const ConfigBuilder = () => {
                             )}
 
                             {activeStep === 2 && (
-                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
-                                    <AppletsConfigStep 
-                                        appId={selectedAppId} 
+                                <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
+                                    <AppletsConfigStep
+                                        appId={selectedAppId}
                                         onUpdateCompletion={(completion) => updateStepCompletion(2, completion)}
                                     />
                                 </div>
                             )}
 
                             {activeStep === 3 && (
-                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
-                                    <GroupsConfigStep 
-                                        appId={selectedAppId} 
+                                <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
+                                    <SourceConfigStep
+                                        appId={selectedAppId}
                                         onUpdateCompletion={(completion) => updateStepCompletion(3, completion)}
                                     />
                                 </div>
                             )}
-
                             {activeStep === 4 && (
-                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
-                                    <FieldsConfigStep 
-                                        appId={selectedAppId} 
+                                <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
+                                    <GroupsConfigStep
+                                        appId={selectedAppId}
                                         onUpdateCompletion={(completion) => updateStepCompletion(4, completion)}
                                     />
                                 </div>
                             )}
 
                             {activeStep === 5 && (
-                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
-                                    <SourceConfigStep 
-                                        appId={selectedAppId} 
+                                <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
+                                    <FieldsConfigStep
+                                        appId={selectedAppId}
                                         onUpdateCompletion={(completion) => updateStepCompletion(5, completion)}
                                     />
                                 </div>
@@ -397,17 +413,33 @@ export const ConfigBuilder = () => {
 
                             {/* PreviewConfig has been updated to use Redux directly and only needs an appId */}
                             {activeStep === 6 && (
-                                <div className="w-full rounded-3xl shadow-lg border border-emerald-200 dark:border-emerald-700">
-                                    <PreviewConfig 
+                                <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
+                                    <PreviewConfig
                                         appId={selectedAppId}
                                         onUpdateCompletion={(completion) => updateStepCompletion(6, completion)}
                                     />
                                 </div>
                             )}
                         </div>
-                        
                     </CardContent>
-                    {renderFooter()}
+                    <StepperFooter
+                        activeStep={activeStep}
+                        totalSteps={steps.length}
+                        currentStepCompletion={stepCompletions[activeStep]}
+                        selectedAppId={selectedAppId}
+                        isLoading={isLoading}
+                        onNext={handleNext}
+                        onBack={handleBack}
+                        onReset={resetToSelectStep}
+                        onLaunchApp={handleLaunchApp}
+                        showLaunchButton={activeStep === steps.length - 1}
+                        backButtonText="Back"
+                        resetButtonText="Select Different App"
+                        nextButtonText="Next"
+                        finalStepButtonText="Finish"
+                        secondToLastStepButtonText="Compile & Preview"
+                        launchButtonText="Launch App"
+                    />
                 </Card>
             </div>
             <Toaster />

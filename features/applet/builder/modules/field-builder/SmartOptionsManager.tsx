@@ -77,7 +77,7 @@ const SmartOptionsManager: React.FC<SmartOptionsManagerProps> = ({ fieldId }) =>
   return (
     <div className="space-y-3 pt-2 w-full">
       <div className="flex justify-between items-center">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Component Options</h3>
+        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">Options</h3>
       </div>
       
       <div className="space-y-2">

@@ -1,9 +1,7 @@
 "use client";
 import React, { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { classColorOptions } from "@/components/official/styles";
-
-
+import { createCardStyles } from "@/components/official/styles";
 
 interface SectionCardProps {
     title: string;
@@ -15,7 +13,8 @@ interface SectionCardProps {
     gridGap?: string; // Gap between grid items
     autoGrid?: boolean; // Whether to enable auto grid or not
     headerActions?: ReactNode; // Add header actions support for buttons
-    color?: keyof typeof classColorOptions;
+    color?: string;
+    spacing?: string;
 }
 
 const SectionCard: React.FC<SectionCardProps> = ({
@@ -29,11 +28,11 @@ const SectionCard: React.FC<SectionCardProps> = ({
     autoGrid = false,
     headerActions,
     color = "rose",
+    spacing = "default"
 }) => {
     
     const getGridClasses = () => {
         if (!autoGrid) return "";
-
         // Tailwind grid classes based on columns
         const gridColsClass =
             {
@@ -44,15 +43,14 @@ const SectionCard: React.FC<SectionCardProps> = ({
                 5: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5",
                 6: "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6",
             }[gridCols] || "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
-
         return `grid ${gridColsClass} gap-${gridGap}`;
     };
-
+    
+    // Updated to use the new createCardStyles function
     const getCardClasses = () => {
-        return classColorOptions[color];
+        return createCardStyles({ color, spacing });
     };
     
-
     return (
         <Card className={getCardClasses().card}>
             <CardHeader className={getCardClasses().cardHeader}>

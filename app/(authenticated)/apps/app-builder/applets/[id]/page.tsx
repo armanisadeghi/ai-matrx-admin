@@ -13,7 +13,6 @@ import {
   selectAppletPrimaryColor,
   selectAppletAccentColor
 } from '@/lib/redux/app-builder/selectors/appletSelectors';
-import { setActiveApplet } from '@/lib/redux/app-builder/slices/appletBuilderSlice';
 import { setActiveAppletWithFetchThunk } from '@/lib/redux/app-builder/thunks/appletBuilderThunks';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';

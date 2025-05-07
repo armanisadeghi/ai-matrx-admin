@@ -10,7 +10,7 @@ import {
     checkAppletSlugUniqueness,
     saveAppletThunk,
     addAppletToAppThunk,
-    FetchAppletByIdSuccessAction
+    FetchAppletByIdSuccessAction,
 } from "../thunks/appletBuilderThunks";
 import { saveContainerAndUpdateAppletThunk } from "../thunks/containerBuilderThunks";
 import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
@@ -27,7 +27,7 @@ const checkAppletExists = (state: AppletsState, id: string): boolean => {
     }
     return true;
 };
-// Default applet configuration
+
 export const DEFAULT_APPLET: Partial<AppletBuilder> = {
     name: "",
     description: "",
@@ -39,14 +39,16 @@ export const DEFAULT_APPLET: Partial<AppletBuilder> = {
     accentColor: "rose",
     layoutType: "open",
     containers: [],
-    dataSourceConfig: {},
+    dataSourceConfig: {
+        sourceConfig: [],
+        brokerMappings: [],
+    },
     resultComponentConfig: {},
     nextStepConfig: {},
     compiledRecipeId: "",
     subcategoryId: "",
     imageUrl: "",
     appId: "",
-    brokerMappings: [],
     isPublic: false,
     authenticatedRead: true,
     publicRead: false,
@@ -91,7 +93,7 @@ export const appletBuilderSlice = createSlice({
         cancelNewApplet: (state, action: PayloadAction<string>) => {
             const id = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             if (state.applets[id].isLocal) {
                 delete state.applets[id];
                 if (state.newAppletId === id) {
@@ -114,161 +116,286 @@ export const appletBuilderSlice = createSlice({
         setName: (state, action: PayloadAction<{ id: string; name: string }>) => {
             const { id, name } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], name, isDirty: true };
         },
         setDescription: (state, action: PayloadAction<{ id: string; description?: string }>) => {
             const { id, description } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], description, isDirty: true };
         },
         setSlug: (state, action: PayloadAction<{ id: string; slug: string }>) => {
             const { id, slug } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], slug, isDirty: true, slugStatus: "unchecked" };
         },
         setAppletIcon: (state, action: PayloadAction<{ id: string; appletIcon?: string }>) => {
             const { id, appletIcon } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], appletIcon, isDirty: true };
         },
         setAppletSubmitText: (state, action: PayloadAction<{ id: string; appletSubmitText?: string }>) => {
             const { id, appletSubmitText } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], appletSubmitText, isDirty: true };
         },
         setCreator: (state, action: PayloadAction<{ id: string; creator?: string }>) => {
             const { id, creator } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], creator, isDirty: true };
         },
         setPrimaryColor: (state, action: PayloadAction<{ id: string; primaryColor?: string }>) => {
             const { id, primaryColor } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], primaryColor, isDirty: true };
         },
         setAccentColor: (state, action: PayloadAction<{ id: string; accentColor?: string }>) => {
             const { id, accentColor } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], accentColor, isDirty: true };
         },
         setLayoutType: (state, action: PayloadAction<{ id: string; layoutType?: AppletLayoutOption }>) => {
             const { id, layoutType } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], layoutType, isDirty: true };
         },
         setDataSourceConfig: (state, action: PayloadAction<{ id: string; dataSourceConfig?: SourceConfig }>) => {
             const { id, dataSourceConfig } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], dataSourceConfig, isDirty: true };
+        },
+        setSourceConfig: (state, action: PayloadAction<{ id: string; sourceConfig?: AppletSourceConfig[] }>) => {
+            const { id, sourceConfig } = action.payload;
+            if (!checkAppletExists(state, id)) return;
+            
+            state.applets[id] = { 
+                ...state.applets[id], 
+                dataSourceConfig: {
+                    ...state.applets[id].dataSourceConfig,
+                    sourceConfig
+                },
+                isDirty: true 
+            };
+        },
+        addSourceConfig: (state, action: PayloadAction<{ id: string; sourceConfig: AppletSourceConfig }>) => {
+            const { id, sourceConfig } = action.payload;
+            if (!checkAppletExists(state, id)) return;
+            
+            const currentSourceConfigs = state.applets[id].dataSourceConfig?.sourceConfig || [];
+            const existingIndex = currentSourceConfigs.findIndex(
+                config => config.config.id === sourceConfig.config.id && config.sourceType === sourceConfig.sourceType
+            );
+            
+            if (existingIndex !== -1) {
+                // Replace existing config with same ID and sourceType
+                const updatedSourceConfigs = [...currentSourceConfigs];
+                updatedSourceConfigs[existingIndex] = sourceConfig;
+                
+                state.applets[id] = { 
+                    ...state.applets[id], 
+                    dataSourceConfig: {
+                        ...state.applets[id].dataSourceConfig,
+                        sourceConfig: updatedSourceConfigs
+                    },
+                    isDirty: true 
+                };
+            } else {
+                // Add new source config
+                state.applets[id] = { 
+                    ...state.applets[id], 
+                    dataSourceConfig: {
+                        ...state.applets[id].dataSourceConfig,
+                        sourceConfig: [...currentSourceConfigs, sourceConfig]
+                    },
+                    isDirty: true 
+                };
+            }
+        },
+        removeSourceConfig: (state, action: PayloadAction<{ id: string; configId: string }>) => {
+            const { id, configId } = action.payload;
+            if (!checkAppletExists(state, id)) return;
+            
+            const currentSourceConfigs = state.applets[id].dataSourceConfig?.sourceConfig || [];
+            const filteredSourceConfigs = currentSourceConfigs.filter(config => config.config.id !== configId);
+            
+            if (filteredSourceConfigs.length !== currentSourceConfigs.length) {
+                state.applets[id] = { 
+                    ...state.applets[id], 
+                    dataSourceConfig: {
+                        ...state.applets[id].dataSourceConfig,
+                        sourceConfig: filteredSourceConfigs
+                    },
+                    isDirty: true 
+                };
+            }
         },
         setResultComponentConfig: (state, action: PayloadAction<{ id: string; resultComponentConfig?: any }>) => {
             const { id, resultComponentConfig } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], resultComponentConfig, isDirty: true };
         },
         setNextStepConfig: (state, action: PayloadAction<{ id: string; nextStepConfig?: any }>) => {
             const { id, nextStepConfig } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], nextStepConfig, isDirty: true };
         },
         setCompiledRecipeId: (state, action: PayloadAction<{ id: string; compiledRecipeId?: string }>) => {
             const { id, compiledRecipeId } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], compiledRecipeId, isDirty: true };
         },
         setSubcategoryId: (state, action: PayloadAction<{ id: string; subcategoryId?: string }>) => {
             const { id, subcategoryId } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], subcategoryId, isDirty: true };
         },
         setImageUrl: (state, action: PayloadAction<{ id: string; imageUrl?: string }>) => {
             const { id, imageUrl } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], imageUrl, isDirty: true };
         },
         setAppId: (state, action: PayloadAction<{ id: string; appId?: string }>) => {
             const { id, appId } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], appId, isDirty: true };
         },
         setBrokerMappings: (state, action: PayloadAction<{ id: string; brokerMappings?: BrokerMapping[] }>) => {
             const { id, brokerMappings } = action.payload;
             if (!checkAppletExists(state, id)) return;
+
+            state.applets[id] = { 
+                ...state.applets[id], 
+                dataSourceConfig: {
+                    ...state.applets[id].dataSourceConfig,
+                    brokerMappings
+                },
+                isDirty: true 
+            };
+        },
+        addBrokerMapping: (state, action: PayloadAction<{ id: string; brokerMapping: BrokerMapping }>) => {
+            const { id, brokerMapping } = action.payload;
+            if (!checkAppletExists(state, id)) return;
             
-            state.applets[id] = { ...state.applets[id], brokerMappings, isDirty: true };
+            const currentMappings = state.applets[id].dataSourceConfig?.brokerMappings || [];
+            const existingIndex = currentMappings.findIndex(mapping => mapping.brokerId === brokerMapping.brokerId);
+            
+            if (existingIndex !== -1) {
+                // Replace the existing mapping with the same brokerId
+                const updatedMappings = [...currentMappings];
+                updatedMappings[existingIndex] = brokerMapping;
+                
+                state.applets[id] = { 
+                    ...state.applets[id], 
+                    dataSourceConfig: {
+                        ...state.applets[id].dataSourceConfig,
+                        brokerMappings: updatedMappings
+                    },
+                    isDirty: true 
+                };
+            } else {
+                // Add new mapping
+                state.applets[id] = { 
+                    ...state.applets[id], 
+                    dataSourceConfig: {
+                        ...state.applets[id].dataSourceConfig,
+                        brokerMappings: [...currentMappings, brokerMapping]
+                    },
+                    isDirty: true 
+                };
+            }
+        },
+        removeBrokerMapping: (state, action: PayloadAction<{ id: string; brokerId: string }>) => {
+            const { id, brokerId } = action.payload;
+            if (!checkAppletExists(state, id)) return;
+            
+            const currentMappings = state.applets[id].dataSourceConfig?.brokerMappings || [];
+            const filteredMappings = currentMappings.filter(mapping => mapping.brokerId !== brokerId);
+            
+            if (filteredMappings.length !== currentMappings.length) {
+                state.applets[id] = { 
+                    ...state.applets[id], 
+                    dataSourceConfig: {
+                        ...state.applets[id].dataSourceConfig,
+                        brokerMappings: filteredMappings
+                    },
+                    isDirty: true 
+                };
+            }
         },
         setIsPublic: (state, action: PayloadAction<{ id: string; isPublic?: boolean }>) => {
             const { id, isPublic } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], isPublic, isDirty: true };
         },
         setAuthenticatedRead: (state, action: PayloadAction<{ id: string; authenticatedRead?: boolean }>) => {
             const { id, authenticatedRead } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], authenticatedRead, isDirty: true };
         },
         setPublicRead: (state, action: PayloadAction<{ id: string; publicRead?: boolean }>) => {
             const { id, publicRead } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], publicRead, isDirty: true };
         },
         setIsDirty: (state, action: PayloadAction<{ id: string; isDirty?: boolean }>) => {
             const { id, isDirty } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], isDirty };
         },
         setIsLocal: (state, action: PayloadAction<{ id: string; isLocal?: boolean }>) => {
             const { id, isLocal } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], isLocal };
         },
-        setSlugStatus: (state, action: PayloadAction<{ id: string; slugStatus: 'unchecked' | 'unique' | 'notUnique' }>) => {
+        setSlugStatus: (state, action: PayloadAction<{ id: string; slugStatus: "unchecked" | "unique" | "notUnique" }>) => {
             const { id, slugStatus } = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             state.applets[id] = { ...state.applets[id], slugStatus, isDirty: true };
         },
         // Container management actions
         addContainer: (state, action: PayloadAction<{ appletId: string; container: ContainerBuilder }>) => {
             const { appletId, container } = action.payload;
             if (!checkAppletExists(state, appletId)) return;
-            
+
             state.applets[appletId].containers = [...state.applets[appletId].containers, container];
             state.applets[appletId].isDirty = true;
         },
         removeContainer: (state, action: PayloadAction<{ appletId: string; containerId: string }>) => {
             const { appletId, containerId } = action.payload;
             if (!checkAppletExists(state, appletId)) return;
-            
-            state.applets[appletId].containers = state.applets[appletId].containers.filter(c => c.id !== containerId);
+
+            state.applets[appletId].containers = state.applets[appletId].containers.filter((c) => c.id !== containerId);
             state.applets[appletId].isDirty = true;
         },
-        recompileContainer: (state, action: PayloadAction<{ appletId: string; containerId: string; updatedContainer: ContainerBuilder }>) => {
+        recompileContainer: (
+            state,
+            action: PayloadAction<{ appletId: string; containerId: string; updatedContainer: ContainerBuilder }>
+        ) => {
             const { appletId, containerId, updatedContainer } = action.payload;
             if (!checkAppletExists(state, appletId)) return;
-            
-            const containerIndex = state.applets[appletId].containers.findIndex(c => c.id === containerId);
+
+            const containerIndex = state.applets[appletId].containers.findIndex((c) => c.id === containerId);
             if (containerIndex >= 0) {
                 state.applets[appletId].containers[containerIndex] = updatedContainer;
                 state.applets[appletId].isDirty = true;
@@ -280,7 +407,7 @@ export const appletBuilderSlice = createSlice({
         deleteApplet: (state, action: PayloadAction<string>) => {
             const id = action.payload;
             if (!checkAppletExists(state, id)) return;
-            
+
             delete state.applets[id];
             if (state.activeAppletId === id) {
                 state.activeAppletId = null;
@@ -304,7 +431,15 @@ export const appletBuilderSlice = createSlice({
         setTempAppletSourceConfig: (state, action: PayloadAction<AppletSourceConfig | null>) => {
             const sourceConfig = action.payload;
             if (sourceConfig) {
-                state.tempSourceConfigList.push(sourceConfig);
+                const existingIndex = state.tempSourceConfigList.findIndex(
+                    (config) => config.config.id === sourceConfig.config.id && config.sourceType === sourceConfig.sourceType
+                );
+
+                if (existingIndex === -1) {
+                    state.tempSourceConfigList.push(sourceConfig);
+                } else {
+                    state.tempSourceConfigList[existingIndex] = sourceConfig;
+                }
             } else {
                 state.error = "Failed to set temp source config";
             }
@@ -322,7 +457,7 @@ export const appletBuilderSlice = createSlice({
                 state.applets[appletId] = {
                     ...action.payload,
                     isDirty: false,
-                    isLocal: false
+                    isLocal: false,
                 };
             }
             state.isLoading = false;
@@ -338,32 +473,32 @@ export const appletBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(saveAppletThunk.fulfilled, (state, action) => {
-            const oldId = state.activeAppletId; 
+            const oldId = state.activeAppletId;
             const newId = action.payload.id;
-            
+
             // Handle case where local ID is replaced with server ID
             if (oldId && oldId !== newId) {
                 // If the saved applet had a temporary ID, we need to remove the temp entry
                 delete state.applets[oldId];
-                
+
                 // Update active and new applet IDs to the new server-generated ID
                 if (state.activeAppletId === oldId) {
                     state.activeAppletId = newId;
                 }
-                
+
                 if (state.newAppletId === oldId) {
                     state.newAppletId = null; // No longer a "new" applet
                 }
             }
-            
+
             // Update the applet with server data
-            state.applets[newId] = { 
-                ...action.payload, 
-                isDirty: false, 
-                isLocal: false, 
-                slugStatus: 'unique' 
+            state.applets[newId] = {
+                ...action.payload,
+                isDirty: false,
+                isLocal: false,
+                slugStatus: "unique",
             };
-            
+
             state.isLoading = false;
         });
         builder.addCase(saveAppletThunk.rejected, (state, action) => {
@@ -377,7 +512,7 @@ export const appletBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(createAppletThunk.fulfilled, (state, action) => {
-            state.applets[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: 'unique' };
+            state.applets[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: "unique" };
             if (state.newAppletId) {
                 delete state.applets[state.newAppletId];
                 state.newAppletId = null;
@@ -396,7 +531,7 @@ export const appletBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(updateAppletThunk.fulfilled, (state, action) => {
-            state.applets[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: 'unique' };
+            state.applets[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: "unique" };
             state.isLoading = false;
         });
         builder.addCase(updateAppletThunk.rejected, (state, action) => {
@@ -447,7 +582,7 @@ export const appletBuilderSlice = createSlice({
         builder.addCase(removeContainerThunk.fulfilled, (state, action) => {
             const { appletId, containerId } = action.meta.arg;
             if (state.applets[appletId]) {
-                state.applets[appletId].containers = state.applets[appletId].containers.filter(c => c.id !== containerId);
+                state.applets[appletId].containers = state.applets[appletId].containers.filter((c) => c.id !== containerId);
                 state.applets[appletId].isDirty = true;
             }
             state.isLoading = false;
@@ -478,7 +613,7 @@ export const appletBuilderSlice = createSlice({
         });
         builder.addCase(fetchAppletsThunk.fulfilled, (state, action) => {
             state.applets = action.payload.reduce((acc, applet) => {
-                acc[applet.id] = { ...applet, isDirty: false, isLocal: false, slugStatus: 'unique' };
+                acc[applet.id] = { ...applet, isDirty: false, isLocal: false, slugStatus: "unique" };
                 return acc;
             }, {} as Record<string, AppletBuilder>);
             state.isLoading = false;
@@ -495,11 +630,11 @@ export const appletBuilderSlice = createSlice({
         builder.addCase(checkAppletSlugUniqueness.fulfilled, (state, action) => {
             const { slug, appletId } = action.meta.arg;
             if (appletId && state.applets[appletId]) {
-                state.applets[appletId].slugStatus = action.payload ? 'unique' : 'notUnique';
+                state.applets[appletId].slugStatus = action.payload ? "unique" : "notUnique";
             } else {
-                Object.values(state.applets).forEach(applet => {
+                Object.values(state.applets).forEach((applet) => {
                     if (applet.slug === slug) {
-                        applet.slugStatus = action.payload ? 'unique' : 'notUnique';
+                        applet.slugStatus = action.payload ? "unique" : "notUnique";
                     }
                 });
             }
@@ -511,11 +646,11 @@ export const appletBuilderSlice = createSlice({
         // Handle saveContainerAndUpdateAppletThunk
         builder.addCase(saveContainerAndUpdateAppletThunk.fulfilled, (state, action) => {
             const { container, appletId } = action.payload;
-            
+
             if (container && appletId && state.applets[appletId]) {
                 // Find the container in the applet
-                const containerIndex = state.applets[appletId].containers.findIndex(c => c.id === container.id);
-                
+                const containerIndex = state.applets[appletId].containers.findIndex((c) => c.id === container.id);
+
                 if (containerIndex >= 0) {
                     // Update existing container
                     state.applets[appletId].containers[containerIndex] = container;
@@ -523,7 +658,7 @@ export const appletBuilderSlice = createSlice({
                     // Add new container
                     state.applets[appletId].containers.push(container);
                 }
-                
+
                 state.applets[appletId].isDirty = true;
             }
         });
@@ -531,11 +666,11 @@ export const appletBuilderSlice = createSlice({
         // Handle saveFieldAndUpdateContainerThunk - if needed for containers within applets
         builder.addCase(saveFieldAndUpdateContainerThunk.fulfilled, (state, action) => {
             const { containerId } = action.payload;
-            
+
             // Find which applet contains this container and mark it as dirty
             if (containerId) {
-                Object.values(state.applets).forEach(applet => {
-                    const containerIndex = applet.containers.findIndex(c => c.id === containerId);
+                Object.values(state.applets).forEach((applet) => {
+                    const containerIndex = applet.containers.findIndex((c) => c.id === containerId);
                     if (containerIndex >= 0) {
                         // Mark the applet as dirty since a field in one of its containers changed
                         applet.isDirty = true;
@@ -546,7 +681,7 @@ export const appletBuilderSlice = createSlice({
 
         // Handling fetchAppletById success (used by setActiveAppletWithFetchThunk)
         builder.addCase("appletBuilder/fetchAppletByIdSuccess", (state, action: FetchAppletByIdSuccessAction) => {
-            state.applets[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: 'unique' };
+            state.applets[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: "unique" };
             state.isLoading = false;
         });
     },
@@ -566,6 +701,9 @@ export const {
     setAccentColor,
     setLayoutType,
     setDataSourceConfig,
+    setSourceConfig,
+    addSourceConfig,
+    removeSourceConfig,
     setResultComponentConfig,
     setNextStepConfig,
     setCompiledRecipeId,
@@ -573,6 +711,8 @@ export const {
     setImageUrl,
     setAppId,
     setBrokerMappings,
+    addBrokerMapping,
+    removeBrokerMapping,
     setIsPublic,
     setAuthenticatedRead,
     setPublicRead,

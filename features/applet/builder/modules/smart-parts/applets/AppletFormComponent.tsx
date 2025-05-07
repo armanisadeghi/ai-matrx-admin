@@ -56,7 +56,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { AppletLayoutSelection } from "@/features/applet/builder/parts/AppletLayoutSelection";
-import { RecipeSelector } from "@/features/applet/builder/modules/smart-parts/applets";
 import { convertToKebabCase } from "@/utils/text/stringUtils";
 import { AppletSourceConfig } from "@/lib/redux/app-builder/service/customAppletService";
 import { setTempAppletSourceConfig } from "@/lib/redux/app-builder/slices/appletBuilderSlice";

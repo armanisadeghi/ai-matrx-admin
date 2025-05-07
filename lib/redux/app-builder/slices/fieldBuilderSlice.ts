@@ -31,7 +31,7 @@ export const DEFAULT_FIELD: Partial<FieldBuilder> = {
     helpText: "",
     group: "default",
     iconName: "",
-    component: "input",
+    component: "textarea",
     required: false,
     disabled: false,
     placeholder: "",

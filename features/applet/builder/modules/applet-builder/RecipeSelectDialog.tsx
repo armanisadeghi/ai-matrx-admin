@@ -26,6 +26,9 @@ import {
   getCompiledRecipeByVersionWithNeededBrokers,
   AppletSourceConfig
 } from '@/lib/redux/app-builder/service/customAppletService';
+import { useAppDispatch } from '@/lib/redux';
+import { setTempAppletSourceConfig } from '@/lib/redux/app-builder/slices/appletBuilderSlice';
+
 
 // Extended RecipeInfo interface with extracted tags
 interface ExtendedRecipeInfo extends Omit<RecipeInfo, 'tags'> {
@@ -63,6 +66,8 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
+  const dispatch = useAppDispatch();
+
   // Extract tags from the recipes
   const extendedRecipes = userRecipes.map(recipe => ({
     ...recipe,
@@ -98,7 +103,7 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
   }, [extendedRecipes, searchTerm, selectedTags]);
 
   // Handle recipe selection
-  const handleRecipeSelect = (recipe: ExtendedRecipeInfo) => {
+  const handleRecipeSelect = async (recipe: ExtendedRecipeInfo) => {
     setSelectedRecipe({
       id: recipe.id,
       name: recipe.name,
@@ -107,6 +112,14 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
       status: recipe.status,
       tags: recipe.originalTags
     });
+
+    const compiledRecipeWithBrokerMapping = await getCompiledRecipeByVersionWithNeededBrokers(recipe.id);
+    if (setCompiledRecipeWithNeededBrokers) {
+      setCompiledRecipeWithNeededBrokers(compiledRecipeWithBrokerMapping);
+    }
+
+    dispatch(setTempAppletSourceConfig(compiledRecipeWithBrokerMapping));
+
     setSpecificVersion(recipe.version);
     setVersionSelection('latest');
     setIsVersionValid(true);
@@ -148,6 +161,12 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
     try {
       const id = await getCompiledRecipeByVersion(selectedRecipe.id);
       setCompiledRecipeId(id);
+      const compiledRecipeWithBrokerMapping = await getCompiledRecipeByVersionWithNeededBrokers(selectedRecipe.id);
+      if (setCompiledRecipeWithNeededBrokers) {
+        setCompiledRecipeWithNeededBrokers(compiledRecipeWithBrokerMapping);
+      }
+
+      dispatch(setTempAppletSourceConfig(compiledRecipeWithBrokerMapping));
     } catch (error) {
       console.error('Error fetching latest compiled recipe:', error);
       toast({
@@ -171,7 +190,13 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
     if (!selectedRecipe) return;
     
     setIsCheckingVersion(true);
-    
+    const compiledRecipeWithBrokerMapping = await getCompiledRecipeByVersionWithNeededBrokers(selectedRecipe.id, specificVersion);
+    if (setCompiledRecipeWithNeededBrokers) {
+      setCompiledRecipeWithNeededBrokers(compiledRecipeWithBrokerMapping);
+    }
+
+    dispatch(setTempAppletSourceConfig(compiledRecipeWithBrokerMapping));
+
     try {
       const exists = await checkCompiledRecipeVersionExists(selectedRecipe.id, specificVersion);
       setIsVersionValid(exists);
@@ -181,10 +206,6 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
         const id = await getCompiledRecipeByVersion(selectedRecipe.id, specificVersion);
         setCompiledRecipeId(id);
 
-        const compiledRecipeWithBrokerMapping = await getCompiledRecipeByVersionWithNeededBrokers(selectedRecipe.id, specificVersion);
-        if (setCompiledRecipeWithNeededBrokers) {
-          setCompiledRecipeWithNeededBrokers(compiledRecipeWithBrokerMapping);
-        }
         
       } else {
         setCompiledRecipeId(null);
@@ -210,7 +231,7 @@ export const RecipeSelectDialog: React.FC<RecipeSelectDialogProps> = ({
       
       return () => clearTimeout(timeoutId);
     }
-  }, [specificVersion, selectedRecipe, versionSelection]);
+  }, [specificVersion, selectedRecipe]);
 
   // Confirm recipe selection
   const confirmRecipeSelection = async () => {

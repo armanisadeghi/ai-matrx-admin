@@ -65,20 +65,24 @@ const AppletSourceSelection = ({ onSelect, itemCounts = {} }) => {
                 transition-all duration-200 cursor-pointer
                 ${isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-md'}
                 ${isSelected 
-                  ? 'border-slate-600 dark:border-slate-400 bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-200 dark:ring-slate-700' 
+                  ? 'border-blue-600 dark:border-blue-400 bg-slate-100 dark:bg-slate-800 ring-2 ring-blue-200 dark:ring-blue-700' 
                   : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'}
               `}
             >
               <div className={`
                 w-10 h-10 rounded-full flex items-center justify-center mb-2
                 ${isSelected 
-                  ? 'bg-slate-600 dark:bg-slate-500 text-white' 
+                  ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/30' 
                   : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}
-                transition-colors duration-200
+                transition-all duration-300
               `}>
                 {React.createElement(source.icon, { 
                   size: 20,
-                  className: isDisabled ? 'text-slate-400 dark:text-slate-600' : ''
+                  className: isDisabled 
+                    ? 'text-slate-400 dark:text-slate-600' 
+                    : isSelected 
+                      ? 'text-white' 
+                      : ''
                 })}
               </div>
               

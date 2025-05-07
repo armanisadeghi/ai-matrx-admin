@@ -168,7 +168,7 @@ export const deleteContainerThunk = createAsyncThunk<
 });
 
 // Add a field to a container
-export const addFieldThunk = createAsyncThunk<
+export const addFieldAndCompileContainerThunk = createAsyncThunk<
     { containerId: string; field: FieldDefinition },
     { containerId: string; field: FieldDefinition },
     { state: RootState }

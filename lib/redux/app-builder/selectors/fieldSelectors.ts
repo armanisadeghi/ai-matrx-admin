@@ -184,3 +184,9 @@ export const selectHasUnsavedFieldChanges = createSelector(
   (fields) => fields.some(field => field.isDirty === true)
 );
 
+// Memoized selector to check if a specific field has unsaved changes
+export const selectHasFieldUnsavedChanges = createSelector(
+  [(state: RootState, id: string) => selectFieldById(state, id)],
+  (field) => field ? field.isDirty === true : false
+);
+

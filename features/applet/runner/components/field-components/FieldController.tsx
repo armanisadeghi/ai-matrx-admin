@@ -23,6 +23,29 @@ import {
     MultiSelectFieldConfig,
 } from ".";
 import { SwitchField, SwitchFieldConfig } from "./SwitchField";
+import { ComponentType } from "@/features/applet/builder/builder.types";
+
+
+// ========================== TODO: Some of these types need to be added to the field controller. ============================================
+
+export const componentOptions: { value: ComponentType; label: string }[] = [
+    { value: "textarea", label: "Textarea" },
+    { value: "input", label: "Input" },
+    { value: "select", label: "Select" },
+    { value: "multiselect", label: "Multiselect" },
+    { value: "radio", label: "Radio" },
+    { value: "checkbox", label: "Checkbox" },
+    { value: "slider", label: "Slider" },
+    { value: "number", label: "Number" },
+    { value: "date", label: "Date" },
+    { value: "switch", label: "Switch" },
+    { value: "button", label: "Button" },
+    { value: "rangeSlider", label: "Range Slider" },
+    { value: "numberPicker", label: "Number Picker" },
+    { value: "jsonField", label: "JSON Field" },
+    { value: "fileUpload", label: "File Upload" },
+];
+
 
 export const fieldController = (field: GroupFieldConfig, isMobile: boolean) => {
     switch (field.type) {

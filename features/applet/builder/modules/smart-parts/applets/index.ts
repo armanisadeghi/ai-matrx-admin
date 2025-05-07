@@ -1,4 +1,4 @@
-export { default as RecipeSelector } from './RecipeSelector';
+export { default as RecipeSelector } from '../../broker-mapping/RecipeSelector';
 export { default as AppletFormComponent } from './AppletFormComponent';
 export { AppletSlugChecker } from './AppletSlugChecker';
 export { default as AppletSidebarNavigation } from './AppletSidebarNavigation';

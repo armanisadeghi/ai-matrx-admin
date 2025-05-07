@@ -443,13 +443,13 @@ export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId, onUpd
                 onSecondStepConfirm={handleSaveAfterDelete}
             />
 
-            <Card className="bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl border-2 border-emerald-200 dark:border-emerald-600">
-                <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b-2 border-emerald-200 dark:border-emerald-600 p-3 rounded-t-3xl">
+            <Card className="bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl border-2 border-rose-200 dark:border-rose-600">
+                <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b-2 border-rose-200 dark:border-rose-600 p-3 rounded-t-3xl">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="text-emerald-500 font-medium text-lg">Field Container Configuration</h2>
-                            <p className="text-gray-600 dark:text-gray-300 text-sm">
-                                Containers hold fields and provide users with some context for the fields.
+                            <h2 className="text-rose-500 font-medium text-lg">Field Container Configuration</h2>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm pt-1">
+                                Containers group similar fields together. Include One or More Fields.
                             </p>
                         </div>
                     </div>

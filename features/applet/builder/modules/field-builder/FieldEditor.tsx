@@ -16,13 +16,15 @@ import {
     selectFieldError,
     selectFieldLoading,
     selectFieldComponent,
+    selectHasFieldUnsavedChanges,
 } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import { selectActiveContainerId } from "@/lib/redux/app-builder/selectors/containerSelectors";
-import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { startFieldCreation, setActiveField } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
-import { saveFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
-import { addFieldThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { startFieldCreation, setActiveField, setComponent, cancelFieldCreation } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
+import { saveFieldThunk, fetchFieldByIdThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
+import { addFieldAndCompileContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+import { componentOptions } from "@/features/applet/runner/components/field-components/FieldController";
+import {ThemeSwitcherIcon} from "@/styles/themes";
+import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
 
 interface FieldEditorProps {
     fieldId?: string;
@@ -30,91 +32,53 @@ interface FieldEditorProps {
     onSaveSuccess?: (fieldId: string) => void;
     onCancel?: () => void;
     containerId?: string;
+    appletId?: string;
 }
 
-const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel, containerId }) => {
+const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel, containerId, appletId }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
 
+    const isLoading = useAppSelector(selectFieldLoading);
+    const error = useAppSelector(selectFieldError);
+
     // Generate a new ID for new fields
-    const [localFieldId, setLocalFieldId] = useState<string>(fieldId || uuidv4());
+    const [localFieldId, setLocalFieldId] = useState<string>(fieldId || null);
 
     // Get field data and state from Redux
     const field = useAppSelector((state) => selectFieldById(state, localFieldId));
-    const isLoading = useAppSelector(selectFieldLoading);
-    const error = useAppSelector(selectFieldError);
-    const component = useAppSelector((state) => selectFieldComponent(state, localFieldId));
-    const activeContainerId = useAppSelector(selectActiveContainerId);
-    const activeAppletId = useAppSelector(selectActiveAppletId);
+    const componentType = useAppSelector((state) => selectFieldComponent(state, localFieldId));
+    const hasUnsavedChanges = useAppSelector((state) => selectHasFieldUnsavedChanges(state, localFieldId));
 
-    // Preview state for component type selection (kept as local state)
-    const [selectedComponentType, setSelectedComponentType] = useState<ComponentType | null>("textarea");
+    const [viewAsComponentType, setViewAsComponentType] = useState<ComponentType | null>("textarea");
 
-    // Initialize field in Redux if creating new
     useEffect(() => {
-        if (isCreatingNew && !field) {
-            dispatch(startFieldCreation({ id: localFieldId }));
+        if (fieldId) {
+            dispatch(setActiveField(fieldId));
         }
+    }, [dispatch, fieldId]);
 
-        // Set active field
-        if (localFieldId) {
-            dispatch(setActiveField(localFieldId));
+    useEffect(() => {
+        if (isCreatingNew && !field && !isLoading) {
+            const newFieldId = uuidv4();
+            setLocalFieldId(newFieldId);
+            dispatch(startFieldCreation({ id: newFieldId }));
         }
-
-        return () => {
-            // Clear active field when unmounting
-            dispatch(setActiveField(null));
-        };
     }, [dispatch, isCreatingNew, field, localFieldId]);
 
-    // All available component types for the multi-component view
-    const componentTypes: ComponentType[] = [
-        "input",
-        "textarea",
-        "select",
-        "multiselect",
-        "radio",
-        "checkbox",
-        "slider",
-        "number",
-        "date",
-        "switch",
-        "button",
-        "rangeSlider",
-        "numberPicker",
-        "jsonField",
-        "fileUpload",
-    ];
+    const handleComponentTypeChange = (componentType: ComponentType) => {
+        setViewAsComponentType(componentType);
+    };
 
-    // Save the current component
     const handleSave = async () => {
         if (!localFieldId) return;
 
         try {
-            // First save the field
             const savedComponent = await dispatch(saveFieldThunk(localFieldId)).unwrap();
-            
-            // Determine the container ID to use
-            const containerIdToUse = containerId || activeContainerId;
-            
-            // If we have a container ID, add the field to the container
-            if (containerIdToUse) {
-                await dispatch(
-                    addFieldThunk({
-                        containerId: containerIdToUse,
-                        field: savedComponent
-                    })
-                ).unwrap();
-                
-                // Recompile the applet if we have an active applet ID
-                if (activeAppletId) {
-                    await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
-                }
-            }
 
             toast({
                 title: "Success",
-                description: `Field component ${isCreatingNew ? "created" : "updated"} successfully${containerIdToUse ? ' and associated with container' : ''}${(containerIdToUse && activeAppletId) ? ', applet recompiled' : ''}`,
+                description: `Field component ${isCreatingNew ? "created" : "updated"}`,
             });
 
             if (onSaveSuccess) {
@@ -130,30 +94,28 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         }
     };
 
-    // Compile and add to container
     const handleCompileAndAdd = async () => {
-        // Save the field first
         await handleSave();
-        
+
         // Only proceed if we have a container ID and a valid field
         if (containerId && field) {
             try {
                 // Use the appropriate container thunk to add the field
                 await dispatch(
-                    addFieldThunk({
+                    addFieldAndCompileContainerThunk({
                         containerId: containerId,
-                        field: field
+                        field: field,
                     })
                 ).unwrap();
-                
+
                 // Recompile the applet if we have an active applet ID
-                if (activeAppletId) {
-                    await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
+                if (appletId) {
+                    await dispatch(recompileAppletThunk(appletId)).unwrap();
                 }
-                
+
                 toast({
                     title: "Success",
-                    description: `Field compiled and added to container successfully${activeAppletId ? ', applet recompiled' : ''}`,
+                    description: `Field compiled and added to container successfully${appletId ? ", applet recompiled" : ""}`,
                 });
             } catch (err: any) {
                 toast({
@@ -165,8 +127,31 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         }
     };
 
-    // Cancel editing
-    const handleCancel = () => {
+    const handleCancel = async () => {
+        if (!isCreatingNew && localFieldId) {
+            // Fetch the original field data to restore it
+            try {
+                await dispatch(fetchFieldByIdThunk(localFieldId)).unwrap();
+
+                toast({
+                    title: "Changes Discarded",
+                    description: "Your changes have been discarded",
+                });
+            } catch (err: any) {
+                toast({
+                    title: "Error",
+                    description: err.message || "Failed to restore original field data",
+                    variant: "destructive",
+                });
+                console.error("Error restoring field:", err);
+            }
+        } else {
+            dispatch(cancelFieldCreation(localFieldId));
+            const newFieldId = uuidv4();
+            setLocalFieldId(newFieldId);
+            dispatch(startFieldCreation({ id: newFieldId }));
+        }
+
         if (onCancel) {
             onCancel();
         }
@@ -178,35 +163,37 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
 
     return (
         <div className="w-full">
-            {error && <div className="p-3 mb-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded">{error}</div>}
+            {error && <div className="p-1 mb-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded">{error}</div>}
 
-            <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex flex-col lg:flex-row gap-3">
                 {/* Left side: Field Builder */}
                 <div className="w-full lg:w-1/2">
                     <SectionCard
                         title={isCreatingNew ? "Create New Component" : "Edit Component"}
-                        description="Configure all aspects of this field component."
+                        color="gray"
+                        spacing="relaxed"
                         footer={
                             <>
                                 <Button
                                     variant="outline"
                                     onClick={handleCancel}
+                                    disabled={!hasUnsavedChanges}
                                     className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                                 >
                                     Cancel
                                 </Button>
                                 <Button
                                     onClick={handleSave}
-                                    disabled={isLoading}
+                                    disabled={isLoading || !hasUnsavedChanges}
                                     className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
                                 >
-                                    {isLoading ? "Saving..." : isCreatingNew ? "Create Component" : "Update Component"}
+                                    {isLoading ? "Saving..." : isCreatingNew ? "Save" : "Update"}
                                 </Button>
-                                {containerId && (
+                                {!hasUnsavedChanges && containerId && (
                                     <Button
                                         variant="outline"
                                         onClick={handleCompileAndAdd}
-                                        className="border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
+                                        className="border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300"
                                     >
                                         Compile and Add to Container
                                     </Button>
@@ -219,68 +206,60 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
                 </div>
 
                 {/* Right side: Preview area */}
-                <div className="w-full lg:w-1/2">
-                    <SectionCard title="Component Preview" description="Live preview of your field component">
+                <div className="w-full">
+                    <SectionCard title="Component Preview" color="gray" spacing="relaxed">
                         {/* Current component preview */}
                         <div className="mt-6 mb-8 border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
-                            <h3 className="text-md font-semibold mb-6 capitalize text-gray-900 dark:text-gray-100">
-                                Your New{" "}
-                                <span className="text-blue-600 dark:text-blue-500 font-bold">
-                                    {" "}
-                                    {"  "}
-                                    {component} {"  "}
-                                </span>{" "}
-                                Component
-                            </h3>
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-md font-semibold capitalize text-gray-900 dark:text-gray-100">
+                                    Your New{" "}
+                                    <span className="text-blue-600 dark:text-blue-500 font-bold">
+                                        {" "}
+                                        {componentType} {"  "}
+                                    </span>{" "}
+                                    Component
+                                </h3>
+                                <ThemeSwitcherIcon />
+                            </div>
                             {field && <FieldRenderer field={field} />}
                         </div>
 
                         {/* Component type selector */}
                         <div className="mb-8 space-y-3">
                             <Label className="text-gray-900 dark:text-gray-100">View As Different Component Type</Label>
+                            <HelpIcon text={"Not all Fields will make sense for your specific settings, but we like to let you 'shop around' to find the best fit. notice that if you provide more values, your component can take on more forms, without breaking."} />
                             <div className="flex flex-wrap gap-2">
-                                {componentTypes.map((type) => (
+                                {componentOptions.map((option) => (
                                     <Button
-                                        key={type}
-                                        variant={selectedComponentType === type ? "default" : "outline"}
+                                        key={option.value}
+                                        variant={viewAsComponentType === option.value ? "default" : "outline"}
                                         size="sm"
-                                        onClick={() => setSelectedComponentType(type)}
+                                        onClick={() => handleComponentTypeChange(option.value)}
                                         className={
-                                            selectedComponentType === type
+                                            viewAsComponentType === option.value
                                                 ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
                                                 : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                                         }
                                     >
-                                        {type.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
+                                        {option.label}
                                     </Button>
                                 ))}
                             </div>
-
-                            {selectedComponentType && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setSelectedComponentType(null)}
-                                    className="mt-2 border-gray-200 dark:border-gray-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                >
-                                    Clear Type Selection
-                                </Button>
-                            )}
                         </div>
 
                         {/* Additional component view when a type is selected */}
-                        {field && selectedComponentType && (
+                        {field && viewAsComponentType && (
                             <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
                                 <h3 className="text-md font-semibold mb-4 capitalize text-gray-900 dark:text-gray-100">
                                     Rendered as{"  "}
                                     <span className="text-blue-600 dark:text-blue-500 font-bold">
-                                        {selectedComponentType.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
+                                        {componentOptions.find((option) => option.value === viewAsComponentType)?.label}
                                     </span>
                                 </h3>
                                 <FieldRenderer
                                     field={{
                                         ...field,
-                                        component: selectedComponentType,
+                                        component: viewAsComponentType,
                                     }}
                                 />
                             </div>
@@ -288,7 +267,6 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
                     </SectionCard>
                 </div>
             </div>
-
             <Toaster />
         </div>
     );

@@ -3,7 +3,7 @@ import {
     createContainerThunk,
     updateContainerThunk,
     deleteContainerThunk,
-    addFieldThunk,
+    addFieldAndCompileContainerThunk,
     removeFieldThunk,
     recompileContainerThunk,
     fetchContainersThunk,
@@ -297,11 +297,11 @@ export const containerBuilderSlice = createSlice({
         });
 
         // Add Field
-        builder.addCase(addFieldThunk.pending, (state) => {
+        builder.addCase(addFieldAndCompileContainerThunk.pending, (state) => {
             state.isLoading = true;
             state.error = null;
         });
-        builder.addCase(addFieldThunk.fulfilled, (state, action) => {
+        builder.addCase(addFieldAndCompileContainerThunk.fulfilled, (state, action) => {
             const { containerId, field } = action.payload;
             if (state.containers[containerId]) {
                 state.containers[containerId].fields = [...state.containers[containerId].fields, field];
@@ -309,7 +309,7 @@ export const containerBuilderSlice = createSlice({
             }
             state.isLoading = false;
         });
-        builder.addCase(addFieldThunk.rejected, (state, action) => {
+        builder.addCase(addFieldAndCompileContainerThunk.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.error.message || "Failed to add field";
         });

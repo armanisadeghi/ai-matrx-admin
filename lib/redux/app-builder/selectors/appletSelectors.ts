@@ -1,6 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux/store";
 import { AppletBuilder } from "../types";
+import { BrokerMapping } from "@/features/applet/builder/builder.types";
+import { AppletSourceConfig } from "../service";
 
 // ================================ Base Selectors ================================
 
@@ -228,7 +230,7 @@ export const selectAppletAppId = createSelector(
 
 export const selectAppletBrokerMappings = createSelector(
   [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
-  (applet) => (applet ? applet.brokerMappings : null)
+  (applet) => (applet && applet.dataSourceConfig ? applet.dataSourceConfig.brokerMappings : null)
 );
 
 // ================================ Security and Status Selectors ================================
@@ -236,6 +238,39 @@ export const selectAppletBrokerMappings = createSelector(
 export const selectAppletIsPublic = createSelector(
   [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
   (applet) => (applet ? applet.isPublic : null)
+);
+
+// ================================ Broker Mapping Selectors ================================
+
+// Get a specific broker mapping by broker ID within a specific applet
+export const selectBrokerMappingByBrokerId = createSelector(
+  [
+    (state: RootState, appletId: string, brokerId: string) => {
+      const applet = getAppletBuilderState(state).applets[appletId];
+      return { applet, brokerId };
+    }
+  ],
+  ({ applet, brokerId }) => {
+    if (!applet || !applet.dataSourceConfig || !applet.dataSourceConfig.brokerMappings || applet.dataSourceConfig.brokerMappings.length === 0) return null;
+    return applet.dataSourceConfig.brokerMappings.find(mapping => mapping.brokerId === brokerId) || null;
+  }
+);
+
+// Get all broker mappings for a specific broker ID across all applets
+export const selectAllBrokerMappingsByBrokerId = createSelector(
+  [
+    selectAllApplets,
+    (_state: RootState, brokerId: string) => brokerId
+  ],
+  (applets, brokerId) => {
+    return applets.reduce((mappings, applet) => {
+      if (applet.dataSourceConfig && applet.dataSourceConfig.brokerMappings && applet.dataSourceConfig.brokerMappings.length > 0) {
+        const match = applet.dataSourceConfig.brokerMappings.find(mapping => mapping.brokerId === brokerId);
+        if (match) mappings.push(match);
+      }
+      return mappings;
+    }, [] as BrokerMapping[]);
+  }
 );
 
 export const selectAppletAuthenticatedRead = createSelector(
@@ -281,4 +316,54 @@ export const selectAppletSourceConfigBySourceType = createSelector(
 export const selectAppletDataSourceConfig = createSelector(
   [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
   (applet) => (applet ? applet.dataSourceConfig : null)
+);
+
+export const selectAppletSourceConfig = createSelector(
+  [(state: RootState, id: string) => getAppletBuilderState(state).applets[id]],
+  (applet) => (applet && applet.dataSourceConfig ? applet.dataSourceConfig.sourceConfig : null)
+);
+
+// Find a source config by config ID within an applet
+export const selectSourceConfigByConfigId = createSelector(
+  [
+    (state: RootState, appletId: string, configId: string) => {
+      const applet = getAppletBuilderState(state).applets[appletId];
+      return { applet, configId };
+    }
+  ],
+  ({ applet, configId }) => {
+    if (!applet || !applet.dataSourceConfig || !applet.dataSourceConfig.sourceConfig || applet.dataSourceConfig.sourceConfig.length === 0) return null;
+    return applet.dataSourceConfig.sourceConfig.find(config => config.config.id === configId) || null;
+  }
+);
+
+// Find a source config by source type within an applet
+export const selectSourceConfigBySourceType = createSelector(
+  [
+    (state: RootState, appletId: string, sourceType: string) => {
+      const applet = getAppletBuilderState(state).applets[appletId];
+      return { applet, sourceType };
+    }
+  ],
+  ({ applet, sourceType }) => {
+    if (!applet || !applet.dataSourceConfig || !applet.dataSourceConfig.sourceConfig || applet.dataSourceConfig.sourceConfig.length === 0) return null;
+    return applet.dataSourceConfig.sourceConfig.find(config => config.sourceType === sourceType) || null;
+  }
+);
+
+// Get all source configs for a specific source type across all applets
+export const selectAllSourceConfigsBySourceType = createSelector(
+  [
+    selectAllApplets,
+    (_state: RootState, sourceType: string) => sourceType
+  ],
+  (applets, sourceType) => {
+    return applets.reduce((configs, applet) => {
+      if (applet.dataSourceConfig && applet.dataSourceConfig.sourceConfig && applet.dataSourceConfig.sourceConfig.length > 0) {
+        const matches = applet.dataSourceConfig.sourceConfig.filter(config => config.sourceType === sourceType);
+        if (matches.length) configs.push(...matches);
+      }
+      return configs;
+    }, [] as AppletSourceConfig[]);
+  }
 );

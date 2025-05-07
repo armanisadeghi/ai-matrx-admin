@@ -390,21 +390,6 @@ export const getCompiledRecipeById = async (id: string): Promise<RuntimeCompiled
 
 
 
-export interface NeededBroker {
-    id: string;
-    name: string;
-    required: boolean;
-    dataType: string;
-    defaultValue: string;
-}
-
-export interface CompiledRecipeWithNeededBrokers {
-    id: string;
-    compiledId: string;
-    version: number;
-    neededBrokers: NeededBroker[];
-}
-
 export interface WorkflowSourceConfig {
     sourceType: "workflow";
     id: string;
@@ -428,6 +413,21 @@ export interface OtherSourceConfig {
     sourceType: "other";
     id: string;
     [key: string]: any;
+}
+
+export interface NeededBroker {
+    id: string;
+    name: string;
+    required: boolean;
+    dataType: string;
+    defaultValue: string;
+}
+
+export interface CompiledRecipeWithNeededBrokers {
+    id: string;
+    compiledId: string;
+    version: number;
+    neededBrokers: NeededBroker[];
 }
 
 export interface AppletSourceConfig {

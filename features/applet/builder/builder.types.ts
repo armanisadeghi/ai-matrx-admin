@@ -74,6 +74,15 @@ export type AppletContainer = {
   fields: FieldDefinition[];
 };
 
+export interface Broker {
+  id: string;
+  name: string;
+  required: boolean;
+  dataType: string;
+  defaultValue: string;
+  inputComponent: string;
+}
+
 export interface BrokerMapping {
   appletId: string;
   fieldId: string;
@@ -105,7 +114,6 @@ export type CustomApplet = {
   subcategoryId?: string;
   imageUrl?: string;
   appId?: string;
-  brokerMappings?: BrokerMapping[];
 };
 
 export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";

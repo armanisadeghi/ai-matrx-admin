@@ -19,7 +19,7 @@ import SectionCard from "@/components/official/cards/SectionCard";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import { AppWindow, Component, PanelRight, SaveIcon } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
-import { updateFieldThunk, addFieldThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { updateFieldThunk, addFieldAndCompileContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 
 
@@ -115,7 +115,7 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
 
             // Add the field to the container using the proper container thunk
             await dispatch(
-                addFieldThunk({
+                addFieldAndCompileContainerThunk({
                     containerId: activeContainerId,
                     field: field
                 })
@@ -301,7 +301,6 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
                                 title="Select a Group to Continue"
                                 description="Please select an applet and group from the sidebar to start configuring fields for your component."
                                 icon={PanelRight}
-                                
                             />
                         </SectionCard>
                     )}

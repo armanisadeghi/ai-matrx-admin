@@ -120,13 +120,15 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
               disabled={field.disabled}
               required={field.required}
               multiple
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded h-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              size={field.componentProps?.rows || 5}
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 appearance-none [&>option]:p-2 [&>option:checked]:bg-blue-600 [&>option:checked]:dark:bg-blue-700 [&>option:checked]:text-white [&>option:checked]:dark:text-white"
+              style={{ overflow: "auto" }}
             >
               {field.options?.map(option => (
-                <option key={option.id} value={option.id}>{option.label}</option>
+                <option key={option.id} value={option.id} className="py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-700">{option.label}</option>
               ))}
               {field.includeOther && (
-                <option value="other">Other</option>
+                <option value="other" className="py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-700">Other</option>
               )}
             </select>
             
