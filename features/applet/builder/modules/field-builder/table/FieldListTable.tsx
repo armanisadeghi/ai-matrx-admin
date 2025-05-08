@@ -7,41 +7,30 @@ import { selectAllFields, selectFieldLoading } from "@/lib/redux/app-builder/sel
 import { deleteFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { Button } from "@/components/ui/button";
 import {
-    Search,
     Eye,
     Pencil,
     TextCursorInput,
     Trash2,
-    Calendar,
-    ToggleLeft,
-    Check,
-    ListFilter,
-    RadioTower,
-    SlidersHorizontal,
-    Type,
-    SquareTerminal,
-    FileUp,
-    Hash,
-    PanelBottomClose,
-    SquareStack,
-    GripVertical,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
 import StructuredSectionCard from "@/components/official/StructuredSectionCard";
 import { ICON_OPTIONS } from "@/features/applet/layouts/helpers/StyledComponents";
 import { ConfirmationDialog } from "@/features/applet/builder/parts/ConfirmationDialog";
+import { getComponentIcon, getComponentTypeName } from "@/features/applet/builder/modules/field-builder/field-constants";
+import TablePagination from "./TablePagination";
+import TableHeaderComponent from "./TableHeader";
 
 interface FieldListTableProps {
     onFieldView?: (id: string) => void;
     onFieldEdit?: (id: string) => void;
     onFieldDelete?: (id: string) => void;
     onFieldSelect?: (id: string) => void;
+    onFieldCreate?: () => void;
 }
 
-export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete, onFieldSelect }: FieldListTableProps) {
+export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete, onFieldSelect, onFieldCreate }: FieldListTableProps) {
     const router = useRouter();
     const dispatch = useAppDispatch();
 
@@ -60,6 +49,11 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
     type SortField = "label" | "component" | "description" | "required";
     const [sortBy, setSortBy] = useState<SortField>("label");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [paginatedFields, setPaginatedFields] = useState<FieldBuilder[]>([]);
 
     // Apply search/filter and sorting whenever fields, search term, or sort params change
     useEffect(() => {
@@ -100,7 +94,17 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
         });
 
         setFilteredFields(sorted);
+        
+        // Reset to first page when filters change
+        setCurrentPage(1);
     }, [fields, searchTerm, sortBy, sortDirection]);
+    
+    // Apply pagination
+    useEffect(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        setPaginatedFields(filteredFields.slice(startIndex, endIndex));
+    }, [filteredFields, currentPage, itemsPerPage]);
 
     // Handle sort click
     const handleSortClick = (field: SortField) => {
@@ -131,6 +135,14 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
         onFieldEdit?.(id);
     };
 
+    const handleCreateField = () => {
+        if (onFieldCreate) {
+            onFieldCreate();
+        } else {
+            router.push("/apps/app-builder/fields/create");
+        }
+    };
+
     // Delete handlers
     const handleDeleteClick = (id: string, label: string, e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent row click from triggering
@@ -143,8 +155,13 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
 
         try {
             setIsDeleting(true);
-            await dispatch(deleteFieldThunk(fieldToDelete)).unwrap();
-            setFieldToDelete(null);
+            if (onFieldDelete) {
+                onFieldDelete(fieldToDelete);
+                setFieldToDelete(null);
+            } else {
+                await dispatch(deleteFieldThunk(fieldToDelete)).unwrap();
+                setFieldToDelete(null);
+            }
         } catch (error) {
             console.error("Failed to delete field:", error);
         } finally {
@@ -155,6 +172,16 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
     // Handle search input change
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
+    };
+    
+    // Handle pagination changes
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+    
+    const handleItemsPerPageChange = (items: number) => {
+        setItemsPerPage(items);
+        setCurrentPage(1); // Reset to first page when changing items per page
     };
 
     // Render icon helper function
@@ -168,61 +195,20 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
         }
 
         // Otherwise use an icon based on the component type
-        const componentIconMap: Record<string, React.ReactNode> = {
-            input: <TextCursorInput className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
-            textarea: <PanelBottomClose className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />,
-            select: <ListFilter className="h-5 w-5 text-purple-500 dark:text-purple-400" />,
-            multiselect: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
-            radio: <RadioTower className="h-5 w-5 text-pink-500 dark:text-pink-400" />,
-            checkbox: <Check className="h-5 w-5 text-green-500 dark:text-green-400" />,
-            slider: <SlidersHorizontal className="h-5 w-5 text-orange-500 dark:text-orange-400" />,
-            number: <Hash className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />,
-            date: <Calendar className="h-5 w-5 text-red-500 dark:text-red-400" />,
-            switch: <ToggleLeft className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />,
-            button: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
-            rangeSlider: <SlidersHorizontal className="h-5 w-5 text-teal-500 dark:text-teal-400" />,
-            numberPicker: <Hash className="h-5 w-5 text-fuchsia-500 dark:text-fuchsia-400" />,
-            jsonField: <SquareTerminal className="h-5 w-5 text-amber-500 dark:text-amber-400" />,
-            fileUpload: <FileUp className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
-        };
-
-        return componentIconMap[field.component] || <TextCursorInput className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
+        return getComponentIcon(field.component);
     };
-
-    // Get nice name for component type
-    const getComponentTypeName = (componentType: string) => {
-        const typeMap: Record<string, string> = {
-            input: "Text Input",
-            textarea: "Text Area",
-            select: "Dropdown",
-            multiselect: "Multi-Select",
-            radio: "Radio Group",
-            checkbox: "Checkbox",
-            slider: "Slider",
-            number: "Number",
-            date: "Date Picker",
-            switch: "Switch",
-            button: "Button",
-            rangeSlider: "Range Slider",
-            numberPicker: "Number Picker",
-            jsonField: "JSON Field",
-            fileUpload: "File Upload",
-        };
-
-        return typeMap[componentType] || componentType;
-    };
-
-    const searchInput = (
-        <div className="relative w-64">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-            <Input placeholder="Search fields..." className="pl-8" value={searchTerm} onChange={handleSearchChange} />
-        </div>
-    );
 
     return (
-        <StructuredSectionCard
-            title="All Field Components"
-            headerActions={[searchInput]}
+        <StructuredSectionCard 
+            title="All Field Components" 
+            headerActions={[
+                <TableHeaderComponent 
+                    key="table-header"
+                    searchTerm={searchTerm}
+                    onSearchChange={handleSearchChange}
+                    onCreateField={handleCreateField}
+                />
+            ]} 
             className="mt-4"
         >
             {isLoading ? (
@@ -237,7 +223,7 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
                         You haven't created any field components yet. Field components are reusable form elements that can be used in your
                         applets.
                     </p>
-                    <Button onClick={() => router.push("/apps/app-builder/fields/create")}>Create First Field</Button>
+                    <Button onClick={handleCreateField}>Create First Field</Button>
                 </div>
             ) : (
                 <div className="overflow-auto">
@@ -255,7 +241,7 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
                                     </div>
                                 </TableHead>
                                 <TableHead
-                                    className="w-[150px] cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                                    className="w-[200px] cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
                                     onClick={() => handleSortClick("component")}
                                 >
                                     <div className="flex items-center space-x-1">
@@ -286,7 +272,7 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredFields.map((field, index) => (
+                            {paginatedFields.map((field, index) => (
                                 <TableRow
                                     key={field.id}
                                     className={`group cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/20 ${
@@ -299,12 +285,20 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
                                     </TableCell>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center">
-                                            <span>{field.label || "Unnamed Field"}</span>
+                                            {field.label ? (
+                                                <span>{field.label}</span>
+                                            ) : (
+                                                <span className="text-gray-500 dark:text-gray-400">Unnamed Field</span>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>{getComponentTypeName(field.component)}</TableCell>
                                     <TableCell className="hidden md:table-cell">
-                                        <span className="line-clamp-1 max-w-xs">{field.description || "No description"}</span>
+                                        {field.description ? (
+                                            <span className="line-clamp-1 max-w-xs">{field.description}</span>
+                                        ) : (
+                                            <span className="text-gray-500 dark:text-gray-400">No description</span>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         {field.required ? (
@@ -371,12 +365,12 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleEditField(field.id);
-                                                }}
-                                                className="opacity-70 group-hover:opacity-100"
-                                            >
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditField(field.id);
+                                                    }}
+                                                    className="opacity-70 group-hover:opacity-100"
+                                                >
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
                                             )}
@@ -394,6 +388,17 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
                             ))}
                         </TableBody>
                     </Table>
+                    
+                    {/* Pagination Footer */}
+                    {filteredFields.length > 0 && (
+                        <TablePagination
+                            totalItems={filteredFields.length}
+                            itemsPerPage={itemsPerPage}
+                            currentPage={currentPage}
+                            onPageChange={handlePageChange}
+                            onItemsPerPageChange={handleItemsPerPageChange}
+                        />
+                    )}
                 </div>
             )}
 

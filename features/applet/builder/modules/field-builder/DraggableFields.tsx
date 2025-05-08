@@ -10,7 +10,6 @@ import {
   selectAllNeededBrokers, 
   selectAllUsedFieldsInApplet
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { FieldDefinition, BrokerMapping } from "@/features/applet/builder/builder.types";
 
 interface DraggableFieldsProps {
   appId: string;
@@ -24,9 +23,10 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
   const brokerMappings = useAppSelector((state) => selectAppletBrokerMappings(state, appletId));
   const neededBrokers = useAppSelector((state) => selectAllNeededBrokers(state, appletId));
   
-  // Get all used field IDs across all containers in this applet
-  const usedFieldIds = useAppSelector((state) => selectAllUsedFieldsInApplet(state, appletId));
-  
+  const usedFieldIds = useAppSelector(state => 
+    selectAllUsedFieldsInApplet(state, appletId)
+  );
+    
   // Track which broker-field mappings have been used
   const [droppedMappingIds, setDroppedMappingIds] = useState<Set<string>>(new Set());
   const [draggedItem, setDraggedItem] = useState<string | null>(null);

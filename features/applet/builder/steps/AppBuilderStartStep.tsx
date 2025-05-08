@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SelectAppStep } from "@/features/applet/builder/steps/SelectAppStep";
-import { AppConfigStep } from "@/features/applet/builder/steps/AppConfigStep";
+import { SelectAppStep } from "@/features/applet/builder/modules/app-builder/SelectAppStep";
+import { AppConfigStep } from "@/features/applet/builder/modules/app-builder/AppConfigStep";
 import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch } from "@/lib/redux";
 import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
@@ -11,14 +11,14 @@ import { Plus, ListTodo, ChevronLeft, Layers, Boxes } from "lucide-react";
 import SimpleTemplateDialog from "@/features/applet/builder/parts/SimpleTemplateDialog";
 import ComplexTemplateDialog from "@/features/applet/builder/parts/ComplexTemplateDialog";
 
-interface AppStartStepProps {
+interface AppBuilderStartStepProps {
   onAppSelected: (id: string) => void;
   onAppSaved: (appId: string) => void;
   selectedAppId: string | null;
   onUpdateCompletion: (completion: { isComplete: boolean; canProceed: boolean; message?: string }) => void;
 }
 
-const AppStartStep: React.FC<AppStartStepProps> = ({
+const AppBuilderStartStep: React.FC<AppBuilderStartStepProps> = ({
   onAppSelected,
   onAppSaved,
   selectedAppId,
@@ -164,4 +164,4 @@ const AppStartStep: React.FC<AppStartStepProps> = ({
   );
 };
 
-export default AppStartStep;
+export default AppBuilderStartStep;

@@ -157,7 +157,7 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, isActive, is
             {/* Display fields that are in the container */}
             <div className="mt-3 grow overflow-hidden flex flex-col">
                 {container.fields && container.fields.length > 0 ? (
-                    <div className="space-y-2 overflow-y-auto max-h-[640px] pr-1">
+                    <div className="space-y-2 overflow-y-auto max-h-[940px] pr-1">
                         {container.fields.map((field) => (
                             <div
                                 key={field.id}

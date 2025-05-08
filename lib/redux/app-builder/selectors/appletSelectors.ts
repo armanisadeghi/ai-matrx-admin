@@ -337,6 +337,17 @@ export const selectAppletBrokerMappings = createSelector(
 );
 
 
+export const selectAppletBrokerFieldIds = createSelector(
+  [selectAppletBrokerMappings],
+  (brokerMap): string[] => {
+    if (!brokerMap) return [];
+    
+    // Extract only the fieldIds from the broker mappings
+    return Object.values(brokerMap).map(mapping => mapping.fieldId);
+  }
+);
+
+
 // Get a specific broker mapping by broker ID within a specific applet
 export const selectBrokerMappingByBrokerId = createSelector(
   [

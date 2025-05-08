@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Stepper } from "@/features/applet/builder/parts/Stepper";
 import { StepperFooter } from "@/features/applet/builder/parts/StepperFooter";
 import { AppletsConfigStep } from "@/features/applet/builder/steps/AppletsConfigStep";
-import { GroupsConfigStep } from "@/features/applet/builder/steps/GroupsConfigStep";
+import { GroupsConfigStep } from "@/features/applet/builder/steps/ContainerConfigStep";
 import { FieldsBrokerConfigStep } from "@/features/applet/builder/steps/FieldsBrokerConfigStep";
 import { PreviewConfig } from "@/features/applet/builder/previews/PreviewConfig";
 import { useToast } from "@/components/ui/use-toast";
@@ -30,7 +30,7 @@ import { selectFieldError, selectFieldLoading, selectHasUnsavedFieldChanges } fr
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import SourceConfigStep from "@/features/applet/builder/steps/SourceConfigStep";
-import AppStartStep from "@/features/applet/builder/steps/AppStartStep";
+import AppBuilderStartStep from "@/features/applet/builder/steps/AppBuilderStartStep";
 
 interface StepCompletion {
     isComplete: boolean;
@@ -342,7 +342,7 @@ export const ConfigBuilder = () => {
 
                             {activeStep === 0 && (
                                 <div className="w-full">
-                                    <AppStartStep
+                                    <AppBuilderStartStep
                                         onAppSelected={handleAppSelected}
                                         onAppSaved={handleAppSaved}
                                         selectedAppId={selectedAppId}

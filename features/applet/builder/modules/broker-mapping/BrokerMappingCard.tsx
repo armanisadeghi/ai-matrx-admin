@@ -6,7 +6,7 @@ import { useAppSelector, useAppDispatch, RootState } from "@/lib/redux";
 import { selectFieldLoading } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { Broker, BrokerMapping } from "@/features/applet/builder/builder.types";
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
-import FieldListTable from "@/features/applet/builder/modules/field-builder/FieldListTable";
+import FieldListTable from "@/features/applet/builder/modules/field-builder/table/FieldListTable";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import { CheckCircle2, LocateOff, Variable, Plus, ListFilter, X } from "lucide-react";

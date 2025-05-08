@@ -24,9 +24,9 @@ import { saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThu
 import { Broker, BrokerMapping, AppletSourceConfig } from "@/features/applet/builder/builder.types";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
-import NeededBrokersCard from "../modules/broker-mapping/NeededBrokersCard";
-import RecipeDetailsCard from "../modules/broker-mapping/RecipeDetailsCard";
-import BrokerMappingCard from "../modules/broker-mapping/BrokerMappingCard";
+import NeededBrokersCard from "../../modules/broker-mapping/NeededBrokersCard";
+import RecipeDetailsCard from "../../modules/broker-mapping/RecipeDetailsCard";
+import BrokerMappingCard from "../../modules/broker-mapping/BrokerMappingCard";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import { cn } from "@/lib/utils";
 
