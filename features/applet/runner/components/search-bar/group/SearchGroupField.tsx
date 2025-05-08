@@ -1,9 +1,10 @@
 // SearchGroupField.tsx
 import React from "react";
-import { useAppletData } from "@/context/AppletDataContext";
+
 import DesktopSearchGroup from "./DesktopSearchFieldGroup";
 import MobileSearchGroup from "./MobileSearchFieldGroup";
 import { GroupFieldConfig } from "../../field-components/types";
+import { useAppletData } from "@/context/AppletDataContext";
 
 interface SearchGroupFieldProps {
     id: string;

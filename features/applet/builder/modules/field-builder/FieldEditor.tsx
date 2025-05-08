@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { ComponentType } from "../../builder.types";
+import { Broker, ComponentType } from "../../builder.types";
 import FieldRenderer from "./FieldRenderer";
 import SmartFieldBuilder from "./SmartFieldBuilder";
 import { Button } from "@/components/ui/button";
@@ -33,9 +33,10 @@ interface FieldEditorProps {
     onCancel?: () => void;
     containerId?: string;
     appletId?: string;
+    broker?: Broker;
 }
 
-const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel, containerId, appletId }) => {
+const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel, containerId, appletId, broker }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
 
@@ -59,12 +60,13 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
     }, [dispatch, fieldId]);
 
     useEffect(() => {
-        if (isCreatingNew && !field && !isLoading) {
+        if (isCreatingNew) {
             const newFieldId = uuidv4();
             setLocalFieldId(newFieldId);
             dispatch(startFieldCreation({ id: newFieldId }));
-        }
-    }, [dispatch, isCreatingNew, field, localFieldId]);
+        } 
+        
+    }, [dispatch, isCreatingNew]);
 
     const handleComponentTypeChange = (componentType: ComponentType) => {
         setViewAsComponentType(componentType);
@@ -153,6 +155,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         }
 
         if (onCancel) {
+            dispatch(cancelFieldCreation(localFieldId));
             onCancel();
         }
     };
@@ -201,7 +204,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
                             </>
                         }
                     >
-                        <SmartFieldBuilder fieldId={localFieldId} />
+                        <SmartFieldBuilder key={broker?.id} fieldId={localFieldId} broker={broker} />
                     </SectionCard>
                 </div>
 

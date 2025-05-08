@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { PlusIcon, BookOpenIcon, SaveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -32,14 +32,16 @@ import { v4 as uuidv4 } from "uuid";
 import AppInfoCard from "@/features/applet/builder/previews/AppInfoCard";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import useAppBuilderErrors from "@/lib/redux/app-builder/hooks/useAppBuilderErrors";
-import SourceConfigCardSelector from "../parts/SourceConfigCardSelector";
-import { AppletSourceConfig } from "@/lib/redux/app-builder/service/customAppletService";
-import { BrokerMapping } from "@/features/applet/builder/builder.types";
-
+import { BrokerMapping, AppletSourceConfig } from "@/features/applet/builder/builder.types";
 
 interface AppletsConfigStepProps {
     appId?: string; // Optional appId to filter applets
-    onUpdateCompletion?: (completion: { isComplete: boolean; canProceed: boolean; message?: string; footerButtons?: React.ReactNode }) => void;
+    onUpdateCompletion?: (completion: {
+        isComplete: boolean;
+        canProceed: boolean;
+        message?: string;
+        footerButtons?: React.ReactNode;
+    }) => void;
 }
 
 export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onUpdateCompletion }) => {
@@ -78,24 +80,24 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
         const hasApplets = appletsAlreadyInApp.length > 0;
         // Only allow proceeding if there's at least one applet and no unsaved changes
         const canProceed = hasApplets && !isDirty;
-        
-        let message = '';
+
+        let message = "";
         if (!hasApplets) {
             message = "Choose at least one existing applet or create a new one to continue";
         } else if (isDirty) {
             message = "Please save your applet changes before continuing";
         } else {
-            message = `Ready to proceed with ${appletsAlreadyInApp.length} applet${appletsAlreadyInApp.length === 1 ? '' : 's'}`;
+            message = `Ready to proceed with ${appletsAlreadyInApp.length} applet${appletsAlreadyInApp.length === 1 ? "" : "s"}`;
         }
 
         // Determine which buttons to show in the footer
         let footerButtons;
-        
+
         if (!hasApplets) {
             // Show Create New button when no applets exist
             footerButtons = (
-                <Button 
-                    onClick={handleCreateNewApplet} 
+                <Button
+                    onClick={handleCreateNewApplet}
                     className="border-emerald-500 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
                     variant="outline"
                 >
@@ -106,8 +108,8 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
         } else if (isDirty && activeAppletId) {
             // Show Save button when there are unsaved changes
             footerButtons = (
-                <Button 
-                    onClick={handleSaveApplet} 
+                <Button
+                    onClick={handleSaveApplet}
                     className="border-blue-500 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                     variant="outline"
                 >
@@ -120,11 +122,11 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
         // Report status to parent component
         onUpdateCompletion?.({
             isComplete: hasApplets,
-            canProceed, 
+            canProceed,
             message,
-            footerButtons
+            footerButtons,
         });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [appletsAlreadyInApp.length, isDirty, activeAppletId]);
 
     // Handlers
@@ -172,7 +174,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
     const handleAppletSelect = (applet: CustomAppletConfig) => {
         if (appId && applet.id) {
             setCurrentMode("existing");
-            console.warn("There is a critical feature missing here. See comments in the code.")
+            console.warn("There is a critical feature missing here. See comments in the code.");
             // TODO: We need to render a modal if the applet they've selected is associated with another app.
             // We need to tell them that an applet can only be associated with one app.
             // Offer two options: Continue with the applet association, or Duplicate the applet. (We have a service for this already, I think.)
@@ -240,13 +242,12 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
         console.log("mapping", mapping);
     };
 
-
     return (
         <div className="w-full">
-                <Card className="bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl border border-rose-200 dark:border-rose-600">
-                    <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-rose-200 dark:border-rose-600 p-3 rounded-t-3xl">
-                        <div className="grid md:grid-cols-[1fr_auto] gap-4 md:items-center">
-                            <div className="flex flex-col gap-1">
+            <Card className="bg-white dark:bg-slate-900 overflow-hidden p-0 rounded-3xl border border-rose-200 dark:border-rose-600">
+                <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-rose-200 dark:border-rose-600 p-3 rounded-t-3xl">
+                    <div className="grid md:grid-cols-[1fr_auto] gap-4 md:items-center">
+                        <div className="flex flex-col gap-1">
                             <h2 className="text-rose-500 font-medium text-lg">Applets Configuration</h2>
                             <p className="text-gray-600 dark:text-gray-300 text-sm">
                                 Applets give you 'buckets' where you can add Recipes, Agents, and Workflows.
@@ -276,7 +277,8 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
                     <div className="w-full md:w-1/4 p-5 bg-gray-50 dark:bg-gray-800/50 border-t md:border-t-0 md:border-r border-gray-200 dark:border-gray-700">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-gray-900 dark:text-gray-100 font-medium">
-                                Your Applets <span className="text-sm text-gray-500 dark:text-gray-400">({appletsAlreadyInApp.length})</span>
+                                Your Applets{" "}
+                                <span className="text-sm text-gray-500 dark:text-gray-400">({appletsAlreadyInApp.length})</span>
                             </h3>
 
                             {/* Action buttons */}
@@ -365,7 +367,9 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
                                     />
                                 }
                                 alternateState={appletsAlreadyInApp.length > 0}
-                                alternateTitle={`Excellent! You have ${appletsAlreadyInApp.length} ${appletsAlreadyInApp.length === 1 ? "Applet" : "Applets"}`}
+                                alternateTitle={`Excellent! You have ${appletsAlreadyInApp.length} ${
+                                    appletsAlreadyInApp.length === 1 ? "Applet" : "Applets"
+                                }`}
                                 alternateDescription="You can select an applet from the list to edit it, or add more applets if you wish."
                                 alternateButtonText="Add Another Applet"
                             />

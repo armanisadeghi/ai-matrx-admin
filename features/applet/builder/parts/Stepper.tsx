@@ -8,10 +8,11 @@ interface StepperProps {
     description: string;
   }[];
   activeStep: number;
+  showDescription: boolean;
   onStepClick: (index: number) => void;
 }
 
-export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick }) => {
+export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick, showDescription }) => {
   return (
     <div className="w-full bg-white dark:bg-gray-900 overflow-x-auto">
       <nav aria-label="Progress" className="pb-2">
@@ -68,9 +69,11 @@ export const Stepper: React.FC<StepperProps> = ({ steps, activeStep, onStepClick
                 >
                   {step.title}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {step.description}
-                </span>
+                {showDescription && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    {step.description}
+                  </span>
+                )}
               </div>
             </li>
           ))}

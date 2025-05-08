@@ -2,6 +2,7 @@
 import React, { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { createCardStyles } from "@/components/official/styles";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SectionCardProps {
     title: string;
@@ -15,6 +16,9 @@ interface SectionCardProps {
     headerActions?: ReactNode; // Add header actions support for buttons
     color?: string;
     spacing?: string;
+    minHeight?: string; // Minimum height of the card content
+    maxHeight?: string; // Maximum height of the card content
+    scrollable?: boolean; // Whether to enable scrolling when content exceeds maxHeight
 }
 
 const SectionCard: React.FC<SectionCardProps> = ({
@@ -28,8 +32,12 @@ const SectionCard: React.FC<SectionCardProps> = ({
     autoGrid = false,
     headerActions,
     color = "rose",
-    spacing = "default"
+    spacing = "default",
+    minHeight,
+    maxHeight,
+    scrollable = true, // Default to true when maxHeight is set
 }) => {
+    const isMobile = useIsMobile();
     
     const getGridClasses = () => {
         if (!autoGrid) return "";
@@ -51,6 +59,34 @@ const SectionCard: React.FC<SectionCardProps> = ({
         return createCardStyles({ color, spacing });
     };
     
+    // Get content classes (for grid)
+    const getContentClasses = () => {
+        return autoGrid ? getGridClasses() : "";
+    };
+    
+    // Create inline styles for height constraints
+    const getContentStyles = () => {
+        const styles: React.CSSProperties = {};
+        
+        // Only apply height constraints on non-mobile devices
+        if (!isMobile) {
+            // Add height constraints if provided
+            if (minHeight) {
+                styles.minHeight = minHeight;
+            }
+            
+            // Add max height and scrolling if applicable
+            if (maxHeight) {
+                styles.maxHeight = maxHeight;
+                if (scrollable) {
+                    styles.overflowY = 'auto';
+                }
+            }
+        }
+        
+        return styles;
+    };
+    
     return (
         <Card className={getCardClasses().card}>
             <CardHeader className={getCardClasses().cardHeader}>
@@ -63,10 +99,8 @@ const SectionCard: React.FC<SectionCardProps> = ({
                     {headerActions && <div className="flex items-center">{headerActions}</div>}
                 </div>
             </CardHeader>
-            <CardContent className={autoGrid ? getGridClasses() : ""}>{children}</CardContent>
-            {footer && (
-                <CardFooter className={getCardClasses().cardFooter}>{footer}</CardFooter>
-            )}
+            <CardContent className={getContentClasses()} style={getContentStyles()}>{children}</CardContent>
+            {footer && <CardFooter className={getCardClasses().cardFooter}>{footer}</CardFooter>}
         </Card>
     );
 };

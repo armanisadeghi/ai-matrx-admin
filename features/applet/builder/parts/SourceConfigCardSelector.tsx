@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
-import { AppletSourceConfig } from '@/lib/redux/app-builder/service';
+import { AppletSourceConfig } from '@/features/applet/builder/builder.types';
 import { useAppSelector, useAppDispatch } from '@/lib/redux';
-import { selectAppletSourceConfigList } from '@/lib/redux/app-builder/selectors/appletSelectors';
+import { selectTempSourceConfigList } from '@/lib/redux/app-builder/selectors/appletSelectors';
 import { selectActiveAppletId } from '@/lib/redux/app-builder/selectors/appletSelectors';
 import { fetchFieldsThunk } from '@/lib/redux/app-builder/thunks/fieldBuilderThunks';
 import { selectAllFields, selectFieldLoading, selectFieldError } from '@/lib/redux/app-builder/selectors/fieldSelectors';
@@ -118,7 +118,7 @@ const SourceConfigCardSelector = ({ appletId, onSourceConfigSelected, onMappingC
   const [selectedField, setSelectedField] = useState<string>('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   
-  const sourceConfigs = useAppSelector(selectAppletSourceConfigList);
+  const tempSourceConfigList = useAppSelector(selectTempSourceConfigList);
   const activeAppletId = useAppSelector(selectActiveAppletId);
   const dispatch = useAppDispatch();
   const allFields = useAppSelector(selectAllFields);
@@ -181,7 +181,7 @@ const SourceConfigCardSelector = ({ appletId, onSourceConfigSelected, onMappingC
           <div className="border rounded-lg p-4 border-gray-200 dark:border-gray-700 dark:bg-gray-800">
             <h3 className="font-medium text-sm mb-3 text-gray-900 dark:text-gray-100">Available Recipes</h3>
             <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-              {sourceConfigs.map((sourceConfig, index) => (
+              {tempSourceConfigList.map((sourceConfig, index) => (
                 <div 
                   key={`${sourceConfig.config.compiledId}-${index}`}
                   className={`border rounded-lg p-3 cursor-pointer transition-all hover:shadow-md ${

@@ -1,5 +1,5 @@
 import { isSlugInUse } from "@/config/applets/apps/constants";
-import { AppletContainer, CustomAppletConfig } from "@/features/applet/builder/builder.types";
+import { AppletContainer, AppletSourceConfig, BrokerMapping, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import { supabase } from "@/utils/supabase/client";
 import { RuntimeCompiledRecipe } from "../../app-runner/types";
@@ -29,6 +29,7 @@ export type CustomAppletConfigDB = {
     subcategory_id?: string;
     image_url?: string;
     app_id?: string;
+    broker_map?: BrokerMapping[];
 };
 
 
@@ -55,6 +56,7 @@ export const normalizeCustomAppletConfig = (config: Partial<CustomAppletConfig>)
         subcategoryId: config.subcategoryId || null,
         imageUrl: config.imageUrl || null,
         appId: config.appId || null,
+        brokerMap: config.brokerMap || [],
     };
 };
 
@@ -94,6 +96,7 @@ export const appletConfigToDBFormat = async (
         subcategory_id: config.subcategoryId || null,
         image_url: config.imageUrl || null,
         app_id: config.appId || null,
+        broker_map: config.brokerMap || null,
     };
 };
 
@@ -120,6 +123,7 @@ export const dbToAppletConfig = (dbRecord: CustomAppletConfigDB): CustomAppletCo
         subcategoryId: dbRecord.subcategory_id,
         imageUrl: dbRecord.image_url,
         appId: dbRecord.app_id,
+        brokerMap: dbRecord.broker_map,
     });
 };
 
@@ -163,7 +167,6 @@ export const getCustomAppletConfigById = async (id: string): Promise<CustomApple
 export const createCustomAppletConfig = async (config: CustomAppletConfig): Promise<CustomAppletConfig> => {
     const dbData = await appletConfigToDBFormat(config);
 
-    console.log("Creating custom applet config with data:", JSON.stringify(dbData, null, 2));
 
     try {
         const { data, error } = await supabase.from("custom_applet_configs").insert(dbData).select().single();
@@ -390,50 +393,6 @@ export const getCompiledRecipeById = async (id: string): Promise<RuntimeCompiled
 
 
 
-export interface WorkflowSourceConfig {
-    sourceType: "workflow";
-    id: string;
-    workflowId: string;
-    [key: string]: any;
-}
-
-export interface ApiSourceConfig {
-    sourceType: "api";
-    id: string;
-    [key: string]: any;
-}
-
-export interface DatabaseSourceConfig {
-    sourceType: "database";
-    id: string;
-    [key: string]: any;
-}
-
-export interface OtherSourceConfig {
-    sourceType: "other";
-    id: string;
-    [key: string]: any;
-}
-
-export interface NeededBroker {
-    id: string;
-    name: string;
-    required: boolean;
-    dataType: string;
-    defaultValue: string;
-}
-
-export interface CompiledRecipeWithNeededBrokers {
-    id: string;
-    compiledId: string;
-    version: number;
-    neededBrokers: NeededBroker[];
-}
-
-export interface AppletSourceConfig {
-    sourceType: "recipe" | "workflow" | "api" | "database" | "other" | string;
-    config: CompiledRecipeWithNeededBrokers | WorkflowSourceConfig | ApiSourceConfig | DatabaseSourceConfig | OtherSourceConfig;
-}
 
 const convertDbResponseForSourceConfigs = (data: any) => {
     const compiled_id = data.id;
@@ -595,6 +554,7 @@ export const getAppletById = async (id: string): Promise<CustomAppletConfig | nu
             subcategoryId: data.subcategory_id,
             imageUrl: data.image_url,
             appId: data.app_id,
+            brokerMap: data.broker_map,
         };
 
         return camelCaseApplet;
@@ -642,6 +602,7 @@ export const getAllApplets = async (): Promise<CustomAppletConfig[]> => {
             subcategoryId: applet.subcategory_id,
             imageUrl: applet.image_url,
             appId: applet.app_id,
+            brokerMap: applet.broker_map,
         }));
 
         return camelCaseApplets;

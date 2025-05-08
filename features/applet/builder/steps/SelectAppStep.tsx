@@ -11,7 +11,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppById } from "@/lib/redux/app-builder/selectors/appSelectors";
 
 interface SelectAppStepProps {
-    onAppSelected: (app: CustomAppConfig) => void;
+    onAppSelected: (id: string) => void;
     onCreateNewApp: () => void;
     selectedAppId: string | null;
     onUpdateCompletion?: (completion: {
@@ -37,7 +37,7 @@ export const SelectAppStep: React.FC<SelectAppStepProps> = ({ onAppSelected, onC
     }, [selectedAppId, selectedApp]);
 
     const handleAppSelected = (app: CustomAppConfig) => {
-        onAppSelected(app);
+        onAppSelected(app.id);
     };
 
     return (

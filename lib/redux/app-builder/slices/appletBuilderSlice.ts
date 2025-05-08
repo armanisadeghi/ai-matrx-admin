@@ -15,9 +15,9 @@ import {
 import { saveContainerAndUpdateAppletThunk } from "../thunks/containerBuilderThunks";
 import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
 import { AppletBuilder, ContainerBuilder } from "../types";
-import { BrokerMapping, SourceConfig } from "@/features/applet/builder/builder.types";
+import { BrokerMapping } from "@/features/applet/builder/builder.types";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
-import { AppletSourceConfig } from "../service";
+import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
 
 // Helper function to check if an applet exists in state
 const checkAppletExists = (state: AppletsState, id: string): boolean => {
@@ -39,10 +39,8 @@ export const DEFAULT_APPLET: Partial<AppletBuilder> = {
     accentColor: "rose",
     layoutType: "open",
     containers: [],
-    dataSourceConfig: {
-        sourceConfig: [],
-        brokerMappings: [],
-    },
+    dataSourceConfig: {},
+    brokerMap: [],
     resultComponentConfig: {},
     nextStepConfig: {},
     compiledRecipeId: "",
@@ -167,76 +165,11 @@ export const appletBuilderSlice = createSlice({
 
             state.applets[id] = { ...state.applets[id], layoutType, isDirty: true };
         },
-        setDataSourceConfig: (state, action: PayloadAction<{ id: string; dataSourceConfig?: SourceConfig }>) => {
+        setDataSourceConfig: (state, action: PayloadAction<{ id: string; dataSourceConfig?: AppletSourceConfig }>) => {
             const { id, dataSourceConfig } = action.payload;
             if (!checkAppletExists(state, id)) return;
 
             state.applets[id] = { ...state.applets[id], dataSourceConfig, isDirty: true };
-        },
-        setSourceConfig: (state, action: PayloadAction<{ id: string; sourceConfig?: AppletSourceConfig[] }>) => {
-            const { id, sourceConfig } = action.payload;
-            if (!checkAppletExists(state, id)) return;
-            
-            state.applets[id] = { 
-                ...state.applets[id], 
-                dataSourceConfig: {
-                    ...state.applets[id].dataSourceConfig,
-                    sourceConfig
-                },
-                isDirty: true 
-            };
-        },
-        addSourceConfig: (state, action: PayloadAction<{ id: string; sourceConfig: AppletSourceConfig }>) => {
-            const { id, sourceConfig } = action.payload;
-            if (!checkAppletExists(state, id)) return;
-            
-            const currentSourceConfigs = state.applets[id].dataSourceConfig?.sourceConfig || [];
-            const existingIndex = currentSourceConfigs.findIndex(
-                config => config.config.id === sourceConfig.config.id && config.sourceType === sourceConfig.sourceType
-            );
-            
-            if (existingIndex !== -1) {
-                // Replace existing config with same ID and sourceType
-                const updatedSourceConfigs = [...currentSourceConfigs];
-                updatedSourceConfigs[existingIndex] = sourceConfig;
-                
-                state.applets[id] = { 
-                    ...state.applets[id], 
-                    dataSourceConfig: {
-                        ...state.applets[id].dataSourceConfig,
-                        sourceConfig: updatedSourceConfigs
-                    },
-                    isDirty: true 
-                };
-            } else {
-                // Add new source config
-                state.applets[id] = { 
-                    ...state.applets[id], 
-                    dataSourceConfig: {
-                        ...state.applets[id].dataSourceConfig,
-                        sourceConfig: [...currentSourceConfigs, sourceConfig]
-                    },
-                    isDirty: true 
-                };
-            }
-        },
-        removeSourceConfig: (state, action: PayloadAction<{ id: string; configId: string }>) => {
-            const { id, configId } = action.payload;
-            if (!checkAppletExists(state, id)) return;
-            
-            const currentSourceConfigs = state.applets[id].dataSourceConfig?.sourceConfig || [];
-            const filteredSourceConfigs = currentSourceConfigs.filter(config => config.config.id !== configId);
-            
-            if (filteredSourceConfigs.length !== currentSourceConfigs.length) {
-                state.applets[id] = { 
-                    ...state.applets[id], 
-                    dataSourceConfig: {
-                        ...state.applets[id].dataSourceConfig,
-                        sourceConfig: filteredSourceConfigs
-                    },
-                    isDirty: true 
-                };
-            }
         },
         setResultComponentConfig: (state, action: PayloadAction<{ id: string; resultComponentConfig?: any }>) => {
             const { id, resultComponentConfig } = action.payload;
@@ -274,16 +207,13 @@ export const appletBuilderSlice = createSlice({
 
             state.applets[id] = { ...state.applets[id], appId, isDirty: true };
         },
-        setBrokerMappings: (state, action: PayloadAction<{ id: string; brokerMappings?: BrokerMapping[] }>) => {
-            const { id, brokerMappings } = action.payload;
+        setBrokerMap: (state, action: PayloadAction<{ id: string; brokerMap?: BrokerMapping[] }>) => {
+            const { id, brokerMap } = action.payload;
             if (!checkAppletExists(state, id)) return;
 
             state.applets[id] = { 
                 ...state.applets[id], 
-                dataSourceConfig: {
-                    ...state.applets[id].dataSourceConfig,
-                    brokerMappings
-                },
+                brokerMap,
                 isDirty: true 
             };
         },
@@ -291,7 +221,7 @@ export const appletBuilderSlice = createSlice({
             const { id, brokerMapping } = action.payload;
             if (!checkAppletExists(state, id)) return;
             
-            const currentMappings = state.applets[id].dataSourceConfig?.brokerMappings || [];
+            const currentMappings = state.applets[id].brokerMap || [];
             const existingIndex = currentMappings.findIndex(mapping => mapping.brokerId === brokerMapping.brokerId);
             
             if (existingIndex !== -1) {
@@ -301,20 +231,14 @@ export const appletBuilderSlice = createSlice({
                 
                 state.applets[id] = { 
                     ...state.applets[id], 
-                    dataSourceConfig: {
-                        ...state.applets[id].dataSourceConfig,
-                        brokerMappings: updatedMappings
-                    },
+                    brokerMap: updatedMappings,
                     isDirty: true 
                 };
             } else {
                 // Add new mapping
                 state.applets[id] = { 
                     ...state.applets[id], 
-                    dataSourceConfig: {
-                        ...state.applets[id].dataSourceConfig,
-                        brokerMappings: [...currentMappings, brokerMapping]
-                    },
+                    brokerMap: [...currentMappings, brokerMapping],
                     isDirty: true 
                 };
             }
@@ -323,16 +247,13 @@ export const appletBuilderSlice = createSlice({
             const { id, brokerId } = action.payload;
             if (!checkAppletExists(state, id)) return;
             
-            const currentMappings = state.applets[id].dataSourceConfig?.brokerMappings || [];
+            const currentMappings = state.applets[id].brokerMap || [];
             const filteredMappings = currentMappings.filter(mapping => mapping.brokerId !== brokerId);
             
             if (filteredMappings.length !== currentMappings.length) {
                 state.applets[id] = { 
                     ...state.applets[id], 
-                    dataSourceConfig: {
-                        ...state.applets[id].dataSourceConfig,
-                        brokerMappings: filteredMappings
-                    },
+                    brokerMap: filteredMappings,
                     isDirty: true 
                 };
             }
@@ -701,16 +622,13 @@ export const {
     setAccentColor,
     setLayoutType,
     setDataSourceConfig,
-    setSourceConfig,
-    addSourceConfig,
-    removeSourceConfig,
     setResultComponentConfig,
     setNextStepConfig,
     setCompiledRecipeId,
     setSubcategoryId,
     setImageUrl,
     setAppId,
-    setBrokerMappings,
+    setBrokerMap,
     addBrokerMapping,
     removeBrokerMapping,
     setIsPublic,

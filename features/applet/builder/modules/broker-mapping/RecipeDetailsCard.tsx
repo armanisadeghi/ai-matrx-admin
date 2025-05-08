@@ -2,7 +2,7 @@
 
 import React from "react";
 import SectionCard from "@/components/official/cards/SectionCard";
-import { AppletSourceConfig } from "@/lib/redux/app-builder/service";
+import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { BrokerMapping } from "@/features/applet/builder/builder.types";
 import { CheckCircle } from "lucide-react";

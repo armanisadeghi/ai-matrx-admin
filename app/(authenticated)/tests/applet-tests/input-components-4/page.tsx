@@ -1,7 +1,7 @@
 // app/booking/page.tsx
 'use client';
 
-import { useAppletData } from '@/context/AppletDataContext';
+import { useAppletData } from "@/context/AppletDataContext";
 
 export default function BookingPage() {
   const { activeTab } = useAppletData();

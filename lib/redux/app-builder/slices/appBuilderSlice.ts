@@ -56,11 +56,25 @@ export const appBuilderSlice = createSlice({
     initialState,
     reducers: {
         // Initialize a new app
-        startNewApp: (state, action: PayloadAction<{ id: string }>) => {
+        startNewApp: (state, action: PayloadAction<{ 
+            id: string; 
+            template?: { 
+                type: 'simple' | 'complex';
+                appName: string;
+                description: string;
+            } 
+        }>) => {
             const id = action.payload.id;
+            const template = action.payload.template;
+
             state.apps[id] = {
                 ...DEFAULT_APP,
                 id,
+                name: template ? template.appName : DEFAULT_APP.name,
+                description: template ? template.description : DEFAULT_APP.description,
+                // For template apps, we'll set a more complete configuration in the thunk
+                isTemplated: !!template,
+                templateType: template?.type,
             } as AppBuilder;
             state.newAppId = id;
             state.activeAppId = id;

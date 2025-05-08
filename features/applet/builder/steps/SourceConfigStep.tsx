@@ -1,37 +1,30 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { PanelRight, PlusCircle, BrainCircuit, Variable } from "lucide-react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { BrainCircuit, Variable, Edit } from "lucide-react";
+import AppletTabsWrapper from "@/features/applet/builder/parts/AppletTabsWrapper";
 import SectionCard from "@/components/official/cards/SectionCard";
 import AppletSourceSelection from "@/features/applet/builder/modules/broker-mapping/SourceSelector";
-import { RecipeSelector } from "@/features/applet/builder/modules/smart-parts/applets";
+import { RecipeSelectionList } from "@/features/applet/builder/modules/recipe-source/RecipeSelectionList";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
-import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { selectAppletCompiledRecipeId } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { selectAppletCompiledRecipeId, selectAppletsByAppId } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectAppletSourceConfig } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectIsAppletDirtyById } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { AppletSourceConfig } from "@/lib/redux/app-builder/service/customAppletService";
-import { selectAppletsByAppId } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import {
-    setCompiledRecipeId,
-    setActiveApplet,
-    addBrokerMapping,
-    addSourceConfig,
-} from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { setDataSourceConfig, setCompiledRecipeId } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { Broker, BrokerMapping } from "@/features/applet/builder/builder.types";
-import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
-import NeededBrokersCard from "../modules/broker-mapping/components/NeededBrokersCard";
-import RecipeDetailsCard from "../modules/broker-mapping/components/RecipeDetailsCard";
-import BrokerMappingCard from "../modules/broker-mapping/components/BrokerMappingCard";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { AppletBuilder } from "@/lib/redux/app-builder/types";
+import RecipeDetailsCard from "@/features/applet/builder/modules/broker-mapping/RecipeDetailsCard";
+import { useToast } from "@/components/ui/use-toast";
+import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
 
-interface SelectAppStepProps {
+
+
+interface SourceConfigContentProps {
+    appletId: string;
     appId?: string;
     onUpdateCompletion?: (completion: {
         isComplete: boolean;
@@ -41,209 +34,275 @@ interface SelectAppStepProps {
     }) => void;
 }
 
-export const SourceConfigStep: React.FC<SelectAppStepProps> = ({ appId, onUpdateCompletion }) => {
+// This is the inner content component that will be wrapped
+const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, appId, onUpdateCompletion }) => {
     const dispatch = useAppDispatch();
-    const activeAppletId = useAppSelector((state: RootState) => selectActiveAppletId(state));
-    const appletCompiledRecipeId = useAppSelector((state: RootState) => selectAppletCompiledRecipeId(state, activeAppletId || ""));
-    const applets = useAppSelector((state) => (appId ? selectAppletsByAppId(state, appId) : [])) as AppletBuilder[];
-    const sourceConfigs = useAppSelector((state) => (activeAppletId ? selectAppletSourceConfig(state, activeAppletId) : null));
-    // Get if the active applet has unsaved changes
-    const isAppletDirty = useAppSelector((state) => activeAppletId ? selectIsAppletDirtyById(state, activeAppletId) : false);
+    const { toast } = useToast();
+    const appletCompiledRecipeId = useAppSelector((state: RootState) => selectAppletCompiledRecipeId(state, appletId || ""));
+    const sourceConfigs = useAppSelector((state) => (appletId ? selectAppletSourceConfig(state, appletId) : null));
+    const isAppletDirty = useAppSelector((state) => (appletId ? selectIsAppletDirtyById(state, appletId) : false));
+    const allApplets = useAppSelector((state) => (appId ? selectAppletsByAppId(state, appId) : [])) as AppletBuilder[];
+
+    const [activeSourceType, setActiveSourceType] = useState<string | null>(
+        sourceConfigs?.sourceType || null
+    );
     
-    // Get the active source config from Redux
-    const activeSourceConfig = sourceConfigs && sourceConfigs.length > 0 ? sourceConfigs[0] : null;
+    const [editingRecipe, setEditingRecipe] = useState<boolean>(
+        !sourceConfigs || !sourceConfigs.config || !sourceConfigs.config.id
+    );
+
     
-    // Keep UI state for source type and broker selection
-    const [activeSourceType, setActiveSourceType] = useState<string | null>(null);
-    const [selectedBroker, setSelectedBroker] = useState<Broker | null>(null);
+    const isFirstRender = useRef(true);
+    const lastUpdateTimeRef = useRef(0);
 
     const { quickReferenceRecords, quickReferenceKeyDisplayPairs, loadingState, getRecordIdByRecord } = useFetchQuickRef("recipe");
     const quickRefCount = quickReferenceRecords.length;
 
-    useEffect(() => {
-        if (!activeAppletId && applets.length > 0) {
-            dispatch(setActiveApplet(applets[0].id));
-        }
-    }, [activeAppletId, applets, dispatch]);
-
-    const handleAppletChange = (value: string) => {
-        dispatch(setActiveApplet(value));
-    };
-
     const handleSourceTypeSelected = (sourceType: string) => {
         setActiveSourceType(sourceType);
+        setEditingRecipe(true);
     };
 
-    const handleRecipeSelected = (compiledRecipeId: string) => {
-        if (activeAppletId) {
-            dispatch(setCompiledRecipeId({ id: activeAppletId, compiledRecipeId }));
-        }
-    };
-
-    const handleGetCompiledRecipeWithNeededBrokers = (sourceConfig: AppletSourceConfig | null) => {
-        if (sourceConfig && activeAppletId) {
-            dispatch(addSourceConfig({ id: activeAppletId, sourceConfig }));
+    const handleRecipeCompiledIdSelected = (compiledId: string) => {
+        if (appletId) {
+            dispatch(setCompiledRecipeId({ id: appletId, compiledRecipeId: compiledId }));
         }
     };
 
     const handleSourceConfigSelected = (sourceConfig: AppletSourceConfig | null) => {
-        if (sourceConfig && activeAppletId) {
-            dispatch(addSourceConfig({ id: activeAppletId, sourceConfig }));
+        if (sourceConfig && appletId) {
+            dispatch(setDataSourceConfig({ id: appletId, dataSourceConfig: sourceConfig }));
+            // Don't automatically exit editing mode - wait for user confirmation
+            updateCompletionStatus();
         }
     };
 
-    const handleMappingCreated = (mapping: BrokerMapping) => {
-        dispatch(addBrokerMapping({ id: activeAppletId, brokerMapping: mapping }));
+    const handleEditRecipe = () => {
+        // Explicit user action to edit recipe
+        setEditingRecipe(true);
     };
 
-    const handleBrokerSelect = (broker: Broker) => {
-        setSelectedBroker(broker);
-    };
-
-    // Handler to save the applet
-    const handleSaveApplet = async () => {
-        if (activeAppletId) {
+    // Handler to save the current applet
+    const handleSaveApplet = useCallback(async () => {
+        if (appletId) {
             try {
-                await dispatch(saveAppletThunk(activeAppletId)).unwrap();
+                await dispatch(saveAppletThunk(appletId)).unwrap();
+                toast({
+                    title: "Success",
+                    description: "Applet saved successfully",
+                });
+                updateCompletionStatus();
             } catch (error) {
                 console.error("Failed to save applet:", error);
-                // You might want to show an error toast/notification here
+                toast({
+                    title: "Error",
+                    description: "Failed to save applet",
+                    variant: "destructive",
+                });
             }
         }
-    };
+    }, [appletId, dispatch, toast]);
 
-    // Helper function to clear source config (if needed in the future)
-    const handleClearSourceConfig = () => {
-        if (activeAppletId && sourceConfigs && sourceConfigs.length > 0) {
-            // Use removeSourceConfig action if needed
-            // We'd need to import it
-            // dispatch(removeSourceConfig({ id: activeAppletId, configId: sourceConfigs[0].config.id }));
-            setActiveSourceType(null);
-            setSelectedBroker(null);
+    // Handler to save all applets
+    const handleSaveAllApplets = useCallback(async () => {
+        if (!appId || allApplets.length === 0) return;
+        
+        try {
+            // Save all applets that have source configs and are dirty
+            const savePromises = allApplets
+                .filter(applet => {
+                    const configs = selectAppletSourceConfig({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id);
+                    const isDirty = selectIsAppletDirtyById({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id);
+                    return configs && isDirty;
+                })
+                .map(applet => dispatch(saveAppletThunk(applet.id)).unwrap());
+            
+            if (savePromises.length > 0) {
+                await Promise.all(savePromises);
+                toast({
+                    title: "Success",
+                    description: "All applets saved successfully",
+                });
+            }
+            
+            updateCompletionStatus();
+        } catch (error) {
+            console.error("Failed to save applets:", error);
+            toast({
+                title: "Error",
+                description: "Failed to save one or more applets",
+                variant: "destructive",
+            });
         }
-    };
+    }, [appId, allApplets, dispatch, toast]);
 
-    // Create a button for "Create New Applet" if needed
-    const headerActions = (
-        <Button
-            variant="outline"
-            className="rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 border text-blue-500 dark:text-blue-300 border-blue-500 dark:border-blue-600 hover:text-white flex items-center gap-2"
-        >
-            <PlusCircle className="h-4 w-4" />
-            Create New Applet
-        </Button>
-    );
+    const updateCompletionStatus = useCallback(() => {
+        if (!onUpdateCompletion || !appId) return;
+        
+        // Throttle updates to prevent excessive re-renders
+        const now = Date.now();
+        if (now - lastUpdateTimeRef.current < 200) return;
+        lastUpdateTimeRef.current = now;
 
-    // Create tabs for description
-    const appletTabs = (
-        <TabsList className="bg-transparent border-none">
-            {applets.map((applet) => (
-                <TabsTrigger key={applet.id} value={applet.id} className="border border-blue-500 dark:border-blue-700">
-                    {applet.name}
-                </TabsTrigger>
-            ))}
-        </TabsList>
-    );
+        // Check if all applets have source configs
+        const appletstWithSourceConfigs = allApplets.filter(applet => {
+            const configs = selectAppletSourceConfig({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id);
+            return configs;
+        });
+
+        // Check if any applets are dirty (need saving)
+        const dirtyApplets = allApplets.filter(applet => 
+            selectIsAppletDirtyById({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id)
+        );
+
+        const allHaveSourceConfigs = allApplets.length > 0 && appletstWithSourceConfigs.length === allApplets.length;
+        const anyNeedSaving = dirtyApplets.length > 0;
+        
+        // Create save button if any applets need saving
+        const saveButton = anyNeedSaving ? (
+            <Button 
+                onClick={handleSaveAllApplets}
+                className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
+            >
+                Save All Changes
+            </Button>
+        ) : null;
+
+        onUpdateCompletion({
+            isComplete: allHaveSourceConfigs && !anyNeedSaving,
+            canProceed: allHaveSourceConfigs, // They can proceed if all have configs, even if not saved
+            message: allApplets.length === 0 
+                ? "No applets found. Please create applets first."
+                : !allHaveSourceConfigs
+                ? `${appletstWithSourceConfigs.length}/${allApplets.length} applets have source configurations.`
+                : anyNeedSaving 
+                ? "All applets have sources configured. Please save your changes before proceeding."
+                : "All applets have been configured and saved.",
+            footerButtons: saveButton
+        });
+    }, [allApplets, appId, handleSaveAllApplets, onUpdateCompletion]);
+
+    // Only update completion on initial render and when explicitly called
+    useEffect(() => {
+        if (isFirstRender.current) {
+            updateCompletionStatus();
+            isFirstRender.current = false;
+        }
+    // Run this effect only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Only update completion when source config or dirty state changes
+    // Don't make any automatic UI changes
+    useEffect(() => {
+        updateCompletionStatus();
+    }, [sourceConfigs, isAppletDirty, updateCompletionStatus]);
 
     const itemCounts = {
-        "ai-recipe": quickRefCount,
+        recipe: quickRefCount,
         "ai-agent": 0,
         action: 0,
         "api-integration": 0,
     };
 
+    // Handler for when recipe configuration is complete
+    const handleRecipeConfigComplete = () => {
+        // Only switch to summary view when the user explicitly completes the recipe selection
+        setEditingRecipe(false);
+        updateCompletionStatus();
+    };
+
+    const renderRecipeSelection = () => {
+        if (!editingRecipe && sourceConfigs) {
+            // Show the recipe details and edit button when a recipe is selected
+            return (
+                <div className="space-y-4">
+                    <RecipeDetailsCard sourceConfig={sourceConfigs} appletId={appletId} />
+                    
+                    <div className="flex justify-between items-center">
+                        <Button
+                            onClick={handleEditRecipe}
+                            variant="outline"
+                            className="text-blue-600 border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-blue-900/20"
+                        >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Change Recipe
+                        </Button>
+                        
+                        {isAppletDirty && (
+                            <Button
+                                onClick={handleSaveApplet}
+                                className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
+                            >
+                                Save Changes
+                            </Button>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+        
+        // Show the recipe selection UI when in editing mode
+        return (
+            <SectionCard title="Select an AI Recipe" color="gray">
+                <div className="flex flex-col items-center justify-center py-6 text-center px-4">
+                    <RecipeSelectionList
+                        setCompiledRecipeId={handleRecipeCompiledIdSelected}
+                        setRecipeSourceConfig={handleSourceConfigSelected}
+                        initialSourceConfig={sourceConfigs}
+                        versionDisplay="card"
+                        onConfirm={handleRecipeConfigComplete}
+                    />
+                </div>
+            </SectionCard>
+        );
+    };
+
     return (
-        <div className="w-full">
-            <Tabs value={activeAppletId || ""} onValueChange={handleAppletChange} className="w-full">
-                <SectionCard
-                    title="Connect Applets to Intelligence"
-                    description="Time to make real-life magic happen! Select a source for each applet."
-                    descriptionNode={applets.length > 0 ? appletTabs : undefined}
-                    headerActions={headerActions}
-                >
-                    {applets.map((applet) => (
-                        <TabsContent key={applet.id} value={applet.id} className="my-6 space-y-4">
-                            <AppletSourceSelection onSelect={handleSourceTypeSelected} itemCounts={itemCounts} />
+        <div className="space-y-4">
+            <AppletSourceSelection onSelect={handleSourceTypeSelected} itemCounts={itemCounts} activeSourceType={activeSourceType} />
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="md:col-span-1 space-y-4">
-                                    {activeSourceType === "ai-recipe" ? (
-                                        <SectionCard title="Select an AI Recipe" color="gray">
-                                            <div className="flex flex-col items-center justify-center py-6 text-center">
-                                                <RecipeSelector
-                                                    compiledRecipeId={appletCompiledRecipeId}
-                                                    onRecipeSelect={handleRecipeSelected}
-                                                    onGetCompiledRecipeWithNeededBrokers={handleGetCompiledRecipeWithNeededBrokers}
-                                                />
-                                            </div>
-                                        </SectionCard>
-                                    ) : (
-                                        <SectionCard title="Intelligence Source Selection" color="gray">
-                                            <EmptyStateCard
-                                                title="Select an Intelligence Source"
-                                                description={`${itemCounts["ai-agent"]} Agents, ${itemCounts["action"]} Actions, ${itemCounts["api-integration"]} API Integrations, ${itemCounts["ai-recipe"]} Recipes`}
-                                                icon={BrainCircuit}
-                                            />
-                                        </SectionCard>
-                                    )}
-
-                                    {appletCompiledRecipeId && <RecipeDetailsCard sourceConfig={activeSourceConfig} appletId={activeAppletId} />}
-
-                                    <NeededBrokersCard
-                                        sourceConfig={activeSourceConfig}
-                                        selectedBroker={selectedBroker}
-                                        onBrokerSelect={handleBrokerSelect}
-                                    />
-
-                                    {/* Save Button */}
-                                    <div className="mt-4">
-                                        <Button
-                                            onClick={handleSaveApplet}
-                                            disabled={!isAppletDirty}
-                                            className={cn(
-                                                "w-full",
-                                                isAppletDirty 
-                                                    ? "bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800" 
-                                                    : "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed"
-                                            )}
-                                        >
-                                            {isAppletDirty ? "Save Changes" : "No Changes to Save"}
-                                        </Button>
-                                    </div>
-                                </div>
-                                {/* Second and Third columns: Broker Mapping */}
-                                {activeSourceType && (
-                                    <div className="md:col-span-2">
-                                        {selectedBroker ? (
-                                            <BrokerMappingCard
-                                                selectedBroker={selectedBroker}
-                                                appletId={activeAppletId}
-                                                onMappingCreated={handleMappingCreated}
-                                            />
-                                        ) : (
-                                            <EmptyStateCard
-                                                title="Broker & Field Mapping"
-                                                description="Select a broker from the list of Needed Brokers."
-                                                icon={Variable}
-                                            />
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </TabsContent>
-                    ))}
-                    {applets.length === 0 && (
-                        <SectionCard title="No applets found" description="Create a new applet to get started">
+            <div className="w-full gap-4">
+                <div className="space-y-4">
+                    {activeSourceType === "recipe" ? (
+                        renderRecipeSelection()
+                    ) : (
+                        <SectionCard title="Intelligence Source Selection" color="gray">
                             <EmptyStateCard
-                                title="Select an Applet to Continue"
-                                description="Please select an applet and group from the sidebar to start configuring fields for your component."
-                                icon={PanelRight}
+                                title="Select an Intelligence Source"
+                                description={`${itemCounts["ai-agent"]} Agents, ${itemCounts["action"]} Actions, ${itemCounts["api-integration"]} API Integrations, ${itemCounts["recipe"]} Recipes`}
+                                icon={BrainCircuit}
                             />
                         </SectionCard>
                     )}
-                </SectionCard>
-            </Tabs>
+                </div>
+            </div>
         </div>
+    );
+};
+
+// This is the main wrapper component that uses AppletTabsWrapper
+interface SourceConfigStepProps {
+    appId?: string;
+    onUpdateCompletion?: (completion: {
+        isComplete: boolean;
+        canProceed: boolean;
+        message?: string;
+        footerButtons?: React.ReactNode;
+    }) => void;
+    onCreateNewApplet?: () => void;
+}
+
+export const SourceConfigStep: React.FC<SourceConfigStepProps> = ({ appId, onUpdateCompletion, onCreateNewApplet }) => {
+    return (
+        <AppletTabsWrapper
+            appId={appId}
+            title="Connect Applets to Intelligence"
+            description="Time to make real-life magic happen! Select a source for each applet."
+            onCreateNewApplet={onCreateNewApplet}
+        >
+            {(applet) => <SourceConfigContent appletId={applet.id} appId={appId} onUpdateCompletion={onUpdateCompletion} />}
+        </AppletTabsWrapper>
     );
 };
 

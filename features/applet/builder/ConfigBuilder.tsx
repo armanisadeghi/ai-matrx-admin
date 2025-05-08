@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, ReactNode } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, ReactNode } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Stepper } from "@/features/applet/builder/parts/Stepper";
 import { StepperFooter } from "@/features/applet/builder/parts/StepperFooter";
-import { AppConfigStep } from "@/features/applet/builder/steps/AppConfigStep";
 import { AppletsConfigStep } from "@/features/applet/builder/steps/AppletsConfigStep";
 import { GroupsConfigStep } from "@/features/applet/builder/steps/GroupsConfigStep";
-import { FieldsConfigStep } from "@/features/applet/builder/steps/FieldsConfigStep";
-import { SelectAppStep } from "@/features/applet/builder/steps/SelectAppStep";
+import { FieldsBrokerConfigStep } from "@/features/applet/builder/steps/FieldsBrokerConfigStep";
 import { PreviewConfig } from "@/features/applet/builder/previews/PreviewConfig";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -29,13 +27,11 @@ import {
     selectHasUnsavedContainerChanges,
 } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { selectFieldError, selectFieldLoading, selectHasUnsavedFieldChanges } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import { v4 as uuidv4 } from "uuid";
-import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import SourceConfigStep from "@/features/applet/builder/steps/SourceConfigStep";
+import AppStartStep from "@/features/applet/builder/steps/AppStartStep";
 
-// Interface for step completion and validation
 interface StepCompletion {
     isComplete: boolean;
     canProceed: boolean;
@@ -48,11 +44,11 @@ export const ConfigBuilder = () => {
     const dispatch = useAppDispatch();
     const [activeStep, setActiveStep] = useState(0);
     const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
-    // Track completion status for each step
+
     const [stepCompletions, setStepCompletions] = useState<StepCompletion[]>([
-        { isComplete: false, canProceed: true }, // Select App step - always can proceed
-        { isComplete: false, canProceed: false }, // App Config step
+        { isComplete: false, canProceed: false }, // App Start step (combined select & create)
         { isComplete: false, canProceed: true }, // Applets Config step
+        { isComplete: false, canProceed: true }, // Source Config step
         { isComplete: false, canProceed: true }, // Groups Config step
         { isComplete: false, canProceed: true }, // Fields Config step
         { isComplete: true, canProceed: false }, // Preview step - no next step
@@ -64,7 +60,6 @@ export const ConfigBuilder = () => {
     const [isCompiling, setIsCompiling] = useState(false);
     const [compilingErrors, setCompilingErrors] = useState<string[]>([]);
 
-    // Add a state for action feedback
     const [actionFeedback, setActionFeedback] = useState<{
         message: string;
         type: "success" | "error" | "info" | "warning";
@@ -95,21 +90,13 @@ export const ConfigBuilder = () => {
     const [activeApplet, setActiveApplet] = useState<string | null>(null);
 
     const steps = [
-        { id: "select-app", title: "Select App", description: "Create new or select existing" },
-        { id: "app-info", title: "Configure App", description: "Basic information about your app" },
-        { id: "applets-config", title: "Add Applets", description: "Define & Configure Applets" },
-        { id: "source-config", title: "Add Intelligence", description: "Connect to Intelligence sources" },
-        { id: "groups-config", title: "Add Containers", description: "Create groups of Custom Fields" },
-        { id: "fields-config", title: "Add Fields", description: "Define fields for each Container" },
-        { id: "preview", title: "Deploy App", description: "Finalize & Launch your app" },
+        { id: "app-start", title: "Start App", description: "Create new or select existing" },
+        { id: "applets-config", title: "Applets", description: "Create & Configure Applets" },
+        { id: "source-config", title: "Intelligence", description: "Connect to Intelligence sources" },
+        { id: "broker-config", title: "Field Mapping", description: "Map brokers to fields" },
+        { id: "groups-config", title: "Containers", description: "Put fields into containers" },
+        { id: "preview", title: "Deploy", description: "Finalize & Launch your app" },
     ];
-
-    const handleCreateNewApp = () => {
-        const newAppId = uuidv4();
-        dispatch(startNewApp({ id: newAppId }));
-        setSelectedAppId(newAppId);
-        setActiveStep(1);
-    };
 
     const handleNext = async () => {
         if (activeStep === 0) {
@@ -121,14 +108,11 @@ export const ConfigBuilder = () => {
         } else if (activeStep === 3) {
             setActiveStep(4);
         } else if (activeStep === 4) {
-            setActiveStep(5);
-        } else if (activeStep === 5) {
             setActionFeedback({
                 message: "Preparing to compile your app...",
                 type: "info",
             });
             await recompileAllApplets();
-            // The feedback message will be updated in the recompileAllApplets function
         } else if (activeStep < steps.length - 1) {
             setActiveStep(activeStep + 1);
         }
@@ -228,11 +212,11 @@ export const ConfigBuilder = () => {
 
     const handleAppSaved = (appId: string) => {
         setSelectedAppId(appId);
-        setActiveStep(2);
+        setActiveStep(1);
     };
 
-    const handleAppSelected = (app: CustomAppConfig) => {
-        setSelectedAppId(app.id);
+    const handleAppSelected = (appId: string) => {
+        setSelectedAppId(appId);
         setActiveStep(1);
     };
 
@@ -319,6 +303,7 @@ export const ConfigBuilder = () => {
                         <Stepper
                             steps={steps}
                             activeStep={activeStep}
+                            showDescription={true}
                             onStepClick={(index) => {
                                 // Only allow clicking on completed steps or the next step
                                 if (index <= activeStep || index <= steps.findIndex((s) => s.id === "preview")) {
@@ -356,10 +341,10 @@ export const ConfigBuilder = () => {
                             {renderCompilationErrors()}
 
                             {activeStep === 0 && (
-                                <div className="w-full shadow-lg">
-                                    <SelectAppStep
+                                <div className="w-full">
+                                    <AppStartStep
                                         onAppSelected={handleAppSelected}
-                                        onCreateNewApp={handleCreateNewApp}
+                                        onAppSaved={handleAppSaved}
                                         selectedAppId={selectedAppId}
                                         onUpdateCompletion={(completion) => updateStepCompletion(0, completion)}
                                     />
@@ -368,9 +353,8 @@ export const ConfigBuilder = () => {
 
                             {activeStep === 1 && (
                                 <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
-                                    <AppConfigStep
+                                    <AppletsConfigStep
                                         appId={selectedAppId}
-                                        onAppSaved={handleAppSaved}
                                         onUpdateCompletion={(completion) => updateStepCompletion(1, completion)}
                                     />
                                 </div>
@@ -378,21 +362,21 @@ export const ConfigBuilder = () => {
 
                             {activeStep === 2 && (
                                 <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
-                                    <AppletsConfigStep
+                                    <SourceConfigStep
                                         appId={selectedAppId}
                                         onUpdateCompletion={(completion) => updateStepCompletion(2, completion)}
                                     />
                                 </div>
                             )}
-
                             {activeStep === 3 && (
                                 <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
-                                    <SourceConfigStep
+                                    <FieldsBrokerConfigStep
                                         appId={selectedAppId}
                                         onUpdateCompletion={(completion) => updateStepCompletion(3, completion)}
                                     />
                                 </div>
                             )}
+
                             {activeStep === 4 && (
                                 <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
                                     <GroupsConfigStep
@@ -402,21 +386,12 @@ export const ConfigBuilder = () => {
                                 </div>
                             )}
 
-                            {activeStep === 5 && (
-                                <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
-                                    <FieldsConfigStep
-                                        appId={selectedAppId}
-                                        onUpdateCompletion={(completion) => updateStepCompletion(5, completion)}
-                                    />
-                                </div>
-                            )}
-
                             {/* PreviewConfig has been updated to use Redux directly and only needs an appId */}
-                            {activeStep === 6 && (
+                            {activeStep === 5 && (
                                 <div className="w-full rounded-3xl shadow-lg border border-rose-200 dark:border-rose-700">
                                     <PreviewConfig
                                         appId={selectedAppId}
-                                        onUpdateCompletion={(completion) => updateStepCompletion(6, completion)}
+                                        onUpdateCompletion={(completion) => updateStepCompletion(5, completion)}
                                     />
                                 </div>
                             )}

@@ -1,59 +1,75 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { BrainCog, TagIcon, ChevronRight, RefreshCw, Cable } from "lucide-react";
+import React, { useState } from "react";
+import { BrainCog, TagIcon, ChevronRight, Cable } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TextIconButton } from "@/components/official/TextIconButton";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { getUserRecipes, RecipeInfo } from "@/lib/redux/app-builder/service/customAppletService";
-import { RecipeSelectDialog } from "@/features/applet/builder/modules/applet-builder/RecipeSelectDialog";
-import { AppletSourceConfig } from "@/lib/redux/app-builder/service/customAppletService";
+import { RecipeInfo } from "@/lib/redux/app-builder/service/customAppletService";
+import { RecipeSelectDialog } from "@/features/applet/builder/modules/recipe-source/RecipeSelectDialog";
+import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
+
+/* For reference only (For a recipe, this is the AppletSourceConfig)
+
+interface AppletSourceConfig {
+    sourceType: "recipe";
+    config: {
+        id: string;
+        compiledId: string;
+        version: number;
+        neededBrokers: NeededBroker[];
+    }
+}
+    
+*/
 
 interface RecipeSelectorProps {
-    compiledRecipeId: string | null;
     onRecipeSelect: (compiledRecipeId: string) => void;
     className?: string;
-    onGetCompiledRecipeWithNeededBrokers: (mapping: AppletSourceConfig | null) => void;
+    onGetSourceConfig: (mapping: AppletSourceConfig | null) => void;
+    sourceConfig: AppletSourceConfig | null;
 }
 
 export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
-    compiledRecipeId,
     onRecipeSelect,
     className,
-    onGetCompiledRecipeWithNeededBrokers,
+    onGetSourceConfig,
+    sourceConfig,
 }) => {
     const { toast } = useToast();
     const [showRecipeDialog, setShowRecipeDialog] = useState(false);
-    const [userRecipes, setUserRecipes] = useState<RecipeInfo[]>([]);
-    const [selectedRecipe, setSelectedRecipe] = useState<RecipeInfo | null>(null);
+    const [selectedRecipe, setSelectedRecipe] = useState<RecipeInfo | null>(
+        sourceConfig?.sourceType === "recipe" ? { 
+            id: sourceConfig.config.id, 
+            name: "Selected Recipe",
+            version: sourceConfig.config.version 
+        } as RecipeInfo : null
+    );
     const [isLoading, setIsLoading] = useState(false);
+    const [activeSourceConfig, setActiveSourceConfig] = useState<AppletSourceConfig | null>(sourceConfig);
 
-    // Fetch user recipes on component mount
-    useEffect(() => {
-        const fetchRecipes = async () => {
-            setIsLoading(true);
-            try {
-                const recipes = await getUserRecipes();
-                setUserRecipes(recipes);
-            } catch (error) {
-                console.error("Failed to fetch user recipes:", error);
-                toast({
-                    title: "Error",
-                    description: "Failed to load recipes",
-                    variant: "destructive",
-                });
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    // Get the compiledId from the source config if available
+    const hasRecipeSelected = activeSourceConfig?.sourceType === "recipe";
+    const activeCompiledId = hasRecipeSelected ? activeSourceConfig.config.compiledId : null;
+        
+    // Get the version from the source config if available
+    const recipeVersion = hasRecipeSelected
+        ? activeSourceConfig.config.version
+        : selectedRecipe?.version;
 
-        fetchRecipes();
-    }, [toast]);
+    const handleSetSourceConfig = (sourceConfig: AppletSourceConfig) => {
+        setActiveSourceConfig(sourceConfig);
+        onGetSourceConfig(sourceConfig);
+        
+        if (sourceConfig.sourceType === "recipe") {
+            onRecipeSelect(sourceConfig.config.compiledId);
+        }
+    };
 
     return (
         <div className={`${className}`}>
             <div className="space-y-3 pt-2">
-                {!compiledRecipeId ? (
+                {!hasRecipeSelected ? (
                     <Button
                         variant="outline"
                         onClick={() => setShowRecipeDialog(true)}
@@ -79,37 +95,37 @@ export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
                                     </p>
                                 </div>
                                 <div className="flex flex-col items-start">
-                                    {selectedRecipe && (
-                                        <div className="flex items-center gap-2 mb-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        {recipeVersion !== undefined && (
                                             <Badge
                                                 variant="secondary"
                                                 className="text-xs px-2 py-0 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
                                             >
-                                                v{selectedRecipe.version}
+                                                v{recipeVersion}
                                             </Badge>
-                                            {selectedRecipe.status && (
-                                                <Badge
-                                                    variant="outline"
-                                                    className="text-xs px-2 py-0 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
-                                                >
-                                                    {selectedRecipe.status}
-                                                </Badge>
-                                            )}
-                                            <TextIconButton
-                                                variant="ghost"
-                                                size="sm" // Options: 'default' | 'sm' | 'lg'
-                                                icon={<Cable />} // Any React node
-                                                iconPosition="right" // Options: 'left' | 'right' (default: 'left')
-                                                tooltip="Change the recipe or the selected version"
-                                                showTooltipOnDisabled={true}
-                                                disabledTooltip="Cannot change recipe"
-                                                onClick={() => setShowRecipeDialog(true)}
-                                                className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-transparent"
+                                        )}
+                                        {selectedRecipe?.status && (
+                                            <Badge
+                                                variant="outline"
+                                                className="text-xs px-2 py-0 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                                             >
-                                                Change Recipe
-                                            </TextIconButton>
-                                        </div>
-                                    )}
+                                                {selectedRecipe.status}
+                                            </Badge>
+                                        )}
+                                        <TextIconButton
+                                            variant="ghost"
+                                            size="sm"
+                                            icon={<Cable />}
+                                            iconPosition="right"
+                                            tooltip="Change the recipe or the selected version"
+                                            showTooltipOnDisabled={true}
+                                            disabledTooltip="Cannot change recipe"
+                                            onClick={() => setShowRecipeDialog(true)}
+                                            className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-transparent"
+                                        >
+                                            Change Recipe
+                                        </TextIconButton>
+                                    </div>
 
                                     {selectedRecipe?.tags?.tags && selectedRecipe.tags.tags.length > 0 && (
                                         <div className="flex flex-wrap items-center gap-1.5">
@@ -128,9 +144,11 @@ export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
                                         </div>
                                     )}
 
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-mono">
-                                        Compiled ID: {compiledRecipeId}
-                                    </p>
+                                    {activeCompiledId && (
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-mono">
+                                            Compiled ID: {activeCompiledId}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -140,11 +158,13 @@ export const RecipeSelector: React.FC<RecipeSelectorProps> = ({
             <RecipeSelectDialog
                 showRecipeDialog={showRecipeDialog}
                 setShowRecipeDialog={setShowRecipeDialog}
-                userRecipes={userRecipes}
-                selectedRecipe={selectedRecipe}
-                setSelectedRecipe={setSelectedRecipe}
+                initialSelectedRecipe={selectedRecipe?.id || null}
+                initialSourceConfig={activeSourceConfig}
+                setRecipeSourceConfig={handleSetSourceConfig}
                 setCompiledRecipeId={onRecipeSelect}
-                setCompiledRecipeWithNeededBrokers={onGetCompiledRecipeWithNeededBrokers}
+                onRecipeSelected={(recipeId) => {
+                    setSelectedRecipe(prev => prev?.id === recipeId ? prev : { id: recipeId, name: recipeId } as RecipeInfo);
+                }}
             />
         </div>
     );

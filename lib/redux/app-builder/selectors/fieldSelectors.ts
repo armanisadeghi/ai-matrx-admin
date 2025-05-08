@@ -1,6 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux";
 import { FieldBuilder } from "../types";
+import { selectAppletBrokerMappings } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { BrokerMapping } from '@/features/applet/builder/builder.types';
 
 // Base selector for the fieldBuilder state
 export const getFieldBuilderState = (state: RootState) => state.fieldBuilder;
@@ -190,3 +192,40 @@ export const selectHasFieldUnsavedChanges = createSelector(
   (field) => field ? field.isDirty === true : false
 );
 
+// Memoized selector to get all fields mapped to brokers for a specific applet
+export const selectFieldsByBrokerMappings = createSelector(
+  [
+    (state: RootState, appletId: string) => selectAppletBrokerMappings(state, appletId),
+    getFieldBuilderState,
+  ],
+  (brokerMappings: BrokerMapping[] | null, fieldBuilderState) => {
+    if (!brokerMappings || brokerMappings.length === 0) {
+      return [];
+    }
+    const fieldIds = brokerMappings.map((mapping) => mapping.fieldId);
+    return fieldIds
+      .map((id) => fieldBuilderState.fields[id])
+      .filter((field): field is FieldBuilder => field !== null);
+  }
+);
+
+// Memoized selector to get the field mapped to a specific broker ID for a specific applet
+export const selectFieldByBrokerId = createSelector(
+  [
+    (state: RootState, appletId: string, brokerId: string) => ({
+      brokerMappings: selectAppletBrokerMappings(state, appletId),
+      brokerId,
+    }),
+    getFieldBuilderState,
+  ],
+  ({ brokerMappings, brokerId }, fieldBuilderState) => {
+    if (!brokerMappings || brokerMappings.length === 0) {
+      return null;
+    }
+    const mapping = brokerMappings.find((mapping) => mapping.brokerId === brokerId);
+    if (!mapping) {
+      return null;
+    }
+    return fieldBuilderState.fields[mapping.fieldId] || null;
+  }
+);

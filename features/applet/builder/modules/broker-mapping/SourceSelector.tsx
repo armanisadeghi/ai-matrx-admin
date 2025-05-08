@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Lightbulb, Workflow, Bot, Zap, Globe } from 'lucide-react';
 
-// The main component - accepts an onSelect callback and itemCounts object
-const AppletSourceSelection = ({ onSelect, itemCounts = {} }) => {
-  const [selectedSource, setSelectedSource] = useState(null);
+
+interface SourceSelectorProps {
+  onSelect: (source: string) => void;
+  itemCounts: Record<string, number>;
+  activeSourceType: string | null;
+}
+
+
+const AppletSourceSelection = ({ onSelect, itemCounts = {}, activeSourceType = null }: SourceSelectorProps) => {
+  const [selectedSource, setSelectedSource] = useState(activeSourceType);
+
+  useEffect(() => {
+    setSelectedSource(activeSourceType);
+  }, [activeSourceType]);
   
   const sources = [
     {
@@ -13,7 +24,7 @@ const AppletSourceSelection = ({ onSelect, itemCounts = {} }) => {
       description: 'Create automated sequences'
     },
     {
-      id: 'ai-recipe',
+      id: 'recipe',
       name: 'AI Recipe',
       icon: Lightbulb,
       description: 'Use pre-built AI solutions'

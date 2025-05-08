@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import { AppletSourceConfig } from "@/lib/redux/app-builder/service";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { Broker, BrokerMapping } from "@/features/applet/builder/builder.types";
+import { Broker, BrokerMapping, AppletSourceConfig } from "@/features/applet/builder/builder.types";
 
-import BrokerMappingCard from "./components/BrokerMappingCard";
+import BrokerMappingCard from "./BrokerMappingCard";
 
 interface SourceConfigCardSelectorProps {
     appletId?: string;

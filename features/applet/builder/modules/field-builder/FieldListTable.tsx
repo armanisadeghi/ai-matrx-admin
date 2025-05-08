@@ -212,7 +212,6 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
         return typeMap[componentType] || componentType;
     };
 
-    // Define search input for header actions
     const searchInput = (
         <div className="relative w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -223,7 +222,6 @@ export default function FieldListTable({ onFieldView, onFieldEdit, onFieldDelete
     return (
         <StructuredSectionCard
             title="All Field Components"
-            description="Manage your reusable field components"
             headerActions={[searchInput]}
             className="mt-4"
         >

@@ -1,6 +1,6 @@
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
 import { AppletLayoutOption } from "../layouts/options/layout.types";
-import { AppletSourceConfig } from "@/lib/redux/app-builder/service/customAppletService";
+
 
 export type ComponentType = 
   | 'input' 
@@ -74,6 +74,54 @@ export type AppletContainer = {
   fields: FieldDefinition[];
 };
 
+
+
+export interface WorkflowSourceConfig {
+  sourceType: "workflow";
+  id: string;
+  workflowId: string;
+  [key: string]: any;
+}
+
+export interface ApiSourceConfig {
+  sourceType: "api";
+  id: string;
+  [key: string]: any;
+}
+
+export interface DatabaseSourceConfig {
+  sourceType: "database";
+  id: string;
+  [key: string]: any;
+}
+
+export interface OtherSourceConfig {
+  sourceType: "other";
+  id: string;
+  [key: string]: any;
+}
+
+export interface NeededBroker {
+  id: string;
+  name: string;
+  required: boolean;
+  dataType: string;
+  defaultValue: string;
+}
+
+export interface RecipeSourceConfig {
+  id: string;
+  compiledId: string;
+  version: number;
+  neededBrokers: NeededBroker[];
+}
+
+export interface AppletSourceConfig {
+  sourceType?: "recipe" | "workflow" | "api" | "database" | "other" | string;
+  config?: RecipeSourceConfig | WorkflowSourceConfig | ApiSourceConfig | DatabaseSourceConfig | OtherSourceConfig;
+}
+
+
 export interface Broker {
   id: string;
   name: string;
@@ -89,11 +137,6 @@ export interface BrokerMapping {
   brokerId: string;
 }
 
-export type SourceConfig = {
-  sourceConfig?: AppletSourceConfig[];
-  brokerMappings?: BrokerMapping[];
-}
-
 
 export type CustomApplet = {
   id: string;
@@ -107,7 +150,8 @@ export type CustomApplet = {
   accentColor?: string;
   layoutType?: AppletLayoutOption;
   containers?: AppletContainer[];
-  dataSourceConfig?: SourceConfig;
+  dataSourceConfig?: AppletSourceConfig;
+  brokerMap?: BrokerMapping[];
   resultComponentConfig?: any;
   nextStepConfig?: any;
   compiledRecipeId?: string;
@@ -248,6 +292,7 @@ export type CustomAppletConfig = {
   subcategoryId?: string;
   imageUrl?: string;
   appId?: string;
+  brokerMap?: BrokerMapping[];
 };
 
 export type ComponentGroup = {

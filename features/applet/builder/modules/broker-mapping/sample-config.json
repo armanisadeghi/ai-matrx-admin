@@ -1,0 +1,29 @@
+{
+    "sourceConfig": [
+        {
+            "sourceType": "recipe",
+            "config": {
+                "id": "e2049ce6-c340-4ff7-987e-deb24a977853",
+                "version": 83,
+                "compiledId": "94e378c3-b55b-4193-8ba9-d64f34a3d9b2",
+                "neededBrokers": [
+                    {
+                        "id": "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+                        "name": "Applet Description",
+                        "dataType": "str",
+                        "required": true,
+                        "defaultValue": "My app is designed to offer high-quality ai-coding assistance. I have an AI model that excels at generating extremely high-quality code and the app will automatically trigger an expert in the specific language the request is needed in.",
+                        "inputComponent": "d9c60ef7-6c82-42f7-b485-b3a37675193a"
+                    }
+                ]
+            }
+        }
+    ],
+    "brokerMappings": [
+        {
+            "fieldId": "d9c859fb-3fe6-4299-9595-2851f4e115b9",
+            "appletId": "e3a6e806-9c98-43ff-ba42-5ec5416b9812",
+            "brokerId": "5d8c5ed2-5a84-476a-9258-6123a45f996a"
+        }
+    ]
+}

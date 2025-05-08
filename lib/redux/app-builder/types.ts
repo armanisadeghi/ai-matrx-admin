@@ -32,6 +32,8 @@ export interface AppBuilder extends CustomAppConfig {
     publicRead?: boolean;
     isDirty?: boolean;
     isLocal?: boolean;
+    isTemplated?: boolean;
+    templateType?: 'simple' | 'complex';
     slugStatus?: 'unchecked' | 'unique' | 'notUnique';
 }
 
