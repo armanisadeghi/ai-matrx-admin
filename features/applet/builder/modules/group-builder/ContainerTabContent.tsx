@@ -321,6 +321,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({
                         containerId={currentContainerId}
                         onSaveSuccess={handleContainerSaved}
                         title={isContainerInApplet ? "Edit Container" : "New Container"}
+                        initialAppletId={appletId}
                     />
                 )}
 

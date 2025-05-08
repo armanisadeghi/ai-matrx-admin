@@ -12,42 +12,99 @@ import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 interface QuickRefSelectProps {
   entityKey?: EntityKeys;
   initialSelectedRecord?: QuickReferenceRecord;
+  initialSelectedRecordKey?: MatrxRecordId;
   onRecordChange?: (record: QuickReferenceRecord) => void;
+  onSelect?: (recordId: MatrxRecordId) => void;
   fetchMode?: FetchMode;
+  customSelectText?: string;
+  disabled?: boolean;
 }
 
 export const QuickRefSelect: React.FC<QuickRefSelectProps> = ({
   entityKey,
   initialSelectedRecord,
+  initialSelectedRecordKey,
   onRecordChange,
+  onSelect,
   fetchMode = "fkIfk",
+  customSelectText,
+  disabled = false,
 }) => {
   const selectText = useAppSelector((state) =>
     selectEntitySelectText(state, entityKey)
   );
 
-  const [selectedRecordKey, setSelectedRecordKey] = useState<MatrxRecordId>(
-    initialSelectedRecord?.recordKey || ""
-  );
+  // Use customSelectText if provided, otherwise use the default from the store
+  const displaySelectText = customSelectText || selectText;
+  
+  // Initialize state from props - use empty string for invalid values
+  const [selectedRecordKey, setSelectedRecordKey] = useState<MatrxRecordId>(() => {
+    // Only use initialValues if they are truthy and not empty strings
+    const recordKeyFromRecord = initialSelectedRecord?.recordKey || "";
+    const recordKey = recordKeyFromRecord || (initialSelectedRecordKey || "");
+    return recordKey;
+  });
 
   // Fetch quick references
   useFetchQuickRef(entityKey);
 
   const { activeRecordId, handleRecordSelect, quickReferenceRecords, setFetchMode } =
     useSelectQuickRef(entityKey);
-
+  
   // Set fetch mode when it changes
   useEffect(() => {
     setFetchMode(fetchMode);
   }, [entityKey, setFetchMode, fetchMode]);
 
-  // Initialize with initial selected record
+  // Handle initial record or record key
   useEffect(() => {
-    if (initialSelectedRecord) {
+    // Handle initialSelectedRecord
+    if (initialSelectedRecord?.recordKey) {
       setSelectedRecordKey(initialSelectedRecord.recordKey);
       onRecordChange?.(initialSelectedRecord);
+      return;
     }
-  }, [initialSelectedRecord, onRecordChange]);
+    
+    // Handle initialSelectedRecordKey
+    if (initialSelectedRecordKey && initialSelectedRecordKey !== selectedRecordKey) {
+      // Verify the key exists in the records if we have records loaded
+      if (quickReferenceRecords?.length) {
+        const record = quickReferenceRecords.find(
+          (r) => r.recordKey === initialSelectedRecordKey
+        );
+        
+        if (record) {
+          setSelectedRecordKey(initialSelectedRecordKey);
+          onRecordChange?.(record);
+        } else {
+          // Key is invalid, reset to empty selection
+          setSelectedRecordKey("");
+        }
+      } else {
+        // No records loaded yet, set the key but we'll verify later
+        setSelectedRecordKey(initialSelectedRecordKey);
+      }
+    } else if (initialSelectedRecordKey === null || initialSelectedRecordKey === undefined) {
+      // Reset to empty for null/undefined keys
+      setSelectedRecordKey("");
+    }
+  }, [initialSelectedRecord, initialSelectedRecordKey, quickReferenceRecords, onRecordChange, selectedRecordKey]);
+
+  // When quickReferenceRecords loads and we have initialSelectedRecordKey but no record yet
+  useEffect(() => {
+    if (initialSelectedRecordKey && quickReferenceRecords?.length && !initialSelectedRecord) {
+      const record = quickReferenceRecords.find(
+        (r) => r.recordKey === initialSelectedRecordKey
+      );
+      
+      if (record) {
+        onRecordChange?.(record);
+      } else {
+        // Record not found after loading, reset to empty
+        setSelectedRecordKey("");
+      }
+    }
+  }, [quickReferenceRecords, initialSelectedRecordKey, initialSelectedRecord, onRecordChange]);
 
   // Handle selection change
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -63,20 +120,25 @@ export const QuickRefSelect: React.FC<QuickRefSelectProps> = ({
       onRecordChange?.(selectedRecord);
       handleRecordSelect(newRecordKey);
     }
+    
+    // Call onSelect with just the record id
+    onSelect?.(newRecordKey);
   };
 
+  // Only update from activeRecordId if not controlled by props
   useEffect(() => {
-  if (!activeRecordId) return;
+    if (!activeRecordId || initialSelectedRecordKey || initialSelectedRecord) return;
     setSelectedRecordKey(activeRecordId);
-  }, [activeRecordId]);
+  }, [activeRecordId, initialSelectedRecordKey, initialSelectedRecord]);
 
   return (
     <select
       className="w-full min-w-0 bg-elevation1 rounded-md p-2 text-sm"
       value={selectedRecordKey}
       onChange={handleChange}
+      disabled={disabled}
     >
-      <option value="">{selectText}</option>
+      <option value="">{displaySelectText}</option>
       {quickReferenceRecords?.map((record) => (
         <option key={record.recordKey} value={record.recordKey} className="text-ellipsis overflow-hidden">
           {record.displayValue}

@@ -10,6 +10,7 @@ import {
     fetchContainerByIdThunk,
     updateFieldThunk,
     saveContainerToAppletThunk,
+    saveOrUpdateContainerToAppletThunk,
     moveFieldUpThunk,
     moveFieldDownThunk,
     saveContainerThunk,
@@ -407,17 +408,17 @@ export const containerBuilderSlice = createSlice({
             state.error = action.error.message || "Failed to update field";
         });
 
-        // Save Container To Applet
-        builder.addCase(saveContainerToAppletThunk.pending, (state) => {
+        // Save or Update Container To Applet
+        builder.addCase(saveOrUpdateContainerToAppletThunk.pending, (state) => {
             state.isLoading = true;
             state.error = null;
         });
-        builder.addCase(saveContainerToAppletThunk.fulfilled, (state) => {
+        builder.addCase(saveOrUpdateContainerToAppletThunk.fulfilled, (state) => {
             state.isLoading = false;
         });
-        builder.addCase(saveContainerToAppletThunk.rejected, (state, action) => {
+        builder.addCase(saveOrUpdateContainerToAppletThunk.rejected, (state, action) => {
             state.isLoading = false;
-            state.error = action.error.message || "Failed to save container to applet";
+            state.error = action.error.message || "Failed to save or update container to applet";
         });
 
         // Move Field Up

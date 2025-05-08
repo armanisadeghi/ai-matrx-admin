@@ -4,124 +4,89 @@ import React, { useState, useEffect } from "react";
 import { SaveIcon, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { 
-    selectContainerById,
-    selectContainerLoading,
-} from "@/lib/redux/app-builder/selectors/containerSelectors";
-import { 
-    setLabel,
-    setShortLabel,
-    setDescription,
-    setIsDirty,
-} from "@/lib/redux/app-builder/slices/containerBuilderSlice";
-import { saveContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { selectContainerById, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
+import { setLabel, setShortLabel, setDescription } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
+import { saveContainerThunk, saveOrUpdateContainerToAppletThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { ContainerLabelAndHelpText } from "@/constants/app-builder-help-text";
+import QuickRefSelect from "@/app/entities/quick-reference/QuickRefSelectFloatingLabel";
 
 interface ContainerFormComponentProps {
     containerId: string | null;
     onSaveSuccess?: (containerId: string) => void;
     title?: string;
+    initialAppletId?: string;
 }
 
 const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
     containerId,
     onSaveSuccess,
     title = "Container Details",
+    initialAppletId,
 }) => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
-    
-    // Local loading state for this component
     const [isSaving, setIsSaving] = useState(false);
-    
-    // Get container data and loading state from Redux
-    const container = useAppSelector(state => 
-        containerId ? selectContainerById(state, containerId) : null
-    );
+    const container = useAppSelector((state) => (containerId ? selectContainerById(state, containerId) : null));
     const isLoading = useAppSelector(selectContainerLoading);
-    
-    // Check if the form is dirty (has unsaved changes)
     const isDirty = container?.isDirty || false;
-    
-    // Handle label change
+
+    const [selectedApplet, setSelectedApplet] = useState<string | null>(initialAppletId || null);
+    const [isCompiling, setIsCompiling] = useState(false);
+
+    const appletRecordKey = `id:${initialAppletId}`;
+
+    const allDisabled = isLoading || isSaving || isCompiling;
+
     const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!containerId) return;
-        
+
         dispatch(
             setLabel({
                 id: containerId,
                 label: e.target.value,
             })
         );
-        
-        // Mark as dirty
-        dispatch(
-            setIsDirty({
-                id: containerId,
-                isDirty: true,
-            })
-        );
     };
-    
-    // Handle short label change
+
     const handleShortLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!containerId) return;
-        
+
         dispatch(
             setShortLabel({
                 id: containerId,
                 shortLabel: e.target.value,
             })
         );
-        
-        // Mark as dirty
-        dispatch(
-            setIsDirty({
-                id: containerId,
-                isDirty: true,
-            })
-        );
     };
-    
-    // Handle description change
+
     const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         if (!containerId) return;
-        
+
         dispatch(
             setDescription({
                 id: containerId,
                 description: e.target.value,
             })
         );
-        
-        // Mark as dirty
-        dispatch(
-            setIsDirty({
-                id: containerId,
-                isDirty: true,
-            })
-        );
     };
-    
-    // Handle save container
+
     const handleSaveContainer = async () => {
         if (!containerId) return;
-        
+
         setIsSaving(true);
-        
+
         try {
             const result = await dispatch(saveContainerThunk(containerId)).unwrap();
-            
+
             toast({
                 title: "Success",
                 description: "Container saved successfully.",
             });
-            
-            // Call the success callback with the container ID
+
             if (onSaveSuccess) {
                 onSaveSuccess(result.id);
             }
@@ -135,37 +100,49 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
             setIsSaving(false);
         }
     };
-    
-    // Compute the validity state of the form
-    const isValid = container?.label && container.label.trim() !== "";
-    
-    // Should the save button be enabled?
-    const canSave = !isLoading && !isSaving && isDirty && isValid;
-    
+
+    const handleAppletSelect = async (appletId: string) => {
+        setSelectedApplet(appletId);
+    };
+
+    const handleCompileContainer = async () => {
+        if (!containerId) return;
+
+        setIsCompiling(true);
+
+        try {
+            await dispatch(saveOrUpdateContainerToAppletThunk({ appletId: selectedApplet, containerId })).unwrap();
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: typeof error === "string" ? error : "Failed to compile container.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsCompiling(false);
+        }
+    };
+
     if (!containerId) {
         return (
             <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
-                <CardContent className="p-6 text-center text-gray-500 dark:text-gray-400">
-                    No container selected.
-                </CardContent>
+                <CardContent className="p-6 text-center text-gray-500 dark:text-gray-400">No container selected.</CardContent>
             </Card>
         );
     }
-    
+
     return (
         <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg">
             <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                 <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">
-                    {title} 
+                    {title}
                     {isDirty && container?.label && <span className="text-xs text-red-500 ml-2">(unsaved changes)</span>}
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="label" className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                            Container Label <span className="text-red-500">*</span>
-                        </Label>
+                        <ContainerLabelAndHelpText fieldName="label" fieldLabel="Label" required={true} />
                         <Input
                             id="label"
                             name="label"
@@ -173,17 +150,12 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                             value={container?.label || ""}
                             onChange={handleLabelChange}
                             className="border-gray-300 dark:border-gray-700"
-                            disabled={isLoading || isSaving}
+                            disabled={allDisabled}
                         />
                     </div>
-                    
+
                     <div className="space-y-2">
-                        <Label
-                            htmlFor="shortLabel"
-                            className="text-sm font-medium text-gray-800 dark:text-gray-200"
-                        >
-                            Short Label (Optional)
-                        </Label>
+                        <ContainerLabelAndHelpText fieldName="shortLabel" fieldLabel="Short Label (Optional)" />
                         <Input
                             id="shortLabel"
                             name="shortLabel"
@@ -191,17 +163,12 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                             value={container?.shortLabel || ""}
                             onChange={handleShortLabelChange}
                             className="border-gray-300 dark:border-gray-700"
-                            disabled={isLoading || isSaving}
+                            disabled={allDisabled}
                         />
                     </div>
-                    
+
                     <div className="space-y-2">
-                        <Label
-                            htmlFor="description"
-                            className="text-sm font-medium text-gray-800 dark:text-gray-200"
-                        >
-                            Description (Optional)
-                        </Label>
+                        <ContainerLabelAndHelpText fieldName="description" fieldLabel="Description (Optional)" />
                         <Textarea
                             id="description"
                             name="description"
@@ -209,23 +176,37 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                             value={container?.description || ""}
                             onChange={handleDescriptionChange}
                             className="border-gray-300 dark:border-gray-700 h-24 resize-none"
-                            disabled={isLoading || isSaving}
+                            disabled={allDisabled}
                         />
                     </div>
-                    
-                    <div className="flex justify-end pt-2">
+
+                    <div className="flex justify-end gap-2">
                         <Button
                             onClick={handleSaveContainer}
-                            disabled={!canSave}
+                            disabled={allDisabled || !isDirty}
                             variant="outline"
                             className="border-blue-500 text-blue-500"
                         >
-                            {isSaving ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <SaveIcon className="mr-2 h-4 w-4" />
-                            )}
-                            Save Container
+                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SaveIcon className="mr-2 h-4 w-4" />}
+                            Save
+                        </Button>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <QuickRefSelect
+                            entityKey="customAppletConfigs"
+                            onSelect={handleAppletSelect}
+                            customSelectText="Choose Applet"
+                            disabled={allDisabled || isDirty}
+                            initialSelectedRecordKey={appletRecordKey}
+                        />
+                        <Button
+                            onClick={handleCompileContainer}
+                            disabled={allDisabled || !selectedApplet || isDirty}
+                            variant="outline"
+                            className="border-blue-500 text-blue-500"
+                        >
+                            {isCompiling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SaveIcon className="mr-2 h-4 w-4" />}
+                            Compile
                         </Button>
                     </div>
                 </div>

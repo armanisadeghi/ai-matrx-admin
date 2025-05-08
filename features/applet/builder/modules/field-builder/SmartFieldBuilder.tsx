@@ -35,7 +35,7 @@ import {
 } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { componentOptions } from "@/features/applet/runner/components/field-components/FieldController";
 import { ComponentType, Broker } from "@/features/applet/builder/builder.types";
-import { helpTextItems } from "./fieldHelpText";
+import { fieldHelpTextItems } from "./fieldHelpText";
 
 interface SmartFieldBuilderProps {
     fieldId: string;
@@ -115,7 +115,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     <Label htmlFor="label" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         Label
                     </Label>
-                    <HelpIcon text={helpTextItems.label} />
+                    <HelpIcon text={fieldHelpTextItems.label} />
                 </div>
                 <Input
                     id="label"
@@ -131,7 +131,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     <Label htmlFor="description" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         Description
                     </Label>
-                    <HelpIcon text={helpTextItems.description} />
+                    <HelpIcon text={fieldHelpTextItems.description} />
                 </div>
                 <Textarea
                     id="description"
@@ -148,7 +148,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     <Label htmlFor="helpText" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         Help Text
                     </Label>
-                    <HelpIcon text={helpTextItems.helpText} />
+                    <HelpIcon text={fieldHelpTextItems.helpText} />
                 </div>
                 <Textarea
                     id="helpText"
@@ -165,7 +165,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     <Label htmlFor="placeholder" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         Placeholder
                     </Label>
-                    <HelpIcon text={helpTextItems.placeholder} />
+                    <HelpIcon text={fieldHelpTextItems.placeholder} />
                 </div>
                 <Input
                     id="placeholder"
@@ -185,7 +185,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                 <Label htmlFor="required" className="text-gray-800 dark:text-gray-200">
                     Required
                 </Label>
-                <HelpIcon text={helpTextItems.required} />
+                <HelpIcon text={fieldHelpTextItems.required} />
             </div>
 
             {/* Include "Other" option checkbox for applicable component types */}
@@ -199,7 +199,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     <Label htmlFor="includeOther" className="text-gray-800 dark:text-gray-200">
                         Allow "Other" Text Input
                     </Label>
-                    <HelpIcon text={helpTextItems.includeOther} />
+                    <HelpIcon text={fieldHelpTextItems.includeOther} />
                 </div>
             )}
 
@@ -211,7 +211,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                             <Label htmlFor="onLabel" className="text-xs text-gray-700 dark:text-gray-300">
                                 ON Label
                             </Label>
-                            <HelpIcon text={helpTextItems.onLabel} />
+                            <HelpIcon text={fieldHelpTextItems.onLabel} />
                         </div>
                         <Input
                             id="onLabel"
@@ -237,7 +237,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                             <Label htmlFor="offLabel" className="text-xs text-gray-700 dark:text-gray-300">
                                 OFF Label
                             </Label>
-                            <HelpIcon text={helpTextItems.offLabel} />
+                            <HelpIcon text={fieldHelpTextItems.offLabel} />
                         </div>
                         <Input
                             id="offLabel"
@@ -268,7 +268,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                             <Label htmlFor="min" className="text-xs text-gray-700 dark:text-gray-300">
                                 Min
                             </Label>
-                            <HelpIcon text={helpTextItems.min} />
+                            <HelpIcon text={fieldHelpTextItems.min} />
                         </div>
                         <Input
                             type="number"
@@ -294,7 +294,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                             <Label htmlFor="max" className="text-xs text-gray-700 dark:text-gray-300">
                                 Max
                             </Label>
-                            <HelpIcon text={helpTextItems.max} />
+                            <HelpIcon text={fieldHelpTextItems.max} />
                         </div>
                         <Input
                             type="number"
@@ -320,7 +320,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                             <Label htmlFor="step" className="text-xs text-gray-700 dark:text-gray-300">
                                 Step
                             </Label>
-                            <HelpIcon text={helpTextItems.step} />
+                            <HelpIcon text={fieldHelpTextItems.step} />
                         </div>
                         <Input
                             type="number"
@@ -350,7 +350,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                         <Label htmlFor="rows" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             Rows
                         </Label>
-                        <HelpIcon text={helpTextItems.rows} />
+                        <HelpIcon text={fieldHelpTextItems.rows} />
                     </div>
                     <div className="flex items-center mt-1 border rounded-md border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
                         <button
@@ -405,7 +405,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                             <Label htmlFor="minDate" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                 Min Date
                             </Label>
-                            <HelpIcon text={helpTextItems.minDate} />
+                            <HelpIcon text={fieldHelpTextItems.minDate} />
                         </div>
                         <Input
                             type="date"
@@ -431,7 +431,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                             <Label htmlFor="maxDate" className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                 Max Date
                             </Label>
-                            <HelpIcon text={helpTextItems.maxDate} />
+                            <HelpIcon text={fieldHelpTextItems.maxDate} />
                         </div>
                         <Input
                             type="date"

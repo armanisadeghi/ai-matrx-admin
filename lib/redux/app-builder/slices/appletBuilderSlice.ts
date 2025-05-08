@@ -483,10 +483,13 @@ export const appletBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(addContainerThunk.fulfilled, (state, action) => {
-            const { appletId, container } = action.payload;
+            const appletId = action.payload.id;
             if (state.applets[appletId]) {
-                state.applets[appletId].containers = [...state.applets[appletId].containers, container];
-                state.applets[appletId].isDirty = true;
+                // Replace the entire applet with the updated one from the server
+                state.applets[appletId] = {
+                    ...action.payload,
+                    isDirty: true,
+                };
             }
             state.isLoading = false;
         });

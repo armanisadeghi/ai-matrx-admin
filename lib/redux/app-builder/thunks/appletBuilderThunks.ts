@@ -207,22 +207,36 @@ export const deleteAppletThunk = createAsyncThunk<void, string>(
 );
 
 export const addContainerThunk = createAsyncThunk<
-    { appletId: string; container: ContainerBuilder },
+    AppletBuilder,
     { appletId: string; containerId: string }
 >(
     "appletBuilder/addContainer",
     async ({ appletId, containerId }, { rejectWithValue }) => {
         try {
+            // Add the container to the applet
             await addContainersToApplet(appletId, [containerId]);
-            const applet = await getCustomAppletConfigById(appletId);
-            if (!applet) {
+            
+            // Get the updated applet with the new container
+            const updatedApplet = await getCustomAppletConfigById(appletId);
+            
+            if (!updatedApplet) {
                 throw new Error("Failed to fetch updated applet");
             }
-            const container = applet.containers.find((c: ContainerBuilder) => c.id === containerId);
-            if (!container) {
-                throw new Error("Container not found in applet");
+            
+            // Verify the container was added
+            const containerExists = updatedApplet.containers.some((c: ContainerBuilder) => c.id === containerId);
+            if (!containerExists) {
+                throw new Error("Container not found in applet after adding");
             }
-            return { appletId, container };
+            
+            // Return the complete updated applet with consistent formatting
+            return {
+                ...updatedApplet,
+                containers: updatedApplet.containers || [],
+                isDirty: true,
+                isLocal: false,
+                slugStatus: "unique",
+            };
         } catch (error: any) {
             return rejectWithValue(error.message || "Failed to add container");
         }

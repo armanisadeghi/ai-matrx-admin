@@ -1,3 +1,6 @@
+import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
+import { Label } from "@/components/ui/label";
+
 
 
 export const fieldHelpTextItems = {
@@ -26,3 +29,51 @@ export const fieldHelpTextItems = {
         "This is perhaps the most useful and powerful feature for components. This will allow you to provide users with highly relevant options which can generate highly customized results depending on your workflow or recipe.\n\nYou can often capture a complex text input with this single value, but it's more work for you to set up.",
 };
 
+  
+export const containerHelpTextItems = {
+    properties: "Basic information about this container",
+    label: "This will be the main identifier for your container",
+    shortLabel: "A shorter name used in limited space contexts. In most cases, this is not necessary, but if you choose a small layout and have many containers, this can be helpful and will be automatically used.",
+    hideDescription: "If you check this, the description will not be visible to the user.",
+    helpText: "If you don't enter a value, it's perfectly fine. \nIf you enter any text, then the user will see an icon exactly like the one you just hovered and they will see exactly the same thing you're looking at now.",
+    description:
+        "The description is not always visible, depending on your chosen layout. It's a good practice to have one just in case, But the system is designed to work seamlessly without it.",
+    fields: "The fields that are contained within this container.",
+    permissions: "The permissions for this container",
+    public: "If you check this, the container will be available for use in multiple apps.",
+    authenticatedRead: "If you check this, the container will be available for use in multiple apps.",
+    publicRead: "If you check this, the container will be available for use in multiple apps.",
+};
+
+
+
+
+export interface AppBuilderHelpTextProps {
+    fieldName: string;
+    fieldLabel?: string;
+    required?: boolean;
+}
+
+export const FieldLabelAndHelpText = ({ fieldName, fieldLabel, required }: AppBuilderHelpTextProps) => {
+    return (
+        <div className="flex items-center gap-1">
+            <Label htmlFor={fieldName} className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {fieldLabel || fieldName}
+                {required && <span className="pl-1 text-red-500">*</span>}
+            </Label>
+            <HelpIcon text={fieldHelpTextItems[fieldName]} />
+        </div>
+    );
+}
+
+export const ContainerLabelAndHelpText = ({ fieldName, fieldLabel, required }: AppBuilderHelpTextProps) => {
+    return (
+        <div className="flex items-center gap-1">
+            <Label htmlFor={fieldName} className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {fieldLabel || fieldName}
+                {required && <span className="pl-1 text-red-500">*</span>}
+            </Label>
+            <HelpIcon text={containerHelpTextItems[fieldName]} />
+        </div>
+    );
+}

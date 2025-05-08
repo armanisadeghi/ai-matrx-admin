@@ -453,7 +453,7 @@ export const getCompiledRecipeByVersionWithNeededBrokers = async (recipeId: stri
 /**
  * Adds Containers to an applet as containers
  */
-export const addContainersToApplet = async (appletId: string, groupIds: string[]): Promise<boolean> => {
+export const addContainersToApplet = async (appletId: string, groupIds: string[]): Promise<CustomAppletConfig | null> => {
     try {
         const { data, error } = await supabase.rpc("add_groups_to_applet", {
             p_applet_id: appletId,
@@ -465,7 +465,7 @@ export const addContainersToApplet = async (appletId: string, groupIds: string[]
             throw error;
         }
 
-        return !!data;
+        return dbToAppletConfig(data);
     } catch (err) {
         console.error("Exception in addContainersToApplet:", err);
         throw err;
