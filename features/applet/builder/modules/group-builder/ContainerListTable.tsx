@@ -1,30 +1,90 @@
+// File Location: @/features/applet/builder/modules/group-builder/ContainerListTable.tsx
+
 "use client";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { useRouter } from "next/navigation";
 import { selectAllContainers, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
-import { deleteContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
-import { Eye, Pencil, Box, Trash2, LayoutGrid } from "lucide-react";
+import { deleteContainerThunk, fetchContainersThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { Eye, Pencil, Box, Trash2, LayoutGrid, Check } from "lucide-react";
 import { ContainerBuilder } from "@/lib/redux/app-builder/types";
 
-import GenericDataTable, { GenericTableHeader, ColumnConfig, ActionConfig } from "@/components/generic-table";
+import GenericDataTable, { 
+    GenericTableHeader, 
+    ColumnConfig, 
+    ActionConfig,
+    CustomTableSettings
+} from "@/components/generic-table";
+import { toast } from "@/components/ui/use-toast";
 
 interface ContainerListTableProps {
+    // Core functionality props
     onContainerView?: (id: string) => void;
     onContainerEdit?: (id: string) => void;
     onContainerDelete?: (id: string) => void;
     onContainerSelect?: (id: string) => void;
     onContainerCreate?: () => void;
+
+    internalFetch?: boolean;
+    
+    // New customization props
+    hiddenColumns?: string[];
+    defaultPageSize?: number;
+    customSettings?: CustomTableSettings;
+    hideTableHeader?: boolean;
+    hideActionsColumn?: boolean;
+    hideStatusColumn?: boolean;
+    hideIconColumn?: boolean;
+    hideTableFooter?: boolean;
+    
+    // Visual customization props
+    title?: string;
+    entityName?: string;
+    allowSelectAction?: boolean;
+    showStripedRows?: boolean;
+    headerClassName?: string;
+    searchPlaceholder?: string;
+    createButtonText?: string;
+    selectLabel?: string;
+    
+    // Custom renderers
+    renderCustomHeader?: React.ReactNode;
+    customSelectActionRender?: (container: ContainerBuilder, onClick: (e: React.MouseEvent) => void) => React.ReactNode;
 }
 
 export default function ContainerListTable({
+    // Core functionality props
     onContainerView,
     onContainerEdit,
     onContainerDelete,
     onContainerSelect,
-    onContainerCreate
+    onContainerCreate,
+
+    internalFetch = false,
+    
+    // New customization props
+    hiddenColumns = [],
+    defaultPageSize,
+    customSettings,
+    hideTableHeader = false,
+    hideActionsColumn = false,
+    hideStatusColumn = false,
+    hideIconColumn = false,
+    hideTableFooter = false,
+    
+    // Visual customization props
+    title = "All Containers",
+    entityName = "Container",
+    allowSelectAction = true, 
+    showStripedRows = true,
+    headerClassName,
+    searchPlaceholder,
+    createButtonText,
+    selectLabel = "Select",
+    
+    // Custom renderers
+    renderCustomHeader,
+    customSelectActionRender
 }: ContainerListTableProps) {
-    const router = useRouter();
     const dispatch = useAppDispatch();
     
     // Get containers from Redux
@@ -42,9 +102,30 @@ export default function ContainerListTable({
     
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(defaultPageSize || 10);
     const [paginatedContainers, setPaginatedContainers] = useState<ContainerBuilder[]>([]);
     
+
+    const loadContainers = async () => {
+        try {
+          await dispatch(fetchContainersThunk()).unwrap();
+        } catch (error) {
+        toast({
+            title: "Error",
+            description: "Failed to load containers",
+            variant: "destructive"
+        });
+        }
+      };
+    
+
+    useEffect(() => {
+        if (internalFetch) {
+            loadContainers();
+        }
+    }, [internalFetch]);
+
+
     // Apply search/filter and sorting whenever containers, search term, or sort params change
     useEffect(() => {
         let filtered = containers;
@@ -126,8 +207,6 @@ export default function ContainerListTable({
     const handleCreateContainer = () => {
         if (onContainerCreate) {
             onContainerCreate();
-        } else {
-            router.push("/apps/app-builder/containers/create");
         }
     };
     
@@ -203,26 +282,35 @@ export default function ContainerListTable({
         }
     ];
     
-    // Define actions
-    const actions: ActionConfig<ContainerBuilder>[] = [
-        {
-            icon: <Eye className="h-4 w-4" />,
-            onClick: (container) => {
-                handleViewContainer(container.id);
-            },
-            badgeStyle: !!onContainerSelect,
-            badgeVariant: "outline",
-            badgeClassName: "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
-            label: "Select"
+    // Define custom select action if provided
+    const selectAction: ActionConfig<ContainerBuilder> = {
+        icon: <Eye className="h-4 w-4" />,
+        onClick: (container) => {
+            handleViewContainer(container.id);
         },
-        {
+        badgeStyle: !!onContainerSelect,
+        badgeVariant: "outline",
+        badgeClassName: "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
+        label: selectLabel,
+        // Add custom render if provided
+        ...(customSelectActionRender && {
+            customRender: (container, onClick) => customSelectActionRender(container, onClick)
+        })
+    };
+    
+    // Define actions based on props
+    const baseActions: ActionConfig<ContainerBuilder>[] = [
+        // Only include select/view action if explicitly allowed or view handler exists
+        ...(allowSelectAction || onContainerView ? [selectAction] : []),
+        // Include edit action if handler exists
+        ...(onContainerEdit ? [{
             icon: <Pencil className="h-4 w-4" />,
             onClick: (container) => {
                 handleEditContainer(container.id);
-            },
-            showCondition: () => !!onContainerEdit
-        },
-        {
+            }
+        }] : []),
+        // Include delete action if handler exists
+        ...(onContainerDelete ? [{
             icon: <Trash2 className="h-4 w-4" />,
             onClick: (container) => {
                 handleDeleteContainer(container);
@@ -234,8 +322,14 @@ export default function ContainerListTable({
                 getDescription: (container) => `This action cannot be undone. This will permanently delete "${container.label || "Unnamed Container"}" and remove it from any layouts that use it.`,
                 confirmButtonText: "Delete Container"
             }
-        }
+        }] : [])
     ];
+    
+    // Merge custom settings
+    const mergedCustomSettings: CustomTableSettings = {
+        useZebraStripes: showStripedRows,
+        ...customSettings
+    };
 
     return (
         <GenericDataTable
@@ -245,44 +339,58 @@ export default function ContainerListTable({
             isLoading={isLoading}
             columns={columns}
             idField="id"
-            iconField={{
+            iconField={!hideIconColumn ? {
                 key: "id", // Not using an actual icon field, just using a fixed icon
                 renderIcon: () => <LayoutGrid className="h-5 w-5 text-gray-700 dark:text-gray-300" />
-            }}
+            } : undefined}
             labelField="label"
-            statusBadge={{
+            hiddenColumns={hiddenColumns}
+            statusBadge={!hideStatusColumn ? {
                 key: "status",
                 isDirtyKey: "isDirty",
                 isLocalKey: "isLocal",
                 isPublicKey: "isPublic"
-            }}
+            } : undefined}
             emptyState={{
                 icon: <Box className="h-16 w-16 text-gray-400 dark:text-gray-500 mb-4" />,
-                title: "No Containers Found",
-                description: "You haven't created any containers yet. Containers let you group related fields together for use in your apps.",
-                buttonText: "Create First Container",
+                title: `No ${entityName}s Found`,
+                description: `You haven't created any ${entityName.toLowerCase()}s yet. ${entityName}s let you group related fields together for use in your apps.`,
+                buttonText: `Create First ${entityName}`,
                 onButtonClick: handleCreateContainer
             }}
-            title="All Containers"
+            title={title}
             headerActions={[
-                <GenericTableHeader
-                    key="table-header"
-                    entityName="Container"
-                    searchTerm={searchTerm}
-                    onSearchChange={handleSearchChange}
-                    onCreateItem={handleCreateContainer}
-                />
+                renderCustomHeader || (
+                    <GenericTableHeader
+                        key="table-header"
+                        entityName={entityName}
+                        searchTerm={searchTerm}
+                        onSearchChange={handleSearchChange}
+                        onCreateItem={onContainerCreate ? handleCreateContainer : undefined}
+                        showCreateButton={!!onContainerCreate}
+                        searchPlaceholder={searchPlaceholder}
+                        createButtonText={createButtonText}
+                        headerClassName={headerClassName}
+                    />
+                )
             ]}
             onRowClick={(container) => handleViewContainer(container.id)}
             sortBy={sortBy}
             sortDirection={sortDirection}
             onSortChange={handleSortClick}
-            actions={actions}
+            actions={!hideActionsColumn ? baseActions : []}
             totalItems={filteredContainers.length}
             itemsPerPage={itemsPerPage}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             onItemsPerPageChange={setItemsPerPage}
+            defaultPageSize={defaultPageSize}
+            customSettings={mergedCustomSettings}
+            hideTableHeader={hideTableHeader}
+            hideActionsColumn={hideActionsColumn}
+            hideStatusColumn={hideStatusColumn}
+            hideIconColumn={hideIconColumn}
+            hideTableFooter={hideTableFooter}
         />
     );
 }

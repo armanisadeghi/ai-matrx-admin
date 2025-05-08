@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import FieldListTable from "@/features/applet/builder/modules/field-builder/table/from-generic";
+import FieldListTable from "@/features/applet/builder/modules/field-builder/FieldListTable";
 import { useAppDispatch } from "@/lib/redux";
 import { deleteFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 

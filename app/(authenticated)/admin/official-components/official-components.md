@@ -137,3 +137,22 @@ features\applet\builder\components\smart-parts\applets\MultiAppletSelector.tsx
  - Fully responsive with built-in mobile support
  - Seamlessly integrates with the applet ecosystem
  - Follows application theming with light and dark mode support
+
+## Applet List Table
+features\applet\builder\modules\applet-builder\AppletListTable.tsx
+ - Flexible data table specifically designed for displaying and interacting with applets
+ - Supports multiple configuration options for different use cases:
+   - Standard mode: Full-featured with view, edit, create, and delete capabilities
+   - Compact mode: Streamlined version with fewer columns for selection interfaces
+   - Minimal mode: Ultra-compact with custom action rendering
+   - Read-only mode: Display-only for related applets without action buttons
+ - Customization features include:
+   - Column visibility control via `hiddenColumns` prop
+   - Default page size configuration
+   - Custom select/view action rendering
+   - Visual styling including zebra striping and custom CSS classes
+   - Conditional action generation based on provided handlers
+   - Hide/show toggles for various table sections
+ - Fully supports light and dark mode with consistent styling
+ - Responsive design works well on all device sizes
+ - Built with proper accessibility support

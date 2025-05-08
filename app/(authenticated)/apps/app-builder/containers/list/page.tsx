@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import ContainerListTable from "@/features/applet/builder/modules/group-builder/table/from-generic";
+import ContainerListTable from "@/features/applet/builder/modules/group-builder/ContainerListTable";
 import { useAppDispatch } from "@/lib/redux";
 import { deleteContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 

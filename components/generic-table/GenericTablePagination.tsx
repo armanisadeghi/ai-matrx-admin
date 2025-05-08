@@ -1,18 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-    ChevronsLeft, 
-    ChevronLeft, 
-    ChevronsRight, 
-    ChevronRight
-} from "lucide-react";
-import { 
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
+import { ChevronsLeft, ChevronLeft, ChevronsRight, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface GenericTablePaginationProps {
     totalItems: number;
@@ -22,6 +11,22 @@ interface GenericTablePaginationProps {
     onItemsPerPageChange: (items: number) => void;
     pageSizeOptions?: number[];
     className?: string;
+    showItemsPerPageSelect?: boolean;
+    showPageInfo?: boolean;
+    showPageControls?: boolean;
+    maxPagesToShow?: number;
+    containerClassName?: string;
+    selectContainerClassName?: string;
+    infoContainerClassName?: string;
+    controlsContainerClassName?: string;
+    pageButtonClassName?: string;
+    pageActiveButtonClassName?: string;
+    navButtonClassName?: string;
+    showAllOption?: boolean;
+    layoutType?: "grid" | "flex";
+    labelFormat?: (start: number, end: number, total: number) => string;
+    compact?: boolean;
+    hideEntriesInfo?: boolean;
 }
 
 export default function GenericTablePagination({
@@ -30,115 +35,156 @@ export default function GenericTablePagination({
     currentPage,
     onPageChange,
     onItemsPerPageChange,
-    pageSizeOptions = [10, 25, 50, 100],
-    className = ""
+    pageSizeOptions = [5, 10, 25, 50, 100],
+    className = "",
+    showItemsPerPageSelect = true,
+    showPageInfo = true,
+    showPageControls = true,
+    maxPagesToShow = 5,
+    containerClassName = "",
+    selectContainerClassName = "",
+    infoContainerClassName = "",
+    controlsContainerClassName = "",
+    pageButtonClassName = "",
+    pageActiveButtonClassName = "",
+    navButtonClassName = "",
+    showAllOption = true,
+    layoutType = "grid",
+    labelFormat,
+    compact = false,
+    hideEntriesInfo = false,
 }: GenericTablePaginationProps) {
+    // State to keep track of available page size options including custom values
+    const [availablePageSizes, setAvailablePageSizes] = useState<number[]>(pageSizeOptions);
+
+    // Ensure the current itemsPerPage is in the available options
+    useEffect(() => {
+        if (!availablePageSizes.includes(itemsPerPage)) {
+            // Add the current value to the available options if it's not already there
+            setAvailablePageSizes((prev) => [...prev, itemsPerPage].sort((a, b) => a - b));
+        }
+    }, [itemsPerPage, availablePageSizes]);
+
     const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-    
-    // Generate array of page numbers to display
+
     const getPageNumbers = () => {
-        // Always show 5 pages when possible
-        const maxPagesToShow = 5;
         let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
         const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-        
-        // Adjust start page if we're near the end
         startPage = Math.max(1, endPage - maxPagesToShow + 1);
-        
         return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
     };
-    
-    // Check if button should be disabled
+
     const isFirstPageDisabled = currentPage <= 1;
     const isLastPageDisabled = currentPage >= totalPages;
-    
-    // Calculate displayed item range
     const startItem = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
     const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-    
+
+    const defaultLabelFormat = (start: number, end: number, total: number) => {
+        return compact ? `${start}-${end} of ${total}` : `Showing ${start} to ${end} of ${total} entries`;
+    };
+
+    const formatLabel = labelFormat || defaultLabelFormat;
+
+    const buttonSize = compact ? "sm" : "icon";
+    const buttonWidth = compact ? "w-6" : "w-8";
+    const buttonHeight = compact ? "h-6" : "h-8";
+    const buttonPadding = compact ? "p-0 text-xs" : "p-0";
+
+    const containerClass =
+        layoutType === "grid"
+            ? `grid grid-cols-1 md:grid-cols-3 items-center gap-4 w-full border-t border-gray-200 dark:border-gray-600 pt-4 ${className} ${containerClassName}`
+            : `flex flex-wrap items-center justify-between gap-2 w-full border-t border-gray-200 dark:border-gray-600 pt-4 ${className} ${containerClassName}`;
+
     return (
-        <div className={`grid grid-cols-1 md:grid-cols-3 items-center gap-4 w-full border-t border-gray-200 dark:border-gray-600 pt-4 ${className}`}>
-            {/* Left Column - Select */}
-            <div className="flex justify-start">
-                <Select 
-                    value={itemsPerPage.toString()} 
-                    onValueChange={(value) => onItemsPerPageChange(parseInt(value))}
-                >
-                    <SelectTrigger className="w-36 focus:ring-0 h-8">
-                        <SelectValue placeholder={itemsPerPage.toString()} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {pageSizeOptions.map(size => (
-                            <SelectItem key={size} value={size.toString()}>{size}</SelectItem>
-                        ))}
-                        {totalItems > Math.max(...pageSizeOptions) && (
-                            <SelectItem value={totalItems.toString()}>All</SelectItem>
-                        )}
-                    </SelectContent>
-                </Select>
+        <div className={containerClass}>
+            {/* Items Per Page Select */}
+            {showItemsPerPageSelect && (
+                <div className={`flex justify-start ${selectContainerClassName}`}>
+                    <Select value={itemsPerPage.toString()} onValueChange={(value) => onItemsPerPageChange(parseInt(value))}>
+                        <SelectTrigger className={`${compact ? "w-20 h-6 text-xs" : "w-36 h-8"} focus:ring-0`}>
+                            <SelectValue placeholder={itemsPerPage.toString()} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availablePageSizes.map((size) => (
+                                <SelectItem key={size} value={size.toString()}>
+                                    {size}
+                                </SelectItem>
+                            ))}
+                            {showAllOption && totalItems > Math.max(...availablePageSizes) && (
+                                <SelectItem value={totalItems.toString()}>All</SelectItem>
+                            )}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+
+            <div className={`flex justify-center ${infoContainerClassName}`}>
+            {/* Page Info - only show if not hidden But always show the div. */}
+            {showPageInfo && !hideEntriesInfo && (
+                    <span className={`${compact ? "text-xs" : "text-sm"} text-gray-600 dark:text-gray-400`}>
+                        {formatLabel(startItem, endItem, totalItems)}
+                    </span>
+                )}
             </div>
-            
-            {/* Middle Column - Text */}
-            <div className="flex justify-center">
-                <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Showing {totalItems > 0 ? startItem : 0} to {endItem} of {totalItems} entries
-                </span>
-            </div>
-            
-            {/* Right Column - Pagination Controls */}
-            <div className="flex justify-end items-center space-x-1">
-                <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => onPageChange(1)}
-                    disabled={isFirstPageDisabled}
-                    className="w-8 h-8"
-                >
-                    <ChevronsLeft className="h-4 w-4" />
-                </Button>
-                
-                <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={isFirstPageDisabled}
-                    className="w-8 h-8"
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                
-                {getPageNumbers().map((page) => (
+
+            {/* Page Controls */}
+            {showPageControls && (
+                <div className={`flex justify-end items-center space-x-1 ${controlsContainerClassName}`}>
                     <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => onPageChange(page)}
-                        className="w-8 h-8 p-0"
+                        variant="outline"
+                        size={buttonSize}
+                        onClick={() => onPageChange(1)}
+                        disabled={isFirstPageDisabled}
+                        className={`${buttonWidth} ${buttonHeight} ${navButtonClassName}`}
                     >
-                        {page}
+                        <ChevronsLeft className={`${compact ? "h-3 w-3" : "h-4 w-4"}`} />
                     </Button>
-                ))}
-                
-                <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={isLastPageDisabled}
-                    className="w-8 h-8"
-                >
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-                
-                <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={() => onPageChange(totalPages)}
-                    disabled={isLastPageDisabled}
-                    className="w-8 h-8"
-                >
-                    <ChevronsRight className="h-4 w-4" />
-                </Button>
-            </div>
+
+                    <Button
+                        variant="outline"
+                        size={buttonSize}
+                        onClick={() => onPageChange(currentPage - 1)}
+                        disabled={isFirstPageDisabled}
+                        className={`${buttonWidth} ${buttonHeight} ${navButtonClassName}`}
+                    >
+                        <ChevronLeft className={`${compact ? "h-3 w-3" : "h-4 w-4"}`} />
+                    </Button>
+
+                    {getPageNumbers().map((page) => (
+                        <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size={buttonSize}
+                            onClick={() => onPageChange(page)}
+                            className={`${buttonWidth} ${buttonHeight} ${buttonPadding} ${
+                                currentPage === page ? pageActiveButtonClassName : pageButtonClassName
+                            }`}
+                        >
+                            {page}
+                        </Button>
+                    ))}
+
+                    <Button
+                        variant="outline"
+                        size={buttonSize}
+                        onClick={() => onPageChange(currentPage + 1)}
+                        disabled={isLastPageDisabled}
+                        className={`${buttonWidth} ${buttonHeight} ${navButtonClassName}`}
+                    >
+                        <ChevronRight className={`${compact ? "h-3 w-3" : "h-4 w-4"}`} />
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        size={buttonSize}
+                        onClick={() => onPageChange(totalPages)}
+                        disabled={isLastPageDisabled}
+                        className={`${buttonWidth} ${buttonHeight} ${navButtonClassName}`}
+                    >
+                        <ChevronsRight className={`${compact ? "h-3 w-3" : "h-4 w-4"}`} />
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

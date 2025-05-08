@@ -229,6 +229,14 @@ export const componentList: ComponentEntry[] = [
     description: 'A structured card layout with title, description, optional header actions, and a three-column footer',
     category: 'layout',
     tags: ['card', 'section', 'layout', 'header', 'footer', 'actions', 'form']
+  },
+  {
+    id: 'applet-list-table',
+    name: 'Applet List Table',
+    path: 'features/applet/builder/modules/applet-builder/AppletListTable.tsx',
+    description: 'Flexible applet listing component with various configuration options for different use cases',
+    category: 'data',
+    tags: ['table', 'list', 'applet', 'data', 'interactive', 'configurable', 'selection']
   }
 ]; 
 

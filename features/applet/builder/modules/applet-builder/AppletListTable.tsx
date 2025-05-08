@@ -1,28 +1,89 @@
+// File Location: @/features/applet/builder/modules/applet-builder/AppletListTable.tsx
+
 "use client";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { useRouter } from "next/navigation";
 import { selectAllApplets, selectAppletLoading } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { deleteAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { Eye, Pencil, AppWindow, Box, Trash2 } from "lucide-react";
+import { deleteAppletThunk, fetchAppletsThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
+import { Eye, Pencil, AppWindow, Box, Trash2, Check } from "lucide-react";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { ICON_OPTIONS } from "@/features/applet/layouts/helpers/StyledComponents";
-import GenericDataTable, {GenericTableHeader, ColumnConfig, ActionConfig } from "@/components/generic-table";
+import GenericDataTable, { 
+    GenericTableHeader, 
+    ColumnConfig, 
+    ActionConfig,
+    CustomTableSettings
+} from "@/components/generic-table";
+import { toast } from "@/components/ui/use-toast";
 
 interface AppletListTableProps {
+    // Core functionality props
     onAppletView?: (id: string) => void;
     onAppletEdit?: (id: string) => void;
     onAppletDelete?: (id: string) => void;
     onAppletSelect?: (id: string) => void;
     onAppletCreate?: () => void;
+
+    internalFetch?: boolean;
+    
+    // New customization props
+    hiddenColumns?: string[];
+    defaultPageSize?: number;
+    customSettings?: CustomTableSettings;
+    hideTableHeader?: boolean;
+    hideActionsColumn?: boolean;
+    hideStatusColumn?: boolean;
+    hideIconColumn?: boolean;
+    hideTableFooter?: boolean;
+    
+    // Visual customization props
+    title?: string;
+    entityName?: string;
+    allowSelectAction?: boolean;
+    showStripedRows?: boolean;
+    headerClassName?: string;
+    searchPlaceholder?: string;
+    createButtonText?: string;
+    selectLabel?: string;
+    
+    // Custom renderers
+    renderCustomHeader?: React.ReactNode;
+    customSelectActionRender?: (applet: AppletBuilder, onClick: (e: React.MouseEvent) => void) => React.ReactNode;
 }
 
 export default function AppletListTable({
+    // Core functionality props
     onAppletView,
     onAppletEdit,
     onAppletDelete,
     onAppletSelect,
-    onAppletCreate
+    onAppletCreate,
+
+    internalFetch = false,
+    // New customization props
+    hiddenColumns = [],
+    defaultPageSize,
+    customSettings,
+    hideTableHeader = false,
+    hideActionsColumn = false,
+    hideStatusColumn = false,
+    hideIconColumn = false,
+    hideTableFooter = false,
+    
+    // Visual customization props
+    title = "All Applets",
+    entityName = "Applet",
+    allowSelectAction = true, 
+    showStripedRows = true,
+    headerClassName,
+    searchPlaceholder,
+    createButtonText,
+    selectLabel = "Select",
+    
+    // Custom renderers
+    renderCustomHeader,
+    customSelectActionRender
 }: AppletListTableProps) {
     const router = useRouter();
     const dispatch = useAppDispatch();
@@ -42,9 +103,30 @@ export default function AppletListTable({
     
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(defaultPageSize || 10);
     const [paginatedApplets, setPaginatedApplets] = useState<AppletBuilder[]>([]);
     
+
+    const loadApplets = async () => {
+        try {
+          await dispatch(fetchAppletsThunk()).unwrap();
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to load applets",
+            variant: "destructive"
+        });
+        }
+    };
+
+    useEffect(() => {
+        if (internalFetch) {
+            loadApplets();
+        }
+    }, [internalFetch]);
+    
+
+
     // Apply search/filter and sorting whenever applets, search term, or sort params change
     useEffect(() => {
         let filtered = applets;
@@ -128,8 +210,6 @@ export default function AppletListTable({
     const handleCreateApplet = () => {
         if (onAppletCreate) {
             onAppletCreate();
-        } else {
-            router.push("/apps/app-builder/applets/create");
         }
     };
     
@@ -215,40 +295,54 @@ export default function AppletListTable({
         }
     ];
     
-    // Define actions
-    const actions: ActionConfig<AppletBuilder>[] = [
-        {
-            icon: <Eye className="h-4 w-4" />,
-            onClick: (applet) => {
-                handleViewApplet(applet.id);
-            },
-            badgeStyle: !!onAppletSelect,
-            badgeVariant: "outline",
-            badgeClassName: "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
-            label: "Select"
+    // Define custom select action if provided
+    const selectAction: ActionConfig<AppletBuilder> = {
+        icon: <Eye className="h-4 w-4" />,
+        onClick: (applet) => {
+            handleViewApplet(applet.id);
         },
-        {
+        badgeStyle: !!onAppletSelect,
+        badgeVariant: "outline",
+        badgeClassName: "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
+        label: selectLabel,
+        // Add custom render if provided
+        ...(customSelectActionRender && {
+            customRender: (applet, onClick) => customSelectActionRender(applet, onClick)
+        })
+    };
+    
+    // Define actions based on props
+    const baseActions: ActionConfig<AppletBuilder>[] = [
+        // Only include select/view action if explicitly allowed or view handler exists
+        ...(allowSelectAction || onAppletView ? [selectAction] : []),
+        // Include edit action if handler exists
+        ...(onAppletEdit ? [{
             icon: <Pencil className="h-4 w-4" />,
             onClick: (applet) => {
                 handleEditApplet(applet.id);
-            },
-            showCondition: () => !!onAppletEdit
-        },
-        {
+            }
+        }] : []),
+        // Include delete action if handler exists
+        ...(onAppletDelete ? [{
             icon: <Trash2 className="h-4 w-4" />,
             onClick: (applet) => {
                 handleDeleteApplet(applet);
             },
             className: "text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300",
-            showCondition: () => !!onAppletDelete,
             requiresConfirmation: true,
             confirmationProps: {
                 getTitle: (applet) => `Delete Applet: ${applet.name || "Unnamed Applet"}`,
                 getDescription: (applet) => `This action cannot be undone. This will permanently delete "${applet.name || "Unnamed Applet"}" and remove it from any applications that use it.`,
                 confirmButtonText: "Delete Applet"
             }
-        }
+        }] : [])
     ];
+    
+    // Merge custom settings
+    const mergedCustomSettings: CustomTableSettings = {
+        useZebraStripes: showStripedRows,
+        ...customSettings
+    };
 
     return (
         <GenericDataTable
@@ -258,44 +352,58 @@ export default function AppletListTable({
             isLoading={isLoading}
             columns={columns}
             idField="id"
-            iconField={{
+            iconField={!hideIconColumn ? {
                 key: "appletIcon",
                 renderIcon: (applet) => renderIcon(applet.appletIcon)
-            }}
+            } : undefined}
             labelField="name"
-            statusBadge={{
+            hiddenColumns={hiddenColumns}
+            statusBadge={!hideStatusColumn ? {
                 key: "status",
                 isDirtyKey: "isDirty",
                 isLocalKey: "isLocal",
                 isPublicKey: "isPublic"
-            }}
+            } : undefined}
             emptyState={{
                 icon: <AppWindow className="h-16 w-16 text-gray-400 dark:text-gray-500 mb-4" />,
-                title: "No Applets Found",
-                description: "You haven't created any applets yet. Applets are interactive components that can be added to your apps.",
-                buttonText: "Create First Applet",
+                title: `No ${entityName}s Found`,
+                description: `You haven't created any ${entityName.toLowerCase()}s yet. ${entityName}s are interactive components that can be added to your apps.`,
+                buttonText: `Create First ${entityName}`,
                 onButtonClick: handleCreateApplet
             }}
-            title="All Applets"
+            title={title}
             headerActions={[
-                <GenericTableHeader
-                    key="table-header"
-                    entityName="Applet"
-                    searchTerm={searchTerm}
-                    onSearchChange={handleSearchChange}
-                    onCreateItem={handleCreateApplet}
-                />
+                renderCustomHeader || (
+                    <GenericTableHeader
+                        key="table-header"
+                        entityName={entityName}
+                        searchTerm={searchTerm}
+                        onSearchChange={handleSearchChange}
+                        onCreateItem={onAppletCreate ? handleCreateApplet : undefined}
+                        showCreateButton={!!onAppletCreate}
+                        searchPlaceholder={searchPlaceholder}
+                        createButtonText={createButtonText}
+                        headerClassName={headerClassName}
+                    />
+                )
             ]}
             onRowClick={(applet) => handleViewApplet(applet.id)}
             sortBy={sortBy}
             sortDirection={sortDirection}
             onSortChange={handleSortClick}
-            actions={actions}
+            actions={!hideActionsColumn ? baseActions : []}
             totalItems={filteredApplets.length}
             itemsPerPage={itemsPerPage}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             onItemsPerPageChange={setItemsPerPage}
+            defaultPageSize={defaultPageSize}
+            customSettings={mergedCustomSettings}
+            hideTableHeader={hideTableHeader}
+            hideActionsColumn={hideActionsColumn}
+            hideStatusColumn={hideStatusColumn}
+            hideIconColumn={hideIconColumn}
+            hideTableFooter={hideTableFooter}
         />
     );
 }

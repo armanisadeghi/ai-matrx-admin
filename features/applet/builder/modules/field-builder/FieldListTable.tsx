@@ -1,30 +1,85 @@
+// File Location: @/features/applet/builder/modules/field-builder/FieldListTable.tsx
+
 "use client";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { useRouter } from "next/navigation";
 import { selectAllFields, selectFieldLoading } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { deleteFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
-import { Eye, Pencil, TextCursorInput, Trash2 } from "lucide-react";
+import { Eye, Pencil, TextCursorInput, Trash2, Check } from "lucide-react";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
 import { getComponentIcon, getComponentTypeName } from "@/features/applet/builder/modules/field-builder/field-constants";
-import GenericDataTable, { GenericTableHeader, ColumnConfig, ActionConfig } from "@/components/generic-table";
+import GenericDataTable, { 
+    GenericTableHeader, 
+    ColumnConfig, 
+    ActionConfig,
+    CustomTableSettings
+} from "@/components/generic-table";
 
 interface FieldListTableProps {
+    // Core functionality props
     onFieldView?: (id: string) => void;
     onFieldEdit?: (id: string) => void;
     onFieldDelete?: (id: string) => void;
     onFieldSelect?: (id: string) => void;
     onFieldCreate?: () => void;
+    
+    // New customization props
+    hiddenColumns?: string[];
+    defaultPageSize?: number;
+    customSettings?: CustomTableSettings;
+    hideTableHeader?: boolean;
+    hideActionsColumn?: boolean;
+    hideStatusColumn?: boolean;
+    hideIconColumn?: boolean;
+    hideTableFooter?: boolean;
+    
+    // Visual customization props
+    title?: string;
+    entityName?: string;
+    allowSelectAction?: boolean;
+    showStripedRows?: boolean;
+    headerClassName?: string;
+    searchPlaceholder?: string;
+    createButtonText?: string;
+    selectLabel?: string;
+    
+    // Custom renderers
+    renderCustomHeader?: React.ReactNode;
+    customSelectActionRender?: (field: FieldBuilder, onClick: (e: React.MouseEvent) => void) => React.ReactNode;
 }
 
 export default function FieldListTable({ 
+    // Core functionality props
     onFieldView, 
     onFieldEdit, 
     onFieldDelete, 
     onFieldSelect, 
-    onFieldCreate 
+    onFieldCreate,
+    
+    // New customization props
+    hiddenColumns = [],
+    defaultPageSize,
+    customSettings,
+    hideTableHeader = false,
+    hideActionsColumn = false,
+    hideStatusColumn = false,
+    hideIconColumn = false,
+    hideTableFooter = false,
+    
+    // Visual customization props
+    title = "All Field Components",
+    entityName = "Field",
+    allowSelectAction = true, 
+    showStripedRows = true,
+    headerClassName,
+    searchPlaceholder,
+    createButtonText,
+    selectLabel = "Select",
+    
+    // Custom renderers
+    renderCustomHeader,
+    customSelectActionRender
 }: FieldListTableProps) {
-    const router = useRouter();
     const dispatch = useAppDispatch();
     
     // Get fields from Redux
@@ -42,7 +97,7 @@ export default function FieldListTable({
     
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(defaultPageSize || 10);
     const [paginatedFields, setPaginatedFields] = useState<FieldBuilder[]>([]);
     
     // Apply search/filter and sorting whenever fields, search term, or sort params change
@@ -126,8 +181,6 @@ export default function FieldListTable({
     const handleCreateField = () => {
         if (onFieldCreate) {
             onFieldCreate();
-        } else {
-            router.push("/apps/app-builder/fields/create");
         }
     };
     
@@ -205,26 +258,35 @@ export default function FieldListTable({
         }
     ];
     
-    // Define actions
-    const actions: ActionConfig<FieldBuilder>[] = [
-        {
-            icon: <Eye className="h-4 w-4" />,
-            onClick: (field) => {
-                handleViewField(field.id);
-            },
-            badgeStyle: !!onFieldSelect,
-            badgeVariant: "outline",
-            badgeClassName: "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
-            label: "Select"
+    // Define custom select action if provided
+    const selectAction: ActionConfig<FieldBuilder> = {
+        icon: <Eye className="h-4 w-4" />,
+        onClick: (field) => {
+            handleViewField(field.id);
         },
-        {
+        badgeStyle: !!onFieldSelect,
+        badgeVariant: "outline",
+        badgeClassName: "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
+        label: selectLabel,
+        // Add custom render if provided
+        ...(customSelectActionRender && {
+            customRender: (field, onClick) => customSelectActionRender(field, onClick)
+        })
+    };
+    
+    // Define actions based on props
+    const baseActions: ActionConfig<FieldBuilder>[] = [
+        // Only include select/view action if explicitly allowed or view handler exists
+        ...(allowSelectAction || onFieldView ? [selectAction] : []),
+        // Include edit action if handler exists
+        ...(onFieldEdit ? [{
             icon: <Pencil className="h-4 w-4" />,
             onClick: (field) => {
                 handleEditField(field.id);
-            },
-            showCondition: () => !!onFieldEdit
-        },
-        {
+            }
+        }] : []),
+        // Include delete action if handler exists
+        ...(onFieldDelete ? [{
             icon: <Trash2 className="h-4 w-4" />,
             onClick: (field) => {
                 handleDeleteField(field);
@@ -236,8 +298,14 @@ export default function FieldListTable({
                 getDescription: (field) => `This action cannot be undone. This will permanently delete "${field.label || "Unnamed Field"}" and remove it from any containers or layouts that use it.`,
                 confirmButtonText: "Delete Field"
             }
-        }
+        }] : [])
     ];
+    
+    // Merge custom settings
+    const mergedCustomSettings: CustomTableSettings = {
+        useZebraStripes: showStripedRows,
+        ...customSettings
+    };
 
     return (
         <GenericDataTable
@@ -247,46 +315,60 @@ export default function FieldListTable({
             isLoading={isLoading}
             columns={columns}
             idField="id"
-            iconField={{
+            iconField={!hideIconColumn ? {
                 key: "iconName",
                 renderIcon: (field) => {
                     return getComponentIcon(field.component);
                 }
-            }}
+            } : undefined}
             labelField="label"
-            statusBadge={{
+            hiddenColumns={hiddenColumns}
+            statusBadge={!hideStatusColumn ? {
                 key: "status",
                 isDirtyKey: "isDirty",
                 isLocalKey: "isLocal",
                 isPublicKey: "isPublic"
-            }}
+            } : undefined}
             emptyState={{
                 icon: <TextCursorInput className="h-16 w-16 text-gray-400 dark:text-gray-500 mb-4" />,
-                title: "No Field Components Found",
-                description: "You haven't created any field components yet. Field components are reusable form elements that can be used in your applets.",
-                buttonText: "Create First Field",
+                title: `No ${entityName} Components Found`,
+                description: `You haven't created any ${entityName.toLowerCase()} components yet. ${entityName} components are reusable form elements that can be used in your applets.`,
+                buttonText: `Create First ${entityName}`,
                 onButtonClick: handleCreateField
             }}
-            title="All Field Components"
+            title={title}
             headerActions={[
-                <GenericTableHeader
-                    key="table-header"
-                    entityName="Field"
-                    searchTerm={searchTerm}
-                    onSearchChange={handleSearchChange}
-                    onCreateItem={handleCreateField}
-                />
+                renderCustomHeader || (
+                    <GenericTableHeader
+                        key="table-header"
+                        entityName={entityName}
+                        searchTerm={searchTerm}
+                        onSearchChange={handleSearchChange}
+                        onCreateItem={onFieldCreate ? handleCreateField : undefined}
+                        showCreateButton={!!onFieldCreate}
+                        searchPlaceholder={searchPlaceholder}
+                        createButtonText={createButtonText}
+                        headerClassName={headerClassName}
+                    />
+                )
             ]}
             onRowClick={(field) => handleViewField(field.id)}
             sortBy={sortBy}
             sortDirection={sortDirection}
             onSortChange={handleSortClick}
-            actions={actions}
+            actions={!hideActionsColumn ? baseActions : []}
             totalItems={filteredFields.length}
             itemsPerPage={itemsPerPage}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             onItemsPerPageChange={setItemsPerPage}
+            defaultPageSize={defaultPageSize}
+            customSettings={mergedCustomSettings}
+            hideTableHeader={hideTableHeader}
+            hideActionsColumn={hideActionsColumn}
+            hideStatusColumn={hideStatusColumn}
+            hideIconColumn={hideIconColumn}
+            hideTableFooter={hideTableFooter}
         />
     );
 }

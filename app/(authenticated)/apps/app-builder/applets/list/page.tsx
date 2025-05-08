@@ -1,3 +1,5 @@
+// File Location: @/app/(authenticated)/apps/app-builder/applets/list/page.tsx
+
 "use client";
 
 import React from "react";

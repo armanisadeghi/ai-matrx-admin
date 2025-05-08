@@ -1,30 +1,85 @@
+// File Location: @/features/applet/builder/modules/app-builder/AppListTable.tsx
+
 "use client";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { useRouter } from "next/navigation";
 import { selectAllApps, selectAppLoading } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { deleteAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
-import { Eye, Pencil, AppWindow, Trash2 } from "lucide-react";
+import { Eye, Pencil, AppWindow, Trash2, Check } from "lucide-react";
 import { AppBuilder } from "@/lib/redux/app-builder/types";
 import { ICON_OPTIONS } from "@/features/applet/layouts/helpers/StyledComponents";
-import GenericDataTable, {GenericTableHeader, ColumnConfig, ActionConfig } from "@/components/generic-table";
+import GenericDataTable, { 
+    GenericTableHeader, 
+    ColumnConfig, 
+    ActionConfig,
+    CustomTableSettings
+} from "@/components/generic-table";
 
 interface AppListTableProps {
+    // Core functionality props
     onAppView?: (id: string) => void;
     onAppEdit?: (id: string) => void;
     onAppDelete?: (id: string) => void;
     onAppSelect?: (id: string) => void;
     onAppCreate?: () => void;
+    
+    // New customization props
+    hiddenColumns?: string[];
+    defaultPageSize?: number;
+    customSettings?: CustomTableSettings;
+    hideTableHeader?: boolean;
+    hideActionsColumn?: boolean;
+    hideStatusColumn?: boolean;
+    hideIconColumn?: boolean;
+    hideTableFooter?: boolean;
+    
+    // Visual customization props
+    title?: string;
+    entityName?: string;
+    allowSelectAction?: boolean;
+    showStripedRows?: boolean;
+    headerClassName?: string;
+    searchPlaceholder?: string;
+    createButtonText?: string;
+    selectLabel?: string;
+    
+    // Custom renderers
+    renderCustomHeader?: React.ReactNode;
+    customSelectActionRender?: (app: AppBuilder, onClick: (e: React.MouseEvent) => void) => React.ReactNode;
 }
 
 export default function AppListTable({
+    // Core functionality props
     onAppView,
     onAppEdit,
     onAppDelete,
     onAppSelect,
-    onAppCreate
+    onAppCreate,
+    
+    // New customization props
+    hiddenColumns = [],
+    defaultPageSize,
+    customSettings,
+    hideTableHeader = false,
+    hideActionsColumn = false,
+    hideStatusColumn = false,
+    hideIconColumn = false,
+    hideTableFooter = false,
+    
+    // Visual customization props
+    title = "All Apps",
+    entityName = "App",
+    allowSelectAction = true, 
+    showStripedRows = true,
+    headerClassName,
+    searchPlaceholder,
+    createButtonText,
+    selectLabel = "Select",
+    
+    // Custom renderers
+    renderCustomHeader,
+    customSelectActionRender
 }: AppListTableProps) {
-    const router = useRouter();
     const dispatch = useAppDispatch();
     
     // Get apps from Redux
@@ -42,7 +97,7 @@ export default function AppListTable({
     
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(defaultPageSize || 10);
     const [paginatedApps, setPaginatedApps] = useState<AppBuilder[]>([]);
     
     // Apply search/filter and sorting whenever apps, search term, or sort params change
@@ -128,8 +183,6 @@ export default function AppListTable({
     const handleCreateApp = () => {
         if (onAppCreate) {
             onAppCreate();
-        } else {
-            router.push("/apps/app-builder/apps/create");
         }
     };
     
@@ -216,26 +269,35 @@ export default function AppListTable({
         }
     ];
     
-    // Define actions
-    const actions: ActionConfig<AppBuilder>[] = [
-        {
-            icon: <Eye className="h-4 w-4" />,
-            onClick: (app) => {
-                handleViewApp(app.id);
-            },
-            badgeStyle: !!onAppSelect,
-            badgeVariant: "outline",
-            badgeClassName: "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
-            label: "Select"
+    // Define custom select action if provided
+    const selectAction: ActionConfig<AppBuilder> = {
+        icon: <Eye className="h-4 w-4" />,
+        onClick: (app) => {
+            handleViewApp(app.id);
         },
-        {
+        badgeStyle: !!onAppSelect,
+        badgeVariant: "outline",
+        badgeClassName: "bg-blue-50 dark:bg-blue-900/20 border-blue-500",
+        label: selectLabel,
+        // Add custom render if provided
+        ...(customSelectActionRender && {
+            customRender: (app, onClick) => customSelectActionRender(app, onClick)
+        })
+    };
+    
+    // Define actions based on props
+    const baseActions: ActionConfig<AppBuilder>[] = [
+        // Only include select/view action if explicitly allowed or view handler exists
+        ...(allowSelectAction || onAppView ? [selectAction] : []),
+        // Include edit action if handler exists
+        ...(onAppEdit ? [{
             icon: <Pencil className="h-4 w-4" />,
             onClick: (app) => {
                 handleEditApp(app.id);
-            },
-            showCondition: () => !!onAppEdit
-        },
-        {
+            }
+        }] : []),
+        // Include delete action if handler exists
+        ...(onAppDelete ? [{
             icon: <Trash2 className="h-4 w-4" />,
             onClick: (app) => {
                 handleDeleteApp(app);
@@ -247,8 +309,14 @@ export default function AppListTable({
                 getDescription: (app) => `This action cannot be undone. This will permanently delete "${app.name || "Unnamed App"}" and all of its configuration. Any associated applets will be disconnected from this app.`,
                 confirmButtonText: "Delete App"
             }
-        }
+        }] : [])
     ];
+    
+    // Merge custom settings
+    const mergedCustomSettings: CustomTableSettings = {
+        useZebraStripes: showStripedRows,
+        ...customSettings
+    };
 
     return (
         <GenericDataTable
@@ -258,44 +326,58 @@ export default function AppListTable({
             isLoading={isLoading}
             columns={columns}
             idField="id"
-            iconField={{
+            iconField={!hideIconColumn ? {
                 key: "mainAppIcon",
                 renderIcon: renderAppIcon
-            }}
+            } : undefined}
             labelField="name"
-            statusBadge={{
+            hiddenColumns={hiddenColumns}
+            statusBadge={!hideStatusColumn ? {
                 key: "status",
                 isDirtyKey: "isDirty",
                 isLocalKey: "isLocal",
                 isPublicKey: "isPublic"
-            }}
+            } : undefined}
             emptyState={{
                 icon: <AppWindow className="h-16 w-16 text-gray-400 dark:text-gray-500 mb-4" />,
-                title: "No Apps Found",
-                description: "You haven't created any apps yet. Apps are complete applications that can be used by your users.",
-                buttonText: "Create First App",
+                title: `No ${entityName}s Found`,
+                description: `You haven't created any ${entityName.toLowerCase()}s yet. ${entityName}s are complete applications that can be used by your users.`,
+                buttonText: `Create First ${entityName}`,
                 onButtonClick: handleCreateApp
             }}
-            title="All Apps"
+            title={title}
             headerActions={[
-                <GenericTableHeader
-                    key="table-header"
-                    entityName="App"
-                    searchTerm={searchTerm}
-                    onSearchChange={handleSearchChange}
-                    onCreateItem={handleCreateApp}
-                />
+                renderCustomHeader || (
+                    <GenericTableHeader
+                        key="table-header"
+                        entityName={entityName}
+                        searchTerm={searchTerm}
+                        onSearchChange={handleSearchChange}
+                        onCreateItem={onAppCreate ? handleCreateApp : undefined}
+                        showCreateButton={!!onAppCreate}
+                        searchPlaceholder={searchPlaceholder}
+                        createButtonText={createButtonText}
+                        headerClassName={headerClassName}
+                    />
+                )
             ]}
             onRowClick={(app) => handleViewApp(app.id)}
             sortBy={sortBy}
             sortDirection={sortDirection}
             onSortChange={handleSortClick}
-            actions={actions}
+            actions={!hideActionsColumn ? baseActions : []}
             totalItems={filteredApps.length}
             itemsPerPage={itemsPerPage}
             currentPage={currentPage}
             onPageChange={setCurrentPage}
             onItemsPerPageChange={setItemsPerPage}
+            defaultPageSize={defaultPageSize}
+            customSettings={mergedCustomSettings}
+            hideTableHeader={hideTableHeader}
+            hideActionsColumn={hideActionsColumn}
+            hideStatusColumn={hideStatusColumn}
+            hideIconColumn={hideIconColumn}
+            hideTableFooter={hideTableFooter}
         />
     );
 }
