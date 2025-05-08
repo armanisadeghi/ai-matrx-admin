@@ -301,8 +301,7 @@ export const saveOrUpdateContainerToAppletThunk = createAsyncThunk<
     { state: RootState }
 >("containerBuilder/saveOrUpdateContainerToApplet",
     async ({ appletId, containerId }, { getState, dispatch, rejectWithValue }) => {
-        console.log("saveOrUpdateContainerToAppletThunk appletId", appletId);
-        console.log("saveOrUpdateContainerToAppletThunk containerId", containerId);
+
         try {
             const container = selectContainerById(getState(), containerId);
             console.log("saveOrUpdateContainerToAppletThunk container", container);

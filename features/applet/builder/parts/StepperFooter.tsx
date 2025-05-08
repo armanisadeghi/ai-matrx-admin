@@ -130,9 +130,9 @@ export const StepperFooter: React.FC<StepperFooterProps> = ({
                             containerClassName="rounded-xl"
                             as="button"
                             onClick={onLaunchApp}
-                            className="dark:bg-gray-900 bg-white px-10 flex items-center space-x-2"
+                            className="dark:bg-gray-900 bg-white px-4 flex items-center space-x-2"
                         >
-                            <span >{launchButtonText}</span>
+                            <span className="text-sm">{launchButtonText}</span>
                             <Rocket className="h-4 w-4 text-gray-800 dark:text-gray-200" />
                         </HoverBorderGradient>
                     )}

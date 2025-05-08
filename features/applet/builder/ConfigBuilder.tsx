@@ -108,10 +108,6 @@ export const ConfigBuilder = () => {
         } else if (activeStep === 3) {
             setActiveStep(4);
         } else if (activeStep === 4) {
-            setActionFeedback({
-                message: "Preparing to compile your app...",
-                type: "info",
-            });
             await recompileAllApplets();
         } else if (activeStep < steps.length - 1) {
             setActiveStep(activeStep + 1);
@@ -135,11 +131,6 @@ export const ConfigBuilder = () => {
         try {
             setIsCompiling(true);
             setCompilingErrors([]);
-
-            setActionFeedback({
-                message: "Compiling your app, please wait...",
-                type: "info",
-            });
 
             // Show toast to indicate compilation is starting
             toast({
@@ -178,11 +169,6 @@ export const ConfigBuilder = () => {
                 return;
             }
 
-            // Success case, move to the next step
-            setActionFeedback({
-                message: "Compilation successful! Your app is ready.",
-                type: "success",
-            });
             toast({
                 title: "Compilation Complete",
                 description: "Your app is ready for preview!",
