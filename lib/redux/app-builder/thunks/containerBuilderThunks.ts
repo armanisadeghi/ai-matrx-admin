@@ -295,11 +295,17 @@ export const fetchContainerByIdThunk = createAsyncThunk<ContainerBuilder, string
 );
 
 // This will save OR update, but we need to make sure it's not dirty. If it's dirty, we need to save it first.
-export const saveOrUpdateContainerToAppletThunk = createAsyncThunk<void, { appletId: string; containerId: string }, { state: RootState }>(
-    "containerBuilder/saveOrUpdateContainerToApplet",
+export const saveOrUpdateContainerToAppletThunk = createAsyncThunk<
+    { appletId: string; updatedApplet: ContainerBuilder[] | null },
+    { appletId: string; containerId: string }, 
+    { state: RootState }
+>("containerBuilder/saveOrUpdateContainerToApplet",
     async ({ appletId, containerId }, { getState, dispatch, rejectWithValue }) => {
+        console.log("saveOrUpdateContainerToAppletThunk appletId", appletId);
+        console.log("saveOrUpdateContainerToAppletThunk containerId", containerId);
         try {
             const container = selectContainerById(getState(), containerId);
+            console.log("saveOrUpdateContainerToAppletThunk container", container);
 
             if (!container) {
                 throw new Error(`Container with ID ${containerId} not found`);
@@ -313,11 +319,17 @@ export const saveOrUpdateContainerToAppletThunk = createAsyncThunk<void, { apple
                 }
             }
 
-            const success = await addContainersToApplet(appletId, [containerId]);
+            console.log("saveOrUpdateContainerToAppletThunk adding container to applet", appletId, containerId);
 
-            if (!success) {
+            const updatedApplet = await addContainersToApplet(appletId, [containerId]);
+
+            console.log("saveOrUpdateContainerToAppletThunk updatedApplet", updatedApplet);
+
+            if (!updatedApplet) {
                 throw new Error("Failed to add container to applet");
             }
+
+            return { appletId, updatedApplet: updatedApplet.containers };
         } catch (error: any) {
             console.error("Error saving container to applet:", error);
             return rejectWithValue(error.message || "Failed to save container to applet");

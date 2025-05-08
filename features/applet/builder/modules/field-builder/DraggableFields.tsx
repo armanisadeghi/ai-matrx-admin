@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, GripVertical } from "lucide-react";
+import { Database, GripVertical, AlertTriangle } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldsByBrokerMappings } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import { 
@@ -103,9 +103,30 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
         ) : (
           <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
             {brokerMappings.map((mapping) => {
-              const field = fields.find((f) => f.id === mapping.fieldId);
-              const broker = neededBrokers.find((b) => b.id === mapping.brokerId);
-              if (!field || !broker) return null; // Skip if field or broker is missing
+              // Added null checking for fields and field.id
+              const field = Array.isArray(fields) ? fields.find((f) => f && f.id === mapping.fieldId) : undefined;
+              const broker = Array.isArray(neededBrokers) ? neededBrokers.find((b) => b && b.id === mapping.brokerId) : undefined;
+              
+              if (!field || !broker) {
+                // Render an error indicator for missing field or broker
+                return (
+                  <div 
+                    key={`error-mapping-${mapping.fieldId}-${mapping.brokerId}`}
+                    className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 
+                              rounded-md p-2 flex items-center"
+                  >
+                    <AlertTriangle className="h-4 w-4 mr-2 text-red-500 dark:text-red-400" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-red-700 dark:text-red-300">
+                        {!field ? "Missing Field Data" : "Missing Broker Data"}
+                      </p>
+                      <p className="text-xs text-red-600 dark:text-red-400">
+                        Field ID: {mapping.fieldId}, Broker ID: {mapping.brokerId}
+                      </p>
+                    </div>
+                  </div>
+                );
+              }
 
               // Use a clear delimiter format for mapping IDs
               const mappingId = `field:${mapping.fieldId}|broker:${mapping.brokerId}`;

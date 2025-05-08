@@ -10,9 +10,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectContainerById, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { setLabel, setShortLabel, setDescription } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
-import { saveContainerThunk, saveOrUpdateContainerToAppletThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { 
+    saveContainerThunk, 
+    saveOrUpdateContainerToAppletThunk
+} from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { ContainerLabelAndHelpText } from "@/constants/app-builder-help-text";
 import QuickRefSelect from "@/app/entities/quick-reference/QuickRefSelectFloatingLabel";
+import ContainerFieldDisplay from "./ContainerFieldDisplay";
 
 interface ContainerFormComponentProps {
     containerId: string | null;
@@ -179,6 +183,13 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                             disabled={allDisabled}
                         />
                     </div>
+                    
+                    {/* Fields Section */}
+                    <ContainerFieldDisplay 
+                        containerId={containerId}
+                        fields={container?.fields || []}
+                        disabled={allDisabled}
+                    />
 
                     <div className="flex justify-end gap-2">
                         <Button

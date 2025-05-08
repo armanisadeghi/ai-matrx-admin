@@ -442,8 +442,6 @@ export const getCompiledRecipeByVersionWithNeededBrokers = async (recipeId: stri
         console.error("Error fetching compiled recipe:", error);
         throw error;
     }
-    console.log("data", data);
-
     return convertDbResponseForSourceConfigs(data[0]);
 };
 
@@ -454,6 +452,10 @@ export const getCompiledRecipeByVersionWithNeededBrokers = async (recipeId: stri
  * Adds Containers to an applet as containers
  */
 export const addContainersToApplet = async (appletId: string, groupIds: string[]): Promise<CustomAppletConfig | null> => {
+
+    console.log("addContainersToApplet appletId", appletId);
+    console.log("addContainersToApplet groupIds", groupIds);
+
     try {
         const { data, error } = await supabase.rpc("add_groups_to_applet", {
             p_applet_id: appletId,
@@ -464,6 +466,8 @@ export const addContainersToApplet = async (appletId: string, groupIds: string[]
             console.error("Error adding containers to applet:", error);
             throw error;
         }
+
+        console.log("addContainersToApplet data", data);
 
         return dbToAppletConfig(data);
     } catch (err) {

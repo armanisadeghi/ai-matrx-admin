@@ -1,22 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { PlusIcon, Loader2, Cpu, SaveIcon } from "lucide-react";
+import { PlusIcon, Loader2, Cpu, SaveIcon, Edit, Eye, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import {
-    selectAppletById,
-    selectContainersForApplet,
-} from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { selectAppletById, selectContainersForApplet } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import {
     selectActiveContainerId,
     selectContainerError,
     selectNewContainerId,
     selectAllContainerIds,
 } from "@/lib/redux/app-builder/selectors/containerSelectors";
-import { setIsDirty as setAppletIsDirty } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
-import { startNewContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
+import { startNewContainer, setActiveContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 import {
     saveContainerAndUpdateAppletThunk,
     setActiveContainerWithFetchThunk,
@@ -27,9 +23,9 @@ import GroupSelectorOverlay from "../smart-parts/containers/GroupSelectorOverlay
 import ContainerFormComponent from "../smart-parts/containers/ContainerFormComponent";
 import { ComponentGroup } from "../../builder.types";
 import { v4 as uuidv4 } from "uuid";
-import AppInfoCard from "../../previews/AppInfoCard";
 import ContainersList from "./ContainersList";
 import DraggableFields from "../field-builder/DraggableFields";
+import ContainerListTable from "./ContainerListTable";
 
 interface ContainerTabContentProps {
     appletId: string;
@@ -42,11 +38,7 @@ interface ContainerTabContentProps {
     }) => void;
 }
 
-const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ 
-    appletId, 
-    appId,
-    onUpdateCompletion 
-}) => {
+const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, appId, onUpdateCompletion }) => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
 
@@ -108,22 +100,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({
 
     // Handle container save completion
     const handleContainerSaved = (containerId: string) => {
-        // If the container is part of an applet, mark the applet as dirty
-        handleAddContainerToApplet();
-
-        if (appletId && isContainerInApplet) {
-            dispatch(
-                setAppletIsDirty({
-                    id: appletId,
-                    isDirty: true,
-                })
-            );
-        }
-
-        // If this was a new container, create a new one to replace it
-        if (containerId === newContainerId) {
-            handleCreateNewContainer();
-        }
+        console.log("Container Tab Content Not going to do anything after this save... containerId", containerId);
     };
 
     // Select a container to edit
@@ -142,7 +119,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({
                 }
 
                 // First select the container so the form updates
-                dispatch(setActiveContainerWithFetchThunk(group.id));
+                dispatch(setActiveContainer(group.id));
 
                 // Add the container to the applet using the thunk that handles database updates
                 await dispatch(
@@ -285,6 +262,31 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            {/* Container List Table - first column */}
+            <div className="md:col-span-3 bg-gray-100 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <ContainerListTable
+                    onContainerEdit={(id) => {
+                        // Set this container as active
+                        dispatch(setActiveContainer(id));
+                    }}
+                    onContainerSelect={(id) => {
+                        // Set this container as active
+                        dispatch(setActiveContainer(id));
+                    }}
+                    internalFetch={true}
+                    hiddenColumns={["icon", "description", "shortLabel", "createdAt", "updatedAt"]}
+                    defaultPageSize={10}
+                    title=""
+                    hideStatusColumn={true}
+                    hideIconColumn={true}
+                    customSettings={{
+                        tableClassName: "text-xs",
+                        hideEntriesInfo: true,
+                    }}
+                    allowSelectAction={true}
+                />
+            </div>
+
             {/* Container form card */}
             <div className="md:col-span-3">
                 <div className="flex justify-between items-center mb-4">
@@ -349,21 +351,12 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({
 
             {/* List of containers */}
             <div className="md:col-span-3">
-                <ContainersList
-                    appletId={appletId}
-                    appletName={activeAppletName}
-                    isDirty={isAppletDirty}
-                />
+                <ContainersList appletId={appletId} appletName={activeAppletName} isDirty={isAppletDirty} />
             </div>
 
             {/* Fields Preview - right column */}
             <div className="md:col-span-3">
                 <DraggableFields appId={appId} appletId={appletId} className="h-full" />
-            </div>
-
-            {/* App Info Card - right column */}
-            <div className="md:col-span-3 bg-gray-100 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700">
-                <AppInfoCard appId={appId} className="h-full" />
             </div>
         </div>
     );

@@ -12,7 +12,7 @@ import {
     addAppletToAppThunk,
     FetchAppletByIdSuccessAction,
 } from "../thunks/appletBuilderThunks";
-import { saveContainerAndUpdateAppletThunk } from "../thunks/containerBuilderThunks";
+import { saveContainerAndUpdateAppletThunk, saveOrUpdateContainerToAppletThunk } from "../thunks/containerBuilderThunks";
 import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
 import { AppletBuilder, ContainerBuilder } from "../types";
 import { BrokerMapping } from "@/features/applet/builder/builder.types";
@@ -607,6 +607,30 @@ export const appletBuilderSlice = createSlice({
         builder.addCase("appletBuilder/fetchAppletByIdSuccess", (state, action: FetchAppletByIdSuccessAction) => {
             state.applets[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: "unique" };
             state.isLoading = false;
+        });
+
+        // Save or Update Container To Applet
+        builder.addCase(saveOrUpdateContainerToAppletThunk.pending, (state) => {
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(saveOrUpdateContainerToAppletThunk.fulfilled, (state, action) => {
+            const { appletId, updatedApplet } = action.payload;
+            
+            if (appletId && updatedApplet && state.applets[appletId]) {
+                // Replace the containers array in the applet with the updated containers from the server
+                state.applets[appletId] = {
+                    ...state.applets[appletId],
+                    containers: updatedApplet,
+                    isDirty: true
+                };
+            }
+            
+            state.isLoading = false;
+        });
+        builder.addCase(saveOrUpdateContainerToAppletThunk.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to save or update container to applet";
         });
     },
 });
