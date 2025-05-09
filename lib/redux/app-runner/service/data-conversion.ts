@@ -118,6 +118,7 @@ export function transformAppWithApplets(rawConfig: any): AppWithApplets {
         compiledRecipeId: typeof applet?.compiled_recipe_id === "string" ? applet.compiled_recipe_id : undefined,
         subcategoryId: typeof applet?.subcategory_id === "string" ? applet.subcategory_id : undefined,
         imageUrl: typeof applet?.image_url === "string" ? applet.image_url : undefined,
+        brokerMap: typeof applet?.broker_map === "object" ? applet.broker_map : undefined,
     }));
 
     // Generate appletList from applets array, ensuring valid id and name
