@@ -13,7 +13,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectAppLoading, selectAppError, selectHasUnsavedAppChanges, selectAppSlug } from "@/lib/redux/app-builder/selectors/appSelectors";
-import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 import AppBuilderDebugOverlay from "@/components/admin/AppBuilderDebugOverlay";
 import {
     selectAppletError,
@@ -31,6 +30,7 @@ import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import SourceConfigStep from "@/features/applet/builder/steps/SourceConfigStep";
 import AppBuilderStartStep from "@/features/applet/builder/steps/AppBuilderStartStep";
+import { saveAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 
 interface StepCompletion {
     isComplete: boolean;
@@ -101,14 +101,18 @@ export const ConfigBuilder = () => {
         if (activeStep === 0) {
             setActiveStep(1);
         } else if (activeStep === 1) {
+            dispatch(saveAppThunk(selectedAppId));
             setActiveStep(2);
         } else if (activeStep === 2) {
             setActiveStep(3);
         } else if (activeStep === 3) {
             setActiveStep(4);
+            dispatch(saveAppThunk(selectedAppId));
         } else if (activeStep === 4) {
             await recompileAllApplets();
+            dispatch(saveAppThunk(selectedAppId));
         } else if (activeStep < steps.length - 1) {
+            dispatch(saveAppThunk(selectedAppId));
             setActiveStep(activeStep + 1);
         }
     };
