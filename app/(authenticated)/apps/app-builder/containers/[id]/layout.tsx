@@ -4,7 +4,7 @@ import React, { ReactNode, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { 
   selectContainerById,
-  selectContainerDirtyStatus
+  selectIsContainerDirtyById
 } from '@/lib/redux/app-builder/selectors/containerSelectors';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ export default function ContainerDetailLayout({ children, params }: ContainerDet
   
   // Get container data from Redux
   const container = useAppSelector((state) => selectContainerById(state, id));
-  const isDirty = useAppSelector((state) => selectContainerDirtyStatus(state, id));
+  const isDirty = useAppSelector((state) => selectIsContainerDirtyById(state, id));
   
   // Check if we're in view or edit mode
   const isEditMode = pathname.includes('/edit');

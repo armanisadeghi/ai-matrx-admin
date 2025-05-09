@@ -1,29 +1,117 @@
 {
-    "sourceConfig": [
-        {
-            "sourceType": "recipe",
-            "config": {
-                "id": "e2049ce6-c340-4ff7-987e-deb24a977853",
-                "version": 83,
-                "compiledId": "94e378c3-b55b-4193-8ba9-d64f34a3d9b2",
-                "neededBrokers": [
-                    {
-                        "id": "5d8c5ed2-5a84-476a-9258-6123a45f996a",
-                        "name": "Applet Description",
-                        "dataType": "str",
-                        "required": true,
-                        "defaultValue": "My app is designed to offer high-quality ai-coding assistance. I have an AI model that excels at generating extremely high-quality code and the app will automatically trigger an expert in the specific language the request is needed in.",
-                        "inputComponent": "d9c60ef7-6c82-42f7-b485-b3a37675193a"
-                    }
-                ]
-            }
-        }
+    "id": "17857aae-36fc-4298-9e5c-c4fd92a842bd",
+    "name": "Matrx App Builder",
+    "description": "A series of applets to assist you in the process of building your applets.",
+    "slug": "matrx-app-builder",
+    "mainAppIcon": "LayoutTemplate",
+    "mainAppSubmitIcon": "FaArrowCircleRight",
+    "creator": "Arman Sadeghi",
+    "primaryColor": "cyan",
+    "accentColor": "sky",
+    "appletList": [
+      {
+        "appletId": "53bbc5b9-22f6-4913-b4db-17460e5301cc",
+        "label": "Core Info Generator"
+      }
     ],
-    "brokerMappings": [
-        {
-            "fieldId": "d9c859fb-3fe6-4299-9595-2851f4e115b9",
-            "appletId": "e3a6e806-9c98-43ff-ba42-5ec5416b9812",
+    "extraButtons": [],
+    "layoutType": "tabbedApplets",
+    "imageUrl": "https://images.unsplash.com/photo-1573164713988-8665fc963095?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2NjE4MDZ8MHwxfHNlYXJjaHwyMHx8dGVjaG5vbG9neXxlbnwwfHx8fDE3NDY3NDg1OTR8Mg&ixlib=rb-4.1.0&q=80&w=1080",
+    "createdAt": "2025-05-08T23:56:59.527203+00:00",
+    "updatedAt": "2025-05-08T23:56:59.527203+00:00",
+    "userId": "4cf62e4e-2679-484f-b652-034e697418df",
+    "isPublic": false,
+    "authenticatedRead": true,
+    "publicRead": false,
+    "appletIds": [
+      "53bbc5b9-22f6-4913-b4db-17460e5301cc"
+    ],
+    "isDirty": false,
+    "isLocal": false,
+    "slugStatus": "unchecked",
+    "applets": [
+      {
+        "id": "53bbc5b9-22f6-4913-b4db-17460e5301cc",
+        "name": "Core Info Generator",
+        "description": "A quick and easy way to get the core information for your app.",
+        "slug": "core-info-generator",
+        "appletIcon": "SquareArrowRight",
+        "appletSubmitText": null,
+        "creator": "Arman Sadeghi",
+        "primaryColor": "gray",
+        "accentColor": "rose",
+        "layoutType": "open",
+        "containers": [
+          {
+            "id": "c4450096-7a0d-4b64-a63e-f8dddd156346",
+            "label": "About Your App",
+            "fields": [
+              {
+                "id": "23cd7dc6-e593-4a78-807b-e56f42f0824c",
+                "group": "default",
+                "label": "Applet Description",
+                "isDirty": false,
+                "options": [],
+                "disabled": false,
+                "helpText": "It's helpful to include as much information as possible regarding what your applet does, who is likely to use it, why they would use it and what the ultimate expected outcome might be. The more context you can provide on your application, the better.",
+                "iconName": "",
+                "required": true,
+                "component": "textarea",
+                "description": "A short description of your app.",
+                "placeholder": "Enter Applet description...",
+                "defaultValue": "",
+                "includeOther": false,
+                "componentProps": {
+                  "max": 100,
+                  "min": 0,
+                  "rows": 5,
+                  "step": 1,
+                  "maxDate": "",
+                  "minDate": "",
+                  "onLabel": "Yes",
+                  "offLabel": "No"
+                }
+              }
+            ],
+            "helpText": "",
+            "shortLabel": "About",
+            "description": "testing",
+            "hideDescription": false
+          }
+        ],
+        "dataSourceConfig": {
+          "config": {
+            "id": "e2049ce6-c340-4ff7-987e-deb24a977853",
+            "version": 83,
+            "compiledId": "94e378c3-b55b-4193-8ba9-d64f34a3d9b2",
+            "neededBrokers": [
+              {
+                "id": "5d8c5ed2-5a84-476a-9258-6123a45f996a",
+                "name": "Applet Description",
+                "dataType": "str",
+                "required": true,
+                "defaultValue": "My app is designed to offer high-quality ai-coding assistance. I have an AI model that excels at generating extremely high-quality code and the app will automatically trigger an expert in the specific language the request is needed in.",
+                "inputComponent": "d9c60ef7-6c82-42f7-b485-b3a37675193a"
+              }
+            ]
+          },
+          "sourceType": "recipe"
+        },
+        "resultComponentConfig": {},
+        "nextStepConfig": {},
+        "compiledRecipeId": "94e378c3-b55b-4193-8ba9-d64f34a3d9b2",
+        "subcategoryId": null,
+        "imageUrl": "https://images.unsplash.com/photo-1627641674091-12f5ef523f95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2NjE4MDZ8MHwxfHNlYXJjaHw4fHxpbmZvcm1hdGlvbnxlbnwwfHx8fDE3NDY3NDg2OTh8Mg&ixlib=rb-4.1.0&q=80&w=1080",
+        "appId": "17857aae-36fc-4298-9e5c-c4fd92a842bd",
+        "brokerMap": [
+          {
+            "fieldId": "23cd7dc6-e593-4a78-807b-e56f42f0824c",
+            "appletId": "53bbc5b9-22f6-4913-b4db-17460e5301cc",
             "brokerId": "5d8c5ed2-5a84-476a-9258-6123a45f996a"
-        }
+          }
+        ],
+        "isDirty": false,
+        "isLocal": false
+      }
     ]
-}
+  }

@@ -12,7 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import { selectAppLoading, selectAppError, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
+import { selectAppLoading, selectAppError, selectHasUnsavedAppChanges, selectAppSlug } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 import AppBuilderDebugOverlay from "@/components/admin/AppBuilderDebugOverlay";
 import {
@@ -75,6 +75,7 @@ export const ConfigBuilder = () => {
     const isAppletError = useAppSelector(selectAppletError);
     const isContainerError = useAppSelector(selectContainerError);
     const isFieldError = useAppSelector(selectFieldError);
+    const appSlug = useAppSelector((state) => selectAppSlug(state, selectedAppId));
 
     const hasUnsavedAppChanges = useAppSelector(selectHasUnsavedAppChanges);
     const hasUnsavedAppletChanges = useAppSelector(selectHasUnsavedAppletChanges);
@@ -84,18 +85,15 @@ export const ConfigBuilder = () => {
     const isLoading = isAppletLoading || isAppLoading || isContainerLoading || isFieldLoading || isCompiling;
     const isError = isAppletError || isAppError || isContainerError || isFieldError || compilingErrors.length > 0;
     const needsRecompile = nextAppRecompile || nextAppletRecompile || nextContainerRecompile;
-    // Applet state
-    const [activeApplet, setActiveApplet] = useState<string | null>(null);
 
     const hasUnsavedChanges = hasUnsavedAppChanges || hasUnsavedAppletChanges || hasUnsavedContainerChanges || hasUnsavedFieldChanges;
-
 
     const steps = [
         { id: "app-start", title: "Start App", description: "Create new or select existing" },
         { id: "applets-config", title: "Applets", description: "Create & Configure Applets" },
         { id: "source-config", title: "Intelligence", description: "Connect to Intelligence sources" },
         { id: "broker-config", title: "Field Mapping", description: "Map brokers to fields" },
-        { id: "groups-config", title: "Containers", description: "Put fields into containers" },
+        { id: "container-config", title: "Containers", description: "Put fields into containers" },
         { id: "preview", title: "Deploy", description: "Finalize & Launch your app" },
     ];
 
@@ -275,8 +273,7 @@ export const ConfigBuilder = () => {
             description: "Your app is being launched in a new window.",
         });
 
-        // Open the app in a new window/tab (placeholder URL - update with actual URL)
-        window.open(`/app/${selectedAppId}/view`, "_blank");
+        window.open(`/apps/custom/${appSlug}`);
     };
 
     return (

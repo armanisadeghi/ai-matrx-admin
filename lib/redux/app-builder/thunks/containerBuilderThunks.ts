@@ -29,6 +29,8 @@ export const saveContainerThunk = createAsyncThunk<ContainerBuilder, string, { s
         try {
             const container = selectContainerById(getState(), containerId);
 
+            console.log("saveContainerThunk container", container);
+
             if (!container) {
                 throw new Error(`Container with ID ${containerId} not found`);
             }
@@ -39,9 +41,11 @@ export const saveContainerThunk = createAsyncThunk<ContainerBuilder, string, { s
             if (container.isLocal) {
                 // Create new container
                 savedContainer = await createComponentGroup(container);
+                console.log("saveContainerThunk savedContainer", savedContainer);
             } else {
                 // Update existing container
                 savedContainer = await updateComponentGroup(containerId, container);
+                console.log("saveContainerThunk savedContainer", savedContainer);
             }
 
             // Return consistently formatted result

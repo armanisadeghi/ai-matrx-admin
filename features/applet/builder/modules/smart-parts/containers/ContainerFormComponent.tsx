@@ -23,6 +23,7 @@ interface ContainerFormComponentProps {
     onSaveSuccess?: (containerId: string) => void;
     title?: string;
     initialAppletId?: string;
+    mode?: "edit" | "new" | "list";
 }
 
 const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
@@ -30,6 +31,7 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
     onSaveSuccess,
     title = "Container Details",
     initialAppletId,
+    mode = "list",
 }) => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
@@ -38,12 +40,27 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
     const isLoading = useAppSelector(selectContainerLoading);
     const isDirty = container?.isDirty || false;
 
-    const [selectedApplet, setSelectedApplet] = useState<string | null>(initialAppletId || null);
+    const [selectedApplet, setSelectedApplet] = useState<string | null>(null);
+    const [appletRecordKey, setAppletRecordKey] = useState<string | null>(null);
     const [isCompiling, setIsCompiling] = useState(false);
 
-    const appletRecordKey = `id:${initialAppletId}`;
 
-    const allDisabled = isLoading || isSaving || isCompiling || !containerId;
+    useEffect(() => {
+        if (initialAppletId) {
+            setSelectedApplet(initialAppletId);
+            setAppletRecordKey(`id:${initialAppletId}`);
+        }
+    }, [initialAppletId]);
+
+    const allDisabled = isLoading || isSaving || isCompiling || !containerId || mode === "list";
+
+
+    useEffect(() => {
+        if (mode === "list") {
+            setSelectedApplet(null);
+        }
+    }, [mode]);
+
 
     const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!containerId) return;
@@ -86,6 +103,8 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
         try {
             const result = await dispatch(saveContainerThunk(containerId)).unwrap();
 
+            console.log("ContainerFormComponent handleSaveContainer result", JSON.stringify(result, null, 2));
+
             toast({
                 title: "Success",
                 description: "Container saved successfully.",
@@ -105,8 +124,10 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
         }
     };
 
-    const handleAppletSelect = async (appletId: string) => {
+    const handleAppletSelect = async (appletRecordKey: string) => {
+        const appletId = appletRecordKey.split(":")[1];
         setSelectedApplet(appletId);
+        setAppletRecordKey(appletRecordKey);
     };
 
     const handleCompileContainer = async () => {
@@ -212,7 +233,7 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                         />
                         <Button
                             onClick={handleCompileContainer}
-                            disabled={allDisabled || !selectedApplet || isDirty}
+                            disabled={isLoading || isSaving || isCompiling || !containerId || !selectedApplet || isDirty}
                             variant="outline"
                             className="border-blue-500 text-blue-500"
                         >

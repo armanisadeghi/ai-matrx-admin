@@ -6,7 +6,7 @@ import {
     selectContainerById,
     selectContainerLoading,
     selectFieldsForContainer,
-    selectContainerDirtyStatus,
+    selectIsContainerDirtyById,
 } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import {
     setActiveContainer,
@@ -59,7 +59,7 @@ export default function ContainerEditPage({ params }: { params: Promise<{ id: st
     // Get container data from Redux
     const container = useAppSelector((state) => selectContainerById(state, id));
     const isLoading = useAppSelector(selectContainerLoading);
-    const isDirty = useAppSelector((state) => selectContainerDirtyStatus(state, id));
+    const isDirty = useAppSelector((state) => selectIsContainerDirtyById(state, id));
     const containerFields = useAppSelector((state) => selectFieldsForContainer(state, id));
 
     // Determine if this is a new container

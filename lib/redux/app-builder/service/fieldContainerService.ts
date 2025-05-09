@@ -183,10 +183,9 @@ export const createComponentGroup = async (group: ContainerBuilder): Promise<Con
  */
 export const updateComponentGroup = async (id: string, group: ContainerBuilder): Promise<ContainerBuilder> => {
     const dbData = await componentGroupToDBFormat(group);
-    const { fields, ...restData } = dbData;
 
     try {
-        const { data, error } = await supabase.from("component_groups").update(restData).eq("id", id).select().single();
+        const { data, error } = await supabase.from("component_groups").update(dbData).eq("id", id).select().single();
 
         if (error) {
             console.error("Error updating component group:", error.message, error.details, error.hint);

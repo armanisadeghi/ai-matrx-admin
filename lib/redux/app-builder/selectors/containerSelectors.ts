@@ -92,7 +92,7 @@ export const selectHasUnsavedContainerChanges = createSelector(
 );
 
 // Selector for container dirty status
-export const selectContainerDirtyStatus = (state: RootState, id?: string | null) => {
+export const selectIsContainerDirtyById = (state: RootState, id?: string | null) => {
   if (!id) return false;
   return selectContainerById(state, id)?.isDirty || false;
 };

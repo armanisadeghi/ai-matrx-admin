@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectContainersForApplet } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { selectActiveContainerId, selectAllContainerIds } from "@/lib/redux/app-builder/selectors/containerSelectors";
+import { selectContainersForApplet, selectIsAppletDirtyById } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { selectActiveContainerId, selectAllContainerIds, selectIsContainerDirtyById } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { removeContainer } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { setActiveContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 import {
@@ -23,10 +23,9 @@ import ContainerCard from "./ContainerCard";
 interface ContainersListProps {
     appletId: string;
     appletName: string;
-    isDirty: boolean;
 }
 
-const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, isDirty }) => {
+const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName }) => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
 
@@ -43,6 +42,9 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, i
     const activeContainerId = useAppSelector(selectActiveContainerId);
     const allContainerIds = useAppSelector(selectAllContainerIds);
     const appletContainers = useAppSelector((state) => (appletId ? selectContainersForApplet(state, appletId) : []));
+
+    const isAppletDirty = useAppSelector((state) => selectIsAppletDirtyById(state, appletId));
+    const isContainerDirty = useAppSelector((state) => selectIsContainerDirtyById(state, activeContainerId));
 
     useEffect(() => {
         dispatch(fetchContainersThunk());
@@ -78,6 +80,33 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, i
             }
         }
     };
+
+    // const handleSaveContainer = async () => {
+    //     if (!activeContainerId) return;
+
+    //     setIsSaving(true);
+
+    //     try {
+    //         const result = await dispatch(saveContainerThunk(activeContainerId)).unwrap();
+
+    //         toast({
+    //             title: "Success",
+    //             description: "Container saved successfully.",
+    //         });
+
+    //         if (onSaveSuccess) {
+    //             onSaveSuccess(result.id);
+    //         }
+    //     } catch (error) {
+    //         toast({
+    //             title: "Error",
+    //             description: typeof error === "string" ? error : "Failed to save container.",
+    //             variant: "destructive",
+    //         });
+    //     } finally {
+    //         setIsSaving(false);
+    //     }
+    // };
 
     // Save and recompile applet
     const saveAndRecompileApplet = async () => {
@@ -190,8 +219,7 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, i
                                     : `${appletContainers.length} Containers`}
                             </CardDescription>
                         </div>
-
-                        {isDirty && (
+                        {isAppletDirty && !isContainerDirty && (
                             <Button
                                 onClick={saveAndRecompileApplet}
                                 disabled={savingApplet}
@@ -199,7 +227,19 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, i
                                 className="bg-amber-500 hover:bg-amber-600 text-white"
                             >
                                 {savingApplet ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                                Recompile Containers
+                                Recompile Applet
+                            </Button>
+                        )}
+
+                        {isContainerDirty && (
+                            <Button
+                                // onClick={saveAndRecompileContainer}
+                                // disabled={savingContainer}
+                                size="sm"
+                                className="bg-amber-500 hover:bg-amber-600 text-white"
+                            >
+                                {savingApplet ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                                Recompile Container
                             </Button>
                         )}
                     </div>
