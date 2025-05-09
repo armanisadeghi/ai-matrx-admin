@@ -11,7 +11,6 @@ interface ResponsiveGalleryProps {
 }
 
 export function ResponsiveGallery({ imageUrls = [], type = 'direct', initialSearchTerm }: ResponsiveGalleryProps) {
-  console.log('ResponsiveGallery rendered with', { type, imageUrls, initialSearchTerm });
   
   return type === 'direct' ? (
     <ResponsiveDirectGallery imageUrls={imageUrls} />

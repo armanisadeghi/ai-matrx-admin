@@ -59,6 +59,7 @@ import { AppletLayoutSelection } from "@/features/applet/builder/parts/AppletLay
 import { convertToKebabCase } from "@/utils/text/stringUtils";
 import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
 import { setTempAppletSourceConfig } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { EasyImageCropper } from "@/components/official/image-cropper";
 
 // Default values for new applets
 export const DEFAULT_APPLET_CONFIG: AppletBuilder = {
@@ -100,20 +101,11 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
     const appletPrimaryColor = useAppSelector((state: RootState) => selectAppletPrimaryColor(state, appletId || ""));
     const appletAccentColor = useAppSelector((state: RootState) => selectAppletAccentColor(state, appletId || ""));
     const appletImageUrl = useAppSelector((state: RootState) => selectAppletImageUrl(state, appletId || ""));
-    const appletCompiledRecipeId = useAppSelector((state: RootState) => selectAppletCompiledRecipeId(state, appletId || ""));
     const appletLoading = useAppSelector(selectAppletLoading);
     const hasUnsavedChanges = useAppSelector(selectHasUnsavedAppletChanges);
     const appletAppId = useAppSelector((state: RootState) => selectAppletAppId(state, appletId || ""));
 
-    const [sourceConfig, setSourceConfig] = useState<AppletSourceConfig | null>(null);
-
     const isAssociated = appletAppId === appId;
-
-    const handleRecipeSelected = (compiledRecipeId: string) => {
-        if (appletId) {
-            dispatch(setCompiledRecipeId({ id: appletId, compiledRecipeId }));
-        }
-    };
 
     const handleDeleteApplet = () => {
         if (appletId) {
@@ -219,12 +211,6 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
         }
     };
 
-    const handleGetCompiledRecipeWithNeededBrokers = (sourceConfig: AppletSourceConfig | null) => {
-        if (sourceConfig) {
-            dispatch(setTempAppletSourceConfig(sourceConfig));
-        }
-    };
-
     // Ensure we have a valid applet before rendering
     if (!appletId) {
         return <div className="p-4 text-gray-500 dark:text-gray-400">No applet selected</div>;
@@ -287,7 +273,7 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                             </div>
                         )}
                     </div>
-                    
+
                     <div className="space-y-2">
                         <Label
                             htmlFor={`${isNew ? "new" : "edit"}-description`}
@@ -354,6 +340,15 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
                         </div>
                         <div className="w-full md:w-1/2 space-y-2">
                             <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Applet Image</Label>
+                            {/* <EasyImageCropper
+                                onComplete={(croppedImageUrl) => {
+                                    console.log("Cropped image URL:", croppedImageUrl);
+                                }}
+                                aspectRatios={[
+                                    { label: 'Sixteen Nine (16:9)', value: 16 / 9 }
+                                  ]}
+                            /> */}
+
                             <SingleImageSelect
                                 size="sm"
                                 aspectRatio="landscape"
@@ -432,4 +427,3 @@ export const AppletFormComponent: React.FC<AppletFormProps> = ({ appletId, appId
 };
 
 export default AppletFormComponent;
-

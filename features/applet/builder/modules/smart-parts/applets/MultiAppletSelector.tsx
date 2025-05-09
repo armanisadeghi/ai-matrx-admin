@@ -34,6 +34,7 @@ type MultiAppletSelectorProps = {
   defaultOpen?: boolean;
   maxSelections?: number;
   emptySelectionText?: string;
+  shouldFetch?: boolean;
 }
 
 /**
@@ -54,7 +55,8 @@ const MultiAppletSelector: React.FC<MultiAppletSelectorProps> & {
   triggerComponent,
   defaultOpen = false,
   maxSelections,
-  emptySelectionText = 'No applets selected'
+  emptySelectionText = 'No applets selected',
+  shouldFetch = true,
 }) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(defaultOpen);
@@ -72,8 +74,10 @@ const MultiAppletSelector: React.FC<MultiAppletSelectorProps> & {
   
   // Initial load of applets
   useEffect(() => {
-    loadApplets();
-  }, []);
+    if (shouldFetch) {
+      loadApplets();
+    }
+  }, [shouldFetch]);
   
   // Filter applets based on search term
   useEffect(() => {

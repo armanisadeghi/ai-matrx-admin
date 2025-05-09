@@ -54,14 +54,18 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
     const appletsNotInApp = useAppSelector((state: RootState) => selectAppletsExcludingAppId(state, appId || ""));
     const availableApplets = useAppSelector(selectAllApplets);
     const isDirty = useAppSelector(selectIsActiveAppletDirty);
+    const [initialFetchComplete, setInitialFetchComplete] = useState(false);
 
     useAppBuilderErrors();
 
     useEffect(() => {
+        if (initialFetchComplete) return;
         const fetchApplets = async () => {
             try {
+                console.log("------> AppletsConfigStep fetchApplets starting");
                 await dispatch(fetchAppletsThunk()).unwrap();
                 setCurrentMode("initialized");
+                setInitialFetchComplete(true);
             } catch (error) {
                 setCurrentMode("initialized");
                 toast({
@@ -72,7 +76,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
             }
         };
         fetchApplets();
-    }, [dispatch, toast]);
+    }, [initialFetchComplete]);
 
     // Effect to track completion status and update parent
     useEffect(() => {
@@ -131,7 +135,9 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
 
     // Handlers
     const handleCreateNewApplet = () => {
-        dispatch(startNewApplet({ id: uuidv4() }));
+        const appletId = uuidv4();
+        console.log("AppletsConfigStep handleCreateNewApplet got id:", appletId);
+        dispatch(startNewApplet({ id: appletId }));
         setCurrentMode("new");
     };
 
@@ -301,6 +307,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
                                     onAppletSelected={handleAppletSelect}
                                     onCreateApplet={handleCreateNewApplet}
                                     onRefreshComplete={handleAppletRefreshComplete}
+                                    shouldFetch={false}
                                 />
                             </div>
                         </div>
@@ -320,6 +327,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
                                         showCreateButton={false}
                                         onRefreshComplete={handleAppletRefreshComplete}
                                         initialViewMode="list"
+                                        shouldFetch={false}
                                     />
                                 </div>
                             )}
@@ -364,6 +372,7 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
                                         onAppletSelected={handleAppletSelect}
                                         onCreateApplet={handleCreateNewApplet}
                                         onRefreshComplete={handleAppletRefreshComplete}
+                                        shouldFetch={false}
                                     />
                                 }
                                 alternateState={appletsAlreadyInApp.length > 0}

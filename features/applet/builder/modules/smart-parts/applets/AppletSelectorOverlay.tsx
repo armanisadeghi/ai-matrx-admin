@@ -24,6 +24,7 @@ export type AppletSelectorOverlayProps = {
   isFullscreen?: boolean;
   appletIds?: AppletId[];
   onRefreshComplete?: (applets: CustomAppletConfig[]) => void;
+  shouldFetch?: boolean;
 }
 
 /**
@@ -43,7 +44,8 @@ const AppletSelectorOverlay = forwardRef<SmartAppletListRefType, AppletSelectorO
   defaultOpen = false,
   isFullscreen = false,
   appletIds,
-  onRefreshComplete
+  onRefreshComplete,
+  shouldFetch = true,
 }, ref) => {
   const { toast } = useToast();
   const [open, setOpen] = useState(defaultOpen);
@@ -153,6 +155,7 @@ const AppletSelectorOverlay = forwardRef<SmartAppletListRefType, AppletSelectorO
             className="pb-4"
             appletIds={appletIds}
             onRefreshComplete={onRefreshComplete}
+            shouldFetch={shouldFetch}
           />
         </div>
         

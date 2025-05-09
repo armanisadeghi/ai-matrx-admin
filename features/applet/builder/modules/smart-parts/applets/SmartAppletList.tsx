@@ -50,6 +50,7 @@ const SmartAppletList = forwardRef<
         onRefreshComplete?: (applets: CustomAppletConfig[]) => void;
         appId?: string; // Add appId prop
         initialViewMode?: "grid" | "list";
+        shouldFetch?: boolean;
     }
 >(
     (
@@ -63,6 +64,7 @@ const SmartAppletList = forwardRef<
             onRefreshComplete,
             appId, // New prop
             initialViewMode = "grid",
+            shouldFetch = true,
         },
         ref
     ) => {
@@ -129,11 +131,13 @@ const SmartAppletList = forwardRef<
         }, [applets, searchTerm, sortBy]);
         // Initial data fetch
         useEffect(() => {
-            // Only fetch if we have no applets or we're showing all applets (no specific IDs)
-            if (allApplets.length === 0 || !appletIds) {
-                dispatch(fetchAppletsThunk());
+            if (shouldFetch) {
+                // Only fetch if we have no applets or we're showing all applets (no specific IDs)
+                if (allApplets.length === 0 || !appletIds) {
+                    dispatch(fetchAppletsThunk());
+                }
             }
-        }, [dispatch, allApplets.length, appletIds]);
+        }, [dispatch, allApplets.length, appletIds, shouldFetch]);
         // Create a refresh function using useRef to always access the latest implementation
         const refreshRef = useRef<(specificAppletIds?: string[]) => Promise<CustomAppletConfig[]>>(null!);
         // Expose the refresh method via ref
