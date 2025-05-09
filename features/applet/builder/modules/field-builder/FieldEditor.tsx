@@ -25,6 +25,8 @@ import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuild
 import { componentOptions } from "@/features/applet/runner/components/field-components/FieldController";
 import {ThemeSwitcherIcon} from "@/styles/themes";
 import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
+
 
 interface FieldEditorProps {
     fieldId?: string;
@@ -34,9 +36,10 @@ interface FieldEditorProps {
     containerId?: string;
     appletId?: string;
     broker?: Broker;
+    showBackButton?: boolean;
 }
 
-const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel, containerId, appletId, broker }) => {
+const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel, containerId, appletId, broker, showBackButton = false }) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
 
@@ -61,10 +64,13 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
 
     useEffect(() => {
         if (isCreatingNew) {
+            dispatch(cancelFieldCreation(localFieldId));
             const newFieldId = uuidv4();
             setLocalFieldId(newFieldId);
             dispatch(startFieldCreation({ id: newFieldId }));
-        } 
+        } else {
+            dispatch(setActiveField(fieldId));
+        }
         
     }, [dispatch, isCreatingNew]);
 
@@ -148,10 +154,11 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
                 console.error("Error restoring field:", err);
             }
         } else {
+            setLocalFieldId(null);
             dispatch(cancelFieldCreation(localFieldId));
-            const newFieldId = uuidv4();
-            setLocalFieldId(newFieldId);
-            dispatch(startFieldCreation({ id: newFieldId }));
+            // const newFieldId = uuidv4();
+            // dispatch(startFieldCreation({ id: newFieldId }));
+            // setLocalFieldId(newFieldId);
         }
 
         if (onCancel) {
@@ -177,6 +184,16 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
                         spacing="relaxed"
                         footer={
                             <>
+                                {showBackButton && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleCancel}
+                                        className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                                    >
+                                        <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                                        Back
+                                    </Button>
+                                )}
                                 <Button
                                     variant="outline"
                                     onClick={handleCancel}

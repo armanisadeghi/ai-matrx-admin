@@ -13,12 +13,12 @@ import {
 } from "../thunks/fieldBuilderThunks";
 import { FieldBuilder } from "../types";
 import { FieldOption } from "@/features/applet/builder/builder.types";
-import { v4 as uuidv4 } from "uuid";
 
 // Helper function to check if a field exists in state
 const checkFieldExists = (state: FieldsState, id: string): boolean => {
+    if (!id) return false;
     if (!state.fields[id]) {
-        console.error(`Field with ID ${id} not found in state`);
+        console.warn(`Field with ID ${id} not found in state`);
         return false;
     }
     return true;

@@ -5,16 +5,18 @@ import SectionCard from "@/components/official/cards/SectionCard";
 import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { BrokerMapping } from "@/features/applet/builder/builder.types";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { selectAppletBrokerMappings } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { Button } from "@/components/ui/button";
 
 interface RecipeDetailsCardProps {
     sourceConfig: AppletSourceConfig | null;
     appletId?: string | null;
+    onChangeRecipe?: () => void;
 }
 
-const RecipeDetailsCard = ({ sourceConfig, appletId }: RecipeDetailsCardProps) => {
+const RecipeDetailsCard = ({ sourceConfig, appletId, onChangeRecipe }: RecipeDetailsCardProps) => {
     const brokerCount = sourceConfig?.config.neededBrokers.length || 0;
     const brokerMappings = useAppSelector(state => 
         appletId ? selectAppletBrokerMappings(state, appletId) : null
@@ -44,31 +46,31 @@ const RecipeDetailsCard = ({ sourceConfig, appletId }: RecipeDetailsCardProps) =
         >
             {sourceConfig && (
                 <div className={cn(
-                    "space-y-2 text-sm p-3",
+                    "space-y-2 text-sm py-3",
                     "transition-all duration-300",
                     allMapped ? "border-l-4 border-blue-500 dark:border-blue-600 pl-4 rounded-l bg-blue-50 dark:bg-blue-950/30" : ""
                 )}>
                     <div className="flex">
-                        <span className="font-medium text-gray-700 dark:text-gray-300 w-28">Recipe ID:</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300 w-36">Recipe ID:</span>
                         <span className="text-gray-900 dark:text-gray-100 text-xs break-all">
                             {displayValue(sourceConfig.config.id)}
                         </span>
                     </div>
                     <div className="flex">
-                        <span className="font-medium text-gray-700 dark:text-gray-300 w-28">Compiled ID:</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300 w-36">Compiled ID:</span>
                         <span className="text-gray-900 dark:text-gray-100 text-xs break-all">
                             {displayValue(sourceConfig.config.compiledId)}
                         </span>
                     </div>
                     <div className="flex">
-                        <span className="font-medium text-gray-700 dark:text-gray-300 w-28">Version:</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300 w-36">Version:</span>
                         <span className="text-gray-900 dark:text-gray-100">{displayValue(sourceConfig.config.version)}</span>
                     </div>
                     <div className="flex justify-between items-center">
                         <div className="flex items-center">
-                            <span className="font-medium text-gray-700 dark:text-gray-300 w-28">Broker Mappings:</span>
+                            <span className="font-medium text-gray-700 dark:text-gray-300 w-36">Broker Mappings:</span>
                             <span className={cn(
-                                "font-medium",
+                                "font-medium pr-4",
                                 allMapped 
                                     ? "text-blue-600 dark:text-blue-400" 
                                     : "text-gray-900 dark:text-gray-100"
@@ -82,6 +84,17 @@ const RecipeDetailsCard = ({ sourceConfig, appletId }: RecipeDetailsCardProps) =
                             />
                         )}
                     </div>
+                    <div className="flex justify-start py-3">
+                        <Button
+                            onClick={onChangeRecipe}
+                            variant="outline"
+                            className="text-blue-600 border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-blue-900/20"
+                        >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Change Recipe
+                        </Button>
+                    </div>
+
                 </div>
             )}
         </SectionCard>

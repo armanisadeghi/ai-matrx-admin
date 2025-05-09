@@ -261,9 +261,9 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
     }, [compiledContainerCount, isAppletDirty, savingApplet]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
             {/* Container List Table - first column */}
-            <div className="md:col-span-3 bg-gray-100 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="md:col-span-3 bg-gray-100 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden rounded-t-xl">
                 <ContainerListTable
                     onContainerEdit={(id) => {
                         // Set this container as active
@@ -273,6 +273,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
                         // Set this container as active
                         dispatch(setActiveContainer(id));
                     }}
+                    onContainerCreate={handleCreateNewContainer}
                     internalFetch={true}
                     hiddenColumns={["icon", "description", "shortLabel", "createdAt", "updatedAt"]}
                     defaultPageSize={10}
@@ -289,7 +290,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
 
             {/* Container form card */}
             <div className="md:col-span-3">
-                <div className="flex justify-between items-center mb-4">
+                {/* <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">{activeAppletName}</h3>
                     <div className="flex space-x-2">
                         <Button
@@ -310,7 +311,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
                             onCreateGroup={handleCreateNewContainer}
                         />
                     </div>
-                </div>
+                </div> */}
 
                 {fetchingContainer ? (
                     <div className="flex items-center justify-center p-6 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
@@ -328,7 +329,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
                 )}
 
                 {/* Add to applet button - only shown if not already in the applet */}
-                {currentContainerId && !isContainerInApplet && !fetchingContainer && (
+                {/* {currentContainerId && !isContainerInApplet && !fetchingContainer && (
                     <div className="mt-4">
                         <Button
                             onClick={handleAddContainerToApplet}
@@ -346,7 +347,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
                             Compile and Add to {activeAppletName}
                         </Button>
                     </div>
-                )}
+                )} */}
             </div>
 
             {/* List of containers */}

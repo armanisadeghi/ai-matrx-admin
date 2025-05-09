@@ -388,7 +388,6 @@ export default function GenericDataTable<T>({
         <StructuredSectionCard 
             title={title} 
             headerActions={headerActions} 
-            className="mt-4"
         >
             {isLoading ? (
                 <div className="flex justify-center items-center h-64">

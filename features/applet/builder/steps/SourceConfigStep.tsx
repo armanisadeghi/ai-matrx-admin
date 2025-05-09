@@ -21,8 +21,6 @@ import RecipeDetailsCard from "@/features/applet/builder/modules/broker-mapping/
 import { useToast } from "@/components/ui/use-toast";
 import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
 
-
-
 interface SourceConfigContentProps {
     appletId: string;
     appId?: string;
@@ -43,15 +41,10 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
     const isAppletDirty = useAppSelector((state) => (appletId ? selectIsAppletDirtyById(state, appletId) : false));
     const allApplets = useAppSelector((state) => (appId ? selectAppletsByAppId(state, appId) : [])) as AppletBuilder[];
 
-    const [activeSourceType, setActiveSourceType] = useState<string | null>(
-        sourceConfigs?.sourceType || null
-    );
-    
-    const [editingRecipe, setEditingRecipe] = useState<boolean>(
-        !sourceConfigs || !sourceConfigs.config || !sourceConfigs.config.id
-    );
+    const [activeSourceType, setActiveSourceType] = useState<string | null>(sourceConfigs?.sourceType || null);
 
-    
+    const [editingRecipe, setEditingRecipe] = useState<boolean>(!sourceConfigs || !sourceConfigs.config || !sourceConfigs.config.id);
+
     const isFirstRender = useRef(true);
     const lastUpdateTimeRef = useRef(0);
 
@@ -106,17 +99,23 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
     // Handler to save all applets
     const handleSaveAllApplets = useCallback(async () => {
         if (!appId || allApplets.length === 0) return;
-        
+
         try {
             // Save all applets that have source configs and are dirty
             const savePromises = allApplets
-                .filter(applet => {
-                    const configs = selectAppletSourceConfig({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id);
-                    const isDirty = selectIsAppletDirtyById({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id);
+                .filter((applet) => {
+                    const configs = selectAppletSourceConfig(
+                        { appletBuilder: { applets: { [applet.id]: applet } } } as RootState,
+                        applet.id
+                    );
+                    const isDirty = selectIsAppletDirtyById(
+                        { appletBuilder: { applets: { [applet.id]: applet } } } as RootState,
+                        applet.id
+                    );
                     return configs && isDirty;
                 })
-                .map(applet => dispatch(saveAppletThunk(applet.id)).unwrap());
-            
+                .map((applet) => dispatch(saveAppletThunk(applet.id)).unwrap());
+
             if (savePromises.length > 0) {
                 await Promise.all(savePromises);
                 toast({
@@ -124,7 +123,7 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
                     description: "All applets saved successfully",
                 });
             }
-            
+
             updateCompletionStatus();
         } catch (error) {
             console.error("Failed to save applets:", error);
@@ -138,29 +137,29 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
 
     const updateCompletionStatus = useCallback(() => {
         if (!onUpdateCompletion || !appId) return;
-        
+
         // Throttle updates to prevent excessive re-renders
         const now = Date.now();
         if (now - lastUpdateTimeRef.current < 200) return;
         lastUpdateTimeRef.current = now;
 
         // Check if all applets have source configs
-        const appletstWithSourceConfigs = allApplets.filter(applet => {
+        const appletstWithSourceConfigs = allApplets.filter((applet) => {
             const configs = selectAppletSourceConfig({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id);
             return configs;
         });
 
         // Check if any applets are dirty (need saving)
-        const dirtyApplets = allApplets.filter(applet => 
+        const dirtyApplets = allApplets.filter((applet) =>
             selectIsAppletDirtyById({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id)
         );
 
         const allHaveSourceConfigs = allApplets.length > 0 && appletstWithSourceConfigs.length === allApplets.length;
         const anyNeedSaving = dirtyApplets.length > 0;
-        
+
         // Create save button if any applets need saving
         const saveButton = anyNeedSaving ? (
-            <Button 
+            <Button
                 onClick={handleSaveAllApplets}
                 className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
             >
@@ -171,14 +170,15 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
         onUpdateCompletion({
             isComplete: allHaveSourceConfigs && !anyNeedSaving,
             canProceed: allHaveSourceConfigs, // They can proceed if all have configs, even if not saved
-            message: allApplets.length === 0 
-                ? "No applets found. Please create applets first."
-                : !allHaveSourceConfigs
-                ? `${appletstWithSourceConfigs.length}/${allApplets.length} applets have source configurations.`
-                : anyNeedSaving 
-                ? "All applets have sources configured. Please save your changes before proceeding."
-                : "All applets have been configured and saved.",
-            footerButtons: saveButton
+            message:
+                allApplets.length === 0
+                    ? "No applets found. Please create applets first."
+                    : !allHaveSourceConfigs
+                    ? `${appletstWithSourceConfigs.length}/${allApplets.length} applets have source configurations.`
+                    : anyNeedSaving
+                    ? "All applets have sources. Please save your changes."
+                    : "All applets have been configured and saved.",
+            footerButtons: saveButton,
         });
     }, [allApplets, appId, handleSaveAllApplets, onUpdateCompletion]);
 
@@ -188,8 +188,8 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
             updateCompletionStatus();
             isFirstRender.current = false;
         }
-    // Run this effect only once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // Run this effect only once on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Only update completion when source config or dirty state changes
@@ -217,31 +217,11 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
             // Show the recipe details and edit button when a recipe is selected
             return (
                 <div className="space-y-4">
-                    <RecipeDetailsCard sourceConfig={sourceConfigs} appletId={appletId} />
-                    
-                    <div className="flex justify-between items-center">
-                        <Button
-                            onClick={handleEditRecipe}
-                            variant="outline"
-                            className="text-blue-600 border-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-400 dark:hover:bg-blue-900/20"
-                        >
-                            <Edit className="w-4 h-4 mr-2" />
-                            Change Recipe
-                        </Button>
-                        
-                        {isAppletDirty && (
-                            <Button
-                                onClick={handleSaveApplet}
-                                className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
-                            >
-                                Save Changes
-                            </Button>
-                        )}
-                    </div>
+                    <RecipeDetailsCard sourceConfig={sourceConfigs} appletId={appletId} onChangeRecipe={handleEditRecipe} />
                 </div>
             );
         }
-        
+
         // Show the recipe selection UI when in editing mode
         return (
             <SectionCard title="Select an AI Recipe" color="gray">

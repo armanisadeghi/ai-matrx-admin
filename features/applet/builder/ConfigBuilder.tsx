@@ -83,11 +83,12 @@ export const ConfigBuilder = () => {
 
     const isLoading = isAppletLoading || isAppLoading || isContainerLoading || isFieldLoading || isCompiling;
     const isError = isAppletError || isAppError || isContainerError || isFieldError || compilingErrors.length > 0;
-    const hasUnsavedChanges = hasUnsavedAppChanges || hasUnsavedAppletChanges || hasUnsavedContainerChanges || hasUnsavedFieldChanges;
     const needsRecompile = nextAppRecompile || nextAppletRecompile || nextContainerRecompile;
-
     // Applet state
     const [activeApplet, setActiveApplet] = useState<string | null>(null);
+
+    const hasUnsavedChanges = hasUnsavedAppChanges || hasUnsavedAppletChanges || hasUnsavedContainerChanges || hasUnsavedFieldChanges;
+
 
     const steps = [
         { id: "app-start", title: "Start App", description: "Create new or select existing" },

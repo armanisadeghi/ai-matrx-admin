@@ -97,6 +97,8 @@ const FieldsBrokerConfigContent: React.FC<FieldsBrokerConfigContentProps> = ({ a
 
         const message = !isBrokerMapValid
             ? "Duplicate broker mappings detected. Please ensure each broker is mapped only once."
+            : isAppletDirty
+            ? "Please save your changes before continuing."
             : allMapped
             ? "All brokers are mapped successfully."
             : isAllRequiredMapped
@@ -105,7 +107,7 @@ const FieldsBrokerConfigContent: React.FC<FieldsBrokerConfigContentProps> = ({ a
 
         onUpdateCompletion({
             isComplete: isAllRequiredMapped && isBrokerMapValid,
-            canProceed: isAllRequiredMapped && isBrokerMapValid,
+            canProceed: isAllRequiredMapped && isBrokerMapValid && !isAppletDirty,
             message,
             footerButtons: saveButton,
         });
@@ -149,18 +151,6 @@ const FieldsBrokerConfigContent: React.FC<FieldsBrokerConfigContentProps> = ({ a
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-transparent">
             <div className="md:col-span-1 space-y-4 bg-transparent">
                 <NeededBrokersCard appletId={appletId} sourceConfig={sourceConfig} selectedBroker={selectedBroker} onBrokerSelect={handleBrokerSelect} />
-                <Button
-                    onClick={handleSaveApplet}
-                    disabled={!isAppletDirty}
-                    className={cn(
-                        "w-full",
-                        isAppletDirty
-                            ? "bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
-                            : "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed"
-                    )}
-                >
-                    {isAppletDirty ? "Save Changes" : "No Changes to Save"}
-                </Button>
             </div>
             <div className="md:col-span-3 bg-transparent">
                 {selectedBroker ? (

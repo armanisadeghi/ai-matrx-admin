@@ -2,7 +2,7 @@ import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux/store";
 import { AppletBuilder } from "../types";
 import { BrokerMapping, AppletSourceConfig, NeededBroker } from "@/features/applet/builder/builder.types";
-
+import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 // ================================ Base Selectors ================================
 
 // Base selector for the appletBuilder state
@@ -359,6 +359,34 @@ export const selectBrokerMappingByBrokerId = createSelector(
   ({ applet, brokerId }) => {
     if (!applet || !applet.brokerMap || applet.brokerMap.length === 0) return null;
     return applet.brokerMap.find(mapping => mapping.brokerId === brokerId) || null;
+  }
+);
+
+// Get the fieldId mapped to a specific broker ID within an applet
+export const selectFieldIdByBrokerId = createSelector(
+  [
+    (state: RootState, appletId: string, brokerId: string) => {
+      const mapping = selectBrokerMappingByBrokerId(state, appletId, brokerId);
+      return mapping;
+    }
+  ],
+  (mapping) => {
+    if (!mapping) return null;
+    return mapping.fieldId;
+  }
+);
+
+// Get the field label for a specific broker ID within an applet
+export const selectFieldLabelByBrokerId = createSelector(
+  [
+    (state: RootState, appletId: string, brokerId: string) => {
+      const fieldId = selectFieldIdByBrokerId(state, appletId, brokerId);
+      return { state, fieldId };
+    }
+  ],
+  ({ state, fieldId }) => {
+    if (!fieldId) return null;
+    return selectFieldLabel(state, fieldId);
   }
 );
 

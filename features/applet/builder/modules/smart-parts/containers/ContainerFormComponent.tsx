@@ -43,7 +43,7 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
 
     const appletRecordKey = `id:${initialAppletId}`;
 
-    const allDisabled = isLoading || isSaving || isCompiling;
+    const allDisabled = isLoading || isSaving || isCompiling || !containerId;
 
     const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!containerId) return;
