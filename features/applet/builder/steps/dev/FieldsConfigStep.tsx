@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectAppletsByAppId, selectActiveAppletId, selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
@@ -37,17 +37,12 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
     const activeAppletId = useAppSelector(selectActiveAppletId);
     const activeContainerId = useAppSelector(selectActiveContainerId);
     const activeFieldId = useAppSelector(selectActiveFieldId);
-    const newFieldId = useAppSelector(selectNewFieldId);
-    const containerLoading = useAppSelector(selectContainerLoading);
-
-    // Get active applet info
     const activeApplet = useAppSelector((state) => (activeAppletId ? selectAppletById(state, activeAppletId) : null));
-    const activeAppletName = activeApplet?.name || "";
-
-    // Get active container info
     const activeContainer = useAppSelector((state) => (activeContainerId ? selectContainerById(state, activeContainerId) : null));
     const activeContainerLabel = activeContainer?.label || "";
     const activeContainerFieldCount = activeContainer?.fields?.length || 0;
+
+    const [isCreatingNew, setIsCreatingNew] = useState(false);
 
     // Helper to get fields from active container
     const getFieldsFromContainer = () => {
@@ -62,6 +57,7 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
 
 
     const handleFieldClicked = (fieldId: string) => {
+        setIsCreatingNew(false);
         dispatch(setActiveFieldWithFetchThunk(fieldId));
     };
 
@@ -77,6 +73,7 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
     };
 
     const handleCreateNewField = () => {
+        console.log("FieldsConfigStep handleCreateNewField");
         if (!activeContainerId) {
             toast({
                 title: "No container selected",
@@ -86,10 +83,12 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
             return;
         }
 
-        // Initialize a new field in the Redux store
+        const newFieldId = uuidv4();
+        setIsCreatingNew(true);
+        console.log("FieldsConfigStep newFieldId", newFieldId);
         dispatch(
             startFieldCreation({
-                id: uuidv4(),
+                id: newFieldId,
             })
         );
     };
@@ -99,6 +98,7 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
             console.error("Field ID is missing");
             return;
         }
+        setIsCreatingNew(false);
 
         if (!activeContainerId || !activeAppletId) {
             toast({
@@ -140,46 +140,47 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
 
     // Handler for when a field is successfully saved
     const handleFieldSaved = async (fieldId: string) => {
-        if (activeContainerId && activeAppletId) {
-            try {
-                // First, make sure the field is saved (this is handled by FieldEditor directly)
-                // We don't need to call saveFieldThunk here since FieldEditor already does that
-                
-                // Now, we need to refresh the field in the container (proper separation of concerns)
-                await dispatch(
-                    updateFieldThunk({
-                        containerId: activeContainerId,
-                        fieldId: fieldId,
-                        changes: {} // No direct changes needed, we're just triggering a refresh
-                    })
-                ).unwrap();
-                
-                // Recompile the applet to ensure container changes are propagated
-                await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
+        setIsCreatingNew(false);
 
-                toast({
-                    title: "Success",
-                    description: "Field saved, container updated, and applet recompiled successfully",
-                });
-            } catch (error) {
-                console.error('Error updating container with saved field:', error);
-                toast({
-                    title: "Error",
-                    description: "Failed to update container with the saved field",
-                    variant: "destructive",
-                });
-            }
-        }
+        console.log("FieldsConfigStep handleFieldSaved - Not doing anything with:", fieldId);
+        // if (activeContainerId && activeAppletId) {
+        //     try {
+        //         // First, make sure the field is saved (this is handled by FieldEditor directly)
+        //         // We don't need to call saveFieldThunk here since FieldEditor already does that
+                
+        //         // Now, we need to refresh the field in the container (proper separation of concerns)
+        //         await dispatch(
+        //             updateFieldThunk({
+        //                 containerId: activeContainerId,
+        //                 fieldId: fieldId,
+        //                 changes: {} // No direct changes needed, we're just triggering a refresh
+        //             })
+        //         ).unwrap();
+                
+        //         // Recompile the applet to ensure container changes are propagated
+        //         await dispatch(recompileAppletThunk(activeAppletId)).unwrap();
+
+        //         toast({
+        //             title: "Success",
+        //             description: "Field saved, container updated, and applet recompiled successfully",
+        //         });
+        //     } catch (error) {
+        //         console.error('Error updating container with saved field:', error);
+        //         toast({
+        //             title: "Error",
+        //             description: "Failed to update container with the saved field",
+        //             variant: "destructive",
+        //         });
+        //     }
+        // }
     };
 
     // Handler for when field editing is cancelled
     const handleFieldEditCancel = () => {
+        setIsCreatingNew(false);
         dispatch(setActiveField(null));
     };
 
-    // Determine if we're editing an existing field or creating a new one
-    const currentFieldId = activeFieldId || newFieldId;
-    const isCreatingNew = Boolean(newFieldId && currentFieldId === newFieldId);
 
     // Update completion status
     useEffect(() => {
@@ -264,9 +265,9 @@ export const FieldsConfigStep: React.FC<FieldsConfigStepProps> = ({ appId, onUpd
                         <>
                             {/* Field Editor Component */}
                             <div className="min-h-[600px]">
-                                {currentFieldId ? (
+                                {activeFieldId ? (
                                     <FieldEditor
-                                        fieldId={currentFieldId}
+                                        fieldId={activeFieldId}
                                         isCreatingNew={isCreatingNew}
                                         onSaveSuccess={handleFieldSaved}
                                         onCancel={handleFieldEditCancel}

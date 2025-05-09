@@ -160,7 +160,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         }
     };
 
-    if (!field && !isCreatingNew) {
+    if (!field) {
         return <div className="p-4 text-gray-500 dark:text-gray-400">Loading field data...</div>;
     }
 

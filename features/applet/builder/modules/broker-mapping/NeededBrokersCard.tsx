@@ -74,8 +74,8 @@ const NeededBrokersCard = ({ appletId, sourceConfig, selectedBroker, onBrokerSel
             title="Needed Brokers"
             descriptionNode={getDescription()}
             color="gray"
-            minHeight="960px"
-            maxHeight="960px"
+            minHeight="640px"
+            maxHeight="640px"
             scrollable={true}
         >
             <div className="py-3 px-1 space-y-3">

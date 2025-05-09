@@ -165,7 +165,7 @@ const BrokerMappingCard = ({ selectedBroker, appletId, onMappingCreated }: Broke
 
     return (
         <>
-            <SectionCard title="Broker Mapping" descriptionNode={getDescription()} color="gray" minHeight="960px" scrollable={true}>
+            <SectionCard title="Broker Mapping" descriptionNode={getDescription()} color="gray" minHeight="640px" scrollable={true}>
                 <div className={cn("bg-transparent mt-4", isMappingComplete && "border-blue-300 dark:border-blue-700")}>
                     {/* Field Dropdown */}
                     <div className="space-y-3">
