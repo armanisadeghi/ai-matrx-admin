@@ -18,6 +18,12 @@ interface DraggableFieldsProps {
   onSuccessfulDrop?: (fieldId: string, brokerId: string, appletId: string) => void;
 }
 
+// ========== IMPORTANT TODO: This component needs to:
+// - Show if a field is dirty
+// - Compare the version of the field we have to the data in the container and applet and report that there is a difference.
+
+
+
 const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSuccessfulDrop, className = "" }) => {
   const fields = useAppSelector((state) => selectFieldsByBrokerMappings(state, appletId));
   const brokerMappings = useAppSelector((state) => selectAppletBrokerMappings(state, appletId));

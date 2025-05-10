@@ -3,13 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { Broker, ComponentType } from "../../../../../types/customAppTypes";
-import FieldRenderer from "./FieldRenderer";
-import SmartFieldBuilder from "./SmartFieldBuilder";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
-import { Toaster } from "@/components/ui/toaster";
+import { Broker } from "@/types/customAppTypes";
 import SectionCard from "@/components/official/cards/SectionCard";
 import {
     selectFieldById,
@@ -18,15 +12,16 @@ import {
     selectFieldComponent,
     selectHasFieldUnsavedChanges,
 } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import { startFieldCreation, setActiveField, setComponent, cancelFieldCreation } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
+import { startFieldCreation, setActiveField, cancelFieldCreation } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { saveFieldThunk, fetchFieldByIdThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { addFieldAndCompileContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { componentOptions } from "@/features/applet/runner/field-components/FieldController";
-import {ThemeSwitcherIcon} from "@/styles/themes";
-import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
-
+import { useToast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+import { LoadingSpinner } from "@/components/ui";
+import SmartFieldBuilder from "./SmartFieldBuilder";
+import FieldPreview from "./FieldPreview";
+import FieldEditorActions from "./FieldEditorActions";
 
 interface FieldEditorProps {
     fieldId?: string;
@@ -54,8 +49,6 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
     const componentType = useAppSelector((state) => selectFieldComponent(state, localFieldId));
     const hasUnsavedChanges = useAppSelector((state) => selectHasFieldUnsavedChanges(state, localFieldId));
 
-    const [viewAsComponentType, setViewAsComponentType] = useState<ComponentType | null>("textarea");
-
     useEffect(() => {
         if (fieldId) {
             dispatch(setActiveField(fieldId));
@@ -73,10 +66,6 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         }
         
     }, [dispatch, isCreatingNew]);
-
-    const handleComponentTypeChange = (componentType: ComponentType) => {
-        setViewAsComponentType(componentType);
-    };
 
     const handleSave = async () => {
         if (!localFieldId) return;
@@ -156,9 +145,6 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         } else {
             setLocalFieldId(null);
             dispatch(cancelFieldCreation(localFieldId));
-            // const newFieldId = uuidv4();
-            // dispatch(startFieldCreation({ id: newFieldId }));
-            // setLocalFieldId(newFieldId);
         }
 
         if (onCancel) {
@@ -168,7 +154,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
     };
 
     if (!field) {
-        return <div className="p-4 text-gray-500 dark:text-gray-400">Loading field data...</div>;
+        return <LoadingSpinner />;
     }
 
     return (
@@ -183,42 +169,16 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
                         color="gray"
                         spacing="relaxed"
                         footer={
-                            <>
-                                {showBackButton && (
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleCancel}
-                                        className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
-                                    >
-                                        <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                                        Back
-                                    </Button>
-                                )}
-                                <Button
-                                    variant="outline"
-                                    onClick={handleCancel}
-                                    disabled={!hasUnsavedChanges}
-                                    className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={handleSave}
-                                    disabled={isLoading || !hasUnsavedChanges}
-                                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
-                                >
-                                    {isLoading ? "Saving..." : isCreatingNew ? "Save" : "Update"}
-                                </Button>
-                                {!hasUnsavedChanges && containerId && (
-                                    <Button
-                                        variant="outline"
-                                        onClick={handleCompileAndAdd}
-                                        className="border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                                    >
-                                        Compile and Add to Container
-                                    </Button>
-                                )}
-                            </>
+                            <FieldEditorActions 
+                                isCreatingNew={isCreatingNew}
+                                isLoading={isLoading}
+                                hasUnsavedChanges={hasUnsavedChanges}
+                                showBackButton={showBackButton}
+                                showCompileButton={!!containerId}
+                                onSave={handleSave}
+                                onCancel={handleCancel}
+                                onCompileAndAdd={handleCompileAndAdd}
+                            />
                         }
                     >
                         <SmartFieldBuilder key={broker?.id} fieldId={localFieldId} broker={broker} />
@@ -227,64 +187,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
 
                 {/* Right side: Preview area */}
                 <div className="w-full">
-                    <SectionCard title="Component Preview" color="gray" spacing="relaxed">
-                        {/* Current component preview */}
-                        <div className="mt-6 mb-8 border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-md font-semibold capitalize text-gray-900 dark:text-gray-100">
-                                    Your New{" "}
-                                    <span className="text-blue-600 dark:text-blue-500 font-bold">
-                                        {" "}
-                                        {componentType} {"  "}
-                                    </span>{" "}
-                                    Component
-                                </h3>
-                                <ThemeSwitcherIcon />
-                            </div>
-                            {field && <FieldRenderer field={field} />}
-                        </div>
-
-                        {/* Component type selector */}
-                        <div className="mb-8 space-y-3">
-                            <Label className="text-gray-900 dark:text-gray-100">View As Different Component Type</Label>
-                            <HelpIcon text={"Not all Fields will make sense for your specific settings, but we like to let you 'shop around' to find the best fit. notice that if you provide more values, your component can take on more forms, without breaking."} />
-                            <div className="flex flex-wrap gap-2">
-                                {componentOptions.map((option) => (
-                                    <Button
-                                        key={option.value}
-                                        variant={viewAsComponentType === option.value ? "default" : "outline"}
-                                        size="sm"
-                                        onClick={() => handleComponentTypeChange(option.value)}
-                                        className={
-                                            viewAsComponentType === option.value
-                                                ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
-                                                : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
-                                        }
-                                    >
-                                        {option.label}
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Additional component view when a type is selected */}
-                        {field && viewAsComponentType && (
-                            <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
-                                <h3 className="text-md font-semibold mb-4 capitalize text-gray-900 dark:text-gray-100">
-                                    Rendered as{"  "}
-                                    <span className="text-blue-600 dark:text-blue-500 font-bold">
-                                        {componentOptions.find((option) => option.value === viewAsComponentType)?.label}
-                                    </span>
-                                </h3>
-                                <FieldRenderer
-                                    field={{
-                                        ...field,
-                                        component: viewAsComponentType,
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </SectionCard>
+                    <FieldPreview field={field} componentType={componentType} />
                 </div>
             </div>
             <Toaster />

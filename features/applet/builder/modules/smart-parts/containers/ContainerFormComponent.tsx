@@ -16,7 +16,7 @@ import {
 } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { ContainerLabelAndHelpText } from "@/constants/app-builder-help-text";
 import QuickRefSelect from "@/app/entities/quick-reference/QuickRefSelectFloatingLabel";
-import ContainerFieldDisplay from "./ContainerFieldDisplay";
+import ContainerFieldDisplay from "../../group-builder/ContainerFieldDisplay";
 
 interface ContainerFormComponentProps {
     containerId: string | null;

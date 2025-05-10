@@ -79,9 +79,9 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
 
 
 
-    const hasOptions = ["select", "multiselect", "radio", "checkbox"].includes(component || "");
+    const hasOptions = ["select", "multiselect", "radio", "checkbox", "button"].includes(component || "");
 
-    const canHaveOther = ["select", "multiselect", "radio", "checkbox"].includes(component || "");
+    const canHaveOther = ["select", "multiselect", "radio", "checkbox", "button"].includes(component || "");
 
     return (
         <div className="py-3 px-2 space-y-4">

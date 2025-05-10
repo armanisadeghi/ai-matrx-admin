@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { SwitchFieldConfig } from "./SwitchField";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 // Base configuration for all field components
 export interface BaseFieldProps {
