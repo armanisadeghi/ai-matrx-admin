@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params;
+    const resolvedParams = await params;
+    const { slug } = resolvedParams;
     
     if (!slug) {
       return NextResponse.json(

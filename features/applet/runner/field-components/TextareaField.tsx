@@ -3,8 +3,13 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
 import { FieldDefinition } from "@/types";
 
-const TextareaField: React.FC<{ field: FieldDefinition; isMobile?: boolean }> = ({
+const TextareaField: React.FC<{ 
+    field: FieldDefinition; 
+    appletId: string;
+    isMobile?: boolean;
+}> = ({
     field,
+    appletId,
     isMobile,
 }) => {
     const {

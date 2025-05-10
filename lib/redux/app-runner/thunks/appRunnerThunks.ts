@@ -82,7 +82,8 @@ export const fetchAppWithApplets = createAsyncThunk(
       
       // Extract and set broker mappings from all applets
       const brokerMappings = applets.reduce((acc, applet) => {
-        if (applet.brokerMap) {
+        // Check for brokerMap property
+        if (applet.brokerMap && Array.isArray(applet.brokerMap) && applet.brokerMap.length > 0) {
           applet.brokerMap.forEach(mapping => {
             acc.push({
               source: 'applet',

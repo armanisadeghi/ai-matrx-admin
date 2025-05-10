@@ -197,8 +197,6 @@ export function transformAppWithApplets(rawConfig: AppAndAppletConfig): {
       imageUrl: config.image_url || undefined,
     };
   
-    console.log("transformAppWithApplets appConfig:", appConfig);
-    console.log("transformAppWithApplets applets:", applets);
     return {
       appConfig,
       applets,
