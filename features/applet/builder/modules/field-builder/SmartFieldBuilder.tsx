@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
 import {
     selectFieldById,
     selectFieldComponent,
@@ -33,9 +32,10 @@ import {
     setComponentProps,
     startFieldCreation,
 } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
-import { componentOptions } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/FieldController";
-import { ComponentType, Broker } from "@/types/customAppTypes";
 import { fieldHelpTextItems } from "./fieldHelpText";
+import { Broker, ComponentType } from "@/types/customAppTypes";
+import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
+import { componentOptions } from "@/features/applet/runner/field-components/FieldController";
 
 interface SmartFieldBuilderProps {
     fieldId: string;

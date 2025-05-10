@@ -1,9 +1,9 @@
 "use client";
 
-import AppletInputLayoutWrapper from "@/features/applet/layouts/core/AppletLayoutWrapper";
-import { CustomAppHeader } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/header/CustomAppHeader";
-import { availableApps } from "@/features/applet/depricated-do-not-use-sample-mock-data/constants";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { AppletLayoutOption } from "@/types";
+import { availableApps } from "../a-old-depricated-do-not-use/depricated-do-not-use-sample-mock-data/constants";
+import AppletInputLayoutWrapper from "../runner/layouts/core/AppletLayoutWrapper";
+import { CustomAppHeader } from "../runner/header";
 
 interface AppDemoManagerProps {
     appId: string;
@@ -37,7 +37,7 @@ export const AppDemoManager = ({
         >
             {/* Use the CustomAppHeader with our demo-specific className */}
             <CustomAppHeader 
-                appName={appId}
+                appId={appId}
                 isDemo={true}
                 headerClassName={demoHeaderClassName} 
             />

@@ -3,10 +3,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useAppletData } from "@/context/AppletDataContext";
-import AppletInputLayoutManager from "@/features/applet/layouts/core/AppletInputLayoutManager";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
-import { ALL_BROKER_IDS } from "@/features/applet/depricated-do-not-use-sample-mock-data/constants";
 import { AppletLayoutOption } from "../options/layout.types";
+import { ALL_BROKER_IDS } from "../../depricated-do-not-use-sample-mock-data/constants";
+import { AppletInputLayoutManager } from "@/features/applet/runner/layouts/options";
 
 interface AppletLayoutWrapperProps {
   initialAppName?: string;
@@ -52,7 +52,7 @@ const AppletInputLayoutWrapper: React.FC<AppletLayoutWrapperProps> = ({
   return (
     <AppletInputLayoutManager
       layoutType={layoutType}
-      initialAppName={appName}
+      appId={appName}
       appletDefinition={appletDefinition}
       activeTab={activeTab}
       activeFieldId={activeFieldId}

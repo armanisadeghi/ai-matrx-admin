@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { FieldDefinition, normalizeFieldDefinition } from '../../../../../types/customAppTypes';
-import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
+import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 
 interface FieldRendererProps {

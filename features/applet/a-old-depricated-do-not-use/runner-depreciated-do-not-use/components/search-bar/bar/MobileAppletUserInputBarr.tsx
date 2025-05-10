@@ -5,7 +5,7 @@ import MobileAppletBrokerContainer from "../container/MobileAppletBrokerContaine
 import SearchGroupField from "../group/SearchGroupField";
 import { useAppletData } from "@/context/AppletDataContext";
 import { useGetorFetchRecords } from "@/app/entities/hooks/records/useGetOrFetch";
-import { ALL_BROKER_IDS } from "@/features/applet/depricated-do-not-use-sample-mock-data/constants";
+
 import MobileActionBar from "./MobileActionBar";
 
 interface MobileAppletUserInputBarProps {

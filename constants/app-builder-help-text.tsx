@@ -1,4 +1,4 @@
-import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
+import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
 import { Label } from "@/components/ui/label";
 
 

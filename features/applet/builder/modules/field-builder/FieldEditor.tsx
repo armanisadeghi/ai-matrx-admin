@@ -22,9 +22,9 @@ import { startFieldCreation, setActiveField, setComponent, cancelFieldCreation }
 import { saveFieldThunk, fetchFieldByIdThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { addFieldAndCompileContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { componentOptions } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/FieldController";
+import { componentOptions } from "@/features/applet/runner/field-components/FieldController";
 import {ThemeSwitcherIcon} from "@/styles/themes";
-import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
+import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 
 

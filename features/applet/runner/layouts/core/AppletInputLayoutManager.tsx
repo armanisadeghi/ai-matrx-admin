@@ -39,7 +39,7 @@ export interface ContainerRenderProps {
     actionButton?: ReactNode;
     className?: string;
     isMobile?: boolean;
-    hidecontainerPlaceholder?: boolean;
+    hideContainerPlaceholder?: boolean;
     children?: ReactNode;
     preventClose?: boolean;
 }

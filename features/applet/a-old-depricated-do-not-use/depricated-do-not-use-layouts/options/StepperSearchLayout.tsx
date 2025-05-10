@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import { AppletInputProps } from "@/features/applet/layouts/options/layout.types";
-import StepperSearchGroup from "@/features/applet/layouts/core/StepperSearchGroup";
-import UniformHeightWrapper from "@/features/applet/layouts/core/UniformHeightWrapper";
-import { allSystemWideMockApplets } from "@/features/applet/depricated-do-not-use-sample-mock-data/constants";
 import SearchGroupHeader from "../helpers/SearchGroupHeader";
+import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import UniformHeightWrapper from "../core/UniformHeightWrapper";
+import StepperSearchGroup from "../core/StepperSearchGroup";
 
 const StepperSearchLayout: React.FC<AppletInputProps> = ({
   appletDefinition,
-  activeTab,
-  activeFieldId,
   setActiveFieldId,
   actionButton,
   className = "",
@@ -41,9 +38,9 @@ const StepperSearchLayout: React.FC<AppletInputProps> = ({
     <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
       {/* Stepper navigation */}
       <div className="flex mb-4">
-        {activeSearchGroups.map((group, index) => (
+        {activeSearchGroups.map((container, index) => (
           <div 
-            key={group.id}
+            key={container.id}
             className={`flex-1 text-center ${
               index < currentStep 
                 ? "text-rose-600" 
@@ -66,7 +63,7 @@ const StepperSearchLayout: React.FC<AppletInputProps> = ({
               onClick={() => handleStepClick(index)}
               className="text-sm hover:underline focus:outline-none"
             >
-              {group.label}
+              {container.label}
             </button>
           </div>
         ))}
@@ -76,15 +73,15 @@ const StepperSearchLayout: React.FC<AppletInputProps> = ({
         {/* Header section with lighter background */}
         <SearchGroupHeader 
           label={activeSearchGroups[currentStep]?.label} 
-          placeholder={activeSearchGroups[currentStep]?.placeholder} 
+          description={activeSearchGroups[currentStep]?.description} 
         />
         {/* Content section */}
         <div className="p-4">
           <div className="w-full">
             {activeSearchGroups.map((group, index) => (
               <UniformHeightWrapper
-                key={group.id}
-                groupId={group.id}
+                key={container.id}
+                groupId={container.id}
                 layoutType="stepper"
                 className={`transition-opacity duration-300 ${
                   index === currentStep 
@@ -93,11 +90,10 @@ const StepperSearchLayout: React.FC<AppletInputProps> = ({
                 }`}
               >
                 <StepperSearchGroup
-                  id={group.id}
-                  label={group.label}
-                  placeholder={group.placeholder}
-                  description={group.description}
-                  fields={group.fields}
+                  id={container.id}
+                  label={container.label}
+                  description={container.description}
+                  fields={container.fields}
                   isActive={true}
                   onClick={() => {}}
                   onOpenChange={() => {}}
