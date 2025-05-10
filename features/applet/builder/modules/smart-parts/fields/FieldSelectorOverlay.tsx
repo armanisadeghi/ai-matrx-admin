@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import SmartFieldsList, { SmartFieldsListRefType } from './SmartFieldsList';
-import { FieldDefinition } from '@/features/applet/builder/builder.types';
+import { FieldDefinition } from '@/types/customAppTypes';
 
 // Define type for fieldIds
 type FieldId = string;

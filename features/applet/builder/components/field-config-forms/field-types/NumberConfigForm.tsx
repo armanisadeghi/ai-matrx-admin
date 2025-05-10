@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NumberInputFieldConfig } from '../../../../runner/components/field-components/types';
+import { NumberInputFieldConfig } from '../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 
 interface NumberConfigFormProps {
   config: Partial<NumberInputFieldConfig>;

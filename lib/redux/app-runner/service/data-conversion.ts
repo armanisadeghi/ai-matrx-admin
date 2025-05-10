@@ -1,4 +1,4 @@
-import { CustomAppRuntimeConfig, CustomApplet } from "@/features/applet/builder/builder.types"; // Adjust import based on your types file
+import { CustomAppConfig, CustomAppletConfig } from "@/types/customAppTypes"; // Adjust import based on your types file
 import { RuntimeCompiledRecipe, RuntimeBrokerDefinition } from "../types";
 
 
@@ -6,8 +6,8 @@ import { RuntimeCompiledRecipe, RuntimeBrokerDefinition } from "../types";
  * Interface for the combined app config and applets output
  */
 export interface AppWithApplets {
-    appConfig: CustomAppRuntimeConfig;
-    applets: CustomApplet[];
+    appConfig: CustomAppConfig;
+    applets: CustomAppletConfig[];
     compiledRecipes: Record<string, RuntimeCompiledRecipe>;
 }
 
@@ -100,7 +100,7 @@ export function transformAppWithApplets(rawConfig: any): AppWithApplets {
     const rawCompiledRecipes = rawConfig?.compiled_recipes || {};
 
     // Transform applets into CustomApplet structures
-    const applets: CustomApplet[] = rawApplets.map((applet) => ({
+    const applets: CustomAppletConfig[] = rawApplets.map((applet) => ({
         id: typeof applet?.id === "string" && applet.id.trim() !== "" ? applet.id : undefined,
         name: typeof applet?.name === "string" && applet.name.trim() !== "" ? applet.name : "Unnamed Applet",
         description: typeof applet?.description === "string" ? applet.description : undefined,
@@ -124,16 +124,17 @@ export function transformAppWithApplets(rawConfig: any): AppWithApplets {
     // Generate appletList from applets array, ensuring valid id and name
     const appletList = applets
         .filter(
-            (applet): applet is CustomApplet & { id: string; name: string } =>
+            (applet): applet is CustomAppletConfig & { id: string; name: string } =>
                 typeof applet?.id === "string" && typeof applet?.name === "string" && applet.id.trim() !== "" && applet.name.trim() !== ""
         )
         .map((applet) => ({
             appletId: applet.id,
             label: applet.name,
+            slug: applet.slug,
         }));
 
     // Construct the transformed app config
-    const appConfig: CustomAppRuntimeConfig = {
+    const appConfig: CustomAppConfig = {
         id: typeof config.id === "string" && config.id.trim() !== "" ? config.id : "",
         name: typeof config.name === "string" && config.name.trim() !== "" ? config.name : "Unnamed App",
         description: typeof config.description === "string" ? config.description : "",

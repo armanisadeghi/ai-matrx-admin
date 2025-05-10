@@ -23,7 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
 
-import { FieldDefinition } from '@/features/applet/builder/builder.types';
+import { FieldDefinition } from '@/types/customAppTypes';
 import { getAllFieldComponents, getFieldComponentById } from '@/lib/redux/app-builder/service';
 
 // Define type for fieldIds

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import SmartContainerList from './SmartContainerList';
-import { ComponentGroup } from '@/features/applet/builder/builder.types';
+import { ComponentGroup } from '@/types/customAppTypes';
 
 // Define type for groupIds
 type GroupId = string;

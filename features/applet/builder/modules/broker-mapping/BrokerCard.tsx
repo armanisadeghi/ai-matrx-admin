@@ -1,6 +1,6 @@
 "use client";
 import React, { useMemo } from "react";
-import { Broker } from "@/features/applet/builder/builder.types";
+import { Broker } from "@/types/customAppTypes";
 import { CheckCircle2 } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import {

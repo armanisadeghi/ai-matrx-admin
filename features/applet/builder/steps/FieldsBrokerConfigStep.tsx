@@ -18,7 +18,7 @@ import {
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { addBrokerMapping } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { Broker, BrokerMapping } from "@/features/applet/builder/builder.types";
+import { Broker, BrokerMapping } from "@/types/customAppTypes";
 import NeededBrokersCard from "@/features/applet/builder/modules/broker-mapping/NeededBrokersCard";
 import BrokerMappingCard from "@/features/applet/builder/modules/broker-mapping/BrokerMappingCard";
 import { cn } from "@/lib/utils";

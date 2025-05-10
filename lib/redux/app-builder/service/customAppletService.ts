@@ -1,5 +1,5 @@
 import { isSlugInUse } from "@/config/applets/apps/constants";
-import { AppletContainer, AppletSourceConfig, BrokerMapping, CustomAppletConfig } from "@/features/applet/builder/builder.types";
+import { AppletContainer, AppletSourceConfig, BrokerMapping, CustomAppletConfig } from "@/types/customAppTypes";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 import { supabase } from "@/utils/supabase/client";
 import { RuntimeCompiledRecipe } from "../../app-runner/types";

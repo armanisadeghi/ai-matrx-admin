@@ -2,12 +2,12 @@ import { AppThunk } from "@/lib/redux/store";
 import { componentDefinitionsSlice } from "../slices/componentDefinitionsSlice";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
 import { fetchAppConfig } from "@/lib/redux/app-runner/service/applet-service";
-import { CustomAppRuntimeConfig } from "@/features/applet/builder/builder.types";
+import { CustomAppConfig } from "@/types/customAppTypes";
 import { loadApplet } from "./loadApplet";
 
 interface LoadAppResult {
     success: boolean;
-    appConfig?: CustomAppRuntimeConfig;
+    appConfig?: CustomAppConfig;
     appletResults?: Array<{ appletId: string; success: boolean; componentInstances?: any[] }>;
     error?: string;
 }

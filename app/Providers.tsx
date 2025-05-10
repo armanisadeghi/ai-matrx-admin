@@ -25,13 +25,12 @@ import { FileSystemProvider } from "@/lib/redux/fileSystem/Provider";
 import { ChipMenuProvider } from "@/features/rich-text-editor/components/ChipContextMenu";
 import { PreferenceSyncProvider } from "@/providers/usePreferenceSync";
 import { EditorProvider } from "@/providers/rich-text-editor/Provider";
-import { AppletDataProvider } from "@/context/AppletDataContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PersistentComponentProvider } from "@/providers/persistance/PersistentComponentProvider";
 import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMConnector";
 import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
-import { UniformHeightProvider } from "@/features/applet/layouts/core";
+import { UniformHeightProvider } from "@/features/applet/runner/layouts/core";
 
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
@@ -75,14 +74,12 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                             <AudioModalProvider>
                                                                                 <ModuleHeaderProvider>
                                                                                     <GoogleAPIProvider>
-                                                                                        <AppletDataProvider isMobile={isMobile}>
                                                                                             <UniformHeightProvider>
                                                                                                 <SelectedImagesProvider>
                                                                                                     <PersistentDOMConnector />
                                                                                                     {children}
                                                                                                 </SelectedImagesProvider>
                                                                                             </UniformHeightProvider>
-                                                                                        </AppletDataProvider>
                                                                                     </GoogleAPIProvider>
                                                                                 </ModuleHeaderProvider>
                                                                                 <Toaster />

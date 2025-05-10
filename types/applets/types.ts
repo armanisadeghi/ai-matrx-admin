@@ -104,7 +104,7 @@ export interface AppletRelationshipConfig {
 }
 
 // Runtime Types
-export interface AppletState {
+export interface AppletStateRenamed {
     currentView: string;
     filters: Record<string, unknown>;
     sort: {
@@ -165,7 +165,7 @@ export interface AppletEntityContext<T extends EntityKeys> {
     config: AppletEntityConfig;
     fields: Record<string, SchemaField>;
     data: EntityData<T>[];
-    state: AppletState;
+    state: AppletStateRenamed;
 }
 
 export interface AppletEntityConfig {

@@ -2,7 +2,7 @@ import { supabase } from "@/utils/supabase/client";
 
 import { dbToFieldDefinition, FieldComponentDB } from "./fieldComponentService";
 import { ContainerBuilder } from "../types";
-import { FieldDefinition } from "@/features/applet/builder/builder.types";
+import { FieldDefinition } from "@/types/customAppTypes";
 
 export type ComponentGroupDB = {
     id: string;

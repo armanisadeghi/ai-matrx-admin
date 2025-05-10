@@ -11,8 +11,8 @@ import {
   CardFooter 
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CustomAppletConfig } from '../../builder.types';
-import { COLOR_VARIANTS } from '@/features/applet/layouts/helpers/StyledComponents';
+import { CustomAppletConfig } from '../../../../../types/customAppTypes';
+import { COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
 
 interface SavedAppletsTabProps {
   savedApplets: CustomAppletConfig[];

@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { createAppThunk, updateAppThunk, deleteAppThunk, addAppletThunk, removeAppletThunk, fetchAppsThunk, checkAppSlugUniqueness, FetchAppByIdSuccessAction, saveAppThunk } from "../thunks/appBuilderThunks";
 import { AppBuilder } from "../types";
 import { v4 as uuidv4 } from "uuid";
-import { AppLayoutOptions, CustomActionButton } from "@/features/applet/builder/builder.types";
+import { AppLayoutOptions, CustomActionButton } from "@/types/customAppTypes";
 
 // Helper function to check if an app exists in state
 const checkAppExists = (state: AppsState, id: string): boolean => {
@@ -192,7 +192,7 @@ export const appBuilderSlice = createSlice({
             
             state.apps[id] = { ...state.apps[id], accentColor, isDirty: true };
         },
-        setAppletList: (state, action: PayloadAction<{ id: string; appletList?: { appletId: string; label: string }[] }>) => {
+        setAppletList: (state, action: PayloadAction<{ id: string; appletList?: { appletId: string; label: string; slug: string }[] }>) => {
             const { id, appletList } = action.payload;
             if (!checkAppExists(state, id)) return;
             

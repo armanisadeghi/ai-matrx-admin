@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ComponentGroup } from "@/features/applet/builder/builder.types";
+import { ComponentGroup } from "@/types/customAppTypes";
 
 interface RefreshFieldsDialogProps {
   open: boolean;

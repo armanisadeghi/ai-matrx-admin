@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { FieldDefinition, ComponentType, ComponentProps } from "@/features/applet/builder/builder.types";
+import { FieldDefinition, ComponentType, ComponentProps } from "@/types/customAppTypes";
 import { FieldConfigForms } from "../../../components/field-config-forms/FieldConfigForms";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectFieldLoading } from "@/lib/redux/app-builder/selectors/fieldSelectors";

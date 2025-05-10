@@ -57,7 +57,7 @@ import {
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { AppletLayoutSelection } from "@/features/applet/builder/parts/AppletLayoutSelection";
 import { convertToKebabCase } from "@/utils/text/stringUtils";
-import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
+import { AppletSourceConfig } from "@/types/customAppTypes";
 import { setTempAppletSourceConfig } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { EasyImageCropper } from "@/components/official/image-cropper";
 

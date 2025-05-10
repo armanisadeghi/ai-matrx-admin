@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { SmartAppList } from "@/features/applet/builder/modules/smart-parts";
-import { CustomAppConfig } from "@/features/applet/builder/builder.types";
+import { CustomAppConfig } from "@/types/customAppTypes";
 
 export default function AppsListPage() {
     const router = useRouter();

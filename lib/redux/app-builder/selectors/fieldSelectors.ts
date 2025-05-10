@@ -2,7 +2,7 @@ import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux";
 import { FieldBuilder } from "../types";
 import { selectAppletBrokerMappings } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { BrokerMapping } from '@/features/applet/builder/builder.types';
+import { BrokerMapping } from '@/types/customAppTypes';
 
 // Base selector for the fieldBuilder state
 export const getFieldBuilderState = (state: RootState) => state.fieldBuilder;

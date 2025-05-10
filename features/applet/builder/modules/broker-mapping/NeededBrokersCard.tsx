@@ -8,7 +8,7 @@ import {
   selectSortedNeededBrokers,
   selectBrokerMappingCompletionPercentage,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { Broker, AppletSourceConfig } from "@/features/applet/builder/builder.types";
+import { Broker, AppletSourceConfig } from "@/types/customAppTypes";
 import { CheckCircle2, GaugeCircle, PieChart } from "lucide-react";
 import BrokerCard from "./BrokerCard";
 

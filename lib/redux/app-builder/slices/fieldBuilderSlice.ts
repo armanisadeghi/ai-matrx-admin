@@ -12,7 +12,7 @@ import {
     FetchFieldByIdSuccessAction
 } from "../thunks/fieldBuilderThunks";
 import { FieldBuilder } from "../types";
-import { FieldOption } from "@/features/applet/builder/builder.types";
+import { FieldOption } from "@/types/customAppTypes";
 
 // Helper function to check if a field exists in state
 const checkFieldExists = (state: FieldsState, id: string): boolean => {

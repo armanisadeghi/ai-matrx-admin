@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useDataBrokersWithFetch, useBrokerValuesWithFetch } from "@/lib/redux/entity/hooks/useAllData";
-import { ALL_BROKER_IDS } from "@/features/applet/sample-mock-data/constants";
+import { ALL_BROKER_IDS } from "@/features/applet/depricated-do-not-use-sample-mock-data/constants";
 import { MultiBrokerAdder } from "../components/MultiBrokerAdder";
 import BrokerSelection from "../components/BrokerSelection";
 import HookStatusDisplay from "../components/HookStatusDisplay";

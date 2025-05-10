@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { SmartFieldsList } from "@/features/applet/builder/modules/smart-parts";
-import { FieldDefinition } from "@/features/applet/builder/builder.types";
+import { FieldDefinition } from "@/types/customAppTypes";
 
 export default function FieldsPage() {
     const router = useRouter();

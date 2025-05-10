@@ -4,7 +4,7 @@ import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import SmartAppletList, { SmartAppletListRefType } from './SmartAppletList';
-import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
+import { CustomAppletConfig } from '@/types/customAppTypes';
 
 // Define type for appletIds
 type AppletId = string;

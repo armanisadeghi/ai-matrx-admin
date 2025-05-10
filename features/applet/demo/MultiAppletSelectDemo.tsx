@@ -13,7 +13,7 @@ import { BoxIcon, FilePlus, Code, Search, Settings, PlayIcon } from 'lucide-reac
 
 // Import our new component
 import MultiAppletSelector from '@/features/applet/builder/modules/smart-parts/applets/MultiAppletSelector';
-import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
+import { CustomAppletConfig } from '@/types/customAppTypes';
 
 const MultiAppletSelectorDemo = () => {
   const { toast } = useToast();

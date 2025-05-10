@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getAppIconOptions } from '@/features/applet/layouts/helpers/StyledComponents';
+import { getAppIconOptions } from '@/features/applet/styles/StyledComponents';
 
 interface IconPickerDialogProps {
   showIconPicker: boolean;

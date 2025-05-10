@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PlusIcon, XIcon, EditIcon, CheckIcon } from 'lucide-react';
-import { SelectFieldConfig, SelectOption } from '../../../../runner/components/field-components/types';
+import { SelectFieldConfig, SelectOption } from '../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 
 interface SelectConfigFormProps {
   config: Partial<SelectFieldConfig>;

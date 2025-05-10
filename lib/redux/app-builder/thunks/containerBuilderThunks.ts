@@ -16,7 +16,7 @@ import { RootState } from "@/lib/redux";
 import { v4 as uuidv4 } from "uuid";
 import { selectContainerById } from "../selectors/containerSelectors";
 import { addContainersToApplet, recompileContainerInAppletById, recompileAllContainersInApplet } from "../service/customAppletService";
-import { FieldDefinition } from "@/features/applet/builder/builder.types";
+import { FieldDefinition } from "@/types/customAppTypes";
 import { saveFieldAndUpdateContainerThunk } from "./fieldBuilderThunks";
 import { setActiveContainer } from "../slices/containerBuilderSlice";
 

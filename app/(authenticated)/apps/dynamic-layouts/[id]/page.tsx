@@ -1,8 +1,8 @@
 // app\(authenticated)\apps\dynamic-layouts\[id]\page.tsx
-import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
-import { AppletLayoutWrapper } from "@/features/applet/layouts/core";
+import { CustomAppHeader } from "@/features/applet/runner/header";
+import AppletLayoutWrapper from "@/features/applet/runner/layouts/core/AppletLayoutWrapper";
 import LayoutSelector from "./LayoutSelector";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = await params;

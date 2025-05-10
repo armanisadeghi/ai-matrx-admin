@@ -16,7 +16,7 @@ import { setName, setDescription, setSlug, setMainAppIcon } from "@/lib/redux/ap
 import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
 import { IconPicker } from "@/components/ui/IconPicker";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
-import { COLOR_VARIANTS } from "@/features/applet/layouts/helpers/StyledComponents";
+import { COLOR_VARIANTS } from "@/features/applet/styles/StyledComponents";
 import { convertToKebabCase } from "@/utils/text/stringUtils";
 
 interface AppEditorProps {

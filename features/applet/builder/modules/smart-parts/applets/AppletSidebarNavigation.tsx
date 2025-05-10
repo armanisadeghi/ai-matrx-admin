@@ -12,7 +12,7 @@ import { setActiveContainerWithFetchThunk } from "@/lib/redux/app-builder/thunks
 import GroupSelectorOverlay from "../containers/GroupSelectorOverlay";
 import { PlusCircle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { ComponentGroup } from "../../../builder.types";
+import { ComponentGroup } from "../../../../../../types/customAppTypes";
 import { fetchContainerByIdThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { saveContainerAndUpdateAppletThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";

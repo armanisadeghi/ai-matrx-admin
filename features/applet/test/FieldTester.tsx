@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
-import { advancedAppletCreatorDefinition } from "@/features/applet/sample-mock-data/applet-creator";
+import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { advancedAppletCreatorDefinition } from "../a-old-depricated-do-not-use/depricated-do-not-use-sample-mock-data/applet-creator";
+
 
 // Extract individual field configurations from the containers
 const getFields = () => {

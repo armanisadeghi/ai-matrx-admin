@@ -8,7 +8,7 @@ import { selectAllApplets, selectAppletLoading } from "@/lib/redux/app-builder/s
 import { deleteAppletThunk, fetchAppletsThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { Eye, Pencil, AppWindow, Box, Trash2, Check } from "lucide-react";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
-import { ICON_OPTIONS } from "@/features/applet/layouts/helpers/StyledComponents";
+import { ICON_OPTIONS } from "@/features/applet/styles/StyledComponents";
 import GenericDataTable, { 
     GenericTableHeader, 
     ColumnConfig, 

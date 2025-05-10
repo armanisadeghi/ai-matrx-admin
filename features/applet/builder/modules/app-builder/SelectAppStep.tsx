@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import SmartAppListWrapper from "@/features/applet/builder/modules/smart-parts/apps/SmartAppListWrapper";
-import { CustomAppConfig } from "@/features/applet/builder/builder.types";
+import { CustomAppConfig } from "@/types/customAppTypes";
 import { SmartAppListRefType } from "@/features/applet/builder/modules/smart-parts/apps/SmartAppList";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppById } from "@/lib/redux/app-builder/selectors/appSelectors";

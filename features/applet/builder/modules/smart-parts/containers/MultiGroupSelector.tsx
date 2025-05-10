@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { ComponentGroup } from '@/features/applet/builder/builder.types';
+import { ComponentGroup } from '@/types/customAppTypes';
 import { getAllComponentGroups, getComponentGroupById } from '@/lib/redux/app-builder/service';
 
 // Define type for groupIds

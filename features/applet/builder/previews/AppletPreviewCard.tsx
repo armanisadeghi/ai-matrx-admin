@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
+import { CustomAppletConfig } from '@/types/customAppTypes';
 import { CogIcon, LayersIcon, ImageIcon, SlidersIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
+import { ICON_OPTIONS } from '@/features/applet/styles/StyledComponents';
 
 interface AppletPreviewCardProps {
   applet: CustomAppletConfig;

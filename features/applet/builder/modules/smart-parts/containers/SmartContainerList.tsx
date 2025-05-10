@@ -31,7 +31,7 @@ import {
   selectContainerError,
   selectContainersByIds 
 } from '@/lib/redux/app-builder/selectors/containerSelectors';
-import { ComponentGroup } from '@/features/applet/builder/builder.types';
+import { ComponentGroup } from '@/types/customAppTypes';
 import { RootState } from '@/lib/redux';
 
 // Define type for groupIds

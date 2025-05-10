@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { FieldDefinition, AppletContainer, CustomApplet, CustomAppRuntimeConfig } from "@/features/applet/builder/builder.types";
+import { FieldDefinition, AppletContainer, CustomAppletConfig, CustomAppConfig } from "@/types/customAppTypes";
 import { ComponentToBrokerMapping } from "../types";
 
 interface ComponentDefinitionsState {
-    appConfigs: Record<string, CustomAppRuntimeConfig>; // Store multiple app configs by ID
+    appConfigs: Record<string, CustomAppConfig>; // Store multiple app configs by ID
     definitions: Record<string, Record<string, FieldDefinition>>; // appId -> definitions
     instances: Record<string, Record<string, FieldDefinition>>; // appId -> instances
     containers: Record<string, Record<string, AppletContainer>>; // appId -> containers
-    applets: Record<string, Record<string, CustomApplet>>; // appId -> applets
+    applets: Record<string, Record<string, CustomAppletConfig>>; // appId -> applets
     componentToBrokerMap: Record<string, ComponentToBrokerMapping[]>; // appId -> mappings
     isLoading: boolean;
     error: string | null;
@@ -29,7 +29,7 @@ export const componentDefinitionsSlice = createSlice({
     initialState: initialComponentDefinitionsState,
     reducers: {
         // App config management
-        setAppConfig: (state, action: PayloadAction<{ appId: string; config: CustomAppRuntimeConfig }>) => {
+        setAppConfig: (state, action: PayloadAction<{ appId: string; config: CustomAppConfig }>) => {
             state.appConfigs[action.payload.appId] = action.payload.config;
         },
         clearAppConfig: (state, action: PayloadAction<string>) => {
@@ -153,11 +153,11 @@ export const componentDefinitionsSlice = createSlice({
         // Applet management
         setApplets: (
             state,
-            action: PayloadAction<{ appId: string; applets: Record<string, CustomApplet> }>
+            action: PayloadAction<{ appId: string; applets: Record<string, CustomAppletConfig> }>
         ) => {
             state.applets[action.payload.appId] = action.payload.applets;
         },
-        addApplet: (state, action: PayloadAction<{ appId: string; applet: CustomApplet }>) => {
+        addApplet: (state, action: PayloadAction<{ appId: string; applet: CustomAppletConfig }>) => {
             if (!state.applets[action.payload.appId]) {
                 state.applets[action.payload.appId] = {};
             }
@@ -170,7 +170,7 @@ export const componentDefinitionsSlice = createSlice({
             action: PayloadAction<{
                 appId: string;
                 id: string;
-                changes: Partial<CustomApplet>;
+                changes: Partial<CustomAppletConfig>;
             }>
         ) => {
             const { appId, id, changes } = action.payload;

@@ -1,7 +1,7 @@
 import { AppThunk } from "@/lib/redux/store";
 import { componentDefinitionsSlice } from "../slices/componentDefinitionsSlice";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
-import { FieldDefinition } from "@/features/applet/builder/builder.types";
+import { FieldDefinition } from "@/types/customAppTypes";
 import { setAppropriateValueForComponent } from "./componentValues";
 import { selectComponentInstance } from "../selectors/appletRuntimeSelectors";
 
@@ -52,7 +52,7 @@ export const createComponentWithBroker =
             if (initialValue !== undefined) {
                 const componentDef = selectComponentInstance(getState(), appId, instanceId);
                 if (componentDef) {
-                    dispatch(setAppropriateValueForComponent({ appId, brokerId, component: componentDef, value: initialValue }));
+                    dispatch(setAppropriateValueForComponent({ appId, brokerId, component: componentDef as FieldDefinition, value: initialValue }));
                 } else {
                     console.warn(`Component instance ${instanceId} not found after creation`);
                 }

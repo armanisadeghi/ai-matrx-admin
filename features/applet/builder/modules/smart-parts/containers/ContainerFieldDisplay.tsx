@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
 import { moveFieldUpThunk, moveFieldDownThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
-import { FieldDefinition } from "@/features/applet/builder/builder.types";
+import { FieldDefinition } from "@/types/customAppTypes";
 import { removeFieldThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { selectContainerById } from "@/lib/redux/app-builder/selectors/containerSelectors";
 

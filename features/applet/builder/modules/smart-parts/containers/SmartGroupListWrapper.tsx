@@ -4,7 +4,7 @@ import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import SmartContainerList, { SmartContainerListRefType } from './SmartContainerList';
-import { ComponentGroup } from '@/features/applet/builder/builder.types';
+import { ComponentGroup } from '@/types/customAppTypes';
 
 // Define type for groupIds
 type GroupId = string;

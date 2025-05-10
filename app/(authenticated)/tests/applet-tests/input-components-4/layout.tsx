@@ -2,9 +2,9 @@
 "use client";
 
 import { ReactNode } from "react";
-import AppletUserInputBar from "@/features/applet/runner/components/search-bar/bar/AppletSearchBar";
-import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
-import { allSystemWideMockApplets, everythingCombinedAppConfig } from "@/features/applet/sample-mock-data/constants";
+import AppletUserInputBar from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/search-bar/bar/AppletSearchBar";
+import { CustomAppHeader } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/header/CustomAppHeader";
+import { allSystemWideMockApplets, everythingCombinedAppConfig } from "@/features/applet/depricated-do-not-use-sample-mock-data/constants";
 
 
 

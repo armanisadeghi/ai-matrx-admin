@@ -37,8 +37,8 @@ import { appBuilderSlice } from "./app-builder/slices/appBuilderSlice";
 import { appletBuilderSlice } from "./app-builder/slices/appletBuilderSlice";
 import { containerBuilderSlice } from "./app-builder/slices/containerBuilderSlice";
 import { fieldBuilderSlice } from "./app-builder/slices/fieldBuilderSlice";
-
-
+import customAppRuntimeSlice from "./app-runner/slices/customAppRuntimeSlice";
+import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSlice";
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -117,6 +117,9 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         appletBuilder: appletBuilderSlice.reducer,
         containerBuilder: containerBuilderSlice.reducer,
         fieldBuilder: fieldBuilderSlice.reducer,
+
+        customAppRuntime: customAppRuntimeSlice,
+        customAppletRuntime: customAppletRuntimeSlice,
 
         // buttonBuilder: buttonBuilderSlice.reducer,
         // brokerMapping: brokerMappingSlice.reducer,

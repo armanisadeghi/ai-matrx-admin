@@ -1,7 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux/store";
 import { AppletBuilder } from "../types";
-import { BrokerMapping, AppletSourceConfig, NeededBroker } from "@/features/applet/builder/builder.types";
+import { BrokerMapping, AppletSourceConfig, NeededBroker } from "@/types/customAppTypes";
 import { selectFieldLabel } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 // ================================ Base Selectors ================================
 

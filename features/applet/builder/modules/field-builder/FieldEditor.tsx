@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { Broker, ComponentType } from "../../builder.types";
+import { Broker, ComponentType } from "../../../../../types/customAppTypes";
 import FieldRenderer from "./FieldRenderer";
 import SmartFieldBuilder from "./SmartFieldBuilder";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { startFieldCreation, setActiveField, setComponent, cancelFieldCreation }
 import { saveFieldThunk, fetchFieldByIdThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { addFieldAndCompileContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { componentOptions } from "@/features/applet/runner/components/field-components/FieldController";
+import { componentOptions } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/FieldController";
 import {ThemeSwitcherIcon} from "@/styles/themes";
 import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import SmartAppletList, { SmartAppletListRefType } from './SmartAppletList';
-import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
+import { CustomAppletConfig } from '@/types/customAppTypes';
 
 // Define type for appletIds
 type AppletId = string;

@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { SmartGroupList } from "@/features/applet/builder/modules/smart-parts";
-import { ComponentGroup } from "@/features/applet/builder/builder.types";
+import { ComponentGroup } from "@/types/customAppTypes";
 
 export default function ContainersPage() {
     const router = useRouter();

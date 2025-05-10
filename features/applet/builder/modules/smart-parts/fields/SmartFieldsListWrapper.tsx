@@ -4,7 +4,7 @@ import { X, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import SmartFieldsList, { SmartFieldsListRefType } from './SmartFieldsList';
-import { FieldDefinition } from '@/features/applet/builder/builder.types';
+import { FieldDefinition } from '@/types/customAppTypes';
 
 // Define type for fieldIds
 type FieldId = string;

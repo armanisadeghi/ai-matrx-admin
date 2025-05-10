@@ -14,7 +14,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FieldDefinition } from '@/features/applet/builder/builder.types';
+import { FieldDefinition } from '@/types/customAppTypes';
 import { getAllFieldComponents } from '@/lib/redux/app-builder/service/fieldComponentService';
 
 // Define type for fieldIds

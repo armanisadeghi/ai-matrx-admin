@@ -12,7 +12,7 @@ import AppletSidebarNavigation from "../../modules/smart-parts/applets/AppletSid
 import FieldsList from "../../modules/smart-parts/fields/FieldsList";
 import { FieldSelectorOverlay } from "../../modules/smart-parts";
 import { useToast } from "@/components/ui/use-toast";
-import { FieldDefinition } from "@/features/applet/builder/builder.types";
+import { FieldDefinition } from "@/types/customAppTypes";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import FieldEditor from "../../modules/field-builder/FieldEditor";
 import SectionCard from "@/components/official/cards/SectionCard";

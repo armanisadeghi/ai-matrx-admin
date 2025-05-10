@@ -3,7 +3,7 @@
 import React from 'react';
 import { XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { FieldDefinition } from '@/features/applet/builder/builder.types';
+import { FieldDefinition } from '@/types/customAppTypes';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { selectFieldLoading } from '@/lib/redux/app-builder/selectors/fieldSelectors';
 import { useToast } from '@/components/ui/use-toast';

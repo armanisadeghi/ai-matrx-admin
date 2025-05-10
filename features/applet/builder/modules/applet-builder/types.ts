@@ -1,4 +1,4 @@
-import { CustomAppletConfig } from '../../builder.types';
+import { CustomAppletConfig } from '../../../../../types/customAppTypes';
 import { RecipeInfo } from '../../../../../lib/redux/app-builder/service/customAppletService';
 import { SavedGroup } from '../group-builder/GroupBuilder';
 

@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ComponentGroup } from '../../builder.types';
+import { ComponentGroup } from '../../../../../types/customAppTypes';
 
 interface GroupSelectorProps {
   showAddGroupsDialog: boolean;

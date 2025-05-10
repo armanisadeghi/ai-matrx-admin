@@ -4,8 +4,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusIcon, XIcon, EditIcon, CheckIcon } from 'lucide-react';
-import { MultiSelectFieldConfig } from '../../../../../runner/components/field-components/MultiSelectField';
-import { SelectOption } from '../../../../../runner/components/field-components/types';
+import { MultiSelectFieldConfig } from '../../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/MultiSelectField';
+import { SelectOption } from '../../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 
 
 interface OptionsTabProps {

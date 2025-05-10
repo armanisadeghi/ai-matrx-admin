@@ -32,8 +32,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/components/ui/use-toast';
-import { CustomAppletConfig, AppletContainer } from '../../builder.types';
-import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/layouts/helpers/StyledComponents';
+import { CustomAppletConfig, AppletContainer } from '../../../../../types/customAppTypes';
+import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
 import { RecipeInfo } from '../../../../../lib/redux/app-builder/service/customAppletService';
 
 interface CreateAppletTabProps {

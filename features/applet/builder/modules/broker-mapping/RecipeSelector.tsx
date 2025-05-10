@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { RecipeInfo } from "@/lib/redux/app-builder/service/customAppletService";
 import { RecipeSelectDialog } from "@/features/applet/builder/modules/recipe-source/RecipeSelectDialog";
-import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
+import { AppletSourceConfig } from "@/types/customAppTypes";
 
 /* For reference only (For a recipe, this is the AppletSourceConfig)
 

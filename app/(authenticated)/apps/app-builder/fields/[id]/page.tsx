@@ -46,7 +46,7 @@ import {
   GripVertical,
   SquareStack
 } from 'lucide-react';
-import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
+import { ICON_OPTIONS } from '@/features/applet/styles/StyledComponents';
 import { Separator } from '@/components/ui/separator';
 
 // Helper function to format component type names

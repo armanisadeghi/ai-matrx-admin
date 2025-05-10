@@ -27,12 +27,12 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import AppletFormComponent from "@/features/applet/builder/modules/smart-parts/applets/AppletFormComponent";
 import AppletSelectorOverlay from "@/features/applet/builder/modules/smart-parts/applets/AppletSelectorOverlay";
 import SmartAppletListWrapper from "@/features/applet/builder/modules/smart-parts/applets/SmartAppletListWrapper";
-import { CustomAppletConfig } from "@/features/applet/builder/builder.types";
+import { CustomAppletConfig } from "@/types/customAppTypes";
 import { v4 as uuidv4 } from "uuid";
 import AppInfoCard from "@/features/applet/builder/previews/AppInfoCard";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import useAppBuilderErrors from "@/lib/redux/app-builder/hooks/useAppBuilderErrors";
-import { BrokerMapping, AppletSourceConfig } from "@/features/applet/builder/builder.types";
+import { BrokerMapping, AppletSourceConfig } from "@/types/customAppTypes";
 
 interface AppletsConfigStepProps {
     appId?: string; // Optional appId to filter applets

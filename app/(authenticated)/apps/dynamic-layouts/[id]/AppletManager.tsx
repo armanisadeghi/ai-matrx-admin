@@ -1,9 +1,11 @@
 "use client";
 
-import AppletInputLayoutWrapper from "@/features/applet/layouts/core/AppletLayoutWrapper";
-import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
-import { availableApps } from "@/features/applet/sample-mock-data/constants";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { CustomAppHeader } from "@/features/applet/runner/header";
+import { AppletLayoutOption } from "@/types/customAppTypes";
+
+import { availableApps } from "@/features/applet/a-old-depricated-do-not-use/depricated-do-not-use-sample-mock-data/constants";
+import AppletInputLayoutWrapper from "@/features/applet/runner/layouts/core/AppletLayoutWrapper";
+
 
 interface AppManagerProps {
     appId: string;

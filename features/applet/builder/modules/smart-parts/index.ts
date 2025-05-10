@@ -23,14 +23,14 @@ import GroupSelectorOverlay from './containers/GroupSelectorOverlay';
 import MultiGroupSelector from './containers/MultiGroupSelector';
 import SmartContainerList from './containers/SmartContainerList';
 import SmartGroupListWrapper from './containers/SmartGroupListWrapper';
-import { getFieldComponentStyle } from "@/features/applet/builder/styles";
+import { getFieldComponentStyle } from "@/features/applet/styles/styles";
 
 // Re-export all components from subdirectories
 export * from './applets';
 export * from './apps';
 export * from './containers';
 export * from './fields';
-export * from '../../styles';
+export * from '../../../styles/styles';
 
 // Export all components
 export {

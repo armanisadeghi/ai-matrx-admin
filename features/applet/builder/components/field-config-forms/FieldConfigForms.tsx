@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GroupFieldConfig } from '@/features/applet/runner/components/field-components/types';
-import { ComponentType } from '@/features/applet/builder/builder.types';
+import { GroupFieldConfig } from '@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
+import { ComponentType } from '@/types/customAppTypes';
 import { 
   InputConfigForm,
   TextareaConfigForm,

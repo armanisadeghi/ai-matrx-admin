@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import RecipeDetailsCard from "@/features/applet/builder/modules/broker-mapping/RecipeDetailsCard";
 import { useToast } from "@/components/ui/use-toast";
-import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
+import { AppletSourceConfig } from "@/types/customAppTypes";
 
 interface SourceConfigContentProps {
     appletId: string;

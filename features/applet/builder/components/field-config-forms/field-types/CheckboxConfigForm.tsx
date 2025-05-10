@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckboxFieldConfig } from '../../../../runner/components/field-components/types';
+import { CheckboxFieldConfig } from '../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 
 interface CheckboxConfigFormProps {
   config: Partial<CheckboxFieldConfig>;

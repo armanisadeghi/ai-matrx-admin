@@ -20,8 +20,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
 import { fetchFieldsThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { selectAllFields, selectFieldLoading, selectFieldError, selectFieldsByIds } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import { FieldDefinition } from "@/features/applet/builder/builder.types";
-import { getFieldComponentStyle } from "@/features/applet/builder/styles";
+import { FieldDefinition } from "@/types/customAppTypes";
+import { getFieldComponentStyle } from "@/features/applet/styles/styles";
 import { RootState } from "@/lib/redux";
 
 // Define type for fieldIds

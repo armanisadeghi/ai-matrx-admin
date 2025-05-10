@@ -2,9 +2,9 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import AppletUserInputBar from "@/features/applet/runner/components/search-bar/bar/AppletSearchBar";
-import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
 import { useAppletData } from "@/context/AppletDataContext";
+import { CustomAppHeader } from "@/features/applet/runner/header";
+import AppletUserInputBar from "@/features/applet/runner/search-bar/bar/AppletSearchBar";
 
 export default function BookingLayout({ children }: { children: ReactNode }) {
     const demoAppName = "starter-app";

@@ -32,8 +32,8 @@ import {
   recompileAllContainersInApplet
 } from '@/lib/redux/app-builder/service/customAppletService';
 import { getAllComponentGroups } from '@/lib/redux/app-builder/service/fieldContainerService';
-import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
-import { CustomAppletConfig, ComponentGroup, AppletSourceConfig } from '@/features/applet/builder/builder.types';
+import { ICON_OPTIONS } from '@/features/applet/styles/StyledComponents';
+import { CustomAppletConfig, ComponentGroup, AppletSourceConfig } from '@/types/customAppTypes';
 
 // Import our modular components
 import CreateAppletTab from './CreateAppletTab';

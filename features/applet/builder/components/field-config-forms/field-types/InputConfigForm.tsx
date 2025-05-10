@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { InputFieldConfig } from '../../../../runner/components/field-components/types';
+import { InputFieldConfig } from '../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 
 interface InputConfigFormProps {
   config: Partial<InputFieldConfig>;

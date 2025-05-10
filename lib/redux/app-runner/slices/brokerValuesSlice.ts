@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BrokerValue, RuntimeBrokerDefinition } from "../types";
-import { FieldOption } from "@/features/applet/builder/builder.types";
+import { FieldOption } from "@/types/customAppTypes";
 
 interface BrokerValuesState {
     values: Record<string, BrokerValue>;

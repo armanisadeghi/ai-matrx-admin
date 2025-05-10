@@ -21,7 +21,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { SmartAppletList } from "@/features/applet/builder/modules/smart-parts";
-import { CustomAppletConfig } from "@/features/applet/builder/builder.types";
+import { CustomAppletConfig } from "@/types/customAppTypes";
 
 export default function AppViewPage({ params }: { params: Promise<{ id: string }> }) {
     // Use React.use() to unwrap the params Promise

@@ -21,7 +21,7 @@ import {
     setDataSourceConfig,
 } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { saveAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
-import { Broker, BrokerMapping, AppletSourceConfig } from "@/features/applet/builder/builder.types";
+import { Broker, BrokerMapping, AppletSourceConfig } from "@/types/customAppTypes";
 import { AppletBuilder } from "@/lib/redux/app-builder/types";
 import { useFetchQuickRef } from "@/app/entities/hooks/useFetchQuickRef";
 import NeededBrokersCard from "../../modules/broker-mapping/NeededBrokersCard";

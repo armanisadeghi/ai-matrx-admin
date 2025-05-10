@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PlusIcon, XIcon } from 'lucide-react';
-import { ButtonFieldConfig } from '../../../../runner/components/field-components/types';
+import { ButtonFieldConfig } from '../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 
 interface ButtonConfigFormProps {
   config: Partial<ButtonFieldConfig>;

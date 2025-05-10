@@ -1,5 +1,5 @@
 import { supabase } from "@/utils/supabase/client";
-import { normalizeFieldDefinition } from "@/features/applet/builder/builder.types";
+import { normalizeFieldDefinition } from "@/types/customAppTypes";
 import { FieldBuilder } from "../types";
 
 export type FieldComponentDB = {

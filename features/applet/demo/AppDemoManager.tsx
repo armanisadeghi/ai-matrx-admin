@@ -1,8 +1,8 @@
 "use client";
 
 import AppletInputLayoutWrapper from "@/features/applet/layouts/core/AppletLayoutWrapper";
-import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
-import { availableApps } from "@/features/applet/sample-mock-data/constants";
+import { CustomAppHeader } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/header/CustomAppHeader";
+import { availableApps } from "@/features/applet/depricated-do-not-use-sample-mock-data/constants";
 import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
 
 interface AppDemoManagerProps {

@@ -1,7 +1,7 @@
 "use client";
 
-import AppletInputLayoutWrapper from "@/features/applet/layouts/core/AppletLayoutWrapper";
-import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
+import { CustomAppHeader } from "@/features/applet/runner/header";
+import AppletInputLayoutWrapper from "@/features/applet/runner/layouts/core/AppletLayoutWrapper";
 
 
 

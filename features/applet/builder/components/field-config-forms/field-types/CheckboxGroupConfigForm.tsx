@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PlusIcon, XIcon, EditIcon, CheckIcon } from 'lucide-react';
-import { CheckboxGroupFieldConfig, CheckboxOption } from '../../../../runner/components/field-components/types';
+import { CheckboxGroupFieldConfig, CheckboxOption } from '../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 
 interface CheckboxGroupConfigFormProps {
   config: Partial<CheckboxGroupFieldConfig>;

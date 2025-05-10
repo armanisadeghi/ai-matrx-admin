@@ -1,8 +1,8 @@
 // app\(authenticated)\apps\dynamic-layouts\page.tsx
 "use client";
-import AppletUserInputBar from "@/features/applet/runner/components/search-bar/bar/AppletSearchBar";
-import { CustomAppHeader } from "@/features/applet/runner/components/header/CustomAppHeader";
 
+import { CustomAppHeader } from "@/features/applet/runner/header";
+import AppletUserInputBar from "@/features/applet/runner/search-bar/bar/AppletSearchBar";
 
 
 export default function DynamicLayoutsPage() {

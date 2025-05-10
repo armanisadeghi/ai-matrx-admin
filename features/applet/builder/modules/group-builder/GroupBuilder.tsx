@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
-import { AppletContainersConfig } from "@/features/applet/runner/components/field-components/types";
-import { ComponentGroup, FieldDefinition } from "@/features/applet/builder/builder.types";
+import { AppletContainersConfig } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types";
+import { ComponentGroup, FieldDefinition } from "@/types/customAppTypes";
 import {
     createComponentGroup,
     deleteComponentGroup,

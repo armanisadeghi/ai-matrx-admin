@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CustomAppConfig, CustomAppletConfig } from '@/features/applet/builder/builder.types';
+import { CustomAppConfig, CustomAppletConfig } from '@/types/customAppTypes';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   CheckCircle2, 

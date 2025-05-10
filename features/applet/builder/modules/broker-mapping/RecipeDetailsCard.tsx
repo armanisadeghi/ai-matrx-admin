@@ -2,9 +2,9 @@
 
 import React from "react";
 import SectionCard from "@/components/official/cards/SectionCard";
-import { AppletSourceConfig } from "@/features/applet/builder/builder.types";
+import { AppletSourceConfig } from "@/types/customAppTypes";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { BrokerMapping } from "@/features/applet/builder/builder.types";
+import { BrokerMapping } from "@/types/customAppTypes";
 import { CheckCircle, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { selectAppletBrokerMappings } from "@/lib/redux/app-builder/selectors/appletSelectors";

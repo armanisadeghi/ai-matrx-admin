@@ -1,11 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { appletLayoutOptionsArray } from "@/features/applet/layouts/options/layout-options";
 import { ArrowLeft } from "lucide-react";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { appletLayoutOptionsArray } from "@/features/applet/constants/layout-options";
 
 interface LayoutSelectorProps {
     currentLayout?: string;

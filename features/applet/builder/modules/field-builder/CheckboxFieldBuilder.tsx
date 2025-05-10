@@ -12,14 +12,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { AppDemoManager } from '@/features/applet/demo/AppDemoManager';
 import { Plus, Trash2, X, RefreshCw } from 'lucide-react';
-import { CheckboxGroupFieldConfig, CheckboxOption, GroupFieldConfig } from '@/features/applet/runner/components/field-components/types';
+import { CheckboxGroupFieldConfig, CheckboxOption, GroupFieldConfig } from '@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 import { 
     originalCheckboxGroupField,
     originalSingleCheckboxField,
     updateCheckboxField, 
     updateCheckboxGroup 
-} from '@/features/applet/sample-mock-data/starter-applet';
-import { starterAppConfig } from '@/features/applet/sample-mock-data/constants';
+} from '@/features/applet/depricated-do-not-use-sample-mock-data/starter-applet';
+import { starterAppConfig } from '@/features/applet/depricated-do-not-use-sample-mock-data/constants';
 
 interface CheckboxFieldBuilderProps {
     isOpen: boolean;

@@ -1,0 +1,65 @@
+'use client';
+
+import React from 'react';
+
+interface AppDisplayProps {
+  appName: string;
+  appDescription: string;
+  appIcon: any;
+  appImageUrl: string;
+  creator: string;
+  accentColor: string;
+  primaryColor: string;
+  accentColorClass: string;
+  getAppIconWithBg: (props: any) => React.ReactNode;
+}
+
+const MinimalAppDisplay: React.FC<AppDisplayProps> = ({
+  appName,
+  appDescription,
+  appIcon,
+  creator,
+  accentColor,
+  primaryColor,
+  getAppIconWithBg
+}) => {
+  return (
+    <div className="max-w-7xl mx-auto mb-8 px-2">
+      <div className="flex items-center gap-3">
+        {/* App Icon */}
+        {appIcon && (
+          <div className="w-10 h-10 flex-shrink-0">
+            {getAppIconWithBg({
+              icon: appIcon,
+              size: 24,
+              color: accentColor || 'blue',
+              primaryColor: primaryColor || 'gray',
+              className: 'rounded-md bg-gray-100 dark:bg-gray-800 p-2 shadow-sm'
+            })}
+          </div>
+        )}
+        
+        {/* App Name and Creator */}
+        <div className="flex flex-col">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            {appName}
+          </h1>
+          {creator && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              By {creator}
+            </p>
+          )}
+        </div>
+      </div>
+      
+      {/* Description (only if not empty) */}
+      {appDescription && (
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 max-w-2xl">
+          {appDescription}
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default MinimalAppDisplay; 

@@ -13,9 +13,9 @@ import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/redux";
 import { fetchAppsThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import { selectAllApps, selectAppLoading, selectAppError, selectAppsByIds } from "@/lib/redux/app-builder/selectors/appSelectors";
 import { IconPicker } from "@/components/ui/IconPicker";
-import { COLOR_VARIANTS } from "@/features/applet/layouts/helpers/StyledComponents";
-import { CustomAppConfig } from "@/features/applet/builder/builder.types";
-import { getAppColorClasses } from "../../../styles";
+import { COLOR_VARIANTS } from "@/features/applet/styles/StyledComponents";
+import { CustomAppConfig } from "@/types/customAppTypes";
+import { getAppColorClasses } from "../../../../styles/styles";
 
 export type SmartAppListRefType = {
     refresh: () => Promise<void>;

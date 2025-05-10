@@ -1,6 +1,6 @@
 import { AppThunk } from "@/lib/redux/store";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
-import { FieldDefinition, FieldOption } from "@/features/applet/builder/builder.types";
+import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 
 export const setAppropriateValueForComponent =
     ({ appId, brokerId, component, value, metadata = {} }: { appId: string; brokerId: string; component: FieldDefinition; value: any; metadata?: Record<string, any> }): AppThunk =>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MultiSelectFieldConfig } from '../../../../../runner/components/field-components/types';
+import { MultiSelectFieldConfig } from '../../../../../a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 
 
 interface ExtrasTabProps {

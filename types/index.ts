@@ -17,3 +17,5 @@ export * from './applets/types';
 export * from './voice/voiceAssistantTypes';
 export * from './toast.types';
 export * from './storage.types';
+export * from './customAppTypes';
+

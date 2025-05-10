@@ -33,8 +33,8 @@ import {
     setComponentProps,
     startFieldCreation,
 } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
-import { componentOptions } from "@/features/applet/runner/components/field-components/FieldController";
-import { ComponentType, Broker } from "@/features/applet/builder/builder.types";
+import { componentOptions } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/FieldController";
+import { ComponentType, Broker } from "@/types/customAppTypes";
 import { fieldHelpTextItems } from "./fieldHelpText";
 
 interface SmartFieldBuilderProps {

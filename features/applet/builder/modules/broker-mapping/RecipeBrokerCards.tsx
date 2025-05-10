@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectActiveAppletId } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { Broker, BrokerMapping, AppletSourceConfig } from "@/features/applet/builder/builder.types";
+import { Broker, BrokerMapping, AppletSourceConfig } from "@/types/customAppTypes";
 
 import BrokerMappingCard from "./BrokerMappingCard";
 

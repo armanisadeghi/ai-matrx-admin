@@ -1,10 +1,12 @@
 // app/booking/page.tsx
 'use client';
 
-import { useAppletData } from "@/context/AppletDataContext";
+import { useAppSelector } from "@/lib/redux/hooks";
+
+
 
 export default function BookingPage() {
-  const { activeTab } = useAppletData();
+  const activeTab = useAppSelector(state => selectActiveAppletContainer(state));
 
   return (
     <div className="px-6">

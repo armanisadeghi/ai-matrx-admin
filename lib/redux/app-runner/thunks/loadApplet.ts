@@ -2,7 +2,7 @@ import { nanoid } from "nanoid";
 import { AppThunk } from "@/lib/redux/store";
 import { componentDefinitionsSlice } from "../slices/componentDefinitionsSlice";
 import { brokerValuesSlice } from "../slices/brokerValuesSlice";
-import { CustomApplet } from "@/features/applet/builder/builder.types";
+import { CustomAppletConfig } from "@/types/customAppTypes";
 import { setAppropriateValueForComponent } from "./componentValues";
 
 export const loadApplet =
@@ -12,7 +12,7 @@ export const loadApplet =
         initialBrokerValues,
     }: {
         appId: string;
-        applet: CustomApplet;
+        applet: CustomAppletConfig;
         initialBrokerValues?: Record<string, any>;
     }): AppThunk<Promise<any>> =>
     async (dispatch) => {
