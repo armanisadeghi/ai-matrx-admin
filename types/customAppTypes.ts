@@ -48,6 +48,7 @@ export interface ComponentProps {
   valuePrefix?: string;
   valueSuffix?: string;
   maxLength?: number;
+  spellCheck?: boolean;
 }
 
 export interface FieldDefinition {
@@ -221,7 +222,7 @@ export type CustomAppletConfig = {
 
 
 export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Partial<FieldBuilder>): FieldDefinition {
-  const componentType = field.component || 'input';
+  const componentType = field.component || 'textarea';
   const defaultComponentProps: ComponentProps = {
     min: 0,
     max: 100,
@@ -230,7 +231,20 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Parti
     minDate: '',
     maxDate: '',
     onLabel: 'Yes',
-    offLabel: 'No'
+    offLabel: 'No',
+    multiSelect: false,
+    maxItems: undefined,
+    minItems: 0,
+    gridCols: 1,
+    autoComplete: 'off',
+    direction: 'vertical',
+    customContent: undefined,
+    showSelectAll: false,
+    width: '100%',
+    valuePrefix: '',
+    valueSuffix: '',
+    maxLength: undefined,
+    spellCheck: false
   };
   
   const mergedComponentProps = {
@@ -254,8 +268,7 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Parti
     componentProps: mergedComponentProps,
     includeOther: field.includeOther !== undefined ? field.includeOther : false
   };
-} 
-
+}
 
 export type ComponentGroup = AppletContainer & {
   isPublic?: boolean;

@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { selectActiveAppletAccentColor, selectAppletRuntimeAccentColor, selectAppletRuntimeActiveAppletId } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 interface AppSelectorProps {
   className?: string;
@@ -17,9 +18,7 @@ interface AppSelectorProps {
 
 export function AppSelector({ className }: AppSelectorProps) {
   const appId = useAppSelector(state => selectAppletRuntimeActiveAppletId(state));
-  const appSelectOptions = useAppSelector(state => selectAppletRuntimeAppSelectOptions(state));
-  const accentColor = useAppSelector(state => selectAppletRuntimeAccentColor(state));
-  
+  const accentColor = useAppSelector(state => selectActiveAppletAccentColor(state));
 
   return (
     <DropdownMenu>

@@ -1,5 +1,4 @@
 // app/(authenticated)/apps/[slug]/page.tsx
-import AppRendered from "../../AppRendererTest";
 
 type Params = Promise<{ slug: string }>;
 

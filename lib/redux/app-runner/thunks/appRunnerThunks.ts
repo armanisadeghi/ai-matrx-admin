@@ -19,6 +19,7 @@ import {
   ValidationOptions,
   ValidationResult
 } from '../validations/appRunnerValidations';
+import { setBrokerMap } from '../slices/brokerSlice';
 
 // Object to store validation results for retrieval later
 const validationStore: Record<string, ValidationResult> = {};
@@ -78,6 +79,23 @@ export const fetchAppWithApplets = createAsyncThunk(
       
       const { appConfig, applets } = await fetchTransformedAppAndApplets(idOrSlug, isSlug);
       const activeAppletId = determineActiveAppletId(appConfig, applets, defaultAppletId);
+      
+      // Extract and set broker mappings from all applets
+      const brokerMappings = applets.reduce((acc, applet) => {
+        if (applet.brokerMap) {
+          applet.brokerMap.forEach(mapping => {
+            acc.push({
+              source: 'applet',
+              sourceId: applet.id,
+              itemId: mapping.fieldId,
+              brokerId: mapping.brokerId
+            });
+          });
+        }
+        return acc;
+      }, [] as Array<{ source: string; sourceId: string; itemId: string; brokerId: string }>);
+      
+      dispatch(setBrokerMap(brokerMappings));
       
       dispatch(setAppRuntimeConfig(appConfig));
       dispatch(setAppletRuntimeConfig({ 

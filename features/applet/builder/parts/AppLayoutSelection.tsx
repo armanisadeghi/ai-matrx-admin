@@ -3,10 +3,11 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { appLayoutOptionsArray } from "@/features/applet/layouts/options/layout-options";
+
 import { AppLayoutOptions } from "@/types/customAppTypes";
 import { appBuilderSlice } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { appLayoutOptionsArray } from "../../constants/layout-options";
 
 interface AppLayoutSelectionProps {
   appId: string;

@@ -99,7 +99,7 @@ export interface FieldDefinition {
 export const fieldController = (field: FieldDefinition, isMobile?: boolean) => {
     switch (field.component) {
         case "textarea": {
-            return <TextareaField id={field.id} label={field.label} placeholder={field.placeholder || ""} isMobile={isMobile} />;
+            return <TextareaField field={field} isMobile={isMobile} />;
         }
         case "select": {
             return <SelectField id={field.id} label={field.label} placeholder={field.placeholder || ""} isMobile={isMobile} />;

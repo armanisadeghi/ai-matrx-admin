@@ -19,12 +19,13 @@ import {
     isAppSlugAvailable,
 } from "@/lib/redux/app-builder/service/customAppService";
 import { getAppIconOptions, COLOR_VARIANTS } from "@/features/applet/styles/StyledComponents";
-import { appletLayoutOptionsArray } from "@/features/applet/layouts/options/layout-options";
+
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
 import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
 import { IconPicker } from "@/components/ui/IconPicker";
 import SmartAppList, { SmartAppListRefType } from "@/features/applet/builder/modules/smart-parts/apps/SmartAppList";
 import { CustomAppConfig } from "@/types/customAppTypes";
+import { appletLayoutOptionsArray } from "@/features/applet/constants/layout-options";
 
 // SINGLE SOURCE OF TRUTH FOR DEFAULT VALUES
 export const DEFAULT_APP_CONFIG: CustomAppConfig = {

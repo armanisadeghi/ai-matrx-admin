@@ -3,11 +3,12 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { appletLayoutOptionsArray } from "@/features/applet/layouts/options/layout-options";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { appletLayoutOptionsArray } from "@/features/applet/constants/layout-options";
+
 import { appletBuilderSlice } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { selectAppletLayoutType } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 interface AppletLayoutSelectionProps {
   appletId: string;
