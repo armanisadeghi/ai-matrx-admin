@@ -28,6 +28,8 @@ export interface ComponentInfo {
     icon: React.ReactNode;
     displayName: string;
     description?: string; // Optional field for component description
+    examples?: string; // Optional field for examples of how to use the component
+    category?: string; // Optional field for component category
     fieldComponent?: string; // Corresponding field component file
 }
 
@@ -37,73 +39,105 @@ export const componentMap: Record<ComponentType, ComponentInfo> = {
     input: {
         icon: <TextCursorInput className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
         displayName: "Text Input",
+        description: "A small, single line text input field. Good for a few words or a short sentence.",
+        examples: "Name, Address, Phone Number",
         fieldComponent: "InputField.tsx",
+        category: "Text Entry",
     },
     textarea: {
         icon: <PanelBottomClose className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />,
         displayName: "Text Area",
+        description: "A multi-line text input field. Good for longer text, paragraphs, or multi-line input.",
+        examples: "Bio, Description, Notes",
         fieldComponent: "TextareaField.tsx",
+        category: "Text Entry",
     },
 
     // Selections
     select: {
         icon: <ListFilter className="h-5 w-5 text-purple-500 dark:text-purple-400" />,
         displayName: "Dropdown",
+        description: "A dropdown list of options. Good for selecting one option from a list.",
+        examples: "Country, State, City",
         fieldComponent: "SelectField.tsx",
+        category: "Option List Selection",
     },
     multiselect: {
         icon: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
         displayName: "Multi-Select",
+        description: "A dropdown list of options that allows multiple selections. Good for selecting multiple options from a list.",
+        examples: "Tags, Colors, Ingredients",
         fieldComponent: "SelectField.tsx", // Uses SelectField with multi prop
+        category: "Option List Selection",
     },
     searchableSelect: {
         icon: <Search className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
         displayName: "Searchable Select",
+        description: "A dropdown list of options that allows searching for an option. Good for selecting one option from a large list.",
+        examples: "Country, State, City",
         fieldComponent: "SearchableSelectField.tsx",
+        category: "Option List Selection",
     },
     multiSearchableSelect: {
         icon: <Search className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
         displayName: "Multi Searchable Select",
+        description:
+            "A dropdown list of options that allows searching for multiple options. Good for selecting multiple options from a large list.",
+        examples: "Tags, Colors, Ingredients",
         fieldComponent: "MultiSearchableSelectField.tsx",
+        category: "Option List Selection",
     },
     directMultiSelect: {
         icon: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
         displayName: "Direct Multi-Select",
+        description:
+            "Shows a list of all options in a column. Good for selecting multiple options from a short list where you want to show all options at once.",
+        examples: "Tags, Colors, Ingredients",
         fieldComponent: "DirectMultiSelectField.tsx",
+        category: "Option List Selection",
     },
     dependentDropdown: {
         icon: <ChevronsUpDown className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
         displayName: "Dependent Dropdown",
+        description:
+            "A dropdown list where the first selection determines the options in the second dropdown, then a third, or fourth, etc.",
+        examples: "Select a country, then select a state, then select a city",
         fieldComponent: "DependentDropdownField.tsx",
+        category: "Option List Selection",
     },
 
     // Toggle & Option Groups
     radio: {
         icon: <RadioTower className="h-5 w-5 text-pink-500 dark:text-pink-400" />,
         displayName: "Radio Group",
+        description: "A group of radio buttons. Good for selecting one option from a list.",
+        examples: "What is your age? 18-25, 26-35, 36-45, etc.",
         fieldComponent: "RadioGroupField.tsx",
+        category: "Option List Selection",
     },
     checkbox: {
         icon: <Check className="h-5 w-5 text-green-500 dark:text-green-400" />,
-        displayName: "Checkbox",
+        displayName: "Checkbox Group",
+        description: "A group of checkboxes. Good for selecting multiple options from a list.",
+        examples: "Select all of your favorite activities. (hiking, reading, cooking, programming, etc.)",
         fieldComponent: "CheckboxGroupField.tsx",
+        category: "Option List Selection",
     },
     switch: {
         icon: <ToggleLeft className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />,
         displayName: "Switch",
+        description:
+            "A toggle switch. Good for things that are either one of two values. Defaults to 'on' and 'off' but can be customized.",
+        examples: "Do you want to receive email updates? Yes, No",
         fieldComponent: "SwitchField.tsx",
+        category: "Two-Option Selection",
     },
 
-    // Buttons
-    button: {
-        icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
-        displayName: "Button",
-        fieldComponent: "ButtonField.tsx",
-    },
     buttonGroup: {
         icon: <Layers className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
         displayName: "Button Group",
         fieldComponent: "ButtonGroupField.tsx",
+        category: "Option List Selection",
     },
     buttonSelection: {
         icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
@@ -432,6 +466,26 @@ export const getComponentTypeDefaults = (componentType: ComponentType): Partial<
             maxLength: FIELD_DEFAULT_COMPONENT_PROPS.maxLength,
             spellCheck: FIELD_DEFAULT_COMPONENT_PROPS.spellCheck,
         },
+
+        buttonColumn: {
+            direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
+            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
+            maxItems: FIELD_DEFAULT_COMPONENT_PROPS.maxItems,
+            minItems: FIELD_DEFAULT_COMPONENT_PROPS.minItems,
+            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll,
+        },
+        buttonSelection: {
+            direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
+            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
+            maxItems: FIELD_DEFAULT_COMPONENT_PROPS.maxItems,
+            minItems: FIELD_DEFAULT_COMPONENT_PROPS.minItems,
+            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll,
+        },
+
+
+
+
+
         select: {},
         multiselect: {
             maxItems: FIELD_DEFAULT_COMPONENT_PROPS.maxItems,
@@ -500,19 +554,6 @@ export const getComponentTypeDefaults = (componentType: ComponentType): Partial<
             onLabel: FIELD_DEFAULT_COMPONENT_PROPS.onLabel,
             offLabel: FIELD_DEFAULT_COMPONENT_PROPS.offLabel,
         },
-        button: {
-            direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
-            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
-        },
-        buttonGroup: {
-            direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
-            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
-        },
-        buttonColumn: {
-            direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
-            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
-        },
-        buttonSelection: {},
         rangeSlider: {
             min: FIELD_DEFAULT_COMPONENT_PROPS.min,
             max: FIELD_DEFAULT_COMPONENT_PROPS.max,

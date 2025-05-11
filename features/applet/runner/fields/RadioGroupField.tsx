@@ -90,6 +90,7 @@ const RadioGroupField: React.FC<{
   const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
   
   const [otherText, setOtherText] = useState("");
+  const [touched, setTouched] = useState(false);
   
   // Initialize stateValue if not set
   useEffect(() => {
@@ -169,6 +170,11 @@ const RadioGroupField: React.FC<{
     );
   };
   
+  // Handle blur event for the radio group
+  const handleBlur = () => {
+    setTouched(true);
+  };
+  
   // Get the currently selected option
   const selectedOption = Array.isArray(stateValue) 
     ? stateValue.find((option: SelectedOptionValue) => option.selected) 
@@ -181,6 +187,7 @@ const RadioGroupField: React.FC<{
   
   // Check if validation error (required but nothing selected)
   const hasValidationError = required && !hasSelection;
+  const showValidationError = touched && hasValidationError;
   
   // Render custom content if provided
   if (customContent) {
@@ -204,16 +211,16 @@ const RadioGroupField: React.FC<{
       <div
         key={option.id}
         className={cn(
-          "flex items-start my-1 transition-colors",
+          "flex items-start mb-2",
           direction === "horizontal" && !useGrid ? "inline-flex mr-4" : "flex"
         )}
       >
         <div className="flex items-center h-5 mt-0.5">
           <div
             className={cn(
-              "relative flex items-center justify-center w-4 h-4 border rounded-full mr-2 cursor-pointer",
+              "relative flex items-center justify-center w-4 h-4 border rounded-full mr-2 cursor-pointer transition-all duration-200",
               isSelected
-                ? "border-gray-500 dark:border-gray-400"
+                ? "border-blue-600 dark:border-blue-500"
                 : "border-gray-300 dark:border-gray-600",
               disabled && "opacity-50 cursor-not-allowed"
             )}
@@ -229,7 +236,7 @@ const RadioGroupField: React.FC<{
             }}
           >
             {isSelected && (
-              <div className="w-2 h-2 bg-gray-500 dark:bg-gray-400 rounded-full" />
+              <div className="w-2 h-2 bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-200" />
             )}
           </div>
         </div>
@@ -263,8 +270,9 @@ const RadioGroupField: React.FC<{
         aria-labelledby={`${id}-label`}
         className={cn(
           "w-full",
-          hasValidationError && "border-red-500"
+          showValidationError && "border-red-500"
         )}
+        onBlur={handleBlur}
       >
         {useGrid ? (
           // Grid layout
@@ -296,11 +304,12 @@ const RadioGroupField: React.FC<{
           onChange={handleOtherTextChange}
           placeholder="Please specify..."
           disabled={disabled}
+          onBlur={handleBlur}
         />
       )}
       
-      {/* Validation message */}
-      {hasValidationError && (
+      {/* Validation message - only show after touched */}
+      {showValidationError && (
         <div className="text-red-500 text-sm mt-1">
           Please select an option.
         </div>

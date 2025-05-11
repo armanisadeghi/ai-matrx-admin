@@ -13,7 +13,6 @@ export type ComponentType =
   | 'number' 
   | 'date'
   | 'switch'
-  | 'button'
   | 'rangeSlider'
   | 'numberPicker'
   | 'jsonField'

@@ -296,13 +296,12 @@ const ButtonGroupField: React.FC<{
                 onBlur={handleBlur}
                 disabled={disabled}
                 className={cn(
-                  "px-3 py-1.5 text-sm rounded-full transition-colors",
-                  "focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400 dark:focus:ring-gray-600",
+                  "px-3 py-1.5 text-sm rounded-md transition-colors border",
                   isSelected
-                    ? "bg-gray-700 text-white dark:bg-gray-300 dark:text-gray-800 font-medium"
-                    : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700",
-                  disabled && "opacity-50 cursor-not-allowed"
-                )}
+                  ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white border-blue-600 dark:border-blue-700"
+                  : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750",
+                "focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              )}
                 role={multiSelect ? "checkbox" : "radio"}
                 aria-checked={isSelected}
               >

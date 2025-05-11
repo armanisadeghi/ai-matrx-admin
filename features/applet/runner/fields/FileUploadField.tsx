@@ -149,6 +149,11 @@ const FileUploadField: React.FC<{
   const hasValidationError = required && 
     (!stateValue || (Array.isArray(stateValue) && stateValue.length === 0));
   
+  // Prepare initialFiles based on the current state
+  const initialFiles = stateValue 
+    ? (Array.isArray(stateValue) ? stateValue : [stateValue]) 
+    : [];
+  
   return (
     <div className={`${safeWidthClass}`}>
       <div 
@@ -182,6 +187,7 @@ const FileUploadField: React.FC<{
             useMiniUploader={true}
             onUploadComplete={handleUploadComplete}
             onUploadStatusChange={handleUploadStatusChange}
+            initialFiles={initialFiles}
           />
         )}
         

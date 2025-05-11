@@ -81,8 +81,8 @@ const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType 
                 </div>
             </div>
 
-            {/* Additional component view when a type is selected */}
-            {viewAsComponentType && viewAsComponentType !== componentType && (
+            {/* Additional component view when a type is selected - always show this when viewAsComponentType is set */}
+            {viewAsComponentType && (
                 <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
                     <h3 className="text-md font-semibold mb-4 capitalize text-gray-900 dark:text-gray-100">
                         Rendered as{"  "}
