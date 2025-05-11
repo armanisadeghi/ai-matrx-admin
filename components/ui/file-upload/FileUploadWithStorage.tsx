@@ -6,26 +6,35 @@ import { motion } from "framer-motion";
 
 type SaveToOption = "public" | "private";
 
+// Define a type for the uploaded file results
+export type UploadedFileResult = { 
+    url: string; 
+    type: string; 
+    details?: EnhancedFileDetails;
+};
+
 type FileUploadWithStorageProps = {
     bucket?: string;
     path?: string;
     saveTo?: SaveToOption;
-    onUploadComplete?: (results: { url: string; type: string; details?: EnhancedFileDetails }[]) => void;
+    onUploadComplete?: (results: UploadedFileResult[]) => void;
     onUploadStatusChange?: (isUploading: boolean) => void;
     multiple?: boolean;
     useMiniUploader?: boolean;
     maxHeight?: string;
+    initialFiles?: UploadedFileResult[]; // Add initialFiles prop
 };
 
 export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
     bucket = "userContent",
     path,
-    saveTo, // Add saveTo to props
+    saveTo,
     onUploadComplete,
     onUploadStatusChange,
     multiple = false,
     useMiniUploader = false,
     maxHeight,
+    initialFiles = [], // Add default empty array
 }) => {
     // Destructure the necessary upload methods from useFileUploadWithStorage
     const {
@@ -124,13 +133,15 @@ export const FileUploadWithStorage: React.FC<FileUploadWithStorageProps> = ({
                 <MiniFileUpload 
                     onChange={handleFilesChange} 
                     multiple={multiple}
-                    maxHeight={maxHeight} 
+                    maxHeight={maxHeight}
+                    initialFiles={initialFiles}
                 />
             ) : (
                 <MultiFileUpload 
                     onChange={handleFilesChange} 
                     multiple={multiple}
                     maxHeight={maxHeight}
+                    initialFiles={initialFiles}
                 />
             )}
             

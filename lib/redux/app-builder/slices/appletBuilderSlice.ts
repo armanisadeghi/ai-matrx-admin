@@ -15,8 +15,7 @@ import {
 import { saveContainerAndUpdateAppletThunk, saveOrUpdateContainerToAppletThunk } from "../thunks/containerBuilderThunks";
 import { saveFieldAndUpdateContainerThunk } from "../thunks/fieldBuilderThunks";
 import { AppletBuilder, ContainerBuilder } from "../types";
-import { BrokerMapping } from "@/types/customAppTypes";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { AppletLayoutOption, BrokerMapping } from "@/types/customAppTypes";
 import { AppletSourceConfig } from "@/types/customAppTypes";
 
 // Helper function to check if an applet exists in state
@@ -345,7 +344,10 @@ export const appletBuilderSlice = createSlice({
         },
         startWithData: (state, action: PayloadAction<AppletBuilder>) => {
             const applet = action.payload;
-            state.applets[applet.id] = applet;
+            state.applets[applet.id] = {
+                ...applet,
+                isLocal: applet.isLocal !== undefined ? applet.isLocal : true
+            };
             state.newAppletId = applet.id;
             state.activeAppletId = applet.id;
         },
@@ -489,6 +491,7 @@ export const appletBuilderSlice = createSlice({
                 state.applets[appletId] = {
                     ...action.payload,
                     isDirty: true,
+                    isLocal: false
                 };
             }
             state.isLoading = false;
@@ -536,10 +539,20 @@ export const appletBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(fetchAppletsThunk.fulfilled, (state, action) => {
-            state.applets = action.payload.reduce((acc, applet) => {
+            // Create a new applets object that preserves local applets
+            const newApplets = action.payload.reduce((acc, applet) => {
                 acc[applet.id] = { ...applet, isDirty: false, isLocal: false, slugStatus: "unique" };
                 return acc;
             }, {} as Record<string, AppletBuilder>);
+            
+            // Preserve any local applets in the current state
+            Object.entries(state.applets).forEach(([id, applet]) => {
+                if (applet.isLocal) {
+                    newApplets[id] = applet;
+                }
+            });
+            
+            state.applets = newApplets;
             state.isLoading = false;
         });
         builder.addCase(fetchAppletsThunk.rejected, (state, action) => {
@@ -622,7 +635,9 @@ export const appletBuilderSlice = createSlice({
                 state.applets[appletId] = {
                     ...state.applets[appletId],
                     containers: updatedApplet,
-                    isDirty: true
+                    isDirty: true,
+                    // Preserve isLocal value, or default to false for server data
+                    isLocal: state.applets[appletId].isLocal || false
                 };
             }
             

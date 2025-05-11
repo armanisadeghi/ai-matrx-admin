@@ -240,7 +240,10 @@ export const containerBuilderSlice = createSlice({
         },
         startWithData: (state, action: PayloadAction<ContainerBuilder>) => {
             const container = action.payload;
-            state.containers[container.id] = container;
+            state.containers[container.id] = {
+                ...container,
+                isLocal: container.isLocal !== undefined ? container.isLocal : true
+            };
             state.newContainerId = container.id;
             state.activeContainerId = container.id;
         },
@@ -338,7 +341,7 @@ export const containerBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(recompileContainerThunk.fulfilled, (state, action) => {
-            state.containers[action.payload.id] = { ...action.payload, isDirty: false };
+            state.containers[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
             state.isLoading = false;
         });
         builder.addCase(recompileContainerThunk.rejected, (state, action) => {
@@ -352,10 +355,20 @@ export const containerBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(fetchContainersThunk.fulfilled, (state, action) => {
-            state.containers = action.payload.reduce((acc, container) => {
+            // Create a new containers object that preserves local containers
+            const newContainers = action.payload.reduce((acc, container) => {
                 acc[container.id] = { ...container, isDirty: false, isLocal: false };
                 return acc;
             }, {} as Record<string, ContainerBuilder>);
+            
+            // Preserve any local containers in the current state
+            Object.entries(state.containers).forEach(([id, container]) => {
+                if (container.isLocal) {
+                    newContainers[id] = container;
+                }
+            });
+            
+            state.containers = newContainers;
             state.isLoading = false;
         });
         builder.addCase(fetchContainersThunk.rejected, (state, action) => {
@@ -390,6 +403,7 @@ export const containerBuilderSlice = createSlice({
                     state.containers[containerId] = {
                         ...updatedContainer,
                         isDirty: false,
+                        isLocal: false
                     };
                 } else {
                     // Fallback to just updating the specific field (legacy support)
@@ -525,6 +539,7 @@ export const containerBuilderSlice = createSlice({
                     state.containers[containerId] = {
                         ...updatedContainer,
                         isDirty: false,
+                        isLocal: false
                     };
                 } else if (field) {
                     // Fallback to just updating the specific field (legacy support)
@@ -541,7 +556,7 @@ export const containerBuilderSlice = createSlice({
 
         // Handle fetchContainerByIdSuccess (used by setActiveContainerWithFetchThunk)
         builder.addCase("containerBuilder/fetchContainerByIdSuccess", (state, action: FetchContainerByIdSuccessAction) => {
-            state.containers[action.payload.id] = { ...action.payload, isDirty: false };
+            state.containers[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
             state.isLoading = false;
         });
 

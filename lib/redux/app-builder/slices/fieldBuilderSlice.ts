@@ -231,7 +231,10 @@ export const fieldBuilderSlice = createSlice({
         },
         startWithData: (state, action: PayloadAction<FieldBuilder>) => {
             const field = action.payload;
-            state.fields[field.id] = field;
+            state.fields[field.id] = {
+                ...field,
+                isLocal: field.isLocal !== undefined ? field.isLocal : true
+            };
             state.newFieldId = field.id;
             state.activeFieldId = field.id;
         },
@@ -263,7 +266,7 @@ export const fieldBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(updateFieldThunk.fulfilled, (state, action) => {
-            state.fields[action.payload.id] = { ...action.payload, isDirty: false };
+            state.fields[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
             state.isLoading = false;
         });
         builder.addCase(updateFieldThunk.rejected, (state, action) => {
@@ -291,10 +294,20 @@ export const fieldBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(fetchFieldsThunk.fulfilled, (state, action) => {
-            state.fields = action.payload.reduce((acc, field) => {
-                acc[field.id] = { ...field, isDirty: false };
+            // Create a new fields object that preserves local fields
+            const newFields = action.payload.reduce((acc, field) => {
+                acc[field.id] = { ...field, isDirty: false, isLocal: false };
                 return acc;
             }, {} as Record<string, FieldBuilder>);
+            
+            // Preserve any local fields in the current state
+            Object.entries(state.fields).forEach(([id, field]) => {
+                if (field.isLocal) {
+                    newFields[id] = field;
+                }
+            });
+            
+            state.fields = newFields;
             state.isLoading = false;
         });
         builder.addCase(fetchFieldsThunk.rejected, (state, action) => {
@@ -405,7 +418,7 @@ export const fieldBuilderSlice = createSlice({
 
         // Handle fetchFieldByIdSuccess (used by setActiveFieldWithFetchThunk)
         builder.addCase("fieldBuilder/fetchFieldByIdSuccess", (state, action: FetchFieldByIdSuccessAction) => {
-            state.fields[action.payload.id] = { ...action.payload, isDirty: false };
+            state.fields[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
             state.isLoading = false;
         });
     },

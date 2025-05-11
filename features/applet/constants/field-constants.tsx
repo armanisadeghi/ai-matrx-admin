@@ -1,231 +1,237 @@
 import React from "react";
 import { ComponentProps, ComponentType } from "@/types/customAppTypes";
 import {
-  TextCursorInput,
-  PanelBottomClose,
-  ListFilter,
-  GripVertical,
-  RadioTower,
-  Check,
-  SlidersHorizontal,
-  Hash,
-  Calendar,
-  ToggleLeft,
-  SquareStack,
-  SquareTerminal,
-  FileUp,
-  Search,
-  Tag,
-  ChevronsUpDown,
-  MapPin,
-  Star,
-  Phone,
-  Layers
-} from 'lucide-react';
+    TextCursorInput,
+    PanelBottomClose,
+    ListFilter,
+    GripVertical,
+    RadioTower,
+    Check,
+    SlidersHorizontal,
+    Hash,
+    Calendar,
+    ToggleLeft,
+    SquareStack,
+    SquareTerminal,
+    FileUp,
+    Search,
+    Tag,
+    ChevronsUpDown,
+    MapPin,
+    Star,
+    Phone,
+    Layers,
+} from "lucide-react";
 
 // Unified component information including icon, display name, and component details
 export interface ComponentInfo {
-  icon: React.ReactNode;
-  displayName: string;
-  description?: string; // Optional field for component description
-  fieldComponent?: string; // Corresponding field component file
+    icon: React.ReactNode;
+    displayName: string;
+    description?: string; // Optional field for component description
+    fieldComponent?: string; // Corresponding field component file
 }
 
 // The complete unified mapping
 export const componentMap: Record<ComponentType, ComponentInfo> = {
-  // Text inputs
-  input: {
-    icon: <TextCursorInput className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
-    displayName: "Text Input",
-    fieldComponent: "InputField.tsx"
-  },
-  textarea: {
-    icon: <PanelBottomClose className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />,
-    displayName: "Text Area",
-    fieldComponent: "TextareaField.tsx"
-  },
-  
-  // Selections
-  select: {
-    icon: <ListFilter className="h-5 w-5 text-purple-500 dark:text-purple-400" />,
-    displayName: "Dropdown",
-    fieldComponent: "SelectField.tsx"
-  },
-  multiselect: {
-    icon: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
-    displayName: "Multi-Select",
-    fieldComponent: "SelectField.tsx" // Uses SelectField with multi prop
-  },
-  searchableSelect: {
-    icon: <Search className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
-    displayName: "Searchable Select",
-    fieldComponent: "SearchableSelectField.tsx"
-  },
-  multiSearchableSelect: {
-    icon: <Search className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
-    displayName: "Multi Searchable Select",
-    fieldComponent: "MultiSearchableSelectField.tsx"
-  },
-  directMultiSelect: {
-    icon: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
-    displayName: "Direct Multi-Select",
-    fieldComponent: "DirectMultiSelectField.tsx"
-  },
-  dependentDropdown: {
-    icon: <ChevronsUpDown className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
-    displayName: "Dependent Dropdown",
-    fieldComponent: "DependentDropdownField.tsx"
-  },
-  
-  // Toggle & Option Groups
-  radio: {
-    icon: <RadioTower className="h-5 w-5 text-pink-500 dark:text-pink-400" />,
-    displayName: "Radio Group",
-    fieldComponent: "RadioGroupField.tsx"
-  },
-  checkbox: {
-    icon: <Check className="h-5 w-5 text-green-500 dark:text-green-400" />,
-    displayName: "Checkbox",
-    fieldComponent: "CheckboxGroupField.tsx"
-  },
-  switch: {
-    icon: <ToggleLeft className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />,
-    displayName: "Switch",
-    fieldComponent: "SwitchField.tsx"
-  },
-  
-  // Buttons
-  button: {
-    icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
-    displayName: "Button",
-    fieldComponent: "ButtonField.tsx"
-  },
-  buttonGroup: {
-    icon: <Layers className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
-    displayName: "Button Group",
-    fieldComponent: "ButtonGroupField.tsx"
-  },
-  buttonSelection: {
-    icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
-    displayName: "Button Selection",
-    fieldComponent: "ButtonSelectionField.tsx"
-  },
-  
-  // Number inputs
-  number: {
-    icon: <Hash className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />,
-    displayName: "Number",
-    fieldComponent: "InputField.tsx" // With type="number"
-  },
-  numberPicker: {
-    icon: <Hash className="h-5 w-5 text-fuchsia-500 dark:text-fuchsia-400" />,
-    displayName: "Number Picker",
-    fieldComponent: "NumberPickerField.tsx" // Implied from structure
-  },
-  simpleNumber: {
-    icon: <Hash className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />,
-    displayName: "Simple Number",
-    fieldComponent: "SimpleNumberField.tsx"
-  },
-  stepperNumber: {
-    icon: <Hash className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />,
-    displayName: "Stepper Number",
-    fieldComponent: "StepperNumberField.tsx"
-  },
-  
-  // Range inputs
-  slider: {
-    icon: <SlidersHorizontal className="h-5 w-5 text-orange-500 dark:text-orange-400" />,
-    displayName: "Slider",
-    fieldComponent: "SliderField.tsx"
-  },
-  rangeSlider: {
-    icon: <SlidersHorizontal className="h-5 w-5 text-teal-500 dark:text-teal-400" />,
-    displayName: "Range Slider",
-    fieldComponent: "RangeSlider.tsx"
-  },
-  
-  // Date inputs
-  date: {
-    icon: <Calendar className="h-5 w-5 text-red-500 dark:text-red-400" />,
-    displayName: "Date Picker",
-    fieldComponent: "DateField.tsx"
-  },
-  multiDate: {
-    icon: <Calendar className="h-5 w-5 text-red-500 dark:text-red-400" />,
-    displayName: "Multi-Date",
-    fieldComponent: "MultiDateField.tsx"
-  },
-  
-  // Special inputs
-  jsonField: {
-    icon: <SquareTerminal className="h-5 w-5 text-amber-500 dark:text-amber-400" />,
-    displayName: "JSON Field",
-    fieldComponent: "JSONField.tsx"
-  },
-  fileUpload: {
-    icon: <FileUp className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
-    displayName: "File Upload",
-    fieldComponent: "FileUploadField.tsx"
-  },
-  sortable: {
-    icon: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
-    displayName: "Sortable",
-    fieldComponent: "SortableField.tsx"
-  },
-  tagInput: {
-    icon: <Tag className="h-5 w-5 text-purple-500 dark:text-purple-400" />,
-    displayName: "Tag Input",
-    fieldComponent: "TagInputField.tsx"
-  },
-  addressBlock: {
-    icon: <MapPin className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
-    displayName: "Address Block",
-    fieldComponent: "AddressBlockField.tsx"
-  },
-  starRating: {
-    icon: <Star className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />,
-    displayName: "Star Rating",
-    fieldComponent: "StarRatingField.tsx"
-  },
-  phoneNumber: {
-    icon: <Phone className="h-5 w-5 text-green-500 dark:text-green-400" />,
-    displayName: "Phone Number",
-    fieldComponent: "PhoneNumberField.tsx"
-  }
+    // Text inputs
+    input: {
+        icon: <TextCursorInput className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
+        displayName: "Text Input",
+        fieldComponent: "InputField.tsx",
+    },
+    textarea: {
+        icon: <PanelBottomClose className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />,
+        displayName: "Text Area",
+        fieldComponent: "TextareaField.tsx",
+    },
+
+    // Selections
+    select: {
+        icon: <ListFilter className="h-5 w-5 text-purple-500 dark:text-purple-400" />,
+        displayName: "Dropdown",
+        fieldComponent: "SelectField.tsx",
+    },
+    multiselect: {
+        icon: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
+        displayName: "Multi-Select",
+        fieldComponent: "SelectField.tsx", // Uses SelectField with multi prop
+    },
+    searchableSelect: {
+        icon: <Search className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
+        displayName: "Searchable Select",
+        fieldComponent: "SearchableSelectField.tsx",
+    },
+    multiSearchableSelect: {
+        icon: <Search className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
+        displayName: "Multi Searchable Select",
+        fieldComponent: "MultiSearchableSelectField.tsx",
+    },
+    directMultiSelect: {
+        icon: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
+        displayName: "Direct Multi-Select",
+        fieldComponent: "DirectMultiSelectField.tsx",
+    },
+    dependentDropdown: {
+        icon: <ChevronsUpDown className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
+        displayName: "Dependent Dropdown",
+        fieldComponent: "DependentDropdownField.tsx",
+    },
+
+    // Toggle & Option Groups
+    radio: {
+        icon: <RadioTower className="h-5 w-5 text-pink-500 dark:text-pink-400" />,
+        displayName: "Radio Group",
+        fieldComponent: "RadioGroupField.tsx",
+    },
+    checkbox: {
+        icon: <Check className="h-5 w-5 text-green-500 dark:text-green-400" />,
+        displayName: "Checkbox",
+        fieldComponent: "CheckboxGroupField.tsx",
+    },
+    switch: {
+        icon: <ToggleLeft className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />,
+        displayName: "Switch",
+        fieldComponent: "SwitchField.tsx",
+    },
+
+    // Buttons
+    button: {
+        icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
+        displayName: "Button",
+        fieldComponent: "ButtonField.tsx",
+    },
+    buttonGroup: {
+        icon: <Layers className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
+        displayName: "Button Group",
+        fieldComponent: "ButtonGroupField.tsx",
+    },
+    buttonSelection: {
+        icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
+        displayName: "Button Selection",
+        fieldComponent: "ButtonSelectionField.tsx",
+    },
+
+    buttonColumn: {
+        icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
+        displayName: "Button Column",
+        fieldComponent: "ButtonColumnField.tsx",
+    },
+
+    // Number inputs
+    number: {
+        icon: <Hash className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />,
+        displayName: "Number",
+        fieldComponent: "InputField.tsx", // With type="number"
+    },
+    numberPicker: {
+        icon: <Hash className="h-5 w-5 text-fuchsia-500 dark:text-fuchsia-400" />,
+        displayName: "Number Picker",
+        fieldComponent: "NumberPickerField.tsx", // Implied from structure
+    },
+    simpleNumber: {
+        icon: <Hash className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />,
+        displayName: "Simple Number",
+        fieldComponent: "SimpleNumberField.tsx",
+    },
+    stepperNumber: {
+        icon: <Hash className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />,
+        displayName: "Stepper Number",
+        fieldComponent: "StepperNumberField.tsx",
+    },
+
+    // Range inputs
+    slider: {
+        icon: <SlidersHorizontal className="h-5 w-5 text-orange-500 dark:text-orange-400" />,
+        displayName: "Slider",
+        fieldComponent: "SliderField.tsx",
+    },
+    rangeSlider: {
+        icon: <SlidersHorizontal className="h-5 w-5 text-teal-500 dark:text-teal-400" />,
+        displayName: "Range Slider",
+        fieldComponent: "RangeSlider.tsx",
+    },
+
+    // Date inputs
+    date: {
+        icon: <Calendar className="h-5 w-5 text-red-500 dark:text-red-400" />,
+        displayName: "Date Picker",
+        fieldComponent: "DateField.tsx",
+    },
+    multiDate: {
+        icon: <Calendar className="h-5 w-5 text-red-500 dark:text-red-400" />,
+        displayName: "Multi-Date",
+        fieldComponent: "MultiDateField.tsx",
+    },
+
+    // Special inputs
+    jsonField: {
+        icon: <SquareTerminal className="h-5 w-5 text-amber-500 dark:text-amber-400" />,
+        displayName: "JSON Field",
+        fieldComponent: "JSONField.tsx",
+    },
+    fileUpload: {
+        icon: <FileUp className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
+        displayName: "File Upload",
+        fieldComponent: "FileUploadField.tsx",
+    },
+    sortable: {
+        icon: <GripVertical className="h-5 w-5 text-indigo-500 dark:text-indigo-400" />,
+        displayName: "Sortable",
+        fieldComponent: "SortableField.tsx",
+    },
+    tagInput: {
+        icon: <Tag className="h-5 w-5 text-purple-500 dark:text-purple-400" />,
+        displayName: "Tag Input",
+        fieldComponent: "TagInputField.tsx",
+    },
+    addressBlock: {
+        icon: <MapPin className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
+        displayName: "Address Block",
+        fieldComponent: "AddressBlockField.tsx",
+    },
+    starRating: {
+        icon: <Star className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />,
+        displayName: "Star Rating",
+        fieldComponent: "StarRatingField.tsx",
+    },
+    phoneNumber: {
+        icon: <Phone className="h-5 w-5 text-green-500 dark:text-green-400" />,
+        displayName: "Phone Number",
+        fieldComponent: "PhoneNumberField.tsx",
+    },
 };
 
 // Helper function to get component information
 export const getComponentInfo = (componentType: ComponentType | string): ComponentInfo => {
-  if (componentType in componentMap) {
-    return componentMap[componentType as ComponentType];
-  }
-  
-  // Default component info if type not found
-  return {
-    icon: <TextCursorInput className="h-5 w-5 text-gray-500 dark:text-gray-400" />,
-    displayName: String(componentType)
-  };
+    if (componentType in componentMap) {
+        return componentMap[componentType as ComponentType];
+    }
+
+    // Default component info if type not found
+    return {
+        icon: <TextCursorInput className="h-5 w-5 text-gray-500 dark:text-gray-400" />,
+        displayName: String(componentType),
+    };
 };
 
 // Derive options for select components
 export const componentOptions = Object.entries(componentMap).map(([value, info]) => ({
-  value: value as ComponentType,
-  label: info.displayName
+    value: value as ComponentType,
+    label: info.displayName,
 }));
 
 // Helper functions for easier access
 export const getComponentIcon = (componentType: ComponentType | string): React.ReactNode => {
-  return getComponentInfo(componentType).icon;
+    return getComponentInfo(componentType).icon;
 };
 
 export const getComponentTypeName = (componentType: ComponentType | string): string => {
-  return getComponentInfo(componentType).displayName;
+    return getComponentInfo(componentType).displayName;
 };
 
 // Default icon function (maintained for backward compatibility)
 export const getDefaultIcon = (): React.ReactNode => {
-  return <TextCursorInput className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
+    return <TextCursorInput className="h-5 w-5 text-gray-500 dark:text-gray-400" />;
 };
 
 export const FIELD_DEFAULT_COMPONENT_PROPS: ComponentProps = {
@@ -371,7 +377,6 @@ export const ensureValidGridColsValue = (gridColsValue?: string): string => {
     return gridColsValue;
 };
 
-
 export const componentCompatibility = {
     input: ["autoComplete", "maxLength", "spellCheck", "width", "valuePrefix", "valueSuffix"],
     textarea: ["rows", "maxLength", "spellCheck", "width"],
@@ -397,7 +402,7 @@ export const componentCompatibility = {
     dependentDropdown: ["width"],
     addressBlock: ["width"],
     starRating: ["width"],
-    phoneNumber: ["width"]
+    phoneNumber: ["width"],
 };
 
 export const getRelevantComponentProps = (componentType: ComponentType, allProps: ComponentProps): Partial<ComponentProps> => {
@@ -415,130 +420,139 @@ export const getComponentTypeDefaults = (componentType: ComponentType): Partial<
     const baseDefaults = {
         ...FIELD_DEFAULT_COMPONENT_PROPS,
     };
-    
+
     const specificDefaults: Record<ComponentType, Partial<ComponentProps>> = {
         input: {
             maxLength: FIELD_DEFAULT_COMPONENT_PROPS.maxLength,
             autoComplete: FIELD_DEFAULT_COMPONENT_PROPS.autoComplete,
-            spellCheck: FIELD_DEFAULT_COMPONENT_PROPS.spellCheck
+            spellCheck: FIELD_DEFAULT_COMPONENT_PROPS.spellCheck,
         },
         textarea: {
             rows: FIELD_DEFAULT_COMPONENT_PROPS.rows,
             maxLength: FIELD_DEFAULT_COMPONENT_PROPS.maxLength,
-            spellCheck: FIELD_DEFAULT_COMPONENT_PROPS.spellCheck
+            spellCheck: FIELD_DEFAULT_COMPONENT_PROPS.spellCheck,
         },
         select: {},
         multiselect: {
             maxItems: FIELD_DEFAULT_COMPONENT_PROPS.maxItems,
             minItems: FIELD_DEFAULT_COMPONENT_PROPS.minItems,
-            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll
+            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll,
         },
         searchableSelect: {
             maxItems: FIELD_DEFAULT_COMPONENT_PROPS.maxItems,
             minItems: FIELD_DEFAULT_COMPONENT_PROPS.minItems,
-            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll
+            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll,
         },
         multiSearchableSelect: {
             maxItems: FIELD_DEFAULT_COMPONENT_PROPS.maxItems,
             minItems: FIELD_DEFAULT_COMPONENT_PROPS.minItems,
-            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll
+            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll,
         },
         directMultiSelect: {
             maxItems: FIELD_DEFAULT_COMPONENT_PROPS.maxItems,
             minItems: FIELD_DEFAULT_COMPONENT_PROPS.minItems,
-            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll
+            showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll,
         },
         multiDate: {
             minDate: FIELD_DEFAULT_COMPONENT_PROPS.minDate,
-            maxDate: FIELD_DEFAULT_COMPONENT_PROPS.maxDate
+            maxDate: FIELD_DEFAULT_COMPONENT_PROPS.maxDate,
         },
         radio: {
             direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
-            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols
+            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
         },
         checkbox: {
             direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
-            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols
+            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
         },
         slider: {
             min: FIELD_DEFAULT_COMPONENT_PROPS.min,
             max: FIELD_DEFAULT_COMPONENT_PROPS.max,
             step: FIELD_DEFAULT_COMPONENT_PROPS.step,
             valuePrefix: FIELD_DEFAULT_COMPONENT_PROPS.valuePrefix,
-            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix
+            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix,
         },
         number: {
             min: FIELD_DEFAULT_COMPONENT_PROPS.min,
             max: FIELD_DEFAULT_COMPONENT_PROPS.max,
             step: FIELD_DEFAULT_COMPONENT_PROPS.step,
             valuePrefix: FIELD_DEFAULT_COMPONENT_PROPS.valuePrefix,
-            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix
+            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix,
         },
         stepperNumber: {
             min: FIELD_DEFAULT_COMPONENT_PROPS.min,
             max: FIELD_DEFAULT_COMPONENT_PROPS.max,
             step: FIELD_DEFAULT_COMPONENT_PROPS.step,
             valuePrefix: FIELD_DEFAULT_COMPONENT_PROPS.valuePrefix,
-            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix
+            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix,
         },
         simpleNumber: {
             min: FIELD_DEFAULT_COMPONENT_PROPS.min,
             max: FIELD_DEFAULT_COMPONENT_PROPS.max,
             valuePrefix: FIELD_DEFAULT_COMPONENT_PROPS.valuePrefix,
-            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix
+            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix,
         },
         date: {
             minDate: FIELD_DEFAULT_COMPONENT_PROPS.minDate,
-            maxDate: FIELD_DEFAULT_COMPONENT_PROPS.maxDate
+            maxDate: FIELD_DEFAULT_COMPONENT_PROPS.maxDate,
         },
         switch: {
             onLabel: FIELD_DEFAULT_COMPONENT_PROPS.onLabel,
-            offLabel: FIELD_DEFAULT_COMPONENT_PROPS.offLabel
+            offLabel: FIELD_DEFAULT_COMPONENT_PROPS.offLabel,
         },
-        button: {},
-        buttonGroup: {},
+        button: {
+            direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
+            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
+        },
+        buttonGroup: {
+            direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
+            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
+        },
+        buttonColumn: {
+            direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
+            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
+        },
         buttonSelection: {},
         rangeSlider: {
             min: FIELD_DEFAULT_COMPONENT_PROPS.min,
             max: FIELD_DEFAULT_COMPONENT_PROPS.max,
             step: FIELD_DEFAULT_COMPONENT_PROPS.step,
             valuePrefix: FIELD_DEFAULT_COMPONENT_PROPS.valuePrefix,
-            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix
+            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix,
         },
         numberPicker: {
             min: FIELD_DEFAULT_COMPONENT_PROPS.min,
             max: FIELD_DEFAULT_COMPONENT_PROPS.max,
             step: FIELD_DEFAULT_COMPONENT_PROPS.step,
             valuePrefix: FIELD_DEFAULT_COMPONENT_PROPS.valuePrefix,
-            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix
+            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix,
         },
         jsonField: {
-            rows: 5
+            rows: 5,
         },
         fileUpload: {
-            maxItems: 1
+            maxItems: 1,
         },
         sortable: {
             direction: FIELD_DEFAULT_COMPONENT_PROPS.direction,
-            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols
+            gridCols: FIELD_DEFAULT_COMPONENT_PROPS.gridCols,
         },
         tagInput: {
-            width: FIELD_DEFAULT_COMPONENT_PROPS.width
+            width: FIELD_DEFAULT_COMPONENT_PROPS.width,
         },
         dependentDropdown: {
-            width: FIELD_DEFAULT_COMPONENT_PROPS.width
+            width: FIELD_DEFAULT_COMPONENT_PROPS.width,
         },
         addressBlock: {
-            width: FIELD_DEFAULT_COMPONENT_PROPS.width
+            width: FIELD_DEFAULT_COMPONENT_PROPS.width,
         },
         starRating: {
-            width: FIELD_DEFAULT_COMPONENT_PROPS.width
+            width: FIELD_DEFAULT_COMPONENT_PROPS.width,
         },
         phoneNumber: {
-            width: FIELD_DEFAULT_COMPONENT_PROPS.width
+            width: FIELD_DEFAULT_COMPONENT_PROPS.width,
         },
     };
-    
-    
+
     return { ...baseDefaults, ...specificDefaults[componentType] };
 };

@@ -287,7 +287,7 @@ export const appBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(updateAppThunk.fulfilled, (state, action) => {
-            state.apps[action.payload.id] = { ...action.payload, isDirty: false, slugStatus: 'unique' };
+            state.apps[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false, slugStatus: 'unique' };
             state.isLoading = false;
         });
         builder.addCase(updateAppThunk.rejected, (state, action) => {
@@ -392,24 +392,23 @@ export const appBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(fetchAppsThunk.fulfilled, (state, action) => {
-            
-            // Create a new apps object based on the payload
+            // Create a new apps object that explicitly sets isLocal=false for fetched apps
             const newApps = action.payload.reduce((acc, app) => {
                 acc[app.id] = {
                     ...app,
-                    // Preserve existing state properties if the app already exists
-                    ...(state.apps[app.id] ? {
-                        isDirty: state.apps[app.id].isDirty,
-                        isLocal: state.apps[app.id].isLocal,
-                        slugStatus: state.apps[app.id].slugStatus
-                    } : {
-                        isDirty: false,
-                        isLocal: false,
-                        slugStatus: 'unchecked'
-                    })
+                    isDirty: false,
+                    isLocal: false,
+                    slugStatus: 'unique'
                 };
                 return acc;
             }, {} as Record<string, AppBuilder>);
+            
+            // Preserve any local apps in the current state
+            Object.entries(state.apps).forEach(([id, app]) => {
+                if (app.isLocal) {
+                    newApps[id] = app;
+                }
+            });
             
             state.apps = newApps;
             state.isLoading = false;
@@ -421,7 +420,12 @@ export const appBuilderSlice = createSlice({
 
         // Handle fetchAppByIdSuccess (used by setActiveAppWithFetchThunk)
         builder.addCase("appBuilder/fetchAppByIdSuccess", (state, action: FetchAppByIdSuccessAction) => {
-            state.apps[action.payload.id!] = action.payload;
+            state.apps[action.payload.id!] = { 
+                ...action.payload, 
+                isDirty: false,
+                isLocal: false,
+                slugStatus: 'unique'
+            };
             state.activeAppId = action.payload.id!;
             state.isLoading = false;
         });

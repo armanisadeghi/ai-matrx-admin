@@ -20,11 +20,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { LoadingSpinner } from "@/components/ui";
 import SmartFieldBuilder from "./SmartFieldBuilder";
-import FieldPreview from "./FieldPreview";
 import FieldEditorActions from "./FieldEditorActions";
 import NewFieldPreview from "./new-system/NewFieldPreview";
-import useTempBrokerMapping from "@/features/applet/builder/hooks/useTempBrokerMapping";
-
 
 interface FieldEditorProps {
     fieldId?: string;
@@ -37,7 +34,16 @@ interface FieldEditorProps {
     showBackButton?: boolean;
 }
 
-const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = false, onSaveSuccess, onCancel, containerId, appletId, broker, showBackButton = false }) => {
+const FieldEditor: React.FC<FieldEditorProps> = ({
+    fieldId,
+    isCreatingNew = false,
+    onSaveSuccess,
+    onCancel,
+    containerId,
+    appletId,
+    broker,
+    showBackButton = false,
+}) => {
     const dispatch = useAppDispatch();
     const { toast } = useToast();
 
@@ -65,7 +71,6 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
         } else {
             dispatch(setActiveField(fieldId));
         }
-        
     }, [dispatch, isCreatingNew]);
 
     const handleSave = async () => {
@@ -126,31 +131,30 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
     };
 
     const handleCancel = async () => {
-        if (!isCreatingNew && localFieldId) {
-            // Fetch the original field data to restore it
-            try {
-                await dispatch(fetchFieldByIdThunk(localFieldId)).unwrap();
-
-                toast({
-                    title: "Changes Discarded",
-                    description: "Your changes have been discarded",
-                });
-            } catch (err: any) {
-                toast({
-                    title: "Error",
-                    description: err.message || "Failed to restore original field data",
-                    variant: "destructive",
-                });
-                console.error("Error restoring field:", err);
-            }
-        } else {
-            setLocalFieldId(null);
-            dispatch(cancelFieldCreation(localFieldId));
-        }
-
         if (onCancel) {
-            dispatch(cancelFieldCreation(localFieldId));
             onCancel();
+        } else {
+            if (!isCreatingNew && localFieldId) {
+                // Fetch the original field data to restore it
+                try {
+                    await dispatch(fetchFieldByIdThunk(localFieldId)).unwrap();
+
+                    toast({
+                        title: "Changes Discarded",
+                        description: "Your changes have been discarded",
+                    });
+                } catch (err: any) {
+                    toast({
+                        title: "Error",
+                        description: err.message || "Failed to restore original field data",
+                        variant: "destructive",
+                    });
+                    console.error("Error restoring field:", err);
+                }
+            } else {
+                setLocalFieldId(null);
+                dispatch(cancelFieldCreation(localFieldId));
+            }
         }
     };
 
@@ -170,7 +174,7 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
                         color="gray"
                         spacing="relaxed"
                         footer={
-                            <FieldEditorActions 
+                            <FieldEditorActions
                                 isCreatingNew={isCreatingNew}
                                 isLoading={isLoading}
                                 hasUnsavedChanges={hasUnsavedChanges}

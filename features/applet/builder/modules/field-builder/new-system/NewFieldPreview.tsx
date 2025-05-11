@@ -8,7 +8,6 @@ import { ThemeSwitcherIcon } from "@/styles/themes";
 import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
 import { ComponentType, FieldDefinition } from "@/types/customAppTypes";
 import { componentOptions } from "@/features/applet/constants/field-constants";
-import { useAppDispatch } from "@/lib/redux";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import useTempBrokerMapping from "@/features/applet/builder/hooks/useTempBrokerMapping";
 
@@ -18,11 +17,9 @@ interface NewFieldPreviewProps {
 }
 
 const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType }) => {    
-    const dispatch = useAppDispatch();
     const [viewAsComponentType, setViewAsComponentType] = useState<ComponentType | null>(componentType);
 
-    const { stableAppletId, stableBrokerId } = useTempBrokerMapping(field.id);
-
+    const { stableAppletId, getPreviewFieldId } = useTempBrokerMapping(field.id);
 
     const handleComponentTypeChange = (newType: ComponentType) => {
         setViewAsComponentType(newType);
@@ -48,7 +45,13 @@ const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType 
                 </div>
 
                 {/* Render the actual field component */}
-                {fieldController({ field, appletId: stableAppletId })}
+                {fieldController({ 
+                    field: {
+                        ...field,
+                        id: field.id // Use original field ID
+                    }, 
+                    appletId: stableAppletId 
+                })}
             </div>
 
             {/* Component type selector */}
@@ -88,12 +91,13 @@ const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType 
                         </span>
                     </h3>
 
-                    {/* For the alternate view, just change the component type but keep everything else the same */}
+                    {/* For the alternate view, use the generated field ID for this component type */}
                     {field &&
                         fieldController({
                             field: {
                                 ...field,
                                 component: viewAsComponentType,
+                                id: getPreviewFieldId(viewAsComponentType) // Use the ID specific to this component type
                             },
                             appletId: stableAppletId,
                         })}
