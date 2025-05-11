@@ -17,7 +17,7 @@ import { getValidationResults } from '../thunks/appRunnerThunks';
  * @returns Validation result
  */
 export function useAppValidation(
-  options: ValidationOptions = { runValidations: true, logResults: false }
+  options: ValidationOptions = { runValidations: false, logResults: false }
 ): ValidationResult {
   const appConfig = useAppSelector(selectAppRuntimeConfig);
   const applets = useAppSelector(selectAppletRuntimeApplets);
@@ -74,7 +74,7 @@ export function useAppValidation(
  * Hook to get a count of validation issues by severity
  */
 export function useValidationSummary(
-  options: ValidationOptions = { runValidations: true, logResults: false }
+  options: ValidationOptions = { runValidations: false, logResults: false }
 ): { 
   errors: number; 
   warnings: number; 

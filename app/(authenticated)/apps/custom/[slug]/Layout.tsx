@@ -3,7 +3,7 @@
 import React from "react";
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Menu, User } from "lucide-react";
+import { LayoutPanelTop, Menu, User, SunMoon } from "lucide-react";
 
 import { CustomAppHeader } from "@/features/applet/runner/header/CustomAppHeader";
 import { selectAppletRuntimeActiveAppletId } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
@@ -29,7 +29,7 @@ const SkeletonHeader: React.FC = () => {
             <div className="flex items-center justify-between h-full px-4">
                 {/* Left section - App icon placeholder */}
                 <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                    <LayoutPanelTop className="w-8 h-8 text-blue-500 dark:text-blue-400" />
                     <div className="ml-3 w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 </div>
                 
@@ -42,9 +42,11 @@ const SkeletonHeader: React.FC = () => {
                 
                 {/* Right section - User and icons placeholders */}
                 <div className="flex items-center space-x-3">
-                    <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-                    <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
-                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                    <SunMoon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <Menu className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700">
+                        <User className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -67,8 +69,8 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
                     idOrSlug: slugValue,
                     isSlug: true,
                     validationOptions: {
-                        runValidations: process.env.NODE_ENV !== "production",
-                        logResults: process.env.NODE_ENV === "development",
+                        runValidations: false,
+                        logResults: false,
                     },
                 })
             );

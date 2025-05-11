@@ -1,22 +1,32 @@
 // state-analyzer/StateViewerOverlay.tsx
 import React from "react";
-import { useSelector } from "react-redux";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import GenericSliceViewer from "./sliceViewers/GenericSliceViewer";
 import { RootState } from "@/lib/redux";
 import EntitySliceViewer from "./sliceViewers/EntitySliceViewer";
 import { featureSchemas } from "@/lib/redux/dynamic/featureSchema";
-import { moduleSchemas, ModuleName } from "@/lib/redux/dynamic/moduleSchema";
+import { moduleSchemas } from "@/lib/redux/dynamic/moduleSchema";
 import AppletRuntimeViewer from "./sliceViewers/AppletRuntimeViewer";
+import { useAppStore } from "@/lib/redux/hooks";
 
 interface StateViewerOverlayProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
+/**
+ * Custom hook to get the entire Redux state without triggering warnings
+ * This is only used for debugging purposes
+ */
+const useCompleteState = (): RootState => {
+    const store = useAppStore();
+    // Get the state directly from the store instead of using useSelector
+    return store.getState();
+};
+
 const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({ isOpen, onClose }) => {
-    // Get the complete Redux state
-    const completeState = useSelector((state: RootState) => state);
+    // Get the complete Redux state using our custom hook
+    const completeState = useCompleteState();
 
     // Create tabs based on the exact slices from your root reducer
     const tabs: TabDefinition[] = [

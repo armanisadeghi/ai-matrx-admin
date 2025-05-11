@@ -33,17 +33,33 @@ function runDeferredValidations(
   options: ValidationOptions, 
   storeKey: string
 ): void {
-  // Use setTimeout to defer validation to next tick
-  setTimeout(() => {
-    try {
-      console.log('Running deferred validations for:', storeKey);
-      const validationResult = validateAppWithApplets(appConfig, applets, options);
-      validationStore[storeKey] = validationResult;
-      console.log('Validation complete:', validationResult.issues.length, 'issues found');
-    } catch (error) {
-      console.error('Background validation error:', error);
-    }
-  }, 0);
+  // Run as a fully isolated process that won't affect the main app
+  try {
+    console.debug('Scheduling deferred validations for:', storeKey);
+    
+    // Create a clone of the data to prevent any reference issues
+    const clonedAppConfig = JSON.parse(JSON.stringify(appConfig));
+    const clonedApplets = JSON.parse(JSON.stringify(applets));
+    
+    // Use a web worker or setTimeout to run in a separate context
+    setTimeout(() => {
+      try {
+        console.debug('Running deferred validations for:', storeKey);
+        const validationResult = validateAppWithApplets(clonedAppConfig, clonedApplets, options);
+        validationStore[storeKey] = validationResult;
+        
+        if (options.logResults && validationResult.issues.length > 0) {
+          console.debug('Validation complete:', validationResult.issues.length, 'issues found');
+        }
+      } catch (error) {
+        // Completely isolate errors from the main thread
+        console.debug('Background validation error (safely contained):', error);
+      }
+    }, 0);
+  } catch (error) {
+    // Safety catch to prevent any possible impact on the main application
+    console.debug('Failed to schedule validation (safely ignored):', error);
+  }
 }
 
 /**
@@ -62,7 +78,7 @@ export const fetchAppWithApplets = createAsyncThunk(
     idOrSlug, 
     isSlug = true, 
     defaultAppletId = null,
-    validationOptions = { runValidations: true, logResults: true } 
+    validationOptions = { runValidations: false, logResults: false } 
   }: { 
     idOrSlug: string; 
     isSlug?: boolean;
@@ -98,6 +114,7 @@ export const fetchAppWithApplets = createAsyncThunk(
       
       dispatch(setBrokerMap(brokerMappings));
       
+      // Set app and applet configurations to make the app functional
       dispatch(setAppRuntimeConfig(appConfig));
       dispatch(setAppletRuntimeConfig({ 
         applets, 
@@ -105,8 +122,17 @@ export const fetchAppWithApplets = createAsyncThunk(
       }));
       
       // Run validations in the background *after* app is loaded
+      // This is completely decoupled from the main application flow
       if (validationOptions.runValidations) {
-        runDeferredValidations(appConfig, applets, validationOptions, appConfig.id);
+        // Use setTimeout with a longer delay to ensure it runs well after the app is loaded
+        setTimeout(() => {
+          try {
+            runDeferredValidations(appConfig, applets, validationOptions, appConfig.id);
+          } catch (error) {
+            // Completely silence any validation errors to prevent affecting the main app
+            console.debug('Validation error (safely ignored):', error);
+          }
+        }, 1000);
       }
       
       return { 

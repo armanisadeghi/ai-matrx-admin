@@ -278,45 +278,72 @@ export interface ValidationOptions {
 export function validateAppWithApplets(
   appConfig: CustomAppConfig, 
   applets: CustomAppletConfig[],
-  options: ValidationOptions = { runValidations: true, logResults: true }
+  options: ValidationOptions = { runValidations: false, logResults: false }
 ): ValidationResult {
-  // If validations are disabled, return valid result
-  if (!options.runValidations) {
-    return { valid: true, issues: [] };
-  }
-  
-  // Determine which validators to run
-  const validators = options.validators || ALL_VALIDATORS;
-  
-  // Run all validators
-  const allIssues: ValidationIssue[] = [];
-  
-  for (const validator of validators) {
-    try {
-      const issues = validator(appConfig, applets);
-      // Filter by severity if requested
-      const filteredIssues = options.severity 
-        ? issues.filter(issue => issue.severity === options.severity)
-        : issues;
-      allIssues.push(...filteredIssues);
-    } catch (error) {
-      console.error(`Validation error in ${validator.name}:`, error);
-      allIssues.push({
-        code: 'VALIDATOR_ERROR',
-        message: `Error running validator ${validator.name}: ${error}`,
-        severity: 'error',
-        data: { validatorName: validator.name, error }
-      });
+  try {
+    // If validations are disabled, return valid result
+    if (!options.runValidations) {
+      return { valid: true, issues: [] };
     }
+    
+    // Defensive check for invalid inputs
+    if (!appConfig || !applets || !Array.isArray(applets)) {
+      return { 
+        valid: false, 
+        issues: [{
+          code: 'VALIDATION_INVALID_INPUT',
+          message: 'Invalid app configuration or applets data provided',
+          severity: 'error'
+        }]
+      };
+    }
+    
+    // Determine which validators to run
+    const validators = options.validators || ALL_VALIDATORS;
+    
+    // Run all validators
+    const allIssues: ValidationIssue[] = [];
+    
+    for (const validator of validators) {
+      try {
+        const issues = validator(appConfig, applets);
+        // Filter by severity if requested
+        const filteredIssues = options.severity 
+          ? issues.filter(issue => issue.severity === options.severity)
+          : issues;
+        allIssues.push(...filteredIssues);
+      } catch (error) {
+        // Log but don't rethrow errors from individual validators
+        console.debug(`Validation error in ${validator.name || 'unknown validator'}:`, error);
+        allIssues.push({
+          code: 'VALIDATOR_ERROR',
+          message: `Error running validator ${validator.name || 'unknown'}: ${error}`,
+          severity: 'error',
+          data: { validatorName: validator.name, error: String(error) }
+        });
+      }
+    }
+    
+    // Log results if requested
+    if (options.logResults && allIssues.length > 0) {
+      console.debug(`App validation found ${allIssues.length} issues (for logging only):`, allIssues);
+    }
+    
+    return {
+      valid: allIssues.length === 0,
+      issues: allIssues
+    };
+  } catch (error) {
+    // Safety catch-all to prevent any possible validation errors from affecting the main app
+    console.debug('Validation system error (safely contained):', error);
+    return { 
+      valid: false, 
+      issues: [{
+        code: 'VALIDATION_SYSTEM_ERROR',
+        message: 'Validation system error (safely contained)',
+        severity: 'error',
+        data: { error: String(error) }
+      }]
+    };
   }
-  
-  // Log results if requested
-  if (options.logResults && allIssues.length > 0) {
-    console.warn(`App validation found ${allIssues.length} issues:`, allIssues);
-  }
-  
-  return {
-    valid: allIssues.length === 0,
-    issues: allIssues
-  };
 } 

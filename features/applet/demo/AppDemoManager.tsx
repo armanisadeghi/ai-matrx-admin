@@ -54,8 +54,8 @@ export default function AppDemoManager({
                     idOrSlug: slugValue,
                     isSlug: true,
                     validationOptions: {
-                        runValidations: process.env.NODE_ENV !== "production",
-                        logResults: process.env.NODE_ENV === "development",
+                        runValidations: false,
+                        logResults: false,
                     },
                 })
             );

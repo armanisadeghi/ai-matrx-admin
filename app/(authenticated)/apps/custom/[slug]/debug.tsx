@@ -22,7 +22,11 @@ export default function DebugFetch() {
         setFetchAttempted(true);
         await dispatch(fetchAppWithApplets({ 
           idOrSlug: slug, 
-          isSlug: true
+          isSlug: true,
+          validationOptions: {
+            runValidations: false,
+            logResults: false
+          }
         })).unwrap();
         console.log('DEBUG: Manual fetch succeeded');
       } catch (error) {

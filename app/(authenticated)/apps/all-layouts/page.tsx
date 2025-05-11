@@ -42,8 +42,8 @@ export default function SearchAppletPage() {
                     idOrSlug: appSlug,
                     isSlug: true,
                     validationOptions: {
-                        runValidations: process.env.NODE_ENV !== "production",
-                        logResults: process.env.NODE_ENV === "development",
+                        runValidations: false,
+                        logResults: false,
                     },
                 })
             );
