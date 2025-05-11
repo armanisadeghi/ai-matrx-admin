@@ -10,7 +10,7 @@ import { SearchGroupRendererProps } from ".";
 const SearchGroupField: React.FC<SearchGroupRendererProps> = ({
   id,
   label,
-  placeholder,
+  appletId,
   description,
   fields,
   isActive,
@@ -27,7 +27,7 @@ const SearchGroupField: React.FC<SearchGroupRendererProps> = ({
   useEffect(() => {
     fields.forEach((field) => {
       if (!fieldRefs.current.has(field.brokerId)) {
-        fieldRefs.current.set(field.brokerId, fieldController(field));
+        fieldRefs.current.set(field.brokerId, fieldController({ field, appletId, isMobile }));
       }
     });
   }, [fields, isMobile]);
@@ -36,7 +36,7 @@ const SearchGroupField: React.FC<SearchGroupRendererProps> = ({
     <SearchField
       id={id}
       label={label}
-      placeholder={placeholder}
+      description={description}
       isActive={isActive}
       onClick={onClick}
       onOpenChange={onOpenChange}
@@ -48,10 +48,7 @@ const SearchGroupField: React.FC<SearchGroupRendererProps> = ({
     >
       <div className="w-full min-w-96 p-4 bg-white rounded-xl dark:bg-gray-800 border dark:border-gray-700">
         <h3 className="text-lg text-rose-500 font-medium mb-1">{label}</h3>
-          {/* If the group has no placeholder, render the placeholder here instead */}
-              {hideGroupPlaceholder && (
-          <div className="pr-1 mb-2 text-sm text-gray-500 dark:text-gray-400">{placeholder}</div>
-        )}
+
         <div className="pr-1 mb-5 text-xs text-gray-500 dark:text-gray-400">{description}</div>
         <div>
           {fields.map((field) => (

@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GroupFieldConfig } from '@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types';
 import { ComponentType } from '@/types/customAppTypes';
 import { 
   InputConfigForm,
@@ -24,6 +23,7 @@ import {
   SliderConfigForm,
   MultiSelectConfigForm,
 } from './field-types';
+import { GroupFieldConfig } from '@/features/applet/runner/field-components/types';
 
 interface FieldConfigFormsProps {
   // Support both type and fieldType for backward compatibility

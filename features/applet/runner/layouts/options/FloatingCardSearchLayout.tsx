@@ -1,29 +1,33 @@
 import React, { useState, useMemo } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import OpenContainerGroup from "@/features/applet/runner/layouts/core/OpenContainerGroup";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 const FloatingCardSearchLayout: React.FC<AppletInputProps> = ({
+  appletId,
+  activeFieldId,
+  setActiveFieldId,
   actionButton,
   className = "",
+  isMobile = false,
 }) => {
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
 
   const gridCols = useMemo(() => {
-    const count = activeAppletContainers.length;
+    const count = appletContainers.length;
     if (count <= 2 || count === 4 || count === 5) {
       return "md:grid-cols-2";
     } else {
       return "md:grid-cols-2 lg:grid-cols-3";
     }
-  }, [activeAppletContainers.length]);
+  }, [appletContainers.length]);
 
   return (
     <div className={`w-full max-w-6xl mx-auto p-4 ${className}`}>
       <div className={`grid grid-cols-1 ${gridCols} gap-10 py-8`}>
-        {activeAppletContainers.map((container) => (
+        {appletContainers.map((container) => (
           <div 
             key={container.id} 
             className="relative"
@@ -47,11 +51,12 @@ const FloatingCardSearchLayout: React.FC<AppletInputProps> = ({
                 label={container.label}
                 description={container.description}
                 fields={container.fields}
+                appletId={appletId}
                 isActive={true}
                 onClick={() => {}}
                 onOpenChange={() => {}}
                 isLast={false}
-                isMobile={false}
+                isMobile={isMobile}
                 className="rounded-xl shadow-lg"
               />
             </div>

@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FieldDefinition, normalizeFieldDefinition } from '../../../../../types/customAppTypes';
+import { FieldDefinition } from '@/types/customAppTypes';
 import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
+import { normalizeFieldDefinition } from '@/features/applet/utils/field-normalization';
 
 interface FieldRendererProps {
   field: FieldDefinition;

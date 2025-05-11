@@ -7,7 +7,7 @@ import { selectAllFields, selectFieldLoading } from "@/lib/redux/app-builder/sel
 import { deleteFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { Eye, Pencil, TextCursorInput, Trash2, Check } from "lucide-react";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
-import { getComponentIcon, getComponentTypeName } from "@/features/applet/builder/modules/field-builder/field-constants";
+import { getComponentIcon, getComponentTypeName } from "@/features/applet/constants/field-constants";
 import GenericDataTable, { 
     GenericTableHeader, 
     ColumnConfig, 

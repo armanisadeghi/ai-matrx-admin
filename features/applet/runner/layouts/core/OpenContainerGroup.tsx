@@ -5,13 +5,14 @@
 import React from "react";
 import SearchContainerHeader from "../helpers/SearchContainerHeader";
 import ContainerFieldRenderer from "../helpers/ContainerFieldRenderer";
-import { ContainerRenderProps } from "./AppletInputLayoutManager";
+import { ContainerRenderProps } from "../AppletLayoutManager";
 
 const OpenContainerGroup: React.FC<ContainerRenderProps> = ({
   id,
   label,
   description,
   fields,
+  appletId,
   isMobile = false,
   className = "",
 }) => {
@@ -25,6 +26,7 @@ const OpenContainerGroup: React.FC<ContainerRenderProps> = ({
         fields={fields}
         description={description}
         isMobile={isMobile}
+        appletId={appletId}
       />
     </div>
   );

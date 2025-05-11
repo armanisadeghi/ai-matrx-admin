@@ -50,8 +50,8 @@ const tabs: TabDefinition[] = [
     label: 'General',
     content: (
       <div className="p-6">
-        <h3 className="text-lg font-medium mb-4">General Settings</h3>
-        <p>This is the content for the general tab.</p>
+        <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">General Settings</h3>
+        <p className="text-gray-700 dark:text-gray-300">This is the content for the general tab.</p>
       </div>
     )
   },
@@ -60,8 +60,8 @@ const tabs: TabDefinition[] = [
     label: 'Advanced',
     content: (
       <div className="p-6">
-        <h3 className="text-lg font-medium mb-4">Advanced Settings</h3>
-        <p>This is the content for the advanced tab.</p>
+        <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Advanced Settings</h3>
+        <p className="text-gray-700 dark:text-gray-300">This is the content for the advanced tab.</p>
       </div>
     )
   }
@@ -95,30 +95,33 @@ const [isOpen, setIsOpen] = useState(false);
 </>`;
 
   return (
-    <ComponentDisplayWrapper
-      component={component}
-      code={code}
-      description="A full-screen overlay with tabbed interface, perfect for modal dialogs, settings panels, or any content that requires focused attention."
-    >
-      <div className="flex flex-col items-center">
-        <Button onClick={() => setIsOpen(true)}>Open Overlay</Button>
-        
-        <FullScreenOverlay
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
-          title="Settings"
-          tabs={tabs}
-          initialTab="tab1"
-          showSaveButton={true}
-          onSave={() => setIsOpen(false)}
-          saveButtonLabel="Save Changes"
-          showCancelButton={true}
-          onCancel={() => setIsOpen(false)}
-          cancelButtonLabel="Cancel"
-          width="90vw"
-          height="95vh"
-        />
-      </div>
-    </ComponentDisplayWrapper>
+    <>
+      <ComponentDisplayWrapper
+        component={component}
+        code={code}
+        description="A full-screen overlay with tabbed interface, perfect for modal dialogs, settings panels, or any content that requires focused attention."
+      >
+        <div className="flex justify-center p-4">
+          <Button onClick={() => setIsOpen(true)}>Open Overlay</Button>
+        </div>
+      </ComponentDisplayWrapper>
+      
+      {/* Render the overlay outside of the container */}
+      <FullScreenOverlay
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Settings"
+        tabs={tabs}
+        initialTab="tab1"
+        showSaveButton={true}
+        onSave={() => setIsOpen(false)}
+        saveButtonLabel="Save Changes"
+        showCancelButton={true}
+        onCancel={() => setIsOpen(false)}
+        cancelButtonLabel="Cancel"
+        width="90vw"
+        height="95vh"
+      />
+    </>
   );
 } 

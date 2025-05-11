@@ -1,18 +1,20 @@
 import React, { useState, useContext } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import OpenContainerGroup from "@/features/applet/runner/layouts/core/OpenContainerGroup";
 import UniformHeightWrapper, { UniformHeightContext } from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 const CardStackSearchLayout: React.FC<AppletInputProps> = ({
-  actionButton,
+  appletId,
+  activeFieldId,
   setActiveFieldId,
+  actionButton,
   className = "",
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const { getMaxHeight } = useContext(UniformHeightContext);
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
 
   // Calculate the position and z-index for each card
   const getCardStyle = (index: number) => {
@@ -53,10 +55,10 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
   };
 
   const handleNext = () => {
-    if (activeIndex < activeAppletContainers.length - 1) {
+    if (activeIndex < appletContainers.length - 1) {
       setActiveIndex(activeIndex + 1);
       if (setActiveFieldId) {
-        setActiveFieldId(activeAppletContainers[activeIndex + 1].id);
+        setActiveFieldId(appletContainers[activeIndex + 1].id);
       }
     }
   };
@@ -65,12 +67,12 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
     if (activeIndex > 0) {
       setActiveIndex(activeIndex - 1);
       if (setActiveFieldId) {
-        setActiveFieldId(activeAppletContainers[activeIndex - 1].id);
+        setActiveFieldId(appletContainers[activeIndex - 1].id);
       }
     }
   };
 
-  const isLastCard = activeIndex === activeAppletContainers.length - 1;
+  const isLastCard = activeIndex === appletContainers.length - 1;
   const isFirstCard = activeIndex === 0;
   
   // Get the maximum height from UniformHeightContext for cardStack layout
@@ -82,7 +84,7 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
     <div className={`w-full max-w-4xl mx-auto p-4 pb-16 ${className}`}>
       {/* Stepper navigation */}
       <div className="flex mb-6">
-        {activeAppletContainers.map((container, index) => (
+        {appletContainers.map((container, index) => (
           <div 
             key={container.id}
             className={`flex-1 text-center ${
@@ -124,7 +126,7 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
       </div>
 
       <div className="relative" style={{ minHeight: containerHeight }}>
-        {activeAppletContainers.map((container, index) => (
+        {appletContainers.map((container, index) => (
           <div
             key={container.id}
             className="absolute w-full transition-all duration-500 ease-in-out cursor-pointer rounded-lg overflow-hidden"
@@ -148,6 +150,7 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
                 label={container.label}
                 description={container.description}
                 fields={container.fields}
+                appletId={appletId}
                 isActive={index === activeIndex}
                 onClick={() => {}}
                 onOpenChange={() => {}}

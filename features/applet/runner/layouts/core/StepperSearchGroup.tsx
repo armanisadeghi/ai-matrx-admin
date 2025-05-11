@@ -2,16 +2,19 @@
 "use client";
 // For the stepper layout
 import React, { useEffect, useRef } from "react";
-import { ContainerRenderProps } from "./AppletInputLayoutManager";
+import { ContainerRenderProps } from "../AppletLayoutManager";
 import { fieldController } from "../../field-components/FieldController";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
-const StepperSearchGroup: React.FC<ContainerRenderProps> = ({ id, label, description, fields, isMobile = false }) => {
+const StepperSearchGroup: React.FC<ContainerRenderProps> = ({ id, label, description, fields, isMobile = false, appletId }) => {
+    const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
     const fieldRefs = useRef<Map<string, React.ReactNode>>(new Map());
 
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, fieldController(field));
+                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile }));
             }
         });
     }, [fields, isMobile]);

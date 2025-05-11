@@ -1,20 +1,22 @@
 // File: components/search/layouts/HorizontalSearchLayout.tsx
 import React from "react";
-import { AppletInputProps } from "../core/AppletInputLayoutManager";
+import { AppletInputProps } from "../AppletLayoutManager";
 import { SearchGroupField } from "../core";
 import AppletBrokerContainer from "../../search-bar/container/AppletBrokerContainer";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 const HorizontalSearchLayout: React.FC<AppletInputProps> = ({
+  appletId,
   activeFieldId,
   setActiveFieldId,
   actionButton,
   className = "",
+  isMobile = false,
 }) => {
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
 
-  const groupsCount = activeAppletContainers.length;
+  const groupsCount = appletContainers.length;
   const hideGroupPlaceholder = groupsCount > 4;
 
 
@@ -26,7 +28,7 @@ const HorizontalSearchLayout: React.FC<AppletInputProps> = ({
         actionButton={actionButton}
         className={`mx-auto max-w-4xl rounded-full bg-white ${className}`}
       >
-        {activeAppletContainers.map((container, index) => (
+        {appletContainers.map((container, index) => (
           <SearchGroupField
             key={container.id}
             id={container.id}
@@ -36,8 +38,8 @@ const HorizontalSearchLayout: React.FC<AppletInputProps> = ({
             isActive={activeFieldId === container.id}
             onClick={() => {}} // Managed by AppletBrokerContainer
             onOpenChange={() => {}} // Managed by AppletBrokerContainer
-            isLast={index === activeAppletContainers.length - 1}
-            isMobile={false}
+            isLast={index === appletContainers.length - 1}
+            isMobile={isMobile}
             hideGroupPlaceholder={hideGroupPlaceholder}
           />
         ))}

@@ -2,26 +2,19 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useValueBroker } from '@/hooks/applets/useValueBroker';
 import { CheckboxGroupFieldConfig, FieldProps, CheckboxOption } from './types';
 
-// Define the enhanced option type with selection state
 interface EnhancedCheckboxOption extends CheckboxOption {
   selected: boolean;
 }
 
-// Extended props interface with optional notification callbacks
 interface ExtendedCheckboxGroupProps extends FieldProps<CheckboxGroupFieldConfig> {
   onOtherSelected?: (isSelected: boolean, otherValue?: string) => void;
   onOtherValueChange?: (value: string) => void;
 }
 
-// Helper function to notify parent containers about size changes
 const notifyParentOfResize = () => {
-  // Dispatch a resize event after a short delay to allow DOM to update
   setTimeout(() => {
-    // Create and dispatch a custom event that parent containers can listen for
     const resizeEvent = new CustomEvent('checkboxGroupResize');
     window.dispatchEvent(resizeEvent);
-    
-    // Also dispatch a standard resize event as a fallback
     window.dispatchEvent(new Event('resize'));
   }, 50);
 };

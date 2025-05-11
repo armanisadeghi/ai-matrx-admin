@@ -7,8 +7,8 @@ import SectionCard from "@/components/official/cards/SectionCard";
 import FieldRenderer from "./FieldRenderer";
 import { ThemeSwitcherIcon } from "@/styles/themes";
 import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
-import { ComponentType } from "../../../../../types/customAppTypes";
-import { componentOptions } from "@/features/applet/runner/field-components/FieldController";
+import { ComponentType } from "@/types/customAppTypes";
+import { componentOptions } from "@/features/applet/constants/field-constants";
 
 interface FieldPreviewProps {
     field: any;

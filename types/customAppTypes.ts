@@ -17,14 +17,29 @@ export type ComponentType =
   | 'rangeSlider'
   | 'numberPicker'
   | 'jsonField'
-  | 'fileUpload';
+  | 'fileUpload'
+  | 'searchableSelect'
+  | 'directMultiSelect'
+  | 'multiDate'
+  | 'simpleNumber'
+  | 'sortable'
+  | 'buttonColumn'
+  | 'tagInput'
+  | 'dependentDropdown'
+  | 'addressBlock'
+  | 'starRating'
+  | 'phoneNumber'
+  | 'stepperNumber'
+  | 'multiSearchableSelect'
+  | 'buttonGroup'
+  | 'buttonSelection';
 
 export interface FieldOption {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  iconName?: string;
+  id: string; // Typically used for the value of the option.
+  label: string; // Used as the human readable label for the option.
+  description?: string; // This is where the 'context' is stored for the ai model. NOT SHOWN TO THE USER!
+  helpText?: string; // Seen by the user.
+  iconName?: string; // Icon name from lucide-react.
 }
 
 export interface ComponentProps {
@@ -39,7 +54,7 @@ export interface ComponentProps {
   multiSelect?: boolean;
   maxItems?: number;
   minItems?: number;
-  gridCols?: number;
+  gridCols?: string;
   autoComplete?: string;
   direction?: "vertical" | "horizontal";
   customContent?: ReactNode;
@@ -235,12 +250,12 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Parti
     multiSelect: false,
     maxItems: undefined,
     minItems: 0,
-    gridCols: 1,
+    gridCols: "grid-cols-1",
     autoComplete: 'off',
     direction: 'vertical',
     customContent: undefined,
     showSelectAll: false,
-    width: '100%',
+    width: 'w-full',
     valuePrefix: '',
     valueSuffix: '',
     maxLength: undefined,

@@ -4,12 +4,12 @@ import { useFileUploadWithStorage } from "@/components/ui/file-upload/useFileUpl
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
 import { motion } from "framer-motion";
 
-type SaveToOption = "public" | "private"; // New type for saveTo prop
+type SaveToOption = "public" | "private";
 
 type FileUploadWithStorageProps = {
     bucket?: string;
     path?: string;
-    saveTo?: SaveToOption; // New optional prop to override bucket and path
+    saveTo?: SaveToOption;
     onUploadComplete?: (results: { url: string; type: string; details?: EnhancedFileDetails }[]) => void;
     onUploadStatusChange?: (isUploading: boolean) => void;
     multiple?: boolean;

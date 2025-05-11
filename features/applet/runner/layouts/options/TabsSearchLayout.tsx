@@ -1,16 +1,20 @@
 // File: features/applet/runner/layouts/options/TabsSearchLayout.tsx
 import React, { useState, useRef, useEffect } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import OpenContainerGroup from "@/features/applet/runner/layouts/core/OpenContainerGroup";
 import UniformHeightWrapper from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 const TabsSearchLayout: React.FC<AppletInputProps> = ({
+  appletId,
+  activeFieldId,
+  setActiveFieldId,
   actionButton,
   className = "",
+  isMobile = false,
 }) => {
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   const [activeGroupIndex, setActiveGroupIndex] = useState(0);
   const [previousGroupIndex, setPreviousGroupIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -30,7 +34,7 @@ const TabsSearchLayout: React.FC<AppletInputProps> = ({
     checkForOverflow();
     window.addEventListener('resize', checkForOverflow);
     return () => window.removeEventListener('resize', checkForOverflow);
-  }, [activeAppletContainers]);
+  }, [appletContainers]);
 
   const scrollTabs = (direction: 'left' | 'right') => {
     if (tabsRef.current) {
@@ -86,7 +90,7 @@ const TabsSearchLayout: React.FC<AppletInputProps> = ({
           className="flex mb-4 overflow-x-auto scrollbar-none relative"
           onScroll={checkForOverflow}
         >          
-          {activeAppletContainers.map((container, index) => (
+          {appletContainers.map((container, index) => (
             <button
               key={container.id}
               className={`px-4 py-2 text-sm font-medium whitespace-nowrap relative ${
@@ -123,7 +127,7 @@ const TabsSearchLayout: React.FC<AppletInputProps> = ({
       </div>
       
       <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 relative">
-        {activeAppletContainers.map((container, index) => {
+        {appletContainers.map((container, index) => {
           const isActive = index === activeGroupIndex;
           const isPrevious = isTransitioning && index === previousGroupIndex;
           
@@ -145,11 +149,12 @@ const TabsSearchLayout: React.FC<AppletInputProps> = ({
                 label={container.label}
                 description={container.description}
                 fields={container.fields}
+                appletId={appletId}
                 isActive={true}
                 onClick={() => {}}
                 onOpenChange={() => {}}
                 isLast={true}
-                isMobile={false}
+                isMobile={isMobile}
                 className="border-0"
               />
             </UniformHeightWrapper>
@@ -173,10 +178,10 @@ const TabsSearchLayout: React.FC<AppletInputProps> = ({
           Previous
         </button>
         
-        {activeGroupIndex === activeAppletContainers.length - 1 ? (actionButton) : (
+        {activeGroupIndex === appletContainers.length - 1 ? (actionButton) : (
           <button
             onClick={() => {
-              const newIndex = Math.min(activeGroupIndex + 1, activeAppletContainers.length - 1);
+              const newIndex = Math.min(activeGroupIndex + 1, appletContainers.length - 1);
               handleTabChange(newIndex);
             }}
             className="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-md"

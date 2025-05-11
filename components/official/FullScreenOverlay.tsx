@@ -82,7 +82,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                 <DialogHeader className="flex flex-row justify-between items-center border-b px-4 py-2 flex-shrink-0">
                     <DialogTitle>{title}</DialogTitle>
                     {description && <DialogDescription className="sr-only">{description}</DialogDescription>}
-                    <Tabs value={activeTab} onValueChange={handleTabChange} className="mx-auto">
+                    <Tabs value={activeTab} onValueChange={handleTabChange} className="mx-auto overflow-x-auto py-1 overflow-y-hidden scrollbar-none">
                         <TabsList className="rounded-3xl space-x-2">
                             {tabs.map((tab, index) => {
                                 // Determine tab position styling

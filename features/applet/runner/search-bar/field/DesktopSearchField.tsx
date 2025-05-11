@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { ContainerRenderProps } from "../../layouts/core/AppletInputLayoutManager";
+import { ContainerRenderProps } from "../../layouts/AppletLayoutManager";
 
 const DesktopSearchField: React.FC<ContainerRenderProps> = ({
     id,

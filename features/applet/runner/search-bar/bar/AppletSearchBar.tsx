@@ -5,17 +5,16 @@ import MobileAppletUserInputBar from "./MobileAppletUserInputBarr";
 import DesktopAppletUserInputBar from "./DesktopAppletSearchBar";
 import { useIsMobile } from "@/hooks/use-mobile";
 interface AppletUserInputBarProps {
-    appId?: string;
+    appletId: string;
 }
 
-const AppletUserInputBar: React.FC<AppletUserInputBarProps> = ({ appId }) => {
+const AppletUserInputBar: React.FC<AppletUserInputBarProps> = ({ appletId }) => {
     const isMobile = useIsMobile();
-    const appName = appId;
 
     return isMobile ? (
-        <MobileAppletUserInputBar appName={appName} />
+        <MobileAppletUserInputBar appletId={appletId} />
     ) : (
-        <DesktopAppletUserInputBar appName={appName} />
+        <DesktopAppletUserInputBar appletId={appletId} />
     );
 };
 

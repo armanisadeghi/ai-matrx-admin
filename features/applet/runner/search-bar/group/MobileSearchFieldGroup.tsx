@@ -1,14 +1,15 @@
 import React, { useEffect, useRef } from "react";
 import MobileSearchField from "../field/MobileSearchField";
 import { FieldDefinition } from "@/types";
-import { fieldController } from "../../field-components/FieldController";
-import TruncatedHelpText from "../common/TruncatedHelpText";
+import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import TruncatedHelpText from "@/features/applet/runner/search-bar/common/TruncatedHelpText";
 
 interface MobileSearchGroupFieldProps {
     id: string;
     label: string;
     description?: string;
     fields: FieldDefinition[];
+    appletId: string;
     isActive: boolean;
     onClick: (id: string) => void;
     onOpenChange: (open: boolean) => void;
@@ -24,6 +25,7 @@ const MobileSearchGroupField: React.FC<MobileSearchGroupFieldProps> = ({
     label,
     description,
     fields,
+    appletId,
     isActive,
     onClick,
     onOpenChange,
@@ -37,7 +39,7 @@ const MobileSearchGroupField: React.FC<MobileSearchGroupFieldProps> = ({
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, fieldController(field, true));
+                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile: true }));
             }
         });
     }, [fields]);
@@ -53,6 +55,8 @@ const MobileSearchGroupField: React.FC<MobileSearchGroupFieldProps> = ({
             id={id}
             label={label}
             description={description}
+            appletId={appletId}
+            isMobile={true}
             fields={fields}
             isActive={isActive}
             onClick={onClick}

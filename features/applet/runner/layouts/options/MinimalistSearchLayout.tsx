@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 const MinimalistSearchLayout: React.FC<AppletInputProps> = ({
+  appletId,
+  activeFieldId,
+  setActiveFieldId,
   actionButton,
   className = "",
 }) => {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   return (
     <div className={`w-full max-w-5xl mx-auto p-4 ${className}`}>
       <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-8">
@@ -17,7 +20,7 @@ const MinimalistSearchLayout: React.FC<AppletInputProps> = ({
       </div>
       
       <div className="space-y-10">
-        {activeAppletContainers.map((container) => {
+        {appletContainers.map((container) => {
           const isExpanded = expandedGroup === container.id;
           
           return (
@@ -45,7 +48,7 @@ const MinimalistSearchLayout: React.FC<AppletInputProps> = ({
                       <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                         {field.label}
                       </label>
-                      {fieldController(field, false)}
+                      {fieldController({ field, appletId, isMobile: false })}
                       {field.helpText && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
                       )}

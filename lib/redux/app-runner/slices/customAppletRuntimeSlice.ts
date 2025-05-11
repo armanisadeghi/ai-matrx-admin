@@ -76,6 +76,12 @@ export const selectAppletRuntimeBySlug = (state: RootState, slug: string) => {
   return Object.values(applets).find(applet => applet.slug === slug) || null;
 };
 
+export const selectAppletIdBySlug = (state: RootState, slug: string) => {
+  const applet = selectAppletRuntimeBySlug(state, slug);
+  return applet?.id || null;
+};
+
+
 export const selectAppletRuntimeName = (state: RootState, appletId: string) => state.customAppletRuntime.applets[appletId]?.name;
 export const selectAppletRuntimeDescription = (state: RootState, appletId: string) => state.customAppletRuntime.applets[appletId]?.description;
 export const selectAppletRuntimeSlug = (state: RootState, appletId: string) => state.customAppletRuntime.applets[appletId]?.slug;

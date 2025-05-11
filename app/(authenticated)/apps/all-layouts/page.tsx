@@ -1,9 +1,22 @@
 "use client";
 
+import React, { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import {
+    selectAppletRuntimeActiveAppletId,
+    setActiveAppletId,
+    selectAppletRuntimeIsInitialized,
+} from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import {
+    selectAppRuntimeId,
+    selectAppRuntimeIsInitialized,
+    selectAppRuntimeStatus,
+    selectAppRuntimeAppletList,
+} from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
+import { LoadingSpinner } from "@/components/ui/spinner";
+import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
+import { fetchAppWithApplets } from "@/lib/redux/app-runner/thunks/appRunnerThunks";
 import { CustomAppHeader } from "@/features/applet/runner/header";
-import AppletInputLayoutWrapper from "@/features/applet/runner/layouts/core/AppletLayoutWrapper";
-
-
 
 // Separator component with name
 const SectionSeparator = ({ name }: { name: string }) => (
@@ -17,73 +30,122 @@ const SectionSeparator = ({ name }: { name: string }) => (
 );
 
 export default function SearchAppletPage() {
-    return (
-            <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
-                <CustomAppHeader isDemo={true} />
+    const dispatch = useAppDispatch();
+    const status = useAppSelector(selectAppRuntimeStatus);
+    const appSlug = "test-applet";
+    const appletId = "da4b93ac-176d-466c-bb13-c627d8def0c9";
 
-                <SectionSeparator name="Applet Specified Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" />
-                {/* Original Layouts */}
-                <SectionSeparator name="Open Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="open" />
+    useEffect(() => {
+        if (status === "uninitialized") {
+            dispatch(
+                fetchAppWithApplets({
+                    idOrSlug: appSlug,
+                    isSlug: true,
+                    validationOptions: {
+                        runValidations: process.env.NODE_ENV !== "production",
+                        logResults: process.env.NODE_ENV === "development",
+                    },
+                })
+            );
+        } else {
+            console.log("Not fetching, status already:", status);
+        }
+    }, [dispatch]);
 
-                <SectionSeparator name="Horizontal Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="horizontal" />
+    const appId = useAppSelector(selectAppRuntimeId);
 
-                <SectionSeparator name="Stepper Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="stepper" />
+    const availableApplets = useAppSelector(selectAppRuntimeAppletList);
 
+    if (availableApplets?.length === 0 && status !== "loading" && status !== "uninitialized") {
+        throw new Error("This app has no applets configured");
+    }
 
-                <SectionSeparator name="Vertical Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="vertical" />
+    const validAppletId = availableApplets?.find((applet) => applet.appletId === appletId)?.appletId || availableApplets?.[0]?.appletId;
 
-                <SectionSeparator name="Two Column Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="twoColumn" />
+    const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
+    const isAppletInitialized = useAppSelector(selectAppletRuntimeIsInitialized);
+    const activeAppletId = useAppSelector(selectAppletRuntimeActiveAppletId);
 
-                <SectionSeparator name="Three Column Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="threeColumn" />
+    // Set as active applet if not already active
+    useEffect(() => {
+        if (isAppInitialized && validAppletId && activeAppletId !== validAppletId) {
+            dispatch(setActiveAppletId(validAppletId));
+        }
+    }, [dispatch, isAppInitialized, validAppletId, activeAppletId]);
 
-                <SectionSeparator name="Four Column Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="fourColumn" />
-
-                <SectionSeparator name="Tabs Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="tabs" />
-
-                <SectionSeparator name="Accordion Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="accordion" />
-
-                <SectionSeparator name="Flat Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="flat" />
-
-                {/* First Set of New Layouts */}
-                <SectionSeparator name="Carousel Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="carousel" />
-
-                <SectionSeparator name="Floating Card Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="floatingCard" />
-
-                <SectionSeparator name="Minimalist Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="minimalist" />
-
-                <SectionSeparator name="Sidebar Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="sidebar" />
-
-                <SectionSeparator name="Full Width Sidebar Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="fullWidthSidebar" />
-
-                {/* Second Set of New Layouts */}
-                <SectionSeparator name="Card Stack Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="cardStack" />
-
-                <SectionSeparator name="Contextual Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="contextual" />
-
-                <SectionSeparator name="Chat Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="chat" />
-
-                <SectionSeparator name="Map Based Layout" />
-                <AppletInputLayoutWrapper initialAppName="travel-agent" layoutTypeOverride="mapBased" />
-
+    if (!isAppInitialized || !isAppletInitialized || !validAppletId) {
+        return (
+            <div className="h-full w-full flex items-center justify-center">
+                <LoadingSpinner />
             </div>
+        );
+    }
+
+    return (
+        <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
+            <CustomAppHeader isDemo={true} />
+
+            <SectionSeparator name="Applet Specified Layout" />
+            <AppletLayoutManager appletId={validAppletId} />
+            {/* Original Layouts */}
+            <SectionSeparator name="Open Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="open" />
+
+            <SectionSeparator name="Horizontal Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="horizontal" />
+
+            <SectionSeparator name="Stepper Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="stepper" />
+
+            <SectionSeparator name="Vertical Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="vertical" />
+
+            <SectionSeparator name="Two Column Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="twoColumn" />
+
+            <SectionSeparator name="Three Column Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="threeColumn" />
+
+            <SectionSeparator name="Four Column Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="fourColumn" />
+
+            <SectionSeparator name="Tabs Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="tabs" />
+
+            <SectionSeparator name="Accordion Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="accordion" />
+
+            <SectionSeparator name="Flat Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="flat" />
+
+            {/* First Set of New Layouts */}
+            <SectionSeparator name="Carousel Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="carousel" />
+
+            <SectionSeparator name="Floating Card Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="floatingCard" />
+
+            <SectionSeparator name="Minimalist Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="minimalist" />
+
+            <SectionSeparator name="Sidebar Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="sidebar" />
+
+            <SectionSeparator name="Full Width Sidebar Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="fullWidthSidebar" />
+
+            {/* Second Set of New Layouts */}
+            <SectionSeparator name="Card Stack Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="cardStack" />
+
+            <SectionSeparator name="Contextual Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="contextual" />
+
+            <SectionSeparator name="Chat Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="chat" />
+
+            <SectionSeparator name="Map Based Layout" />
+            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="mapBased" />
+        </div>
     );
 }

@@ -4,7 +4,7 @@ import { CustomAppHeader } from "@/features/applet/runner/header";
 import { AppletLayoutOption } from "@/types/customAppTypes";
 
 import { availableApps } from "@/features/applet/a-old-depricated-do-not-use/depricated-do-not-use-sample-mock-data/constants";
-import AppletInputLayoutWrapper from "@/features/applet/runner/layouts/core/AppletLayoutWrapper";
+import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 
 
 interface AppManagerProps {
@@ -19,10 +19,10 @@ export const AppManager = ({ appId, layoutType }: AppManagerProps) => {
     }
     return (
         <>
-            <CustomAppHeader appName={appId} isDemo={true} />
+            <CustomAppHeader appId={appId} isDemo={true} />
             <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
                 <div className="pt-14">
-                    <AppletInputLayoutWrapper layoutTypeOverride={layoutType} />
+                    <AppletLayoutManager appletId={appId} layoutTypeOverride={layoutType} />
                 </div>
             </div>
         </>

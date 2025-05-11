@@ -1,22 +1,26 @@
 // File: features/applet/runner/layouts/options/FlatSearchLayout.tsx
 import React from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 
 const FlatSearchLayout: React.FC<AppletInputProps> = ({
+  appletId,
+  activeFieldId,
+  setActiveFieldId,
   actionButton,
   className = "",
+  isMobile = false,
 }) => {
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   return (
     <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
       <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 p-6">
-        {activeAppletContainers.map((container, groupIndex) => (
+        {appletContainers.map((container, groupIndex) => (
           <div key={container.id} className="mb-8">
             {/* Group header with minimal padding */}
-            {activeAppletContainers.length > 1 && (
+            {appletContainers.length > 1 && (
               <div className="mb-4">
                 <h4 className="text-lg font-medium text-rose-500 dark:text-rose-400">{container.label}</h4>
                 {container.description && (
@@ -32,7 +36,7 @@ const FlatSearchLayout: React.FC<AppletInputProps> = ({
                   <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
                     {field.label}
                   </label>
-                  {fieldController(field, false)}
+                  {fieldController({ field, appletId, isMobile })}
                   {field.helpText && (
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
                   )}
@@ -41,7 +45,7 @@ const FlatSearchLayout: React.FC<AppletInputProps> = ({
             </div>
             
             {/* Add a subtle divider between groups if not the last container */}
-            {groupIndex < activeAppletContainers.length - 1 && (
+            {groupIndex < appletContainers.length - 1 && (
               <div className="border-b-3 border-gray-200 dark:border-gray-700 mt-8"></div>
             )}
           </div>

@@ -1,31 +1,35 @@
 import React, { useState } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import UniformHeightWrapper from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { ChevronRight, Send } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 interface SidebarSearchLayoutProps extends AppletInputProps {
     fullWidth?: boolean;
 }
 
-const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
+const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
+    appletId,
+    activeFieldId,
+    setActiveFieldId,
     actionButton,
     className = "",
+    isMobile = false,
     fullWidth = false,
-}) => {
-    const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
-    const [activeGroupId, setActiveGroupId] = useState(activeAppletContainers.length > 0 ? activeAppletContainers[0].id : null);
+  }) => {
+    const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
+    const [activeGroupId, setActiveGroupId] = useState(appletContainers.length > 0 ? appletContainers[0].id : null);
 
     // Find current container index to determine if it's the last one
-    const currentGroupIndex = activeAppletContainers.findIndex((container) => container.id === activeGroupId);
-    const isLastGroup = currentGroupIndex === activeAppletContainers.length - 1;
+    const currentGroupIndex = appletContainers.findIndex((container) => container.id === activeGroupId);
+    const isLastGroup = currentGroupIndex === appletContainers.length - 1;
 
     // Function to navigate to the next container
     const handleNext = () => {
-        if (currentGroupIndex < activeAppletContainers.length - 1) {
-            setActiveGroupId(activeAppletContainers[currentGroupIndex + 1].id);
+        if (currentGroupIndex < appletContainers.length - 1) {
+            setActiveGroupId(appletContainers[currentGroupIndex + 1].id);
         }
     };
 
@@ -44,7 +48,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
                         <span className="inline-block border-b-2 border-gray-200 dark:border-gray-700 pb-2">Options</span>
                     </h3>
                     <div className="space-y-1">
-                        {activeAppletContainers.map((container) => (
+                        {appletContainers.map((container) => (
                             <button
                                 key={container.id}
                                 onClick={() => setActiveGroupId(container.id)}
@@ -81,7 +85,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
                 <div className="flex-grow p-6 bg-white dark:bg-gray-900 relative flex flex-col">
                     {/* Content container with fixed height */}
                     <div className="flex-grow relative" style={{ minHeight: "400px" }}>
-                        {activeAppletContainers.map((container) => (
+                        {appletContainers.map((container) => (
                             <UniformHeightWrapper
                                 key={container.id}
                                 groupId={container.id}
@@ -105,7 +109,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
                                                 <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
                                                     {field.label}
                                                 </label>
-                                                {fieldController(field, false)}
+                                                {fieldController({ field, appletId, isMobile })}
                                                 {field.helpText && (
                                                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
                                                 )}

@@ -2,13 +2,14 @@
 import React, { useEffect, useRef } from "react";
 import { fieldController } from "../../field-components/FieldController";
 import DesktopSearchField from "../field/DesktopSearchField";
-import { ContainerRenderProps } from "../../layouts/core/AppletInputLayoutManager";
+import { ContainerRenderProps } from "../../layouts/AppletLayoutManager";
 
 const DesktopSearchGroup: React.FC<ContainerRenderProps> = ({
     id,
     label,
     description,
     fields,
+    appletId,
     isActive,
     onClick,
     onOpenChange,
@@ -22,7 +23,7 @@ const DesktopSearchGroup: React.FC<ContainerRenderProps> = ({
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, fieldController(field, false));
+                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile }));
             }
         });
     }, [fields]);
@@ -32,6 +33,7 @@ const DesktopSearchGroup: React.FC<ContainerRenderProps> = ({
             id={id}
             label={label}
             description={description}
+            appletId={appletId}
             fields={fields}
             isActive={isActive}
             onClick={onClick}

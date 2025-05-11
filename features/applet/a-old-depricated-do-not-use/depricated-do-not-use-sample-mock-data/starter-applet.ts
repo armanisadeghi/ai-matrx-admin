@@ -2,7 +2,7 @@ import {
     AppletContainersConfig, 
     GroupFieldConfig,
     CheckboxGroupFieldConfig
-} from "../runner-depreciated-do-not-use/components/field-components/types";
+} from "@/features/applet/runner/field-components/types";
 
 // This is a placeholder field for group checkboxes - we'll replace this dynamically
 const placeholderCheckboxGroupField: GroupFieldConfig = {

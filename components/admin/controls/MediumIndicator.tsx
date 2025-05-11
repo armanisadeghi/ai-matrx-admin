@@ -8,7 +8,6 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSelectors";
 
-
 interface User {
   id: string;
   email?: string;

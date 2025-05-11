@@ -4,11 +4,15 @@
 
 import React, { useRef, useEffect } from "react";
 import { SearchFieldProps } from ".";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 const SearchField: React.FC<SearchFieldProps> = ({
   id,
   label,
-  placeholder,
+  description,
+  fields,
+  appletId,
   isActive,
   onClick,
   onOpenChange,
@@ -20,6 +24,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
   isMobile = false,
   hideGroupPlaceholder = false,
 }) => {
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   
@@ -135,7 +140,7 @@ const SearchField: React.FC<SearchFieldProps> = ({
         <div className={actionButton ? "flex-grow" : ""}>
           <div className="font-semibold text-xs text-gray-800 dark:text-gray-200">{label}</div>
           {!hideGroupPlaceholder && (
-            <div className="text-sm text-gray-500 dark:text-gray-400">{placeholder}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">{description}</div>
           )}
         </div>
         {actionButton}

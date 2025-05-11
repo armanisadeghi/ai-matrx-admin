@@ -1,11 +1,12 @@
 import { supabase } from "@/utils/supabase/client";
-import { normalizeFieldDefinition } from "@/types/customAppTypes";
+import { normalizeFieldDefinition } from '@/features/applet/utils/field-normalization';
 import { FieldBuilder } from "../types";
 
 export type FieldComponentDB = {
     id: string;
     created_at?: string;
     updated_at?: string;
+    
     label: string;
     description?: string;
     help_text?: string;
@@ -18,6 +19,7 @@ export type FieldComponentDB = {
     include_other?: boolean;
     options?: any;
     component_props?: any;
+
     user_id?: string;
     is_public?: boolean;
     authenticated_read?: boolean;
@@ -43,7 +45,7 @@ export const fieldDefinitionToDBFormat = async (
         help_text: field.helpText || null,
         component_group: field.group || null,
         icon_name: field.iconName || null,
-        component: field.component || "input",
+        component: field.component || "textarea",
         required: field.required !== undefined ? field.required : null,
         placeholder: field.placeholder || null,
         default_value: field.defaultValue !== undefined ? field.defaultValue : null,
@@ -60,8 +62,9 @@ export const fieldDefinitionToDBFormat = async (
 /**
  * Converts a database record to a FieldBuilder
  */
+
 export const dbToFieldDefinition = (dbRecord: FieldComponentDB): FieldBuilder => {
-    return normalizeFieldDefinition({
+    const fieldBuilder = {
         id: dbRecord.id,
         label: dbRecord.label,
         description: dbRecord.description,
@@ -78,8 +81,12 @@ export const dbToFieldDefinition = (dbRecord: FieldComponentDB): FieldBuilder =>
         isPublic: dbRecord.is_public,
         authenticatedRead: dbRecord.authenticated_read,
         publicRead: dbRecord.public_read,
-    });
+    };
+    
+    // Apply normalization after mapping from DB
+    return normalizeFieldDefinition(fieldBuilder);
 };
+
 
 /**
  * Fetches all field components for the current user

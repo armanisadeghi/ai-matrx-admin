@@ -222,6 +222,7 @@ export const ICON_OPTIONS = {
     FaStore,
     FaTools,
 };
+
 // Define color variations for different component types
 export const COLOR_VARIANTS = {
     // Background color variants for action buttons

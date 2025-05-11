@@ -1,48 +1,50 @@
 import React, { useState } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import StepperSearchGroup from "@/features/applet/runner/layouts/core/StepperSearchGroup";
 import UniformHeightWrapper from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import SearchGroupHeader from "@/features/applet/runner/layouts/helpers/SearchContainerHeader";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
-const StepperSearchLayout: React.FC<AppletInputProps> = ({
+const StepperSearchLayout: React.FC<AppletInputProps>= ({
+  appletId,
   activeFieldId,
   setActiveFieldId,
   actionButton,
   className = "",
+  isMobile = false,
 }) => {
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
 
 
   const [currentStep, setCurrentStep] = useState(0);
   
   const handleNext = () => {
-    if (currentStep < activeAppletContainers.length - 1) {
+    if (currentStep < appletContainers.length - 1) {
       setCurrentStep(currentStep + 1);
-      setActiveFieldId(activeAppletContainers[currentStep + 1].id);
+      setActiveFieldId(appletContainers[currentStep + 1].id);
     }
   };
   
   const handlePrev = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
-      setActiveFieldId(activeAppletContainers[currentStep - 1].id);
+      setActiveFieldId(appletContainers[currentStep - 1].id);
     }
   };
 
   const handleStepClick = (index: number) => {
     setCurrentStep(index);
-    setActiveFieldId(activeAppletContainers[index].id);
+    setActiveFieldId(appletContainers[index].id);
   };
   
-  const isLastStep = currentStep === activeAppletContainers.length - 1;
+  const isLastStep = currentStep === appletContainers.length - 1;
   
   return (
     <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
       {/* Stepper navigation */}
       <div className="flex mb-4">
-        {activeAppletContainers.map((container, index) => (
+        {appletContainers.map((container, index) => (
           <div 
             key={container.id}
             className={`flex-1 text-center ${
@@ -76,13 +78,13 @@ const StepperSearchLayout: React.FC<AppletInputProps> = ({
       <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700">
         {/* Header section with lighter background */}
         <SearchGroupHeader 
-          label={activeAppletContainers[currentStep]?.label} 
-          description={activeAppletContainers[currentStep]?.description}
+          label={appletContainers[currentStep]?.label} 
+          description={appletContainers[currentStep]?.description}
         />
         {/* Content section */}
         <div className="p-4">
           <div className="w-full">
-            {activeAppletContainers.map((container, index) => (
+            {appletContainers.map((container, index) => (
               <UniformHeightWrapper
                 key={container.id}
                 groupId={container.id}
@@ -98,10 +100,11 @@ const StepperSearchLayout: React.FC<AppletInputProps> = ({
                   label={container.label}
                   description={container.description}
                   fields={container.fields}
+                  appletId={appletId}
                   isActive={true}
                   onClick={() => {}}
                   onOpenChange={() => {}}
-                  isMobile={false}
+                  isMobile={isMobile}
                   className="border-0"
                 />
               </UniformHeightWrapper>

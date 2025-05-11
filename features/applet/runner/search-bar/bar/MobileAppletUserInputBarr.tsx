@@ -9,10 +9,10 @@ import SearchContainerField from "../group/SearchContainerField";
 
 
 interface MobileAppletUserInputBarProps {
-    appName: string;
+    appletId: string;
 }
 
-const MobileAppletUserInputBar: React.FC<MobileAppletUserInputBarProps> = ({ appName }) => {
+const MobileAppletUserInputBar: React.FC<MobileAppletUserInputBarProps> = ({ appletId }) => {
     const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
     const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
     const [showFullScreen, setShowFullScreen] = useState(false);

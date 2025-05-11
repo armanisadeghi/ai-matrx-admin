@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
+  appletId,
+  activeFieldId,
+  setActiveFieldId,
   actionButton,
   className = "",
 }) => {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
 
   return (
     <div className={`w-full h-[600px] ${className}`}>
@@ -72,7 +75,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
             </svg>
             <span>Filters</span>
             <span className="bg-white text-rose-500 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
-              {activeAppletContainers.reduce((sum, container) => sum + container.fields.length, 0)}
+              {appletContainers.reduce((sum, container) => sum + container.fields.length, 0)}
             </span>
           </button>
           
@@ -140,7 +143,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
           </div>
           
           <div className="p-4 space-y-6">
-            {activeAppletContainers.map((container) => (
+            {appletContainers.map((container) => (
               <div key={container.id} className="border-b dark:border-gray-700 pb-4 last:border-0">
                 <h4 className="text-md font-medium mb-3 text-rose-500">{container.label}</h4>
                 {container.fields.map((field) => (
@@ -149,7 +152,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
                       {field.label}
                       </label>
                     <div className="field-control">
-                      {fieldController(field, false)}
+                      {fieldController({ field, appletId, isMobile: false })}
                     </div>
                     {field.helpText && (
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>

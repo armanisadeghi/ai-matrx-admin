@@ -6,12 +6,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { fieldController } from "../../field-components/FieldController";
-import { ContainerRenderProps } from "./AppletInputLayoutManager";
+import { ContainerRenderProps } from "../AppletLayoutManager";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 const VerticalSearchGroup: React.FC<ContainerRenderProps> = ({
   id,
   label,
   description,
+  appletId,
   fields,
   isActive,
   onClick,
@@ -19,6 +22,8 @@ const VerticalSearchGroup: React.FC<ContainerRenderProps> = ({
   className = "",
   isMobile = false,
 }) => {
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
+
   const fieldRefs = useRef<Map<string, React.ReactNode>>(new Map());
   const [expanded, setExpanded] = useState(isActive);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -30,7 +35,7 @@ const VerticalSearchGroup: React.FC<ContainerRenderProps> = ({
   useEffect(() => {
     fields.forEach((field) => {
       if (!fieldRefs.current.has(field.id)) {
-        fieldRefs.current.set(field.id, fieldController(field));
+        fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile }));
       }
     });
   }, [fields, isMobile]);

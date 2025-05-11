@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Check, Grid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -17,8 +17,19 @@ interface AppSelectorProps {
 }
 
 export function AppSelector({ className }: AppSelectorProps) {
-  const appId = useAppSelector(state => selectAppletRuntimeActiveAppletId(state));
+  const activeAppId = useAppSelector(state => selectAppletRuntimeActiveAppletId(state));
   const accentColor = useAppSelector(state => selectActiveAppletAccentColor(state));
+  const [appId, setAppId] = useState(activeAppId);
+  const appSelectOptions = [
+    {
+      value: activeAppId,
+      label: "Active App"
+    },
+    {
+      value: "test-applet",
+      label: "Test Applet"
+    }
+  ]
 
   return (
     <DropdownMenu>
@@ -39,12 +50,12 @@ export function AppSelector({ className }: AppSelectorProps) {
             key={option.value}
             className={cn(
               "flex items-center justify-between py-1.5 cursor-pointer",
-              appId === option.value && "bg-zinc-100 dark:bg-zinc-800"
+              activeAppId === option.value && "bg-zinc-100 dark:bg-zinc-800"
             )}
             onClick={() => setAppId(option.value)}
           >
             <span className="text-sm">{option.label}</span>
-            {appId === option.value && (
+            {activeAppId === option.value && (
               <Check 
                 size={14} 
                 style={{ color: accentColor }}

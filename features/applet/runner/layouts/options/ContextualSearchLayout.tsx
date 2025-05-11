@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
-const ContextualSearchLayout: React.FC<AppletInputProps> = ({
-  actionButton,
-  className = "",
-}) => {
-  
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
+  const ContextualSearchLayout: React.FC<AppletInputProps>= ({
+    appletId,
+    activeFieldId,
+    setActiveFieldId,
+    actionButton,
+    className = "",
+    isMobile = false,
+  }) => {
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   const [context, setContext] = useState<'hotels' | 'flights' | 'dining' | 'activities'>('hotels');
   
   // Background images/gradients for each context
@@ -98,7 +101,7 @@ const ContextualSearchLayout: React.FC<AppletInputProps> = ({
           <h2 className="text-2xl font-medium text-center mb-8">Find the perfect {context}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {activeAppletContainers.map((container) => (
+            {appletContainers.map((container) => (
               <div key={container.id} className="space-y-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{container.label}</h3>
                 
@@ -107,7 +110,7 @@ const ContextualSearchLayout: React.FC<AppletInputProps> = ({
                     <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                       {field.label}
                     </label>
-                    {fieldController(field, false)}
+                    {fieldController({ field, appletId, isMobile })}
                     {field.helpText && (
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
                     )}

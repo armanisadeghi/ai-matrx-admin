@@ -10,10 +10,12 @@ import {
     selectAppletRuntimeContainers,
     selectAppletRuntimeLayoutType,
     setActiveAppletId,
+    selectAppletIdBySlug,
+    selectAppletRuntimeIsInitialized,
 } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { selectAppRuntimeId, selectAppRuntimeIsInitialized } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
 import { LoadingSpinner } from "@/components/ui/spinner";
-import AppletInputLayoutWrapper from "@/features/applet/runner/layouts/core/AppletLayoutWrapper";
+import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 
 export default function AppletPage() {
     const params = useParams();
@@ -22,7 +24,9 @@ export default function AppletPage() {
 
     const dispatch = useAppDispatch();
     const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
+    const isAppletInitialized = useAppSelector(selectAppletRuntimeIsInitialized);
     const applet = useAppSelector((state) => selectAppletRuntimeBySlug(state, appletSlug));
+    const appletId = useAppSelector((state) => selectAppletIdBySlug(state, appletSlug));
     const activeAppletId = useAppSelector(selectAppletRuntimeActiveAppletId);
     const containers = applet ? useAppSelector((state) => selectAppletRuntimeContainers(state, applet.id)) : null;
     const layoutType = applet ? useAppSelector((state) => selectAppletRuntimeLayoutType(state, applet.id)) : null;
@@ -36,7 +40,7 @@ export default function AppletPage() {
     }, [dispatch, isAppInitialized, applet, activeAppletId]);
 
     // Show loading state until app is initialized and applet data is available
-    if (!isAppInitialized || !applet) {
+    if (!isAppInitialized || !isAppletInitialized || !applet || !appletId) {
         return (
             <div className="h-full w-full flex items-center justify-center">
                 <LoadingSpinner />
@@ -44,5 +48,5 @@ export default function AppletPage() {
         );
     }
 
-    return <AppletInputLayoutWrapper appId={appId} />;
+    return <AppletLayoutManager appletId={appletId} />;
 }

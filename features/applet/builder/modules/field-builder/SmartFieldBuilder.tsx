@@ -35,7 +35,7 @@ import {
 import { fieldHelpTextItems } from "./fieldHelpText";
 import { Broker, ComponentType } from "@/types/customAppTypes";
 import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
-import { componentOptions } from "@/features/applet/runner/field-components/FieldController";
+import { componentOptions } from "@/features/applet/constants/field-constants";
 
 interface SmartFieldBuilderProps {
     fieldId: string;

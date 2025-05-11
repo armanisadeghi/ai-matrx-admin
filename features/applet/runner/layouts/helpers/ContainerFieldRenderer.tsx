@@ -6,12 +6,14 @@ import { fieldController } from "../../field-components/FieldController";
 
 interface ContainerFieldRendererProps {
   fields: FieldDefinition[];
+  appletId: string;
   description?: string;
   isMobile?: boolean;
 }
 
 const ContainerFieldRenderer: React.FC<ContainerFieldRendererProps> = ({
   fields,
+  appletId,
   description,
   isMobile = false,
 }) => {
@@ -30,7 +32,7 @@ const ContainerFieldRenderer: React.FC<ContainerFieldRendererProps> = ({
     // Process each field and create components if needed
     fields.forEach((field) => {
       if (!newFieldComponents.has(field.id)) {
-        newFieldComponents.set(field.id, fieldController(field, isMobile));
+        newFieldComponents.set(field.id, fieldController({ field, appletId, isMobile }));
         hasNewComponents = true;
       }
     });

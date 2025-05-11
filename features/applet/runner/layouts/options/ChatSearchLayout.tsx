@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { AppletInputProps } from "@/features/applet/runner/layouts/core/AppletInputLayoutManager";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 const ChatSearchLayout: React.FC<AppletInputProps> = ({
+  appletId,
+  activeFieldId,
+  setActiveFieldId,
   actionButton,
   className = "",
+  isMobile = false,
 }) => {  
-  const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
-  const allFields = activeAppletContainers.flatMap(container => 
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
+  const allFields = appletContainers.flatMap(container => 
     container.fields.map(field => ({ ...field, groupLabel: container.label }))
   );
   
@@ -125,7 +129,7 @@ const ChatSearchLayout: React.FC<AppletInputProps> = ({
                         {field.label}
                       </label>
                       <div className="field-control" onChange={() => handleFieldComplete(field.id)}>
-                        {fieldController(field, false)}
+                        {fieldController({ field, appletId, isMobile })}
                       </div>
                       {field.helpText && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>

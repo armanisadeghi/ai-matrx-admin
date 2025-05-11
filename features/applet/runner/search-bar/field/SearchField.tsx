@@ -2,7 +2,7 @@
 import React, { ReactNode } from "react";
 import MobileSearchField from "./MobileSearchField";
 import DesktopSearchField from "./DesktopSearchField";
-import { ContainerRenderProps } from "../../layouts/core/AppletInputLayoutManager";
+import { ContainerRenderProps } from "../../layouts/AppletLayoutManager";
 
 
 const SearchField: React.FC<ContainerRenderProps> = (props) => {

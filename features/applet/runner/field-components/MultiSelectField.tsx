@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useValueBroker } from '@/hooks/applets/useValueBroker';
 import { FieldProps, SelectOption } from './types';
+import { X, ChevronDown, Plus } from 'lucide-react';
 
 export interface MultiSelectFieldConfig {
   options: SelectOption[];
@@ -239,9 +240,7 @@ const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
               onClick={(e) => handleRemoveOption(value, e)}
               aria-label={`Remove ${getLabelForValue(value)}`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3 h-3">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
+              <X className="w-3 h-3" />
             </button>
           </div>
         ))}
@@ -269,9 +268,7 @@ const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
           
           {/* Dropdown indicator */}
           <div className="ml-auto pl-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-400">
-              <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
+            <ChevronDown className="w-5 h-5 text-gray-400" />
           </div>
         </div>
         
@@ -297,9 +294,7 @@ const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
                       onClick={() => setSearchTerm('')}
                       aria-label="Clear search"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
+                      <X className="w-4 h-4" />
                     </button>
                   )}
                 </div>
@@ -378,9 +373,7 @@ const MultiSelectField: React.FC<FieldProps<MultiSelectFieldConfig>> = ({
                     className="flex items-center p-2 rounded-md cursor-pointer text-sm border-t border-gray-200 dark:border-gray-700 text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 mt-1"
                     onClick={handleCreateOption}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
+                    <Plus className="h-4 w-4 mr-2" />
                     <span>{createNewMessage}: "{searchTerm}"</span>
                   </div>
                 )}

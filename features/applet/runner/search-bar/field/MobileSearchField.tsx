@@ -1,6 +1,6 @@
 // MobileSearchField.tsx
 import React from "react";
-import { ContainerRenderProps } from "../../layouts/core/AppletInputLayoutManager";
+import { ContainerRenderProps } from "../../layouts/AppletLayoutManager";
 
 
 const MobileSearchField: React.FC<ContainerRenderProps> = ({

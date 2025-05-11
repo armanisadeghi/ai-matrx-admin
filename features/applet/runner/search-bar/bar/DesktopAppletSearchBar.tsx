@@ -8,14 +8,14 @@ import { getSubmitButton } from "@/features/applet/styles/StyledComponents";
 import SearchContainerField from "../group/SearchContainerField";
 
 interface DesktopAppletUserInputBarProps {
-    appId: string;
+    appletId: string;
 }
 
-const DesktopAppletUserInputBar: React.FC<DesktopAppletUserInputBarProps> = ({ appId }) => {
+const DesktopAppletUserInputBar: React.FC<DesktopAppletUserInputBarProps> = ({ appletId }) => {
     const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
     const activeAppletId = useAppSelector(state => selectAppletRuntimeActiveAppletId(state))
-    const accentColor = useAppSelector(state => selectAppletRuntimeAccentColor(state, appId || "")) || "pink";
-    const submitIconName = useAppSelector(state => selectAppletRuntimeAppletIcon(state, appId || "")) || "search";
+    const accentColor = useAppSelector(state => selectAppletRuntimeAccentColor(state, appletId || "")) || "pink";
+    const submitIconName = useAppSelector(state => selectAppletRuntimeAppletIcon(state, appletId || "")) || "search";
   
     const submitButton = getSubmitButton({
       color: accentColor,
