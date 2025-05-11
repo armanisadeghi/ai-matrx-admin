@@ -9,53 +9,25 @@ import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
 import { ComponentType, FieldDefinition } from "@/types/customAppTypes";
 import { componentOptions } from "@/features/applet/constants/field-constants";
 import { useAppDispatch } from "@/lib/redux";
-import { setBrokerMap } from "@/lib/redux/app-runner/slices/brokerSlice";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
-import { v4 as uuidv4 } from "uuid";
-import BrokerDebugger from "./BrokerDebugger";
+import useTempBrokerMapping from "@/features/applet/builder/hooks/useTempBrokerMapping";
 
 interface NewFieldPreviewProps {
     field: FieldDefinition;
     componentType: ComponentType | null;
 }
 
-const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType }) => {
-    const [fakeAppletId, setFakeAppletId] = useState<string>(null);
-    const [fakeBrokerId, setFakeBrokerId] = useState<string>(null);
-
-    const fieldId = field?.id;
-
-    useEffect(() => {
-        setFakeAppletId(uuidv4());
-        setFakeBrokerId(uuidv4());
-    }, [fieldId]);
-    
+const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType }) => {    
     const dispatch = useAppDispatch();
     const [viewAsComponentType, setViewAsComponentType] = useState<ComponentType | null>(componentType);
 
+    const { stableAppletId, stableBrokerId } = useTempBrokerMapping(field.id);
 
-
-    
-    useEffect(() => {
-        if (fieldId && fakeAppletId && fakeBrokerId) {
-            dispatch(
-                setBrokerMap([
-                    {
-                        source: "applet",
-                        sourceId: fakeAppletId,
-                        itemId: fieldId,
-                        brokerId: fakeBrokerId,
-                    },
-                ])
-            );
-        }
-    }, [fieldId, fakeAppletId, fakeBrokerId, dispatch]);
 
     const handleComponentTypeChange = (newType: ComponentType) => {
         setViewAsComponentType(newType);
     };
 
-    // If no field data, show placeholder
     if (!field) {
         return (
             <SectionCard title="Component Preview" color="gray" spacing="relaxed">
@@ -76,7 +48,7 @@ const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType 
                 </div>
 
                 {/* Render the actual field component */}
-                {fieldController({ field, appletId: fakeAppletId })}
+                {fieldController({ field, appletId: stableAppletId })}
             </div>
 
             {/* Component type selector */}
@@ -123,7 +95,7 @@ const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType 
                                 ...field,
                                 component: viewAsComponentType,
                             },
-                            appletId: fakeAppletId,
+                            appletId: stableAppletId,
                         })}
                 </div>
             )}

@@ -23,6 +23,8 @@ import SmartFieldBuilder from "./SmartFieldBuilder";
 import FieldPreview from "./FieldPreview";
 import FieldEditorActions from "./FieldEditorActions";
 import NewFieldPreview from "./new-system/NewFieldPreview";
+import useTempBrokerMapping from "@/features/applet/builder/hooks/useTempBrokerMapping";
+
 
 interface FieldEditorProps {
     fieldId?: string;
@@ -41,8 +43,6 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
 
     const isLoading = useAppSelector(selectFieldLoading);
     const error = useAppSelector(selectFieldError);
-
-    // Generate a new ID for new fields
     const [localFieldId, setLocalFieldId] = useState<string>(fieldId || null);
 
     // Get field data and state from Redux

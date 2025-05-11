@@ -1,4 +1,4 @@
-// app/(authenticated)/apps/custom/Layout.tsx
+// app/(authenticated)/apps/debug/layout.tsx
 
 import React from "react";
 
