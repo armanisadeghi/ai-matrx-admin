@@ -22,6 +22,7 @@ import { LoadingSpinner } from "@/components/ui";
 import SmartFieldBuilder from "./SmartFieldBuilder";
 import FieldPreview from "./FieldPreview";
 import FieldEditorActions from "./FieldEditorActions";
+import NewFieldPreview from "./new-system/NewFieldPreview";
 
 interface FieldEditorProps {
     fieldId?: string;
@@ -187,7 +188,8 @@ const FieldEditor: React.FC<FieldEditorProps> = ({ fieldId, isCreatingNew = fals
 
                 {/* Right side: Preview area */}
                 <div className="w-full">
-                    <FieldPreview field={field} componentType={componentType} />
+                    {/* <FieldPreview field={field} componentType={componentType} /> */}
+                    <NewFieldPreview field={field} componentType={componentType} />
                 </div>
             </div>
             <Toaster />
