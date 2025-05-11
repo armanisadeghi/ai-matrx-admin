@@ -1,12 +1,12 @@
 // app/(authenticated)/apps/custom/[slug]/metadata.ts
 
-
 import { Metadata } from 'next';
 import { getAppData } from '@/utils/server/appDataCache';
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   try {
-    const { slug } = params;
+    const resolvedParams = await params;
+    const { slug } = resolvedParams;
     
     const data = await getAppData(slug);
 

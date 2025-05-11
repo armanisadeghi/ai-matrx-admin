@@ -1,7 +1,6 @@
 // app/(authenticated)/apps/custom/[slug]/layout.tsx
 "use client";
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { LayoutPanelTop, Menu, User, SunMoon } from "lucide-react";
 
@@ -59,10 +58,17 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
 
     const dispatch = useAppDispatch();
     const status = useAppSelector(selectAppRuntimeStatus);
+    const [error, setError] = useState<string | null>(null);
+    const [fetchAttempts, setFetchAttempts] = useState(0);
+    const [lastFetchTime, setLastFetchTime] = useState<string | null>(null);
 
     useEffect(() => {
         if (status === "uninitialized" && slug) {
             const slugValue = Array.isArray(slug) ? slug[0] : slug;
+            setFetchAttempts(prev => prev + 1);
+            setLastFetchTime(new Date().toISOString());
+            
+            console.log(`[DEBUG] Attempting to fetch app with slug: ${slugValue} (Attempt ${fetchAttempts + 1})`);
 
             dispatch(
                 fetchAppWithApplets({
@@ -73,11 +79,31 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
                         logResults: false,
                     },
                 })
-            );
+            ).unwrap()
+            .then(() => {
+                console.log(`[DEBUG] Successfully fetched app with slug: ${slugValue}`);
+                setError(null);
+            })
+            .catch((err) => {
+                console.error(`[DEBUG] Error fetching app with slug: ${slugValue}`, err);
+                setError(err.message || "Failed to fetch app data");
+            });
         } else {
-            console.log("Not fetching, status already:", status);
+            console.log(`[DEBUG] Not fetching, status: ${status}, slug: ${slug}`);
         }
     }, [dispatch, slug]);
+
+    // Set a timeout to show diagnostic info if the app takes too long to load
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (status === "loading" || status === "uninitialized") {
+                console.log(`[DEBUG] App still loading after 10 seconds. Current status: ${status}`);
+                // This won't set state to error, just provides diagnostic info
+            }
+        }, 10000);
+        
+        return () => clearTimeout(timeout);
+    }, [status]);
 
     const activeAppletId = useAppSelector(selectAppletRuntimeActiveAppletId);
     const isDemo = useAppSelector(selectAppRuntimeIsDemo);
@@ -85,12 +111,41 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
     const appId = useAppSelector(selectAppRuntimeId);
     const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
 
+    // If the app hasn't initialized after 15 seconds, show diagnostic information
+    const showDiagnostics = !isAppInitialized && (error || fetchAttempts > 0);
+
     if (!isAppInitialized) {
         return (
             <div className="h-full w-full flex flex-col bg-white dark:bg-gray-900 transition-colors">
                 <SkeletonHeader />
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex flex-col items-center justify-center">
                     <LoadingSpinner />
+                    
+                    {showDiagnostics && (
+                        <div className="mt-8 p-4 max-w-md bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-left">
+                            <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">
+                                App Loading Diagnostic
+                            </h3>
+                            <div className="text-sm text-red-700 dark:text-red-400 space-y-1">
+                                <p><strong>App Slug:</strong> {slug || 'Not available'}</p>
+                                <p><strong>App Status:</strong> {status}</p>
+                                <p><strong>Fetch Attempts:</strong> {fetchAttempts}</p>
+                                <p><strong>Last Attempt:</strong> {lastFetchTime || 'Not attempted'}</p>
+                                {error && (
+                                    <div className="mt-2 p-2 bg-red-100 dark:bg-red-900/30 rounded">
+                                        <p className="font-semibold">Error:</p>
+                                        <p className="font-mono text-xs whitespace-pre-wrap">{error}</p>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="mt-4 pt-2 border-t border-red-200 dark:border-red-800">
+                                <p className="text-xs text-red-600 dark:text-red-500">
+                                    This diagnostic panel is only visible to admins.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         );

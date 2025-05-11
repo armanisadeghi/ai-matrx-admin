@@ -84,7 +84,12 @@ export const fetchAppWithApplets = createAsyncThunk(
     isSlug?: boolean;
     defaultAppletId?: string | null;
     validationOptions?: ValidationOptions;
-  }, { dispatch }) => {
+  }, { dispatch, rejectWithValue }) => {
+    
+    const requestId = Math.random().toString(36).substring(2, 10);
+    console.log(`[THUNK-DEBUG ${requestId}] fetchAppWithApplets starting:`, { 
+      idOrSlug, isSlug, defaultAppletId, env: process.env.NODE_ENV 
+    });
     
     try {
       // Reset both slices and set loading state
@@ -93,7 +98,35 @@ export const fetchAppWithApplets = createAsyncThunk(
       dispatch(setAppRuntimeLoading());
       dispatch(setAppletRuntimeLoading());
       
-      const { appConfig, applets } = await fetchTransformedAppAndApplets(idOrSlug, isSlug);
+      console.log(`[THUNK-DEBUG ${requestId}] Calling fetchTransformedAppAndApplets`);
+      
+      // Add timeout to prevent hanging forever on fetch
+      const fetchWithTimeout = async (): Promise<{ appConfig: any; applets: any[] }> => {
+        const FETCH_TIMEOUT = 15000; // 15 seconds
+        
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`Fetch timed out after ${FETCH_TIMEOUT}ms`));
+          }, FETCH_TIMEOUT);
+        });
+        
+        return Promise.race([
+          fetchTransformedAppAndApplets(idOrSlug, isSlug),
+          timeoutPromise
+        ]);
+      };
+      
+      // Fetch app data with timeout
+      const appData = await fetchWithTimeout();
+      const { appConfig, applets } = appData;
+      
+      console.log(`[THUNK-DEBUG ${requestId}] App data fetched successfully:`, {
+        appId: appConfig?.id,
+        appName: appConfig?.name,
+        appSlug: appConfig?.slug,
+        appletCount: applets?.length
+      });
+      
       const activeAppletId = determineActiveAppletId(appConfig, applets, defaultAppletId);
       
       // Extract and set broker mappings from all applets
@@ -112,6 +145,8 @@ export const fetchAppWithApplets = createAsyncThunk(
         return acc;
       }, [] as Array<{ source: string; sourceId: string; itemId: string; brokerId: string }>);
       
+      console.log(`[THUNK-DEBUG ${requestId}] Setting broker mappings, app config and applet config`);
+      
       dispatch(setBrokerMap(brokerMappings));
       
       // Set app and applet configurations to make the app functional
@@ -127,25 +162,39 @@ export const fetchAppWithApplets = createAsyncThunk(
         // Use setTimeout with a longer delay to ensure it runs well after the app is loaded
         setTimeout(() => {
           try {
+            console.log(`[THUNK-DEBUG ${requestId}] Running deferred validations`);
             runDeferredValidations(appConfig, applets, validationOptions, appConfig.id);
           } catch (error) {
             // Completely silence any validation errors to prevent affecting the main app
-            console.debug('Validation error (safely ignored):', error);
+            console.debug('[THUNK-DEBUG] Validation error (safely ignored):', error);
           }
         }, 1000);
       }
+      
+      console.log(`[THUNK-DEBUG ${requestId}] fetchAppWithApplets completed successfully`);
       
       return { 
         appConfig, 
         applets, 
         activeAppletId
       };
-    } catch (error) {
-      console.error('Error in fetchAppWithApplets thunk:', error);
+    } catch (error: any) {
+      console.error(`[THUNK-DEBUG ${requestId}] Error in fetchAppWithApplets thunk:`, error);
+      
+      // Detailed error for debugging
+      const errorDetails = {
+        message: error.message || 'Unknown error',
+        code: error.code,
+        status: error.status,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+        requestId
+      };
+      
       // Reset both slices on error
       dispatch(resetAppRuntimeConfig());
       dispatch(resetAppletRuntimeConfig());
-      throw error;
+      
+      return rejectWithValue(errorDetails);
     }
   }
 );
