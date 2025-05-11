@@ -133,7 +133,7 @@ const DependentDropdownField: React.FC<{
       );
     } else if (stateValue) {
       // If there's an "other" option and it's selected, initialize the otherText state
-      const otherOption = stateValue.find((opt: SelectedOptionValue) => opt.id === "other");
+      const otherOption = Array.isArray(stateValue) ? stateValue.find((opt: SelectedOptionValue) => opt.id === "other") : null;
       if (otherOption && otherOption.selected && otherOption.description) {
         setOtherText(otherOption.description);
       }
@@ -148,20 +148,20 @@ const DependentDropdownField: React.FC<{
     
     // For level 0, we're looking at root options (no parent)
     if (level === 0) {
-      return stateValue.find((option: SelectedOptionValue) => {
+      return Array.isArray(stateValue) ? stateValue.find((option: SelectedOptionValue) => {
         // Find the original option to check if it has a parentId
         const originalOption = options.find(o => o.id === option.id);
         return option.selected && !originalOption?.parentId;
-      }) || null;
+      }) || null : null;
     }
     
     // For other levels, we need to chain through the parents
     for (let i = 0; i < level; i++) {
       // Find the selected option at the current level
-      const selectedOption = stateValue.find((option: SelectedOptionValue) => {
+      const selectedOption = Array.isArray(stateValue) ? stateValue.find((option: SelectedOptionValue) => {
         const originalOption = options.find(o => o.id === option.id);
         return option.selected && originalOption?.parentId === currentParentId;
-      });
+      }) : null;
       
       // If no option is selected at this level, break the chain
       if (!selectedOption) return null;
@@ -171,10 +171,10 @@ const DependentDropdownField: React.FC<{
     }
     
     // Now find the selected option at the target level
-    return stateValue.find((option: SelectedOptionValue) => {
+    return Array.isArray(stateValue) ? stateValue.find((option: SelectedOptionValue) => {
       const originalOption = options.find(o => o.id === option.id);
       return option.selected && originalOption?.parentId === currentParentId;
-    }) || null;
+    }) || null : null;
   };
   
   // Get child options for a specific parent
@@ -343,7 +343,7 @@ const DependentDropdownField: React.FC<{
     
     // Check if "Other" is selected
     if (!chain.length) {
-      const otherOption = stateValue?.find((opt: SelectedOptionValue) => opt.id === "other" && opt.selected);
+      const otherOption = Array.isArray(stateValue) ? stateValue.find((opt: SelectedOptionValue) => opt.id === "other" && opt.selected) : undefined;
       if (otherOption) chain.push(otherOption);
     }
     
@@ -534,7 +534,7 @@ const DependentDropdownField: React.FC<{
       {/* Other text input */}
       {isOtherSelected && (
         <Input
-          id={`${id}-other-input`}
+          id={`${appletId}-${id}-other-input`}
           className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
           value={otherText}
           onChange={handleOtherTextChange}

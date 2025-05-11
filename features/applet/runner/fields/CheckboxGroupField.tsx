@@ -128,7 +128,7 @@ const CheckboxGroupField: React.FC<{
       );
     } else if (stateValue) {
       // If there's an "other" option and it's selected, initialize the otherText state
-      const otherOption = stateValue.find((opt: SelectedOptionValue) => opt.id === "other");
+      const otherOption = Array.isArray(stateValue) ? stateValue.find((opt: SelectedOptionValue) => opt.id === "other") : null;
       if (otherOption && otherOption.selected && otherOption.description) {
         setOtherText(otherOption.description);
       }
@@ -142,7 +142,7 @@ const CheckboxGroupField: React.FC<{
     setTouched(true);
     
     // Get current selection state
-    const currentOption = stateValue?.find((o: SelectedOptionValue) => o.id === optionId);
+    const currentOption = Array.isArray(stateValue) ? stateValue.find((o: SelectedOptionValue) => o.id === optionId) : undefined;
     const isCurrentlySelected = currentOption?.selected || false;
     
     // Count currently selected items
@@ -253,7 +253,7 @@ const CheckboxGroupField: React.FC<{
   };
   
   // Get the selected options
-  const selectedOptions = stateValue 
+  const selectedOptions = Array.isArray(stateValue) 
     ? stateValue.filter((option: SelectedOptionValue) => option.selected)
     : [];
   
@@ -352,7 +352,7 @@ const CheckboxGroupField: React.FC<{
         >
           <label 
             className="cursor-pointer select-none"
-            htmlFor={`${id}-${option.id}`}
+            htmlFor={`${appletId}-${id}-${option.id}`}
           >
             {option.label}
           </label>
@@ -447,7 +447,7 @@ const CheckboxGroupField: React.FC<{
       {/* Other text input */}
       {isOtherSelected && (
         <Input
-          id={`${id}-other-input`}
+          id={`${appletId}-${id}-other-input`}
           className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
           value={otherText}
           onChange={handleOtherTextChange}

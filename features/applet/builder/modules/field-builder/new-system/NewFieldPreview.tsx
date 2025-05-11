@@ -32,6 +32,10 @@ const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType 
     
     const dispatch = useAppDispatch();
     const [viewAsComponentType, setViewAsComponentType] = useState<ComponentType | null>(componentType);
+
+
+
+    
     useEffect(() => {
         if (fieldId && fakeAppletId && fakeBrokerId) {
             dispatch(
@@ -45,7 +49,7 @@ const NewFieldPreview: React.FC<NewFieldPreviewProps> = ({ field, componentType 
                 ])
             );
         }
-    }, [fieldId, dispatch]);
+    }, [fieldId, fakeAppletId, fakeBrokerId, dispatch]);
 
     const handleComponentTypeChange = (newType: ComponentType) => {
         setViewAsComponentType(newType);

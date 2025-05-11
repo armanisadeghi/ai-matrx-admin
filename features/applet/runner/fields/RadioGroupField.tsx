@@ -119,7 +119,7 @@ const RadioGroupField: React.FC<{
       );
     } else if (stateValue) {
       // If there's an "other" option and it's selected, initialize the otherText state
-      const otherOption = stateValue.find((opt: SelectedOptionValue) => opt.id === "other");
+      const otherOption = Array.isArray(stateValue) ? stateValue.find((opt: SelectedOptionValue) => opt.id === "other") : null;
       if (otherOption && otherOption.selected && otherOption.description) {
         setOtherText(otherOption.description);
       }
@@ -170,7 +170,7 @@ const RadioGroupField: React.FC<{
   };
   
   // Get the currently selected option
-  const selectedOption = stateValue 
+  const selectedOption = Array.isArray(stateValue) 
     ? stateValue.find((option: SelectedOptionValue) => option.selected) 
     : null;
   
@@ -242,7 +242,7 @@ const RadioGroupField: React.FC<{
         >
           <label 
             className="cursor-pointer select-none"
-            htmlFor={`${id}-${option.id}`}
+            htmlFor={`${appletId}-${id}-${option.id}`}
           >
             {option.label}
           </label>
@@ -290,7 +290,7 @@ const RadioGroupField: React.FC<{
       {/* Other text input */}
       {isOtherSelected && (
         <Input
-          id={`${id}-other-input`}
+          id={`${appletId}-${id}-other-input`}
           className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
           value={otherText}
           onChange={handleOtherTextChange}

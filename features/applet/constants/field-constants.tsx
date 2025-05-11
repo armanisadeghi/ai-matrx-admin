@@ -1,5 +1,5 @@
 import React from "react";
-import { ComponentProps } from "@/types/customAppTypes";
+import { ComponentProps, ComponentType } from "@/types/customAppTypes";
 import {
   TextCursorInput,
   PanelBottomClose,
@@ -22,38 +22,6 @@ import {
   Phone,
   Layers
 } from 'lucide-react';
-
-// Define the component type for TypeScript
-export type ComponentType = 
-  | 'input'
-  | 'textarea'
-  | 'select'
-  | 'multiselect'
-  | 'radio'
-  | 'checkbox'
-  | 'slider'
-  | 'number'
-  | 'date'
-  | 'switch'
-  | 'button'
-  | 'buttonGroup'
-  | 'buttonSelection'
-  | 'rangeSlider'
-  | 'numberPicker'
-  | 'stepperNumber'
-  | 'jsonField'
-  | 'fileUpload'
-  | 'searchableSelect'
-  | 'multiSearchableSelect'
-  | 'directMultiSelect'
-  | 'multiDate'
-  | 'simpleNumber'
-  | 'sortable'
-  | 'tagInput'
-  | 'dependentDropdown'
-  | 'addressBlock'
-  | 'starRating'
-  | 'phoneNumber';
 
 // Unified component information including icon, display name, and component details
 export interface ComponentInfo {
@@ -130,7 +98,7 @@ export const componentMap: Record<ComponentType, ComponentInfo> = {
   button: {
     icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
     displayName: "Button",
-    fieldComponent: "ButtonField.tsx" // Implied from structure
+    fieldComponent: "ButtonField.tsx"
   },
   buttonGroup: {
     icon: <Layers className="h-5 w-5 text-blue-500 dark:text-blue-400" />,

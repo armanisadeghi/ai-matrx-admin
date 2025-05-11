@@ -167,7 +167,7 @@ const SearchableSelectField: React.FC<{
   };
   
   // Determine the currently selected option
-  const selectedOption = stateValue ? stateValue.find((option: SelectedOptionValue) => option.selected) : null;
+  const selectedOption = Array.isArray(stateValue) ? stateValue.find((option: SelectedOptionValue) => option.selected) : null;
   const isOtherSelected = selectedOption?.id === "other";
   
   // Render custom content if provided
@@ -266,7 +266,7 @@ const SearchableSelectField: React.FC<{
       
       {isOtherSelected && (
         <Input
-          id={`${id}-other-input`}
+          id={`${appletId}-${id}-other-input`}
           className="w-full mt-2 focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800"
           value={selectedOption?.description || ""}
           onChange={handleOtherTextChange}

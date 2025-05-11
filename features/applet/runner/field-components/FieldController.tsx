@@ -24,7 +24,6 @@ import {
 } from "@/features/applet/runner/fields";
 import { ComponentType } from "@/types/customAppTypes";
 
-
 export interface FieldOption {
     id: string;
     label: string;
@@ -69,6 +68,69 @@ export interface FieldControllerProps {
 
 export const fieldController = ({ field, appletId, isMobile }: FieldControllerProps) => {
     switch (field.component) {
+        case "textarea":
+        case "radio": {
+            return (
+                <div className="flex flex-col gap-6 w-full">
+                    <TextareaField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <SelectField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <RadioGroupField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <CheckboxGroupField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <DateField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <MultiDateField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <SearchableSelectField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <DirectMultiSelectField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <MultiSearchableSelectField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <ButtonSelectionField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <SortableField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <ButtonGroupField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <StepperNumberField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <SimpleNumberField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <SliderField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <SwitchField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <JsonField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <FileUploadField field={field} appletId={appletId} isMobile={isMobile} />
+                    <hr className="border-gray-300 dark:border-gray-700" />
+
+                    <InputField field={field} appletId={appletId} isMobile={isMobile} />
+                </div>
+            );
+        }
+
         case "textarea": {
             return <TextareaField field={field} appletId={appletId} isMobile={isMobile} />;
         }
@@ -110,7 +172,6 @@ export const fieldController = ({ field, appletId, isMobile }: FieldControllerPr
             return <ButtonSelectionField field={field} appletId={appletId} isMobile={isMobile} />;
         }
 
-
         case "sortable": {
             return <SortableField field={field} appletId={appletId} isMobile={isMobile} />;
         }
@@ -122,7 +183,7 @@ export const fieldController = ({ field, appletId, isMobile }: FieldControllerPr
         case "number": {
             return <StepperNumberField field={field} appletId={appletId} isMobile={isMobile} />;
         }
-        
+
         case "simpleNumber": {
             return <SimpleNumberField field={field} appletId={appletId} isMobile={isMobile} />;
         }
