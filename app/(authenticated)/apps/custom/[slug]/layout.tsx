@@ -53,6 +53,7 @@ const SkeletonHeader: React.FC = () => {
 };
 
 export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
+    console.log("CustomAppLayout");
     const params = useParams();
     const slug = params.slug as string;
 
