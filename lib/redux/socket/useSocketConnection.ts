@@ -80,7 +80,6 @@ export const useSocketConnection = () => {
     if (!hookInstance) {
         isControllingInstance.current = true;
         hookInstance = {};
-        console.log("Created controlling socket hook instance");
     }
     
     // Set up listener for global state changes
@@ -105,7 +104,6 @@ export const useSocketConnection = () => {
                 socketManager.disconnect();
                 dispatch(socketDisconnected());
                 hookInstance = null;
-                console.log("Cleaned up controlling socket hook instance");
             }
         };
     }, [dispatch, socketManager]);
@@ -144,7 +142,6 @@ export const useSocketConnection = () => {
             };
             
             const onConnectError = (error: Error) => {
-                console.log("Socket connection error:", error.message);
                 globalState.isConnected = false;
                 globalState.isAuthenticated = Boolean(socket?.auth?.token);
                 if (!globalState.isSwitchingServer) {
@@ -162,7 +159,6 @@ export const useSocketConnection = () => {
             socket.on("connect_error", onConnectError);
             
             return () => {
-                console.log("Cleaning up socket listeners");
                 socket.off("connect", onConnect);
                 socket.off("disconnect", onDisconnect);
                 socket.off("connect_error", onConnectError);
@@ -178,7 +174,6 @@ export const useSocketConnection = () => {
             
             let cleanupListeners: (() => void) | undefined;
             try {
-                console.log(`${isReconnect ? "Reconnecting" : "Connecting"} socket`, { override });
                 dispatch(socketConnecting());
                 
                 const config = override || globalState.socketOverride || undefined;
@@ -204,7 +199,6 @@ export const useSocketConnection = () => {
                 cleanupListeners = setupSocketListeners(socket);
                 
                 if (socket.connected) {
-                    console.log("Socket already connected, dispatching actions");
                     dispatch(socketConnected());
                     dispatch(socketInitialized());
                 }
@@ -251,10 +245,9 @@ export const useSocketConnection = () => {
                     }
                     
                     if (!globalState.isConnected && isMounted && !globalState.isSwitchingServer) {
-                        console.log("Still disconnected, scheduling next attempt");
                         scheduleReconnect();
                     } else {
-                        console.log("Connected, switching, or unmounted, stopping reconnection attempts");
+                        console.log("Connected");
                     }
                 }, 3000);
             }
@@ -323,7 +316,6 @@ export const useSocketConnection = () => {
     
     const overrideNamespace = useCallback(
         async (namespace: string) => {
-            console.log("Overriding namespace:", { namespace });
             try {
                 globalState.isSwitchingServer = true;
                 notifyListeners();
@@ -356,7 +348,6 @@ export const useSocketConnection = () => {
     );
     
     const clearServerOverride = useCallback(async () => {
-        console.log("Clearing server override");
         globalState.isSwitchingServer = true;
         globalState.socketOverride = null;
         notifyListeners();
@@ -375,7 +366,6 @@ export const useSocketConnection = () => {
         if (isControllingInstance.current) {
             try {
                 await connectSocket();
-                console.log("Successfully reconnected after clearing override");
             } catch (error) {
                 console.error("Failed to reconnect after clearing override:", error);
             }

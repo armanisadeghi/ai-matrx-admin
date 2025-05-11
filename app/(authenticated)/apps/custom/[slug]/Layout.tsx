@@ -3,6 +3,7 @@
 import React from "react";
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
+import { Menu, User } from "lucide-react";
 
 import { CustomAppHeader } from "@/features/applet/runner/header/CustomAppHeader";
 import { selectAppletRuntimeActiveAppletId } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
@@ -16,14 +17,39 @@ import {
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import { fetchAppWithApplets } from "@/lib/redux/app-runner/thunks/appRunnerThunks";
-import DebugFetch from "./debug";
-
-// Note: We don't import metadata.ts directly here
-// Next.js automatically uses it for metadata generation
 
 interface CustomAppLayoutProps {
     children: React.ReactNode;
 }
+
+// Skeleton header component that displays during loading
+const SkeletonHeader: React.FC = () => {
+    return (
+        <div className="sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm">
+            <div className="flex items-center justify-between h-full px-4">
+                {/* Left section - App icon placeholder */}
+                <div className="flex items-center">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                    <div className="ml-3 w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                </div>
+                
+                {/* Center section - Navigation items placeholders */}
+                <div className="hidden md:flex space-x-6">
+                    <div className="w-20 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                    <div className="w-24 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                    <div className="w-16 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                </div>
+                
+                {/* Right section - User and icons placeholders */}
+                <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                    <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
     const params = useParams();
@@ -59,9 +85,11 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
 
     if (!isAppInitialized) {
         return (
-            <div className="h-full w-full flex items-center justify-center bg-white dark:bg-gray-900 transition-colors">
-                <DebugFetch />
-                <LoadingSpinner />
+            <div className="h-full w-full flex flex-col bg-white dark:bg-gray-900 transition-colors">
+                <SkeletonHeader />
+                <div className="flex-1 flex items-center justify-center">
+                    <LoadingSpinner />
+                </div>
             </div>
         );
     }

@@ -1,12 +1,13 @@
+// app/(authenticated)/apps/custom/[slug]/metadata.ts
+
+
 import { Metadata } from 'next';
 import { getAppData } from '@/utils/server/appDataCache';
 
-// Dynamically generate metadata for each custom app
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   try {
     const { slug } = params;
     
-    // Fetch app data using cached utility
     const data = await getAppData(slug);
 
     if (!data || !data.app_config) {
@@ -18,20 +19,19 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
     const app = data.app_config;
     
-    // Construct metadata
     return {
       title: app.name || 'Custom App',
       description: app.description || 'Interactive application platform',
       openGraph: {
         title: app.name || 'Custom App',
         description: app.description || 'Interactive application platform',
-        images: [`/apps/custom/${slug}/opengraph-image`],
+        // Remove images
       },
       twitter: {
         card: 'summary_large_image',
         title: app.name || 'Custom App',
         description: app.description || 'Interactive application platform',
-        images: [`/apps/custom/${slug}/opengraph-image`],
+        // Remove images
       },
     };
   } catch (error) {
@@ -41,4 +41,4 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description: 'Interactive application platform',
     };
   }
-} 
+}

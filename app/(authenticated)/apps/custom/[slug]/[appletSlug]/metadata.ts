@@ -1,7 +1,8 @@
+// app/(authenticated)/apps/custom/[slug]/[appletSlug]/metadata.ts
+
 import { Metadata } from 'next';
 import { getAppData, getAppletBySlug } from '@/utils/server/appDataCache';
 
-// Dynamically generate metadata for each applet
 export async function generateMetadata({ 
   params 
 }: { 
@@ -10,7 +11,6 @@ export async function generateMetadata({
   try {
     const { slug, appletSlug } = params;
     
-    // Fetch app data using cached utility
     const data = await getAppData(slug);
 
     if (!data) {
@@ -20,7 +20,6 @@ export async function generateMetadata({
       };
     }
 
-    // Find the specific applet
     const applet = data.applets.find((a) => a.slug === appletSlug);
     const app = data.app_config;
     
@@ -31,7 +30,6 @@ export async function generateMetadata({
       };
     }
     
-    // Construct metadata
     const title = `${app?.name || 'App'} | ${applet.name || 'Applet'}`;
     const description = applet.description || app?.description || 'Interactive applet';
     
@@ -41,13 +39,13 @@ export async function generateMetadata({
       openGraph: {
         title,
         description,
-        images: [`/apps/custom/${slug}/opengraph-image`],
+        // Remove images
       },
       twitter: {
         card: 'summary_large_image',
         title,
         description,
-        images: [`/apps/custom/${slug}/opengraph-image`],
+        // Remove images
       },
     };
   } catch (error) {
@@ -57,4 +55,4 @@ export async function generateMetadata({
       description: 'Interactive applet',
     };
   }
-} 
+}

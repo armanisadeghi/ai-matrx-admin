@@ -104,6 +104,7 @@ export async function fetchAppBySlug(slug: string): Promise<{
 }> {
     if (!slug) throw new Error("App slug is required");
     const rawData = await fetchAppAndAppletConfig(null, slug);
+    console.log("fetchAppBySlug rawData", rawData);
     return transformAppWithApplets(rawData);
 }
 

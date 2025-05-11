@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { PredefinedConnection } from "../socket.types";
 
 
+const DEBUG = false;
+
 export class SocketConnectionManager {
   private static instance: SocketConnectionManager | null = null;
   private sockets: Map<string, any> = new Map();
@@ -117,7 +119,7 @@ export class SocketConnectionManager {
       this.authenticationStatus.set(connectionId, false);
 
       socket.on("connect", () => {
-        console.log(`[SOCKET] Connection ${connectionId} connected successfully`);
+        if (DEBUG) console.log(`[SOCKET] Connection ${connectionId} connected successfully`);
         this.sockets.set(connectionId, socket);
         this.connectionAttempts.set(connectionId, 0);
         this.connectionPromises.delete(connectionId);
@@ -126,7 +128,7 @@ export class SocketConnectionManager {
         // Set authentication status to true as we're using a token
         if (this.authToken) {
           this.authenticationStatus.set(connectionId, true);
-          console.log(`[SOCKET] Connection ${connectionId} authenticated with token`);
+          if (DEBUG) console.log(`[SOCKET] Connection ${connectionId} authenticated with token`);
         }
 
         resolve(socket);
@@ -134,23 +136,23 @@ export class SocketConnectionManager {
 
       // Listen for auth related events
       socket.on("authenticated", () => {
-        console.log(`[SOCKET] Connection ${connectionId} explicitly authenticated`);
+        if (DEBUG) console.log(`[SOCKET] Connection ${connectionId} explicitly authenticated`);
         this.authenticationStatus.set(connectionId, true);
       });
 
       socket.on("unauthorized", () => {
-        console.log(`[SOCKET] Connection ${connectionId} unauthorized - token rejected`);
+        if (DEBUG) console.log(`[SOCKET] Connection ${connectionId} unauthorized - token rejected`);
         this.authenticationStatus.set(connectionId, false);
       });
 
       socket.on("connect_error", (error) => {
-        console.log(`[SOCKET] Connection ${connectionId} attempt failed:`, error.message);
+        if (DEBUG) console.log(`[SOCKET] Connection ${connectionId} attempt failed:`, error.message);
         this.authenticationStatus.set(connectionId, false);
         const attempts = (this.connectionAttempts.get(connectionId) || 0) + 1;
         this.connectionAttempts.set(connectionId, attempts);
 
         if (attempts >= this.maxConnectionAttempts) {
-          console.log(`[SOCKET] Max connection attempts reached for ${connectionId}`);
+          if (DEBUG) console.log(`[SOCKET] Max connection attempts reached for ${connectionId}`);
           socket.disconnect();
           this.sockets.delete(connectionId);
           this.connectionPromises.delete(connectionId);
@@ -159,7 +161,7 @@ export class SocketConnectionManager {
       });
 
       socket.on("disconnect", () => {
-        console.log(`[SOCKET] Connection ${connectionId} disconnected`);
+        if (DEBUG) console.log(`[SOCKET] Connection ${connectionId} disconnected`);
         this.authenticationStatus.set(connectionId, false);
       });
     });
@@ -208,7 +210,7 @@ export class SocketConnectionManager {
 
   public setPrimaryConnection(connectionId: string): void {
     if (this.sockets.has(connectionId)) {
-      console.log(`[SOCKET] Set primary connection to ${connectionId}`);
+      if (DEBUG) console.log(`[SOCKET] Set primary connection to ${connectionId}`);
     }
   }
 
@@ -228,7 +230,7 @@ export class SocketConnectionManager {
     // Check if we have details for this connection
     const details = this.connectionDetails.get(connectionId);
     if (!details) {
-      console.log(`[SOCKET] Cannot reconnect, no details found for connection ${connectionId}`);
+      if (DEBUG) console.log(`[SOCKET] Cannot reconnect, no details found for connection ${connectionId}`);
       return null;
     }
 
@@ -236,7 +238,7 @@ export class SocketConnectionManager {
     this.connectionAttempts.set(connectionId, 0);
     
     // Establish a new connection
-    console.log(`[SOCKET] Attempting to reconnect ${connectionId} to ${details.url}${details.namespace}`);
+    if (DEBUG) console.log(`[SOCKET] Attempting to reconnect ${connectionId} to ${details.url}${details.namespace}`);
     return this.getSocket(connectionId, details.url, details.namespace);
   }
 
@@ -274,9 +276,9 @@ export class SocketConnectionManager {
       if (this.authToken && this.isClientSide) {
         try {
           await supabase.auth.getSession();
-          console.log("[SOCKET] Session keep-alive successful");
+          if (DEBUG) console.log("[SOCKET] Session keep-alive successful");
         } catch (error) {
-          console.log("[SOCKET] Session keep-alive failed, attempting to refresh token");
+          if (DEBUG) console.log("[SOCKET] Session keep-alive failed, attempting to refresh token");
           this.authToken = await this.getAuthToken();
         }
       }
