@@ -1,7 +1,6 @@
 "use client";
-
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { SelectAppStep } from "@/features/applet/builder/modules/app-builder/SelectAppStep";
 import { AppConfigStep } from "@/features/applet/builder/modules/app-builder/AppConfigStep";
 import { v4 as uuidv4 } from "uuid";
@@ -10,6 +9,7 @@ import { startNewApp } from "@/lib/redux/app-builder/slices/appBuilderSlice";
 import { Plus, ListTodo, ChevronLeft, Layers, Boxes } from "lucide-react";
 import SimpleTemplateDialog from "@/features/applet/builder/parts/SimpleTemplateDialog";
 import ComplexTemplateDialog from "@/features/applet/builder/parts/ComplexTemplateDialog";
+import { CardGrid } from "@/components/official/cards/CardGrid";
 
 interface AppBuilderStartStepProps {
   onAppSelected: (id: string) => void;
@@ -61,56 +61,42 @@ const AppBuilderStartStep: React.FC<AppBuilderStartStepProps> = ({
     onAppSaved(appId);
   };
 
+  const cards = [
+    {
+      icon: <ListTodo className="h-12 w-12" />,
+      title: "Start From Existing App",
+      onClick: handleSelectExisting,
+    },
+    {
+      icon: <Plus className="h-12 w-12" />,
+      title: "Create New App",
+      onClick: handleCreateNewApp,
+    },
+    {
+      icon: <Layers className="h-12 w-12" />,
+      title: "Start From Simple Template",
+      description: "One Applet, One Container, One Field Only",
+      onClick: handleOpenSimpleTemplateDialog,
+    },
+    {
+      icon: <Boxes className="h-12 w-12" />,
+      title: "Start From Complex Template",
+      description: "Multiple Applets, Multiple Containers, Many Fields",
+      onClick: handleOpenComplexTemplateDialog,
+    },
+  ];
+
   return (
     <Card className="w-full bg-white dark:bg-gray-900 border-none shadow-lg">
       {view === "choice" && (
         <div className="p-8 md:p-12">
-          <CardHeader className="text-center pb-8">
-            <CardTitle className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-200">
-              How would you like to start?
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div 
-                onClick={handleSelectExisting}
-                className="cursor-pointer rounded-xl h-64 flex flex-col items-center justify-center space-y-6 p-4 text-xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-              >
-                <ListTodo className="h-12 w-12 text-blue-500 dark:text-blue-400" />
-                <span className="font-medium text-blue-500 dark:text-blue-400">Start From Existing App</span>
-              </div>
-              
-              <div
-                onClick={handleCreateNewApp}
-                className="cursor-pointer rounded-xl h-64 flex flex-col items-center justify-center space-y-6 p-4 text-xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-              >
-                <Plus className="h-12 w-12 text-blue-500 dark:text-blue-400" />
-                <span className="font-medium text-blue-500 dark:text-blue-400">Create New App</span>
-              </div>
-
-              <div
-                onClick={handleOpenSimpleTemplateDialog}
-                className="cursor-pointer rounded-xl h-64 flex flex-col items-center justify-center space-y-6 p-4 text-xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-              >
-                <Layers className="h-12 w-12 text-blue-500 dark:text-blue-400" />
-                <span className="font-medium text-blue-500 dark:text-blue-400">Start From Simple Template</span>
-                <p className="text-xs text-center text-gray-600 dark:text-gray-400 mt-1">
-                  One Applet, One Container, One Field Only
-                </p>
-              </div>
-
-              <div
-                onClick={handleOpenComplexTemplateDialog}
-                className="cursor-pointer rounded-xl h-64 flex flex-col items-center justify-center space-y-6 p-4 text-xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-              >
-                <Boxes className="h-12 w-12 text-blue-500 dark:text-blue-400" />
-                <span className="font-medium text-blue-500 dark:text-blue-400">Start From Complex Template</span>
-                <p className="text-xs text-center text-gray-600 dark:text-gray-400 mt-1">
-                  Multiple Applets, Multiple Containers, Many Fields
-                </p>
-              </div>
-            </div>
-          </CardContent>
+          <CardGrid
+            title="How would you like to start?"
+            cards={cards}
+            columns={2}
+            headerClassName="text-center pb-8"
+            className="bg-slate-100 dark:bg-slate-900 border-none shadow-none"
+          />
         </div>
       )}
 
@@ -154,7 +140,7 @@ const AppBuilderStartStep: React.FC<AppBuilderStartStepProps> = ({
         onClose={() => setIsSimpleTemplateDialogOpen(false)}
         onAppCreated={handleAppCreated}
       />
-
+      
       <ComplexTemplateDialog 
         isOpen={isComplexTemplateDialogOpen}
         onClose={() => setIsComplexTemplateDialogOpen(false)}
