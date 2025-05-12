@@ -496,7 +496,7 @@ export const COLOR_VARIANTS = {
 // Component types with their specific styles
 export const COMPONENT_STYLES = {
     submitButton: {
-        base: "rounded-full p-3",
+        base: "rounded-full p-3 cursor-pointer",
         colorType: "buttonBg", // References the buttonBg color group
     },
     appIcon: {
@@ -509,11 +509,11 @@ export const COMPONENT_STYLES = {
         bgColorType: "background", // Background color from background color group
     },
     actionButton: {
-        base: "rounded-md px-4 py-2 flex items-center justify-center",
+        base: "rounded-md px-4 py-2 flex items-center justify-center cursor-pointer",
         colorType: "buttonBg",
     },
     outlineButton: {
-        base: "rounded-md px-4 py-2 border-2 flex items-center justify-center",
+        base: "rounded-md px-4 py-2 border-2 flex items-center justify-center cursor-pointer",
         colorType: "border",
     },
     // Add more component types as needed

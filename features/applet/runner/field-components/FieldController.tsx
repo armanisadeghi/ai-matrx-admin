@@ -30,7 +30,10 @@ import {
     NumberInputField,
 } from "@/features/applet/runner/fields";
 import { FieldDefinition } from "@/types/customAppTypes";
-
+import DraggableTableField from "../fields/concepts/DraggableTableField";
+import DraggableEditableTableField from "../fields/concepts/DraggableEditableTableField";
+import DragEditModifyTableField from "../fields/concepts/DragEditModifyTableField";
+import DragTableRowAndColumnField from "../fields/concepts/DragTableRowAndColumnField";
 export interface FieldControllerProps {
     field: FieldDefinition;
     appletId: string;
@@ -101,6 +104,27 @@ export const fieldController = ({ field, appletId, isMobile, source = "applet" }
             console.log(`Field Controller Rendered: 'sortable' using SortableField`);
             return <SortableField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
+
+        case "draggableTable": {
+            console.log(`Field Controller Rendered: 'draggableTable' using DraggableTableField`);
+            return <DraggableTableField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
+        }
+        
+        case "draggableEditableTable": {
+            console.log(`Field Controller Rendered: 'draggableEditableTable' using DraggableEditableTableField`);
+            return <DraggableEditableTableField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
+        }
+
+        case "dragEditModifyTable": {
+            console.log(`Field Controller Rendered: 'dragEditModifyTable' using DragEditModifyTableField`);
+            return <DragEditModifyTableField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
+        }
+
+        case "dragTableRowAndColumn": {
+            console.log(`Field Controller Rendered: 'dragTableRowAndColumn' using DragTableRowAndColumnField`);
+            return <DragTableRowAndColumnField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
+        }
+
 
         case "buttonColumn": {
             console.log(`Field Controller Rendered: 'buttonColumn' using ButtonColumnField`);

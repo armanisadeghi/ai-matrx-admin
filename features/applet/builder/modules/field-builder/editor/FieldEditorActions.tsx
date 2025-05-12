@@ -92,6 +92,8 @@ const FieldEditorActions: React.FC<FieldEditorActionsProps> = ({
                 isOpen={showAdvancedSettings}
                 onClose={() => setShowAdvancedSettings(false)}
                 fieldId={fieldId}
+                onSave={onSave}
+                onCancel={onCancel}
             />
         </>
     );

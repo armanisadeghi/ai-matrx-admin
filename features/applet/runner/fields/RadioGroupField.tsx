@@ -4,11 +4,8 @@ import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/sli
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { cn } from "@/lib/utils";
 import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
-
-// Import the shadcn/ui components
 import { Input } from "@/components/ui/input";
 
-// Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {
   selected: boolean;
   otherText?: string;

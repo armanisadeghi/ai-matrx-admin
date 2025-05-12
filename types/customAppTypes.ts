@@ -1,3 +1,4 @@
+import { defaultTableRules } from "@/features/applet/constants/field-constants";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
 import { ReactNode } from "react";
 
@@ -7,7 +8,10 @@ export type ComponentType =
   | 'textarea' 
   | 'buttonSelection'
   | 'buttonColumn'
-
+  | 'draggableTable'
+  | 'draggableEditableTable'
+  | 'dragEditModifyTable'
+  | 'dragTableRowAndColumn'
 
   | 'select' 
   | 'multiselect' 
@@ -35,6 +39,16 @@ export type ComponentType =
   | 'stepperNumber'
   | 'multiSearchableSelect'
 
+  export interface TableRules {
+    canAddRows?: boolean;
+    canDeleteRows?: boolean;
+    canAddColumns?: boolean;
+    canDeleteColumns?: boolean;
+    canEditCells?: boolean;
+    canRenameColumns?: boolean; // For column headers
+    canSortRows?: boolean;
+    canSortColumns?: boolean;
+}
 
 
 export interface FieldOption {
@@ -70,6 +84,7 @@ export interface ComponentProps {
   valueSuffix: string;
   maxLength: number;
   spellCheck: boolean;
+  tableRules: TableRules;
 }
 
 export interface FieldDefinition {
@@ -264,7 +279,8 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Parti
     valuePrefix: '',
     valueSuffix: '',
     maxLength: undefined,
-    spellCheck: false
+    spellCheck: false,
+    tableRules: defaultTableRules
   };
   
   const mergedComponentProps = {
@@ -294,4 +310,6 @@ export type ComponentGroup = AppletContainer & {
   authenticatedRead?: boolean;
   publicRead?: boolean;
 };
+
+
 

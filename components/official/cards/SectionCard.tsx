@@ -5,7 +5,8 @@ import { createCardStyles } from "@/components/official/styles";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SectionCardProps {
-    title: string;
+    title?: string;
+    titleNode?: ReactNode;
     description?: string;
     descriptionNode?: ReactNode;
     children: ReactNode;
@@ -23,6 +24,7 @@ interface SectionCardProps {
 
 const SectionCard: React.FC<SectionCardProps> = ({
     title,
+    titleNode,
     description,
     descriptionNode,
     children,
@@ -92,7 +94,11 @@ const SectionCard: React.FC<SectionCardProps> = ({
             <CardHeader className={getCardClasses().cardHeader}>
                 <div className="grid md:grid-cols-[1fr_auto] gap-4 md:items-center">
                     <div className="flex flex-col gap-1">
-                        <CardTitle className={getCardClasses().cardTitle}>{title}</CardTitle>
+                        {titleNode ? (
+                            <div className={getCardClasses().cardTitle}>{titleNode}</div>
+                        ) : title ? (
+                            <CardTitle className={getCardClasses().cardTitle}>{title}</CardTitle>
+                        ) : null}
                         {description && !descriptionNode && <div className={getCardClasses().cardDescription}>{description}</div>}
                         {descriptionNode && <div className={getCardClasses().cardDescriptionNode}>{descriptionNode}</div>}
                     </div>

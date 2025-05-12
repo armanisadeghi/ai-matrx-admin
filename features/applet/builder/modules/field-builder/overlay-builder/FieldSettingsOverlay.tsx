@@ -10,10 +10,12 @@ import { BasicTab, OptionsTab, SelectionTab, StylingTab, NumericTab, DateTimeTab
 interface FieldSettingsOverlayProps {
     isOpen: boolean;
     onClose: () => void;
+    onSave?: () => void;
+    onCancel?: () => void;
     fieldId: string;
 }
 
-const FieldSettingsOverlay: React.FC<FieldSettingsOverlayProps> = ({ isOpen, onClose, fieldId }) => {
+const FieldSettingsOverlay: React.FC<FieldSettingsOverlayProps> = ({ isOpen, onClose, onSave, onCancel, fieldId }) => {
     const [activeTab, setActiveTab] = useState("basic");
     const field = useAppSelector((state) => selectFieldById(state, fieldId));
 
@@ -66,16 +68,15 @@ const FieldSettingsOverlay: React.FC<FieldSettingsOverlayProps> = ({ isOpen, onC
         <FullScreenOverlay
             isOpen={isOpen}
             onClose={onClose}
-            title={`Field Settings: ${fieldName}`}
-            description={`Configure all settings for this ${componentType} field in one place`}
+            title={`Live Field Editor`}
             tabs={tabs}
             initialTab={activeTab}
             onTabChange={setActiveTab}
-            showSaveButton={true}
-            onSave={onClose}
+            showSaveButton={!!onSave}
+            onSave={onSave}
             saveButtonLabel="Save Changes"
-            showCancelButton={true}
-            onCancel={onClose}
+            showCancelButton={!!onCancel}
+            onCancel={onCancel}
             cancelButtonLabel="Cancel"
             width="98vw"
             sidePanel={<FieldPreviewAs fieldId={fieldId} />}
