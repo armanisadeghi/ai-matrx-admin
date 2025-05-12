@@ -7,7 +7,7 @@ import { startFieldCreation } from "@/lib/redux/app-builder/slices/fieldBuilderS
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { Toaster } from "@/components/ui/toaster";
-import FieldEditor from "@/features/applet/builder/modules/field-builder/FieldEditor";
+import FieldEditor from "@/features/applet/builder/modules/field-builder/editor/FieldEditor";
 
 export default function FieldCreatePage() {
     const dispatch = useAppDispatch();

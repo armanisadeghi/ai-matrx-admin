@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import FieldComponentsList from "./FieldComponentsList";
-import FieldEditor from "./FieldEditor";
+import FieldEditor from "./editor/FieldEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
     selectAllFields, 

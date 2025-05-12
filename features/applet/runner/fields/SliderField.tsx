@@ -105,7 +105,8 @@ const SliderField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -129,7 +130,7 @@ const SliderField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Set up UI state for controlled sliders
   const [sliderValue, setSliderValue] = useState<number | number[]>(
@@ -148,7 +149,7 @@ const SliderField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialValue,
         })
@@ -168,7 +169,7 @@ const SliderField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedValue,
       })

@@ -12,7 +12,7 @@ import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import { CheckCircle2, LocateOff, Variable, Plus, ListFilter, X, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { addBrokerMapping } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
-import FieldEditor from "../field-builder/FieldEditor";
+import FieldEditor from "../field-builder/editor/FieldEditor";
 import { setActiveField } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { selectFieldLabelByBrokerId, selectIsBrokerMapped } from "@/lib/redux/app-builder/selectors/appletSelectors";
 

@@ -70,8 +70,9 @@ interface FieldDefinition {
 const DirectMultiSelectField: React.FC<{
   field: FieldDefinition;
   appletId: string;
+  source?: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -94,7 +95,7 @@ const DirectMultiSelectField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   const [searchQuery, setSearchQuery] = useState("");
   const [otherText, setOtherText] = useState("");
@@ -120,7 +121,7 @@ const DirectMultiSelectField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialOptions,
         })
@@ -168,7 +169,7 @@ const DirectMultiSelectField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })
@@ -201,7 +202,7 @@ const DirectMultiSelectField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: limitedOptions,
         })
@@ -211,7 +212,7 @@ const DirectMultiSelectField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })
@@ -235,7 +236,7 @@ const DirectMultiSelectField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })
@@ -287,7 +288,7 @@ const DirectMultiSelectField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: clearedOptions,
       })

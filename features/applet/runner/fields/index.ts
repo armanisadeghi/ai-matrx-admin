@@ -12,7 +12,7 @@ export { default as SliderField } from './SliderField';
 export { default as StepperNumberField } from './StepperNumberField';
 export { default as SimpleNumberField } from './SimpleNumberField';
 export { default as SwitchField } from './SwitchField';
-export { default as ButtonGroupField } from './ButtonGroupField';
+export { default as ButtonColumnField } from './ButtonGroupField';
 export { default as InputField } from './InputField';
 export { default as SortableField } from './SortableField';
 export { default as FileUploadField } from './FileUploadField';

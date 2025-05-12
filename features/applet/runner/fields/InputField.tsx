@@ -58,7 +58,8 @@ const InputField: React.FC<{
     field: FieldDefinition;
     appletId: string;
     isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+    source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
     const { id, label, placeholder = "", required, disabled, componentProps = {} } = field;
     const { 
         type = "text",
@@ -76,12 +77,12 @@ const InputField: React.FC<{
     const safeWidthClass = ensureValidWidthClass(width);
     
     const dispatch = useAppDispatch();
-    const value = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+    const value = useAppSelector((state) => selectBrokerValue(state, source, id));
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         dispatch(
             updateBrokerValue({
-                source: "applet",
+                source: source,
                 itemId: id,
                 value: e.target.value,
             })

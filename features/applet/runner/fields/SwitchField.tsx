@@ -74,7 +74,8 @@ const SwitchField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -94,7 +95,7 @@ const SwitchField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Initialize state if needed
   useEffect(() => {
@@ -104,7 +105,7 @@ const SwitchField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialValue,
         })
@@ -116,7 +117,7 @@ const SwitchField: React.FC<{
   const handleToggle = (checked: boolean) => {
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: checked,
       })

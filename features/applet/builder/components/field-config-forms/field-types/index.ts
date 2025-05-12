@@ -1,9 +1,0 @@
-export { InputConfigForm } from './InputConfigForm';
-export { TextareaConfigForm } from './TextareaConfigForm';
-export { SelectConfigForm } from './SelectConfigForm';
-export { ButtonConfigForm } from './ButtonConfigForm';
-export { NumberConfigForm } from './NumberConfigForm';
-export { CheckboxConfigForm } from './CheckboxConfigForm';
-export { RadioConfigForm } from './RadioConfigForm';
-export { SliderConfigForm } from './SliderConfigForm';
-export { MultiSelectConfigForm } from './MultiSelectConfigForm';

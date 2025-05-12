@@ -37,7 +37,6 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Parti
         iconName: field.iconName || "",
         component: componentType as ComponentType,
         required: field.required !== undefined ? field.required : false,
-        disabled: field.disabled !== undefined ? field.disabled : false,
         placeholder: field.placeholder || "",
         defaultValue: field.defaultValue !== undefined ? field.defaultValue : "",
         options: processFieldOptions(field.options || []),

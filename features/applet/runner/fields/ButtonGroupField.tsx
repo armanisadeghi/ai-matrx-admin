@@ -62,11 +62,12 @@ interface FieldDefinition {
   includeOther?: boolean;
 }
 
-const ButtonGroupField: React.FC<{
+const ButtonColumnField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -89,7 +90,7 @@ const ButtonGroupField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   const [otherText, setOtherText] = useState("");
   const [touched, setTouched] = useState(false);
@@ -115,7 +116,7 @@ const ButtonGroupField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialOptions,
         })
@@ -151,7 +152,7 @@ const ButtonGroupField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: updatedOptions,
         })
@@ -184,7 +185,7 @@ const ButtonGroupField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })
@@ -208,7 +209,7 @@ const ButtonGroupField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })
@@ -231,7 +232,7 @@ const ButtonGroupField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: clearedOptions,
       })
@@ -344,4 +345,4 @@ const ButtonGroupField: React.FC<{
   );
 };
 
-export default ButtonGroupField;
+export default ButtonColumnField;

@@ -136,11 +136,6 @@ export const selectFieldRequired = createSelector(
   (field) => (field ? field.required : null)
 );
 
-export const selectFieldDisabled = createSelector(
-  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
-  (field) => (field ? field.disabled : null)
-);
-
 export const selectFieldPlaceholder = createSelector(
   [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
   (field) => (field ? field.placeholder : null)
@@ -179,6 +174,112 @@ export const selectFieldIsDirty = createSelector(
 export const selectFieldIsLocal = createSelector(
   [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
   (field) => (field ? field.isLocal : null)
+);
+
+// Explicit selectors for each ComponentProps property
+export const selectFieldMin = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.min : null)
+);
+
+export const selectFieldMax = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.max : null)
+);
+
+export const selectFieldStep = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.step : null)
+);
+
+export const selectFieldRows = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.rows : null)
+);
+
+export const selectFieldMinDate = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.minDate : null)
+);
+
+export const selectFieldMaxDate = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.maxDate : null)
+);
+
+export const selectFieldOnLabel = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.onLabel : null)
+);
+
+export const selectFieldOffLabel = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.offLabel : null)
+);
+
+export const selectFieldMultiSelect = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.multiSelect : null)
+);
+
+export const selectFieldMaxItems = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.maxItems : null)
+);
+
+export const selectFieldMinItems = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.minItems : null)
+);
+
+export const selectFieldGridCols = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.gridCols : null)
+);
+
+export const selectFieldAutoComplete = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.autoComplete : null)
+);
+
+export const selectFieldDirection = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.direction : null)
+);
+
+export const selectFieldCustomContent = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.customContent : null)
+);
+
+export const selectFieldShowSelectAll = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.showSelectAll : null)
+);
+
+export const selectFieldWidth = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.width : null)
+);
+
+export const selectFieldValuePrefix = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.valuePrefix : null)
+);
+
+export const selectFieldValueSuffix = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.valueSuffix : null)
+);
+
+export const selectFieldMaxLength = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.maxLength : null)
+);
+
+export const selectFieldSpellCheck = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.spellCheck : null)
 );
 
 export const selectHasUnsavedFieldChanges = createSelector(

@@ -16,7 +16,6 @@ import {
     selectFieldHelpText,
     selectFieldPlaceholder,
     selectFieldRequired,
-    selectFieldDisabled,
     selectFieldIncludeOther,
     selectFieldComponentProps,
     selectFieldIsDirty,
@@ -32,7 +31,7 @@ import {
     setComponentProps,
     startFieldCreation,
 } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
-import { fieldHelpTextItems } from "./fieldHelpText";
+import { fieldHelpTextItems } from "../fieldHelpText";
 import { Broker, ComponentType } from "@/types/customAppTypes";
 import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
 import { componentOptions } from "@/features/applet/constants/field-constants";
@@ -48,14 +47,13 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
     // Redux selectors for field properties
     const field = useAppSelector((state) => selectFieldById(state, fieldId));
     const component = useAppSelector((state) => selectFieldComponent(state, fieldId));
-    const label = useAppSelector((state) => selectFieldLabel(state, fieldId)) || "";
-    const description = useAppSelector((state) => selectFieldDescription(state, fieldId)) || "";
-    const helpText = useAppSelector((state) => selectFieldHelpText(state, fieldId)) || "";
-    const placeholder = useAppSelector((state) => selectFieldPlaceholder(state, fieldId)) || "";
-    const required = useAppSelector((state) => selectFieldRequired(state, fieldId)) || false;
-    const disabled = useAppSelector((state) => selectFieldDisabled(state, fieldId)) || false;
-    const includeOther = useAppSelector((state) => selectFieldIncludeOther(state, fieldId)) || false;
-    const componentProps = useAppSelector((state) => selectFieldComponentProps(state, fieldId)) || {};
+    const label = useAppSelector((state) => selectFieldLabel(state, fieldId));
+    const description = useAppSelector((state) => selectFieldDescription(state, fieldId));
+    const helpText = useAppSelector((state) => selectFieldHelpText(state, fieldId));
+    const placeholder = useAppSelector((state) => selectFieldPlaceholder(state, fieldId));
+    const required = useAppSelector((state) => selectFieldRequired(state, fieldId));
+    const includeOther = useAppSelector((state) => selectFieldIncludeOther(state, fieldId));
+    const componentProps = useAppSelector((state) => selectFieldComponentProps(state, fieldId));
     const [autoSetLabel, setAutoSetLabel] = useState<boolean>(false);
 
     // Ensure field exists

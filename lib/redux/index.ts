@@ -45,8 +45,6 @@ export * from './features/broker/data';
 export * from './features/broker/selectors';
 export * from './features/broker/types';
 export * from './features/config/configSlice';
-export * from './features/dynamicEvents/dynamicEventsSlice';
-export * from './features/dynamicEvents/dynamicEventsThunks';
 export * from './features/functions/functionsSelectors';
 export * from './features/functions/functionsThunks';
 export * from './features/functions/functionsTypes';
@@ -95,3 +93,4 @@ export * from './ui/uiSelectors';
 export * from './ui/uiSlice';
 export * from './ui/uiThunks';
 export * from './ui/uiTypes';
+

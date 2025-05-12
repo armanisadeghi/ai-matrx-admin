@@ -50,7 +50,8 @@ const StepperNumberField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -74,7 +75,7 @@ const StepperNumberField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Local state for the input value
   const [inputValue, setInputValue] = useState<string>("");
@@ -86,7 +87,7 @@ const StepperNumberField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialValue,
         })
@@ -128,7 +129,7 @@ const StepperNumberField: React.FC<{
     if (!isNaN(parsedValue)) {
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: validateValue(parsedValue),
         })
@@ -144,7 +145,7 @@ const StepperNumberField: React.FC<{
       setInputValue(String(resetValue));
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: resetValue,
         })
@@ -159,7 +160,7 @@ const StepperNumberField: React.FC<{
       setInputValue(String(validatedValue));
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: validatedValue,
         })
@@ -177,7 +178,7 @@ const StepperNumberField: React.FC<{
     setInputValue(String(newValue));
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: newValue,
       })
@@ -194,7 +195,7 @@ const StepperNumberField: React.FC<{
     setInputValue(String(newValue));
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: newValue,
       })

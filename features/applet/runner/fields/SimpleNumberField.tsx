@@ -49,7 +49,8 @@ const SimpleNumberField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -72,7 +73,7 @@ const SimpleNumberField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Local state for the input value
   const [inputValue, setInputValue] = useState<string>("");
@@ -84,7 +85,7 @@ const SimpleNumberField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialValue,
         })
@@ -122,7 +123,7 @@ const SimpleNumberField: React.FC<{
         
         dispatch(
           updateBrokerValue({
-            source: "applet",
+            source: source,
             itemId: id,
             value: validValue,
           })
@@ -140,7 +141,7 @@ const SimpleNumberField: React.FC<{
         setInputValue(String(resetValue));
         dispatch(
           updateBrokerValue({
-            source: "applet",
+            source: source,
             itemId: id,
             value: resetValue,
           })
@@ -149,7 +150,7 @@ const SimpleNumberField: React.FC<{
         setInputValue("");
         dispatch(
           updateBrokerValue({
-            source: "applet",
+            source: source,
             itemId: id,
             value: null,
           })
@@ -173,7 +174,7 @@ const SimpleNumberField: React.FC<{
       setInputValue(String(validValue));
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: validValue,
         })

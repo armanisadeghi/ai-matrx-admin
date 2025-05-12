@@ -60,8 +60,9 @@ interface FieldDefinition {
 const MultiDateField: React.FC<{
   field: FieldDefinition;
   appletId: string;
+  source?: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -85,7 +86,7 @@ const MultiDateField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Initialize state if needed
   useEffect(() => {
@@ -93,7 +94,7 @@ const MultiDateField: React.FC<{
       // Initialize with empty array
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: [],
         })
@@ -143,7 +144,7 @@ const MultiDateField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedDates,
       })
@@ -169,7 +170,7 @@ const MultiDateField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedDates,
       })
@@ -231,7 +232,7 @@ const MultiDateField: React.FC<{
                 // Clear all dates
                 dispatch(
                   updateBrokerValue({
-                    source: "applet",
+                    source: source,
                     itemId: id,
                     value: [],
                   })
@@ -277,7 +278,7 @@ const MultiDateField: React.FC<{
                 // All dates were cleared
                 dispatch(
                   updateBrokerValue({
-                    source: "applet",
+                    source: source,
                     itemId: id,
                     value: [],
                   })

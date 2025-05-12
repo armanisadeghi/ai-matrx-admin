@@ -50,7 +50,8 @@ const StarRatingField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -71,7 +72,7 @@ const StarRatingField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Local state for rating and hover
   const [rating, setRating] = useState<number | null>(null);
@@ -89,7 +90,7 @@ const StarRatingField: React.FC<{
       // Update state
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: defaultRating,
         })
@@ -109,7 +110,7 @@ const StarRatingField: React.FC<{
       // Update state
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: null,
         })
@@ -121,7 +122,7 @@ const StarRatingField: React.FC<{
       // Update state
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: value,
         })

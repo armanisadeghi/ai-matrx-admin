@@ -60,7 +60,8 @@ const DateField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -82,7 +83,7 @@ const DateField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Process min and max dates
   const processDateLimit = (dateLimit: string): Date | undefined => {
@@ -104,7 +105,7 @@ const DateField: React.FC<{
   const handleDateSelect = (date: Date | undefined) => {
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: date ? date.toISOString() : null,
       })

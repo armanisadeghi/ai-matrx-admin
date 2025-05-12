@@ -73,8 +73,9 @@ interface FieldDefinition {
 const SearchableSelectField: React.FC<{
   field: FieldDefinition;
   appletId: string;
+  source?: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -89,7 +90,7 @@ const SearchableSelectField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -115,7 +116,7 @@ const SearchableSelectField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialOptions,
         })
@@ -133,7 +134,7 @@ const SearchableSelectField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })
@@ -159,7 +160,7 @@ const SearchableSelectField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })

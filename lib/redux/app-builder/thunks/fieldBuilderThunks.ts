@@ -110,23 +110,23 @@ export const createFieldThunk = createAsyncThunk<FieldBuilder, FieldBuilder>(
     }
 );
 
-export const updateFieldThunk = createAsyncThunk<FieldBuilder, { id: string; changes: Partial<FieldBuilder> }>(
-    "fieldBuilder/updateField",
-    async ({ id, changes }, { rejectWithValue }) => {
-        try {
-            const updatedField = await updateFieldComponent(id, { 
-                id, 
-                label: changes.label || '', 
-                component: changes.component || 'input', 
-                componentProps: changes.componentProps || {}, 
-                ...changes 
-            });
-            return updatedField;
-        } catch (error: any) {
-            return rejectWithValue(error.message);
-        }
-    }
-);
+// export const updateFieldThunk = createAsyncThunk<FieldBuilder, { id: string; changes: Partial<FieldBuilder> }>(
+//     "fieldBuilder/updateField",
+//     async ({ id, changes }, { rejectWithValue }) => {
+//         try {
+//             const updatedField = await updateFieldComponent(id, { 
+//                 id, 
+//                 label: changes.label || '', 
+//                 component: changes.component || 'input', 
+//                 componentProps: changes.componentProps || {}, 
+//                 ...changes 
+//             });
+//             return updatedField;
+//         } catch (error: any) {
+//             return rejectWithValue(error.message);
+//         }
+//     }
+// );
 
 export const deleteFieldThunk = createAsyncThunk<void, string>(
     "fieldBuilder/deleteField",

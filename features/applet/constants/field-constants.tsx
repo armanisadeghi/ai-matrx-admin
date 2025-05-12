@@ -133,22 +133,23 @@ export const componentMap: Record<ComponentType, ComponentInfo> = {
         category: "Two-Option Selection",
     },
 
-    buttonGroup: {
-        icon: <Layers className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
-        displayName: "Button Group",
-        fieldComponent: "ButtonGroupField.tsx",
-        category: "Option List Selection",
-    },
     buttonSelection: {
         icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
         displayName: "Button Selection",
+        description: "A group of buttons that allows the user to select one or more options from a list by clicking them on or off.",
+        examples: "Select shopping categories: (groceries, electronics, clothing, etc.)",
         fieldComponent: "ButtonSelectionField.tsx",
+        category: "Option List Selection",
     },
 
     buttonColumn: {
         icon: <SquareStack className="h-5 w-5 text-blue-500 dark:text-blue-400" />,
         displayName: "Button Column",
+        description:
+            "A column with individual buttons for each row to allow users to select one or more. Great when you have limited options or when you want to make the options highly visible.",
+        examples: "Select shopping categories: (groceries, electronics, clothing, etc.)",
         fieldComponent: "ButtonColumnField.tsx",
+        category: "Option List Selection",
     },
 
     // Number inputs
@@ -278,17 +279,17 @@ export const FIELD_DEFAULT_COMPONENT_PROPS: ComponentProps = {
     onLabel: "Yes",
     offLabel: "No",
     multiSelect: false,
-    maxItems: undefined,
+    maxItems: 99999,
     minItems: 0,
     gridCols: "grid-cols-1",
     autoComplete: "off",
     direction: "vertical",
-    customContent: undefined,
+    customContent: "",
     showSelectAll: false,
     width: "w-full",
     valuePrefix: "",
     valueSuffix: "",
-    maxLength: undefined,
+    maxLength: 999999,
     spellCheck: false,
 };
 
@@ -481,10 +482,6 @@ export const getComponentTypeDefaults = (componentType: ComponentType): Partial<
             minItems: FIELD_DEFAULT_COMPONENT_PROPS.minItems,
             showSelectAll: FIELD_DEFAULT_COMPONENT_PROPS.showSelectAll,
         },
-
-
-
-
 
         select: {},
         multiselect: {

@@ -58,7 +58,8 @@ const ButtonSelectionField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -79,7 +80,7 @@ const ButtonSelectionField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   const [touched, setTouched] = useState(false);
   
   // Initialize state if needed
@@ -88,7 +89,7 @@ const ButtonSelectionField: React.FC<{
       // Initialize with empty array
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: [],
         })
@@ -134,7 +135,7 @@ const ButtonSelectionField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedValue,
       })

@@ -6,45 +6,39 @@ import { ComponentType } from "@/types/customAppTypes";
 import { componentOptions } from "@/features/applet/constants/field-constants";
 
 export default function useTempBrokerMapping(fieldId: string) {
-    const [stableAppletId] = useState<string>(uuidv4());
-    const [mappings, setMappings] = useState<Map<string, string>>(new Map());
+    const [stableAppletId] = useState(() => uuidv4());
     const dispatch = useAppDispatch();
 
-    // Generate broker mappings for all component types on initial render
+    // Set up broker mappings on mount
     useEffect(() => {
         if (!fieldId) return;
 
-        const newMappings = new Map<string, string>();
+        const mappings = [];
         
         // Original field mapping
-        newMappings.set(fieldId, uuidv4());
+        mappings.push({
+            source: "applet",
+            sourceId: stableAppletId,
+            itemId: fieldId,
+            brokerId: uuidv4()
+        });
         
         // Create mappings for all possible component types
         componentOptions.forEach(option => {
-            const previewFieldId = `${fieldId}-${option.value}`;
-            newMappings.set(previewFieldId, uuidv4());
+            mappings.push({
+                source: "applet",
+                sourceId: stableAppletId,
+                itemId: `${fieldId}-${option.value}`,
+                brokerId: uuidv4()
+            });
         });
         
-        setMappings(newMappings);
-    }, [fieldId]);
+        dispatch(setBrokerMap(mappings));
+    }, [fieldId, stableAppletId, dispatch]);
 
-    // Set broker mappings whenever they change
-    useEffect(() => {
-        if (!fieldId || mappings.size === 0) return;
-
-        const brokerMappings = Array.from(mappings).map(([itemId, brokerId]) => ({
-            source: "applet",
-            sourceId: stableAppletId,
-            itemId,
-            brokerId,
-        }));
-
-        dispatch(setBrokerMap(brokerMappings));
-    }, [fieldId, mappings, stableAppletId, dispatch]);
-
-    // Get a field ID for a specific component type preview
+    // Simple function to get a field ID for a specific component type
     const getPreviewFieldId = (componentType: ComponentType | null) => {
-        if (!componentType || !fieldId) return fieldId;
+        if (!componentType) return fieldId;
         return `${fieldId}-${componentType}`;
     };
 

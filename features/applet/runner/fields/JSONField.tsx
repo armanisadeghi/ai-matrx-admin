@@ -49,7 +49,8 @@ const JSONField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -69,7 +70,7 @@ const JSONField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Local state for the textarea value
   const [jsonText, setJsonText] = useState<string>("");
@@ -105,7 +106,7 @@ const JSONField: React.FC<{
         // Also update the state value
         dispatch(
           updateBrokerValue({
-            source: "applet",
+            source: source,
             itemId: id,
             value: defaultValue,
           })
@@ -155,7 +156,7 @@ const JSONField: React.FC<{
       // Update state with parsed value
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: value,
         })
@@ -168,7 +169,7 @@ const JSONField: React.FC<{
       // If invalid, keep the raw text in state
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: jsonText,
         })

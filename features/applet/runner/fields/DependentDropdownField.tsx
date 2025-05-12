@@ -75,7 +75,8 @@ const DependentDropdownField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -95,7 +96,7 @@ const DependentDropdownField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Set up UI state
   const [open, setOpen] = useState<{ [key: string]: boolean }>({});
@@ -126,7 +127,7 @@ const DependentDropdownField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialOptions,
         })
@@ -217,7 +218,7 @@ const DependentDropdownField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: updatedOptions,
         })
@@ -296,7 +297,7 @@ const DependentDropdownField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })
@@ -322,7 +323,7 @@ const DependentDropdownField: React.FC<{
     
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedOptions,
       })

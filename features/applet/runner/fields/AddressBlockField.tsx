@@ -79,7 +79,8 @@ const AddressBlockField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -96,7 +97,7 @@ const AddressBlockField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Local state for address fields
   const [address, setAddress] = useState<AddressData>({
@@ -133,7 +134,7 @@ const AddressBlockField: React.FC<{
       // Update state with default value
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: {
             ...address,
@@ -162,7 +163,7 @@ const AddressBlockField: React.FC<{
     // Update state
     dispatch(
       updateBrokerValue({
-        source: "applet",
+        source: source,
         itemId: id,
         value: updatedAddress,
       })

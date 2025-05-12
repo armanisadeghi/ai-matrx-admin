@@ -16,7 +16,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/use-toast';
 import { Toaster } from '@/components/ui/toaster';
-import FieldEditor from '@/features/applet/builder/modules/field-builder/FieldEditor';
+import FieldEditor from '@/features/applet/builder/modules/field-builder/editor/FieldEditor';
 
 export default function FieldEditPage({ params }: { params: Promise<{ id: string }> }) {
   // Use React.use() to unwrap the params Promise

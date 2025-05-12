@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
     createFieldThunk,
-    updateFieldThunk,
     deleteFieldThunk,
     fetchFieldsThunk,
     fetchFieldByIdThunk,
@@ -12,7 +11,8 @@ import {
     FetchFieldByIdSuccessAction
 } from "../thunks/fieldBuilderThunks";
 import { FieldBuilder } from "../types";
-import { FieldOption } from "@/types/customAppTypes";
+import { fieldDirection, FieldOption } from "@/types/customAppTypes";
+import { ComponentProps } from "@/types/customAppTypes";
 
 // Helper function to check if a field exists in state
 const checkFieldExists = (state: FieldsState, id: string): boolean => {
@@ -24,6 +24,48 @@ const checkFieldExists = (state: FieldsState, id: string): boolean => {
     return true;
 };
 
+// Helper function to normalize a FieldBuilder object with defaults
+const normalizeField = (field: FieldBuilder): FieldBuilder => {
+    // Merge componentProps with defaults
+    const normalizedComponentProps: ComponentProps = {
+        ...FIELD_DEFAULT_COMPONENT_PROPS,
+        ...field.componentProps,
+    };
+
+    // Merge field with defaults
+    return {
+        ...DEFAULT_FIELD,
+        ...field,
+        componentProps: normalizedComponentProps,
+        isDirty: false,
+        isLocal: false,
+    } as FieldBuilder;
+};
+
+export const FIELD_DEFAULT_COMPONENT_PROPS: ComponentProps = {
+    min: 0,
+    max: 100,
+    step: 1,
+    rows: 3,
+    minDate: "",
+    maxDate: "",
+    onLabel: "Yes",
+    offLabel: "No",
+    multiSelect: false,
+    maxItems: 99999,
+    minItems: 0,
+    gridCols: "grid-cols-1",
+    autoComplete: "off",
+    direction: "vertical",
+    customContent: "",
+    showSelectAll: false,
+    width: "w-full",
+    valuePrefix: "",
+    valueSuffix: "",
+    maxLength: 999999,
+    spellCheck: false,
+};
+
 // Default field configuration
 export const DEFAULT_FIELD: Partial<FieldBuilder> = {
     label: "",
@@ -33,11 +75,10 @@ export const DEFAULT_FIELD: Partial<FieldBuilder> = {
     iconName: "",
     component: "textarea",
     required: false,
-    disabled: false,
     placeholder: "",
     defaultValue: "",
     options: [],
-    componentProps: {},
+    componentProps: FIELD_DEFAULT_COMPONENT_PROPS,
     includeOther: false,
     isPublic: false,
     isDirty: false,
@@ -140,12 +181,6 @@ export const fieldBuilderSlice = createSlice({
             
             state.fields[id] = { ...state.fields[id], required, isDirty: true };
         },
-        setDisabled: (state, action: PayloadAction<{ id: string; disabled?: boolean }>) => {
-            const { id, disabled } = action.payload;
-            if (!checkFieldExists(state, id)) return;
-            
-            state.fields[id] = { ...state.fields[id], disabled, isDirty: true };
-        },
         setPlaceholder: (state, action: PayloadAction<{ id: string; placeholder?: string }>) => {
             const { id, placeholder } = action.payload;
             if (!checkFieldExists(state, id)) return;
@@ -187,6 +222,217 @@ export const fieldBuilderSlice = createSlice({
             if (!checkFieldExists(state, id)) return;
             
             state.fields[id] = { ...state.fields[id], isLocal };
+        },
+        // Actions for ComponentProps properties
+        setMin: (state, action: PayloadAction<{ id: string; min?: number }>) => {
+            const { id, min } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, min },
+                isDirty: true
+            };
+        },
+        setMax: (state, action: PayloadAction<{ id: string; max?: number }>) => {
+            const { id, max } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, max },
+                isDirty: true
+            };
+        },
+        setStep: (state, action: PayloadAction<{ id: string; step?: number }>) => {
+            const { id, step } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, step },
+                isDirty: true
+            };
+        },
+        setRows: (state, action: PayloadAction<{ id: string; rows?: number }>) => {
+            const { id, rows } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, rows },
+                isDirty: true
+            };
+        },
+        setMinDate: (state, action: PayloadAction<{ id: string; minDate?: string }>) => {
+            const { id, minDate } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, minDate },
+                isDirty: true
+            };
+        },
+        setMaxDate: (state, action: PayloadAction<{ id: string; maxDate?: string }>) => {
+            const { id, maxDate } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, maxDate },
+                isDirty: true
+            };
+        },
+        setOnLabel: (state, action: PayloadAction<{ id: string; onLabel?: string }>) => {
+            const { id, onLabel } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, onLabel },
+                isDirty: true
+            };
+        },
+        setOffLabel: (state, action: PayloadAction<{ id: string; offLabel?: string }>) => {
+            const { id, offLabel } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, offLabel },
+                isDirty: true
+            };
+        },
+        setMultiSelect: (state, action: PayloadAction<{ id: string; multiSelect?: boolean }>) => {
+            const { id, multiSelect } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, multiSelect },
+                isDirty: true
+            };
+        },
+        setMaxItems: (state, action: PayloadAction<{ id: string; maxItems?: number }>) => {
+            const { id, maxItems } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, maxItems },
+                isDirty: true
+            };
+        },
+        setMinItems: (state, action: PayloadAction<{ id: string; minItems?: number }>) => {
+            const { id, minItems } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, minItems },
+                isDirty: true
+            };
+        },
+        setGridCols: (state, action: PayloadAction<{ id: string; gridCols?: string }>) => {
+            const { id, gridCols } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, gridCols },
+                isDirty: true
+            };
+        },
+        setAutoComplete: (state, action: PayloadAction<{ id: string; autoComplete?: string }>) => {
+            const { id, autoComplete } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, autoComplete },
+                isDirty: true
+            };
+        },
+        setDirection: (state, action: PayloadAction<{ id: string; direction?: fieldDirection }>) => {
+            const { id, direction } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, direction },
+                isDirty: true
+            };
+        },
+        setCustomContent: (state, action: PayloadAction<{ id: string; customContent?: string }>) => {
+            const { id, customContent } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, customContent },
+                isDirty: true
+            };
+        },
+        setShowSelectAll: (state, action: PayloadAction<{ id: string; showSelectAll?: boolean }>) => {
+            const { id, showSelectAll } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, showSelectAll },
+                isDirty: true
+            };
+        },
+        setWidth: (state, action: PayloadAction<{ id: string; width?: string }>) => {
+            const { id, width } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, width },
+                isDirty: true
+            };
+        },
+        setValuePrefix: (state, action: PayloadAction<{ id: string; valuePrefix?: string }>) => {
+            const { id, valuePrefix } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, valuePrefix },
+                isDirty: true
+            };
+        },
+        setValueSuffix: (state, action: PayloadAction<{ id: string; valueSuffix?: string }>) => {
+            const { id, valueSuffix } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, valueSuffix },
+                isDirty: true
+            };
+        },
+        setMaxLength: (state, action: PayloadAction<{ id: string; maxLength?: number }>) => {
+            const { id, maxLength } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, maxLength },
+                isDirty: true
+            };
+        },
+        setSpellCheck: (state, action: PayloadAction<{ id: string; spellCheck?: boolean }>) => {
+            const { id, spellCheck } = action.payload;
+            if (!checkFieldExists(state, id)) return;
+            
+            state.fields[id] = {
+                ...state.fields[id],
+                componentProps: { ...state.fields[id].componentProps, spellCheck },
+                isDirty: true
+            };
         },
         // Actions for options
         addOption: (state, action: PayloadAction<{ id: string; option: FieldOption }>) => {
@@ -260,20 +506,6 @@ export const fieldBuilderSlice = createSlice({
             state.error = action.error.message || "Failed to create field";
         });
 
-        // Update Field
-        builder.addCase(updateFieldThunk.pending, (state) => {
-            state.isLoading = true;
-            state.error = null;
-        });
-        builder.addCase(updateFieldThunk.fulfilled, (state, action) => {
-            state.fields[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
-            state.isLoading = false;
-        });
-        builder.addCase(updateFieldThunk.rejected, (state, action) => {
-            state.isLoading = false;
-            state.error = action.error.message || "Failed to update field";
-        });
-
         // Delete Field
         builder.addCase(deleteFieldThunk.pending, (state) => {
             state.isLoading = true;
@@ -296,7 +528,7 @@ export const fieldBuilderSlice = createSlice({
         builder.addCase(fetchFieldsThunk.fulfilled, (state, action) => {
             // Create a new fields object that preserves local fields
             const newFields = action.payload.reduce((acc, field) => {
-                acc[field.id] = { ...field, isDirty: false, isLocal: false };
+                acc[field.id] = normalizeField(field);
                 return acc;
             }, {} as Record<string, FieldBuilder>);
             
@@ -321,7 +553,7 @@ export const fieldBuilderSlice = createSlice({
             state.error = null;
         });
         builder.addCase(fetchFieldByIdThunk.fulfilled, (state, action) => {
-            state.fields[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
+            state.fields[action.payload.id] = normalizeField(action.payload);
             state.isLoading = false;
         });
         builder.addCase(fetchFieldByIdThunk.rejected, (state, action) => {
@@ -418,7 +650,7 @@ export const fieldBuilderSlice = createSlice({
 
         // Handle fetchFieldByIdSuccess (used by setActiveFieldWithFetchThunk)
         builder.addCase("fieldBuilder/fetchFieldByIdSuccess", (state, action: FetchFieldByIdSuccessAction) => {
-            state.fields[action.payload.id] = { ...action.payload, isDirty: false, isLocal: false };
+            state.fields[action.payload.id] = normalizeField(action.payload);
             state.isLoading = false;
         });
     },
@@ -435,7 +667,6 @@ export const {
     setIconName,
     setComponent,
     setRequired,
-    setDisabled,
     setPlaceholder,
     setDefaultValue,
     setComponentProps,
@@ -443,6 +674,27 @@ export const {
     setIsPublic,
     setIsDirty,
     setIsLocal,
+    setMin,
+    setMax,
+    setStep,
+    setRows,
+    setMinDate,
+    setMaxDate,
+    setOnLabel,
+    setOffLabel,
+    setMultiSelect,
+    setMaxItems,
+    setMinItems,
+    setGridCols,
+    setAutoComplete,
+    setDirection,
+    setCustomContent,
+    setShowSelectAll,
+    setWidth,
+    setValuePrefix,
+    setValueSuffix,
+    setMaxLength,
+    setSpellCheck,
     addOption,
     updateOption,
     deleteOption,

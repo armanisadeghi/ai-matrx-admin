@@ -50,8 +50,9 @@ interface FieldDefinition {
 const FileUploadField: React.FC<{
   field: FieldDefinition;
   appletId: string;
+  source?: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -70,7 +71,7 @@ const FileUploadField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Track the upload status
   const [isUploading, setIsUploading] = React.useState(false);
@@ -80,7 +81,7 @@ const FileUploadField: React.FC<{
     if (stateValue === undefined && field.defaultValue) {
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: field.defaultValue,
         })
@@ -95,7 +96,7 @@ const FileUploadField: React.FC<{
       if (!multiSelect) {
         dispatch(
           updateBrokerValue({
-            source: "applet",
+            source: source,
             itemId: id,
             value: results[0],
           })
@@ -123,7 +124,7 @@ const FileUploadField: React.FC<{
       
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: updatedValue,
         })

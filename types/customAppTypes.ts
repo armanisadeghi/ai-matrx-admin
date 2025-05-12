@@ -5,6 +5,10 @@ import { ReactNode } from "react";
 export type ComponentType = 
   | 'input' 
   | 'textarea' 
+  | 'buttonSelection'
+  | 'buttonColumn'
+
+
   | 'select' 
   | 'multiselect' 
   | 'radio' 
@@ -22,7 +26,6 @@ export type ComponentType =
   | 'multiDate'
   | 'simpleNumber'
   | 'sortable'
-  | 'buttonColumn'
   | 'tagInput'
   | 'dependentDropdown'
   | 'addressBlock'
@@ -30,8 +33,6 @@ export type ComponentType =
   | 'phoneNumber'
   | 'stepperNumber'
   | 'multiSearchableSelect'
-  | 'buttonGroup'
-  | 'buttonSelection';
 
 
 
@@ -43,45 +44,46 @@ export interface FieldOption {
   iconName?: string; // Icon name from lucide-react.
 }
 
+export type fieldDirection = "vertical" | "horizontal";
+
 export interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
+  min: number;
+  max: number;
+  step: number;
+  rows: number;
+  minDate: string;
+  maxDate: string;
+  onLabel: string;
+  offLabel: string;
+  multiSelect: boolean;
+  maxItems: number;
+  minItems: number;
+  gridCols: string;
+  autoComplete: string;
+  direction: fieldDirection;
+  customContent: ReactNode;
+  showSelectAll: boolean;
+  width: string;
+  valuePrefix: string;
+  valueSuffix: string;
+  maxLength: number;
+  spellCheck: boolean;
 }
 
 export interface FieldDefinition {
   id: string;
   label: string;
-  description?: string;
-  helpText?: string;
+  description: string;
+  helpText: string;
+  component: ComponentType;
+  required: boolean;
+  placeholder: string;
+  componentProps: ComponentProps;
+  includeOther: boolean;
   group?: string;
   iconName?: string;
-  component: ComponentType;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
   defaultValue?: any;
   options?: FieldOption[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
 }
 
 export type AppletContainer = {
@@ -277,7 +279,6 @@ export function normalizeFieldDefinition(field: Partial<FieldDefinition> | Parti
     iconName: field.iconName || '',
     component: componentType,
     required: field.required !== undefined ? field.required : false,
-    disabled: field.disabled !== undefined ? field.disabled : false,
     placeholder: field.placeholder || '',
     defaultValue: field.defaultValue !== undefined ? field.defaultValue : '',
     options: field.options || [],

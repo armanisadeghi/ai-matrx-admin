@@ -1,12 +1,19 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { createSelector } from 'reselect';
 import { RootState } from '@/lib/redux';
+import { v4 as uuidv4 } from 'uuid';
 
 interface BrokerMapEntry {
   source: string;
   sourceId: string;
   itemId: string;
   brokerId: string;
+}
+
+interface DynamicBrokerMapEntry {
+  source: string;
+  sourceId: string;
+  itemId: string;
 }
 
 interface BrokerState {
@@ -57,6 +64,31 @@ const brokersSlice = createSlice({
       });
       state.brokerMap = newMap;
     },
+    addDynamicBrokerMap(
+      state,
+      action: PayloadAction<DynamicBrokerMapEntry | DynamicBrokerMapEntry[]>
+    ) {
+      const entries = Array.isArray(action.payload) 
+        ? action.payload 
+        : [action.payload];
+        
+      entries.forEach((entry) => {
+        // Generate a new UUID for this mapping
+        const brokerId = uuidv4();
+        
+        // Create the map entry
+        const mapEntry: BrokerMapEntry = {
+          source: entry.source,
+          sourceId: entry.sourceId,
+          itemId: entry.itemId,
+          brokerId,
+        };
+        
+        // Add to map using standard format
+        const mapKey = `${entry.source}:${entry.itemId}`;
+        state.brokerMap[mapKey] = mapEntry;
+      });
+    },
     resetMapEntry(
       state,
       action: PayloadAction<{ source: string; itemId: string }>
@@ -102,6 +134,7 @@ const brokersSlice = createSlice({
 export const {
   updateBrokerValue,
   setBrokerMap,
+  addDynamicBrokerMap,
   resetMapEntry,
   resetMapFull,
   resetBrokerValue,
@@ -126,6 +159,17 @@ export const selectBrokerValue = createSelector(
 export const selectBrokerValueByBrokerId = createSelector(
   [selectBrokersState, (_: RootState, brokerId: string) => brokerId],
   (brokersState, brokerId) => brokersState.brokers[brokerId]
+);
+
+export const selectBrokerId = createSelector(
+  [
+    selectBrokersState,
+    (_: RootState, source: string, itemId: string) => ({ source, itemId }),
+  ],
+  (brokersState, { source, itemId }) => {
+    const mapKey = `${source}:${itemId}`;
+    return brokersState.brokerMap[mapKey]?.brokerId;
+  }
 );
 
 export default brokersSlice.reducer;

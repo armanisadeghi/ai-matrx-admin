@@ -1,8 +1,6 @@
 import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
 import { Label } from "@/components/ui/label";
 
-
-
 export const fieldHelpTextItems = {
     label: "The label or name. This is the most promanent thing the user will see. For convenience, this defaults to the broker name, but it can be changed to any value.",
     description:
@@ -27,15 +25,38 @@ export const fieldHelpTextItems = {
     offLabel: "The default is 'No' but you can enter anything you wish to use such as False, Off, Closed, etc.",
     options:
         "This is perhaps the most useful and powerful feature for components. This will allow you to provide users with highly relevant options which can generate highly customized results depending on your workflow or recipe.\n\nYou can often capture a complex text input with this single value, but it's more work for you to set up.",
+    width: "Controls the width of the field. It's best to leave this as full width, since your container will already establish the width, but there are times when this will be a valuable customization.",
+    direction:
+        "Controls the direction of the field. This is only relevant for fields that have multiple options, such as radio groups or checkboxes.",
+    gridCols: "Controls the number of columns the field will use",
+    spellCheck: "If you check this, the field will have spell check enabled",
+    multiSelect: "If you check this, the field will allow multiple selections",
+    showSelectAll: "If you check this, the field will show a 'Select All' option",
+    minItems: "The minimum number of items the field will allow the user to select",
+    maxItems: "The maximum number of items the field will allow the user to select",
+    minLength: "The minimum number of characters the user can enter",
+    maxLength: "The maximum number of characters the user can enter",
+    minValue: "The minimum value the user can enter",
+    maxValue: "The maximum value the user can enter",
+    valuePrefix: "Text to display before the value (e.g., $)",
+    valueSuffix: "Text to display after the value (e.g., %)",
+    autoComplete: "Browser autocomplete behavior for this field",
+    customContent: "This is a more advanced feature that allows you to enter custom HTML content for the field.",
+    disabled: "This will probably be removed. Why would you create a permanently disabled field?",
+    dateFormat: "The format of the date the user can enter",
+    timeFormat: "The format of the time the user can enter",
+    timeZone: "The time zone of the date the user can enter",
+    timeZoneOffset: "The time zone offset of the date the user can enter",
 };
 
-  
 export const containerHelpTextItems = {
     properties: "Basic information about this container",
     label: "This will be the main identifier for your container",
-    shortLabel: "A shorter name used in limited space contexts. In most cases, this is not necessary, but if you choose a small layout and have many containers, this can be helpful and will be automatically used.",
+    shortLabel:
+        "A shorter name used in limited space contexts. In most cases, this is not necessary, but if you choose a small layout and have many containers, this can be helpful and will be automatically used.",
     hideDescription: "If you check this, the description will not be visible to the user.",
-    helpText: "If you don't enter a value, it's perfectly fine. \nIf you enter any text, then the user will see an icon exactly like the one you just hovered and they will see exactly the same thing you're looking at now.",
+    helpText:
+        "If you don't enter a value, it's perfectly fine. \nIf you enter any text, then the user will see an icon exactly like the one you just hovered and they will see exactly the same thing you're looking at now.",
     description:
         "The description is not always visible, depending on your chosen layout. It's a good practice to have one just in case, But the system is designed to work seamlessly without it.",
     fields: "The fields that are contained within this container.",
@@ -44,9 +65,6 @@ export const containerHelpTextItems = {
     authenticatedRead: "If you check this, the container will be available for use in multiple apps.",
     publicRead: "If you check this, the container will be available for use in multiple apps.",
 };
-
-
-
 
 export interface AppBuilderHelpTextProps {
     fieldName: string;
@@ -64,7 +82,7 @@ export const FieldLabelAndHelpText = ({ fieldName, fieldLabel, required }: AppBu
             <HelpIcon text={fieldHelpTextItems[fieldName]} />
         </div>
     );
-}
+};
 
 export const ContainerLabelAndHelpText = ({ fieldName, fieldLabel, required }: AppBuilderHelpTextProps) => {
     return (
@@ -76,4 +94,4 @@ export const ContainerLabelAndHelpText = ({ fieldName, fieldLabel, required }: A
             <HelpIcon text={containerHelpTextItems[fieldName]} />
         </div>
     );
-}
+};

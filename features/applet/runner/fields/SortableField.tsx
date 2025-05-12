@@ -58,7 +58,8 @@ const SortableField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile }) => {
+  source?: string;
+}> = ({ field, appletId, isMobile, source="applet" }) => {
   const { 
     id, 
     label, 
@@ -75,7 +76,7 @@ const SortableField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, "applet", id));
+  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   
   // Track drag and drop state
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
@@ -105,7 +106,7 @@ const SortableField: React.FC<{
       // Update state
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: initialItems,
         })
@@ -238,7 +239,7 @@ const SortableField: React.FC<{
       // Update state
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: reorderedItems,
         })
@@ -301,7 +302,7 @@ const SortableField: React.FC<{
         // Update state
         dispatch(
           updateBrokerValue({
-            source: "applet",
+            source: source,
             itemId: id,
             value: reorderedItems,
           })
@@ -336,7 +337,7 @@ const SortableField: React.FC<{
       // Update state
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: reorderedItems,
         })
@@ -367,7 +368,7 @@ const SortableField: React.FC<{
       // Update state
       dispatch(
         updateBrokerValue({
-          source: "applet",
+          source: source,
           itemId: id,
           value: reorderedItems,
         })
