@@ -174,6 +174,12 @@ export const componentMap: Record<ComponentType, ComponentInfo> = {
         fieldComponent: "StepperNumberField.tsx",
     },
 
+    numberInput: {
+        icon: <Hash className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />,
+        displayName: "Number Input",
+        fieldComponent: "NumberInputField.tsx",
+    },
+
     // Range inputs
     slider: {
         icon: <SlidersHorizontal className="h-5 w-5 text-orange-500 dark:text-orange-400" />,
@@ -660,6 +666,13 @@ export const getComponentTypeDefaults = (componentType: ComponentType): Partial<
             valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix,
         },
         numberPicker: {
+            min: FIELD_DEFAULT_COMPONENT_PROPS.min,
+            max: FIELD_DEFAULT_COMPONENT_PROPS.max,
+            step: FIELD_DEFAULT_COMPONENT_PROPS.step,
+            valuePrefix: FIELD_DEFAULT_COMPONENT_PROPS.valuePrefix,
+            valueSuffix: FIELD_DEFAULT_COMPONENT_PROPS.valueSuffix,
+        },
+        numberInput: {
             min: FIELD_DEFAULT_COMPONENT_PROPS.min,
             max: FIELD_DEFAULT_COMPONENT_PROPS.max,
             step: FIELD_DEFAULT_COMPONENT_PROPS.step,

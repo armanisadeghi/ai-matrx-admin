@@ -24,6 +24,7 @@ export { default as AddressBlockField } from './AddressBlockField';
 export { default as StarRatingField } from './StarRatingField';
 export { default as PhoneNumberField } from './PhoneNumberField';
 export { default as RangeSliderField } from './RangeSlider';
+export { default as NumberInputField } from './NumberInputField';
 
 // Export common components
 export { default as SelectionPills } from './common/SelectionPills';

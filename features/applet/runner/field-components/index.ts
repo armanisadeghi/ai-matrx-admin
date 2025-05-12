@@ -4,7 +4,7 @@ export { default as ButtonField } from './ButtonField';
 export { default as SelectField } from './SelectField';
 export { default as InputField } from './InputField';
 export { default as TextareaField } from '../fields/TextareaField';
-export { default as NumberInputField } from './NumberInputField';
+export { default as NumberInputField } from '../fields/NumberInputField';
 export { default as CheckboxGroupField } from './CheckboxGroupField';
 export { default as RadioGroupField } from './RadioGroupField';
 export { default as SliderField } from './SliderField';

@@ -4,13 +4,13 @@ import React, { useEffect, useState } from "react";
 import SectionCard from "@/components/official/cards/SectionCard";
 import { ThemeSwitcherIcon } from "@/styles/themes";
 import { ComponentType, FieldDefinition } from "@/types/customAppTypes";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectFieldById } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import FieldPreviewAs from "./FieldPreviewAs";
 import { componentOptions } from "@/features/applet/constants/field-constants";
 import { addDynamicBrokerMap } from "@/lib/redux/app-runner/slices/brokerSlice";
 import { v4 as uuidv4 } from "uuid";
+import FieldContainerPreview from "./FieldContainerPreview";
 
 interface FieldPreviewProps {
     fieldId: string;
@@ -61,16 +61,20 @@ const FieldPreview: React.FC<FieldPreviewProps> = ({ fieldId, componentType='tex
                     <ThemeSwitcherIcon />
                 </div>
 
-                {/* Render the actual field component with latest field data but stable ID */}
-                {componentType && fieldVersionIds[componentType] && fieldController({ 
-                    field: {
-                        ...field,
-                        component: componentType,
-                        id: fieldVersionIds[componentType]
-                    },
-                    appletId: stableSourceId,
-                    source: source
-                })}
+                {/* Use FieldContainerPreview instead of fieldController directly */}
+                {componentType && fieldVersionIds[componentType] && (
+                    <FieldContainerPreview 
+                        fields={[
+                            {
+                                ...field,
+                                component: componentType,
+                                id: fieldVersionIds[componentType]
+                            }
+                        ]}
+                        appletId={stableSourceId}
+                        source={source}
+                    />
+                )}
             </div>
 
             <FieldPreviewAs fieldId={fieldId} initialComponentType={componentType} />

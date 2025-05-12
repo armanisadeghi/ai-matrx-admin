@@ -4,6 +4,7 @@ import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/sli
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FieldDefinition } from "@/types/customAppTypes";
 
 // Import the shadcn/ui components
 import {
@@ -29,61 +30,20 @@ interface FieldOption {
   iconName?: string;
 }
 
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: number;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: FieldOption[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
-
 const SearchableSelectField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   source?: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    placeholder = "Select an option", 
-    options = [],
-    componentProps = {},
-    disabled = false,
-    includeOther = false
+    placeholder, 
+    options,
+    componentProps,
+    includeOther
   } = field;
   
   const { width, customContent } = componentProps;
@@ -97,7 +57,7 @@ const SearchableSelectField: React.FC<{
   
   // Initialize stateValue if not set
   useEffect(() => {
-    if (!stateValue && options.length > 0) {
+    if (!stateValue && options?.length > 0) {
       // Initialize with all options having selected: false
       const initialOptions = options.map(option => ({
         ...option,
@@ -122,7 +82,7 @@ const SearchableSelectField: React.FC<{
         })
       );
     }
-  }, [stateValue, options, includeOther, dispatch, id]);
+  }, [stateValue, options, includeOther, dispatch, id, source]);
   
   // Handler for select change
   const handleSelectChange = (selectedId: string) => {
@@ -177,7 +137,7 @@ const SearchableSelectField: React.FC<{
   }
   
   // Prepare options list including "Other" option if needed
-  const selectWithOptions = [...options];
+  const selectWithOptions = [...(options || [])];
   if (includeOther) {
     selectWithOptions.push({ id: "other", label: "Other" });
   }
@@ -194,7 +154,7 @@ const SearchableSelectField: React.FC<{
   });
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={safeWidthClass}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

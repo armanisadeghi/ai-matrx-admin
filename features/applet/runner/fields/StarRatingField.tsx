@@ -4,70 +4,36 @@ import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/sli
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FieldDefinition } from "@/types/customAppTypes";
 
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: any[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
+// Maximum allowed stars
+const MAX_ALLOWED_STARS = 15;
 
 const StarRatingField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    componentProps = {},
-    disabled = false,
-    required = false
+    componentProps,
+    required
   } = field;
   
   const { 
     width, 
     customContent,
-    min = 1,
+    min = 0,
     max = 5, // Default to 5 stars
     valuePrefix = "",
     valueSuffix = ""
   } = componentProps;
+  
+  // Cap max at MAX_ALLOWED_STARS
+  const cappedMax = Math.min(max, MAX_ALLOWED_STARS);
   
   const safeWidthClass = ensureValidWidthClass(width);
   
@@ -130,8 +96,9 @@ const StarRatingField: React.FC<{
     }
   };
   
-  // Generate array of stars based on min/max
-  const stars = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+  // Generate array of stars based on min/max (capped)
+  // Ensure star numbers start from 1 for display purposes
+  const stars = Array.from({ length: cappedMax }, (_, i) => i + 1);
   
   // Check validation
   const hasValidationError = required && touched && rating === null;
@@ -149,7 +116,7 @@ const StarRatingField: React.FC<{
           <div 
             className="flex space-x-1"
             role="radiogroup"
-            aria-label={`Star rating from ${min} to ${max}`}
+            aria-label={`Star rating from ${min} to ${cappedMax}`}
           >
             {stars.map((star) => (
               <button
@@ -170,7 +137,7 @@ const StarRatingField: React.FC<{
                 <Star
                   className={cn(
                     "h-8 w-8 transition-all", 
-                    (hoverRating !== null && star <= hoverRating) || (hoverRating === null && rating !== null && star <= rating)
+                    (hoverRating !== null && star <= hoverRating) || (hoverRating === null && rating !== null && star <= rating && rating > 0)
                       ? "fill-yellow-400 text-yellow-400"
                       : "fill-transparent text-gray-300 dark:text-gray-600"
                   )}

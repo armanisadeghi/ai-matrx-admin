@@ -7,47 +7,7 @@ import { cn } from "@/lib/utils";
 // Import the shadcn/ui components
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: any[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
+import { FieldDefinition } from "@/types/customAppTypes";
 
 // Interface for phone number data
 interface PhoneData {
@@ -80,14 +40,14 @@ const PhoneNumberField: React.FC<{
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
     placeholder = "Phone number", 
-    componentProps = {},
-    disabled = false,
-    required = false
+    componentProps,
+    required
   } = field;
   
   const { 
@@ -264,7 +224,7 @@ const PhoneNumberField: React.FC<{
     <div className={`${safeWidthClass}`}>
       <div className="flex flex-wrap gap-2">
         {/* Country Code Dropdown */}
-        <div className="w-24">
+        <div className="w-48">
           <Select
             value={phone.countryCode}
             onValueChange={handleCountryCodeChange}

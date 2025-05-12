@@ -4,7 +4,7 @@ import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/sli
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 // Import the shadcn/ui components
 import { Input } from "@/components/ui/input";
 
@@ -18,69 +18,20 @@ export interface SelectedOptionValue extends FieldOption {
   otherText?: string;
 }
 
-interface FieldOption {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  iconName?: string;
-}
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: FieldOption[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
-
 const CheckboxGroupField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    options = [],
-    componentProps = {},
-    disabled = false,
-    includeOther = false,
-    required = false
+    options,
+    componentProps,
+    includeOther,
+    required
   } = field;
   
   const { 

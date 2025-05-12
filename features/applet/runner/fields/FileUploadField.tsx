@@ -5,67 +5,29 @@ import { ensureValidWidthClass } from "@/features/applet/constants/field-constan
 import { cn } from "@/lib/utils";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import { EnhancedFileDetails } from "@/utils/file-operations/constants";
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: any[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
+import { FieldDefinition } from "@/types/customAppTypes";
+import { FieldValidation, useFieldValidation } from "./common/FieldValidation";
 
 const FileUploadField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   source?: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    componentProps = {},
-    disabled = false,
-    required = false
+    componentProps,
+    required
   } = field;
   
   const { 
     width, 
     customContent,
-    multiSelect = false, // Use multiSelect as the flag for multiple file uploads
-    maxItems = undefined // Optional limit on the number of files
+    multiSelect = false,
+    maxItems = undefined,
+    minItems = undefined // Add support for minItems
   } = componentProps;
   
   const safeWidthClass = ensureValidWidthClass(width);
@@ -75,6 +37,9 @@ const FileUploadField: React.FC<{
   
   // Track the upload status
   const [isUploading, setIsUploading] = React.useState(false);
+  
+  // Use the validation hook
+  const { hasBlurred, handleBlur, showValidation } = useFieldValidation();
   
   // Initialize from defaultValue if available and no current state
   useEffect(() => {
@@ -146,10 +111,6 @@ const FileUploadField: React.FC<{
   const hasReachedMaxItems = multiSelect && maxItems !== undefined && 
     Array.isArray(stateValue) && stateValue.length >= maxItems;
   
-  // Check if there's a validation error (required but no files)
-  const hasValidationError = required && 
-    (!stateValue || (Array.isArray(stateValue) && stateValue.length === 0));
-  
   // Prepare initialFiles based on the current state
   const initialFiles = stateValue 
     ? (Array.isArray(stateValue) ? stateValue : [stateValue]) 
@@ -160,9 +121,9 @@ const FileUploadField: React.FC<{
       <div 
         className={cn(
           "w-full",
-          hasValidationError && "border-red-500",
           disabled && "opacity-60 pointer-events-none"
         )}
+        onBlur={handleBlur} // Add blur handler to the wrapper
       >
         {/* Show the existing files count if any */}
         {stateValue && (
@@ -200,12 +161,16 @@ const FileUploadField: React.FC<{
         )}
       </div>
       
-      {/* Validation error message */}
-      {hasValidationError && !isUploading && (
-        <div className="text-red-500 text-sm mt-1">
-          {required && "Please upload at least one file."}
-        </div>
-      )}
+      {/* Use the FieldValidation component */}
+      <FieldValidation
+        value={stateValue}
+        required={required}
+        minSelections={minItems}
+        maxSelections={maxItems}
+        multiSelect={multiSelect}
+        showValidation={showValidation && !isUploading}
+        fieldType="file"
+      />
       
       {/* Helper text */}
       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">

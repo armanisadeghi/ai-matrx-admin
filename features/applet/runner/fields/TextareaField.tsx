@@ -1,57 +1,8 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
-import { ComponentType } from "@/types/customAppTypes";
-
-interface FieldOption {
-    id: string;
-    label: string;
-    description?: string;
-    helpText?: string;
-    iconName?: string;
-}
-
-interface ComponentProps {
-    min?: number;
-    max?: number;
-    step?: number;
-    rows?: number;
-    minDate?: string;
-    maxDate?: string;
-    onLabel?: string;
-    offLabel?: string;
-    multiSelect?: boolean;
-    maxItems?: number;
-    minItems?: number;
-    gridCols?: number;
-    autoComplete?: string;
-    direction?: "vertical" | "horizontal";
-    customContent?: ReactNode;
-    showSelectAll?: boolean;
-    width?: string;
-    valuePrefix?: string;
-    valueSuffix?: string;
-    maxLength?: number;
-    spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-    id: string;
-    label: string;
-    description?: string;
-    helpText?: string;
-    group?: string;
-    iconName?: string;
-    component: ComponentType;
-    required?: boolean;
-    disabled?: boolean;
-    placeholder?: string;
-    defaultValue?: any;
-    options?: FieldOption[];
-    componentProps: ComponentProps;
-    includeOther?: boolean;
-}
+import { FieldDefinition } from "@/types/customAppTypes";
 
 
 const TextareaField: React.FC<{
@@ -59,8 +10,9 @@ const TextareaField: React.FC<{
     appletId: string;
     isMobile?: boolean;
     source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
-    const { id, label, placeholder = "", componentProps = {} } = field;
+    disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+    const { id, label, placeholder, componentProps } = field;
     const { 
         rows,
         maxLength,

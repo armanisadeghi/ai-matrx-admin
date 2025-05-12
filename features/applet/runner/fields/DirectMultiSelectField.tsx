@@ -2,85 +2,33 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
-import { Check, Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 // Import the shadcn/ui components
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-
 // Import the new SelectionPills component
 import SelectionPills from "./common/SelectionPills";
-
 // Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {
   selected: boolean;
   otherText?: string;
 }
-
-interface FieldOption {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  iconName?: string;
-}
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: number;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: FieldOption[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
-
 const DirectMultiSelectField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   source?: string;
   isMobile?: boolean;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    placeholder = "Search options...", 
-    options = [],
-    componentProps = {},
-    disabled = false,
-    includeOther = false
+    placeholder, 
+    options,
+    componentProps,
+    includeOther
   } = field;
   
   const { 
@@ -88,8 +36,8 @@ const DirectMultiSelectField: React.FC<{
     customContent, 
     maxItems, 
     minItems,
-    rows = 5,
-    showSelectAll = false 
+    rows,
+    showSelectAll
   } = componentProps;
   
   const safeWidthClass = ensureValidWidthClass(width);
@@ -102,7 +50,7 @@ const DirectMultiSelectField: React.FC<{
   
   // Initialize stateValue if not set
   useEffect(() => {
-    if (!stateValue && options.length > 0) {
+    if (!stateValue && options?.length > 0) {
       // Initialize with all options having selected: false
       const initialOptions = options.map(option => ({
         ...option,
@@ -133,7 +81,7 @@ const DirectMultiSelectField: React.FC<{
         setOtherText(otherOption.description);
       }
     }
-  }, [stateValue, options, includeOther, dispatch, id]);
+  }, [stateValue, options, includeOther, dispatch, id, source]);
   
   // Handler for toggling a selection
   const toggleOption = (optionId: string) => {
@@ -260,11 +208,10 @@ const DirectMultiSelectField: React.FC<{
   }
   
   // Prepare options list including "Other" option if needed
-  const selectWithOptions = [...options];
+  const selectWithOptions = [...(options || [])];
   if (includeOther) {
     selectWithOptions.push({ id: "other", label: "Other" });
   }
-
   // Filter options based on search query
   const filteredOptions = selectWithOptions.filter(option => {
     if (!searchQuery.trim()) return true;
@@ -275,9 +222,20 @@ const DirectMultiSelectField: React.FC<{
     
     return matchLabel || matchDescription;
   });
+
+  // Calculate height based on visible items
+  const adjustedRows = Math.max(rows || 3, 3); // Ensure minimum of 3 rows
+  // Use filtered options length if less than adjusted rows
+  const visibleRows = Math.min(filteredOptions.length, adjustedRows);
   
-  // Calculate the height based on the rows prop (each row is approx 36px)
-  const scrollHeight = Math.min(rows * 36, 300); // Cap at 300px max height
+  // Calculate exact height needed to show the specified number of rows
+  const optionHeight = 41;
+  const optionGap = 12;
+  const containerPadding = 14;
+  const adjustmentFactor = 8;
+  
+  // Calculate total height (show exactly the number of visible rows)
+  const scrollHeight = (visibleRows * optionHeight) + ((visibleRows - 1) * optionGap) + containerPadding + adjustmentFactor;
   
   // Handler for clearing all selections
   const handleClearAll = () => {
@@ -317,15 +275,15 @@ const DirectMultiSelectField: React.FC<{
         {showSelectAll && (
           <div
             className={cn(
-              "flex items-center relative cursor-pointer select-none py-1.5 px-2 border-b border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300",
-              !disabled && "hover:bg-gray-100 dark:hover:bg-gray-700"
+              "flex items-center relative cursor-pointer select-none py-2 px-3 mx-2 mt-2 mb-1 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300",
+              !disabled && "hover:bg-gray-100 dark:hover:bg-gray-700",
+              selectWithOptions.every(option => {
+                const stateOption = stateValue?.find((o: SelectedOptionValue) => o.id === option.id);
+                return stateOption?.selected;
+              }) && "bg-gray-200 dark:bg-gray-700 border-gray-400 dark:border-gray-500"
             )}
             onClick={toggleSelectAll}
-            role="checkbox"
-            aria-checked={selectWithOptions.every(option => {
-              const stateOption = stateValue?.find((o: SelectedOptionValue) => o.id === option.id);
-              return stateOption?.selected;
-            })}
+            role="button"
             tabIndex={disabled ? -1 : 0}
             onKeyDown={(e) => {
               if (!disabled && (e.key === "Enter" || e.key === " ")) {
@@ -334,18 +292,6 @@ const DirectMultiSelectField: React.FC<{
               }
             }}
           >
-            <div className={cn(
-              "flex h-4 w-4 items-center justify-center rounded-sm border border-gray-300 dark:border-gray-700 mr-2",
-              selectWithOptions.every(option => {
-                const stateOption = stateValue?.find((o: SelectedOptionValue) => o.id === option.id);
-                return stateOption?.selected;
-              }) && "bg-gray-300 dark:bg-gray-600 border-gray-400 dark:border-gray-500"
-            )}>
-              {selectWithOptions.every(option => {
-                const stateOption = stateValue?.find((o: SelectedOptionValue) => o.id === option.id);
-                return stateOption?.selected;
-              }) && <Check className="h-3 w-3" />}
-            </div>
             <span className="font-semibold">Select All</span>
           </div>
         )}
@@ -356,37 +302,30 @@ const DirectMultiSelectField: React.FC<{
               No options found.
             </div>
           ) : (
-            <div className="p-1">
+            <div className="p-2 flex flex-col gap-2">
               {filteredOptions.map((option) => {
                 const isSelected = selectedOptions.some(selectedOpt => selectedOpt.id === option.id);
                 
                 return (
-                  <div
+                  <button
                     key={option.id}
                     className={cn(
-                      "flex items-center relative cursor-pointer select-none py-1.5 px-2 rounded-sm text-gray-700 dark:text-gray-300 my-1",
-                      !disabled && "hover:bg-gray-100 dark:hover:bg-gray-700",
-                      isSelected && "bg-gray-100 dark:bg-gray-700"
+                      "flex items-center justify-between px-3 py-2 rounded-md border transition-all duration-200 text-left w-full",
+                      isSelected
+                        ? "bg-gray-200 dark:bg-gray-700 border-gray-400 dark:border-gray-500 text-gray-900 dark:text-gray-100"
+                        : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300",
+                      !disabled && "hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500",
+                      disabled && "cursor-not-allowed"
                     )}
                     onClick={() => toggleOption(option.id)}
-                    role="checkbox"
-                    aria-checked={isSelected}
-                    tabIndex={disabled ? -1 : 0}
-                    onKeyDown={(e) => {
-                      if (!disabled && (e.key === "Enter" || e.key === " ")) {
-                        e.preventDefault();
-                        toggleOption(option.id);
-                      }
-                    }}
+                    disabled={disabled}
+                    type="button"
                   >
-                    <div className={cn(
-                      "flex h-4 w-4 items-center justify-center rounded-sm border border-gray-300 dark:border-gray-700 mr-2",
-                      isSelected && "bg-gray-300 dark:bg-gray-600 border-gray-400 dark:border-gray-500"
-                    )}>
-                      {isSelected && <Check className="h-3 w-3" />}
-                    </div>
-                    <span>{option.label}</span>
-                  </div>
+                    <span className="font-medium">{option.label}</span>
+                    {isSelected && (
+                      <X className="h-4 w-4 ml-2 flex-shrink-0" />
+                    )}
+                  </button>
                 );
               })}
             </div>
@@ -424,5 +363,4 @@ const DirectMultiSelectField: React.FC<{
     </div>
   );
 };
-
 export default DirectMultiSelectField;

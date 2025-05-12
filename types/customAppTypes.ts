@@ -18,6 +18,7 @@ export type ComponentType =
   | 'date'
   | 'switch'
   | 'rangeSlider'
+  | 'numberInput'
   | 'numberPicker'
   | 'jsonField'
   | 'fileUpload'
@@ -42,6 +43,7 @@ export interface FieldOption {
   description?: string; // This is where the 'context' is stored for the ai model. NOT SHOWN TO THE USER!
   helpText?: string; // Seen by the user.
   iconName?: string; // Icon name from lucide-react.
+  parentId?: string; // Used to create a hierarchy of options.
 }
 
 export type fieldDirection = "vertical" | "horizontal";

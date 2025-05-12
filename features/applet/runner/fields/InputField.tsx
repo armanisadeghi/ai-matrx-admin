@@ -1,68 +1,18 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
-import { ComponentType } from "@/types/customAppTypes";
-
-interface FieldOption {
-    id: string;
-    label: string;
-    description?: string;
-    helpText?: string;
-    iconName?: string;
-}
-
-interface ComponentProps {
-    min?: number;
-    max?: number;
-    step?: number;
-    rows?: number;
-    minDate?: string;
-    maxDate?: string;
-    onLabel?: string;
-    offLabel?: string;
-    multiSelect?: boolean;
-    maxItems?: number;
-    minItems?: number;
-    gridCols?: number;
-    autoComplete?: string;
-    direction?: "vertical" | "horizontal";
-    customContent?: ReactNode;
-    showSelectAll?: boolean;
-    width?: string;
-    valuePrefix?: string;
-    valueSuffix?: string;
-    maxLength?: number;
-    spellCheck?: boolean;
-    type?: string;
-}
-
-interface FieldDefinition {
-    id: string;
-    label: string;
-    description?: string;
-    helpText?: string;
-    group?: string;
-    iconName?: string;
-    component: ComponentType;
-    required?: boolean;
-    disabled?: boolean;
-    placeholder?: string;
-    defaultValue?: any;
-    options?: FieldOption[];
-    componentProps: ComponentProps;
-    includeOther?: boolean;
-}
+import { FieldDefinition } from "@/types/customAppTypes";
 
 const InputField: React.FC<{
     field: FieldDefinition;
     appletId: string;
     isMobile?: boolean;
     source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
-    const { id, label, placeholder = "", required, disabled, componentProps = {} } = field;
+    disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+    const { id, label, placeholder, required, componentProps } = field;
     const { 
-        type = "text",
         maxLength,
         min,
         max,
@@ -73,6 +23,9 @@ const InputField: React.FC<{
         valueSuffix,
         customContent
     } = componentProps;
+    
+    // Use a default input type if not provided
+    const inputType = "text";
     
     const safeWidthClass = ensureValidWidthClass(width);
     
@@ -97,14 +50,14 @@ const InputField: React.FC<{
     }
     
     return (
-        <div className={`${safeWidthClass}`}>
+        <div className={safeWidthClass}>
             {valuePrefix && (
                 <span className="text-gray-500 dark:text-gray-400 mr-1">{valuePrefix}</span>
             )}
             <input
                 id={`${id}-input`}
                 className={inputClassName}
-                type={type}
+                type={inputType}
                 value={value ?? ""}
                 onChange={handleChange}
                 placeholder={placeholder}

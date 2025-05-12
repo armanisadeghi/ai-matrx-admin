@@ -3,50 +3,10 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { cn } from "@/lib/utils";
+import { FieldDefinition } from "@/types/customAppTypes";
 
 // Import the shadcn/ui components
 import * as SliderPrimitive from "@radix-ui/react-slider";
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: any[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
 
 // Multi-Thumb Slider for range selection
 const RangeSlider = React.forwardRef<
@@ -82,25 +42,32 @@ const RangeSliderField: React.FC<{
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    componentProps = {},
-    disabled = false,
-    required = false,
+    componentProps,
+    required,
     defaultValue
   } = field;
   
   const { 
     width, 
     customContent, 
-    min = 0,
-    max = 100,
-    step = 1,
-    valuePrefix = "",
-    valueSuffix = ""
+    min,
+    max,
+    step,
+    valuePrefix,
+    valueSuffix
   } = componentProps;
+  
+  // Default values to use when props not provided
+  const minValue = min ?? 0;
+  const maxValue = max ?? 100;
+  const stepValue = step ?? 1;
+  const prefixValue = valuePrefix ?? "";
+  const suffixValue = valueSuffix ?? "";
   
   const safeWidthClass = ensureValidWidthClass(width);
   
@@ -113,7 +80,7 @@ const RangeSliderField: React.FC<{
       ? [stateValue[0], stateValue[1]]
       : defaultValue !== undefined && Array.isArray(defaultValue) && defaultValue.length === 2
         ? [defaultValue[0], defaultValue[1]]
-        : [min, max]
+        : [minValue, maxValue]
   );
   
   // Initialize state if needed
@@ -122,7 +89,7 @@ const RangeSliderField: React.FC<{
       // Initialize with default value or min/max
       const initialValue = defaultValue !== undefined && Array.isArray(defaultValue) && defaultValue.length === 2
         ? [defaultValue[0], defaultValue[1]]
-        : [min, max];
+        : [minValue, maxValue];
       
       dispatch(
         updateBrokerValue({
@@ -137,7 +104,7 @@ const RangeSliderField: React.FC<{
       // Update local state when Redux state changes
       setSliderValue([stateValue[0], stateValue[1]]);
     }
-  }, [stateValue, defaultValue, min, max, dispatch, id]);
+  }, [stateValue, defaultValue, minValue, maxValue, dispatch, id, source]);
   
   // Handler for slider value change
   const handleSliderChange = (newValue: number[]) => {
@@ -212,8 +179,8 @@ const RangeSliderField: React.FC<{
     return (
       Array.isArray(sliderValue) &&
       sliderValue.length === 2 &&
-      sliderValue[0] >= min &&
-      sliderValue[1] <= max &&
+      sliderValue[0] >= minValue &&
+      sliderValue[1] <= maxValue &&
       sliderValue[0] <= sliderValue[1]
     );
   };
@@ -227,7 +194,7 @@ const RangeSliderField: React.FC<{
   }
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={safeWidthClass}>
       <div className="mb-6 space-y-6">
         {/* Current range display */}
         <div className="flex justify-between items-center mb-2">
@@ -236,32 +203,32 @@ const RangeSliderField: React.FC<{
           </span>
           <div className="flex items-center space-x-2">
             <div className="relative">
-              {valuePrefix && (
+              {prefixValue && (
                 <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                  {valuePrefix}
+                  {prefixValue}
                 </span>
               )}
               <input 
                 type="number"
                 value={sliderValue[0]}
                 onChange={handleMinInputChange}
-                min={min}
+                min={minValue}
                 max={sliderValue[1]}
-                step={step}
+                step={stepValue}
                 className={cn(
                   "w-20 h-8 px-2 border border-gray-300 dark:border-gray-700 rounded-md text-center text-sm",
                   "text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
                   "focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600",
-                  valuePrefix && "pl-6"
+                  prefixValue && "pl-6"
                 )}
                 disabled={disabled}
               />
             </div>
             <span className="text-gray-500 dark:text-gray-400">to</span>
             <div className="relative">
-              {valuePrefix && (
+              {prefixValue && (
                 <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                  {valuePrefix}
+                  {prefixValue}
                 </span>
               )}
               <input 
@@ -269,20 +236,20 @@ const RangeSliderField: React.FC<{
                 value={sliderValue[1]}
                 onChange={handleMaxInputChange}
                 min={sliderValue[0]}
-                max={max}
-                step={step}
+                max={maxValue}
+                step={stepValue}
                 className={cn(
                   "w-20 h-8 px-2 border border-gray-300 dark:border-gray-700 rounded-md text-center text-sm",
                   "text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800",
                   "focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600",
-                  valuePrefix && "pl-6"
+                  prefixValue && "pl-6"
                 )}
                 disabled={disabled}
               />
             </div>
-            {valueSuffix && (
+            {suffixValue && (
               <span className="text-gray-500 dark:text-gray-400">
-                {valueSuffix}
+                {suffixValue}
               </span>
             )}
           </div>
@@ -292,9 +259,9 @@ const RangeSliderField: React.FC<{
         <RangeSlider
           defaultValue={sliderValue}
           value={sliderValue}
-          max={max}
-          min={min}
-          step={step}
+          max={maxValue}
+          min={minValue}
+          step={stepValue}
           disabled={disabled}
           onValueChange={handleSliderChange}
           aria-label={`${id}-range-slider`}
@@ -303,14 +270,13 @@ const RangeSliderField: React.FC<{
         
         {/* Min/Max labels */}
         <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-          <span>{valuePrefix}{min}{valueSuffix}</span>
-          <span>{valuePrefix}{max}{valueSuffix}</span>
+          <span>{prefixValue}{minValue}{suffixValue}</span>
+          <span>{prefixValue}{maxValue}{suffixValue}</span>
         </div>
       </div>
       
-      {/* Validation message */}
       {hasValidationError && (
-        <div className="text-red-500 text-sm mt-1">
+        <div className="text-destructive text-sm mt-1">
           Please select a valid range.
         </div>
       )}

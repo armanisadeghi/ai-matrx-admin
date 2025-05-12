@@ -4,76 +4,28 @@ import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/sli
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { cn } from "@/lib/utils";
 import ValidationMessage from "./common/ValidationMessage";
-
-interface FieldOption {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  iconName?: string;
-}
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: FieldOption[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
+import { FieldDefinition } from "@/types/customAppTypes";
 
 const ButtonSelectionField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    options = [],
-    componentProps = {},
-    disabled = false,
-    required = false
+    options,
+    componentProps,
+    required
   } = field;
   
   const { 
     width, 
     customContent, 
-    multiSelect = true, // Default to true for this component
-    minItems = 0,
+    multiSelect,
+    minItems,
     maxItems
   } = componentProps;
   
@@ -95,7 +47,7 @@ const ButtonSelectionField: React.FC<{
         })
       );
     }
-  }, [stateValue, dispatch, id]);
+  }, [stateValue, dispatch, id, source]);
   
   // Handle button click
   const handleButtonClick = (optionId: string) => {
@@ -177,7 +129,7 @@ const ButtonSelectionField: React.FC<{
   }
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={safeWidthClass}>
       <div
         role={multiSelect ? "group" : "radiogroup"}
         aria-labelledby={`${id}-label`}
@@ -188,7 +140,7 @@ const ButtonSelectionField: React.FC<{
         onBlur={handleBlur}
       >
         <div className="flex flex-wrap gap-2">
-          {options.map(option => (
+          {options?.map(option => (
             <button
               key={option.id}
               id={`${id}-${option.id}`}
@@ -211,7 +163,6 @@ const ButtonSelectionField: React.FC<{
         </div>
       </div>
       
-      {/* Use our ValidationMessage component */}
       <ValidationMessage
         message={validationMessage || maxItemsMessage}
         touched={touched}

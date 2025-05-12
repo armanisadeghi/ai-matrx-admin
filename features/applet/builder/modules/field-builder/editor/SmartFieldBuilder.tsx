@@ -153,7 +153,7 @@ export const SmartFieldBuilder: React.FC<SmartFieldBuilderProps> = ({ fieldId, b
                     name="helpText"
                     value={helpText}
                     onChange={(e) => dispatch(setHelpText({ id: fieldId, helpText: e.target.value }))}
-                    rows={2}
+                    rows={3}
                     className="resize-none border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 mt-1 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
             </div>

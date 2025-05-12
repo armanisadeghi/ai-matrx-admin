@@ -4,6 +4,7 @@ import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/sli
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 import {
   Popover,
   PopoverContent,
@@ -20,69 +21,21 @@ export interface SelectedOptionValue extends FieldOption {
   otherText?: string;
 }
 
-interface FieldOption {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  iconName?: string;
-}
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: number;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: FieldOption[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
 
 const MultiSearchableSelectField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    placeholder = "Select options", 
-    options = [],
-    componentProps = {},
-    disabled = false,
-    includeOther = false
+    placeholder, 
+    options,
+    componentProps,
+    includeOther
   } = field;
   
   const { 
@@ -90,7 +43,7 @@ const MultiSearchableSelectField: React.FC<{
     customContent, 
     maxItems, 
     minItems,
-    showSelectAll = false 
+    showSelectAll 
   } = componentProps;
   
   const safeWidthClass = ensureValidWidthClass(width);
@@ -104,7 +57,7 @@ const MultiSearchableSelectField: React.FC<{
   
   // Initialize stateValue if not set
   useEffect(() => {
-    if (!stateValue && options.length > 0) {
+    if (!stateValue && options?.length > 0) {
       // Initialize with all options having selected: false
       const initialOptions = options.map(option => ({
         ...option,
@@ -135,7 +88,7 @@ const MultiSearchableSelectField: React.FC<{
         setOtherText(otherOption.description);
       }
     }
-  }, [stateValue, options, includeOther, dispatch, id]);
+  }, [stateValue, options, includeOther, dispatch, id, source]);
   
   // Handler for toggling a selection
   const toggleOption = (optionId: string) => {
@@ -240,7 +193,7 @@ const MultiSearchableSelectField: React.FC<{
   }
   
   // Prepare options list including "Other" option if needed
-  const selectWithOptions = [...options];
+  const selectWithOptions = [...(options || [])];
   if (includeOther) {
     selectWithOptions.push({ id: "other", label: "Other" });
   }
@@ -257,7 +210,7 @@ const MultiSearchableSelectField: React.FC<{
   });
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={safeWidthClass}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

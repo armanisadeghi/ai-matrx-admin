@@ -9,19 +9,16 @@ import { componentOptions } from "@/features/applet/constants/field-constants";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { selectFieldById } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import { v4 as uuidv4 } from 'uuid';
-import { FieldDefinition } from "@/features/applet/runner/field-components/FieldController";
+import { v4 as uuidv4 } from "uuid";
 import { addDynamicBrokerMap } from "@/lib/redux/app-runner/slices/brokerSlice";
+import FieldContainerPreview from "./FieldContainerPreview";
 
 interface FieldPreviewAsProps {
     fieldId: string;
     initialComponentType?: ComponentType | null;
 }
 
-const FieldPreviewAs: React.FC<FieldPreviewAsProps> = ({ 
-    fieldId, 
-    initialComponentType = "textarea"
-}) => {
+const FieldPreviewAs: React.FC<FieldPreviewAsProps> = ({ fieldId, initialComponentType = "textarea" }) => {
     const dispatch = useAppDispatch();
     const [viewAsComponentType, setViewAsComponentType] = useState<ComponentType | null>(initialComponentType);
     const field = useAppSelector((state) => selectFieldById(state, fieldId));
@@ -32,18 +29,20 @@ const FieldPreviewAs: React.FC<FieldPreviewAsProps> = ({
     // Create stable IDs and broker maps only when fieldId changes
     useEffect(() => {
         const versionIds: Record<string, string> = {};
-        
+
         componentOptions.forEach((option) => {
             const stableId = `${option.value}-${fieldId}`;
             versionIds[option.value] = stableId;
-            
-            dispatch(addDynamicBrokerMap({
-                source: source,
-                sourceId: stableSourceId,
-                itemId: stableId,
-            }));
+
+            dispatch(
+                addDynamicBrokerMap({
+                    source: source,
+                    sourceId: stableSourceId,
+                    itemId: stableId,
+                })
+            );
         });
-        
+
         setFieldVersionIds(versionIds);
     }, [fieldId]);
 
@@ -52,11 +51,7 @@ const FieldPreviewAs: React.FC<FieldPreviewAsProps> = ({
     };
 
     if (!field || Object.keys(fieldVersionIds).length === 0) {
-        return (
-            <div className="mt-6 p-4 text-center text-gray-500 dark:text-gray-400">
-                Loading preview...
-            </div>
-        );
+        return <div className="mt-6 p-4 text-center text-gray-500 dark:text-gray-400">Loading preview...</div>;
     }
 
     return (
@@ -88,25 +83,22 @@ const FieldPreviewAs: React.FC<FieldPreviewAsProps> = ({
                 </div>
             </div>
 
-            {/* Additional component view when a type is selected */}
             {viewAsComponentType && fieldVersionIds[viewAsComponentType] && (
                 <div className="border border-gray-300 dark:border-gray-700 rounded p-4 bg-white dark:bg-gray-900 shadow-sm rounded-xl min-h-[250px]">
                     <h3 className="text-md font-semibold mb-4 capitalize text-gray-900 dark:text-gray-100">
-                        Rendered as{"  "}
-                        <span className="text-blue-600 dark:text-blue-500 font-bold">
-                            {viewAsComponentType}
-                        </span>
+                        Rendered In Sample Container{"  "}
                     </h3>
-
-                    {fieldController({
-                        field: {
-                            ...field,
-                            component: viewAsComponentType,
-                            id: fieldVersionIds[viewAsComponentType]
-                        },
-                        appletId: stableSourceId,
-                        source: source
-                    })}
+                    <FieldContainerPreview 
+                        fields={[
+                            {
+                                ...field,
+                                component: viewAsComponentType,
+                                id: fieldVersionIds[viewAsComponentType]
+                            }
+                        ]}
+                        appletId={stableSourceId}
+                        source={source}
+                    />
                 </div>
             )}
         </div>

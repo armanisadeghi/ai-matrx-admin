@@ -4,60 +4,21 @@ import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/sli
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FieldDefinition } from "@/types/customAppTypes";
 
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: any[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
 
 const TagInputField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
     placeholder = "Type and press Enter to add tags", 
-    componentProps = {},
-    disabled = false,
+    componentProps,
     required = false
   } = field;
   
@@ -76,6 +37,9 @@ const TagInputField: React.FC<{
   // Local state for the input value
   const [inputValue, setInputValue] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Track if field has been touched/blurred
+  const [touched, setTouched] = useState<boolean>(false);
   
   // Initialize state if needed
   useEffect(() => {
@@ -165,19 +129,25 @@ const TagInputField: React.FC<{
     }
   };
   
+  // Handle blur event
+  const handleBlur = () => {
+    setTouched(true);
+  };
+  
   // Check if we're at max items
   const isAtMaxItems = maxItems !== undefined && 
     Array.isArray(stateValue) && stateValue.length >= maxItems;
   
-  // Check if we have validation errors
-  const hasMinItemsError = required || (minItems > 0 && 
-    (!Array.isArray(stateValue) || stateValue.length < minItems));
+  // Check if the minimum requirements are met
+  const hasEnoughTags = Array.isArray(stateValue) && stateValue.length >= minItems;
+  const isRequirementMet = !required || (required && hasEnoughTags);
   
-  const validationError = hasMinItemsError && (!Array.isArray(stateValue) || stateValue.length === 0)
-    ? "Please add at least one tag."
-    : hasMinItemsError
-      ? `Please add at least ${minItems} tags.`
-      : "";
+  // Only show validation error if the field has been touched (blurred) and requirements are not met
+  const validationError = touched && !isRequirementMet
+    ? minItems === 0
+      ? "Please add at least one tag."
+      : `Please add at least ${minItems} tags.`
+    : "";
   
   // Render custom content if provided
   if (customContent) {
@@ -230,6 +200,7 @@ const TagInputField: React.FC<{
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
             disabled={disabled}
             placeholder={Array.isArray(stateValue) && stateValue.length === 0 ? placeholder : ""}
             className={cn(
@@ -247,7 +218,7 @@ const TagInputField: React.FC<{
         </div>
       )}
       
-      {/* Validation message */}
+      {/* Validation message - only shown after blur */}
       {validationError && (
         <div className="text-red-500 text-xs mt-1">
           {validationError}

@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import SelectionPills from "./common/SelectionPills";
 import ValidationMessage from "./common/ValidationMessage";
+import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 
 // Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {
@@ -13,69 +14,20 @@ export interface SelectedOptionValue extends FieldOption {
   otherText?: string;
 }
 
-interface FieldOption {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  iconName?: string;
-}
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: FieldOption[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
-
 const ButtonColumnField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
-    options = [],
-    componentProps = {},
-    disabled = false,
-    includeOther = false,
-    required = false
+    options,
+    componentProps,
+    includeOther,
+    required
   } = field;
   
   const { 

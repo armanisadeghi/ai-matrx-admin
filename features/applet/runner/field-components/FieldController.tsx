@@ -27,43 +27,9 @@ import {
     StarRatingField,
     PhoneNumberField,
     RangeSliderField,
-} from "@/features/applet/runner/fields";import { ComponentType } from "@/types/customAppTypes";
-
-export interface FieldOption {
-    id: string;
-    label: string;
-    description?: string;
-    helpText?: string;
-    iconName?: string;
-}
-
-export interface ComponentProps {
-    min?: number;
-    max?: number;
-    step?: number;
-    rows?: number;
-    minDate?: string;
-    maxDate?: string;
-    onLabel?: string;
-    offLabel?: string;
-}
-
-export interface FieldDefinition {
-    id: string;
-    label: string;
-    description?: string;
-    helpText?: string;
-    group?: string;
-    iconName?: string;
-    component: ComponentType;
-    required?: boolean;
-    disabled?: boolean;
-    placeholder?: string;
-    defaultValue?: any;
-    options?: FieldOption[];
-    componentProps: ComponentProps;
-    includeOther?: boolean;
-}
+    NumberInputField,
+} from "@/features/applet/runner/fields";
+import { FieldDefinition } from "@/types/customAppTypes";
 
 export interface FieldControllerProps {
     field: FieldDefinition;
@@ -72,143 +38,145 @@ export interface FieldControllerProps {
     source?: string;
 }
 
-
-
-export const fieldController = ({ field, appletId, isMobile, source="applet" }: FieldControllerProps) => {
+export const fieldController = ({ field, appletId, isMobile, source = "applet" }: FieldControllerProps) => {
     switch (field.component) {
         case "textarea": {
             console.log(`Field Controller Rendered: 'textarea' using TextareaField`);
-            return <TextareaField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <TextareaField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "select": {
             console.log(`Field Controller Rendered: 'select' using SelectField`);
-            return <SelectField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <SelectField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
         case "radio": {
             console.log(`Field Controller Rendered: 'radio' using RadioGroupField`);
-            return <RadioGroupField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <RadioGroupField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "checkbox": {
             console.log(`Field Controller Rendered: 'checkbox' using CheckboxGroupField`);
-            return <CheckboxGroupField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <CheckboxGroupField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
         case "date": {
             console.log(`Field Controller Rendered: 'date' using DateField`);
-            return <DateField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <DateField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "multiDate": {
             console.log(`Field Controller Rendered: 'multiDate' using MultiDateField`);
-            return <MultiDateField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <MultiDateField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "searchableSelect": {
             console.log(`Field Controller Rendered: 'searchableSelect' using SearchableSelectField`);
-            return <SearchableSelectField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <SearchableSelectField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "directMultiSelect": {
             console.log(`Field Controller Rendered: 'directMultiSelect' using DirectMultiSelectField`);
-            return <DirectMultiSelectField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <DirectMultiSelectField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "multiselect": {
             console.log(`Field Controller Rendered: 'multiselect' using MultiSearchableSelectField`);
-            return <MultiSearchableSelectField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <MultiSearchableSelectField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "dependentDropdown": {
             console.log(`Field Controller Rendered: 'dependentDropdown' using DependentDropdownField`);
-            return <DependentDropdownField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <DependentDropdownField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         // @ts-ignore   ===== This needs to be updated for all components and then removed.
         case "button":
-            console.log('========== button. nor buttonSelection ==========' )
+            console.log("========== button. nor buttonSelection ==========");
 
         case "buttonSelection": {
             console.log(`Field Controller Rendered: 'button' or 'buttonSelection' using ButtonSelectionField`);
-            return <ButtonSelectionField field={field} appletId={appletId} isMobile={isMobile}  source={source} />;
+            return <ButtonSelectionField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "sortable": {
             console.log(`Field Controller Rendered: 'sortable' using SortableField`);
-            return <SortableField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <SortableField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "buttonColumn": {
             console.log(`Field Controller Rendered: 'buttonColumn' using ButtonColumnField`);
-            return <ButtonColumnField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <ButtonColumnField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "number": {
             console.log(`Field Controller Rendered: 'number' using StepperNumberField`);
-            return <StepperNumberField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <StepperNumberField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "simpleNumber": {
             console.log(`Field Controller Rendered: 'simpleNumber' using SimpleNumberField`);
-            return <SimpleNumberField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <SimpleNumberField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
+        }
+
+        case "numberInput": {
+            console.log(`Field Controller Rendered: 'numberInput' using NumberInputField`);
+            return <NumberInputField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "slider": {
             console.log(`Field Controller Rendered: 'slider' using SliderField`);
-            return <SliderField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <SliderField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
         case "switch": {
             console.log(`Field Controller Rendered: 'switch' using SwitchField`);
-            return <SwitchField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <SwitchField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "jsonField": {
             console.log(`Field Controller Rendered: 'jsonField' using JsonField`);
-            return <JsonField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <JsonField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "fileUpload": {
             console.log(`Field Controller Rendered: 'fileUpload' using FileUploadField`);
-            return <FileUploadField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <FileUploadField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "addressBlock": {
             console.log(`Field Controller Rendered: 'addressBlock' using AddressBlockField`);
-            return <AddressBlockField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <AddressBlockField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "starRating": {
             console.log(`Field Controller Rendered: 'starRating' using StarRatingField`);
-            return <StarRatingField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <StarRatingField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "phoneNumber": {
             console.log(`Field Controller Rendered: 'phoneNumber' using PhoneNumberField`);
-            return <PhoneNumberField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <PhoneNumberField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "rangeSlider": {
             console.log(`Field Controller Rendered: 'rangeSlider' using RangeSliderField`);
-            return <RangeSliderField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <RangeSliderField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         case "tagInput": {
             console.log(`Field Controller Rendered: 'tagInput' using TagInputField`);
-            return <TagInputField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            return <TagInputField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
-        
+        case "input": {
+            console.log(`Field Controller Rendered: 'input' using InputField`);
+            return <InputField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
+        }
 
         default: {
-            console.log(`Field Controller Rendered: '${field.component || "default"}' using InputField`);
-            return <InputField field={field} appletId={appletId} isMobile={isMobile} source={source} />;
+            console.log(`ERROR!!!!!! Invalid field component: '${field.component || "default"}' using InputField ============`);
+            return <InputField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
     }
 };
-
-
-
-
 
 /* for testing.
 

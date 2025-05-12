@@ -95,3 +95,22 @@ export const ContainerLabelAndHelpText = ({ fieldName, fieldLabel, required }: A
         </div>
     );
 };
+
+export interface CustomFieldLabelAndHelpTextProps {
+    fieldName: any;
+    fieldLabel?: string;
+    helpText: string;
+    required?: boolean;
+}
+
+export const CustomFieldLabelAndHelpText = ({ fieldName, fieldLabel, helpText, required=false }: CustomFieldLabelAndHelpTextProps) => {
+    return (
+        <div className="flex items-center gap-1">
+            <Label htmlFor={fieldName} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                {fieldLabel || fieldName}
+                {required && <span className="pl-1 text-red-500">*</span>}
+            </Label>
+            <HelpIcon text={helpText} />
+        </div>
+    );
+};

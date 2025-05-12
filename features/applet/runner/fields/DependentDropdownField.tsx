@@ -14,77 +14,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-
+import { FieldDefinition, FieldOption } from "@/types/customAppTypes";
 // Define the type for selected option in state
 export interface SelectedOptionValue extends FieldOption {
   selected: boolean;
   otherText?: string;
 }
 
-interface FieldOption {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  iconName?: string;
-  parentId?: string; // Parent option ID for dependent dropdowns
-}
-
-interface ComponentProps {
-  min?: number;
-  max?: number;
-  step?: number;
-  rows?: number;
-  minDate?: string;
-  maxDate?: string;
-  onLabel?: string;
-  offLabel?: string;
-  multiSelect?: boolean;
-  maxItems?: number;
-  minItems?: number;
-  gridCols?: string;
-  autoComplete?: string;
-  direction?: "vertical" | "horizontal";
-  customContent?: React.ReactNode;
-  showSelectAll?: boolean;
-  width?: string;
-  valuePrefix?: string;
-  valueSuffix?: string;
-  maxLength?: number;
-  spellCheck?: boolean;
-}
-
-interface FieldDefinition {
-  id: string;
-  label: string;
-  description?: string;
-  helpText?: string;
-  group?: string;
-  iconName?: string;
-  component: string;
-  required?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
-  defaultValue?: any;
-  options?: FieldOption[];
-  componentProps: ComponentProps;
-  includeOther?: boolean;
-}
 
 const DependentDropdownField: React.FC<{
   field: FieldDefinition;
   appletId: string;
   isMobile?: boolean;
   source?: string;
-}> = ({ field, appletId, isMobile, source="applet" }) => {
+  disabled?: boolean;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
   const { 
     id, 
     label, 
     placeholder = "Select an option", 
-    options = [],
-    componentProps = {},
-    disabled = false,
-    required = false,
+    options,
+    componentProps,
+    required,
     includeOther = false
   } = field;
   
@@ -102,6 +53,8 @@ const DependentDropdownField: React.FC<{
   const [open, setOpen] = useState<{ [key: string]: boolean }>({});
   const [searchQuery, setSearchQuery] = useState<{ [key: string]: string }>({});
   const [otherText, setOtherText] = useState("");
+  // Track if field has been interacted with
+  const [touched, setTouched] = useState(false);
   
   // Extract parent options (options with no parentId)
   const parentOptions = options.filter(option => !option.parentId);
@@ -191,6 +144,9 @@ const DependentDropdownField: React.FC<{
   // Handle option selection at a specific level
   const handleOptionSelect = (optionId: string, level: number) => {
     if (disabled) return;
+    
+    // Mark as touched when user makes a selection
+    setTouched(true);
     
     // Create a copy of the current state
     const updatedOptions = [...(stateValue || [])];
@@ -308,6 +264,9 @@ const DependentDropdownField: React.FC<{
   
   // Handler for "Other" text input
   const handleOtherTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Mark as touched when user types in Other field
+    setTouched(true);
+    
     const newOtherText = e.target.value;
     setOtherText(newOtherText);
     
@@ -388,6 +347,9 @@ const DependentDropdownField: React.FC<{
     return true;
   };
   
+  // Only show validation errors if the field has been touched
+  const showValidationError = touched && !isSelectionValid() && required;
+  
   // Render custom content if provided
   if (customContent) {
     return <>{customContent}</>;
@@ -426,7 +388,11 @@ const DependentDropdownField: React.FC<{
             <Popover 
               key={`level-${level}`} 
               open={open[level]} 
-              onOpenChange={(isOpen) => setOpen({ ...open, [level]: isOpen })}
+              onOpenChange={(isOpen) => {
+                setOpen({ ...open, [level]: isOpen });
+                // Mark as touched when dropdown is opened
+                if (isOpen) setTouched(true);
+              }}
             >
               <PopoverTrigger asChild>
                 <Button
@@ -437,7 +403,7 @@ const DependentDropdownField: React.FC<{
                     "w-full justify-between focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600",
                     "border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300",
                     "bg-white dark:bg-gray-800",
-                    !isSelectionValid() && required && "border-red-500"
+                    showValidationError && "border-red-500"
                   )}
                   disabled={disabled || displayOptions.length === 0}
                 >
@@ -545,7 +511,7 @@ const DependentDropdownField: React.FC<{
       )}
       
       {/* Validation message */}
-      {!isSelectionValid() && required && (
+      {showValidationError && (
         <div className="text-red-500 text-sm mt-1">
           Please make a complete selection.
         </div>
