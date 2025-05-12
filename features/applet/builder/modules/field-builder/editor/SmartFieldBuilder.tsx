@@ -33,7 +33,7 @@ import {
 } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 import { fieldHelpTextItems } from "../fieldHelpText";
 import { Broker, ComponentType } from "@/types/customAppTypes";
-import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
+import HelpIcon from "@/components/official/HelpIcon";
 import { componentOptions } from "@/features/applet/constants/field-constants";
 
 interface SmartFieldBuilderProps {

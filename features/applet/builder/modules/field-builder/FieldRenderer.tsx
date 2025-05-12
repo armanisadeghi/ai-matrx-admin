@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { FieldDefinition } from '@/types/customAppTypes';
-import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
+import HelpIcon from "@/components/official/HelpIcon";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
 import { normalizeFieldDefinition } from '@/features/applet/utils/field-normalization';
 

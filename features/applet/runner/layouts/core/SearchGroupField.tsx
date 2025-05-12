@@ -4,7 +4,7 @@
 import React, { useEffect, useRef } from "react";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import SearchField from "@/features/applet/runner/layouts/core/SearchField";
-import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
+import HelpIcon from "@/components/official/HelpIcon";
 import { SearchGroupRendererProps } from ".";
 
 const SearchGroupField: React.FC<SearchGroupRendererProps> = ({

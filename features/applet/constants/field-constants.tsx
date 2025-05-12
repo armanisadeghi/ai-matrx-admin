@@ -412,6 +412,107 @@ export const ensureValidGridColsValue = (gridColsValue?: string): string => {
     return gridColsValue;
 };
 
+
+export const autoCompleteOptions = [
+  { value: "off", label: "Off" },
+  { value: "on", label: "On" },
+  { value: "name", label: "Name" },
+  { value: "email", label: "Email" },
+  { value: "username", label: "Username" },
+  { value: "new-password", label: "New Password" },
+  { value: "current-password", label: "Current Password" },
+  { value: "one-time-code", label: "One-Time Code" },
+  { value: "cc-name", label: "Credit Card Name" },
+  { value: "cc-number", label: "Credit Card Number" },
+  { value: "cc-exp", label: "Credit Card Expiration" },
+  { value: "cc-csc", label: "Credit Card CSC" },
+  { value: "street-address", label: "Street Address" },
+  { value: "address-line1", label: "Address Line 1" },
+  { value: "address-line2", label: "Address Line 2" },
+  { value: "address-level1", label: "State/Province" },
+  { value: "address-level2", label: "City" },
+  { value: "postal-code", label: "Postal Code" },
+  { value: "country", label: "Country" },
+  { value: "tel", label: "Telephone" },
+  { value: "bday", label: "Birthday" },
+  { value: "given-name", label: "First Name" },
+  { value: "family-name", label: "Last Name" },
+  { value: "nickname", label: "Nickname" },
+  { value: "honorific-prefix", label: "Prefix (Mr., Ms., etc.)" },
+  { value: "honorific-suffix", label: "Suffix (Jr., Sr., etc.)" },
+  { value: "sex", label: "Gender" },
+  { value: "url", label: "Website URL" },
+  { value: "photo", label: "Photo" },
+  { value: "impp", label: "Instant Messaging" },
+
+  // Contact information
+  { value: "tel-country-code", label: "Country Code" },
+  { value: "tel-national", label: "National Phone Number" },
+  { value: "tel-area-code", label: "Area Code" },
+  { value: "tel-local", label: "Local Phone Number" },
+  { value: "tel-extension", label: "Phone Extension" },
+
+  // Organization
+  { value: "organization", label: "Organization" },
+  { value: "organization-title", label: "Job Title" },
+
+  // Transaction
+  { value: "transaction-currency", label: "Currency" },
+  { value: "transaction-amount", label: "Amount" },
+
+  // Language
+  { value: "language", label: "Preferred Language" },
+
+  // More credit card fields
+  { value: "cc-exp-month", label: "CC Expiration Month" },
+  { value: "cc-exp-year", label: "CC Expiration Year" },
+  { value: "cc-type", label: "Credit Card Type" },
+
+  // Additional address fields
+  { value: "address-level3", label: "Suburb/District" },
+  { value: "address-level4", label: "Sublocality" },
+  { value: "country-name", label: "Country Name" },
+
+  // Shipping/Billing (these can be prefixed)
+  { value: "shipping", label: "Shipping (prefix)" },
+  { value: "billing", label: "Billing (prefix)" },
+
+  // Birthday components
+  { value: "bday-day", label: "Birth Day" },
+  { value: "bday-month", label: "Birth Month" },
+  { value: "bday-year", label: "Birth Year" },
+];
+
+export const getAutoCompleteLabel = (autoCompleteValue: string): string => {
+  const option = autoCompleteOptions.find((opt) => opt.value === autoCompleteValue);
+  return option ? option.label : autoCompleteValue;
+};
+
+export const getAutoCompleteValue = (label: string): string | undefined => {
+  const option = autoCompleteOptions.find((opt) => opt.label === label);
+  return option ? option.value : undefined;
+};
+
+export const getAutoCompleteDropdownOptions = () => {
+  return autoCompleteOptions;
+};
+
+export const isValidAutoCompleteValue = (autoCompleteValue: string): boolean => {
+  return autoCompleteOptions.some((opt) => opt.value === autoCompleteValue);
+};
+
+export const getDefaultAutoCompleteValue = (): string => {
+  return FIELD_DEFAULT_COMPONENT_PROPS.autoComplete as string;
+};
+
+export const ensureValidAutoCompleteValue = (autoCompleteValue?: string): string => {
+  if (autoCompleteValue === undefined || !isValidAutoCompleteValue(autoCompleteValue)) {
+      return getDefaultAutoCompleteValue();
+  }
+  return autoCompleteValue;
+};
+
+
 export const componentCompatibility = {
     input: ["autoComplete", "maxLength", "spellCheck", "width", "valuePrefix", "valueSuffix"],
     textarea: ["rows", "maxLength", "spellCheck", "width"],

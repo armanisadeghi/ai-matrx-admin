@@ -2,15 +2,10 @@
 import React, { useState } from "react";
 import { useAppSelector } from "@/lib/redux";
 import { selectFieldById } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import BasicTab from "./tabs/BasicTab";
-import OptionsTab from "./tabs/OptionsTab";
-import SelectionTab from "./tabs/SelectionTab";
-import StylingTab from "./tabs/StylingTab";
-import NumericTab from "./tabs/NumericTab";
-import DateTimeTab from "./tabs/DateTimeTab";
-import TextContentTab from "./tabs/TextContentTab";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import FieldPreviewAs from "../previews/FieldPreviewAs";
+import { BasicTab, OptionsTab, SelectionTab, StylingTab, NumericTab, DateTimeTab, TextContentTab } from "./Field-config-tabs";
+
 
 interface FieldSettingsOverlayProps {
     isOpen: boolean;

@@ -231,6 +231,14 @@ export const componentList: ComponentEntry[] = [
     tags: ['card', 'section', 'layout', 'header', 'footer', 'actions', 'form']
   },
   {
+    id: 'help-icon',
+    name: 'Help Icon',
+    path: 'components/official/HelpIcon.tsx',
+    description: 'Elegant informational tooltip icon for providing contextual help text with copy functionality',
+    category: 'display',
+    tags: ['tooltip', 'help', 'info', 'contextual', 'copy', 'hover']
+  },
+  {
     id: 'applet-list-table',
     name: 'Applet List Table',
     path: 'features/applet/builder/modules/applet-builder/AppletListTable.tsx',

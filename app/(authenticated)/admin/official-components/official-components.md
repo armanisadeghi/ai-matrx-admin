@@ -124,6 +124,16 @@ components\official\StructuredSectionCard.tsx
  - Highly customizable with support for various content types in all sections
  - Footer columns automatically stack on mobile for better usability
 
+## Help Icon
+components\official\HelpIcon.tsx
+ - Elegant informational tooltip icon for providing contextual help
+ - Shows helpful text when users hover over the icon
+ - Features intelligent tooltip positioning to stay within viewport
+ - Tooltip includes copy-to-clipboard functionality for easy reference
+ - Properly handles both literal newlines and \n escape sequences in text
+ - Fully supports light and dark mode with consistent styling
+ - Includes built-in delay handling for better user experience
+
 ## Multi Applet Selector
 features\applet\builder\components\smart-parts\applets\MultiAppletSelector.tsx
  - Interactive component for selecting and managing multiple applets

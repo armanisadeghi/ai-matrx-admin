@@ -1,4 +1,4 @@
-import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
+import HelpIcon from "@/components/official/HelpIcon";
 import { Label } from "@/components/ui/label";
 
 export const fieldHelpTextItems = {
@@ -75,7 +75,7 @@ export interface AppBuilderHelpTextProps {
 export const FieldLabelAndHelpText = ({ fieldName, fieldLabel, required }: AppBuilderHelpTextProps) => {
     return (
         <div className="flex items-center gap-1">
-            <Label htmlFor={fieldName} className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <Label htmlFor={fieldName} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
                 {fieldLabel || fieldName}
                 {required && <span className="pl-1 text-red-500">*</span>}
             </Label>
@@ -87,7 +87,7 @@ export const FieldLabelAndHelpText = ({ fieldName, fieldLabel, required }: AppBu
 export const ContainerLabelAndHelpText = ({ fieldName, fieldLabel, required }: AppBuilderHelpTextProps) => {
     return (
         <div className="flex items-center gap-1">
-            <Label htmlFor={fieldName} className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <Label htmlFor={fieldName} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
                 {fieldLabel || fieldName}
                 {required && <span className="pl-1 text-red-500">*</span>}
             </Label>

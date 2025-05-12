@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import HelpIcon from "@/features/applet/runner/layouts/helpers/HelpIcon";
+import HelpIcon from "@/components/official/HelpIcon";
 import { ComponentType } from "@/types/customAppTypes";
 import { componentOptions } from "@/features/applet/constants/field-constants";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
