@@ -1,6 +1,5 @@
 export { default as FieldsList } from './FieldsList';
 export { default as SmartFieldsList } from './SmartFieldsList';
-export { default as FieldConfigForm } from './FieldConfigForm';
 export { default as SmartFieldsListWrapper } from './SmartFieldsListWrapper';
 export { default as EnhancedMultiFieldSelector } from './EnhancedMultiFieldSelector';
 export { default as MultiFieldSelector } from './MultiFieldSelector';
