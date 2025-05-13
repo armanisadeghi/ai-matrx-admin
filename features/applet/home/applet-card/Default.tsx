@@ -33,11 +33,16 @@ const AppletCard: React.FC<AppletCardProps> = ({
   const appletBgColor = applet.primaryColor || primaryColor;
   const appletAccentColor = applet.accentColor || accentColor;
   const appletBgClass = appletBgColor ? `bg-[${appletBgColor}]` : 'bg-white dark:bg-gray-800';
-  const appletAccentClass = appletAccentColor ? `text-[${appletAccentColor}] border-[${appletAccentColor}]` : accentColorClass;
+  const appletAccentClass = appletAccentColor ? `text-[${appletAccentColor}]-500 border-[${appletAccentColor}]-500` : accentColorClass;
   
+  console.log("AppletCard appletAccentClass", appletAccentColor);
+  console.log("AppletCard appletBgClass", appletBgColor);
+  console.log("AppletCard accentColorClass", accentColorClass);
+  console.log("AppletCard appletAccentClass", appletAccentClass);
+
   return (
     <div 
-      className="group relative rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 cursor-pointer border border-gray-200 dark:border-gray-700"
+      className="group relative rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 cursor-pointer border border-gray-200 dark:border-gray-700"
       onClick={onClick}
     >
       {/* Card image/banner */}
@@ -47,6 +52,7 @@ const AppletCard: React.FC<AppletCardProps> = ({
             src={applet.imageUrl}
             alt={applet.name}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover"
           />
         ) : (
@@ -78,11 +84,15 @@ const AppletCard: React.FC<AppletCardProps> = ({
       
       {/* Card content */}
       <div className="p-4 bg-white dark:bg-gray-800">
-        {applet.description && (
-          <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-4">
-            {applet.description}
-          </p>
-        )}
+        <div className="h-[3.5rem] mb-4">
+          {applet.description ? (
+            <p className="text-gray-600 dark:text-gray-300 text-sm line-clamp-3">
+              {applet.description}
+            </p>
+          ) : (
+            <div className="h-full"></div>
+          )}
+        </div>
         
         <div className="flex items-center justify-between">
           {/* Optional creator badge */}

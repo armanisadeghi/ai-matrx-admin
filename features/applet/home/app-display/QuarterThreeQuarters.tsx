@@ -74,6 +74,7 @@ const QuarterThreeQuarters: React.FC<AppDisplayProps> = ({
                 src={appImageUrl} 
                 alt={`${appName} banner`} 
                 fill
+                sizes="(max-width: 768px) 100vw, 75vw"
                 className="object-cover"
               />
             </div>

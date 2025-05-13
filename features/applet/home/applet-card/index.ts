@@ -16,7 +16,7 @@ const variants = {
 export type AppletCardVariant = keyof typeof variants;
 
 export const getAppletCardComponent = (variant: AppletCardVariant = 'default') => {
-  return variants[variant.toLowerCase() as AppletCardVariant] || variants.default;
+  return variants[variant] || variants.default;
 };
 
 export default getAppletCardComponent;

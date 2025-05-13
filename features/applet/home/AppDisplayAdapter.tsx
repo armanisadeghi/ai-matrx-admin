@@ -18,10 +18,28 @@ interface AppDisplayAdapterProps {
 
 const AppDisplayAdapter: React.FC<AppDisplayAdapterProps> = ({
   variant = 'default',
-  ...props
+  appName,
+  appDescription,
+  appIcon,
+  appImageUrl,
+  creator,
+  accentColor,
+  primaryColor,
+  accentColorClass,
+  getAppIconWithBg,
 }) => {
   const AppDisplayComponent = getAppDisplayComponent(variant);
-  return <AppDisplayComponent {...props} />;
+  return <AppDisplayComponent 
+    appName={appName}
+    appDescription={appDescription}
+    appIcon={appIcon}
+    appImageUrl={appImageUrl}
+    creator={creator}
+    accentColor={accentColor}
+    primaryColor={primaryColor}
+    accentColorClass={accentColorClass}
+    getAppIconWithBg={getAppIconWithBg}
+  />;
 };
 
 export default AppDisplayAdapter; 

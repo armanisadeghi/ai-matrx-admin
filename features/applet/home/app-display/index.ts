@@ -18,7 +18,7 @@ const variants = {
 export type AppDisplayVariant = keyof typeof variants;
 
 export const getAppDisplayComponent = (variant: AppDisplayVariant = 'default') => {
-  return variants[variant.toLowerCase() as AppDisplayVariant] || variants.default;
+  return variants[variant] || variants.default;
 };
 
 export default getAppDisplayComponent;

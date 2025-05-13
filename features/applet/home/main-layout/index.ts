@@ -12,7 +12,7 @@ const variants = {
 export type MainLayoutVariant = keyof typeof variants;
 
 export const getMainLayoutComponent = (variant: MainLayoutVariant = 'default') => {
-  return variants[variant.toLowerCase() as MainLayoutVariant] || variants.default;
+  return variants[variant] || variants.default;
 };
 
 export default getMainLayoutComponent;

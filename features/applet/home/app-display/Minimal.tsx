@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 
 interface AppDisplayProps {
@@ -26,12 +25,12 @@ const MinimalAppDisplay: React.FC<AppDisplayProps> = ({
   return (
     <div className="max-w-7xl mx-auto mb-8 px-2">
       <div className="flex items-center gap-3">
-        {/* App Icon */}
+        {/* App Icon - sized to match the height of two lines of text */}
         {appIcon && (
-          <div className="w-10 h-10 flex-shrink-0">
+          <div className="w-12 h-12 flex-shrink-0">
             {getAppIconWithBg({
               icon: appIcon,
-              size: 24,
+              size: 32,
               color: accentColor || 'blue',
               primaryColor: primaryColor || 'gray',
               className: 'rounded-md bg-gray-100 dark:bg-gray-800 p-2 shadow-sm'
@@ -52,9 +51,9 @@ const MinimalAppDisplay: React.FC<AppDisplayProps> = ({
         </div>
       </div>
       
-      {/* Description (only if not empty) */}
+      {/* Description (only if not empty) - reduced spacing */}
       {appDescription && (
-        <p className="text-sm text-gray-600 dark:text-gray-300 mt-2 max-w-2xl">
+        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 max-w-2xl">
           {appDescription}
         </p>
       )}
@@ -62,4 +61,4 @@ const MinimalAppDisplay: React.FC<AppDisplayProps> = ({
   );
 };
 
-export default MinimalAppDisplay; 
+export default MinimalAppDisplay;

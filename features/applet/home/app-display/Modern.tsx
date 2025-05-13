@@ -91,6 +91,7 @@ const ModernAppDisplay: React.FC<AppDisplayProps> = ({
                   src={appImageUrl} 
                   alt={`${appName} preview`} 
                   fill
+                  sizes="(max-width: 768px) 100vw, 40vw"
                   className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-gray-800 md:via-transparent to-transparent opacity-30 md:opacity-0"></div>

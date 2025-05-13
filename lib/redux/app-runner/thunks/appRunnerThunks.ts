@@ -87,9 +87,6 @@ export const fetchAppWithApplets = createAsyncThunk(
   }, { dispatch, rejectWithValue }) => {
     
     const requestId = Math.random().toString(36).substring(2, 10);
-    console.log(`[THUNK-DEBUG ${requestId}] fetchAppWithApplets starting:`, { 
-      idOrSlug, isSlug, defaultAppletId, env: process.env.NODE_ENV 
-    });
     
     try {
       // Reset both slices and set loading state
@@ -98,7 +95,6 @@ export const fetchAppWithApplets = createAsyncThunk(
       dispatch(setAppRuntimeLoading());
       dispatch(setAppletRuntimeLoading());
       
-      console.log(`[THUNK-DEBUG ${requestId}] Calling fetchTransformedAppAndApplets`);
       
       // Add timeout to prevent hanging forever on fetch
       const fetchWithTimeout = async (): Promise<{ appConfig: any; applets: any[] }> => {
@@ -120,13 +116,6 @@ export const fetchAppWithApplets = createAsyncThunk(
       const appData = await fetchWithTimeout();
       const { appConfig, applets } = appData;
       
-      console.log(`[THUNK-DEBUG ${requestId}] App data fetched successfully:`, {
-        appId: appConfig?.id,
-        appName: appConfig?.name,
-        appSlug: appConfig?.slug,
-        appletCount: applets?.length
-      });
-      
       const activeAppletId = determineActiveAppletId(appConfig, applets, defaultAppletId);
       
       // Extract and set broker mappings from all applets
@@ -145,7 +134,6 @@ export const fetchAppWithApplets = createAsyncThunk(
         return acc;
       }, [] as Array<{ source: string; sourceId: string; itemId: string; brokerId: string }>);
       
-      console.log(`[THUNK-DEBUG ${requestId}] Setting broker mappings, app config and applet config`);
       
       dispatch(setBrokerMap(brokerMappings));
       
@@ -162,7 +150,6 @@ export const fetchAppWithApplets = createAsyncThunk(
         // Use setTimeout with a longer delay to ensure it runs well after the app is loaded
         setTimeout(() => {
           try {
-            console.log(`[THUNK-DEBUG ${requestId}] Running deferred validations`);
             runDeferredValidations(appConfig, applets, validationOptions, appConfig.id);
           } catch (error) {
             // Completely silence any validation errors to prevent affecting the main app
@@ -171,7 +158,6 @@ export const fetchAppWithApplets = createAsyncThunk(
         }, 1000);
       }
       
-      console.log(`[THUNK-DEBUG ${requestId}] fetchAppWithApplets completed successfully`);
       
       return { 
         appConfig, 

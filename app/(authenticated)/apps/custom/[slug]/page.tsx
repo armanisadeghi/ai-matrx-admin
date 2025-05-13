@@ -15,11 +15,13 @@ export default function CustomAppHomePage() {
     router.push(`/apps/custom/${slug}/${appletSlug}`);
   };
   
-  // Render the MainLayout with all necessary props
+  // app display variant options: "default" | "banner" | "minimal" | "sideBySide" | "modern" | "QuarterThreeQuarters"
+  // applet card variant options: "default" | "glass" | "modern" | "simple" | "compact"
+  // main layout variant options: "default" | "grid" | "sidebar"
   return (
     <HomeApplet 
       navigateToApplet={navigateToApplet}
-      appDisplayVariant="QuarterThreeQuarters"
+      appDisplayVariant="sideBySide"
       appletCardVariant="default"
       mainLayoutVariant="default"
     />
