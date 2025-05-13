@@ -22,6 +22,7 @@ import {
     Phone,
     Layers,
 } from "lucide-react";
+import { FIELD_DEFAULT_COMPONENT_PROPS } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 
 // Unified component information including icon, display name, and component details
 export interface ComponentInfo {
@@ -356,31 +357,6 @@ export const defaultTableRules: Required<TableRules> = {
     canRenameColumns: true,
     canSortRows: true,
     canSortColumns: true,
-};
-
-export const FIELD_DEFAULT_COMPONENT_PROPS: ComponentProps = {
-    min: 0,
-    max: 100,
-    step: 1,
-    rows: 3,
-    minDate: "",
-    maxDate: "",
-    onLabel: "Yes",
-    offLabel: "No",
-    multiSelect: false,
-    maxItems: 99999,
-    minItems: 0,
-    gridCols: "grid-cols-1",
-    autoComplete: "off",
-    direction: "vertical",
-    customContent: "",
-    showSelectAll: false,
-    width: "w-full",
-    valuePrefix: "",
-    valueSuffix: "",
-    maxLength: 999999,
-    spellCheck: false,
-    tableRules: defaultTableRules,
 };
 
 export const widthOptions = [

@@ -9,7 +9,6 @@ import {
     fetchContainersThunk,
     fetchContainerByIdThunk,
     updateFieldThunk,
-    saveContainerToAppletThunk,
     saveOrUpdateContainerToAppletThunk,
     moveFieldUpThunk,
     moveFieldDownThunk,

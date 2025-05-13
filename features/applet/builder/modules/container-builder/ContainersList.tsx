@@ -1,37 +1,46 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectContainersForApplet, selectIsAppletDirtyById } from "@/lib/redux/app-builder/selectors/appletSelectors";
-import { selectActiveContainerId, selectAllContainerIds, selectIsContainerDirtyById } from "@/lib/redux/app-builder/selectors/containerSelectors";
+import {
+    selectActiveContainerId,
+    selectAllContainerIds,
+    selectIsContainerDirtyById,
+} from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { removeContainer } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
 import { setActiveContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 import {
     setActiveContainerWithFetchThunk,
     fetchContainerByIdThunk,
     fetchContainersThunk,
+    saveContainerThunk,
+    saveOrUpdateContainerToAppletThunk,
 } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { saveAppletThunk, recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import { ConfirmationDialog } from "@/features/applet/builder/parts/ConfirmationDialog";
 import { ContainerBuilder } from "@/lib/redux/app-builder/types";
 import ContainerCard from "./ContainerCard";
+import { DebugLog } from "@/components/admin/debug-log-component";
 
 interface ContainersListProps {
     appletId: string;
     appletName: string;
+    onFullRecompileSuccess?: (containerId: string) => void;
 }
 
-const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName }) => {
+const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, onFullRecompileSuccess }) => {
     const { toast } = useToast();
     const dispatch = useAppDispatch();
 
     // UI state
     const [fetchingContainer, setFetchingContainer] = useState<boolean>(false);
     const [savingApplet, setSavingApplet] = useState<boolean>(false);
+    const [savingContainer, setSavingContainer] = useState<boolean>(false);
 
     // Delete dialog state
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
@@ -81,32 +90,34 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName })
         }
     };
 
-    // const handleSaveContainer = async () => {
-    //     if (!activeContainerId) return;
+    const handleSaveContainerAndRecompileFieldsAndApplet = async () => {
+        if (!activeContainerId) return;
 
-    //     setIsSaving(true);
+        setSavingContainer(true);
 
-    //     try {
-    //         const result = await dispatch(saveContainerThunk(activeContainerId)).unwrap();
+        try {
+            const result = await dispatch(
+                saveOrUpdateContainerToAppletThunk({ appletId, containerId: activeContainerId, recompileAllFields: true })
+            ).unwrap();
 
-    //         toast({
-    //             title: "Success",
-    //             description: "Container saved successfully.",
-    //         });
+            toast({
+                title: "Success",
+                description: "Container saved successfully.",
+            });
 
-    //         if (onSaveSuccess) {
-    //             onSaveSuccess(result.id);
-    //         }
-    //     } catch (error) {
-    //         toast({
-    //             title: "Error",
-    //             description: typeof error === "string" ? error : "Failed to save container.",
-    //             variant: "destructive",
-    //         });
-    //     } finally {
-    //         setIsSaving(false);
-    //     }
-    // };
+            if (onFullRecompileSuccess) {
+                onFullRecompileSuccess(activeContainerId);
+            }
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: typeof error === "string" ? error : "Failed to save container.",
+                variant: "destructive",
+            });
+        } finally {
+            setSavingContainer(false);
+        }
+    };
 
     // Save and recompile applet
     const saveAndRecompileApplet = async () => {
@@ -208,7 +219,7 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName })
 
             <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
                 <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col space-y-3">
                         <div>
                             <CardTitle className="text-lg font-medium text-gray-800 dark:text-gray-200">{appletName} Containers</CardTitle>
                             <CardDescription className="text-gray-500 dark:text-gray-400 pl-2">
@@ -219,29 +230,38 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName })
                                     : `${appletContainers.length} Containers`}
                             </CardDescription>
                         </div>
+                        <DebugLog
+                            title="-> Container List Applet Recompile Button"
+                            values={{
+                                isAppletDirty,
+                                isContainerDirty,
+                            }}
+                        />
                         {isAppletDirty && !isContainerDirty && (
                             <Button
                                 onClick={saveAndRecompileApplet}
                                 disabled={savingApplet}
                                 size="sm"
-                                className="bg-amber-500 hover:bg-amber-600 text-white"
+                                className="bg-amber-500 hover:bg-amber-600 text-white w-full"
                             >
                                 {savingApplet ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                                Recompile Applet
+                                Applet Recompile Needed
                             </Button>
                         )}
-
-                        {isContainerDirty && (
-                            <Button
-                                // onClick={saveAndRecompileContainer}
-                                // disabled={savingContainer}
-                                size="sm"
-                                className="bg-amber-500 hover:bg-amber-600 text-white"
-                            >
-                                {savingApplet ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                                Recompile Container
-                            </Button>
-                        )}
+                        <Button
+                            onClick={handleSaveContainerAndRecompileFieldsAndApplet}
+                            disabled={savingContainer}
+                            size="sm"
+                            className="bg-amber-500 hover:bg-amber-600 text-white w-full"
+                        >
+                            {savingContainer ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <RefreshCw className="mr-2 h-4 w-4 text-red-500" />
+                            )}
+                            FULLY RECOMPILE FIELDS & APPLET
+                            <TriangleAlert className="ml-2 h-4 w-4 text-red-500" />
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-4">

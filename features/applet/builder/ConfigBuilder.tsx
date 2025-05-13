@@ -206,7 +206,7 @@ export const ConfigBuilder = () => {
 
     const handleAppSelected = (appId: string) => {
         setSelectedAppId(appId);
-        setActiveStep(1);
+        // setActiveStep(1);
     };
 
     // Reset to the app selection step

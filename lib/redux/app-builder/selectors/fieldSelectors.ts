@@ -15,9 +15,13 @@ export const selectAllFields = createSelector(
 
 // Memoized selector for a specific field by ID
 export const selectFieldById = createSelector(
-  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
-  (field) => field || null
+  [
+    getFieldBuilderState,
+    (state: RootState, id: string) => id
+  ],
+  (fieldBuilderState, id) => fieldBuilderState.fields[id] || null
 );
+
 
 // Memoized selector for field loading state
 export const selectFieldLoading = createSelector(

@@ -2,7 +2,8 @@
 
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
 import { FieldDefinition, ComponentProps, ComponentType, FieldOption } from "@/types/customAppTypes";
-import { getComponentTypeDefaults, ensureValidWidthClass, ensureValidDirectionValue, ensureValidGridColsValue, FIELD_DEFAULT_COMPONENT_PROPS } from "@/features/applet/constants/field-constants";
+import { getComponentTypeDefaults, ensureValidWidthClass, ensureValidDirectionValue, ensureValidGridColsValue } from "@/features/applet/constants/field-constants";
+import { FIELD_DEFAULT_COMPONENT_PROPS } from "@/lib/redux/app-builder/slices/fieldBuilderSlice";
 
 export function processFieldOptions(options?: FieldOption[]): FieldOption[] {
     if (!options || options.length === 0) {

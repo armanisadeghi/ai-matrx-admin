@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { DebugLog } from "@/components/admin/debug-log-component";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectContainerById, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { setLabel, setShortLabel, setDescription } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
@@ -47,8 +48,24 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
         if (initialAppletId) {
             setSelectedApplet(initialAppletId);
             setAppletRecordKey(`id:${initialAppletId}`);
+        } else if (appletRecordKey) {
+            // Extract the applet ID from the record key if available
+            const appletId = appletRecordKey.split(":")[1];
+            if (appletId) {
+                setSelectedApplet(appletId);
+            }
         }
-    }, [initialAppletId]);
+    }, [initialAppletId, appletRecordKey]);
+
+    // Handle the case when appletRecordKey is set initially but selectedApplet isn't
+    useEffect(() => {
+        if (appletRecordKey && !selectedApplet) {
+            const appletId = appletRecordKey.split(":")[1];
+            if (appletId) {
+                setSelectedApplet(appletId);
+            }
+        }
+    }, [appletRecordKey, selectedApplet]);
 
     const allDisabled = isLoading || isSaving || isCompiling || !containerId || mode === "list";
 
@@ -231,6 +248,20 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                             customSelectText="Choose Applet"
                             disabled={allDisabled || isDirty}
                             initialSelectedRecordKey={appletRecordKey}
+                        />
+                        <DebugLog 
+                            title="Button disable conditions"
+                            values={{
+                                isLoading,
+                                isSaving,
+                                isCompiling,
+                                containerId,
+                                hasContainerId: !!containerId,
+                                selectedApplet,
+                                hasSelectedApplet: !!selectedApplet,
+                                isDirty,
+                                appletRecordKey,
+                            }}
                         />
                         <Button
                             onClick={handleCompileContainer}

@@ -186,7 +186,7 @@ const AppletConfigViewer = ({ applet, searchParams }: AppletConfigViewerProps) =
                         <div className="flex items-start">
                             <div className="flex-shrink-0 mr-4">
                                 <div className="relative w-24 h-24 rounded-lg overflow-hidden">
-                                    {applet.image_url && <Image src={applet.image_url} alt={applet.name} fill className="object-cover" />}
+                                    {applet.image_url && <Image src={applet.image_url} alt={applet.name} fill sizes="96px" className="object-cover" />}
                                 </div>
                             </div>
                             <div className="flex-1">

@@ -29,7 +29,7 @@ export const saveContainerThunk = createAsyncThunk<ContainerBuilder, string, { s
         try {
             const container = selectContainerById(getState(), containerId);
 
-            console.log("saveContainerThunk container", container);
+            // console.log("saveContainerThunk container", JSON.stringify(container, null, 2));
 
             if (!container) {
                 throw new Error(`Container with ID ${containerId} not found`);
@@ -41,11 +41,11 @@ export const saveContainerThunk = createAsyncThunk<ContainerBuilder, string, { s
             if (container.isLocal) {
                 // Create new container
                 savedContainer = await createComponentGroup(container);
-                console.log("saveContainerThunk savedContainer", savedContainer);
+                // console.log("saveContainerThunk savedContainer", JSON.stringify(savedContainer, null, 2));
             } else {
                 // Update existing container
                 savedContainer = await updateComponentGroup(containerId, container);
-                console.log("saveContainerThunk savedContainer", savedContainer);
+                // console.log("saveContainerThunk savedContainer", JSON.stringify(savedContainer, null, 2));
             }
 
             // Return consistently formatted result
@@ -253,6 +253,8 @@ export const recompileContainerThunk = createAsyncThunk<ContainerBuilder, string
             // Get the updated container
             const result = await getComponentGroupById(containerId);
 
+            console.log("recompileContainerThunk result", JSON.stringify(result, null, 2));
+
             if (!result) {
                 throw new Error("Failed to fetch recompiled container");
             }
@@ -301,47 +303,60 @@ export const fetchContainerByIdThunk = createAsyncThunk<ContainerBuilder, string
 // This will save OR update, but we need to make sure it's not dirty. If it's dirty, we need to save it first.
 export const saveOrUpdateContainerToAppletThunk = createAsyncThunk<
     { appletId: string; updatedApplet: ContainerBuilder[] | null },
-    { appletId: string; containerId: string }, 
+    { appletId: string; containerId: string; recompileAllFields?: boolean },
     { state: RootState }
->("containerBuilder/saveOrUpdateContainerToApplet",
-    async ({ appletId, containerId }, { getState, dispatch, rejectWithValue }) => {
+>("containerBuilder/saveOrUpdateContainerToApplet", async ({ appletId, containerId, recompileAllFields = false }, { getState, dispatch, rejectWithValue }) => {
+    try {
+        const container = selectContainerById(getState(), containerId);
+        // console.log("saveOrUpdateContainerToAppletThunk container", JSON.stringify(container, null, 2));
 
-        try {
-            const container = selectContainerById(getState(), containerId);
-            console.log("saveOrUpdateContainerToAppletThunk container", container);
-
-            if (!container) {
-                throw new Error(`Container with ID ${containerId} not found`);
-            }
-
-            if (container.isDirty) {
-                try {
-                    await dispatch(saveContainerThunk(containerId)).unwrap();
-                } catch (error: any) {
-                    throw new Error(`Failed to save container before adding to applet: ${error.message}`);
-                }
-            }
-
-            console.log("saveOrUpdateContainerToAppletThunk adding container to applet", appletId, containerId);
-
-            const updatedApplet = await addContainersToApplet(appletId, [containerId]);
-
-            console.log("saveOrUpdateContainerToAppletThunk updatedApplet", updatedApplet);
-
-            if (!updatedApplet) {
-                throw new Error("Failed to add container to applet");
-            }
-
-            return { appletId, updatedApplet: updatedApplet.containers };
-        } catch (error: any) {
-            console.error("Error saving container to applet:", error);
-            return rejectWithValue(error.message || "Failed to save container to applet");
+        if (!container) {
+            throw new Error(`Container with ID ${containerId} not found`);
         }
-    }
-);
 
-// Create an alias for backwards compatibility (deprecated)
-export const saveContainerToAppletThunk = saveOrUpdateContainerToAppletThunk;
+        // Save the container if it's dirty
+        if (container.isDirty) {
+            // console.log("saveOrUpdateContainerToAppletThunk container is dirty, saving it first");
+            try {
+                await dispatch(saveContainerThunk(containerId)).unwrap();
+            } catch (error: any) {
+                throw new Error(`Failed to save container before adding to applet: ${error.message}`);
+            }
+        } else {
+            // console.log("saveOrUpdateContainerToAppletThunk container is not dirty, skipping save");
+        }
+
+        // Recompile all fields if requested
+        if (recompileAllFields) {
+            try {
+                await dispatch(recompileContainerThunk(containerId)).unwrap();
+            } catch (error: any) {
+                throw new Error(`Failed to recompile container: ${error.message}`);
+            }
+        }
+
+        console.log("saveOrUpdateContainerToAppletThunk adding container to applet", appletId, containerId);
+
+        const updatedApplet = await addContainersToApplet(appletId, [containerId]);
+
+        console.log("saveOrUpdateContainerToAppletThunk updatedApplet", JSON.stringify(updatedApplet, null, 2));
+
+        const updatedContainer = selectContainerById(getState(), containerId);
+
+        console.log("saveOrUpdateContainerToAppletThunk updatedContainer", JSON.stringify(updatedContainer, null, 2));
+
+        if (!updatedApplet) {
+            throw new Error("Failed to add container to applet");
+        }
+
+        return { appletId, updatedApplet: updatedApplet.containers };
+    } catch (error: any) {
+        console.error("Error saving container to applet:", error);
+        return rejectWithValue(error.message || "Failed to save container to applet");
+    }
+});
+
+
 
 // Move a field up in the container order
 export const moveFieldUpThunk = createAsyncThunk<

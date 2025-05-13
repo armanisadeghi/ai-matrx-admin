@@ -64,6 +64,16 @@ export const FIELD_DEFAULT_COMPONENT_PROPS: ComponentProps = {
     valueSuffix: "",
     maxLength: 999999,
     spellCheck: false,
+    tableRules: {
+        canAddRows: true,
+        canSortRows: true,
+        canEditCells: true,
+        canAddColumns: true,
+        canDeleteRows: true,
+        canSortColumns: true,
+        canDeleteColumns: true,
+        canRenameColumns: true
+    }
 };
 
 // Default field configuration

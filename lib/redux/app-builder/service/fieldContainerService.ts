@@ -36,10 +36,10 @@ export const componentGroupToDBFormat = async (
     return {
         id: group.id || null,
         label: group.label || "",
-        short_label: group.shortLabel || null,
-        description: group.description || null,
+        short_label: group.shortLabel || "",
+        description: group.description || "",
         hide_description: group.hideDescription !== undefined ? group.hideDescription : false,
-        help_text: group.helpText || null,
+        help_text: group.helpText || "",
         fields: group.fields || [],
         user_id: userId,
         is_public: group.isPublic !== undefined ? group.isPublic : false,
@@ -55,22 +55,14 @@ export const dbToComponentGroup = (dbRecord: ComponentGroupDB): ContainerBuilder
     let processedFields: FieldDefinition[] = [];
 
     if (Array.isArray(dbRecord.fields)) {
-        processedFields = dbRecord.fields
-            .map((field: any) => {
-                if (field && typeof field === "object" && field.label && field.component) {
-                    try {
-                        return dbToFieldDefinition(field as FieldComponentDB);
-                    } catch (error) {
-                        console.error("Error processing field:", field.id, error);
-                        return null;
-                    }
-                }
-                if (field && field.id) {
-                    console.warn(`Incomplete field found in group ${dbRecord.id}: ${field.id}`);
-                }
-                return null;
-            })
-            .filter((field): field is FieldDefinition => field !== null);
+        processedFields = dbRecord.fields.map((field: any) => {
+            if (field && typeof field === "object" && field.label && field.component) {
+                // Create a new object excluding isDirty and isLocal
+                const { isDirty, isLocal, ...cleanField } = field;
+                return cleanField;
+            }
+            return field;
+        });
     }
 
     return {
@@ -86,7 +78,6 @@ export const dbToComponentGroup = (dbRecord: ComponentGroupDB): ContainerBuilder
         publicRead: dbRecord.public_read,
     };
 };
-
 /**
  * Fetches all component groups for the current user
  */
@@ -184,8 +175,11 @@ export const createComponentGroup = async (group: ContainerBuilder): Promise<Con
 export const updateComponentGroup = async (id: string, group: ContainerBuilder): Promise<ContainerBuilder> => {
     const dbData = await componentGroupToDBFormat(group);
 
+    console.log("updateComponentGroup dbData", JSON.stringify(dbData, null, 2));
+
     try {
         const { data, error } = await supabase.from("component_groups").update(dbData).eq("id", id).select().single();
+        console.log("updateComponentGroup data", JSON.stringify(data, null, 2));
 
         if (error) {
             console.error("Error updating component group:", error.message, error.details, error.hint);

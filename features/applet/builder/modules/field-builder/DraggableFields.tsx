@@ -53,13 +53,45 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
         setDroppedMappingIds(newDroppedMappings);
     }, [usedFieldIdsInApplet, brokerMappings]);
 
-    // Handle drag start
-    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, fieldId: string, brokerId: string) => {
-        // Create a mapping ID that clearly identifies both the field and broker
+    // Handle drag start for normal state
+    const handleNormalDragStart = (e: React.DragEvent<HTMLDivElement>, fieldId: string, brokerId: string) => {
         const mappingId = `field:${fieldId}|broker:${brokerId}`;
         setDraggedItem(mappingId);
 
-        // Set the drag data with field and broker information
+        e.dataTransfer.setData(
+            "application/json",
+            JSON.stringify({
+                mappingId,
+                type: "broker-field",
+                fieldId,
+                brokerId,
+            })
+        );
+        e.dataTransfer.effectAllowed = "move";
+    };
+
+    // Handle drag start for dropped state
+    const handleDroppedDragStart = (e: React.DragEvent<HTMLDivElement>, fieldId: string, brokerId: string) => {
+        const mappingId = `field:${fieldId}|broker:${brokerId}`;
+        setDraggedItem(mappingId);
+
+        e.dataTransfer.setData(
+            "application/json",
+            JSON.stringify({
+                mappingId,
+                type: "broker-field",
+                fieldId,
+                brokerId,
+            })
+        );
+        e.dataTransfer.effectAllowed = "move";
+    };
+
+    // Handle drag start for issue state
+    const handleIssueDragStart = (e: React.DragEvent<HTMLDivElement>, fieldId: string, brokerId: string) => {
+        const mappingId = `field:${fieldId}|broker:${brokerId}`;
+        setDraggedItem(mappingId);
+
         e.dataTransfer.setData(
             "application/json",
             JSON.stringify({
@@ -87,7 +119,6 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
     };
 
     // Check field status in containers
-    // Check field status in containers (move this outside the component)
     const checkFieldContainerStatus = (fieldId: string, appletContainers: any[], databaseContainer: any | null) => {
         const result = {
             inAppletContainer: false,
@@ -153,7 +184,6 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
                 ) : (
                     <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
                         {brokerMappings.map((mapping) => {
-                            // Added null checking for fieldsFromDatabase and field.id
                             const field = Array.isArray(fieldsFromDatabase)
                                 ? fieldsFromDatabase.find((f) => f && f.id === mapping.fieldId)
                                 : undefined;
@@ -162,7 +192,6 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
                                 : undefined;
 
                             if (!field || !broker) {
-                                // Render an error indicator for missing field or broker
                                 return (
                                     <div
                                         key={`error-mapping-${mapping.fieldId}-${mapping.brokerId}`}
@@ -182,14 +211,10 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
                                 );
                             }
 
-                            // Use a clear delimiter format for mapping IDs
                             const mappingId = `field:${mapping.fieldId}|broker:${mapping.brokerId}`;
                             const isDropped = droppedMappingIds.has(mappingId);
                             const isDragging = draggedItem === mappingId;
 
-                            // Check field status
-                            // Inside the map function, after getting field and broker:
-                            // Get the container ID from applet containers
                             let containerId: string | null = null;
                             if (appletContainers) {
                                 for (const container of appletContainers) {
@@ -200,33 +225,38 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
                                 }
                             }
 
-                            // Get the database container if we found a container ID
                             const databaseContainer = useAppSelector((state) =>
                                 containerId ? selectContainerById(state, containerId) : null
                             );
 
-                            // Check field status
                             const containerStatus = checkFieldContainerStatus(mapping.fieldId, appletContainers, databaseContainer);
-                            // If there's any issue, don't disable the field
                             const hasIssue = containerStatus.status !== "ok";
 
                             return (
                                 <div
                                     key={mappingId}
-                                    draggable={!isDropped && !hasIssue} // Enable dragging if there's an issue
-                                    onDragStart={(e) => !isDropped && !hasIssue && handleDragStart(e, mapping.fieldId, mapping.brokerId)}
+                                    draggable={true}
+                                    onDragStart={(e) => {
+                                        if (hasIssue) {
+                                            handleIssueDragStart(e, mapping.fieldId, mapping.brokerId);
+                                        } else if (isDropped) {
+                                            handleDroppedDragStart(e, mapping.fieldId, mapping.brokerId);
+                                        } else {
+                                            handleNormalDragStart(e, mapping.fieldId, mapping.brokerId);
+                                        }
+                                    }}
                                     onDragEnd={handleDragEnd}
                                     className={`
                                             bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
                                             rounded-md p-2 flex items-center
                                             ${
                                                 isDropped && !hasIssue
-                                                    ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 pointer-events-none"
-                                                    : "cursor-move hover:border-indigo-300 dark:hover:border-indigo-500"
+                                                    ? "opacity-50 bg-gray-100 dark:bg-gray-800"
+                                                    : "hover:border-indigo-300 dark:hover:border-indigo-500"
                                             }
                                             ${isDragging ? "opacity-50 border-indigo-500" : ""}
                                             ${hasIssue ? "border-amber-400 dark:border-amber-600" : ""}
-                                            transition-colors duration-150
+                                            transition-colors duration-150 cursor-move
                                         `}
                                 >
                                     {!isDropped && !hasIssue && <GripVertical className="h-4 w-4 mr-2 flex-shrink-0 text-gray-400" />}
@@ -244,7 +274,6 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Broker: {broker.name}</p>
 
-                                        {/* Status indicators that ALWAYS show */}
                                         <div className="flex items-center gap-3 mt-1 flex-wrap">
                                             <div className="flex items-center gap-1">
                                                 <span className="text-xs text-gray-600 dark:text-gray-400">Container:</span>
@@ -264,7 +293,6 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
                                             </div>
                                         </div>
 
-                                        {/* Show specific issue */}
                                         {!containerStatus.inAppletContainer && (
                                             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Field not in applet</p>
                                         )}
