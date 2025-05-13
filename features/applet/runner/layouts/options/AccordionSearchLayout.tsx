@@ -8,15 +8,15 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const AccordionSearchLayout: React.FC<AppletInputProps>= ({
     appletId,
-    activeFieldId,
-    setActiveFieldId,
+    activeContainerId,
+    setActiveContainerId,
     actionButton,
     className = "",
     isMobile = false,
+    source = "applet",
   }) => {
     const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
     
-    const [activeContainerId, setActiveContainerId] = useState<string>(appletContainers[0]?.id || "");
     const contentRefs = useRef<Map<string, React.RefObject<HTMLDivElement>>>(new Map());
     const fieldRefs = useRef<Map<string, Map<string, React.ReactNode>>>(new Map());
 
@@ -34,7 +34,7 @@ const AccordionSearchLayout: React.FC<AppletInputProps>= ({
 
                 // Render each field
                 container.fields.forEach((field) => {
-                    groupFieldRefs.set(field.id, fieldController({ field, appletId, isMobile }));
+                    groupFieldRefs.set(field.id, fieldController({ field, appletId, isMobile, source }));
                 });
             }
         });

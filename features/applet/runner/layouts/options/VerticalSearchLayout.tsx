@@ -7,11 +7,12 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const VerticalSearchLayout: React.FC<AppletInputProps>= ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
   isMobile = false,
+  source = "applet",
 }) => {
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   return (
@@ -24,12 +25,13 @@ const VerticalSearchLayout: React.FC<AppletInputProps>= ({
           description={container.description}
           fields={container.fields}
           appletId={appletId}
-          isActive={activeFieldId === container.id}
-          onClick={(id) => setActiveFieldId(id === activeFieldId ? null : id)}
-          onOpenChange={(open) => !open && setActiveFieldId(null)}
+          isActive={activeContainerId === container.id}
+          onClick={(id) => setActiveContainerId(id === activeContainerId ? null : id)}
+          onOpenChange={(open) => !open && setActiveContainerId(null)}
           isLast={index === appletContainers.length - 1}
           isMobile={isMobile}
           className="mb-6"
+          source={source}
         />
       ))}
       

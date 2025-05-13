@@ -9,6 +9,7 @@ interface ContainerFieldRendererProps {
   appletId: string;
   description?: string;
   isMobile?: boolean;
+  source?: string;
 }
 
 const ContainerFieldRenderer: React.FC<ContainerFieldRendererProps> = ({
@@ -16,6 +17,7 @@ const ContainerFieldRenderer: React.FC<ContainerFieldRendererProps> = ({
   appletId,
   description,
   isMobile = false,
+  source = "applet",
 }) => {
   // Use state instead of useRef to ensure re-rendering when field components are created
   const [fieldComponents, setFieldComponents] = useState<Map<string, React.ReactNode>>(new Map());
@@ -32,7 +34,7 @@ const ContainerFieldRenderer: React.FC<ContainerFieldRendererProps> = ({
     // Process each field and create components if needed
     fields.forEach((field) => {
       if (!newFieldComponents.has(field.id)) {
-        newFieldComponents.set(field.id, fieldController({ field, appletId, isMobile }));
+        newFieldComponents.set(field.id, fieldController({ field, appletId, isMobile, source }));
         hasNewComponents = true;
       }
     });

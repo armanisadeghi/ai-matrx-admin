@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import OpenContainerGroup from "@/features/applet/runner/layouts/core/OpenContainerGroup";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -6,21 +6,35 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const CarouselSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
   isMobile = false,
+  source = "applet",
 }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId));
+  
+  // Find the active container index based on the activeContainerId
+  const activeIndex = activeContainerId 
+    ? appletContainers.findIndex(container => container.id === activeContainerId)
+    : 0;
+  
+  // Set the first container as active if nothing is selected
+  useEffect(() => {
+    if (!activeContainerId && appletContainers.length > 0) {
+      setActiveContainerId(appletContainers[0].id);
+    }
+  }, [activeContainerId, appletContainers, setActiveContainerId]);
 
   const handlePrev = () => {
-    setActiveIndex((prev) => (prev === 0 ? appletContainers.length - 1 : prev - 1));
+    const newIndex = activeIndex <= 0 ? appletContainers.length - 1 : activeIndex - 1;
+    setActiveContainerId(appletContainers[newIndex].id);
   };
 
   const handleNext = () => {
-    setActiveIndex((prev) => (prev === appletContainers.length - 1 ? 0 : prev + 1));
+    const newIndex = activeIndex >= appletContainers.length - 1 ? 0 : activeIndex + 1;
+    setActiveContainerId(appletContainers[newIndex].id);
   };
 
   return (
@@ -45,6 +59,7 @@ const CarouselSearchLayout: React.FC<AppletInputProps> = ({
                   isLast={false}
                   isMobile={isMobile}
                   className="h-full"
+                  source={source}
                 />
               </div>
             ))}
@@ -75,10 +90,10 @@ const CarouselSearchLayout: React.FC<AppletInputProps> = ({
       
       {/* Dots indicator */}
       <div className="flex justify-center mt-4 space-x-2">
-        {appletContainers.map((_, index) => (
+        {appletContainers.map((container, index) => (
           <button
             key={index}
-            onClick={() => setActiveIndex(index)}
+            onClick={() => setActiveContainerId(container.id)}
             className={`w-3 h-3 rounded-full focus:outline-none ${
               index === activeIndex 
                 ? "bg-rose-500" 

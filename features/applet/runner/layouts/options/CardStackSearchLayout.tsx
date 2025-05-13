@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import OpenContainerGroup from "@/features/applet/runner/layouts/core/OpenContainerGroup";
 import UniformHeightWrapper, { UniformHeightContext } from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
@@ -7,14 +7,26 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const CardStackSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
+  source = "applet",
 }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
   const { getMaxHeight } = useContext(UniformHeightContext);
-  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
+  const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId));
+
+  // Find the active container index based on activeContainerId
+  const activeIndex = activeContainerId 
+    ? appletContainers.findIndex(container => container.id === activeContainerId)
+    : 0;
+  
+  // Set the first container as active if nothing is selected
+  useEffect(() => {
+    if (!activeContainerId && appletContainers.length > 0) {
+      setActiveContainerId(appletContainers[0].id);
+    }
+  }, [activeContainerId, appletContainers, setActiveContainerId]);
 
   // Calculate the position and z-index for each card
   const getCardStyle = (index: number) => {
@@ -56,19 +68,15 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
 
   const handleNext = () => {
     if (activeIndex < appletContainers.length - 1) {
-      setActiveIndex(activeIndex + 1);
-      if (setActiveFieldId) {
-        setActiveFieldId(appletContainers[activeIndex + 1].id);
-      }
+      const nextContainer = appletContainers[activeIndex + 1];
+      setActiveContainerId(nextContainer.id);
     }
   };
   
   const handlePrev = () => {
     if (activeIndex > 0) {
-      setActiveIndex(activeIndex - 1);
-      if (setActiveFieldId) {
-        setActiveFieldId(appletContainers[activeIndex - 1].id);
-      }
+      const prevContainer = appletContainers[activeIndex - 1];
+      setActiveContainerId(prevContainer.id);
     }
   };
 
@@ -96,12 +104,7 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
             }`}
           >
             <button
-              onClick={() => {
-                setActiveIndex(index);
-                if (setActiveFieldId) {
-                  setActiveFieldId(container.id);
-                }
-              }}
+              onClick={() => setActiveContainerId(container.id)}
               className={`rounded-full w-8 h-8 mx-auto mb-2 flex items-center justify-center ${
                 index <= activeIndex 
                   ? "bg-rose-500 text-white hover:bg-rose-600" 
@@ -111,12 +114,7 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
               {index + 1}
             </button>
             <button 
-              onClick={() => {
-                setActiveIndex(index);
-                if (setActiveFieldId) {
-                  setActiveFieldId(container.id);
-                }
-              }}
+              onClick={() => setActiveContainerId(container.id)}
               className="text-sm hover:underline focus:outline-none text-gray-700 dark:text-gray-300"
             >
               {container.label}
@@ -137,10 +135,10 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
               right: 0,
               pointerEvents: "auto"
             }}
-            onClick={() => setActiveIndex(index)}
+            onClick={() => setActiveContainerId(container.id)}
           >
             <UniformHeightWrapper
-              groupId={container.id}
+              containerId={container.id}
               layoutType="cardStack"
               className="w-full"
               enabled={true}
@@ -156,6 +154,7 @@ const CardStackSearchLayout: React.FC<AppletInputProps> = ({
                 onOpenChange={() => {}}
                 isLast={false}
                 isMobile={false}
+                source={source}
                 className="shadow-xl border-2 border-gray-200 dark:border-gray-700 rounded-lg"
               />
             </UniformHeightWrapper>

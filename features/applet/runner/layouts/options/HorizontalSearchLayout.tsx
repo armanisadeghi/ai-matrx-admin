@@ -8,23 +8,24 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const HorizontalSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
   isMobile = false,
+  source = "applet",
 }) => {
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
 
   const groupsCount = appletContainers.length;
-  const hideGroupPlaceholder = groupsCount > 4;
+  const hideContainerPlaceholder = groupsCount > 4;
 
 
   return (
     <div className="w-full p-4">
       <AppletBrokerContainer
-        activeFieldId={activeFieldId}
-        onActiveFieldChange={setActiveFieldId}
+        activeContainerId={activeContainerId}
+        onActiveContainerChange={setActiveContainerId}
         actionButton={actionButton}
         className={`mx-auto max-w-4xl rounded-full bg-white ${className}`}
       >
@@ -32,15 +33,19 @@ const HorizontalSearchLayout: React.FC<AppletInputProps> = ({
           <SearchGroupField
             key={container.id}
             id={container.id}
+            appletId={appletId}
             label={container.label}
             description={container.description}
             fields={container.fields}
-            isActive={activeFieldId === container.id}
+            isActive={activeContainerId === container.id}
             onClick={() => {}} // Managed by AppletBrokerContainer
             onOpenChange={() => {}} // Managed by AppletBrokerContainer
             isLast={index === appletContainers.length - 1}
+            actionButton={actionButton}
+            className={className}
             isMobile={isMobile}
-            hideGroupPlaceholder={hideGroupPlaceholder}
+            hideContainerPlaceholder={hideContainerPlaceholder}
+            source={source}
           />
         ))}
       </AppletBrokerContainer>

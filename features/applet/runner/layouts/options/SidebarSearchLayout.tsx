@@ -12,24 +12,23 @@ interface SidebarSearchLayoutProps extends AppletInputProps {
 
 const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
     appletId,
-    activeFieldId,
-    setActiveFieldId,
+    activeContainerId,
+    setActiveContainerId,
     actionButton,
     className = "",
     isMobile = false,
     fullWidth = false,
   }) => {
     const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
-    const [activeGroupId, setActiveGroupId] = useState(appletContainers.length > 0 ? appletContainers[0].id : null);
 
     // Find current container index to determine if it's the last one
-    const currentGroupIndex = appletContainers.findIndex((container) => container.id === activeGroupId);
-    const isLastGroup = currentGroupIndex === appletContainers.length - 1;
+    const currentContainerIndex = appletContainers.findIndex((container) => container.id === activeContainerId);
+    const isLastContainer = currentContainerIndex === appletContainers.length - 1;
 
     // Function to navigate to the next container
     const handleNext = () => {
-        if (currentGroupIndex < appletContainers.length - 1) {
-            setActiveGroupId(appletContainers[currentGroupIndex + 1].id);
+        if (currentContainerIndex < appletContainers.length - 1) {
+            setActiveContainerId(appletContainers[currentContainerIndex + 1].id);
         }
     };
 
@@ -51,16 +50,16 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
                         {appletContainers.map((container) => (
                             <button
                                 key={container.id}
-                                onClick={() => setActiveGroupId(container.id)}
+                                onClick={() => setActiveContainerId(container.id)}
                                 className={`w-full text-left px-4 py-3 rounded-lg transition ${
-                                    activeGroupId === container.id
+                                    activeContainerId === container.id
                                         ? "bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-100"
                                         : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                                 }`}
                             >
                                 <div className="flex items-center">
                                     <span className="flex-grow">{container.label}</span>
-                                    {activeGroupId === container.id && (
+                                    {activeContainerId === container.id && (
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             width="16"
@@ -88,10 +87,10 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
                         {appletContainers.map((container) => (
                             <UniformHeightWrapper
                                 key={container.id}
-                                groupId={container.id}
+                                containerId={container.id}
                                 layoutType={layoutType}
                                 className={`transition-opacity duration-300 h-full ${
-                                    activeGroupId === container.id
+                                    activeContainerId === container.id
                                         ? "opacity-100 visible"
                                         : "opacity-0 invisible absolute top-0 left-0 w-full h-full"
                                 }`}
@@ -124,7 +123,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
                     {/* Footer with action button - always at the bottom */}
                     <div className="flex justify-end">
                         {actionButton ||
-                            (isLastGroup ? (
+                            (isLastContainer ? (
                                 <button className="bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-700 text-white rounded-md px-6 py-3 flex items-center">
                                     <span className="mr-2">Submit</span>
                                     <Send size={16} />

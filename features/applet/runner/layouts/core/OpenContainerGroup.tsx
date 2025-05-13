@@ -15,6 +15,7 @@ const OpenContainerGroup: React.FC<ContainerRenderProps> = ({
   appletId,
   isMobile = false,
   className = "",
+  source = "applet",
 }) => {
   return (
     <div className={`border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}>
@@ -27,6 +28,7 @@ const OpenContainerGroup: React.FC<ContainerRenderProps> = ({
         description={description}
         isMobile={isMobile}
         appletId={appletId}
+        source={source}
       />
     </div>
   );

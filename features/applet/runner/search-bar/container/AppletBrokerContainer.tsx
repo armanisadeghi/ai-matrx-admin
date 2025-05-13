@@ -6,8 +6,8 @@ import MobileAppletBrokerContainer from './MobileAppletBrokerContainer';
 
 interface AppletBrokerContainerProps {
   children: React.ReactNode;
-  activeFieldId?: string | null;
-  onActiveFieldChange?: (id: string | null) => void;
+  activeContainerId?: string | null;
+  onActiveContainerChange?: (id: string | null) => void;
   actionButton?: React.ReactNode;
   className?: string;
 }
@@ -17,9 +17,21 @@ const AppletBrokerContainer: React.FC<AppletBrokerContainerProps> = (props) => {
   
   // Conditionally render either the mobile or desktop version
   return isMobile ? (
-    <MobileAppletBrokerContainer {...props} />
+    <MobileAppletBrokerContainer
+      activeContainerId={props.activeContainerId}
+      setActiveContainerId={props.onActiveContainerChange}
+      actionButton={props.actionButton}
+      className={props.className}
+      children={props.children}
+    />
   ) : (
-    <DesktopAppletBrokerContainer {...props} />
+    <DesktopAppletBrokerContainer
+      activeContainerId={props.activeContainerId}
+      setActiveContainerId={props.onActiveContainerChange}
+      actionButton={props.actionButton}
+      className={props.className}
+      children={props.children}
+    />
   );
 };
 

@@ -7,11 +7,12 @@ import { fieldController } from "@/features/applet/runner/field-components/Field
 
 const FlatSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
   isMobile = false,
+  source = "applet",
 }) => {
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   return (
@@ -36,7 +37,7 @@ const FlatSearchLayout: React.FC<AppletInputProps> = ({
                   <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
                     {field.label}
                   </label>
-                  {fieldController({ field, appletId, isMobile })}
+                  {fieldController({ field, appletId, isMobile, source })}
                   {field.helpText && (
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
                   )}

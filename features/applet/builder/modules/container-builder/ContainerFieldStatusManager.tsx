@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAppSelector } from "@/lib/redux";
 import { selectAllFields } from "@/lib/redux/app-builder/selectors/fieldSelectors";
-import { useFieldAnalysis } from "@/features/applet/builder/hooks/useFieldAnalysis";
+import { useFieldAnalysis } from "@/features/applet/hooks/useFieldAnalysis";
 import { FieldDefinition } from "@/types/customAppTypes";
 
 interface ContainerFieldStatusManagerProps {

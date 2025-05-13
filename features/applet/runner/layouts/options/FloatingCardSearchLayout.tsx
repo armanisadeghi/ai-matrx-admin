@@ -6,14 +6,15 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const FloatingCardSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
   isMobile = false,
+  source = "applet",
 }) => {
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
-  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+  const [hoveredContainer, setHoveredContainer] = useState<string | null>(null);
 
   const gridCols = useMemo(() => {
     const count = appletContainers.length;
@@ -31,18 +32,18 @@ const FloatingCardSearchLayout: React.FC<AppletInputProps> = ({
           <div 
             key={container.id} 
             className="relative"
-            onMouseEnter={() => setHoveredGroup(container.id)}
-            onMouseLeave={() => setHoveredGroup(null)}
+            onMouseEnter={() => setHoveredContainer(container.id)}
+            onMouseLeave={() => setHoveredContainer(null)}
           >
             <div 
               className={`absolute inset-0 bg-gradient-to-br from-rose-100 to-rose-300 dark:from-rose-900 dark:to-rose-700 rounded-xl shadow-xl transform transition-all duration-300 ${
-                hoveredGroup === container.id ? "scale-105 rotate-1" : ""
+                hoveredContainer === container.id ? "scale-105 rotate-1" : ""
               }`}
               style={{ zIndex: 0 }}
             ></div>
             <div 
               className={`relative transition-all duration-300 transform ${
-                hoveredGroup === container.id ? "translate-y-2" : "translate-y-6"
+                hoveredContainer === container.id ? "translate-y-2" : "translate-y-6"
               }`}
               style={{ zIndex: 1 }}
             >
@@ -57,6 +58,7 @@ const FloatingCardSearchLayout: React.FC<AppletInputProps> = ({
                 onOpenChange={() => {}}
                 isLast={false}
                 isMobile={isMobile}
+                source={source}
                 className="rounded-xl shadow-lg"
               />
             </div>

@@ -88,7 +88,7 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
                 <div className="flex-1 flex flex-col items-center justify-center">
                     <LoadingSpinner size="lg" />
                     <p className="mt-4 text-gray-600 dark:text-gray-400 text-sm animate-pulse">
-                        Loading application...
+                        Loading custom Matrx application...
                     </p>
                 </div>
             </div>

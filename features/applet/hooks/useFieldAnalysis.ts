@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { FieldDefinition } from "@/types/customAppTypes";
 import { FieldBuilder } from "@/lib/redux/app-builder/types";
-import { hasFieldDifferences, getFieldDifferences } from "@/features/applet/builder/utils/fieldComparison";
+import { hasFieldDifferences, getFieldDifferences } from "@/features/applet/utils/fieldComparison";
 
 interface FieldAnalysisResult {
   coreFieldsForOurFields: Array<FieldDefinition | FieldBuilder>;
@@ -24,7 +24,7 @@ interface FieldAnalysisResult {
  */
 export const useFieldAnalysis = (
   containerFields: FieldDefinition[],
-  allCoreFields: Array<FieldDefinition | FieldBuilder>
+  allCoreFields: Array<FieldBuilder>
 ): FieldAnalysisResult => {
   return useMemo(() => {
     // Finds the actual database version of the fields that are in the container

@@ -13,8 +13,8 @@ export interface FieldChildProps {
 
 export interface DesktopAppletBrokerContainerProps {
   children: ReactNode;
-  activeFieldId?: string | null;
-  onActiveFieldChange?: (id: string | null) => void;
+  activeContainerId?: string | null;  // Changed from activeFieldId
+  setActiveContainerId?: (id: string | null) => void;  // Changed from onActiveFieldChange
   actionButton?: ReactNode;
   className?: string;
   isMobile?: boolean;
@@ -22,41 +22,25 @@ export interface DesktopAppletBrokerContainerProps {
 
 const DesktopAppletBrokerContainer: React.FC<DesktopAppletBrokerContainerProps> = ({
   children,
-  activeFieldId: externalActiveFieldId,
-  onActiveFieldChange,
+  activeContainerId,  // Container ID - not used for field tracking
+  setActiveContainerId,  // Container setter - not used for field tracking
   actionButton,
   className = '',
   isMobile = false,
 }) => {
-  // Use internal state if no external control is provided
-  const [internalActiveFieldId, setInternalActiveFieldId] = useState<string | null>(null);
-  
-  // Determine which active field state to use
-  const activeFieldId = externalActiveFieldId !== undefined 
-    ? externalActiveFieldId 
-    : internalActiveFieldId;
+  // Use internal state only - fields are managed internally
+  const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   
   // Handle field activation
   const handleFieldClick = (id: string) => {
     const newActiveId = id === activeFieldId ? null : id;
-    
-    // Update internal state if needed
-    if (externalActiveFieldId === undefined) {
-      setInternalActiveFieldId(newActiveId);
-    }
-    
-    // Notify parent if callback exists
-    if (onActiveFieldChange) {
-      onActiveFieldChange(newActiveId);
-    }
+    setActiveFieldId(newActiveId);
   };
   
   // Handle popover state changes
-  const handleOpenChange = (open: boolean) => {
-    if (!open && onActiveFieldChange) {
-      onActiveFieldChange(null);
-    } else if (!open) {
-      setInternalActiveFieldId(null);
+  const handleOpenChange = (open: boolean, id: string) => {
+    if (!open) {
+      setActiveFieldId(null);
     }
   };
 
@@ -85,7 +69,7 @@ const DesktopAppletBrokerContainer: React.FC<DesktopAppletBrokerContainerProps> 
     return cloneElement(typedChild, {
       isActive: activeFieldId === fieldId,
       onClick: handleFieldClick,
-      onOpenChange: handleOpenChange,
+      onOpenChange: (open: boolean) => handleOpenChange(open, fieldId),
       isLast,
       actionButton: fieldActionButton,
     });

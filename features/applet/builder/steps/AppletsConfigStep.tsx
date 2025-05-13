@@ -62,7 +62,6 @@ export const AppletsConfigStep: React.FC<AppletsConfigStepProps> = ({ appId, onU
         if (initialFetchComplete) return;
         const fetchApplets = async () => {
             try {
-                console.log("------> AppletsConfigStep fetchApplets starting");
                 await dispatch(fetchAppletsThunk()).unwrap();
                 setCurrentMode("initialized");
                 setInitialFetchComplete(true);

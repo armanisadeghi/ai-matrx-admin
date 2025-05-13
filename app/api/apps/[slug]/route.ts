@@ -8,17 +8,10 @@ export async function GET(
   const requestId = crypto.randomUUID();
   const startTime = Date.now();
   
-  console.log(`[API-DEBUG ${requestId}] GET /api/apps/[slug] - Starting request`, {
-    slug: '(Resolving params...)',
-    headers: Object.fromEntries(req.headers),
-    url: req.url
-  });
-
   try {
     const resolvedParams = await params;
     const { slug } = resolvedParams;
     
-    console.log(`[API-DEBUG ${requestId}] Params resolved:`, { slug });
     
     if (!slug) {
       console.error(`[API-DEBUG ${requestId}] Missing slug parameter`);
@@ -28,7 +21,6 @@ export async function GET(
       );
     }
     
-    console.log(`[API-DEBUG ${requestId}] Fetching app with slug:`, slug);
     
     try {
       // Use the cached app data utility
@@ -48,12 +40,6 @@ export async function GET(
         applets: data.applets,
       };
 
-      console.log(`[API-DEBUG ${requestId}] Successfully fetched app in ${endTime - startTime}ms:`, {
-        slug,
-        appId: data.app_config?.id,
-        appName: data.app_config?.name,
-        appletsCount: data.applets?.length || 0
-      });
 
       return NextResponse.json(responseData, {
         headers: {

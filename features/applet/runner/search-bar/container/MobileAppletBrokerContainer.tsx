@@ -15,27 +15,22 @@ interface FieldChildProps {
 
 interface MobileAppletBrokerContainerProps {
   children: ReactNode;
-  activeFieldId?: string | null;
-  onActiveFieldChange?: (id: string | null) => void;
+  activeContainerId?: string | null;
+  setActiveContainerId?: (id: string | null) => void;
   actionButton?: ReactNode;
   className?: string;
 }
 
 const MobileAppletBrokerContainer: React.FC<MobileAppletBrokerContainerProps> = ({
   children,
-  activeFieldId: externalActiveFieldId,
-  onActiveFieldChange,
+  activeContainerId,  // Container ID - not used for field tracking
+  setActiveContainerId,  // Container setter - not used for field tracking
   actionButton,
   className = '',
 }) => {
-  // Use internal state if no external control is provided
-  const [internalActiveFieldId, setInternalActiveFieldId] = useState<string | null>(null);
+  // Use internal state only - fields are managed internally
+  const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   
-  // Determine which active field state to use
-  const activeFieldId = externalActiveFieldId !== undefined 
-    ? externalActiveFieldId 
-    : internalActiveFieldId;
-
   // Initialize with the first field active if nothing is active
   useEffect(() => {
     if (activeFieldId === null) {
@@ -44,30 +39,16 @@ const MobileAppletBrokerContainer: React.FC<MobileAppletBrokerContainerProps> = 
         const firstFieldId = (childArray[0] as ReactElement<FieldChildProps>).props.id;
         
         if (firstFieldId) {
-          if (externalActiveFieldId === undefined) {
-            setInternalActiveFieldId(firstFieldId);
-          } else if (onActiveFieldChange) {
-            onActiveFieldChange(firstFieldId);
-          }
+          setActiveFieldId(firstFieldId);
         }
       }
     }
-  }, [children, activeFieldId, externalActiveFieldId, onActiveFieldChange]);
+  }, [children, activeFieldId]);
   
   // Handle field activation
   const handleFieldClick = (id: string) => {
     // We don't allow null (all closed) in mobile view
-    const newActiveId = id;
-    
-    // Update internal state if needed
-    if (externalActiveFieldId === undefined) {
-      setInternalActiveFieldId(newActiveId);
-    }
-    
-    // Notify parent if callback exists
-    if (onActiveFieldChange) {
-      onActiveFieldChange(newActiveId);
-    }
+    setActiveFieldId(id);
   };
   
   // Handle popover state changes - never allow closing all fields
@@ -77,11 +58,7 @@ const MobileAppletBrokerContainer: React.FC<MobileAppletBrokerContainerProps> = 
       return;
     }
     
-    if (externalActiveFieldId === undefined) {
-      setInternalActiveFieldId(id);
-    } else if (onActiveFieldChange) {
-      onActiveFieldChange(id);
-    }
+    setActiveFieldId(id);
   };
 
   // Clone children and inject props

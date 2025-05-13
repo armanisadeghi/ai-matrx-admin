@@ -255,9 +255,9 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName })
                             {appletContainers.map((container: ContainerBuilder) => (
                                 <ContainerCard
                                     key={container.id}
+                                    appletId={appletId}
                                     containerId={container.id}
                                     isActive={activeContainerId === container.id}
-                                    isCompiled={!allContainerIds.includes(container.id)}
                                     onSelect={handleContainerSelect}
                                     onDelete={openDeleteDialog}
                                 />

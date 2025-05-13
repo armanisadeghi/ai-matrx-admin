@@ -6,7 +6,7 @@ import React, { useRef, useEffect, useState } from "react";
 
 interface UniformHeightWrapperProps {
   children: React.ReactNode;
-  groupId: string;
+  containerId: string;
   className?: string;
   layoutType: string;
   enabled?: boolean;
@@ -68,7 +68,7 @@ export const UniformHeightProvider: React.FC<{ children: React.ReactNode }> = ({
 // Wrapper component for individual search groups
 const UniformHeightWrapper: React.FC<UniformHeightWrapperProps> = ({
   children,
-  groupId,
+  containerId,
   className = "",
   layoutType,
   enabled = true
@@ -85,7 +85,7 @@ const UniformHeightWrapper: React.FC<UniformHeightWrapperProps> = ({
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         const height = entry.contentRect.height;
-        registerHeight(layoutType, groupId, height);
+        registerHeight(layoutType, containerId, height);
         setMeasured(true);
       }
     });
@@ -97,7 +97,7 @@ const UniformHeightWrapper: React.FC<UniformHeightWrapperProps> = ({
         resizeObserver.unobserve(contentRef.current);
       }
     };
-  }, [groupId, layoutType, registerHeight, enabled]);
+  }, [containerId, layoutType, registerHeight, enabled]);
   
   // For layouts that need uniform heights
   const maxHeight = enabled ? getMaxHeight(layoutType) : 0;

@@ -8,11 +8,12 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const StepperSearchLayout: React.FC<AppletInputProps>= ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
   isMobile = false,
+  source = "applet",
 }) => {
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
 
@@ -22,20 +23,20 @@ const StepperSearchLayout: React.FC<AppletInputProps>= ({
   const handleNext = () => {
     if (currentStep < appletContainers.length - 1) {
       setCurrentStep(currentStep + 1);
-      setActiveFieldId(appletContainers[currentStep + 1].id);
+      setActiveContainerId(appletContainers[currentStep + 1].id);
     }
   };
   
   const handlePrev = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
-      setActiveFieldId(appletContainers[currentStep - 1].id);
+      setActiveContainerId(appletContainers[currentStep - 1].id);
     }
   };
 
   const handleStepClick = (index: number) => {
     setCurrentStep(index);
-    setActiveFieldId(appletContainers[index].id);
+    setActiveContainerId(appletContainers[index].id);
   };
   
   const isLastStep = currentStep === appletContainers.length - 1;
@@ -87,7 +88,7 @@ const StepperSearchLayout: React.FC<AppletInputProps>= ({
             {appletContainers.map((container, index) => (
               <UniformHeightWrapper
                 key={container.id}
-                groupId={container.id}
+                containerId={container.id}
                 layoutType="stepper"
                 className={`transition-opacity duration-300 ${
                   index === currentStep 
@@ -106,6 +107,7 @@ const StepperSearchLayout: React.FC<AppletInputProps>= ({
                   onOpenChange={() => {}}
                   isMobile={isMobile}
                   className="border-0"
+                  source={source}
                 />
               </UniformHeightWrapper>
             ))}

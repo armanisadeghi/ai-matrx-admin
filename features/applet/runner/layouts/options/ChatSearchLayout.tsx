@@ -4,12 +4,17 @@ import { fieldController } from "@/features/applet/runner/field-components/Field
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
+
+// TODO: This doesn't wait for an entery to process! It also doesn't use containers, but it easily could add another message for that.
+
+
 const ChatSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
+  source = "applet",
   isMobile = false,
 }) => {  
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
@@ -129,7 +134,7 @@ const ChatSearchLayout: React.FC<AppletInputProps> = ({
                         {field.label}
                       </label>
                       <div className="field-control" onChange={() => handleFieldComplete(field.id)}>
-                        {fieldController({ field, appletId, isMobile })}
+                        {fieldController({ field, appletId, isMobile, source })}
                       </div>
                       {field.helpText && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>

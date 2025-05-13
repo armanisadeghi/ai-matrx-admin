@@ -10,17 +10,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectContainerById, selectContainerLoading } from "@/lib/redux/app-builder/selectors/containerSelectors";
 import { setLabel, setShortLabel, setDescription } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
-import { 
-    saveContainerThunk, 
-    saveOrUpdateContainerToAppletThunk
-} from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
+import { saveContainerThunk, saveOrUpdateContainerToAppletThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { ContainerLabelAndHelpText } from "@/constants/app-builder-help-text";
 import QuickRefSelect from "@/app/entities/quick-reference/QuickRefSelectFloatingLabel";
-import ContainerFieldDisplay from "../../group-builder/ContainerFieldDisplay";
+import ContainerFieldDisplay from "../../container-builder/ContainerFieldDisplay";
 
 interface ContainerFormComponentProps {
     containerId: string | null;
     onSaveSuccess?: (containerId: string) => void;
+    onCancelCreateNewContainer?: (containerId: string) => void;
     title?: string;
     initialAppletId?: string;
     mode?: "edit" | "new" | "list";
@@ -29,6 +27,7 @@ interface ContainerFormComponentProps {
 const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
     containerId,
     onSaveSuccess,
+    onCancelCreateNewContainer,
     title = "Container Details",
     initialAppletId,
     mode = "list",
@@ -44,7 +43,6 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
     const [appletRecordKey, setAppletRecordKey] = useState<string | null>(null);
     const [isCompiling, setIsCompiling] = useState(false);
 
-
     useEffect(() => {
         if (initialAppletId) {
             setSelectedApplet(initialAppletId);
@@ -54,13 +52,11 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
 
     const allDisabled = isLoading || isSaving || isCompiling || !containerId || mode === "list";
 
-
     useEffect(() => {
         if (mode === "list") {
             setSelectedApplet(null);
         }
     }, [mode]);
-
 
     const handleLabelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!containerId) return;
@@ -204,15 +200,20 @@ const ContainerFormComponent: React.FC<ContainerFormComponentProps> = ({
                             disabled={allDisabled}
                         />
                     </div>
-                    
+
                     {/* Fields Section */}
-                    <ContainerFieldDisplay 
-                        containerId={containerId}
-                        fields={container?.fields || []}
-                        disabled={allDisabled}
-                    />
+                    <ContainerFieldDisplay containerId={containerId} fields={container?.fields || []} disabled={allDisabled} />
 
                     <div className="flex justify-end gap-2">
+                        <Button
+                            onClick={() => onCancelCreateNewContainer?.(containerId)}
+                            disabled={allDisabled}
+                            variant="outline"
+                            className="border-amber-500 text-amber-500"
+                        >
+                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SaveIcon className="mr-2 h-4 w-4" />}
+                            Cancel
+                        </Button>
                         <Button
                             onClick={handleSaveContainer}
                             disabled={allDisabled || !isDirty}

@@ -154,11 +154,8 @@ const SourceConfigContent: React.FC<SourceConfigContentProps> = ({ appletId, app
             selectIsAppletDirtyById({ appletBuilder: { applets: { [applet.id]: applet } } } as RootState, applet.id)
         );
 
-        console.log("SourceConfigStep updateCompletionStatus Dirty applets:", dirtyApplets);
         const allHaveSourceConfigs = allApplets.length > 0 && appletstWithSourceConfigs.length === allApplets.length;
         const anyNeedSaving = dirtyApplets.length > 0;
-
-        console.log("-> anyNeedSaving:", anyNeedSaving);
 
         // Create save button if any applets need saving
         const saveButton = anyNeedSaving ? (

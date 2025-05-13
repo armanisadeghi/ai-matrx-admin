@@ -317,7 +317,6 @@ export const fetchAppletsThunk = createAsyncThunk<AppletBuilder[], void>(
     async (_, { rejectWithValue }) => {
         try {
             const applets = await getAllCustomAppletConfigs();
-            console.log("fetchAppletsThunk got applets:", applets);
             return applets.map((applet) => ({
                 ...applet,
                 containers: applet.containers || [],

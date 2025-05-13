@@ -3,13 +3,15 @@ import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutM
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { MoveVertical, Plus, PlusSquare, Filter, Search, X } from "lucide-react";
 
 const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
+  source = "applet",
 }) => {
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
@@ -43,25 +45,13 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
           {/* Map controls */}
           <div className="absolute top-4 right-4 flex flex-col space-y-2">
             <button className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20v-8"/>
-                <path d="M12 12l-4-4"/>
-                <path d="M12 12l4-4"/>
-                <path d="M12 4v8"/>
-              </svg>
+              <MoveVertical size={24} />
             </button>
             <button className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12H3"/>
-                <path d="M12 3v18"/>
-              </svg>
+              <Plus size={24} />
             </button>
             <button className="bg-white dark:bg-gray-800 rounded-full w-10 h-10 shadow-lg flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12H3"/>
-                <path d="M12 3v18"/>
-                <path d="M12 8L8 12M4 16"/>
-              </svg>
+              <PlusSquare size={24} />
             </button>
           </div>
           
@@ -70,9 +60,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
             className="absolute bottom-4 right-4 bg-rose-500 hover:bg-rose-600 text-white rounded-full px-4 py-2 shadow-lg flex items-center space-x-2 z-10"
             onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
+            <Filter size={20} />
             <span>Filters</span>
             <span className="bg-white text-rose-500 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">
               {appletContainers.reduce((sum, container) => sum + container.fields.length, 0)}
@@ -114,10 +102,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
                 className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full py-2 pl-10 pr-4 shadow-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
               />
               <div className="absolute left-3 top-2.5 text-gray-500 dark:text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
+                <Search size={18} />
               </div>
             </div>
           </div>
@@ -135,10 +120,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
               onClick={() => setIsFilterPanelOpen(false)}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
+              <X size={24} />
             </button>
           </div>
           
@@ -152,7 +134,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
                       {field.label}
                       </label>
                     <div className="field-control">
-                      {fieldController({ field, appletId, isMobile: false })}
+                      {fieldController({ field, appletId, isMobile: false, source })}
                     </div>
                     {field.helpText && (
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>

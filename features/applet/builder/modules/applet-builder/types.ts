@@ -1,6 +1,6 @@
 import { CustomAppletConfig } from '../../../../../types/customAppTypes';
 import { RecipeInfo } from '../../../../../lib/redux/app-builder/service/customAppletService';
-import { SavedGroup } from '../group-builder/GroupBuilder';
+import { SavedGroup } from '../container-builder/GroupBuilder';
 
 export interface IconOption {
   name: string;

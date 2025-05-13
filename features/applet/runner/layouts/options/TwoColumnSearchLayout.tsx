@@ -7,11 +7,12 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const TwoColumnSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
   isMobile = false,
+  source = "applet",
 }) => {
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   return (
@@ -31,6 +32,7 @@ const TwoColumnSearchLayout: React.FC<AppletInputProps> = ({
             isLast={index === appletContainers.length - 1}
             isMobile={isMobile}
             className="h-full"
+            source={source}
           />
         ))}
       </div>

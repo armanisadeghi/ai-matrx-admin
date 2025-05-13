@@ -5,7 +5,7 @@ import { Cpu } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import AppletTabsWrapper from "@/features/applet/builder/parts/AppletTabsWrapper";
-import ContainerTabContent from "@/features/applet/builder/modules/group-builder/ContainerTabContent";
+import ContainerTabContent from "@/features/applet/builder/modules/container-builder/ContainerTabContent";
 import { selectContainerError } from "@/lib/redux/app-builder/selectors/containerSelectors";
 
 interface GroupsConfigStepProps {
@@ -20,10 +20,8 @@ interface GroupsConfigStepProps {
 
 export const GroupsConfigStep: React.FC<GroupsConfigStepProps> = ({ appId, onUpdateCompletion }) => {
     const { toast } = useToast();
-    const dispatch = useAppDispatch();
     const containerError = useAppSelector(selectContainerError);
 
-    // Show error toasts when they occur
     useEffect(() => {
         if (containerError) {
             toast({

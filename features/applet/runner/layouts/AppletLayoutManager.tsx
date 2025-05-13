@@ -53,7 +53,9 @@ export interface ContainerRenderProps {
     hideContainerPlaceholder?: boolean;
     children?: ReactNode;
     preventClose?: boolean;
+    source: string;
 }
+
 
 export interface AppletLayoutOptionInfo {
     value: AppletLayoutOption;
@@ -64,8 +66,9 @@ export interface AppletLayoutOptionInfo {
 
 export interface AppletInputProps {
     appletId: string;
-    activeFieldId: string | null;
-    setActiveFieldId: (id: string | null) => void;
+    source?: string;
+    activeContainerId: string | null;
+    setActiveContainerId: (id: string | null) => void;
     isMobile: boolean;
     actionButton?: ReactNode;
     className?: string;
@@ -73,13 +76,14 @@ export interface AppletInputProps {
 
 interface AppletLayoutManagerProps {
     appletId: string;
+    source?: string;
     layoutTypeOverride?: AppletLayoutOption;
     className?: string;
 }
 
-const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, layoutTypeOverride, className }) => {
+const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, layoutTypeOverride, className, source = "applet" }) => {
     const isMobile = useIsMobile();
-    const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
+    const [activeContainerId, setActiveContainerId] = useState<string | null>(null);
 
     const appletLayoutType = useAppSelector((state) => selectAppletRuntimeLayoutType(state, appletId || ""));
     const accentColor = useAppSelector((state) => selectAppletRuntimeAccentColor(state, appletId || "")) || "pink";
@@ -93,7 +97,7 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
     });
 
     useEffect(() => {
-        setActiveFieldId(null);
+        setActiveContainerId(null);
     }, [activeApplet]);
 
     const layoutType = layoutTypeOverride || appletLayoutType;
@@ -105,11 +109,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <OpenSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -117,11 +122,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <VerticalSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -129,11 +135,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <StepperSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -141,11 +148,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <FlatSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -153,23 +161,25 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <TwoColumnSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
-        case "accordion":
+        case "threeColumn":
             return (
-                <AccordionSearchLayout
+                <ThreeColumnSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -177,11 +187,38 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <FourColumnSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
+                />
+            );
+
+        case "tabs":
+            return (
+                <TabsSearchLayout
+                    appletId={appletId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
+                    actionButton={actionButton}
+                    className={className}
+                    isMobile={isMobile}
+                    source={source}
+                />
+            );
+
+        case "accordion":
+            return (
+                <AccordionSearchLayout
+                    appletId={appletId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
+                    actionButton={actionButton}
+                    className={className}
+                    isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -189,11 +226,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <MinimalistSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -201,11 +239,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <FloatingCardSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -213,11 +252,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <SidebarSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -225,11 +265,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <CarouselSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -237,11 +278,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <CardStackSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -249,11 +291,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <ContextualSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -261,11 +304,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <ChatSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -273,11 +317,12 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <MapBasedSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
@@ -285,26 +330,43 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
             return (
                 <FullWidthSidebarSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
                 />
             );
 
         case "input-bar":
             return <AppletUserInputBar appletId={appletId} />;
 
-        default:
+        case "horizontal":
             return (
                 <HorizontalSearchLayout
                     appletId={appletId}
-                    activeFieldId={activeFieldId}
-                    setActiveFieldId={setActiveFieldId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
                     actionButton={actionButton}
                     className={className}
                     isMobile={isMobile}
+                    source={source}
+                />
+            );
+
+
+        default:
+            console.error(`[DEBUG] No layout found for layout type: ${layoutType}`);
+            return (
+                <HorizontalSearchLayout
+                    appletId={appletId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
+                    actionButton={actionButton}
+                    className={className}
+                    isMobile={isMobile}
+                    source={source}
                 />
             );
     }

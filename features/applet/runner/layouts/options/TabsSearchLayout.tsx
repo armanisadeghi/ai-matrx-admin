@@ -8,11 +8,12 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const TabsSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
   isMobile = false,
+  source = "applet",
 }) => {
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
   const [activeGroupIndex, setActiveGroupIndex] = useState(0);
@@ -134,7 +135,7 @@ const TabsSearchLayout: React.FC<AppletInputProps> = ({
           return (
             <UniformHeightWrapper
               key={container.id}
-              groupId={container.id}
+              containerId={container.id}
               layoutType="tabs"
               className={`transition-all duration-300 ${
                 isActive 
@@ -156,6 +157,7 @@ const TabsSearchLayout: React.FC<AppletInputProps> = ({
                 isLast={true}
                 isMobile={isMobile}
                 className="border-0"
+                source={source}
               />
             </UniformHeightWrapper>
           );

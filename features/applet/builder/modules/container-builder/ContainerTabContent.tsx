@@ -14,7 +14,7 @@ import {
     selectAllContainerIds,
     selectIsContainerDirtyById,
 } from "@/lib/redux/app-builder/selectors/containerSelectors";
-import { startNewContainer, setActiveContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
+import { startNewContainer, setActiveContainer, cancelNewContainer } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
 import { saveAppletThunk, recompileAppletThunk } from "@/lib/redux/app-builder/thunks/appletBuilderThunks";
 import ContainerFormComponent from "../smart-parts/containers/ContainerFormComponent";
 import { v4 as uuidv4 } from "uuid";
@@ -41,8 +41,6 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
     const [savingApplet, setSavingApplet] = useState<boolean>(false);
     const [compiledContainerCount, setCompiledContainerCount] = useState<number>(0);
     const [mode, setMode] = useState<"edit" | "new" | "list">("list");
-
-    // Get data directly from Redux using individual selectors
     const containerError = useAppSelector(selectContainerError);
     const activeContainerId = useAppSelector(selectActiveContainerId);
     const isContainerLoading = useAppSelector(selectContainerLoading);
@@ -75,8 +73,15 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
     const handleCreateNewContainer = useCallback(() => {
         setMode("new");
         const newId = uuidv4();
+        console.log("ContainerTabContent Creating new container with id", newId);
         dispatch(startNewContainer({ id: newId }));
     }, [dispatch]);
+
+
+    const handleCancelCreateNewContainer = useCallback((activeContainerId: string) => {
+        dispatch(cancelNewContainer(activeContainerId));
+        setMode("list");
+    }, [dispatch, ]);
 
     const handleEditContainer = useCallback(
         (id: string) => {
@@ -90,13 +95,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
         handleEditContainer(id);
     }, [handleEditContainer]);
 
-    useEffect(() => {
-        if (appletId && !activeContainerId) {
-            handleCreateNewContainer();
-        }
-    }, [appletId, activeContainerId, dispatch]);
 
-    // Handle container save completion
     const handleContainerSaved = (containerId: string) => {
         console.log("Container Tab Content Not going to do anything after this save... containerId", containerId);
     };
@@ -133,6 +132,8 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
     // Save the active applet
     const saveActiveApplet = () => {
         if (appletId && isAppletDirty) {
+
+            // TODO: Compile fields into containers and then save. Either here or in the applet thunk.
             saveAndRecompileApplet(appletId);
             setMode("list");
         }
@@ -200,6 +201,7 @@ const ContainerTabContent: React.FC<ContainerTabContentProps> = ({ appletId, app
                 <ContainerFormComponent
                     containerId={activeContainerId}
                     onSaveSuccess={handleContainerSaved}
+                    onCancelCreateNewContainer={handleCancelCreateNewContainer}
                     title={mode === "list" ? "Select or Create a Container" : mode === "edit" ? "Edit Container" : "Container Details"}
                     initialAppletId={appletId}
                     mode={mode}

@@ -6,10 +6,11 @@ import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/cus
 
 const MinimalistSearchLayout: React.FC<AppletInputProps> = ({
   appletId,
-  activeFieldId,
-  setActiveFieldId,
+  activeContainerId,
+  setActiveContainerId,
   actionButton,
   className = "",
+  source = "applet",
 }) => {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
@@ -48,7 +49,7 @@ const MinimalistSearchLayout: React.FC<AppletInputProps> = ({
                       <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                         {field.label}
                       </label>
-                      {fieldController({ field, appletId, isMobile: false })}
+                      {fieldController({ field, appletId, isMobile: false, source })}
                       {field.helpText && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
                       )}
