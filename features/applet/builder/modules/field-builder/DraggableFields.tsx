@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Database, GripVertical, AlertTriangle } from "lucide-react";
+import { Database, GripVertical, AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectFieldsByBrokerMappings } from "@/lib/redux/app-builder/selectors/fieldSelectors";
 import {
@@ -10,6 +10,7 @@ import {
     selectAllUsedFieldsInApplet,
 } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectContainersForApplet } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { selectContainerById } from "@/lib/redux/app-builder/selectors/containerSelectors";
 
 interface DraggableFieldsProps {
     appId: string;
@@ -25,10 +26,9 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
     const fieldsFromDatabase = useAppSelector((state) => selectFieldsByBrokerMappings(state, appletId));
     const brokerMappings = useAppSelector((state) => selectAppletBrokerMappings(state, appletId));
     const neededBrokers = useAppSelector((state) => selectAllNeededBrokers(state, appletId));
-
     const usedFieldIdsInApplet = useAppSelector((state) => selectAllUsedFieldsInApplet(state, appletId));
 
-    // NEW: Get containers to check if fields exist in the original container
+    // Get containers to check if fields exist
     const appletContainers = useAppSelector((state) => selectContainersForApplet(state, appletId));
 
     // Track which broker-field mappings have been used
@@ -86,35 +86,52 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
         }
     };
 
-    // NEW: Check if field exists in container (minimal check)
-    // NEW: Check if field exists in container (minimal check)
-    const checkFieldInContainer = (fieldId: string) => {
-        console.log("Checking field:", fieldId);
-        console.log("Containers:", appletContainers);
+    // Check field status in containers
+    // Check field status in containers (move this outside the component)
+    const checkFieldContainerStatus = (fieldId: string, appletContainers: any[], databaseContainer: any | null) => {
+        const result = {
+            inAppletContainer: false,
+            appletContainerId: null as string | null,
+            databaseContainerExists: false,
+            fieldInDatabaseContainer: false,
+            status: "error" as "error" | "warning" | "ok",
+        };
 
-        if (!appletContainers) return { exists: true, containerCount: 0 }; // Default to exists if no containers
-
-        let containerCount = 0;
-        let exists = false;
-
-        for (const container of appletContainers) {
-            console.log("Container fields:", container.fields);
-            if (
-                container.fields &&
-                container.fields.some((f) => {
-                    console.log("Comparing:", f.id, "with", fieldId);
-                    return f.id === fieldId;
-                })
-            ) {
-                exists = true;
-                containerCount++;
+        // Step 1: Find the field in applet containers
+        if (appletContainers && appletContainers.length > 0) {
+            for (const container of appletContainers) {
+                if (container.fields && container.fields.some((f) => f.id === fieldId)) {
+                    result.inAppletContainer = true;
+                    result.appletContainerId = container.id;
+                    break;
+                }
             }
         }
 
-        console.log("Result for", fieldId, ":", { exists, containerCount });
-        return { exists, containerCount };
+        // Step 2 & 3: Check database container
+        if (result.appletContainerId && databaseContainer) {
+            result.databaseContainerExists = true;
+
+            // Check if the field exists in the database container
+            if (databaseContainer.fields && databaseContainer.fields.some((f) => f.id === fieldId)) {
+                result.fieldInDatabaseContainer = true;
+            }
+        }
+
+        // Determine overall status
+        if (!result.inAppletContainer) {
+            result.status = "error"; // Field not in any applet container
+        } else if (!result.databaseContainerExists) {
+            result.status = "error"; // Container doesn't exist in database
+        } else if (!result.fieldInDatabaseContainer) {
+            result.status = "warning"; // Container exists but field is missing
+        } else {
+            result.status = "ok"; // Everything is fine
+        }
+
+        return result;
     };
-    
+
     return (
         <Card className={`border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm ${className}`}>
             <CardHeader className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 py-3 px-4">
@@ -170,41 +187,92 @@ const DraggableFields: React.FC<DraggableFieldsProps> = ({ appId, appletId, onSu
                             const isDropped = droppedMappingIds.has(mappingId);
                             const isDragging = draggedItem === mappingId;
 
-                            // NEW: Check if field exists in container
-                            const containerCheck = checkFieldInContainer(mapping.fieldId);
+                            // Check field status
+                            // Inside the map function, after getting field and broker:
+                            // Get the container ID from applet containers
+                            let containerId: string | null = null;
+                            if (appletContainers) {
+                                for (const container of appletContainers) {
+                                    if (container.fields && container.fields.some((f) => f.id === mapping.fieldId)) {
+                                        containerId = container.id;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Get the database container if we found a container ID
+                            const databaseContainer = useAppSelector((state) =>
+                                containerId ? selectContainerById(state, containerId) : null
+                            );
+
+                            // Check field status
+                            const containerStatus = checkFieldContainerStatus(mapping.fieldId, appletContainers, databaseContainer);
+                            // If there's any issue, don't disable the field
+                            const hasIssue = containerStatus.status !== "ok";
 
                             return (
                                 <div
                                     key={mappingId}
-                                    draggable={!isDropped} // Disable dragging if dropped
-                                    onDragStart={(e) => !isDropped && handleDragStart(e, mapping.fieldId, mapping.brokerId)}
+                                    draggable={!isDropped && !hasIssue} // Enable dragging if there's an issue
+                                    onDragStart={(e) => !isDropped && !hasIssue && handleDragStart(e, mapping.fieldId, mapping.brokerId)}
                                     onDragEnd={handleDragEnd}
                                     className={`
-                    bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
-                    rounded-md p-2 flex items-center
-                    ${
-                        isDropped
-                            ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 pointer-events-none"
-                            : "cursor-move hover:border-indigo-300 dark:hover:border-indigo-500"
-                    }
-                    ${isDragging ? "opacity-50 border-indigo-500" : ""}
-                    transition-colors duration-150
-                  `}
+                                            bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 
+                                            rounded-md p-2 flex items-center
+                                            ${
+                                                isDropped && !hasIssue
+                                                    ? "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800 pointer-events-none"
+                                                    : "cursor-move hover:border-indigo-300 dark:hover:border-indigo-500"
+                                            }
+                                            ${isDragging ? "opacity-50 border-indigo-500" : ""}
+                                            ${hasIssue ? "border-amber-400 dark:border-amber-600" : ""}
+                                            transition-colors duration-150
+                                        `}
                                 >
-                                    {!isDropped && <GripVertical className="h-4 w-4 mr-2 flex-shrink-0 text-gray-400" />}
-                                    {isDropped && (
+                                    {!isDropped && !hasIssue && <GripVertical className="h-4 w-4 mr-2 flex-shrink-0 text-gray-400" />}
+                                    {isDropped && !hasIssue && (
                                         <div className="h-4 w-4 mr-2 flex-shrink-0 text-green-500 dark:text-green-400 text-xs font-bold">
                                             ✓
                                         </div>
+                                    )}
+                                    {hasIssue && (
+                                        <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0 text-amber-500 dark:text-amber-400" />
                                     )}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">
                                             {field.label || `Field ${field.id}`}
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Broker: {broker.name}</p>
-                                        {/* NEW: Container check indicator */}
-                                        {!containerCheck.exists && (
-                                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Not in original container</p>
+
+                                        {/* Status indicators that ALWAYS show */}
+                                        <div className="flex items-center gap-3 mt-1 flex-wrap">
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-xs text-gray-600 dark:text-gray-400">Container:</span>
+                                                {containerStatus.databaseContainerExists ? (
+                                                    <CheckCircle2 className="h-3 w-3 text-green-500 dark:text-green-400" />
+                                                ) : (
+                                                    <XCircle className="h-3 w-3 text-red-500 dark:text-red-400" />
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-xs text-gray-600 dark:text-gray-400">Field:</span>
+                                                {containerStatus.fieldInDatabaseContainer ? (
+                                                    <CheckCircle2 className="h-3 w-3 text-green-500 dark:text-green-400" />
+                                                ) : (
+                                                    <XCircle className="h-3 w-3 text-red-500 dark:text-red-400" />
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Show specific issue */}
+                                        {!containerStatus.inAppletContainer && (
+                                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Field not in applet</p>
+                                        )}
+                                        {containerStatus.inAppletContainer && !containerStatus.databaseContainerExists && (
+                                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">Container missing from database</p>
+                                        )}
+                                        {containerStatus.databaseContainerExists && !containerStatus.fieldInDatabaseContainer && (
+                                            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Field missing from container</p>
                                         )}
                                     </div>
                                 </div>

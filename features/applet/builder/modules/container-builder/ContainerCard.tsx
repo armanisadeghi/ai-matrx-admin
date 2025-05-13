@@ -12,7 +12,7 @@ import { saveFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunk
 import { toast } from "@/components/ui/use-toast";
 import { selectAppletContainers } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectContainerComparisonResult, selectDoContainersMatch, selectContainerComparisonDetails } from "@/lib/redux/app-builder/selectors/containerMatchSelectors";
-import ContainerComparisonModal from "./ContainerComparisonModal";
+import ContainerComparisonModal from "./container-comparison/ContainerComparisonModal";
 
 interface ContainerCardProps {
     containerId: string;
