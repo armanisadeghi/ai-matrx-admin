@@ -1,23 +1,11 @@
 'use client';
-
 import React from 'react';
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { MainLayoutProps } from '@/features/applet/home/types';
+import Image from 'next/image';
 import { LoadingSpinner } from '@/components/ui/spinner';
-
-interface MainLayoutProps {
-  isInitialized: boolean;
-  appName: string;
-  appDescription: string;
-  appIcon: any;
-  appImageUrl: string;
-  creator: string;
-  primaryColor: string;
-  accentColor: string;
-  appletList: any[];
-  appletsMap: Record<string, any>;
-  navigateToApplet: (appletSlug: string) => void;
-  getAppIcon: (props: any) => React.ReactNode;
-  getAppIconWithBg: (props: any) => React.ReactNode;
-}
+import AppDisplay from '@/features/applet/home/app-display/Default';
+import ModernAppletCard from '@/features/applet/home/applet-card/Modern';
 
 const SidebarMainLayout: React.FC<MainLayoutProps> = ({
   isInitialized,
@@ -31,8 +19,7 @@ const SidebarMainLayout: React.FC<MainLayoutProps> = ({
   appletList,
   appletsMap,
   navigateToApplet,
-  getAppIcon,
-  getAppIconWithBg
+  isMobile
 }) => {
   if (!isInitialized) {
     return (
@@ -41,10 +28,6 @@ const SidebarMainLayout: React.FC<MainLayoutProps> = ({
       </div>
     );
   }
-
-  // Convert primary and accent colors to Tailwind classes
-  const bgColorClass = primaryColor ? `bg-[${primaryColor}]` : 'bg-white dark:bg-gray-900';
-  const accentColorClass = accentColor ? `text-[${accentColor}] border-[${accentColor}]` : 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400';
 
   return (
     <div className="h-full w-full overflow-hidden flex">
@@ -58,8 +41,8 @@ const SidebarMainLayout: React.FC<MainLayoutProps> = ({
                 {getAppIconWithBg({
                   icon: appIcon,
                   size: 24,
-                  color: accentColor || 'blue',
-                  primaryColor: primaryColor || 'gray',
+                  color: accentColor,
+                  primaryColor: primaryColor,
                   className: 'flex items-center justify-center w-full h-full'
                 })}
               </div>
@@ -114,7 +97,7 @@ const SidebarMainLayout: React.FC<MainLayoutProps> = ({
                       getAppIcon({
                         icon: applet.appletIcon,
                         size: 18,
-                        color: appletAccentColor || 'blue',
+                        color: appletAccentColor,
                       })
                     ) : (
                       <span className="w-5 h-5 rounded-sm flex items-center justify-center text-xs font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">

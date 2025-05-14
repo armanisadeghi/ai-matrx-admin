@@ -1,16 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import UniformHeightWrapper from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { ChevronRight, Send } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import {
+    selectAppletRuntimeAppletIcon,
+    selectAppletRuntimeAccentColor,
+    selectAppletRuntimeContainers,
+    selectAppletRuntimeName,
+} from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { getAppletIcon } from "@/features/applet/styles/StyledComponents";
+import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
+
 
 interface SidebarSearchLayoutProps extends AppletInputProps {
     fullWidth?: boolean;
 }
 
-const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
+const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
     appletId,
     activeContainerId,
     setActiveContainerId,
@@ -18,8 +26,16 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
     className = "",
     isMobile = false,
     fullWidth = false,
-  }) => {
-    const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
+    source = "applet",
+}) => {
+    const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
+    const appletIconName = useAppSelector((state) => selectAppletRuntimeAppletIcon(state, appletId));
+    const appletAccentColor = useAppSelector((state) => selectAppletRuntimeAccentColor(state, appletId));
+    const appletName = useAppSelector((state) => selectAppletRuntimeName(state, appletId));
+
+    const appletIcon = getAppletIcon({ appletIconName, size: 28, appletAccentColor });
+
+    const [hoveredContainerId, setHoveredContainerId] = useState<string | null>(null);
 
     // Find current container index to determine if it's the last one
     const currentContainerIndex = appletContainers.findIndex((container) => container.id === activeContainerId);
@@ -38,19 +54,31 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
     // Width classes based on layout type
     const containerWidthClass = fullWidth ? "w-full" : "w-full max-w-6xl mx-auto";
 
+    // Set first container as active on mount if no active container
+    useEffect(() => {
+        if (appletContainers.length > 0 && !activeContainerId) {
+            setActiveContainerId(appletContainers[0].id);
+        }
+    }, [appletContainers, activeContainerId, setActiveContainerId]);
+
     return (
-        <div className={`${containerWidthClass} ${className}`}>
+        <div
+            className={`${containerWidthClass} border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}
+        >
             <div className="flex flex-col md:flex-row h-full">
                 {/* Sidebar */}
                 <div className="w-full md:w-64 border-r dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800 flex-shrink-0">
-                    <h3 className="text-lg font-medium mb-6 text-rose-500 dark:text-rose-500">
-                        <span className="inline-block border-b-2 border-gray-200 dark:border-gray-700 pb-2">Options</span>
-                    </h3>
+                    <div className="flex items-center mb-6 border-b-2 border-gray-200 dark:border-gray-700 pb-2">
+                        <div className="mr-2 flex-shrink-0">{appletIcon}</div>
+                        <h3 className="text-md font-medium text-gray-900 dark:text-gray-100 truncate">{appletName}</h3>
+                    </div>
                     <div className="space-y-1">
                         {appletContainers.map((container) => (
                             <button
                                 key={container.id}
                                 onClick={() => setActiveContainerId(container.id)}
+                                onMouseEnter={() => setHoveredContainerId(container.id)}
+                                onMouseLeave={() => setHoveredContainerId(null)}
                                 className={`w-full text-left px-4 py-3 rounded-lg transition ${
                                     activeContainerId === container.id
                                         ? "bg-rose-100 dark:bg-rose-900 text-rose-800 dark:text-rose-100"
@@ -59,20 +87,8 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
                             >
                                 <div className="flex items-center">
                                     <span className="flex-grow">{container.label}</span>
-                                    {activeContainerId === container.id && (
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <polyline points="9 18 15 12 9 6"></polyline>
-                                        </svg>
+                                    {(activeContainerId === container.id || hoveredContainerId === container.id) && (
+                                        <ChevronRight size={16} />
                                     )}
                                 </div>
                             </button>
@@ -99,19 +115,22 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
                                 <div className="flex flex-col">
                                     <div className="mb-6">
                                         <h2 className="text-2xl font-medium text-gray-900 dark:text-gray-100">{container.label}</h2>
-                                        {container.description && <p className="mt-2 text-gray-600 dark:text-gray-400">{container.description}</p>}
+                                        {container.description && (
+                                            <p className="mt-2 text-gray-600 dark:text-gray-400">{container.description}</p>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                         {container.fields.map((field) => (
-                                            <div key={field.id}>
-                                                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
-                                                    {field.label}
-                                                </label>
-                                                {fieldController({ field, appletId, isMobile })}
-                                                {field.helpText && (
-                                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
-                                                )}
+                                            <div key={field.id} className="mb-5 last:mb-0">
+                                                <CustomFieldLabelAndHelpText
+                                                    fieldId={field.id}
+                                                    fieldLabel={field.label}
+                                                    helpText={field.helpText}
+                                                    required={field.required}
+                                                    className="mb-2"
+                                                />
+                                                {fieldController({ field, appletId, isMobile, source })}
                                             </div>
                                         ))}
                                     </div>
@@ -142,6 +161,10 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps>= ({
             </div>
         </div>
     );
+};
+
+export const FullWidthSidebarSearchLayout: React.FC<AppletInputProps> = (props) => {
+    return <SidebarSearchLayout {...props} fullWidth={true} />;
 };
 
 export default SidebarSearchLayout;

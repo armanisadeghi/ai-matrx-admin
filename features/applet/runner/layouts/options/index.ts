@@ -1,12 +1,12 @@
 export { default as HorizontalSearchLayout } from "./HorizontalSearchLayout";
-export { default as VerticalSearchLayout } from "./VerticalSearchLayout";
+export { default as VerticalAppletInputLayout } from "./VerticalAppletInputLayout";
 export { default as StepperSearchLayout } from "./StepperSearchLayout";
-export { default as FlatSearchLayout } from "./FlatSearchLayout";
-export { default as OpenSearchLayout } from "./OpenSearchLayout";
+export { default as FlatAppletInputLayout } from "./FlatAppletInputLayout";
+export { default as OpenAppletInputLayout } from "./OpenAppletInputLayout";
 export { default as TwoColumnSearchLayout } from "./TwoColumnSearchLayout";
 export { default as ThreeColumnSearchLayout } from "./ThreeColumnSearchLayout";
 export { default as TabsSearchLayout } from "./TabsSearchLayout";
-export { default as AccordionSearchLayout } from "./AccordionSearchLayout";
+export { default as AccordionAppletInputLayout } from "./AccordionAppletInputLayout";
 export { default as FourColumnSearchLayout } from "./FourColumnSearchLayout";
 export { default as AppletLayoutManager } from "../AppletLayoutManager";
 export { default as MinimalistSearchLayout } from "./MinimalistSearchLayout";
@@ -17,5 +17,5 @@ export { default as CardStackSearchLayout } from "./CardStackSearchLayout";
 export { default as ContextualSearchLayout } from "./ContextualSearchLayout";
 export { default as ChatSearchLayout } from "./ChatSearchLayout";
 export { default as MapBasedSearchLayout } from "./MapBasedSearchLayout";
-export { default as FullWidthSidebarSearchLayout } from "./FullWidthSidebarSearchLayout";
-
+export { FullWidthSidebarSearchLayout } from "./SidebarSearchLayout";
+export { default as FlatAppletInputLayoutAccordion } from "./FlatAppletInputLayoutAccordion";

@@ -16,12 +16,14 @@ const OpenContainerGroup: React.FC<ContainerRenderProps> = ({
   isMobile = false,
   className = "",
   source = "applet",
+  containerDescriptionLocation = "container-header",
 }) => {
   return (
     <div className={`border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}>
       <SearchContainerHeader 
         label={label} 
         description={description}
+        containerDescriptionLocation={containerDescriptionLocation}
       />
       <ContainerFieldRenderer 
         fields={fields}
@@ -29,6 +31,7 @@ const OpenContainerGroup: React.FC<ContainerRenderProps> = ({
         isMobile={isMobile}
         appletId={appletId}
         source={source}
+        containerDescriptionLocation={containerDescriptionLocation}
       />
     </div>
   );

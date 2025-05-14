@@ -103,7 +103,7 @@ const FieldContainerPreview: React.FC<any> = ({ fields, appletId, source, classN
                         <div key={field.id} className="mb-6 last:mb-0 space-y-2">
                             <CustomFieldLabelAndHelpText
                                 key={field.id}
-                                fieldName={field.id}
+                                fieldId={field.id}
                                 fieldLabel={field.label}
                                 helpText={field.helpText}
                                 required={field.required}

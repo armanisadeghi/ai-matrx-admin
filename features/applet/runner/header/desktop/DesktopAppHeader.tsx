@@ -3,14 +3,23 @@ import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppRuntimeLayoutType } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
 import { AppLayoutOptions } from "./HeaderLogic";
-import { CustomAppHeaderProps } from "../CustomAppHeader";
 import { TabbedAppletsHeader } from "./TabbedAppletsHeader";
 import { SingleDropdownHeader } from "./SingleDropdownHeader";
 import { MultiDropdownHeader } from "./MultiDropdownHeader";
 import { SingleDropdownWithSearchHeader } from "./SingleDropdownWithSearchHeader";
 import { IconsHeader } from "./IconsHeader";
 
-export const DesktopAppHeader: React.FC<CustomAppHeaderProps> = (props) => {
+
+export interface DesktopAppHeaderProps {
+  appId?: string;
+  headerClassName?: string;
+  isDemo?: boolean;
+  isDebug?: boolean;
+  activeAppletSlug?: string;
+}
+
+
+export const DesktopAppHeader: React.FC<DesktopAppHeaderProps> = (props) => {
   const layoutType = useAppSelector(selectAppRuntimeLayoutType) as AppLayoutOptions;
 
   switch (layoutType) {

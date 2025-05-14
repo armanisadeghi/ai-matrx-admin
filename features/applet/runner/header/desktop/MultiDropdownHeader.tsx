@@ -6,14 +6,14 @@ import Link from "next/link";
 import { ThemeSwitcherIcon } from "@/styles/themes";
 import AppSelector from "../common/AppSelector";
 import ButtonMenu from "../common/ButtonMenu";
-import { CustomAppHeaderProps } from "../CustomAppHeader";
+import { DesktopAppHeaderProps } from "./DesktopAppHeader";
 import { HeaderLogic } from "./HeaderLogic";
 
-export const MultiDropdownHeader: React.FC<CustomAppHeaderProps> = ({ 
+export const MultiDropdownHeader: React.FC<DesktopAppHeaderProps> = ({ 
     appId, 
     headerClassName,
     isDemo = false,
-    activeAppletId = ''
+    activeAppletSlug = ''
 }) => {
     const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";
     const finalHeaderClass = headerClassName || defaultHeaderClass;
@@ -22,7 +22,7 @@ export const MultiDropdownHeader: React.FC<CustomAppHeaderProps> = ({
         <HeaderLogic
             appId={appId}
             isDemo={isDemo}
-            activeAppletId={activeAppletId}
+            activeAppletSlug={activeAppletSlug}
         >
             {({
                 activeAppIcon,
@@ -31,8 +31,8 @@ export const MultiDropdownHeader: React.FC<CustomAppHeaderProps> = ({
                 config,
                 displayName,
                 profilePhoto,
-                activeAppletId: activeId,
-                handleTabChange,
+                activeAppletSlug,
+                handleAppletChange,
                 isDemo: isDemoMode
             }) => {
                 // Group applets by category (simplified example)
@@ -42,7 +42,7 @@ export const MultiDropdownHeader: React.FC<CustomAppHeaderProps> = ({
                 };
                 
                 // Find the active applet from the list
-                const activeApplet = appletList.find(applet => applet.value === activeId);
+                const activeApplet = appletList.find(applet => applet.value === activeAppletSlug);
                 
                 return (
                     <header className={finalHeaderClass}>

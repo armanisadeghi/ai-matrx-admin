@@ -6,12 +6,15 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 
-const OpenSearchLayout: React.FC<AppletInputProps> = ({
+const OpenAppletInputLayout: React.FC<AppletInputProps> = ({
   appletId,
   activeContainerId,
   setActiveContainerId,
   actionButton,
   className = "",
+  isMobile = false,
+  source = "applet",
+  containerDescriptionLocation = "container-header",
 }) => {
   const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
 
@@ -29,8 +32,10 @@ const OpenSearchLayout: React.FC<AppletInputProps> = ({
           onClick={() => {}} // No-op
           onOpenChange={() => {}} // No-op
           isLast={index === appletContainers.length - 1}
-          isMobile={false}
+          isMobile={isMobile}
           className="mb-6"
+          source={source}
+          containerDescriptionLocation={containerDescriptionLocation}
         />
       ))}
       
@@ -41,4 +46,4 @@ const OpenSearchLayout: React.FC<AppletInputProps> = ({
   );
 };
 
-export default OpenSearchLayout;
+export default OpenAppletInputLayout;

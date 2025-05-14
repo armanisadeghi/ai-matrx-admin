@@ -8,17 +8,17 @@ interface AppletCardAdapterProps {
   applet: any;
   primaryColor: string;
   accentColor: string;
-  accentColorClass: string;
   onClick: () => void;
-  getAppIcon: (props: any) => React.ReactNode;
+  isMobile: boolean;
 }
 
 const AppletCardAdapter: React.FC<AppletCardAdapterProps> = ({
   variant = 'default',
+  isMobile,
   ...props
 }) => {
-  const AppletCardComponent = getAppletCardComponent(variant);
-  return <AppletCardComponent {...props} />;
+  const AppletCardComponent = getAppletCardComponent(variant, isMobile);
+  return <AppletCardComponent {...props} isMobile={isMobile} />;
 };
 
 export default AppletCardAdapter; 

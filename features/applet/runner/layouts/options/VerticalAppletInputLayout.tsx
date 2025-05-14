@@ -5,7 +5,7 @@ import VerticalSearchGroup from "@/features/applet/runner/layouts/core/VerticalS
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
-const VerticalSearchLayout: React.FC<AppletInputProps>= ({
+const VerticalAppletInputLayout: React.FC<AppletInputProps>= ({
   appletId,
   activeContainerId,
   setActiveContainerId,
@@ -42,4 +42,4 @@ const VerticalSearchLayout: React.FC<AppletInputProps>= ({
   );
 };
 
-export default VerticalSearchLayout;
+export default VerticalAppletInputLayout;

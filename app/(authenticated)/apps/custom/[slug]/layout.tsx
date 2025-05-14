@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { LayoutPanelTop, Menu, User, SunMoon } from "lucide-react";
 
 import { CustomAppHeader } from "@/features/applet/runner/header/CustomAppHeader";
-import { selectAppletRuntimeActiveAppletId } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeActiveAppletId, selectActiveAppletSlug } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import {
     selectAppRuntimeId,
     selectAppRuntimeIsDemo,
@@ -76,10 +76,12 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
     }, [dispatch, slug, status]);
 
     const activeAppletId = useAppSelector(selectAppletRuntimeActiveAppletId);
+    const activeAppletSlug = useAppSelector(selectActiveAppletSlug);
     const isDemo = useAppSelector(selectAppRuntimeIsDemo);
     const isDebug = useAppSelector(selectAppRuntimeIsDebug);
     const appId = useAppSelector(selectAppRuntimeId);
     const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
+
 
     if (!isAppInitialized) {
         return (
@@ -97,7 +99,7 @@ export default function CustomAppLayout({ children }: CustomAppLayoutProps) {
 
     return (
         <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
-            <CustomAppHeader appId={appId} activeAppletId={activeAppletId} isDemo={isDemo} isDebug={isDebug} />
+            <CustomAppHeader appId={appId} initialActiveAppletSlug={activeAppletSlug} isDemo={isDemo} isDebug={isDebug} />
             {children}
         </div>
     );

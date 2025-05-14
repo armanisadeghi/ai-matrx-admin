@@ -1,23 +1,12 @@
 'use client';
-
 import React from 'react';
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { MainLayoutProps } from '@/features/applet/home/types';
+import Image from 'next/image';
 import { LoadingSpinner } from '@/components/ui/spinner';
+import AppDisplay from '@/features/applet/home/app-display/Default';
+import ModernAppletCard from '@/features/applet/home/applet-card/Modern';
 
-interface MainLayoutProps {
-  isInitialized: boolean;
-  appName: string;
-  appDescription: string;
-  appIcon: any;
-  appImageUrl: string;
-  creator: string;
-  primaryColor: string;
-  accentColor: string;
-  appletList: any[];
-  appletsMap: Record<string, any>;
-  navigateToApplet: (appletSlug: string) => void;
-  getAppIcon: (props: any) => React.ReactNode;
-  getAppIconWithBg: (props: any) => React.ReactNode;
-}
 
 const GridMainLayout: React.FC<MainLayoutProps> = ({
   isInitialized,
@@ -31,8 +20,7 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
   appletList,
   appletsMap,
   navigateToApplet,
-  getAppIcon,
-  getAppIconWithBg
+  isMobile
 }) => {
   if (!isInitialized) {
     return (
@@ -42,10 +30,6 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
     );
   }
 
-  // Convert primary and accent colors to Tailwind classes
-  const bgColorClass = primaryColor ? `bg-[${primaryColor}]` : 'bg-white dark:bg-gray-900';
-  const accentColorClass = accentColor ? `text-[${accentColor}] border-[${accentColor}]` : 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400';
-  const accentBgClass = accentColor ? `bg-[${accentColor}]` : 'bg-blue-600 dark:bg-blue-500';
 
   return (
     <div className="h-full w-full overflow-auto p-4 md:p-6">
@@ -57,8 +41,8 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
               {getAppIconWithBg({
                 icon: appIcon,
                 size: 28,
-                color: accentColor || 'blue',
-                primaryColor: primaryColor || 'gray',
+                color: accentColor,
+                primaryColor: primaryColor,
                 className: 'flex items-center justify-center w-full h-full'
               })}
             </div>
@@ -114,11 +98,11 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className={`w-full h-full flex items-center justify-center ${bgColorClass}`}>
+                    <div className={`w-full h-full flex items-center justify-center bg-${accentColor}-500 dark:bg-${accentColor}-600`}>
                       {applet.appletIcon && getAppIcon({
                         icon: applet.appletIcon,
                         size: 28,
-                        color: applet.accentColor || accentColor || 'blue',
+                        color: applet.accentColor,
                         className: 'opacity-20'
                       })}
                     </div>
@@ -160,7 +144,7 @@ const GridMainLayout: React.FC<MainLayoutProps> = ({
                       </span>
                     )}
                     
-                    <div className={`ml-auto text-xs ${accentColorClass} font-medium group-hover:underline`}>
+                    <div className={`ml-auto text-xs text-${accentColor}-500 dark:text-${accentColor}-600 font-medium group-hover:underline`}>
                       Open
                     </div>
                   </div>

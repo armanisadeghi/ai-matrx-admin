@@ -1,7 +1,5 @@
-// File: features\applet\layouts\core\SearchField.tsx
 "use client";
-
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { ContainerRenderProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
@@ -27,6 +25,9 @@ const SearchField: React.FC<ContainerRenderProps> = ({
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
     const popoverRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
+    
+    // Add a state to track hover timeout
+    const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         // Handle clicks outside the component
@@ -34,14 +35,11 @@ const SearchField: React.FC<ContainerRenderProps> = ({
             // Only close if popover is active and click is outside the popover and button
             if (isActive && !preventClose && popoverRef.current && buttonRef.current) {
                 const target = event.target as Node;
-
                 // Check if the click is inside our popover or button
                 const clickedOutsidePopover = !popoverRef.current.contains(target);
                 const clickedOutsideButton = !buttonRef.current.contains(target);
-
                 // Check if the click is inside any select dropdown or list
                 const clickedInsideSelect = isClickInsideSelectDropdown(target);
-
                 // Only close if clicked outside both the popover, button, and any select dropdowns
                 if (clickedOutsidePopover && clickedOutsideButton && !clickedInsideSelect) {
                     onOpenChange(false);
@@ -65,7 +63,6 @@ const SearchField: React.FC<ContainerRenderProps> = ({
                 ".dropdown-list",
                 ".select-list",
             ];
-
             // Check if clicked element or any parent matches select dropdown selectors
             let current = node as Element;
             while (current && current !== document.body) {
@@ -81,7 +78,6 @@ const SearchField: React.FC<ContainerRenderProps> = ({
                 ) {
                     return true;
                 }
-
                 // Also check for common tag names and data attributes
                 const tagName = current.tagName?.toLowerCase();
                 if (
@@ -91,7 +87,6 @@ const SearchField: React.FC<ContainerRenderProps> = ({
                 ) {
                     return true;
                 }
-
                 // Move up to parent
                 if (current.parentElement) {
                     current = current.parentElement;
@@ -99,7 +94,6 @@ const SearchField: React.FC<ContainerRenderProps> = ({
                     break;
                 }
             }
-
             return false;
         };
 
@@ -131,8 +125,39 @@ const SearchField: React.FC<ContainerRenderProps> = ({
         boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
     };
 
+    // Hover handlers
+    const handleMouseEnter = () => {
+        if (!isActive) {
+            // Add a small delay to prevent accidental triggers
+            const timeout = setTimeout(() => {
+                onClick(id);
+            }, 200); // 300ms delay
+            setHoverTimeout(timeout);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (hoverTimeout) {
+            clearTimeout(hoverTimeout);
+            setHoverTimeout(null);
+        }
+    };
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+            }
+        };
+    }, [hoverTimeout]);
+
     return (
-        <div className="field-container flex-1 relative rounded-full">
+        <div 
+            className="field-container flex-1 relative rounded-full"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
             {/* Trigger button */}
             <button
                 ref={buttonRef}

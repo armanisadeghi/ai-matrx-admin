@@ -1,38 +1,16 @@
 'use client';
-
 import React from 'react';
-
-interface AppletCardProps {
-  applet: {
-    id: string;
-    slug: string;
-    name: string;
-    description?: string;
-    imageUrl?: string;
-    creator?: string;
-    appletIcon?: any;
-    primaryColor?: string;
-    accentColor?: string;
-  };
-  primaryColor: string;
-  accentColor: string;
-  accentColorClass: string;
-  onClick: () => void;
-  getAppIcon: (props: any) => React.ReactNode;
-}
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { AppletCardProps } from '@/features/applet/home/types';
+import Image from 'next/image';
 
 const SimpleAppletCard: React.FC<AppletCardProps> = ({
   applet,
   primaryColor,
   accentColor,
-  accentColorClass,
   onClick,
-  getAppIcon
+  isMobile
 }) => {
-  // Get applet-specific colors or fall back to app colors
-  const appletBgColor = applet.primaryColor || primaryColor || 'gray';
-  const appletAccentColor = applet.accentColor || accentColor || 'blue';
-  
   return (
     <div 
       className="group flex items-start p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 bg-gray-50 dark:bg-gray-800 cursor-pointer transition-all duration-200 hover:shadow-sm"
@@ -45,8 +23,7 @@ const SimpleAppletCard: React.FC<AppletCardProps> = ({
             {getAppIcon({
               icon: applet.appletIcon,
               size: 24,
-              color: appletAccentColor,
-              className: 'text-gray-700 dark:text-gray-300'
+              color: accentColor,
             })}
           </div>
         ) : (
@@ -78,7 +55,7 @@ const SimpleAppletCard: React.FC<AppletCardProps> = ({
       </div>
       
       {/* Action button */}
-      <div className={`px-3 py-1 text-xs rounded-full border ${accentColorClass} font-medium transition-colors ml-2 mt-1 whitespace-nowrap`}>
+      <div className={`px-3 py-1 text-xs rounded-full border bg-${accentColor}-500 dark:bg-${accentColor}-600 font-medium transition-colors ml-2 mt-1 whitespace-nowrap`}>
         Open
       </div>
     </div>

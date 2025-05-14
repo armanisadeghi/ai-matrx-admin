@@ -6,14 +6,14 @@ import Link from "next/link";
 import { ThemeSwitcherIcon } from "@/styles/themes";
 import AppSelector from "../common/AppSelector";
 import ButtonMenu from "../common/ButtonMenu";
-import { CustomAppHeaderProps } from "../CustomAppHeader";
+import { DesktopAppHeaderProps } from "./DesktopAppHeader";
 import { HeaderLogic } from "./HeaderLogic";
 
-export const IconsHeader: React.FC<CustomAppHeaderProps> = ({ 
+export const IconsHeader: React.FC<DesktopAppHeaderProps> = ({ 
     appId, 
     headerClassName,
     isDemo = false,
-    activeAppletId = ''
+    activeAppletSlug = ''
 }) => {
     const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";
     const finalHeaderClass = headerClassName || defaultHeaderClass;
@@ -22,7 +22,7 @@ export const IconsHeader: React.FC<CustomAppHeaderProps> = ({
         <HeaderLogic
             appId={appId}
             isDemo={isDemo}
-            activeAppletId={activeAppletId}
+            activeAppletSlug={activeAppletSlug}
         >
             {({
                 activeAppIcon,
@@ -31,8 +31,8 @@ export const IconsHeader: React.FC<CustomAppHeaderProps> = ({
                 config,
                 displayName,
                 profilePhoto,
-                activeAppletId: activeId,
-                handleTabChange,
+                activeAppletSlug,
+                handleAppletChange,
                 isDemo: isDemoMode
             }) => {
                 return (
@@ -53,11 +53,11 @@ export const IconsHeader: React.FC<CustomAppHeaderProps> = ({
                                             <div 
                                                 key={applet.value}
                                                 className={`w-8 h-8 flex items-center justify-center rounded-md cursor-pointer transition-colors
-                                                    ${activeId === applet.value 
+                                                    ${activeAppletSlug === applet.value 
                                                         ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300' 
                                                         : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                     }`}
-                                                onClick={() => handleTabChange(applet.value)}
+                                                onClick={() => handleAppletChange(applet.value)}
                                                 title={applet.label}
                                             >
                                                 {/* Simple letter icon (first letter of label) */}

@@ -1,5 +1,7 @@
 import HelpIcon from "@/components/official/HelpIcon";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
 
 export const fieldHelpTextItems = {
     label: "The label or name. This is the most promanent thing the user will see. For convenience, this defaults to the broker name, but it can be changed to any value.",
@@ -97,20 +99,30 @@ export const ContainerLabelAndHelpText = ({ fieldName, fieldLabel, required }: A
 };
 
 export interface CustomFieldLabelAndHelpTextProps {
-    fieldName: any;
-    fieldLabel?: string;
-    helpText: string;
+    fieldId: string;
+    fieldLabel: string;
+    helpText?: string;
     required?: boolean;
+    className?: string;
+    onAiAssistance?: () => void;
 }
 
-export const CustomFieldLabelAndHelpText = ({ fieldName, fieldLabel, helpText, required=false }: CustomFieldLabelAndHelpTextProps) => {
+export const CustomFieldLabelAndHelpText = ({ fieldId, fieldLabel, helpText, required=false, className="", onAiAssistance }: CustomFieldLabelAndHelpTextProps) => {
+
+    const handleAiAssistance = () => {
+        console.log("AI Assistance");
+        if (onAiAssistance) {
+            onAiAssistance();
+        }
+    };
+
     return (
-        <div className="flex items-center gap-1">
-            <Label htmlFor={fieldName} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
-                {fieldLabel || fieldName}
+        <div className={cn("flex items-center gap-1", className)}>
+            <Label htmlFor={fieldId} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                {fieldLabel}
                 {required && <span className="pl-1 text-red-500">*</span>}
             </Label>
-            <HelpIcon text={helpText} />
+            <HelpIcon text={helpText} required={required} title={fieldLabel} onAiAssistance={handleAiAssistance}/>
         </div>
     );
 };

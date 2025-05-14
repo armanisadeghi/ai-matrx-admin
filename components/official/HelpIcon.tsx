@@ -1,13 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { InfoIcon, HelpCircleIcon, CopyIcon, CheckIcon } from 'lucide-react';
+import { InfoIcon, HelpCircleIcon, CopyIcon, CheckIcon, SparklesIcon } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
 interface HelpIconProps {
-  text: string;
+  text?: string;
+  content?: React.ReactNode;
+  className?: string;
+  title?: string;
+  required?: boolean;
+  onAiAssistance?: () => void;
 }
 
-const HelpIcon: React.FC<HelpIconProps> = ({ text }) => {
-  if (!text) return null;
+const HelpIcon: React.FC<HelpIconProps> = ({ 
+  text, 
+  content, 
+  className = "", 
+  title = "", 
+  required = false,
+  onAiAssistance
+}) => {
+  if (!text && !content) return null;
   
   const [copied, setCopied] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -19,60 +31,77 @@ const HelpIcon: React.FC<HelpIconProps> = ({ text }) => {
   
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const updatePosition = () => {
-    if (iconRef.current && tooltipRef.current) {
-      const rect = iconRef.current.getBoundingClientRect();
-      const tooltipHeight = tooltipRef.current.offsetHeight;
-      
-      // Position tooltip slightly to the right and below the icon to make it easier to reach
-      setPosition({
-        top: rect.top - tooltipHeight + 15, // Move down slightly to make it easier to reach
-        left: Math.max(10, rect.left - 180 + rect.width / 2) // Adjust to make copy button more accessible
-      });
+    if (text) {
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
+  const handleAiClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAiAssistance) {
+      onAiAssistance();
+    }
+  };
+  
+  const updatePosition = () => {
+    if (iconRef.current && tooltipRef.current) {
+      const rect = iconRef.current.getBoundingClientRect();
+      const tooltipRect = tooltipRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+      let top = rect.top - tooltipRect.height - 8;
+      
+      // Adjust if tooltip would go off-screen
+      if (left < 10) left = 10;
+      if (left + tooltipRect.width > viewportWidth - 10) {
+        left = viewportWidth - tooltipRect.width - 10;
+      }
+      
+      // If tooltip would go above viewport, position below icon
+      if (top < 10) {
+        top = rect.bottom + 8;
+      }
+      
+      setPosition({ top, left });
+    }
+  };
+  
   const showTooltip = () => {
-    // Clear any existing hide timeout
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
     
-    // Set a slight delay before showing
     if (!isVisible && !showTimeoutRef.current) {
       showTimeoutRef.current = setTimeout(() => {
         setIsVisible(true);
         showTimeoutRef.current = null;
-      }, 200); // 100ms delay before showing
+      }, 200);
     }
   };
-
+  
   const hideTooltip = () => {
-    // Clear any pending show timeout
     if (showTimeoutRef.current) {
       clearTimeout(showTimeoutRef.current);
       showTimeoutRef.current = null;
     }
     
-    // Set a delay before hiding to give user time to move to the tooltip
     hideTimeoutRef.current = setTimeout(() => {
       setIsVisible(false);
-    }, 150); // 150ms delay before hiding
+    }, 150);
   };
-
+  
   const cancelHideTooltip = () => {
     if (hideTimeoutRef.current) {
       clearTimeout(hideTimeoutRef.current);
       hideTimeoutRef.current = null;
     }
   };
-
+  
   useEffect(() => {
     if (isVisible) {
       updatePosition();
@@ -83,7 +112,6 @@ const HelpIcon: React.FC<HelpIconProps> = ({ text }) => {
     return () => {
       window.removeEventListener('scroll', updatePosition);
       window.removeEventListener('resize', updatePosition);
-      // Clear any pending timeouts when unmounting
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current);
       }
@@ -95,10 +123,7 @@ const HelpIcon: React.FC<HelpIconProps> = ({ text }) => {
   
   // Format text to handle both literal newlines and \n escape sequences
   const formatTextWithLineBreaks = (text: string) => {
-    // First replace any literal \n strings with actual newlines
     const processedText = text.replace(/\\n/g, '\n');
-    
-    // Then split by actual newlines and render with breaks
     return processedText.split('\n').map((line, index) => (
       <React.Fragment key={index}>
         {index > 0 && <br />}
@@ -109,17 +134,17 @@ const HelpIcon: React.FC<HelpIconProps> = ({ text }) => {
   
   return (
     <div 
-      className="inline-block ml-1 relative cursor-help"
+      className={`inline-block relative cursor-help ${className}`}
       ref={iconRef}
       onMouseEnter={showTooltip}
       onMouseLeave={hideTooltip}
     >
-      <InfoIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+      <InfoIcon className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors duration-200" />
       
       {isVisible && typeof document !== 'undefined' && createPortal(
         <div 
           ref={tooltipRef}
-          className="fixed p-4 w-96 bg-gray-900 dark:bg-gray-800 border-3 border-gray-700 dark:border-gray-600 rounded-3xl text-white dark:text-gray-200 text-sm shadow-lg z-[9999]"
+          className="fixed max-w-sm bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[9999] animate-in fade-in-0 zoom-in-95 duration-100"
           style={{ 
             top: `${position.top}px`, 
             left: `${position.left}px`,
@@ -128,24 +153,57 @@ const HelpIcon: React.FC<HelpIconProps> = ({ text }) => {
           onMouseEnter={cancelHideTooltip}
           onMouseLeave={hideTooltip}
         >
-          <div className="flex items-start justify-between">
-            <div className="flex items-start flex-1">
-              <HelpCircleIcon className="h-5 w-5 mr-2 flex-shrink-0 text-blue-500 dark:text-blue-400 mt-0.5" />
-              <div className="flex-1">{formatTextWithLineBreaks(text)}</div>
-            </div>
-            <button 
-              onClick={handleCopy} 
-              className="ml-2 p-1 rounded-full hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors"
-              title="Copy to clipboard"
-            >
-              {copied ? (
-                <CheckIcon className="h-4 w-4 text-green-400" />
-              ) : (
-                <CopyIcon className="h-4 w-4 text-gray-300 hover:text-white dark:text-gray-300 dark:hover:text-white" />
+          <div className="p-3">
+            {/* Header row with icon and title */}
+            <div className="flex items-center gap-2 mb-2">
+              <HelpCircleIcon className="h-4 w-4 flex-shrink-0 text-blue-500 dark:text-blue-400" />
+              {title && (
+                <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">
+                  {title}
+                </h3>
               )}
-            </button>
+              {text && (
+                <button 
+                  onClick={handleCopy} 
+                  className="ml-auto p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                  title="Copy to clipboard"
+                >
+                  {copied ? (
+                    <CheckIcon className="h-3.5 w-3.5 text-green-500" />
+                  ) : (
+                    <CopyIcon className="h-3.5 w-3.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+                  )}
+                </button>
+              )}
+            </div>
+            
+            {/* Content */}
+            <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              {content ? content : (text && formatTextWithLineBreaks(text))}
+            </div>
+            
+            {/* Required field pill */}
+            {required && (
+              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 dark:bg-amber-900/20 text-amber-800 dark:text-amber-400 text-xs font-medium rounded-full">
+                <div className="w-1.5 h-1.5 bg-amber-600 dark:bg-amber-500 rounded-full"></div>
+                Required Field
+              </div>
+            )}
+            
+            {/* AI Assistance button */}
+            {onAiAssistance && (
+              <button
+                onClick={handleAiClick}
+                className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white text-sm font-medium rounded-md transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                <SparklesIcon className="h-4 w-4" />
+                Get Help From Matrx AI
+              </button>
+            )}
           </div>
-          <div className="absolute top-full left-[calc(50%-4px)] -mt-px border-4 border-transparent border-t-gray-900 dark:border-t-gray-800"></div>
+          
+          {/* Tooltip arrow */}
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-gray-900 border-r border-b border-gray-200 dark:border-gray-700 rotate-45"></div>
         </div>,
         document.body
       )}
@@ -153,4 +211,4 @@ const HelpIcon: React.FC<HelpIconProps> = ({ text }) => {
   );
 };
 
-export default HelpIcon; 
+export default HelpIcon;

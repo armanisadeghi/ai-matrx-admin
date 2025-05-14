@@ -1,26 +1,12 @@
 // MainLayout.tsx
+'use client';
 import React from 'react';
-import AppDisplay from '../app-display/Default';
-import AppletCard from '../applet-card/Default';
-import { LoadingSpinner } from '@/components/ui/spinner';
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { MainLayoutProps } from '@/features/applet/home/types';
 import Image from 'next/image';
-import ModernAppletCard from '../applet-card/Modern';
-
-interface MainLayoutProps {
-  isInitialized: boolean;
-  appName: string;
-  appDescription: string;
-  appIcon: any;
-  appImageUrl: string;
-  creator: string;
-  primaryColor: string;
-  accentColor: string;
-  appletList: any[];
-  appletsMap: Record<string, any>;
-  navigateToApplet: (appletSlug: string) => void;
-  getAppIcon: (props: any) => React.ReactNode;
-  getAppIconWithBg: (props: any) => React.ReactNode;
-}
+import { LoadingSpinner } from '@/components/ui/spinner';
+import AppDisplay from '@/features/applet/home/app-display/Default';
+import ModernAppletCard from '@/features/applet/home/applet-card/Modern';
 
 const MainLayout: React.FC<MainLayoutProps> = ({
   isInitialized,
@@ -34,8 +20,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
   appletList,
   appletsMap,
   navigateToApplet,
-  getAppIcon,
-  getAppIconWithBg
+  isMobile
 }) => {
   if (!isInitialized) {
     return (
@@ -45,10 +30,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({
     );
   }
 
-  // Convert primary and accent colors to Tailwind classes
-  const bgColorClass = primaryColor ? `bg-[${primaryColor}]` : 'bg-white dark:bg-gray-900';
-  const accentColorClass = accentColor ? `text-[${accentColor}] border-[${accentColor}]` : 'text-blue-600 dark:text-blue-400 border-blue-600 dark:border-blue-400';
-  const accentBgClass = accentColor ? `bg-[${accentColor}]` : 'bg-blue-600 dark:bg-blue-500';
 
   return (
     <div className="h-full w-full overflow-auto p-4 md:p-8">
@@ -61,8 +42,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
         creator={creator}
         accentColor={accentColor}
         primaryColor={primaryColor}
-        accentColorClass={accentColorClass}
-        getAppIconWithBg={getAppIconWithBg}
+        isMobile={isMobile}
       />
       
       {/* App Cards */}
@@ -82,9 +62,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({
                 applet={applet}
                 primaryColor={primaryColor}
                 accentColor={accentColor}
-                accentColorClass={accentColorClass}
                 onClick={() => navigateToApplet(applet.slug)}
-                getAppIcon={getAppIcon}
+                isMobile={isMobile}
               />
             );
           })}

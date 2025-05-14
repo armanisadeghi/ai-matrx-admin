@@ -196,7 +196,8 @@ export type AppletLayoutOption =
     | "chat"
     | "mapBased"
     | "fullWidthSidebar"
-    | "input-bar";
+    | "input-bar"
+    | "flat-accordion";
 
 
 export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
@@ -252,6 +253,7 @@ export type CustomAppletConfig = {
   imageUrl?: string;
   appId?: string;
   brokerMap?: BrokerMapping[];
+  overviewLabel?: string;  // "This will replace the message for Minimalist Layout as well as show after submission if things are put together. (eg. What are you looking for?)"
 };
 
 

@@ -6,7 +6,7 @@ import MobileAppHeader from "./mobile/MobileAppHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppRuntimeIsInitialized } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
-import { selectAppletRuntimeActiveAppletId } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectActiveAppletSlug } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { LoadingSpinner } from "@/components/ui/spinner";
 
 export interface CustomAppHeaderProps {
@@ -14,13 +14,14 @@ export interface CustomAppHeaderProps {
   headerClassName?: string;
   isDemo?: boolean;
   isDebug?: boolean;
-  activeAppletId?: string;
+  initialActiveAppletSlug?: string;
 }
 
-export const CustomAppHeader = ({ appId, isDemo = false, isDebug = false, activeAppletId }: CustomAppHeaderProps) => {
+export const CustomAppHeader = ({ appId, isDemo = false, isDebug = false, initialActiveAppletSlug }: CustomAppHeaderProps) => {
   const isMobile = useIsMobile();
   const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
-  const activeId = activeAppletId || useAppSelector(selectAppletRuntimeActiveAppletId) || '';
+  const activeAppletSlug = initialActiveAppletSlug || useAppSelector(selectActiveAppletSlug);
+
 
   if (isDebug) {
     console.log("isDebug", isDebug);
@@ -36,9 +37,9 @@ export const CustomAppHeader = ({ appId, isDemo = false, isDebug = false, active
 
 
   return isMobile ? (
-    <MobileAppHeader appId={appId} activeAppletId={activeId} isDemo={isDemo}/>
+    <MobileAppHeader appId={appId} activeAppletSlug={activeAppletSlug} isDemo={isDemo}/>
   ) : (
-    <DesktopAppHeader appId={appId} activeAppletId={activeId} isDemo={isDemo} />
+    <DesktopAppHeader appId={appId} activeAppletSlug={activeAppletSlug} isDemo={isDemo} />
   );
 };
 

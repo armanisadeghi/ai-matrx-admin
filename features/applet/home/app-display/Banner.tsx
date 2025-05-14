@@ -1,18 +1,8 @@
 'use client';
 
 import React from 'react';
-
-interface AppDisplayProps {
-  appName: string;
-  appDescription: string;
-  appIcon: any;
-  appImageUrl: string;
-  creator: string;
-  accentColor: string;
-  primaryColor: string;
-  accentColorClass: string;
-  getAppIconWithBg: (props: any) => React.ReactNode;
-}
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { AppDisplayProps } from '@/features/applet/home/types';
 
 const BannerAppDisplay: React.FC<AppDisplayProps> = ({
   appName,
@@ -22,7 +12,7 @@ const BannerAppDisplay: React.FC<AppDisplayProps> = ({
   creator,
   accentColor,
   primaryColor,
-  getAppIconWithBg
+  isMobile
 }) => {
   // Define a background class based on whether we have an image or use color
   const bgClass = appImageUrl 

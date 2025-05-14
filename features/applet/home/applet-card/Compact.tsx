@@ -1,37 +1,15 @@
 'use client';
-
 import React from 'react';
-
-interface AppletCardProps {
-  applet: {
-    id: string;
-    slug: string;
-    name: string;
-    description?: string;
-    imageUrl?: string;
-    creator?: string;
-    appletIcon?: any;
-    primaryColor?: string;
-    accentColor?: string;
-  };
-  primaryColor: string;
-  accentColor: string;
-  accentColorClass: string;
-  onClick: () => void;
-  getAppIcon: (props: any) => React.ReactNode;
-}
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { AppletCardProps } from '@/features/applet/home/types';
 
 const CompactAppletCard: React.FC<AppletCardProps> = ({
   applet,
   primaryColor,
   accentColor,
-  accentColorClass,
   onClick,
-  getAppIcon
+  isMobile
 }) => {
-  // Get applet-specific colors or fall back to app colors
-  const appletAccentColor = applet.accentColor || accentColor || 'blue';
-  const appletAccentClass = appletAccentColor ? `text-[${appletAccentColor}]` : accentColorClass;
   
   return (
     <div 
@@ -41,16 +19,15 @@ const CompactAppletCard: React.FC<AppletCardProps> = ({
       {/* Icon - using circle with accent color border */}
       <div className="flex-shrink-0 mr-3">
         {applet.appletIcon ? (
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${appletAccentClass.replace('text-', 'border-')}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center border bg-${accentColor}-500 dark:bg-${accentColor}-600`}>
             {getAppIcon({
               icon: applet.appletIcon,
               size: 16,
-              color: appletAccentColor,
-              className: appletAccentClass
+              color: accentColor,
             })}
           </div>
         ) : (
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${appletAccentClass.replace('text-', 'border-')} ${appletAccentClass}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-${accentColor}-500 dark:border-${accentColor}-600`}>
             <span className="text-xs font-medium">
               {applet.name?.charAt(0) || '?'}
             </span>

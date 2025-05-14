@@ -18,11 +18,9 @@ interface MainLayoutAdapterProps {
   appletList: any[];
   appletsMap: Record<string, any>;
   navigateToApplet: (appletSlug: string) => void;
-  getAppIcon: (props: any) => React.ReactNode;
-  getAppIconWithBg: (props: any) => React.ReactNode;
-  // Custom components
   appDisplayComponent?: React.ReactNode;
   renderAppletCard?: (applet: any) => React.ReactNode;
+  isMobile: boolean;
 }
 
 const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
@@ -32,10 +30,10 @@ const MainLayoutAdapter: React.FC<MainLayoutAdapterProps> = ({
   isInitialized,
   appletList,
   appletsMap,
-  ...props
+  isMobile,
 }) => {
   // Get the base MainLayout component
-  const MainLayoutComponent = getMainLayoutComponent(variant);
+  const MainLayoutComponent = getMainLayoutComponent(variant, isMobile);
   
   if (!isInitialized) {
     return (

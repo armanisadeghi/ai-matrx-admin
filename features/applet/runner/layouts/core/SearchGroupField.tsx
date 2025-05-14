@@ -4,7 +4,7 @@
 import React, { useEffect, useRef } from "react";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import SearchField from "@/features/applet/runner/layouts/core/SearchField";
-import HelpIcon from "@/components/official/HelpIcon";
+import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
 import { ContainerRenderProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 
 const SearchGroupField: React.FC<ContainerRenderProps> = ({
@@ -28,7 +28,7 @@ const SearchGroupField: React.FC<ContainerRenderProps> = ({
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile }));
+                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile, source }));
             }
         });
     }, [fields, isMobile]);
@@ -53,15 +53,17 @@ const SearchGroupField: React.FC<ContainerRenderProps> = ({
             <div className="w-full min-w-96 p-4 bg-white rounded-xl dark:bg-gray-800 border dark:border-gray-700">
                 <h3 className="text-lg text-rose-500 font-medium mb-1">{label}</h3>
 
-                <div className="pr-1 mb-5 text-xs text-gray-500 dark:text-gray-400">{description}</div>
+                <div className="pr-1 pt-1 mb-5 text-xs text-gray-500 dark:text-gray-400">{description}</div>
                 <div>
                     {fields.map((field) => (
-                        <div key={field.id} className="mb-6 last:mb-0">
-                            <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
-                                {field.label}
-                                <HelpIcon text={field.helpText} />
-                            </label>
-                            {/* Directly render the saved component */}
+                        <div key={field.id} className="mb-5 last:mb-0">
+                            <CustomFieldLabelAndHelpText
+                                fieldId={field.id}
+                                fieldLabel={field.label}
+                                helpText={field.helpText}
+                                required={field.required}
+                                className="mb-2"
+                            />
                             {fieldRefs.current.get(field.id)}
                         </div>
                     ))}

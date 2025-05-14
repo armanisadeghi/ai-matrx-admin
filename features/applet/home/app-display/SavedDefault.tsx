@@ -1,18 +1,9 @@
 // AppDisplay.tsx
+'use client';
 import React from 'react';
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { AppDisplayProps } from '@/features/applet/home/types';
 import Image from 'next/image';
-
-interface AppDisplayProps {
-  appName: string;
-  appDescription: string;
-  appIcon: any;
-  appImageUrl: string;
-  creator: string;
-  accentColor: string;
-  primaryColor: string;
-  accentColorClass: string;
-  getAppIconWithBg: (props: any) => React.ReactNode;
-}
 
 const AppDisplay: React.FC<AppDisplayProps> = ({
   appName,
@@ -22,8 +13,7 @@ const AppDisplay: React.FC<AppDisplayProps> = ({
   creator,
   accentColor,
   primaryColor,
-  accentColorClass,
-  getAppIconWithBg
+  isMobile
 }) => {
   return (
     <div 

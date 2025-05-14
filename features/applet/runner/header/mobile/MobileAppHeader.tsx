@@ -6,7 +6,6 @@ import { RootState } from "@/lib/redux";
 import { ThemeSwitcherIcon } from "@/styles/themes";
 import Image from "next/image";
 import Link from "next/link";
-import { CustomAppHeaderProps } from "../CustomAppHeader";
 import MobileTabHeader from "./MobileTabHeader ";
 import AppSelector from "../common/AppSelector";
 import ButtonMenu from "../common/ButtonMenu";
@@ -20,7 +19,18 @@ import {
 import { getAppIcon } from "@/features/applet/styles/StyledComponents";
 import { HeaderExtraButtonsConfig } from "../../field-components/types";
 
-export const MobileAppHeader = ({ appId, activeAppletId, isDemo = false }: CustomAppHeaderProps) => {
+interface MobileAppHeaderProps {
+    appId?: string;
+    headerClassName?: string;
+    isDemo?: boolean;
+    isDebug?: boolean;
+    activeAppletSlug?: string;
+  }
+  
+
+
+
+export const MobileAppHeader = ({ appId, activeAppletSlug, isDemo = false }: MobileAppHeaderProps) => {
     const router = useRouter();
     const user = useAppSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
@@ -34,11 +44,11 @@ export const MobileAppHeader = ({ appId, activeAppletId, isDemo = false }: Custo
     // Generate the app icon using the existing function
     const activeAppIcon = React.useMemo(() => {
         return getAppIcon({
-            color: config?.primaryColor,
+            color: config?.accentColor,
             icon: iconName,
             size: 24,
         });
-    }, [config?.primaryColor, iconName]);
+    }, [config?.accentColor, iconName]);
 
     // Setup tab navigation function that uses routing instead of state
     const handleTabChange = (tabSlug: string) => {
@@ -62,7 +72,7 @@ export const MobileAppHeader = ({ appId, activeAppletId, isDemo = false }: Custo
                             value: app.slug,
                             label: app.label,
                         }))}
-                        activeTab={activeAppletId || ""}
+                        activeTab={activeAppletSlug || ""}
                         setActiveTab={handleTabChange}
                     />
                 </div>

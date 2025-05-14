@@ -19,17 +19,9 @@ import { fetchAppWithApplets } from "@/lib/redux/app-runner/thunks/appRunnerThun
 import { CustomAppHeader } from "@/features/applet/runner/header";
 import AppletLayoutIntroCard from "@/features/applet/builder/parts/AppletLayoutIntroCard";
 import { Beaker, MessageSquare, Map, LayoutPanelTop } from "lucide-react";
+import { appletLayoutOptionsArray } from "@/features/applet/constants/layout-options";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
-// Separator component with name
-const SectionSeparator = ({ name }: { name: string }) => (
-    <div className="w-full my-8">
-        <div className="flex items-center">
-            <div className="flex-grow h-px bg-gray-300 dark:bg-gray-700"></div>
-            <span className="px-4 font-medium text-gray-600 dark:text-gray-400">{name}</span>
-            <div className="flex-grow h-px bg-gray-300 dark:bg-gray-700"></div>
-        </div>
-    </div>
-);
 
 export default function SearchAppletPage() {
     const dispatch = useAppDispatch();
@@ -66,6 +58,10 @@ export default function SearchAppletPage() {
     const isAppletInitialized = useAppSelector(selectAppletRuntimeIsInitialized);
     const activeAppletId = useAppSelector(selectAppletRuntimeActiveAppletId);
 
+    // Filter layouts by experimental status
+    const standardLayouts = appletLayoutOptionsArray.filter(layout => !layout.experimental);
+    const experimentalLayouts = appletLayoutOptionsArray.filter(layout => layout.experimental);
+
     // Set as active applet if not already active
     useEffect(() => {
         if (isAppInitialized && validAppletId && activeAppletId !== validAppletId) {
@@ -80,6 +76,16 @@ export default function SearchAppletPage() {
             </div>
         );
     }
+
+    // Helper function to render a layout section
+    const renderLayoutSection = (layoutType: AppletLayoutOption, extraClasses: string = "") => (
+        <>
+            <AppletLayoutIntroCard layoutType={layoutType} />
+            <div className={extraClasses}>
+                <AppletLayoutManager appletId={validAppletId} layoutTypeOverride={layoutType} />
+            </div>
+        </>
+    );
 
     return (
         <div className="h-full w-full bg-white dark:bg-gray-900 transition-colors">
@@ -100,60 +106,22 @@ export default function SearchAppletPage() {
             </div>
             <AppletLayoutManager appletId={validAppletId} />
             
-            <AppletLayoutIntroCard layoutType="open" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="open" />
+            {/* Render all standard layouts */}
+            {standardLayouts.map(layout => {
+                // Add special classes for specific layouts
+                let extraClasses = "";
+                if (layout.value === "horizontal") extraClasses = "mt-64 mb-64";
+                if (layout.value === "minimalist") extraClasses = "mb-32";
+                if (layout.value === "cardStack") extraClasses = "mb-20";
+                
+                return (
+                    <React.Fragment key={layout.value}>
+                        {renderLayoutSection(layout.value, extraClasses)}
+                    </React.Fragment>
+                );
+            })}
 
-            <AppletLayoutIntroCard layoutType="horizontal" />
-            <div className="mt-64 mb-64">
-                <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="horizontal" />
-            </div>
-
-            <AppletLayoutIntroCard layoutType="stepper" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="stepper" />
-
-            <AppletLayoutIntroCard layoutType="vertical" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="vertical" />
-
-            <AppletLayoutIntroCard layoutType="twoColumn" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="twoColumn" />
-
-            <AppletLayoutIntroCard layoutType="threeColumn" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="threeColumn" />
-
-            <AppletLayoutIntroCard layoutType="fourColumn" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="fourColumn" />
-
-            <AppletLayoutIntroCard layoutType="tabs" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="tabs" />
-
-            <AppletLayoutIntroCard layoutType="accordion" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="accordion" />
-
-            <AppletLayoutIntroCard layoutType="flat" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="flat" />
-
-            <AppletLayoutIntroCard layoutType="carousel" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="carousel" />
-
-            <AppletLayoutIntroCard layoutType="floatingCard" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="floatingCard" />
-
-            <AppletLayoutIntroCard layoutType="minimalist" />
-            <div className="mb-32">
-                <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="minimalist" />
-            </div>
-
-            <AppletLayoutIntroCard layoutType="sidebar" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="sidebar" />
-
-            <AppletLayoutIntroCard layoutType="fullWidthSidebar" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="fullWidthSidebar" />
-
-            <AppletLayoutIntroCard layoutType="cardStack" />
-            <div className="mb-20">
-                <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="cardStack" />
-            </div>
-
+            {/* Experimental layouts section */}
             <div className="my-8 p-6 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 shadow-sm">
                 <div className="flex items-center mb-3">
                     <Beaker className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3" />
@@ -164,18 +132,12 @@ export default function SearchAppletPage() {
                     designs based on user feedback and research.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="flex items-center p-3 bg-blue-100/70 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <LayoutPanelTop className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
-                        <span className="text-blue-700 dark:text-blue-300">Contextual</span>
-                    </div>
-                    <div className="flex items-center p-3 bg-blue-100/70 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
-                        <span className="text-blue-700 dark:text-blue-300">Chat</span>
-                    </div>
-                    <div className="flex items-center p-3 bg-blue-100/70 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <Map className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
-                        <span className="text-blue-700 dark:text-blue-300">Map Based</span>
-                    </div>
+                    {experimentalLayouts.map(layout => (
+                        <div key={layout.value} className="flex items-center p-3 bg-blue-100/70 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <span className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2">{layout.icon}</span>
+                            <span className="text-blue-700 dark:text-blue-300">{layout.title.replace(" Layout", "")}</span>
+                        </div>
+                    ))}
                 </div>
                 <div className="text-sm text-blue-600 dark:text-blue-400 flex items-center">
                     <span className="inline-block h-2 w-2 rounded-full bg-blue-500 dark:bg-blue-400 mr-2"></span>
@@ -183,16 +145,18 @@ export default function SearchAppletPage() {
                 </div>
             </div>
 
-            <AppletLayoutIntroCard layoutType="contextual" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="contextual" />
-
-            <AppletLayoutIntroCard layoutType="chat" />
-            <div className="mb-24">
-                <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="chat" />
-            </div>
-
-            <AppletLayoutIntroCard layoutType="mapBased" />
-            <AppletLayoutManager appletId={validAppletId} layoutTypeOverride="mapBased" />
+            {/* Render all experimental layouts */}
+            {experimentalLayouts.map(layout => {
+                // Add special classes for specific layouts
+                let extraClasses = "";
+                if (layout.value === "chat") extraClasses = "mb-24";
+                
+                return (
+                    <React.Fragment key={layout.value}>
+                        {renderLayoutSection(layout.value, extraClasses)}
+                    </React.Fragment>
+                );
+            })}
         </div>
     );
 }

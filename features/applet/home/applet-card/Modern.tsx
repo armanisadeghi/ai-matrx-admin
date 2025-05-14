@@ -1,39 +1,18 @@
 // ModernAppletCard.tsx
+'use client';
 import React from 'react';
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { AppletCardProps } from '@/features/applet/home/types';
 import Image from 'next/image';
 
-interface AppletCardProps {
-  applet: {
-    id: string;
-    slug: string;
-    name: string;
-    description?: string;
-    imageUrl?: string;
-    creator?: string;
-    appletIcon?: any;
-    primaryColor?: string;
-    accentColor?: string;
-  };
-  primaryColor: string;
-  accentColor: string;
-  accentColorClass: string;
-  onClick: () => void;
-  getAppIcon: (props: any) => React.ReactNode;
-}
 
 const ModernAppletCard: React.FC<AppletCardProps> = ({
   applet,
   primaryColor,
   accentColor,
-  accentColorClass,
   onClick,
-  getAppIcon
+  isMobile
 }) => {
-  // Get applet-specific colors or fall back to app colors
-  const appletBgColor = applet.primaryColor || primaryColor;
-  const appletAccentColor = applet.accentColor || accentColor;
-  const appletBgClass = appletBgColor ? `bg-[${appletBgColor}]` : 'bg-white dark:bg-gray-800';
-  const appletAccentClass = appletAccentColor ? `text-[${appletAccentColor}] border-[${appletAccentColor}]` : accentColorClass;
   
   return (
     <div 
@@ -43,13 +22,13 @@ const ModernAppletCard: React.FC<AppletCardProps> = ({
       {/* Horizontal layout with icon on left side */}
       <div className="flex items-stretch">
         {/* Left sidebar with color and icon */}
-        <div className={`w-16 flex-shrink-0 flex items-center justify-center ${appletBgClass}`}>
+        <div className={`w-16 flex-shrink-0 flex items-center justify-center bg-${primaryColor}-500 dark:bg-${primaryColor}-600`}>
           {applet.appletIcon ? (
             <div className="p-2 rounded-full bg-gray-100/20 backdrop-blur-sm">
               {getAppIcon({
                 icon: applet.appletIcon,
                 size: 28,
-                color: appletAccentColor || accentColor || "blue",
+                color: accentColor,
                 className: "text-gray-100"
               })}
             </div>
@@ -103,7 +82,7 @@ const ModernAppletCard: React.FC<AppletCardProps> = ({
         
         {/* Open button overlay on hover */}
         <div className="absolute bottom-0 right-0 m-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className={`${appletBgClass} text-gray-100 px-4 py-1 text-sm rounded-full font-medium shadow-lg`}>
+          <div className={`bg-${accentColor}-500 dark:bg-${accentColor}-600 text-gray-100 px-4 py-1 text-sm rounded-full font-medium shadow-lg`}>
             Open
           </div>
         </div>
@@ -112,11 +91,11 @@ const ModernAppletCard: React.FC<AppletCardProps> = ({
       {/* Bottom stats bar */}
       <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <div className="flex items-center space-x-2">
-          <div className={`h-2 w-2 rounded-full ${appletBgClass}`}></div>
+          <div className={`h-2 w-2 rounded-full bg-${primaryColor}-500 dark:bg-${primaryColor}-600`}></div>
           <span className="text-xs text-gray-500 dark:text-gray-400">Active</span>
         </div>
         
-        <div className={`text-xs ${appletAccentClass} font-medium`}>
+        <div className={`text-xs text-${accentColor}-500 dark:text-${accentColor}-600 font-medium`}>
           {applet.slug}
         </div>
       </div>

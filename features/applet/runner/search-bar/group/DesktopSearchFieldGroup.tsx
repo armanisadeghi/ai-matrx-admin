@@ -17,13 +17,14 @@ const DesktopSearchGroup: React.FC<ContainerRenderProps> = ({
     actionButton,
     className = "",
     isMobile = false,
+    source = "applet",
 }) => {
     const fieldRefs = useRef<Map<string, React.ReactNode>>(new Map());
 
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile }));
+                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile, source }));
             }
         });
     }, [fields]);
@@ -42,6 +43,7 @@ const DesktopSearchGroup: React.FC<ContainerRenderProps> = ({
             actionButton={isLast ? actionButton : undefined}
             className={className}
             isMobile={isMobile}
+            source={source}
         >
             <div className="w-full min-w-96 p-2 bg-white rounded-xl dark:bg-gray-800 border dark:border-gray-700">
                 <h3 className="text-lg text-rose-500 font-medium mb-1">{label}</h3>

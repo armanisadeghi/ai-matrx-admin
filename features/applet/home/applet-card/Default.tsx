@@ -1,44 +1,17 @@
 // AppletCard.tsx
+'use client';
 import React from 'react';
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { AppletCardProps } from '@/features/applet/home/types';
 import Image from 'next/image';
-
-interface AppletCardProps {
-  applet: {
-    id: string;
-    slug: string;
-    name: string;
-    description?: string;
-    imageUrl?: string;
-    creator?: string;
-    appletIcon?: any;
-    primaryColor?: string;
-    accentColor?: string;
-  };
-  primaryColor: string;
-  accentColor: string;
-  accentColorClass: string;
-  onClick: () => void;
-  getAppIcon: (props: any) => React.ReactNode;
-}
 
 const AppletCard: React.FC<AppletCardProps> = ({
   applet,
   primaryColor,
   accentColor,
-  accentColorClass,
   onClick,
-  getAppIcon
+  isMobile
 }) => {
-  // Get applet-specific colors or fall back to app colors
-  const appletBgColor = applet.primaryColor || primaryColor;
-  const appletAccentColor = applet.accentColor || accentColor;
-  const appletBgClass = appletBgColor ? `bg-[${appletBgColor}]` : 'bg-white dark:bg-gray-800';
-  const appletAccentClass = appletAccentColor ? `text-[${appletAccentColor}]-500 border-[${appletAccentColor}]-500` : accentColorClass;
-  
-  console.log("AppletCard appletAccentClass", appletAccentColor);
-  console.log("AppletCard appletBgClass", appletBgColor);
-  console.log("AppletCard accentColorClass", accentColorClass);
-  console.log("AppletCard appletAccentClass", appletAccentClass);
 
   return (
     <div 
@@ -56,7 +29,7 @@ const AppletCard: React.FC<AppletCardProps> = ({
             className="object-cover"
           />
         ) : (
-          <div className={`w-full h-full flex items-center justify-center ${appletBgClass}`}>
+          <div className={`w-full h-full flex items-center justify-center bg-${primaryColor}-500 dark:bg-${primaryColor}-600`}>
             <div className="opacity-10 text-5xl">{applet.name?.charAt(0) || '?'}</div>
           </div>
         )}
@@ -71,7 +44,7 @@ const AppletCard: React.FC<AppletCardProps> = ({
               {getAppIcon({
                 icon: applet.appletIcon,
                 size: 24,
-                color: appletAccentColor || accentColor || 'blue',
+                color: accentColor,
                 className: 'text-gray-100'
               })}
             </div>
@@ -103,7 +76,7 @@ const AppletCard: React.FC<AppletCardProps> = ({
           )}
           
           {/* Access button with applet accent color */}
-          <div className={`px-3 py-1 text-sm rounded-full border ${appletAccentClass} font-medium transition-colors`}>
+          <div className={`px-3 py-1 text-sm rounded-full border bg-${accentColor}-500 dark:bg-${accentColor}-600 font-medium transition-colors`}>
             Open
           </div>
         </div>

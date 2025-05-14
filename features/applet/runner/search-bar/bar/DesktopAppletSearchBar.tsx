@@ -3,7 +3,14 @@
 import React, { useState, useEffect } from "react";
 import AppletBrokerContainer from "../container/AppletBrokerContainer";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectActiveAppletContainers, selectAppletRuntimeAccentColor, selectAppletRuntimeAppletIcon, selectAppletRuntimeActiveApplet, selectAppletRuntimeActiveAppletId, selectAppletRuntimeLayoutType } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import {
+    selectActiveAppletContainers,
+    selectAppletRuntimeAccentColor,
+    selectAppletRuntimeAppletIcon,
+    selectAppletRuntimeActiveApplet,
+    selectAppletRuntimeActiveAppletId,
+    selectAppletRuntimeLayoutType,
+} from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { getSubmitButton } from "@/features/applet/styles/StyledComponents";
 import SearchContainerField from "../group/SearchContainerField";
 
@@ -12,31 +19,24 @@ interface DesktopAppletUserInputBarProps {
 }
 
 const DesktopAppletUserInputBar: React.FC<DesktopAppletUserInputBarProps> = ({ appletId }) => {
-    const activeAppletContainers = useAppSelector(state => selectActiveAppletContainers(state))
-    const activeAppletId = useAppSelector(state => selectAppletRuntimeActiveAppletId(state))
-    const accentColor = useAppSelector(state => selectAppletRuntimeAccentColor(state, appletId || "")) || "pink";
-    const submitIconName = useAppSelector(state => selectAppletRuntimeAppletIcon(state, appletId || "")) || "search";
-  
-    const submitButton = getSubmitButton({
-      color: accentColor,
-      icon: submitIconName,
-      size: 24,
-  });
-  
+    const activeAppletContainers = useAppSelector((state) => selectActiveAppletContainers(state));
+    const activeAppletId = useAppSelector((state) => selectAppletRuntimeActiveAppletId(state));
+    const accentColor = useAppSelector((state) => selectAppletRuntimeAccentColor(state, appletId || "")) || "pink";
+    const submitIconName = useAppSelector((state) => selectAppletRuntimeAppletIcon(state, appletId || "")) || "search";
 
+    const submitButton = getSubmitButton({
+        color: accentColor,
+        icon: submitIconName,
+        size: 24,
+    });
 
     const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
-
 
     useEffect(() => {
         setActiveFieldId(null);
     }, [activeAppletId]);
 
-    const searchButtonWithMargin = (
-        <div className="ml-2">
-            {submitButton}
-        </div>
-    );
+    const searchButtonWithMargin = <div className="ml-2">{submitButton}</div>;
 
     return (
         <div className="w-full p-4">

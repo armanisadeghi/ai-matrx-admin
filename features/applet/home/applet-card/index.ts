@@ -15,7 +15,7 @@ const variants = {
 
 export type AppletCardVariant = keyof typeof variants;
 
-export const getAppletCardComponent = (variant: AppletCardVariant = 'default') => {
+export const getAppletCardComponent = (variant: AppletCardVariant = 'default', isMobile: boolean) => {
   return variants[variant] || variants.default;
 };
 

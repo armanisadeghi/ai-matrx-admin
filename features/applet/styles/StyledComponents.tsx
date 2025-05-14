@@ -493,6 +493,17 @@ export const COLOR_VARIANTS = {
     }
 };
 
+
+export const getColorClasses = (usage: keyof typeof COLOR_VARIANTS, color: string) => {
+    const colorClasses = COLOR_VARIANTS[usage][color];
+    if (!colorClasses) {
+        console.error(`Color '${color}' not found for usage '${usage}'`);
+        return "";
+    }
+    return colorClasses;
+};
+
+
 // Component types with their specific styles
 export const COMPONENT_STYLES = {
     submitButton: {
@@ -569,6 +580,7 @@ export const getAppIcon = (props) => getComponent({ type: "appIcon", ...props })
 export const getAppIconWithBg = (props) => getComponent({ type: "appIconWithBg", ...props });
 export const getActionButton = (props) => getComponent({ type: "actionButton", ...props });
 export const getOutlineButton = (props) => getComponent({ type: "outlineButton", ...props });
+export const getAppletIcon = (props) => getComponent({ type: "appIcon", ...props });
 
 // Utility function to get a list of recommended app icons
 export const getAppIconOptions = () => {

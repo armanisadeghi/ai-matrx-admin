@@ -12,8 +12,7 @@ interface AppDisplayAdapterProps {
   creator: string;
   accentColor: string;
   primaryColor: string;
-  accentColorClass: string;
-  getAppIconWithBg: (props: any) => React.ReactNode;
+  isMobile: boolean;
 }
 
 const AppDisplayAdapter: React.FC<AppDisplayAdapterProps> = ({
@@ -25,10 +24,9 @@ const AppDisplayAdapter: React.FC<AppDisplayAdapterProps> = ({
   creator,
   accentColor,
   primaryColor,
-  accentColorClass,
-  getAppIconWithBg,
+  isMobile,
 }) => {
-  const AppDisplayComponent = getAppDisplayComponent(variant);
+  const AppDisplayComponent = getAppDisplayComponent(variant, isMobile);
   return <AppDisplayComponent 
     appName={appName}
     appDescription={appDescription}
@@ -37,8 +35,7 @@ const AppDisplayAdapter: React.FC<AppDisplayAdapterProps> = ({
     creator={creator}
     accentColor={accentColor}
     primaryColor={primaryColor}
-    accentColorClass={accentColorClass}
-    getAppIconWithBg={getAppIconWithBg}
+    isMobile={isMobile}
   />;
 };
 

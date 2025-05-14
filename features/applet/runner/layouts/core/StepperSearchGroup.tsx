@@ -6,15 +6,16 @@ import { ContainerRenderProps } from "../AppletLayoutManager";
 import { fieldController } from "../../field-components/FieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
 
-const StepperSearchGroup: React.FC<ContainerRenderProps> = ({ id, label, description, fields, isMobile = false, appletId }) => {
+const StepperSearchGroup: React.FC<ContainerRenderProps> = ({ id, label, description, fields, isMobile = false, appletId, source }) => {
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
     const fieldRefs = useRef<Map<string, React.ReactNode>>(new Map());
 
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile }));
+                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile, source }));
             }
         });
     }, [fields, isMobile]);
@@ -22,10 +23,15 @@ const StepperSearchGroup: React.FC<ContainerRenderProps> = ({ id, label, descrip
     return (
         <div className="w-full">
             {fields.map((field) => (
-                <div key={field.id} className="mb-6 last:mb-0">
-                    <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">{field.label}</label>
+                <div key={field.id} className="mb-5 last:mb-0">
+                    <CustomFieldLabelAndHelpText
+                        fieldId={field.id}
+                        fieldLabel={field.label}
+                        helpText={field.helpText}
+                        required={field.required}
+                        className="mb-2"
+                    />
                     {fieldRefs.current.get(field.id)}
-                    {field.helpText && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>}
                 </div>
             ))}
         </div>

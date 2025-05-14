@@ -1,18 +1,9 @@
 // ModernAppDisplay.tsx
+'use client';
 import React from 'react';
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { AppDisplayProps } from '@/features/applet/home/types';
 import Image from 'next/image';
-
-interface AppDisplayProps {
-  appName: string;
-  appDescription: string;
-  appIcon: any;
-  appImageUrl: string;
-  creator: string;
-  accentColor: string;
-  primaryColor: string;
-  accentColorClass: string;
-  getAppIconWithBg: (props: any) => React.ReactNode;
-}
 
 const ModernAppDisplay: React.FC<AppDisplayProps> = ({
   appName,
@@ -22,8 +13,7 @@ const ModernAppDisplay: React.FC<AppDisplayProps> = ({
   creator,
   accentColor,
   primaryColor,
-  accentColorClass,
-  getAppIconWithBg
+  isMobile
 }) => {
   return (
     <div className="max-w-7xl mx-auto mb-12">
@@ -38,8 +28,8 @@ const ModernAppDisplay: React.FC<AppDisplayProps> = ({
                   getAppIconWithBg({
                     icon: appIcon,
                     size: 28,
-                    color: accentColor || 'blue',
-                    primaryColor: primaryColor || 'gray',
+                    color: accentColor,
+                    primaryColor: primaryColor,
                     className: 'w-full h-full flex items-center justify-center'
                   })
                 ) : (
@@ -58,7 +48,7 @@ const ModernAppDisplay: React.FC<AppDisplayProps> = ({
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       By {creator}
                     </span>
-                    <span className={`ml-3 w-2 h-2 rounded-full ${accentColorClass.replace('text-', 'bg-')}`}></span>
+                    <span className={`ml-3 w-2 h-2 rounded-full bg-${accentColor}-500 dark:bg-${accentColor}-600`}></span>
                     <span className="ml-1 text-xs text-gray-500 dark:text-gray-400">Active</span>
                   </div>
                 )}
@@ -74,10 +64,10 @@ const ModernAppDisplay: React.FC<AppDisplayProps> = ({
             
             {/* Action buttons */}
             <div className="flex flex-wrap gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
-              <button className={`px-4 py-2 rounded-lg ${accentColorClass.replace('text-', 'bg-').replace('border-', '')} text-gray-100 font-medium`}>
+              <button className={`px-4 py-2 rounded-lg bg-${accentColor}-500 dark:bg-${accentColor}-600 text-white hover:bg-opacity-90 dark:hover:bg-opacity-80 font-medium transition-colors`}>
                 Open App
               </button>
-              <button className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium">
+              <button className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors">
                 View Details
               </button>
             </div>

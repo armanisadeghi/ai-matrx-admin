@@ -3,15 +3,15 @@
 
 import React, { useEffect } from "react";
 import {
-    AccordionSearchLayout,
-    FlatSearchLayout,
+    AccordionAppletInputLayout,
+    FlatAppletInputLayout,
     HorizontalSearchLayout,
-    OpenSearchLayout,
+    OpenAppletInputLayout,
     StepperSearchLayout,
     TabsSearchLayout,
     ThreeColumnSearchLayout,
     TwoColumnSearchLayout,
-    VerticalSearchLayout,
+    VerticalAppletInputLayout,
     FourColumnSearchLayout,
     MinimalistSearchLayout,
     FloatingCardSearchLayout,
@@ -22,8 +22,8 @@ import {
     ChatSearchLayout,
     MapBasedSearchLayout,
     FullWidthSidebarSearchLayout,
+    FlatAppletInputLayoutAccordion,
 } from "@/features/applet/runner/layouts/options";
-import AppletUserInputBar from "../search-bar/bar/AppletSearchBar";
 import { ReactNode, useState } from "react";
 import { AppletLayoutOption, FieldDefinition } from "@/types";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -54,6 +54,7 @@ export interface ContainerRenderProps {
     children?: ReactNode;
     preventClose?: boolean;
     source: string;
+    containerDescriptionLocation?: "container-header" | "container-body";
 }
 
 
@@ -72,6 +73,7 @@ export interface AppletInputProps {
     isMobile: boolean;
     actionButton?: ReactNode;
     className?: string;
+    containerDescriptionLocation?: "container-header" | "container-body";
 }
 
 interface AppletLayoutManagerProps {
@@ -90,6 +92,8 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
     const submitIconName = useAppSelector((state) => selectAppletRuntimeAppletIcon(state, appletId || "")) || "Search";
     const activeApplet = useAppSelector((state) => selectAppletRuntimeActiveApplet(state)) || null;
 
+    const containerDescriptionLocation = "container-header";  // "container-header" or "container-body"
+
     const submitButton = getSubmitButton({
         color: accentColor,
         icon: submitIconName,
@@ -105,9 +109,10 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
     const actionButton = <div className="ml-2">{submitButton}</div>;
 
     switch (layoutType) {
+        case "oneColumn":
         case "open":
             return (
-                <OpenSearchLayout
+                <OpenAppletInputLayout
                     appletId={appletId}
                     activeContainerId={activeContainerId}
                     setActiveContainerId={setActiveContainerId}
@@ -115,12 +120,13 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
                     className={className}
                     isMobile={isMobile}
                     source={source}
+                    containerDescriptionLocation={containerDescriptionLocation}
                 />
             );
 
         case "vertical":
             return (
-                <VerticalSearchLayout
+                <VerticalAppletInputLayout
                     appletId={appletId}
                     activeContainerId={activeContainerId}
                     setActiveContainerId={setActiveContainerId}
@@ -146,7 +152,7 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
 
         case "flat":
             return (
-                <FlatSearchLayout
+                <FlatAppletInputLayout
                     appletId={appletId}
                     activeContainerId={activeContainerId}
                     setActiveContainerId={setActiveContainerId}
@@ -211,7 +217,7 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
 
         case "accordion":
             return (
-                <AccordionSearchLayout
+                <AccordionAppletInputLayout
                     appletId={appletId}
                     activeContainerId={activeContainerId}
                     setActiveContainerId={setActiveContainerId}
@@ -339,12 +345,23 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
                 />
             );
 
-        case "input-bar":
-            return <AppletUserInputBar appletId={appletId} />;
-
         case "horizontal":
             return (
                 <HorizontalSearchLayout
+                    appletId={appletId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
+                    actionButton={actionButton}
+                    className={className}
+                    isMobile={isMobile}
+                    source={source}
+                />
+            );
+
+
+        case "flat-accordion":
+            return (
+                <FlatAppletInputLayoutAccordion
                     appletId={appletId}
                     activeContainerId={activeContainerId}
                     setActiveContainerId={setActiveContainerId}

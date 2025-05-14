@@ -1,7 +1,4 @@
-// File: features\applet\layouts\core\UniformHeightWrapper.tsx
 'use client';
-
-
 import React, { useRef, useEffect, useState } from "react";
 
 interface UniformHeightWrapperProps {
@@ -30,7 +27,9 @@ export const UniformHeightProvider: React.FC<{ children: React.ReactNode }> = ({
   const getMaxHeight = (layoutType: string): number => {
     if (!heightMap[layoutType]) return 0;
     
-    return Math.max(...Object.values(heightMap[layoutType]));
+    const maxHeight = Math.max(...Object.values(heightMap[layoutType]));
+    // Add a small buffer (4px) to prevent underestimation
+    return maxHeight + 4;
   };
   
   // Register a height for a specific group

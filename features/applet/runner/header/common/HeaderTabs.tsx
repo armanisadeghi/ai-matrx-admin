@@ -30,17 +30,17 @@ const TabTrigger = ({ value, label, active }: { value: string; label: string; ac
 };
 
 export interface TabListProps {
-    activeTab: string;
-    setActiveTab: (value: string) => void;
+    activeAppletSlug: string;
+    handleAppletChange: (value: string) => void;
     appletList: AppletListItemConfig[];
     preserveTabOrder?: boolean;
 }
 
 export const HeaderTabGroup = ({ 
-    activeTab, 
-    setActiveTab, 
+    activeAppletSlug, 
+    handleAppletChange, 
     appletList,
-    preserveTabOrder = false 
+    preserveTabOrder = false,
 }: TabListProps) => {
     // Use measure hook for container width
     const [containerRef, { width: containerWidth }] = useMeasure();
@@ -55,7 +55,7 @@ export const HeaderTabGroup = ({
     const CHAR_WIDTH = 8; // Character width approximation (in pixels)
     const MIN_TAB_WIDTH = 50; // Minimum width for any applet
 
-    // Estimate applet width based on text length
+
     const estimateTabWidth = (label: string) => {
         return Math.max(label.length * CHAR_WIDTH, MIN_TAB_WIDTH);
     };
@@ -77,7 +77,7 @@ export const HeaderTabGroup = ({
                 if (visible.length > 0) currentWidth += GAP_SIZE;
                 
                 // If this is the active tab or there's still space, add it to visible
-                if (applet.value === activeTab || currentWidth + tabWidth <= availableWidth) {
+                if (applet.value === activeAppletSlug || currentWidth + tabWidth <= availableWidth) {
                     currentWidth += tabWidth;
                     visible.push(applet);
                 } else {
@@ -87,8 +87,8 @@ export const HeaderTabGroup = ({
             }
         } else {
             // Original behavior: active tab first, then others
-            const activeTabConfig = appletList.find((applet) => applet.value === activeTab);
-            const otherTabs = appletList.filter((applet) => applet.value !== activeTab);
+            const activeTabConfig = appletList.find((applet) => applet.value === activeAppletSlug);
+            const otherTabs = appletList.filter((applet) => applet.value !== activeAppletSlug);
 
             // Add active applet first
             if (activeTabConfig) {
@@ -124,14 +124,14 @@ export const HeaderTabGroup = ({
             setVisibleTabs(visible);
             setOverflowTabs(overflow);
         }
-    }, [containerWidth, appletList, activeTab, preserveTabOrder]);
+    }, [containerWidth, appletList, activeAppletSlug, preserveTabOrder]);
 
     return (
-        <div className="relative w-full" ref={containerRef}>
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value)} className="w-full">
+        <div className="relative w-full" ref={containerRef} >
+            <Tabs value={activeAppletSlug} onValueChange={(value) => handleAppletChange(value)} className="w-full">
                 <TabsList className="bg-transparent border-b-0 w-full justify-start gap-8 relative z-10">
                     {visibleTabs.map((applet) => (
-                        <TabTrigger key={applet.value} value={applet.value} label={applet.label} active={activeTab === applet.value} />
+                        <TabTrigger key={applet.value} value={applet.value} label={applet.label} active={activeAppletSlug === applet.value} />
                     ))}
 
                     {overflowTabs.length > 0 && (
@@ -145,10 +145,10 @@ export const HeaderTabGroup = ({
                                 {overflowTabs.map((applet) => (
                                     <DropdownMenuItem
                                         key={applet.value}
-                                        onClick={() => setActiveTab(applet.value)}
+                                        onClick={() => handleAppletChange(applet.value)}
                                         className={cn(
                                             "cursor-pointer",
-                                            activeTab === applet.value && "font-medium text-rose-500 dark:text-rose-500"
+                                            activeAppletSlug === applet.value && "font-medium text-rose-500 dark:text-rose-500"
                                         )}
                                     >
                                         {applet.label}

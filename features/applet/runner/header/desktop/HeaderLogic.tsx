@@ -15,11 +15,13 @@ import {
 import { getAppIcon } from "@/features/applet/styles/StyledComponents";
 import { HeaderExtraButtonsConfig } from "../../field-components/types";
 import { CustomAppHeaderProps } from "../CustomAppHeader";
+import { selectActiveAppletSlug, selectAppletRuntimeActiveApplet } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
 export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
 
 export interface HeaderLogicProps extends CustomAppHeaderProps {
     children: (props: HeaderUIProps) => React.ReactNode;
+    activeAppletSlug?: string;
 }
 
 export interface HeaderUIProps {
@@ -30,15 +32,14 @@ export interface HeaderUIProps {
     primaryColor: string;
     displayName: string;
     profilePhoto: string | null;
-    activeAppletId: string;
-    handleTabChange: (tabSlug: string) => void;
+    activeAppletSlug: string;
+    handleAppletChange: (appletSlug: string) => void;
     isDemo: boolean;
     appId?: string;
 }
 
 export const HeaderLogic: React.FC<HeaderLogicProps> = ({ 
     appId, 
-    activeAppletId = '',
     isDemo = false,
     children 
 }) => {
@@ -50,7 +51,9 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
     const accentColor = useAppSelector(selectAppRuntimeAccentColor);
     const appletList = useAppSelector(selectAppRuntimeAppletList) || [];
     const layoutType = useAppSelector(selectAppRuntimeLayoutType) as AppLayoutOptions;
-    
+    const activeApplet = useAppSelector((state) => selectAppletRuntimeActiveApplet(state)) || null;
+    const activeAppletSlug = useAppSelector(selectActiveAppletSlug);
+
     const user = useAppSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
     const profilePhoto = user.userMetadata.picture || null;
@@ -65,9 +68,9 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
     }, [primaryColor, iconName]);
     
     // Setup tab navigation function that uses routing instead of state
-    const handleTabChange = (tabSlug: string) => {
-        if (config?.slug && tabSlug) {
-            router.push(`/apps/custom/${config.slug}/${tabSlug}`);
+    const handleAppletChange = (appletSlug: string) => {
+        if (config?.slug && appletSlug) {
+            router.push(`/apps/custom/${config.slug}/${appletSlug}`);
         }
     };
 
@@ -82,8 +85,8 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
         primaryColor,
         displayName,
         profilePhoto,
-        activeAppletId,
-        handleTabChange,
+        activeAppletSlug,
+        handleAppletChange,
         isDemo,
         appId
     });

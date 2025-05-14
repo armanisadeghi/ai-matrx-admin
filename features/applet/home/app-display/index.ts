@@ -4,7 +4,7 @@ import Banner from './Banner';
 import SideBySide from './SideBySide';
 import Modern from './Modern';
 import QuarterThreeQuarters from './QuarterThreeQuarters';
-
+import ModernGlass from './ModernGlass';
 // Add any other variants here as they're created
 const variants = {
   default: Default,
@@ -13,11 +13,12 @@ const variants = {
   sideBySide: SideBySide,
   modern: Modern,
   QuarterThreeQuarters: QuarterThreeQuarters,
+  modernGlass: ModernGlass,
 };
 
 export type AppDisplayVariant = keyof typeof variants;
 
-export const getAppDisplayComponent = (variant: AppDisplayVariant = 'default') => {
+export const getAppDisplayComponent = (variant: AppDisplayVariant = 'default', isMobile: boolean) => {
   return variants[variant] || variants.default;
 };
 

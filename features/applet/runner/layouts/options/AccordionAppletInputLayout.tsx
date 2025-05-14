@@ -1,12 +1,13 @@
-// File: features/applet/runner/layouts/options/AccordionSearchLayout.tsx
-import React, { useState, useRef, useEffect } from "react";
+// File: features/applet/runner/layouts/options/AccordionAppletInputLayout.tsx
+import React, { useRef, useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { ChevronDown, Send } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { fieldController } from "@/features/applet/runner/field-components/FieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
 
-const AccordionSearchLayout: React.FC<AppletInputProps>= ({
+const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
     appletId,
     activeContainerId,
     setActiveContainerId,
@@ -14,9 +15,10 @@ const AccordionSearchLayout: React.FC<AppletInputProps>= ({
     className = "",
     isMobile = false,
     source = "applet",
-  }) => {
-    const appletContainers = useAppSelector(state => selectAppletRuntimeContainers(state, appletId))
-    
+    containerDescriptionLocation = "container-header",
+}) => {
+    const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
+
     const contentRefs = useRef<Map<string, React.RefObject<HTMLDivElement>>>(new Map());
     const fieldRefs = useRef<Map<string, Map<string, React.ReactNode>>>(new Map());
 
@@ -46,16 +48,15 @@ const AccordionSearchLayout: React.FC<AppletInputProps>= ({
     }, [appletContainers, activeContainerId]);
 
     const toggleGroup = (groupId: string) => {
-        // In a true accordion, clicking on the active item doesn't close it
-        if (groupId !== activeContainerId) {
+        if (groupId === activeContainerId) {
+            // If clicking the active container, close it by setting activeContainerId to null
+            setActiveContainerId(null);
+        } else {
+            // Otherwise, open the clicked container
             setActiveContainerId(groupId);
         }
     };
 
-    // Determine if we're at the last container
-    const isLastGroup = (index: number): boolean => {
-        return index === appletContainers.length - 1;
-    };
 
     return (
         <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
@@ -66,15 +67,16 @@ const AccordionSearchLayout: React.FC<AppletInputProps>= ({
                         <div key={container.id} className={`${index !== 0 ? "border-t dark:border-gray-700" : ""}`}>
                             <button
                                 className={`w-full flex justify-between items-center p-4 text-left focus:outline-none 
-                  ${isActive ? "bg-gray-50 dark:bg-gray-700 cursor-default" : "hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"}`}
-                                onClick={() => !isActive && toggleGroup(container.id)}
-                                disabled={isActive}
+                  ${isActive ? "bg-gray-50 dark:bg-gray-700" : "hover:bg-gray-50 dark:hover:bg-gray-700 hover: border border-gray-100 dark:border-gray-800"} cursor-pointer`}
+                                onClick={() => toggleGroup(container.id)}
                             >
                                 <div>
                                     <h3 className="text-lg font-medium text-rose-500">{container.label}</h3>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{container.description}</p>
+                                    {containerDescriptionLocation === "container-header" && (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{container.description}</p>
+                                    )}
                                 </div>
-                                <div>{!isActive && <ChevronDown size={20} />}</div>
+                                <div><ChevronDown size={20} className={`transition-transform duration-300 ${isActive ? 'rotate-180' : ''}`} /></div>
                             </button>
 
                             <div
@@ -83,21 +85,22 @@ const AccordionSearchLayout: React.FC<AppletInputProps>= ({
                                     height: isActive ? contentRefs.current.get(container.id)?.current?.scrollHeight || "auto" : 0,
                                 }}
                             >
-                                <div ref={contentRefs.current.get(container.id) || null} className="p-4 border-t dark:border-gray-700">
-                                    {container.description && (
+                                <div ref={contentRefs.current.get(container.id) || null} className="p-4 pb-5 border-t dark:border-gray-700">
+                                    {container.description && containerDescriptionLocation === "container-body" && (
                                         <div className="pr-1 mb-5 text-sm text-gray-500 dark:text-gray-400 ">{container.description}</div>
                                     )}
 
                                     <div>
                                         {container.fields.map((field) => (
-                                            <div key={field.id} className="mb-6 last:mb-0">
-                                                <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">
-                                                    {field.label}
-                                                </label>
+                                            <div key={field.id} className="mb-5 last:mb-0">
+                                                <CustomFieldLabelAndHelpText
+                                                    fieldId={field.id}
+                                                    fieldLabel={field.label}
+                                                    helpText={field.helpText}
+                                                    required={field.required}
+                                                    className="mb-2"
+                                                />
                                                 {fieldRefs.current.get(container.id)?.get(field.id)}
-                                                {field.helpText && (
-                                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
-                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -108,11 +111,9 @@ const AccordionSearchLayout: React.FC<AppletInputProps>= ({
                 })}
             </div>
 
-            <div className="flex justify-end mt-3">
-                {actionButton}
-            </div>
+            <div className="flex justify-end mt-4">{actionButton}</div>
         </div>
     );
 };
 
-export default AccordionSearchLayout;
+export default AccordionAppletInputLayout;

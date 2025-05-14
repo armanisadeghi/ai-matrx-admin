@@ -1,18 +1,10 @@
 // QuarterThreeQuarters.tsx
+'use client';
 import React from 'react';
+import { getAppIconWithBg, getAppIcon, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
+import { AppDisplayProps } from '@/features/applet/home/types';
 import Image from 'next/image';
 
-interface AppDisplayProps {
-  appName: string;
-  appDescription: string;
-  appIcon: any;
-  appImageUrl: string;
-  creator: string;
-  accentColor: string;
-  primaryColor: string;
-  accentColorClass: string;
-  getAppIconWithBg: (props: any) => React.ReactNode;
-}
 
 const QuarterThreeQuarters: React.FC<AppDisplayProps> = ({
   appName,
@@ -22,8 +14,7 @@ const QuarterThreeQuarters: React.FC<AppDisplayProps> = ({
   creator,
   accentColor,
   primaryColor,
-  accentColorClass,
-  getAppIconWithBg
+  isMobile
 }) => {
   return (
     <div className="max-w-7xl mx-auto mb-12">

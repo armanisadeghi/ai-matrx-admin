@@ -2,6 +2,7 @@ import Default from './Default';
 import Grid from './Grid';
 import Sidebar from './Sidebar';
 
+
 // Add any other variants here as they're created
 const variants = {
   default: Default,
@@ -11,7 +12,7 @@ const variants = {
 
 export type MainLayoutVariant = keyof typeof variants;
 
-export const getMainLayoutComponent = (variant: MainLayoutVariant = 'default') => {
+export const getMainLayoutComponent = (variant: MainLayoutVariant = 'default', isMobile: boolean) => {
   return variants[variant] || variants.default;
 };
 
