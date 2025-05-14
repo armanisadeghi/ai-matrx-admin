@@ -173,24 +173,24 @@ const ResumeBuilder = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
           <input
             type="text"
             name="fullName"
             value={formData.personalInfo.fullName}
             onChange={handlePersonalInfoChange}
-            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
             placeholder="John Smith"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Professional Title</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Professional Title</label>
           <input
             type="text"
             name="title"
             value={formData.personalInfo.title}
             onChange={handlePersonalInfoChange}
-            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
             placeholder="Senior Legal Counsel"
           />
         </div>
@@ -198,49 +198,49 @@ const ResumeBuilder = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
           <input
             type="email"
             name="email"
             value={formData.personalInfo.email}
             onChange={handlePersonalInfoChange}
-            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
             placeholder="john.smith@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
           <input
             type="tel"
             name="phone"
             value={formData.personalInfo.phone}
             onChange={handlePersonalInfoChange}
-            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
             placeholder="(555) 123-4567"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
         <input
           type="text"
           name="location"
           value={formData.personalInfo.location}
           onChange={handlePersonalInfoChange}
-          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
           placeholder="New York, NY"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Professional Summary</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Professional Summary</label>
         <textarea
           name="summary"
           value={formData.personalInfo.summary}
           onChange={handlePersonalInfoChange}
           rows={4}
-          className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
           placeholder="Briefly describe your professional background and key strengths..."
         />
       </div>
@@ -250,9 +250,9 @@ const ResumeBuilder = () => {
   const renderExperience = () => (
     <div className="space-y-8">
       {formData.experience.map((exp, index) => (
-        <div key={index} className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
               <Briefcase className="mr-2" size={20} />
               Position {index + 1}
             </h3>
@@ -260,7 +260,7 @@ const ResumeBuilder = () => {
               <button
                 type="button"
                 onClick={() => removeExperience(index)}
-                className="text-red-500 hover:text-red-700 text-sm font-medium"
+                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
               >
                 Remove
               </button>
@@ -269,24 +269,24 @@ const ResumeBuilder = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company</label>
               <input
                 type="text"
                 name="company"
                 value={exp.company}
                 onChange={(e) => handleExperienceChange(index, e)}
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="Company Name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Position</label>
               <input
                 type="text"
                 name="position"
                 value={exp.position}
                 onChange={(e) => handleExperienceChange(index, e)}
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="Job Title"
               />
             </div>
@@ -294,33 +294,33 @@ const ResumeBuilder = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Calendar className="h-5 w-5 text-gray-400" />
+                  <Calendar className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   type="text"
                   name="startDate"
                   value={exp.startDate}
                   onChange={(e) => handleExperienceChange(index, e)}
-                  className="w-full p-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 pl-10 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                   placeholder="MM/YYYY"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Calendar className="h-5 w-5 text-gray-400" />
+                  <Calendar className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   type="text"
                   name="endDate"
                   value={exp.endDate}
                   onChange={(e) => handleExperienceChange(index, e)}
-                  className="w-full p-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 pl-10 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                   placeholder="MM/YYYY or Present"
                 />
               </div>
@@ -328,13 +328,13 @@ const ResumeBuilder = () => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
             <textarea
               name="description"
               value={exp.description}
               onChange={(e) => handleExperienceChange(index, e)}
               rows={3}
-              className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
               placeholder="Describe your responsibilities and achievements..."
             />
           </div>
@@ -344,7 +344,7 @@ const ResumeBuilder = () => {
       <button
         type="button"
         onClick={addExperience}
-        className="flex items-center justify-center w-full p-3 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 transition duration-150"
+        className="flex items-center justify-center w-full p-3 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/50 transition duration-150"
       >
         <span className="mr-2">+</span> Add Another Position
       </button>
@@ -354,9 +354,9 @@ const ResumeBuilder = () => {
   const renderEducation = () => (
     <div className="space-y-8">
       {formData.education.map((edu, index) => (
-        <div key={index} className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
               <GraduationCap className="mr-2" size={20} />
               Education {index + 1}
             </h3>
@@ -364,7 +364,7 @@ const ResumeBuilder = () => {
               <button
                 type="button"
                 onClick={() => removeEducation(index)}
-                className="text-red-500 hover:text-red-700 text-sm font-medium"
+                className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
               >
                 Remove
               </button>
@@ -373,24 +373,24 @@ const ResumeBuilder = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Institution</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institution</label>
               <input
                 type="text"
                 name="institution"
                 value={edu.institution}
                 onChange={(e) => handleEducationChange(index, e)}
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="University or Institution Name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Degree</label>
               <input
                 type="text"
                 name="degree"
                 value={edu.degree}
                 onChange={(e) => handleEducationChange(index, e)}
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="e.g., Bachelor of Science, Juris Doctor"
               />
             </div>
@@ -398,24 +398,24 @@ const ResumeBuilder = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Field of Study</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Field of Study</label>
               <input
                 type="text"
                 name="field"
                 value={edu.field}
                 onChange={(e) => handleEducationChange(index, e)}
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="e.g., Medicine, Law, Biochemistry"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Graduation Year</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Graduation Year</label>
               <input
                 type="text"
                 name="gradYear"
                 value={edu.gradYear}
                 onChange={(e) => handleEducationChange(index, e)}
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 placeholder="YYYY"
               />
             </div>
@@ -426,7 +426,7 @@ const ResumeBuilder = () => {
       <button
         type="button"
         onClick={addEducation}
-        className="flex items-center justify-center w-full p-3 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 transition duration-150"
+        className="flex items-center justify-center w-full p-3 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/50 transition duration-150"
       >
         <span className="mr-2">+</span> Add Another Education
       </button>
@@ -436,7 +436,7 @@ const ResumeBuilder = () => {
   const renderSkillsAndCertifications = () => (
     <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
           <Award className="mr-2" size={20} />
           Skills
         </h3>
@@ -450,7 +450,7 @@ const ResumeBuilder = () => {
                   name="name"
                   value={skill.name}
                   onChange={(e) => handleSkillChange(index, e)}
-                  className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                   placeholder="Skill name (e.g., Clinical Research, Contract Negotiation)"
                 />
               </div>
@@ -459,7 +459,7 @@ const ResumeBuilder = () => {
                   name="level"
                   value={skill.level}
                   onChange={(e) => handleSkillChange(index, e)}
-                  className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                 >
                   <option value="Beginner">Beginner</option>
                   <option value="Intermediate">Intermediate</option>
@@ -471,7 +471,7 @@ const ResumeBuilder = () => {
                 <button
                   type="button"
                   onClick={() => removeSkill(index)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                 >
                   ✕
                 </button>
@@ -483,28 +483,28 @@ const ResumeBuilder = () => {
         <button
           type="button"
           onClick={addSkill}
-          className="mt-4 flex items-center justify-center w-full p-3 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 transition duration-150"
+          className="mt-4 flex items-center justify-center w-full p-3 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/50 transition duration-150"
         >
           <span className="mr-2">+</span> Add Another Skill
         </button>
       </div>
       
-      <div className="pt-6 border-t border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+      <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
           <Award className="mr-2" size={20} />
           Certifications & Licenses
         </h3>
         
         <div className="space-y-6">
           {formData.certifications.map((cert, index) => (
-            <div key={index} className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
               <div className="flex justify-between items-center mb-4">
-                <h4 className="font-medium text-gray-700">Certification {index + 1}</h4>
+                <h4 className="font-medium text-gray-700 dark:text-gray-300">Certification {index + 1}</h4>
                 {formData.certifications.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeCertification(index)}
-                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                    className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium"
                   >
                     Remove
                   </button>
@@ -513,41 +513,41 @@ const ResumeBuilder = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Certification Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Certification Name</label>
                   <input
                     type="text"
                     name="name"
                     value={cert.name}
                     onChange={(e) => handleCertificationChange(index, e)}
-                    className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                     placeholder="e.g., Board Certification, Bar Admission"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Issuing Organization</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issuing Organization</label>
                   <input
                     type="text"
                     name="issuer"
                     value={cert.issuer}
                     onChange={(e) => handleCertificationChange(index, e)}
-                    className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                     placeholder="e.g., American Board of Internal Medicine"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date Issued</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Issued</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Calendar className="h-5 w-5 text-gray-400" />
+                    <Calendar className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                   </div>
                   <input
                     type="text"
                     name="date"
                     value={cert.date}
                     onChange={(e) => handleCertificationChange(index, e)}
-                    className="w-full p-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-3 pl-10 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
                     placeholder="MM/YYYY"
                   />
                 </div>
@@ -559,7 +559,7 @@ const ResumeBuilder = () => {
         <button
           type="button"
           onClick={addCertification}
-          className="mt-4 flex items-center justify-center w-full p-3 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 transition duration-150"
+          className="mt-4 flex items-center justify-center w-full p-3 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/50 transition duration-150"
         >
           <span className="mr-2">+</span> Add Another Certification
         </button>
@@ -570,65 +570,65 @@ const ResumeBuilder = () => {
   const renderReview = () => (
     <div className="space-y-8">
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h3>
-        <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Personal Information</h3>
+        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-gray-500">Full Name</p>
-              <p className="font-medium">{formData.personalInfo.fullName || 'Not provided'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Full Name</p>
+              <p className="font-medium dark:text-white">{formData.personalInfo.fullName || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Title</p>
-              <p className="font-medium">{formData.personalInfo.title || 'Not provided'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Title</p>
+              <p className="font-medium dark:text-white">{formData.personalInfo.title || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-medium">{formData.personalInfo.email || 'Not provided'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+              <p className="font-medium dark:text-white">{formData.personalInfo.email || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Phone</p>
-              <p className="font-medium">{formData.personalInfo.phone || 'Not provided'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Phone</p>
+              <p className="font-medium dark:text-white">{formData.personalInfo.phone || 'Not provided'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Location</p>
-              <p className="font-medium">{formData.personalInfo.location || 'Not provided'}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Location</p>
+              <p className="font-medium dark:text-white">{formData.personalInfo.location || 'Not provided'}</p>
             </div>
           </div>
           <div className="mt-4">
-            <p className="text-sm text-gray-500">Professional Summary</p>
-            <p className="text-sm mt-1">{formData.personalInfo.summary || 'Not provided'}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Professional Summary</p>
+            <p className="text-sm mt-1 dark:text-gray-300">{formData.personalInfo.summary || 'Not provided'}</p>
           </div>
         </div>
       </div>
       
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Experience ({formData.experience.length})</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Experience ({formData.experience.length})</h3>
         {formData.experience.map((exp, index) => (
-          <div key={index} className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-4">
+          <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-4">
             <div className="flex justify-between">
               <div>
-                <p className="font-medium">{exp.position || 'Position not specified'}</p>
-                <p className="text-sm text-gray-600">{exp.company || 'Company not specified'}</p>
+                <p className="font-medium dark:text-white">{exp.position || 'Position not specified'}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{exp.company || 'Company not specified'}</p>
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 {exp.startDate || 'Start date'} - {exp.endDate || 'End date'}
               </div>
             </div>
-            <p className="text-sm mt-2">{exp.description || 'No description provided'}</p>
+            <p className="text-sm mt-2 dark:text-gray-300">{exp.description || 'No description provided'}</p>
           </div>
         ))}
       </div>
       
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Education ({formData.education.length})</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Education ({formData.education.length})</h3>
         {formData.education.map((edu, index) => (
-          <div key={index} className="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-4">
+          <div key={index} className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 mb-4">
             <div className="flex justify-between">
               <div>
-                <p className="font-medium">{edu.degree || 'Degree not specified'} {edu.field ? `in ${edu.field}` : ''}</p>
-                <p className="text-sm text-gray-600">{edu.institution || 'Institution not specified'}</p>
+                <p className="font-medium dark:text-white">{edu.degree || 'Degree not specified'} {edu.field ? `in ${edu.field}` : ''}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{edu.institution || 'Institution not specified'}</p>
               </div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
                 {edu.gradYear || 'Graduation year not specified'}
               </div>
             </div>
@@ -638,13 +638,13 @@ const ResumeBuilder = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Skills ({formData.skills.length})</h3>
-          <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Skills ({formData.skills.length})</h3>
+          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
             <ul className="space-y-2">
               {formData.skills.map((skill, index) => (
                 <li key={index} className="flex justify-between">
-                  <span>{skill.name || 'Skill not specified'}</span>
-                  <span className="text-sm text-gray-500">{skill.level}</span>
+                  <span className="dark:text-white">{skill.name || 'Skill not specified'}</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">{skill.level}</span>
                 </li>
               ))}
             </ul>
@@ -652,14 +652,14 @@ const ResumeBuilder = () => {
         </div>
         
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Certifications ({formData.certifications.length})</h3>
-          <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Certifications ({formData.certifications.length})</h3>
+          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
             <ul className="space-y-4">
               {formData.certifications.map((cert, index) => (
                 <li key={index}>
-                  <p className="font-medium">{cert.name || 'Certification not specified'}</p>
-                  <p className="text-sm text-gray-600">{cert.issuer || 'Issuer not specified'}</p>
-                  <p className="text-sm text-gray-500">{cert.date || 'Date not specified'}</p>
+                  <p className="font-medium dark:text-white">{cert.name || 'Certification not specified'}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{cert.issuer || 'Issuer not specified'}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{cert.date || 'Date not specified'}</p>
                 </li>
               ))}
             </ul>
@@ -667,18 +667,18 @@ const ResumeBuilder = () => {
         </div>
       </div>
       
-      <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-        <p className="text-blue-800 font-medium">Ready to submit your professional resume?</p>
-        <p className="text-sm text-blue-600 mt-1">You can review all sections and make any final changes before submitting.</p>
+      <div className="bg-blue-50 dark:bg-blue-900/50 p-6 rounded-xl border border-blue-100 dark:border-blue-800">
+        <p className="text-blue-800 dark:text-blue-200 font-medium">Ready to submit your professional resume?</p>
+        <p className="text-sm text-blue-600 dark:text-blue-300 mt-1">You can review all sections and make any final changes before submitting.</p>
       </div>
     </div>
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-6 md:p-8 bg-white rounded-2xl shadow-xl">
+    <div className="max-w-4xl mx-auto p-6 md:p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Professional Resume Builder</h1>
-        <p className="text-gray-600">Create a standout resume for elite medical and legal positions</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Professional Resume Builder</h1>
+        <p className="text-gray-600 dark:text-gray-400">Create a standout resume for elite medical and legal positions</p>
       </div>
       
       {/* Progress Bar */}
@@ -688,24 +688,24 @@ const ResumeBuilder = () => {
             <div 
               key={i} 
               className={`flex flex-col items-center ${
-                i <= currentStep ? 'text-blue-600' : 'text-gray-400'
+                i <= currentStep ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
               }`}
               style={{ width: `${100 / steps.length}%` }}
             >
               <div 
                 className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                  i <= currentStep ? 'bg-blue-100' : 'bg-gray-100'
+                  i <= currentStep ? 'bg-blue-100 dark:bg-blue-900' : 'bg-gray-100 dark:bg-gray-800'
                 } mb-2`}
               >
-                <span>{i < currentStep ? <Check size={16} className="text-blue-600" /> : step.icon}</span>
+                <span>{i < currentStep ? <Check size={16} className="text-blue-600 dark:text-blue-400" /> : step.icon}</span>
               </div>
               <span className="text-xs text-center">{step.name}</span>
             </div>
           ))}
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
           <div 
-            className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-in-out"
+            className="bg-blue-600 dark:bg-blue-500 h-2.5 rounded-full transition-all duration-300 ease-in-out"
             style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
           />
         </div>
@@ -728,8 +728,8 @@ const ResumeBuilder = () => {
           disabled={currentStep === 0}
           className={`flex items-center px-6 py-3 rounded-lg font-medium ${
             currentStep === 0
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+              ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
         >
           <ChevronLeft className="mr-2" size={18} />
@@ -740,7 +740,7 @@ const ResumeBuilder = () => {
           <button
             type="button"
             onClick={nextStep}
-            className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition duration-150"
+            className="flex items-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition duration-150"
           >
             Next
             <ChevronRight className="ml-2" size={18} />
@@ -749,7 +749,7 @@ const ResumeBuilder = () => {
           <button
             type="button"
             onClick={handleSubmit}
-            className="flex items-center px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition duration-150"
+            className="flex items-center px-6 py-3 bg-green-600 dark:bg-green-500 text-white rounded-lg font-medium hover:bg-green-700 dark:hover:bg-green-600 transition duration-150"
           >
             Submit Resume
             <Check className="ml-2" size={18} />
