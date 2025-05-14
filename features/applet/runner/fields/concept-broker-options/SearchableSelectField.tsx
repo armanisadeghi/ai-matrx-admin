@@ -2,12 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import {
     brokerConceptSelectors,
-    setBrokerOptionsConcept as setBrokerOptions,
-    selectOptionConcept as selectOption,
-    deselectOptionConcept as deselectOption,
-    updateOptionPropertiesConcept as updateOptionProperties,
+    brokerConceptActions,
     BrokerIdentifier,
-} from "@/lib/redux/app-runner/slices/brokerSliceConcept";
+} from "@/lib/redux/brokerSlice"; // Update to the new brokerSlice path
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -66,7 +63,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
                 });
             }
             dispatch(
-                setBrokerOptions({
+                brokerConceptActions.setBrokerOptions({
                     idArgs,
                     options: initialOptions,
                 })
@@ -79,11 +76,11 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
         // Deselect current selection (if any)
         selectedOptions.forEach((opt) => {
             if (opt.id !== optionId) {
-                dispatch(deselectOption({ idArgs, optionId: opt.id }));
+                dispatch(brokerConceptActions.deselectOption({ idArgs, optionId: opt.id }));
             }
         });
         // Select new option
-        dispatch(selectOption({ idArgs, optionId }));
+        dispatch(brokerConceptActions.selectOption({ idArgs, optionId }));
         setSearchQuery("");
     };
 
@@ -91,7 +88,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
     const handleOtherTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const otherText = e.target.value;
         dispatch(
-            updateOptionProperties({
+            brokerConceptActions.updateOptionProperties({
                 idArgs,
                 optionId: "other",
                 properties: { otherText, isSelected: true },
