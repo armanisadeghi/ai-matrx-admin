@@ -35,6 +35,8 @@ import DraggableEditableTableField from "./concepts/DraggableEditableTableField"
 import DragEditModifyTableField from "./concepts/DragEditModifyTableField";
 import DragTableRowAndColumnField from "./concepts/DragTableRowAndColumnField";
 
+import ConceptBrokerOptionsField from "./concept-broker-options/SearchableSelectField";
+
 
 export interface FieldControllerProps {
     field: FieldDefinition;
@@ -167,6 +169,10 @@ export const AppletFieldController = ({ field, appletId, isMobile, source = "app
 
         case "input": {
             return <InputField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
+        }
+
+        case "conceptBrokerOptions": {
+            return <ConceptBrokerOptionsField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
         }
 
         default: {

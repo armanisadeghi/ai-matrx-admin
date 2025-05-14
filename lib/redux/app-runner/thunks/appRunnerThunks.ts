@@ -20,6 +20,9 @@ import {
   ValidationResult
 } from '../validations/appRunnerValidations';
 import { setBrokerMap } from '../slices/brokerSlice';
+import { setBrokerMapConcept } from '../slices/brokerSliceConcept';
+
+
 
 // Object to store validation results for retrieval later
 const validationStore: Record<string, ValidationResult> = {};
@@ -136,7 +139,10 @@ export const fetchAppWithApplets = createAsyncThunk(
       
       
       dispatch(setBrokerMap(brokerMappings));
-      
+      dispatch(setBrokerMapConcept(brokerMappings));
+
+      console.warn('NOTICE: fetchAppWithApplets -> Conceptual broker mapping being set to the broker map concept slice')
+
       // Set app and applet configurations to make the app functional
       dispatch(setAppRuntimeConfig(appConfig));
       dispatch(setAppletRuntimeConfig({ 

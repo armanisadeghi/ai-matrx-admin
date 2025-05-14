@@ -4,6 +4,7 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { v4 as uuidv4 } from "uuid";
 import { ComponentType } from "@/types/customAppTypes";
 import { componentOptions } from "@/features/applet/constants/field-constants";
+import { setBrokerMapConcept } from "@/lib/redux/app-runner/slices/brokerSliceConcept";
 
 export default function useTempBrokerMapping(fieldId: string) {
     const [stableAppletId] = useState(() => uuidv4());
@@ -34,6 +35,10 @@ export default function useTempBrokerMapping(fieldId: string) {
         });
         
         dispatch(setBrokerMap(mappings));
+        dispatch(setBrokerMapConcept(mappings));
+
+        console.warn('NOTICE: useTempBrokerMapping -> Conceptual broker mapping being set to the broker map concept slice')
+  
     }, [fieldId, stableAppletId, dispatch]);
 
     // Simple function to get a field ID for a specific component type

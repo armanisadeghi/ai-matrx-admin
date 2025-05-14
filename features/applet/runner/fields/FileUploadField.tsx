@@ -171,13 +171,6 @@ const FileUploadField: React.FC<{
         showValidation={showValidation && !isUploading}
         fieldType="file"
       />
-      
-      {/* Helper text */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-        {multiSelect 
-          ? "You can upload multiple files at once by selecting them together."
-          : "Only one file can be uploaded."}
-      </div>
     </div>
   );
 };

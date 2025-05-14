@@ -16,9 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Define the type for selected option in state
+// Define the type for isSelected option in state
 export interface SelectedOptionValue extends FieldOption {
-  selected: boolean;
+  isSelected: boolean;
   otherText?: string;
 }
 
@@ -58,10 +58,10 @@ const SearchableSelectField: React.FC<{
   // Initialize stateValue if not set
   useEffect(() => {
     if (!stateValue && options?.length > 0) {
-      // Initialize with all options having selected: false
+      // Initialize with all options having isSelected: false
       const initialOptions = options.map(option => ({
         ...option,
-        selected: false
+        isSelected: false
       }));
       
       // Add Other option if includeOther is true
@@ -69,7 +69,7 @@ const SearchableSelectField: React.FC<{
         initialOptions.push({
           id: "other",
           label: "Other",
-          selected: false,
+          isSelected: false,
           description: ""
         });
       }
@@ -86,10 +86,10 @@ const SearchableSelectField: React.FC<{
   
   // Handler for select change
   const handleSelectChange = (selectedId: string) => {
-    // Create new options array with only the selected option set to true
+    // Create new options array with only the isSelected option set to true
     const updatedOptions = (stateValue || []).map((option: SelectedOptionValue) => ({
       ...option,
-      selected: option.id === selectedId
+      isSelected: option.id === selectedId
     }));
     
     dispatch(
@@ -127,8 +127,8 @@ const SearchableSelectField: React.FC<{
     );
   };
   
-  // Determine the currently selected option
-  const selectedOption = Array.isArray(stateValue) ? stateValue.find((option: SelectedOptionValue) => option.selected) : null;
+  // Determine the currently isSelected option
+  const selectedOption = Array.isArray(stateValue) ? stateValue.find((option: SelectedOptionValue) => option.isSelected) : null;
   const isOtherSelected = selectedOption?.id === "other";
   
   // Render custom content if provided

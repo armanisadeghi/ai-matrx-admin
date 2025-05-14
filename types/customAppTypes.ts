@@ -38,6 +38,10 @@ export type ComponentType =
   | 'phoneNumber'
   | 'stepperNumber'
   | 'multiSearchableSelect'
+  | 'conceptBrokerOptions'
+
+
+
 
   export interface TableRules {
     canAddRows?: boolean;
@@ -58,6 +62,12 @@ export interface FieldOption {
   helpText?: string; // Seen by the user.
   iconName?: string; // Icon name from lucide-react.
   parentId?: string; // Used to create a hierarchy of options.
+  metadata?: any; // Used to store any additional data for the option.
+}
+
+export interface FieldOptionsRuntime extends FieldOption {
+  isSelected: boolean; // Used to determine if the option is selected.
+  otherText?: string; // Used to store the text of the other option.
 }
 
 export type fieldDirection = "vertical" | "horizontal";
@@ -110,6 +120,7 @@ export type AppletContainer = {
   description?: string;
   hideDescription?: boolean;
   helpText?: string;
+  gridCols?: string; // Newly added and would need to be added to the database structure, slice, and many other places. ======================
   fields: FieldDefinition[];
 };
 

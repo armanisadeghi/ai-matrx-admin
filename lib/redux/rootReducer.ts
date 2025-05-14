@@ -40,6 +40,9 @@ import { fieldBuilderSlice } from "./app-builder/slices/fieldBuilderSlice";
 import customAppRuntimeSlice from "./app-runner/slices/customAppRuntimeSlice";
 import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSlice";
 import brokersSlice from "./app-runner/slices/brokerSlice";
+import brokerConceptSlice from "./app-runner/slices/brokerSliceConcept";
+
+
 
 export type FileSystemState = { [K in AvailableBuckets]: FileManagement };
 
@@ -121,12 +124,17 @@ export const createRootReducer = (initialState: InitialReduxState) => {
 
         customAppRuntime: customAppRuntimeSlice,
         customAppletRuntime: customAppletRuntimeSlice,
-        brokers: brokersSlice,
+
+        brokers: brokersSlice, // Current broker implementation
+
+        brokerConcept: brokerConceptSlice, // Concept broker implementation
+
+    });
+};
+
 
         // buttonBuilder: buttonBuilderSlice.reducer,
         // brokerMapping: brokerMappingSlice.reducer,
         // recipeBuilder: recipeBuilderSlice.reducer,
         // workflowBuilder: workflowBuilderSlice.reducer,
 
-    });
-};

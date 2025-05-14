@@ -224,13 +224,7 @@ const TagInputField: React.FC<{
           {validationError}
         </div>
       )}
-      
-      {/* Helper text */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-        Type and press Enter to add tags.
-        {maxItems !== undefined && ` Maximum: ${maxItems} tags.`}
-        {minItems > 0 && ` Minimum: ${minItems} tags.`}
-      </div>
+
     </div>
   );
 };

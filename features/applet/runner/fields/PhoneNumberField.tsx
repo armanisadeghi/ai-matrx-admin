@@ -264,11 +264,6 @@ const PhoneNumberField: React.FC<{
           )}
         </div>
       </div>
-      
-      {/* Helper text */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-        Enter phone number with no formatting restrictions.
-      </div>
     </div>
   );
 };

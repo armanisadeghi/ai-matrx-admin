@@ -26,6 +26,13 @@ const FieldSettingsOverlay: React.FC<FieldSettingsOverlayProps> = ({ isOpen, onC
     const fieldName = field.label || "Untitled Field";
     const componentType = field.component || "textarea";
 
+    const handleActualCancel = () => {
+        if (onCancel) {
+            onCancel(); // Execute external cancel logic if provided
+        }
+        onClose(); // Then, always ensure the overlay is closed
+    };
+
     const tabs: TabDefinition[] = [
         {
             id: "basic",
@@ -76,7 +83,7 @@ const FieldSettingsOverlay: React.FC<FieldSettingsOverlayProps> = ({ isOpen, onC
             onSave={onSave}
             saveButtonLabel="Save Changes"
             showCancelButton={!!onCancel}
-            onCancel={onCancel}
+            onCancel={handleActualCancel}
             cancelButtonLabel="Cancel"
             width="98vw"
             sidePanel={<FieldPreviewAs fieldId={fieldId} />}

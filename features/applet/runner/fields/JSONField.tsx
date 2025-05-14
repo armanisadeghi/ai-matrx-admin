@@ -172,11 +172,6 @@ const JSONField: React.FC<{
           {error}
         </div>
       )}
-      
-      {/* Helper text */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-        Enter valid JSON data. The editor will format valid JSON when you click away.
-      </div>
     </div>
   );
 };

@@ -3,6 +3,24 @@ import { createSelector } from 'reselect';
 import { RootState } from '@/lib/redux';
 import { v4 as uuidv4 } from 'uuid';
 
+
+interface FieldOption {
+  id: string; // Typically used for the value of the option.
+  label: string; // Used as the human readable label for the option.
+  description?: string; // This is where the 'context' is stored for the ai model. NOT SHOWN TO THE USER!
+  helpText?: string; // Seen by the user.
+  iconName?: string; // Icon name from lucide-react.
+  parentId?: string; // Used to create a hierarchy of options.
+  metadata?: any; // Used to store any additional data for the option.
+}
+
+interface FieldOptionsRuntime extends FieldOption {
+  isSelected: boolean; // Used to determine if the option is selected.
+  otherText?: string; // Used to store the text of the other option.
+}
+
+
+
 interface BrokerMapEntry {
   source: string;
   sourceId: string;

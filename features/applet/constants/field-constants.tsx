@@ -289,6 +289,12 @@ export const componentMap: Record<ComponentType, ComponentInfo> = {
         fieldComponent: "PhoneNumberField.tsx",
         category: "Info",
     },
+    conceptBrokerOptions: {
+        icon: <Search className="h-5 w-5 text-sky-500 dark:text-sky-400" />,
+        displayName: "Concept Broker Options",
+        fieldComponent: "SearchableSelectField.tsx",
+        category: "Concept Broker",
+    },
 };
 
 // Helper function to get component information
@@ -776,6 +782,12 @@ export const getComponentTypeDefaults = (componentType: ComponentType): Partial<
             width: FIELD_DEFAULT_COMPONENT_PROPS.width,
         },
         phoneNumber: {
+            width: FIELD_DEFAULT_COMPONENT_PROPS.width,
+        },
+
+
+        // Concept Broker Options
+        conceptBrokerOptions: {
             width: FIELD_DEFAULT_COMPONENT_PROPS.width,
         },
     };
