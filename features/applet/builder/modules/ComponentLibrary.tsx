@@ -9,16 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { DownloadIcon, UploadIcon, DatabaseIcon, FileIcon, AppWindowIcon, BoxIcon, LayersIcon, CheckIcon, Copy } from "lucide-react";
-import { ComponentGroup, FieldDefinition, CustomApplet, AppletContainer, ComponentType } from "@/features/applet/builder/builder.types";
-import { getAllCustomAppConfigs } from "../../../../lib/redux/app-builder/service/customAppService";
-import { getAllCustomAppletConfigs } from "../../../../lib/redux/app-builder/service/customAppletService";
+import { CustomAppConfig, FieldDefinition, CustomAppletConfig, AppletContainer, ComponentType } from "@/types/customAppTypes";
+import { getAllCustomAppConfigs } from "@/lib/redux/app-builder/service/customAppService";
+import { getAllCustomAppletConfigs } from "@/lib/redux/app-builder/service/customAppletService";
 import { getAllFieldComponents, getAllComponentGroups } from "@/lib/redux/app-builder/service";
-import { CustomAppConfig, CustomAppletConfig } from "@/features/applet/builder/builder.types";
 
 type AppPartType = "app" | "applet" | "group" | "field";
 
 // Type adapters to convert service types to component types
-const adaptAppletToCustomApplet = (applet: any): CustomApplet => {
+const adaptAppletToCustomApplet = (applet: any): CustomAppletConfig => {
   return {
       id: applet.id || "",
       name: applet.name,
@@ -79,7 +78,7 @@ const ComponentLibrary = () => {
     const [exportData, setExportData] = useState<string>("");
     const [importData, setImportData] = useState<string>("");
     const [savedApps, setSavedApps] = useState<CustomAppConfig[]>([]);
-    const [savedApplets, setSavedApplets] = useState<CustomApplet[]>([]);
+    const [savedApplets, setSavedApplets] = useState<CustomAppletConfig[]>([]);
     const [savedGroups, setSavedGroups] = useState<AppletContainer[]>([]);
     const [savedFields, setSavedFields] = useState<FieldDefinition[]>([]);
     const [copied, setCopied] = useState(false);

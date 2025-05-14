@@ -3,7 +3,24 @@
 import {ModulePage} from "@/components/matrx/navigation/types";
 
 export const pages: ModulePage[] = [
-
+    {
+        title: 'Transformable Cards Demo',
+        path: 'draggables/transformable-cards-demo',
+        relative: true,
+        description: 'Cards that transform into pills when dragged into containers'
+    },
+    {
+        title: 'Container Drop Demo',
+        path: 'draggables/container-drop-demo',
+        relative: true,
+        description: 'Draggable cards that can be assigned to containers'
+    },
+    {
+        title: 'Draggable Interactive Cards',
+        path: 'draggables/draggable-interactive-cards',
+        relative: true,
+        description: 'Interactive cards with physics-based dragging'
+    },
     {
         title: 'Not Implemented',
         path: 'link-here',

@@ -88,7 +88,19 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  componentGroups: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   conversation: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  customAppConfigs: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  customAppletConfigs: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
@@ -113,6 +125,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   extractor: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  fieldComponents: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },

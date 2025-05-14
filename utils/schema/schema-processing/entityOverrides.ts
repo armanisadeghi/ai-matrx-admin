@@ -378,7 +378,58 @@ const compiledRecipeEntityOverrides: EntityOverrides<'compiledRecipe'> = {
 
 
 
+const componentGroupsEntityOverrides: EntityOverrides<'componentGroups'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const conversationEntityOverrides: EntityOverrides<'conversation'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const customAppConfigsEntityOverrides: EntityOverrides<'customAppConfigs'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const customAppletConfigsEntityOverrides: EntityOverrides<'customAppletConfigs'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -481,6 +532,23 @@ const emailsEntityOverrides: EntityOverrides<'emails'> = {
 
 
 const extractorEntityOverrides: EntityOverrides<'extractor'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const fieldComponentsEntityOverrides: EntityOverrides<'fieldComponents'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1641,13 +1709,17 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     bucketTreeStructures: bucketTreeStructuresEntityOverrides,
     category: categoryEntityOverrides,
     compiledRecipe: compiledRecipeEntityOverrides,
+    componentGroups: componentGroupsEntityOverrides,
     conversation: conversationEntityOverrides,
+    customAppConfigs: customAppConfigsEntityOverrides,
+    customAppletConfigs: customAppletConfigsEntityOverrides,
     dataBroker: dataBrokerEntityOverrides,
     dataInputComponent: dataInputComponentEntityOverrides,
     dataOutputComponent: dataOutputComponentEntityOverrides,
     displayOption: displayOptionEntityOverrides,
     emails: emailsEntityOverrides,
     extractor: extractorEntityOverrides,
+    fieldComponents: fieldComponentsEntityOverrides,
     fileStructure: fileStructureEntityOverrides,
     flashcardData: flashcardDataEntityOverrides,
     flashcardHistory: flashcardHistoryEntityOverrides,

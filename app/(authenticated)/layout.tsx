@@ -11,7 +11,7 @@ import NavigationLoader from "@/components/loaders/NavigationLoader";
 import { headers } from "next/headers";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
 import SocketInitializer from "@/lib/redux/socket-io/connection/SocketInitializer";
-// import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
+import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -84,7 +84,7 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
             <LayoutWithSidebar {...layoutProps}>
                 <NavigationLoader />
                 {children}
-                {/* <AdminIndicatorWrapper /> */}
+                <AdminIndicatorWrapper />
             </LayoutWithSidebar>
         </Providers>
     );

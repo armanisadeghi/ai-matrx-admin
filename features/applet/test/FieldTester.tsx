@@ -1,13 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { fieldController } from "@/features/applet/runner/components/field-components/FieldController";
-import { advancedAppletCreatorDefinition } from "@/features/applet/sample-mock-data/applet-creator";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 
-// Extract individual field configurations from the containers
+
+const advancedAppletCreatorDefinitionFAKE_FAKE_FAKE_FAKE = [
+  {
+    label: '',
+    fields: [{ brokerId: '', label: '' }]
+  }
+];
+
+
 const getFields = () => {
   const allFields = [];
-  advancedAppletCreatorDefinition.forEach(container => {
+  advancedAppletCreatorDefinitionFAKE_FAKE_FAKE_FAKE.forEach(container => {
     container.fields.forEach(field => {
       allFields.push({
         id: field.brokerId,
@@ -23,6 +30,9 @@ const getFields = () => {
 const FieldTester: React.FC = () => {
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [selectedContainer, setSelectedContainer] = useState<string | null>(null);
+  
+
+  const appletId = "THIS-WILL-NOT-WORK-WE-MUST-FETCH-A-TEST-APPLET-FROM-THE-SERVER-AND-LOAD-REDUX-FIRST";
   
   // Get all fields from containers
   const allFields = getFields();
@@ -141,7 +151,7 @@ const FieldTester: React.FC = () => {
                   {def.field.label}
                 </label>
                 <div className="mt-1">
-                  {fieldController(def.field, false)}
+                {AppletFieldController({ field: def.field, appletId, isMobile: false })}
                 </div>
                 {def.field.helpText && (
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

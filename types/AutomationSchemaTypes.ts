@@ -107,13 +107,17 @@ export type AutomationTableName =
     | 'bucketTreeStructures'
     | 'category'
     | 'compiledRecipe'
+    | 'componentGroups'
     | 'conversation'
+    | 'customAppConfigs'
+    | 'customAppletConfigs'
     | 'dataBroker'
     | 'dataInputComponent'
     | 'dataOutputComponent'
     | 'displayOption'
     | 'emails'
     | 'extractor'
+    | 'fieldComponents'
     | 'fileStructure'
     | 'flashcardData'
     | 'flashcardHistory'
@@ -400,6 +404,15 @@ export type CompiledRecipeData = Expand<EntityDataMixed<"compiledRecipe">>;
 export type CompiledRecipeState = EntityStateType<"compiledRecipe">;
 export type CompiledRecipeRecordMap = Record<"compiledRecipeRecordId", CompiledRecipeData>;
 
+export type ComponentGroupsType = AutomationEntity<"componentGroups">;
+export type ComponentGroupsDataRequired = Expand<EntityData<"componentGroups">>;
+export type ComponentGroupsDataOptional = Expand<EntityDataOptional<"componentGroups">>;
+export type ComponentGroupsRecordWithKey = Expand<EntityDataWithKey<"componentGroups">>;
+export type ComponentGroupsProcessed = Expand<ProcessedEntityData<"componentGroups">>;
+export type ComponentGroupsData = Expand<EntityDataMixed<"componentGroups">>;
+export type ComponentGroupsState = EntityStateType<"componentGroups">;
+export type ComponentGroupsRecordMap = Record<"componentGroupsRecordId", ComponentGroupsData>;
+
 export type ConversationType = AutomationEntity<"conversation">;
 export type ConversationDataRequired = Expand<EntityData<"conversation">>;
 export type ConversationDataOptional = Expand<EntityDataOptional<"conversation">>;
@@ -408,6 +421,24 @@ export type ConversationProcessed = Expand<ProcessedEntityData<"conversation">>;
 export type ConversationData = Expand<EntityDataMixed<"conversation">>;
 export type ConversationState = EntityStateType<"conversation">;
 export type ConversationRecordMap = Record<"conversationRecordId", ConversationData>;
+
+export type CustomAppConfigsType = AutomationEntity<"customAppConfigs">;
+export type CustomAppConfigsDataRequired = Expand<EntityData<"customAppConfigs">>;
+export type CustomAppConfigsDataOptional = Expand<EntityDataOptional<"customAppConfigs">>;
+export type CustomAppConfigsRecordWithKey = Expand<EntityDataWithKey<"customAppConfigs">>;
+export type CustomAppConfigsProcessed = Expand<ProcessedEntityData<"customAppConfigs">>;
+export type CustomAppConfigsData = Expand<EntityDataMixed<"customAppConfigs">>;
+export type CustomAppConfigsState = EntityStateType<"customAppConfigs">;
+export type CustomAppConfigsRecordMap = Record<"customAppConfigsRecordId", CustomAppConfigsData>;
+
+export type CustomAppletConfigsType = AutomationEntity<"customAppletConfigs">;
+export type CustomAppletConfigsDataRequired = Expand<EntityData<"customAppletConfigs">>;
+export type CustomAppletConfigsDataOptional = Expand<EntityDataOptional<"customAppletConfigs">>;
+export type CustomAppletConfigsRecordWithKey = Expand<EntityDataWithKey<"customAppletConfigs">>;
+export type CustomAppletConfigsProcessed = Expand<ProcessedEntityData<"customAppletConfigs">>;
+export type CustomAppletConfigsData = Expand<EntityDataMixed<"customAppletConfigs">>;
+export type CustomAppletConfigsState = EntityStateType<"customAppletConfigs">;
+export type CustomAppletConfigsRecordMap = Record<"customAppletConfigsRecordId", CustomAppletConfigsData>;
 
 export type DataBrokerType = AutomationEntity<"dataBroker">;
 export type DataBrokerDataRequired = Expand<EntityData<"dataBroker">>;
@@ -462,6 +493,15 @@ export type ExtractorProcessed = Expand<ProcessedEntityData<"extractor">>;
 export type ExtractorData = Expand<EntityDataMixed<"extractor">>;
 export type ExtractorState = EntityStateType<"extractor">;
 export type ExtractorRecordMap = Record<"extractorRecordId", ExtractorData>;
+
+export type FieldComponentsType = AutomationEntity<"fieldComponents">;
+export type FieldComponentsDataRequired = Expand<EntityData<"fieldComponents">>;
+export type FieldComponentsDataOptional = Expand<EntityDataOptional<"fieldComponents">>;
+export type FieldComponentsRecordWithKey = Expand<EntityDataWithKey<"fieldComponents">>;
+export type FieldComponentsProcessed = Expand<ProcessedEntityData<"fieldComponents">>;
+export type FieldComponentsData = Expand<EntityDataMixed<"fieldComponents">>;
+export type FieldComponentsState = EntityStateType<"fieldComponents">;
+export type FieldComponentsRecordMap = Record<"fieldComponentsRecordId", FieldComponentsData>;
 
 export type FileStructureType = AutomationEntity<"fileStructure">;
 export type FileStructureDataRequired = Expand<EntityData<"fileStructure">>;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
-import { appletLayoutOptions, appletLayoutOptionsArray } from "@/features/applet/layouts/options/layout-options";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { appletLayoutOptions, appletLayoutOptionsArray } from "@/features/applet/constants/layout-options";
+import { AppletLayoutOption } from "@/types/customAppTypes";
 
 const LayoutExamples = () => {
     const [selectedLayout, setSelectedLayout] = useState<AppletLayoutOption>("horizontal");

@@ -29,15 +29,15 @@ const mapSortOrderToOrderBy = (sort?: SortOrder): OrderBy => {
 const mapSortOrderToSearchOrderBy = (sort?: SortOrder): SearchOrderBy => {
     if (!sort) return "relevant";
     switch (sort) {
-        case "latest":
-            return "latest";
         case "relevant":
             return "relevant";
+        case "latest":
+            return "latest";
         // SearchOrderBy only supports 'latest', 'relevant', and 'editorial'
         case "popular":
         case "oldest":
         default:
-            return "latest"; // Default to latest for unsupported options
+            return "relevant"; // Default to latest for unsupported options
     }
 };
 
@@ -84,7 +84,7 @@ export function useUnsplashGallery() {
     const [topics, setTopics] = useState([]);
 
     // Simple parameters
-    const [sortOrder, setSortOrder] = useState<SortOrder>("latest");
+    const [sortOrder, setSortOrder] = useState<SortOrder>("relevant");
     const [orientation, setOrientation] = useState<ImageOrientation>(undefined);
     const [premiumFilter, setPremiumFilter] = useState<PremiumFilter>("none");
 
@@ -574,7 +574,7 @@ export function useUnsplashGallery() {
         predefinedTopics: UNSPLASH_TOPICS,
 
         // Expose simple options for UI
-        sortOrderOptions: ["latest", "popular", "relevant", "oldest"] as SortOrder[],
+        sortOrderOptions: ["relevant", "latest", "popular", "oldest"] as SortOrder[],
         orientationOptions: ["landscape", "portrait", "squarish"] as ImageOrientation[],
         premiumFilterOptions: ["mixed", "only", "none"] as PremiumFilter[],
 

@@ -20,8 +20,8 @@ import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { SmartAppletList } from "@/features/applet/builder/components/smart-parts";
-import { CustomAppletConfig } from "@/features/applet/builder/builder.types";
+import { SmartAppletList } from "@/features/applet/builder/modules/smart-parts";
+import { CustomAppletConfig } from "@/types/customAppTypes";
 
 export default function AppViewPage({ params }: { params: Promise<{ id: string }> }) {
     // Use React.use() to unwrap the params Promise
@@ -127,7 +127,7 @@ export default function AppViewPage({ params }: { params: Promise<{ id: string }
                         <Card className="p-6">
                             <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Preview Image</h3>
                             <div className="relative w-full h-48 rounded-md overflow-hidden">
-                                <Image src={appImageUrl} alt={appName || "App preview"} fill className="object-cover" />
+                                <Image src={appImageUrl} alt={appName || "App preview"} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
                             </div>
                         </Card>
                     )}

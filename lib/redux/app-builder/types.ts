@@ -1,7 +1,9 @@
-import { AppletContainer, CustomAppConfig, CustomApplet, FieldDefinition } from "@/features/applet/builder/builder.types";
+import { AppletContainer, CustomAppConfig, CustomAppletConfig, FieldDefinition } from "@/types/customAppTypes";
 
 export interface FieldBuilder extends FieldDefinition {
     isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
     isDirty?: boolean;
     isLocal?: boolean;
 }
@@ -14,7 +16,7 @@ export interface ContainerBuilder extends AppletContainer {
     isLocal?: boolean;
 }
 
-export interface AppletBuilder extends CustomApplet {
+export interface AppletBuilder extends CustomAppletConfig {
     isPublic?: boolean;
     authenticatedRead?: boolean;
     publicRead?: boolean;
@@ -25,8 +27,13 @@ export interface AppletBuilder extends CustomApplet {
 
 export interface AppBuilder extends CustomAppConfig {
     appletIds: string[];
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
     isDirty?: boolean;
     isLocal?: boolean;
+    isTemplated?: boolean;
+    templateType?: 'simple' | 'complex';
     slugStatus?: 'unchecked' | 'unique' | 'notUnique';
 }
 

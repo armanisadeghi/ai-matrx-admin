@@ -1,0 +1,1 @@
+export { default, HomeApplet, type HomeAppletProps } from './HomeApplet'; 

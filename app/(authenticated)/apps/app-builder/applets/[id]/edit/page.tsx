@@ -39,7 +39,15 @@ export default function AppletEditPage({ params }: AppletEditPageProps) {
   // Set the active applet when the component loads
   useEffect(() => {
     if (id) {
-      dispatch(setActiveAppletWithFetchThunk(id));
+      dispatch(setActiveAppletWithFetchThunk(id)).unwrap()
+        .catch(error => {
+          console.error("Failed to set active applet:", error);
+          toast({
+            title: "Error",
+            description: "Failed to set active applet.",
+            variant: "destructive", 
+          });
+        });
     }
     
     // Clean up when unmounting

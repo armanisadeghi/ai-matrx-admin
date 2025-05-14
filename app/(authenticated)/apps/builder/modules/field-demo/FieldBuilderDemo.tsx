@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import FieldComponentsList from "@/features/applet/builder/modules/field-builder/FieldComponentsList";
-import FieldEditor from "@/features/applet/builder/modules/field-builder/FieldEditor";
+import FieldEditor from "@/features/applet/builder/modules/field-builder/editor/FieldEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
     selectAllFields, 

@@ -27,19 +27,20 @@ export type FetchAppletByIdSuccessAction = ReturnType<typeof fetchAppletByIdSucc
  * Thunk that sets an applet as active, fetching it first if not in state
  */
 export const setActiveAppletWithFetchThunk = createAsyncThunk<
-    void,
+    { success: boolean; exists: boolean },
     string,
     { state: RootState }
 >(
     "appletBuilder/setActiveAppletWithFetch",
     async (appletId, { getState, dispatch, rejectWithValue }) => {
         try {
-            // Check if applet already exists in state
-            const applet = selectAppletById(getState() as RootState, appletId);
+            // Check if applet already exists in state - using getState directly instead of a selector
+            const appletState = getState().appletBuilder.applets[appletId];
             
-            if (applet) {
+            if (appletState) {
                 // If it exists, just set it as active
                 dispatch(setActiveApplet(appletId));
+                return { success: true, exists: true };
             } else {
                 // Otherwise, fetch it first
                 try {
@@ -56,9 +57,11 @@ export const setActiveAppletWithFetchThunk = createAsyncThunk<
                         
                         // Set it as active
                         dispatch(setActiveApplet(appletId));
+                        return { success: true, exists: false };
                     } else {
                         console.error(`Applet with ID ${appletId} not found on server`);
                         dispatch(setActiveApplet(null));
+                        return rejectWithValue(`Applet with ID ${appletId} not found on server`);
                     }
                 } catch (error: any) {
                     console.error(`Failed to fetch applet with ID ${appletId}: ${error.message}`);
@@ -204,22 +207,36 @@ export const deleteAppletThunk = createAsyncThunk<void, string>(
 );
 
 export const addContainerThunk = createAsyncThunk<
-    { appletId: string; container: ContainerBuilder },
+    AppletBuilder,
     { appletId: string; containerId: string }
 >(
     "appletBuilder/addContainer",
     async ({ appletId, containerId }, { rejectWithValue }) => {
         try {
+            // Add the container to the applet
             await addContainersToApplet(appletId, [containerId]);
-            const applet = await getCustomAppletConfigById(appletId);
-            if (!applet) {
+            
+            // Get the updated applet with the new container
+            const updatedApplet = await getCustomAppletConfigById(appletId);
+            
+            if (!updatedApplet) {
                 throw new Error("Failed to fetch updated applet");
             }
-            const container = applet.containers.find((c: ContainerBuilder) => c.id === containerId);
-            if (!container) {
-                throw new Error("Container not found in applet");
+            
+            // Verify the container was added
+            const containerExists = updatedApplet.containers.some((c: ContainerBuilder) => c.id === containerId);
+            if (!containerExists) {
+                throw new Error("Container not found in applet after adding");
             }
-            return { appletId, container };
+            
+            // Return the complete updated applet with consistent formatting
+            return {
+                ...updatedApplet,
+                containers: updatedApplet.containers || [],
+                isDirty: true,
+                isLocal: false,
+                slugStatus: "unique",
+            };
         } catch (error: any) {
             return rejectWithValue(error.message || "Failed to add container");
         }

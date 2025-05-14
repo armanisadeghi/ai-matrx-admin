@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FieldDefinition, normalizeFieldDefinition } from '../../builder.types';
-import HelpIcon from "@/features/applet/layouts/helpers/HelpIcon";
+import { FieldDefinition } from '@/types/customAppTypes';
+import HelpIcon from "@/components/official/HelpIcon";
 import { FileUploadWithStorage } from "@/components/ui/file-upload/FileUploadWithStorage";
+import { normalizeFieldDefinition } from '@/features/applet/utils/field-normalization';
 
 interface FieldRendererProps {
   field: FieldDefinition;
@@ -120,13 +121,15 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
               disabled={field.disabled}
               required={field.required}
               multiple
-              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded h-32 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              size={field.componentProps?.rows || 5}
+              className="w-full p-2 border border-gray-300 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 appearance-none [&>option]:p-2 [&>option:checked]:bg-blue-600 [&>option:checked]:dark:bg-blue-700 [&>option:checked]:text-white [&>option:checked]:dark:text-white"
+              style={{ overflow: "auto" }}
             >
               {field.options?.map(option => (
-                <option key={option.id} value={option.id}>{option.label}</option>
+                <option key={option.id} value={option.id} className="py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-700">{option.label}</option>
               ))}
               {field.includeOther && (
-                <option value="other">Other</option>
+                <option value="other" className="py-1 px-2 hover:bg-gray-100 dark:hover:bg-gray-700">Other</option>
               )}
             </select>
             
@@ -355,11 +358,11 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field: rawField })
                   }
                 }}
                 disabled={field.disabled}
-                className={`px-4 py-2 rounded-md transition-colors ${
+                className={`px-2.5 py-1 text-xs rounded-md transition-colors border ${
                   Array.isArray(value) && value.includes(option.id)
-                    ? 'bg-blue-600 dark:bg-blue-500 text-white dark:text-gray-100'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-                } hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-800 disabled:opacity-50 disabled:cursor-not-allowed`}
+                    ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white border-blue-600 dark:border-blue-700'
+                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750'
+                } focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {option.label}
               </button>

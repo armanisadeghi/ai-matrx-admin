@@ -12,8 +12,8 @@ import { Switch } from '@/components/ui/switch';
 import { BoxIcon, FilePlus, Code, Search, Settings, PlayIcon } from 'lucide-react';
 
 // Import our new component
-import MultiAppletSelector from '@/features/applet/builder/components/smart-parts/applets/MultiAppletSelector';
-import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
+import MultiAppletSelector from '@/features/applet/builder/modules/smart-parts/applets/MultiAppletSelector';
+import { CustomAppletConfig } from '@/types/customAppTypes';
 
 const MultiAppletSelectorDemo = () => {
   const { toast } = useToast();

@@ -2,10 +2,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect } from "react";
-import { allSystemWideMockApplets, availableApps, getSelectOptionsFromApps } from "@/features/applet/sample-mock-data/constants";
-import { AvailableAppletConfigs, CustomAppConfig, AppletContainersConfig } from "@/features/applet/runner/components/field-components/types";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
-import { getAppIcon, getSubmitButton } from "@/features/applet/layouts/helpers/StyledComponents";
+import { AvailableAppletConfigs, CustomAppConfig, AppletContainersConfig } from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types";
+import { getAppIcon, getSubmitButton } from "@/features/applet/styles/StyledComponents";
 
 interface AppletDataContextType {
     activeTab: string;

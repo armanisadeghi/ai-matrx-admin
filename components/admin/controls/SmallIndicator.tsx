@@ -2,6 +2,7 @@
 import React from "react";
 import { TbBrandSocketIo } from "react-icons/tb";
 import { Server, ChevronRight } from "lucide-react";
+import StateViewerButton from "@/components/admin/state-analyzer/components/StateViewerButton";
 
 interface SmallIndicatorProps {
   isConnected: boolean;
@@ -55,6 +56,7 @@ const SmallIndicator: React.FC<SmallIndicatorProps> = ({
         />
         <Server size={14} />
       </div>
+      <StateViewerButton />
       <button
         onClick={(e) => {
           e.stopPropagation(); // Prevent event from bubbling up

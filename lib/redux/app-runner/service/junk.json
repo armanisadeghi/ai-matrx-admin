@@ -1,0 +1,58 @@
+{
+    "applet": {
+        "id": "141f5d6e-e24f-4bde-8556-cf6569eeecca",
+        "name": "Applet Basics",
+        "slug": "applet-basics",
+        "app_id": "e598b7e4-4a7f-4016-bc05-40edd3292255",
+        "creator": "Arman Sadeghi",
+        "image_url": "",
+        "containers": [
+            {
+                "id": "e1c59d5a-7d6b-4c7f-a14e-642cdee3b283",
+                "label": "Applet Overview",
+                "fields": [],
+                "isDirty": false,
+                "isLocal": false,
+                "helpText": null,
+                "isPublic": true,
+                "publicRead": false,
+                "shortLabel": "Overview",
+                "description": "Let's get a few essentials about your new applet",
+                "hideDescription": false,
+                "authenticatedRead": true
+            }
+        ],
+        "applet_icon": "FaMagic",
+        "description": "A simple integration to get some of the basics for an applet from an AI Model. This applet serves two purposes. One is to help users create applets and another is to demonstrate how easy it is to create very useful automations.",
+        "layout_type": "input-bar",
+        "accent_color": "emerald",
+        "primary_color": "sky",
+        "subcategory_id": null,
+        "next_step_config": {},
+        "applet_submit_text": null,
+        "compiled_recipe_id": "94e378c3-b55b-4193-8ba9-d64f34a3d9b2",
+        "data_source_config": [
+                {
+                    "type": "user_input",
+                    "broker_id": "0771ea58-cdc7-431c-b19d-9159c5404491",
+                    "component_id": "some-component-uuid-goes-here"
+                }
+            ],
+        "result_component_config": {}
+    },
+    "compiled_recipe": {
+        "id": "8565dc8b-2064-4368-989f-3eb2552de7e7",
+        "brokers": [
+            {
+                "id": "0771ea58-cdc7-431c-b19d-9159c5404491",
+                "name": "Intake Call?",
+                "required": true,
+                "data_type": "str",
+                "default_value": "",
+                "inputComponent": null
+            }
+        ],
+        "version": 11,
+        "recipe_id": "22a0a147-135a-44d9-b1fb-2b2ed6920a79"
+    }
+}

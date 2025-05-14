@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface TabDefinition {
     id: string;
@@ -31,6 +32,10 @@ export interface FullScreenOverlayProps {
     additionalButtons?: ReactNode;
     width?: string;
     height?: string;
+    // New optional props for split view
+    sidePanel?: ReactNode;
+    sidePanelRatio?: number; // value between 0-1, defaults to 0.5 (50/50 split)
+    sidePanelClassName?: string;
 }
 
 const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
@@ -52,6 +57,9 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
     additionalButtons,
     width = "90vw",
     height = "95vh",
+    sidePanel,
+    sidePanelRatio = 0.5,
+    sidePanelClassName,
 }) => {
     const [activeTab, setActiveTab] = React.useState<string>(initialTab || (tabs.length > 0 ? tabs[0].id : ""));
 
@@ -76,13 +84,20 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
         }
     };
 
+    // Calculate the width percentages based on ratio
+    const contentWidth = sidePanel ? (1 - sidePanelRatio) * 100 : 100;
+    const sidePanelWidth = sidePanel ? sidePanelRatio * 100 : 0;
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className={`flex flex-col w-[${width}] max-w-[${width}] h-[${height}] max-h-[${height}] p-0 gap-0 border-3 border-solid border-slate-500 rounded-3xl`}>
+            <DialogContent 
+                className="flex flex-col p-0 gap-0 border-3 border-solid border-slate-500 rounded-3xl"
+                style={{ width, maxWidth: width, height, maxHeight: height }}
+            >
                 <DialogHeader className="flex flex-row justify-between items-center border-b px-4 py-2 flex-shrink-0">
                     <DialogTitle>{title}</DialogTitle>
                     {description && <DialogDescription className="sr-only">{description}</DialogDescription>}
-                    <Tabs value={activeTab} onValueChange={handleTabChange} className="mx-auto">
+                    <Tabs value={activeTab} onValueChange={handleTabChange} className="mx-auto overflow-x-auto py-1 overflow-y-hidden scrollbar-none">
                         <TabsList className="rounded-3xl space-x-2">
                             {tabs.map((tab, index) => {
                                 // Determine tab position styling
@@ -111,13 +126,31 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                         </TabsList>
                     </Tabs>
                 </DialogHeader>
-                <Tabs value={activeTab} className="flex-grow flex flex-col overflow-hidden">
-                    {tabs.map((tab) => (
-                        <TabsContent key={tab.id} value={tab.id} className="flex-grow mt-0 border-none overflow-auto outline-none ring-0">
-                            {tab.content}
-                        </TabsContent>
-                    ))}
-                </Tabs>
+                
+                <div className="flex flex-1 overflow-hidden">
+                    <div 
+                        className="flex flex-col overflow-hidden" 
+                        style={{ width: `${contentWidth}%` }}
+                    >
+                        <Tabs value={activeTab} className="flex-grow flex flex-col overflow-hidden">
+                            {tabs.map((tab) => (
+                                <TabsContent key={tab.id} value={tab.id} className="flex-grow mt-0 border-none overflow-auto outline-none ring-0">
+                                    {tab.content}
+                                </TabsContent>
+                            ))}
+                        </Tabs>
+                    </div>
+                    
+                    {sidePanel && (
+                        <div 
+                            className={cn("border-l overflow-auto", sidePanelClassName)}
+                            style={{ width: `${sidePanelWidth}%` }}
+                        >
+                            {sidePanel}
+                        </div>
+                    )}
+                </div>
+                
                 {(showSaveButton || showCancelButton || additionalButtons || footerContent) && (
                     <DialogFooter className="border-t p-4 flex justify-end flex-shrink-0">
                         {additionalButtons}

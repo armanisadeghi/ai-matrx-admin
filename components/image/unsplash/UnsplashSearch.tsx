@@ -41,7 +41,7 @@ export function UnsplashSearch({
   currentSortOrder = 'relevant',
   currentOrientation,
   currentPremiumFilter = 'none',
-  sortOrderOptions = ['latest', 'popular', 'relevant', 'oldest'],
+  sortOrderOptions = ['relevant', 'latest', 'popular', 'oldest'],
   orientationOptions = ['landscape', 'portrait', 'squarish'],
   premiumFilterOptions = ['mixed', 'only', 'none'],
   viewMode = 'grid',

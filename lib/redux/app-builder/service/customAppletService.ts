@@ -1,7 +1,8 @@
 import { isSlugInUse } from "@/config/applets/apps/constants";
-import { AppletContainer, CustomAppletConfig } from "@/features/applet/builder/builder.types";
-import { AppletLayoutOption } from "@/features/applet/layouts/options/layout.types";
+import { AppletContainer, AppletSourceConfig, BrokerMapping, CustomAppletConfig } from "@/types/customAppTypes";
+import { AppletLayoutOption } from "@/types";
 import { supabase } from "@/utils/supabase/client";
+import { RuntimeCompiledRecipe } from "../../app-runner/types";
 
 export type CustomAppletConfigDB = {
     id: string;
@@ -28,6 +29,7 @@ export type CustomAppletConfigDB = {
     subcategory_id?: string;
     image_url?: string;
     app_id?: string;
+    broker_map?: BrokerMapping[];
 };
 
 
@@ -54,6 +56,7 @@ export const normalizeCustomAppletConfig = (config: Partial<CustomAppletConfig>)
         subcategoryId: config.subcategoryId || null,
         imageUrl: config.imageUrl || null,
         appId: config.appId || null,
+        brokerMap: config.brokerMap || [],
     };
 };
 
@@ -93,6 +96,7 @@ export const appletConfigToDBFormat = async (
         subcategory_id: config.subcategoryId || null,
         image_url: config.imageUrl || null,
         app_id: config.appId || null,
+        broker_map: config.brokerMap || null,
     };
 };
 
@@ -119,6 +123,7 @@ export const dbToAppletConfig = (dbRecord: CustomAppletConfigDB): CustomAppletCo
         subcategoryId: dbRecord.subcategory_id,
         imageUrl: dbRecord.image_url,
         appId: dbRecord.app_id,
+        brokerMap: dbRecord.broker_map,
     });
 };
 
@@ -162,7 +167,6 @@ export const getCustomAppletConfigById = async (id: string): Promise<CustomApple
 export const createCustomAppletConfig = async (config: CustomAppletConfig): Promise<CustomAppletConfig> => {
     const dbData = await appletConfigToDBFormat(config);
 
-    console.log("Creating custom applet config with data:", JSON.stringify(dbData, null, 2));
 
     try {
         const { data, error } = await supabase.from("custom_applet_configs").insert(dbData).select().single();
@@ -378,10 +382,80 @@ export const checkCompiledRecipeVersionExists = async (recipeId: string, version
     return !!data;
 };
 
+export const getCompiledRecipeById = async (id: string): Promise<RuntimeCompiledRecipe | null> => {
+    const { data, error } = await supabase.from("compiled_recipe").select("*").eq("id", id).single();
+    if (error) {
+        console.error("Error fetching compiled recipe:", error);
+        throw error;
+    }
+    return data ? data : null;
+};
+
+
+
+
+const convertDbResponseForSourceConfigs = (data: any) => {
+    const compiled_id = data.id;
+    const recipe_id = data.recipe_id;
+    const version = data.version;
+    const compiled_data = data.compiled_recipe;
+    const raw_brokers = compiled_data.brokers || [];
+
+    const needed_brokers = raw_brokers.map((broker: any) => {
+        return {
+            id: broker.id,
+            name: broker.name || "Name Missing",
+            required: broker.required || true,
+            dataType: broker.data_type || null,
+            defaultValue: broker.default_value || null,
+            inputComponent: broker.inputComponent || null,
+        }
+    });
+
+    return {
+        sourceType: "recipe",
+        config: {
+            id: recipe_id,
+            compiledId: compiled_id,
+            version: version,
+            neededBrokers: needed_brokers,
+        }
+    }
+}
+
+
+/**
+ * Fetches a specific compiled recipe by recipe ID and version
+ */
+export const getCompiledRecipeByVersionWithNeededBrokers = async (recipeId: string, version?: number): Promise<AppletSourceConfig | null> => {
+    let query = supabase.from("compiled_recipe").select("*").eq("recipe_id", recipeId);
+
+    if (version) {
+        query = query.eq("version", version);
+    } else {
+        query = query.order("version", { ascending: false }).limit(1);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error("Error fetching compiled recipe:", error);
+        throw error;
+    }
+    return convertDbResponseForSourceConfigs(data[0]);
+};
+
+
+
+
 /**
  * Adds Containers to an applet as containers
  */
-export const addContainersToApplet = async (appletId: string, groupIds: string[]): Promise<boolean> => {
+export const addContainersToApplet = async (appletId: string, groupIds: string[]): Promise<CustomAppletConfig | null> => {
+
+    console.log("addContainersToApplet appletId", appletId);
+    console.log("addContainersToApplet groupIds", groupIds);
+
     try {
         const { data, error } = await supabase.rpc("add_groups_to_applet", {
             p_applet_id: appletId,
@@ -393,7 +467,9 @@ export const addContainersToApplet = async (appletId: string, groupIds: string[]
             throw error;
         }
 
-        return !!data;
+        console.log("addContainersToApplet data", data);
+
+        return dbToAppletConfig(data);
     } catch (err) {
         console.error("Exception in addContainersToApplet:", err);
         throw err;
@@ -482,6 +558,7 @@ export const getAppletById = async (id: string): Promise<CustomAppletConfig | nu
             subcategoryId: data.subcategory_id,
             imageUrl: data.image_url,
             appId: data.app_id,
+            brokerMap: data.broker_map,
         };
 
         return camelCaseApplet;
@@ -529,6 +606,7 @@ export const getAllApplets = async (): Promise<CustomAppletConfig[]> => {
             subcategoryId: applet.subcategory_id,
             imageUrl: applet.image_url,
             appId: applet.app_id,
+            brokerMap: applet.broker_map,
         }));
 
         return camelCaseApplets;

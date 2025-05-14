@@ -14,6 +14,7 @@ import {adminCategories} from "@/app/(authenticated)/(admin-auth)/constants/cate
 // This would ideally come from a database or configuration
 const verifiedFeatures = [
   // Add verified feature titles here once they're verified
+  "TypeScript Error Analyzer"
 ];
 
 const AdminPage = () => {

@@ -18,13 +18,10 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 
-import { SavedGroup } from '../group-builder/GroupBuilder';
 import { 
   isAppletSlugAvailable, 
   RecipeInfo, 
   getUserRecipes, 
-  getCompiledRecipeByVersion, 
-  checkCompiledRecipeVersionExists,
   getAllCustomAppletConfigs,
   getCustomAppletConfigById,
   createCustomAppletConfig,
@@ -35,14 +32,14 @@ import {
   recompileAllContainersInApplet
 } from '@/lib/redux/app-builder/service/customAppletService';
 import { getAllComponentGroups } from '@/lib/redux/app-builder/service/fieldContainerService';
-import { ICON_OPTIONS } from '@/features/applet/layouts/helpers/StyledComponents';
-import { CustomAppletConfig, AppletContainer, ComponentGroup } from '../../builder.types';
+import { ICON_OPTIONS } from '@/features/applet/styles/StyledComponents';
+import { CustomAppletConfig, ComponentGroup, AppletSourceConfig } from '@/types/customAppTypes';
 
 // Import our modular components
 import CreateAppletTab from './CreateAppletTab';
 import SavedAppletsTab from './SavedAppletsTab';
 import IconPickerDialog from './IconPickerDialog';
-import RecipeSelectDialog from './RecipeSelectDialog';
+import RecipeSelectDialog from '../recipe-source/RecipeSelectDialog';
 import GroupSelector from './GroupSelector';
 
 export const AppletBuilder = () => {
@@ -75,10 +72,11 @@ export const AppletBuilder = () => {
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 
   // Recipe selection state
-  const [userRecipes, setUserRecipes] = useState<RecipeInfo[]>([]);
   const [showRecipeDialog, setShowRecipeDialog] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<RecipeInfo | null>(null);
   const [compiledRecipeId, setCompiledRecipeId] = useState<string | null>(null);
+  const [compiledRecipeWithNeededBrokers, setCompiledRecipeWithNeededBrokers] = useState<AppletSourceConfig | null>(null);
+  const [userRecipes, setUserRecipes] = useState<RecipeInfo[]>([]);
 
   // List of available colors
   const availableColors = useMemo(() => [
@@ -141,6 +139,21 @@ export const AppletBuilder = () => {
     }
   };
 
+  // Fetch user recipes
+  const fetchUserRecipes = async () => {
+    try {
+      const recipes = await getUserRecipes();
+      setUserRecipes(recipes);
+    } catch (error) {
+      console.error('Failed to load recipes:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load recipes",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Helper function to render the correct icon component
   const renderIcon = (iconName: string | undefined) => {
     if (!iconName) return <BoxIcon className="h-5 w-5" />;
@@ -151,20 +164,6 @@ export const AppletBuilder = () => {
     return <IconComponent className="h-5 w-5" />;
   };
 
-  // Fetch user recipes
-  const fetchUserRecipes = async () => {
-    try {
-      const recipes = await getUserRecipes();
-      setUserRecipes(recipes);
-    } catch (error) {
-      console.error('Failed to fetch user recipes:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load recipes",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleIconSelect = (iconName: string) => {
     if (iconPickerType === 'main') {
@@ -563,11 +562,15 @@ export const AppletBuilder = () => {
       <RecipeSelectDialog 
         showRecipeDialog={showRecipeDialog}
         setShowRecipeDialog={setShowRecipeDialog}
-        userRecipes={userRecipes}
-        selectedRecipe={selectedRecipe}
-        setSelectedRecipe={setSelectedRecipe}
+        initialSelectedRecipe={selectedRecipe?.id || null}
         setCompiledRecipeId={setCompiledRecipeId}
         setNewApplet={setNewApplet}
+        setRecipeSourceConfig={setCompiledRecipeWithNeededBrokers}
+        onRecipeSelected={(recipeId) => {
+          // First find the recipe in userRecipes if available
+          const foundRecipe = userRecipes.find(r => r.id === recipeId);
+          setSelectedRecipe(foundRecipe || { id: recipeId } as RecipeInfo);
+        }}
       />
       
       <GroupSelector

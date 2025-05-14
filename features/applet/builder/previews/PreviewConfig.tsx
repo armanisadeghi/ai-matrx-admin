@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CustomAppConfig, CustomAppletConfig } from '@/features/applet/builder/builder.types';
+import { CustomAppConfig, CustomAppletConfig } from '@/types/customAppTypes';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   CheckCircle2, 
@@ -37,9 +37,10 @@ import {
 
 interface PreviewConfigProps {
   appId: string;
+  onUpdateCompletion?: (completion: { isComplete: boolean; canProceed: boolean; message?: string; footerButtons?: React.ReactNode }) => void;
 }
 
-export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
+export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId, onUpdateCompletion }) => {
   const { toast } = useToast();
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState('preview');
@@ -49,6 +50,60 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
   // Get data from Redux store
   const config = useAppSelector((state) => selectAppById(state, appId));
   const applets = useAppSelector((state) => selectAppletsByAppId(state, appId));
+  
+  // Create full configuration with nested applets
+  const fullConfig = useMemo(() => {
+    if (!config) return null;
+    return {
+      ...config,
+      applets: applets
+    };
+  }, [config, applets]);
+  
+  // Update step completion status
+  useEffect(() => {
+    const hasConfig = !!config;
+    const hasApplets = applets.length > 0;
+    
+    let message = '';
+    if (!hasConfig) {
+      message = "No app configuration found. Please complete the previous steps.";
+    } else if (!hasApplets) {
+      message = "App configuration found but no applets. You might want to add applets.";
+    } else {
+      message = `App is ready for review with ${applets.length} applet${applets.length === 1 ? '' : 's'}.`;
+    }
+
+    // This is the final step, so we provide buttons to export or copy the configuration
+    const footerButtons = hasConfig ? (
+      <div className="flex gap-2">
+        <Button 
+          variant="outline" 
+          onClick={() => handleCopyJSON('full')}
+          className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+        >
+          <Copy className="h-4 w-4 mr-2" />
+          Copy JSON
+        </Button>
+        <Button 
+          variant="default" 
+          onClick={() => handleExportConfig('full')}
+          className="bg-emerald-500 hover:bg-emerald-600 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export Config
+        </Button>
+      </div>
+    ) : undefined;
+
+    onUpdateCompletion?.({
+      isComplete: hasConfig && hasApplets,
+      canProceed: false, // This is the last step, so there's nowhere to proceed to
+      message,
+      footerButtons
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, applets.length]);
   
   if (!config) {
     return (
@@ -70,23 +125,57 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
     );
   }
   
-  const handleCopyJSON = () => {
-    navigator.clipboard.writeText(JSON.stringify(config, null, 2));
+  const handleCopyJSON = (configType: 'app' | 'applets' | 'full' = 'full') => {
+    let contentToCopy;
+    
+    switch (configType) {
+      case 'app':
+        contentToCopy = JSON.stringify(config, null, 2);
+        break;
+      case 'applets':
+        contentToCopy = JSON.stringify(applets, null, 2);
+        break;
+      case 'full':
+      default:
+        contentToCopy = JSON.stringify(fullConfig, null, 2);
+        break;
+    }
+    
+    navigator.clipboard.writeText(contentToCopy);
     toast({
       title: "Configuration Copied",
-      description: "App configuration JSON has been copied to clipboard.",
+      description: "Configuration JSON has been copied to clipboard.",
     });
   };
   
-  const handleExportConfig = () => {
+  const handleExportConfig = (configType: 'app' | 'applets' | 'full' = 'full') => {
+    let contentToExport;
+    let fileName;
+    
+    switch (configType) {
+      case 'app':
+        contentToExport = JSON.stringify(config, null, 2);
+        fileName = `${config.slug || 'app'}-config.json`;
+        break;
+      case 'applets':
+        contentToExport = JSON.stringify(applets, null, 2);
+        fileName = `${config.slug || 'app'}-applets.json`;
+        break;
+      case 'full':
+      default:
+        contentToExport = JSON.stringify(fullConfig, null, 2);
+        fileName = `${config.slug || 'app'}-full-config.json`;
+        break;
+    }
+    
     // Create a JSON Blob
-    const configBlob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const configBlob = new Blob([contentToExport], { type: 'application/json' });
     
     // Create download link
     const url = URL.createObjectURL(configBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${config.slug || 'app-config'}.json`;
+    link.download = fileName;
     
     // Trigger download
     document.body.appendChild(link);
@@ -98,7 +187,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
     
     toast({
       title: "Configuration Exported",
-      description: "App configuration has been exported as JSON.",
+      description: "Configuration has been exported as JSON.",
     });
   };
 
@@ -140,8 +229,8 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
   
   return (
     <div className="w-full">
-      <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden mb-6">
-        <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+      <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden rounded-3xl">
+        <CardHeader className="bg-gray-100 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-xl font-medium text-emerald-500 flex items-center">
@@ -156,7 +245,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={handleCopyJSON}
+                onClick={() => handleCopyJSON('full')}
                 className="border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
               >
                 <Copy className="h-4 w-4 mr-2" />
@@ -165,7 +254,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
               <Button 
                 variant="default" 
                 size="sm"
-                onClick={handleExportConfig}
+                onClick={() => handleExportConfig('full')}
                 className="bg-emerald-500 hover:bg-emerald-600 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
               >
                 <Download className="h-4 w-4 mr-2" />
@@ -177,7 +266,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
         
         <CardContent className="p-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="px-6 pt-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="px-6 py-3 border-b border-gray-200 dark:border-gray-700">
               <TabsList className="grid w-full max-w-md grid-cols-3 mb-0">
                 <TabsTrigger 
                   value="preview"
@@ -198,7 +287,7 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
                   className="data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-700"
                 >
                   <Code2 className="h-4 w-4 mr-2" />
-                  JSON
+                  Configurations
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -376,25 +465,68 @@ export const PreviewConfig: React.FC<PreviewConfigProps> = ({ appId }) => {
             </TabsContent>
             
             <TabsContent value="json" className="border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-700">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  Configuration JSON
-                </h3>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleCopyJSON}
-                  className="h-8 text-xs border-gray-300 dark:border-gray-600"
-                >
-                  <Copy className="h-3 w-3 mr-1" />
-                  Copy
-                </Button>
+              <div className="p-0">
+                <Tabs defaultValue="full" className="w-full">
+                  <div className="flex items-center justify-between p-4">
+                    <TabsList className="grid w-full max-w-md grid-cols-3">
+                      <TabsTrigger value="app">
+                        App Overview
+                      </TabsTrigger>
+                      <TabsTrigger value="applets">
+                        Applets
+                      </TabsTrigger>
+                      <TabsTrigger value="full">
+                        Full Configuration
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <div className="flex ml-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleCopyJSON(activeTab === 'app' ? 'app' : activeTab === 'applets' ? 'applets' : 'full')}
+                        className="h-8 text-xs border-gray-300 dark:border-gray-600 mr-2"
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        Copy
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleExportConfig(activeTab === 'app' ? 'app' : activeTab === 'applets' ? 'applets' : 'full')}
+                        className="h-8 text-xs border-gray-300 dark:border-gray-600"
+                      >
+                        <Download className="h-3 w-3 mr-1" />
+                        Export
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <TabsContent value="app">
+                    <ScrollArea className="h-[600px] w-full">
+                      <pre className="p-4 text-xs font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                        {JSON.stringify(config, null, 2)}
+                      </pre>
+                    </ScrollArea>
+                  </TabsContent>
+                  
+                  <TabsContent value="applets">
+                    <ScrollArea className="h-[600px] w-full">
+                      <pre className="p-4 text-xs font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                        {JSON.stringify(applets, null, 2)}
+                      </pre>
+                    </ScrollArea>
+                  </TabsContent>
+                  
+                  <TabsContent value="full">
+                    <ScrollArea className="h-[600px] w-full">
+                      <pre className="p-4 text-xs font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                        {JSON.stringify(fullConfig, null, 2)}
+                      </pre>
+                    </ScrollArea>
+                  </TabsContent>
+                </Tabs>
               </div>
-              <ScrollArea className="h-[400px] w-full">
-                <pre className="p-4 text-xs font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                  {JSON.stringify(config, null, 2)}
-                </pre>
-              </ScrollArea>
             </TabsContent>
           </Tabs>
         </CardContent>

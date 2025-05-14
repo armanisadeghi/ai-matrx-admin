@@ -48,13 +48,13 @@ const useDebugSelectors = () => {
     return useMemo(() => ({
         entityStats: {
             total: Object.keys(entities).length,
-            initialized: Object.values(entities).filter(e => e.initialized).length,
-            withData: Object.values(entities).filter(e => e.data?.length > 0).length
+            initialized: Object.values(entities).filter(e => e.loading?.initialized).length,
+            withData: Object.values(entities).filter(e => Object.keys(e.records || {}).length > 0).length
         },
         schemaStats: {
-            totalFields: Object.keys(schema.fields).length,
-            entityCount: schema.entityNames.length,
-            mappedEntities: Object.keys(schema.entityNameToCanonical).length
+            totalFields: Object.keys(schema.entityNames || []).length,
+            entityCount: (schema.entityNames || []).length,
+            mappedEntities: Object.keys(schema.entityNameToCanonical || {}).length
         }
     }), [entities, schema]);
 };

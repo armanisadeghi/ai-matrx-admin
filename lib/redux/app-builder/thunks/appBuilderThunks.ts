@@ -6,6 +6,7 @@ import { AppBuilder, AppletBuilder } from "../types";
 import { RootState } from "../../store";
 import { setApp, setActiveApp } from "../slices/appBuilderSlice";
 import { selectAppById } from "../selectors/appSelectors";
+import { v4 as uuidv4 } from 'uuid';
 
 export const createAppThunk = createAsyncThunk<AppBuilder, AppBuilder>(
     "appBuilder/createApp",
@@ -238,6 +239,50 @@ export const saveAppThunk = createAsyncThunk<
             };
         } catch (error: any) {
             return rejectWithValue(error.message || "Failed to save app");
+        }
+    }
+);
+
+// Add a template app generator thunk
+export const createTemplateAppThunk = createAsyncThunk<
+    void,
+    { appId: string; templateType: 'simple' | 'complex' },
+    { state: RootState }
+>(
+    "appBuilder/createTemplateApp",
+    async ({ appId, templateType }, { getState, dispatch, rejectWithValue }) => {
+        try {
+            const app = selectAppById(getState() as RootState, appId);
+            if (!app) {
+                throw new Error(`App with ID ${appId} not found`);
+            }
+
+            // Basic setup for both templates
+            dispatch(setActiveApp(appId));
+
+            if (templateType === 'simple') {
+                // Create a simple app with one applet, one container, and one field
+                // 1. Create an applet
+                const appletId = uuidv4();
+                const appletName = "Simple Applet";
+                
+                // 2. Create a container
+                const containerId = uuidv4();
+                
+                // 3. Create a field
+                const fieldId = uuidv4();
+                
+                // 4. Set up the structure
+                // TODO: Implement the actual structure setup once we design the template
+                
+            } else if (templateType === 'complex') {
+                // Create a complex app with multiple applets, containers, and fields
+                // TODO: Implement the complex template structure
+                
+            }
+            
+        } catch (error: any) {
+            return rejectWithValue(error.message || "Failed to create template app");
         }
     }
 );

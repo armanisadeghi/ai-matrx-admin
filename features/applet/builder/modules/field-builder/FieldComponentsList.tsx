@@ -11,11 +11,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Search, Loader2 } from "lucide-react";
 import FieldComponentCard from "./FieldComponentCard";
-import GroupSelectorOverlay from '@/features/applet/builder/components/smart-parts/containers/GroupSelectorOverlay';
+import GroupSelectorOverlay from '@/features/applet/builder/modules/smart-parts/containers/GroupSelectorOverlay';
 import { duplicateFieldComponent } from '@/lib/redux/app-builder/service/fieldComponentService';
 import React from 'react';
 import { FieldBuilder } from '@/lib/redux/app-builder/types';
-import { ComponentGroup } from '@/features/applet/builder/builder.types';
+import { ComponentGroup } from '@/types/customAppTypes';
 
 interface FieldComponentsListProps {
   // List of fields (optional - will use Redux state if not provided)

@@ -1,5 +1,5 @@
 import { supabase } from "@/utils/supabase/client";
-import { AppLayoutOptions, CustomAppConfig } from "@/features/applet/builder/builder.types";
+import { AppLayoutOptions, CustomAppConfig } from "@/types/customAppTypes";
 import { isSlugInUse } from "@/config/applets/apps/constants";
 
 // Define the database type for CustomAppConfig
@@ -190,6 +190,7 @@ export const getAllCustomAppConfigsWithApplets = async (): Promise<(CustomAppCon
     const appletList = appApplets.map(applet => ({
       appletId: applet.id,
       label: applet.name || applet.id,
+      slug: applet.slug,
     }));
     
     // Ensure appletIds and appletList are properly set

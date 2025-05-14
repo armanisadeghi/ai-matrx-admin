@@ -15,7 +15,7 @@ export default function MultiAppletSelectorDemo({ component }: ComponentDisplayP
     // Example code to show how to use the various components
     const usageCode = `// 1. SmartAppList - For displaying and selecting a single app
 import { SmartAppList } from '@/features/applet/builder/components/smart-parts';
-import { CustomAppConfig } from '@/features/applet/builder/modules/app-builder/AppBuilder';
+import { CustomAppConfig } from "@/features/applet/builder/builder.types";
 
 <SmartAppList 
   onSelect={(app: CustomAppConfig) => handleAppSelect(app)}

@@ -1,7 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { AppBuilder } from "../types"; // Adjust path based on your project structure
 import { AppsState } from "../slices/appBuilderSlice";
-import { AppLayoutOptions, CustomActionButton } from "@/features/applet/builder/builder.types";
+import { AppLayoutOptions, CustomActionButton } from "@/types/customAppTypes";
 
 // Assuming the root state has an `appBuilder` slice
 interface RootState {

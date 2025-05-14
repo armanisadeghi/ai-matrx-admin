@@ -134,7 +134,20 @@ export const adminCategories = [
                 link: "/administration/database/sql-functions",
             },
         ],
-    },    {
+    },
+    {
+        name: "TypeScript Management",
+        icon: <IconCode className="w-6 h-6" />,
+        features: [
+            {
+                title: "TypeScript Error Analyzer",
+                description: "View, filter, and analyze TypeScript compilation errors across the project",
+                icon: <IconCode />,
+                link: "/administration/typescript-errors",
+            },
+        ],
+    },
+    {
         name: "Schema Visualizer",
         icon: <IconFlag className="w-6 h-6" />,
         features: [

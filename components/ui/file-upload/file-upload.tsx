@@ -1,10 +1,11 @@
 'use client';
 
-import {cn} from "@/lib/utils";
-import React, {useRef, useState} from "react";
+import React, {useRef, useState, useEffect} from "react";
 import {motion} from "framer-motion";
 import {IconUpload} from "@tabler/icons-react";
 import {useDropzone} from "react-dropzone";
+import {cn} from "@/lib/utils";
+import { UploadedFileResult } from './FileUploadWithStorage';
 
 const mainVariant = {
     initial: {
@@ -202,21 +203,40 @@ export const MultiFileUpload = (
     {
         onChange,
         multiple = false,
-        maxHeight = "400px", // Added a maxHeight prop with default value
+        maxHeight = "400px",
+        initialFiles = [],
     }: {
         onChange?: (files: File[]) => void;
         multiple?: boolean;
-        maxHeight?: string; // New prop type definition
+        maxHeight?: string;
+        initialFiles?: UploadedFileResult[];
     }) => {
     const [files, setFiles] = useState<File[]>([]);
+    const [displayedFiles, setDisplayedFiles] = useState<Array<File | UploadedFileResult>>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    
+    // Initialize with initialFiles
+    useEffect(() => {
+        if (initialFiles && initialFiles.length > 0) {
+            setDisplayedFiles([...initialFiles]);
+        }
+    }, [initialFiles]);
+    
+    // Helper function to check if item is a File
+    const isFile = (item: File | UploadedFileResult): item is File => {
+        return 'name' in item && 'size' in item && 'type' in item && 'lastModified' in item;
+    };
+    
     const handleFileChange = (newFiles: File[]) => {
         setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+        setDisplayedFiles((prevDisplayedFiles) => [...prevDisplayedFiles, ...newFiles]);
         onChange && onChange(newFiles);
     };
+    
     const handleClick = () => {
         fileInputRef.current?.click();
     };
+    
     const {getRootProps, isDragActive} = useDropzone({
         multiple: multiple,
         noClick: true,
@@ -225,6 +245,7 @@ export const MultiFileUpload = (
             console.log(error);
         },
     });
+
     return (
         <div className="w-full" {...getRootProps()}>
             <motion.div
@@ -248,70 +269,65 @@ export const MultiFileUpload = (
                         Upload {multiple ? 'files' : 'file'}
                     </p>
                     <p className="relative z-20 font-sans font-normal text-neutral-400 dark:text-neutral-400 text-base mt-2">
-                        Drag or drop your {multiple ? 'files' : 'file'} here or click to upload
+                        Drag or drop your files here or click to upload
                     </p>
-                    <div className="relative w-full mt-10 max-w-xl mx-auto">
-                        {/* Files container with fixed height and scrolling */}
-                        <div 
-                            className={`${files.length > 0 ? "overflow-y-auto" : ""}`} 
-                            style={{ maxHeight: files.length > 0 ? maxHeight : "auto" }}
-                        >
-                            {files.length > 0 &&
-                                files.map((file, idx) => (
-                                    <motion.div
-                                        key={"file" + idx}
-                                        layoutId={idx === 0 ? "file-upload" : "file-upload-" + idx}
-                                        className={cn(
-                                            "relative overflow-hidden z-40 bg-white dark:bg-neutral-900 flex flex-col items-start justify-start p-4 mt-4 w-full mx-auto rounded-md",
-                                            "shadow-sm",
-                                            // Reduce height when there are many files
-                                            files.length > 3 ? "md:h-16 h-20" : "md:h-24"
-                                        )}
-                                    >
-                                        <div className="flex justify-between w-full items-center gap-4">
-                                            <motion.p
-                                                initial={{opacity: 0}}
-                                                animate={{opacity: 1}}
-                                                layout
-                                                className="text-base text-neutral-700 dark:text-neutral-300 truncate max-w-xs"
-                                            >
-                                                {file.name}
-                                            </motion.p>
-                                            <motion.p
-                                                initial={{opacity: 0}}
-                                                animate={{opacity: 1}}
-                                                layout
-                                                className="rounded-lg px-2 py-1 w-fit flex-shrink-0 text-sm text-neutral-600 dark:bg-neutral-800 dark:text-white shadow-input"
-                                            >
-                                                {(file.size / (1024 * 1024)).toFixed(2)} MB
-                                            </motion.p>
-                                        </div>
-                                        
-                                        {/* Only show additional file info when there are few files */}
-                                        {files.length <= 3 && (
-                                            <div
-                                                className="flex text-sm md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-neutral-600 dark:text-neutral-400">
-                                                <motion.p
-                                                    initial={{opacity: 0}}
-                                                    animate={{opacity: 1}}
-                                                    layout
-                                                    className="px-1 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 "
-                                                >
-                                                    {file.type}
-                                                </motion.p>
-                                                <motion.p
-                                                    initial={{opacity: 0}}
-                                                    animate={{opacity: 1}}
-                                                    layout
-                                                >
-                                                    modified{" "}
-                                                    {new Date(file.lastModified).toLocaleDateString()}
-                                                </motion.p>
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                ))}
-                        </div>
+                    <div className="relative w-full mt-10 max-w-xl mx-auto overflow-y-auto" style={{ maxHeight }}>
+                        {displayedFiles.length > 0 &&
+                            displayedFiles.map((file, idx) => (
+                                <motion.div
+                                    key={"file" + idx}
+                                    layoutId={idx === 0 ? "file-upload" : "file-upload-" + idx}
+                                    className={cn(
+                                        "relative overflow-hidden z-40 bg-white dark:bg-neutral-900 flex flex-col items-start justify-start md:h-24 p-4 mt-4 w-full mx-auto rounded-md",
+                                        "shadow-sm"
+                                    )}
+                                >
+                                    <div className="flex justify-between w-full items-center gap-4">
+                                        <motion.p
+                                            initial={{opacity: 0}}
+                                            animate={{opacity: 1}}
+                                            layout
+                                            className="text-base text-neutral-700 dark:text-neutral-300 truncate max-w-xs"
+                                        >
+                                            {isFile(file) ? file.name : file.details?.filename || 'Unknown file'}
+                                        </motion.p>
+                                        <motion.p
+                                            initial={{opacity: 0}}
+                                            animate={{opacity: 1}}
+                                            layout
+                                            className="rounded-lg px-2 py-1 w-fit flex-shrink-0 text-sm text-neutral-600 dark:bg-neutral-800 dark:text-white shadow-input"
+                                        >
+                                            {isFile(file) 
+                                                ? (file.size / (1024 * 1024)).toFixed(2) 
+                                                : file.details?.size 
+                                                    ? (file.details.size / (1024 * 1024)).toFixed(2) 
+                                                    : '?'} MB
+                                        </motion.p>
+                                    </div>
+
+                                    <div
+                                        className="flex text-sm md:flex-row flex-col items-start md:items-center w-full mt-2 justify-between text-neutral-600 dark:text-neutral-400">
+                                        <motion.p
+                                            initial={{opacity: 0}}
+                                            animate={{opacity: 1}}
+                                            layout
+                                            className="px-1 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-800 "
+                                        >
+                                            {isFile(file) ? file.type : file.details?.mimetype || file.type}
+                                        </motion.p>
+
+                                        <motion.p
+                                            initial={{opacity: 0}}
+                                            animate={{opacity: 1}}
+                                            layout
+                                        >
+                                            {isFile(file) 
+                                                ? `modified ${new Date(file.lastModified).toLocaleDateString()}`
+                                                : ''}
+                                        </motion.p>
+                                    </div>
+                                </motion.div>
+                            ))}
                         
                         {!files.length && (
                             <motion.div
@@ -337,8 +353,8 @@ export const MultiFileUpload = (
                                         <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-400"/>
                                     </motion.p>
                                 ) : (
-                                     <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-300"/>
-                                 )}
+                                    <IconUpload className="h-4 w-4 text-neutral-600 dark:text-neutral-300"/>
+                                )}
                             </motion.div>
                         )}
                         {!files.length && (
@@ -359,16 +375,32 @@ export const MiniFileUpload = ({
     onChange,
     multiple = false,
     maxHeight = "200px",
+    initialFiles = [],
   } : {
     onChange?: (files: File[]) => void;
     multiple?: boolean;
     maxHeight?: string;
+    initialFiles?: UploadedFileResult[];
   }) => {
     const [files, setFiles] = useState<File[]>([]);
+    const [displayedFiles, setDisplayedFiles] = useState<Array<File | UploadedFileResult>>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    
+    // Initialize with initialFiles
+    useEffect(() => {
+        if (initialFiles && initialFiles.length > 0) {
+            setDisplayedFiles([...initialFiles]);
+        }
+    }, [initialFiles]);
+    
+    // Helper function to check if item is a File
+    const isFile = (item: File | UploadedFileResult): item is File => {
+        return 'name' in item && 'size' in item && 'type' in item && 'lastModified' in item;
+    };
   
     const handleFileChange = (newFiles: File[]) => {
       setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+      setDisplayedFiles((prevDisplayedFiles) => [...prevDisplayedFiles, ...newFiles]);
       onChange && onChange(newFiles);
     };
   
@@ -410,37 +442,39 @@ export const MiniFileUpload = ({
               </p>
             </div>
             
-            {!files.length && (
+            {!displayedFiles.length && (
               <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                 Drag or click to upload
               </p>
             )}
   
             {/* Files list with fixed height and scrolling */}
-            {files.length > 0 && (
-              <div 
-                className="w-full mt-3 overflow-y-auto"
-                style={{ maxHeight: maxHeight }}
-              >
-                {files.map((file, idx) => (
-                  <motion.div
-                    key={`file-${idx}`}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white dark:bg-neutral-800 p-2 mb-2 rounded-md shadow-sm text-xs"
-                  >
-                    <div className="flex justify-between items-center">
-                      <p className="truncate max-w-[150px] text-neutral-700 dark:text-neutral-300">
-                        {file.name}
-                      </p>
-                      <span className="text-neutral-500 dark:text-neutral-400 text-xs ml-2">
-                        {(file.size / (1024 * 1024)).toFixed(1)} MB
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+            <div 
+              className="w-full mt-3 overflow-y-auto"
+              style={{ maxHeight: maxHeight }}
+            >
+              {displayedFiles.map((file, idx) => (
+                <motion.div
+                  key={`file-${idx}`}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white dark:bg-neutral-800 p-2 mb-2 rounded-md shadow-sm text-xs"
+                >
+                  <div className="flex justify-between items-center">
+                    <p className="truncate max-w-[150px] text-neutral-700 dark:text-neutral-300">
+                      {isFile(file) ? file.name : file.details?.filename || 'Unknown file'}
+                    </p>
+                    <span className="text-neutral-500 dark:text-neutral-400 text-xs ml-2">
+                      {isFile(file) 
+                        ? (file.size / (1024 * 1024)).toFixed(1) 
+                        : file.details?.size 
+                          ? (file.details.size / (1024 * 1024)).toFixed(1) 
+                          : '?'} MB
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>

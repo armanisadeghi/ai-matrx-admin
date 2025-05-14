@@ -79,7 +79,6 @@ export class SocketConnectionManager {
 
         // Check if current user is an admin
         const isAdmin = await this.isUserAdmin();
-        console.log("[SOCKET] Is admin:", isAdmin);
 
         // For non-production or admin users, check if local server is available
         if (!isProduction || isAdmin) {
@@ -103,7 +102,6 @@ export class SocketConnectionManager {
         try {
             const session = await supabase.auth.getSession();
             const userId = session.data.session?.user?.id;
-            console.log("[SOCKET] User ID:", userId);
             
             if (!userId) return false;
             
@@ -143,7 +141,6 @@ export class SocketConnectionManager {
 
         return new Promise((resolve, reject) => {
             socket.on("connect", () => {
-                if (DEBUG_MODE) console.log(`[SOCKET] Connected to ${url}`);
                 resolve(socket);
             });
             socket.on("connect_error", async () => {

@@ -1,6 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from "@/lib/redux";
 import { FieldBuilder } from "../types";
+import { selectAppletBrokerMappings } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { BrokerMapping, ComponentType } from '@/types/customAppTypes';
 
 // Base selector for the fieldBuilder state
 export const getFieldBuilderState = (state: RootState) => state.fieldBuilder;
@@ -13,9 +15,13 @@ export const selectAllFields = createSelector(
 
 // Memoized selector for a specific field by ID
 export const selectFieldById = createSelector(
-  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
-  (field) => field || null
+  [
+    getFieldBuilderState,
+    (state: RootState, id: string) => id
+  ],
+  (fieldBuilderState, id) => fieldBuilderState.fields[id] || null
 );
+
 
 // Memoized selector for field loading state
 export const selectFieldLoading = createSelector(
@@ -46,7 +52,7 @@ export const selectFieldsByIds = createSelector(
 export const selectFieldsByComponentType = createSelector(
   [
     selectAllFields,
-    (_state: RootState, componentType: string) => componentType
+    (_state: RootState, componentType: ComponentType) => componentType
   ],
   (fields, componentType) => fields.filter(field => field.component === componentType)
 );
@@ -134,11 +140,6 @@ export const selectFieldRequired = createSelector(
   (field) => (field ? field.required : null)
 );
 
-export const selectFieldDisabled = createSelector(
-  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
-  (field) => (field ? field.disabled : null)
-);
-
 export const selectFieldPlaceholder = createSelector(
   [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
   (field) => (field ? field.placeholder : null)
@@ -179,8 +180,157 @@ export const selectFieldIsLocal = createSelector(
   (field) => (field ? field.isLocal : null)
 );
 
+// Explicit selectors for each ComponentProps property
+export const selectFieldMin = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.min : null)
+);
+
+export const selectFieldMax = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.max : null)
+);
+
+export const selectFieldStep = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.step : null)
+);
+
+export const selectFieldRows = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.rows : null)
+);
+
+export const selectFieldMinDate = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.minDate : null)
+);
+
+export const selectFieldMaxDate = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.maxDate : null)
+);
+
+export const selectFieldOnLabel = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.onLabel : null)
+);
+
+export const selectFieldOffLabel = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.offLabel : null)
+);
+
+export const selectFieldMultiSelect = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.multiSelect : null)
+);
+
+export const selectFieldMaxItems = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.maxItems : null)
+);
+
+export const selectFieldMinItems = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.minItems : null)
+);
+
+export const selectFieldGridCols = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.gridCols : null)
+);
+
+export const selectFieldAutoComplete = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.autoComplete : null)
+);
+
+export const selectFieldDirection = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.direction : null)
+);
+
+export const selectFieldCustomContent = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.customContent : null)
+);
+
+export const selectFieldShowSelectAll = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.showSelectAll : null)
+);
+
+export const selectFieldWidth = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.width : null)
+);
+
+export const selectFieldValuePrefix = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.valuePrefix : null)
+);
+
+export const selectFieldValueSuffix = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.valueSuffix : null)
+);
+
+export const selectFieldMaxLength = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.maxLength : null)
+);
+
+export const selectFieldSpellCheck = createSelector(
+  [(state: RootState, id: string) => getFieldBuilderState(state).fields[id]],
+  (field) => (field ? field.componentProps.spellCheck : null)
+);
+
 export const selectHasUnsavedFieldChanges = createSelector(
   [selectAllFields],
   (fields) => fields.some(field => field.isDirty === true)
 );
 
+// Memoized selector to check if a specific field has unsaved changes
+export const selectHasFieldUnsavedChanges = createSelector(
+  [(state: RootState, id: string) => selectFieldById(state, id)],
+  (field) => field ? field.isDirty === true : false
+);
+
+// Memoized selector to get all fields mapped to brokers for a specific applet
+export const selectFieldsByBrokerMappings = createSelector(
+  [
+    (state: RootState, appletId: string) => selectAppletBrokerMappings(state, appletId),
+    getFieldBuilderState,
+  ],
+  (brokerMappings: BrokerMapping[] | null, fieldBuilderState) => {
+    if (!brokerMappings || brokerMappings.length === 0) {
+      return [];
+    }
+    const fieldIds = brokerMappings.map((mapping) => mapping.fieldId);
+    return fieldIds
+      .map((id) => fieldBuilderState.fields[id])
+      .filter((field): field is FieldBuilder => field !== null);
+  }
+);
+
+// Memoized selector to get the field mapped to a specific broker ID for a specific applet
+export const selectFieldByBrokerId = createSelector(
+  [
+    (state: RootState, appletId: string, brokerId: string) => ({
+      brokerMappings: selectAppletBrokerMappings(state, appletId),
+      brokerId,
+    }),
+    getFieldBuilderState,
+  ],
+  ({ brokerMappings, brokerId }, fieldBuilderState) => {
+    if (!brokerMappings || brokerMappings.length === 0) {
+      return null;
+    }
+    const mapping = brokerMappings.find((mapping) => mapping.brokerId === brokerId);
+    if (!mapping) {
+      return null;
+    }
+    return fieldBuilderState.fields[mapping.fieldId] || null;
+  }
+);

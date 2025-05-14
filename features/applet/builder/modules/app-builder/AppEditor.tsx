@@ -16,8 +16,8 @@ import { setName, setDescription, setSlug, setMainAppIcon } from "@/lib/redux/ap
 import { TailwindColorPicker } from "@/components/ui/TailwindColorPicker";
 import { IconPicker } from "@/components/ui/IconPicker";
 import { SingleImageSelect } from "@/components/image/shared/SingleImageSelect";
-import { generateSlug } from "@/utils/slugs";
-import { COLOR_VARIANTS } from "@/features/applet/layouts/helpers/StyledComponents";
+import { COLOR_VARIANTS } from "@/features/applet/styles/StyledComponents";
+import { convertToKebabCase } from "@/utils/text/stringUtils";
 
 interface AppEditorProps {
     appId: string;
@@ -77,7 +77,7 @@ const AppEditor: React.FC<AppEditorProps> = ({ appId, isCreatingNew = false, onS
 
             // Auto-generate slug from name if this is a new app
             if (isCreatingNew && !app?.slug) {
-                const slug = generateSlug(value);
+                const slug = convertToKebabCase(value);
                 dispatch(setSlug({ id: appId, slug }));
             }
         } else if (name === "description") {

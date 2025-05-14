@@ -1,6 +1,6 @@
 'use client';
 import React, { useRef } from 'react';
-import { CustomAppletConfig } from '@/features/applet/builder/builder.types';
+import { CustomAppletConfig } from '@/types/customAppTypes';
 import AppletPreviewCard from '@/features/applet/builder/previews/AppletPreviewCard';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 

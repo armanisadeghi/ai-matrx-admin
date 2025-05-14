@@ -1,3 +1,5 @@
+'use client';
+
 // page.tsx
 
 import { NextNavCardFull } from "@/components/matrx/navigation";

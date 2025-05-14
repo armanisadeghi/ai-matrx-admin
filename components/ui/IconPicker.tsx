@@ -8,7 +8,7 @@ import {
     getAppIcon,
     getSubmitButton,
     getAppIconWithBg
-} from "@/features/applet/layouts/helpers/StyledComponents";
+} from "@/features/applet/styles/StyledComponents";
 
 interface IconPickerProps {
     selectedIcon: string;

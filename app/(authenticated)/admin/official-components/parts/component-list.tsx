@@ -229,6 +229,38 @@ export const componentList: ComponentEntry[] = [
     description: 'A structured card layout with title, description, optional header actions, and a three-column footer',
     category: 'layout',
     tags: ['card', 'section', 'layout', 'header', 'footer', 'actions', 'form']
+  },
+  {
+    id: 'help-icon',
+    name: 'Help Icon',
+    path: 'components/official/HelpIcon.tsx',
+    description: 'Elegant informational tooltip icon for providing contextual help text with copy functionality',
+    category: 'display',
+    tags: ['tooltip', 'help', 'info', 'contextual', 'copy', 'hover']
+  },
+  {
+    id: 'applet-list-table',
+    name: 'Applet List Table',
+    path: 'features/applet/builder/modules/applet-builder/AppletListTable.tsx',
+    description: 'Flexible applet listing component with various configuration options for different use cases',
+    category: 'data',
+    tags: ['table', 'list', 'applet', 'data', 'interactive', 'configurable', 'selection']
+  },
+  {
+    id: 'simple-card',
+    name: 'Simple Card',
+    path: 'components/official/cards/CardGrid.tsx',
+    description: 'Versatile card component with icon, title, description, and support for links or click handlers',
+    category: 'display',
+    tags: ['card', 'icon', 'link', 'button', 'navigation', 'display']
+  },
+  {
+    id: 'simple-card-grid',
+    name: 'Simple Card Grid',
+    path: 'components/official/cards/CardGrid.tsx',
+    description: 'Flexible grid system for displaying Simple Cards with customizable layout, headers, and styling options',
+    category: 'layout',
+    tags: ['grid', 'card', 'layout', 'responsive', 'navigation', 'dashboard']
   }
 ]; 
 
