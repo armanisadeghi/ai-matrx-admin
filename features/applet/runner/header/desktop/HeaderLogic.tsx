@@ -13,9 +13,9 @@ import {
     selectAppRuntimeAccentColor
 } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
 import { getAppIcon } from "@/features/applet/styles/StyledComponents";
-import { HeaderExtraButtonsConfig } from "../../field-components/types";
 import { CustomAppHeaderProps } from "../CustomAppHeader";
 import { selectActiveAppletSlug, selectAppletRuntimeActiveApplet } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { CustomActionButton, AppletListItemConfig, CustomAppConfig } from "@/types";
 
 export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
 
@@ -26,9 +26,9 @@ export interface HeaderLogicProps extends CustomAppHeaderProps {
 
 export interface HeaderUIProps {
     activeAppIcon: React.ReactNode;
-    appletList: Array<{value: string; label: string}>;
-    extraButtons: HeaderExtraButtonsConfig[] | undefined;
-    config: any; // Using any here as the exact type wasn't specified
+    appletList: AppletListItemConfig[];
+    extraButtons: CustomActionButton[] | undefined;
+    config: CustomAppConfig;
     primaryColor: string;
     displayName: string;
     profilePhoto: string | null;
@@ -45,7 +45,7 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
 }) => {
     const router = useRouter();
     const config = useAppSelector(selectAppRuntimeConfig);
-    const extraButtons = useAppSelector(selectAppRuntimeExtraButtons) as HeaderExtraButtonsConfig[] | undefined;
+    const extraButtons = useAppSelector(selectAppRuntimeExtraButtons);
     const iconName = useAppSelector(selectAppRuntimeMainAppIcon);
     const primaryColor = useAppSelector(selectAppRuntimePrimaryColor);
     const accentColor = useAppSelector(selectAppRuntimeAccentColor);
@@ -76,10 +76,7 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
 
     return children({
         activeAppIcon,
-        appletList: appletList.map(app => ({
-            value: app.slug,
-            label: app.label
-        })),
+        appletList,
         extraButtons,
         config,
         primaryColor,

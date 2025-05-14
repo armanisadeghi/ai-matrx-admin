@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 
 
 const advancedAppletCreatorDefinitionFAKE_FAKE_FAKE_FAKE = [
@@ -151,7 +151,7 @@ const FieldTester: React.FC = () => {
                   {def.field.label}
                 </label>
                 <div className="mt-1">
-                {fieldController({ field: def.field, appletId, isMobile: false })}
+                {AppletFieldController({ field: def.field, appletId, isMobile: false })}
                 </div>
                 {def.field.helpText && (
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

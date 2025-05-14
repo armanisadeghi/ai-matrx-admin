@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import UniformHeightWrapper from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { ChevronRight, Send } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -130,7 +130,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
                                                     required={field.required}
                                                     className="mb-2"
                                                 />
-                                                {fieldController({ field, appletId, isMobile, source })}
+                                                {AppletFieldController({ field, appletId, isMobile, source })}
                                             </div>
                                         ))}
                                     </div>

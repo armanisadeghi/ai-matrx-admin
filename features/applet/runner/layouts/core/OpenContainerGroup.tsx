@@ -3,8 +3,8 @@
 
 // For the open/non-collapsible layouts
 import React from "react";
-import SearchContainerHeader from "../helpers/SearchContainerHeader";
-import ContainerFieldRenderer from "../helpers/ContainerFieldRenderer";
+import SearchContainerHeader from "./SearchContainerHeader";
+import ContainerFieldRenderer from "./ContainerFieldRenderer";
 import { ContainerRenderProps } from "../AppletLayoutManager";
 
 const OpenContainerGroup: React.FC<ContainerRenderProps> = ({

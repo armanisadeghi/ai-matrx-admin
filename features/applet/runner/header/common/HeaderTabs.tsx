@@ -6,8 +6,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useMeasure } from "@uidotdev/usehooks";
-import { AppletListItemConfig } from "../../field-components/types";
-
+import { AppletListItemConfig } from "@/types/customAppTypes";
 
 
 // STYLE TASK: Accent color in TabsTriggerCore
@@ -77,7 +76,7 @@ export const HeaderTabGroup = ({
                 if (visible.length > 0) currentWidth += GAP_SIZE;
                 
                 // If this is the active tab or there's still space, add it to visible
-                if (applet.value === activeAppletSlug || currentWidth + tabWidth <= availableWidth) {
+                if (applet.slug === activeAppletSlug || currentWidth + tabWidth <= availableWidth) {
                     currentWidth += tabWidth;
                     visible.push(applet);
                 } else {
@@ -87,8 +86,8 @@ export const HeaderTabGroup = ({
             }
         } else {
             // Original behavior: active tab first, then others
-            const activeTabConfig = appletList.find((applet) => applet.value === activeAppletSlug);
-            const otherTabs = appletList.filter((applet) => applet.value !== activeAppletSlug);
+            const activeTabConfig = appletList.find((applet) => applet.slug === activeAppletSlug);
+            const otherTabs = appletList.filter((applet) => applet.slug !== activeAppletSlug);
 
             // Add active applet first
             if (activeTabConfig) {
@@ -131,7 +130,7 @@ export const HeaderTabGroup = ({
             <Tabs value={activeAppletSlug} onValueChange={(value) => handleAppletChange(value)} className="w-full">
                 <TabsList className="bg-transparent border-b-0 w-full justify-start gap-8 relative z-10">
                     {visibleTabs.map((applet) => (
-                        <TabTrigger key={applet.value} value={applet.value} label={applet.label} active={activeAppletSlug === applet.value} />
+                        <TabTrigger key={applet.slug} value={applet.slug} label={applet.label} active={activeAppletSlug === applet.slug} />
                     ))}
 
                     {overflowTabs.length > 0 && (
@@ -144,11 +143,11 @@ export const HeaderTabGroup = ({
                             <DropdownMenuContent align="end" className="w-48">
                                 {overflowTabs.map((applet) => (
                                     <DropdownMenuItem
-                                        key={applet.value}
-                                        onClick={() => handleAppletChange(applet.value)}
+                                        key={applet.slug}
+                                        onClick={() => handleAppletChange(applet.slug)}
                                         className={cn(
                                             "cursor-pointer",
-                                            activeAppletSlug === applet.value && "font-medium text-rose-500 dark:text-rose-500"
+                                            activeAppletSlug === applet.slug && "font-medium text-rose-500 dark:text-rose-500"
                                         )}
                                     >
                                         {applet.label}

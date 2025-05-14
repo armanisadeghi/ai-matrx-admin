@@ -2,7 +2,7 @@
 
 import { FieldDefinition } from "@/types";
 import React, { useEffect, useRef, useState } from "react";
-import { fieldController } from "../../field-components/FieldController";
+import { AppletFieldController } from "../../fields/AppletFieldController";
 import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
 
 interface ContainerFieldRendererProps {
@@ -39,7 +39,7 @@ const ContainerFieldRenderer: React.FC<ContainerFieldRendererProps> = ({
         // Process each field and create components if needed
         fields.forEach((field) => {
             if (!newFieldComponents.has(field.id)) {
-                newFieldComponents.set(field.id, fieldController({ field, appletId, isMobile, source }));
+                newFieldComponents.set(field.id, AppletFieldController({ field, appletId, isMobile, source }));
                 hasNewComponents = true;
             }
         });

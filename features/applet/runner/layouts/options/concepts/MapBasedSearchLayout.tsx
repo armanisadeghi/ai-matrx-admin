@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { MoveVertical, Plus, PlusSquare, Filter, Search, X } from "lucide-react";
@@ -134,7 +134,7 @@ const MapBasedSearchLayout: React.FC<AppletInputProps> = ({
                       {field.label}
                       </label>
                     <div className="field-control">
-                      {fieldController({ field, appletId, isMobile: false, source })}
+                      {AppletFieldController({ field, appletId, isMobile: false, source })}
                     </div>
                     {field.helpText && (
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>

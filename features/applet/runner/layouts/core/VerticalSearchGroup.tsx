@@ -4,7 +4,7 @@
 // For the vertical layout
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { fieldController } from "../../field-components/FieldController";
+import { AppletFieldController } from "../../fields/AppletFieldController";
 import { ContainerRenderProps } from "../AppletLayoutManager";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -36,7 +36,7 @@ const VerticalSearchGroup: React.FC<ContainerRenderProps> = ({
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile, source }));
+                fieldRefs.current.set(field.id, AppletFieldController({ field, appletId, isMobile, source }));
             }
         });
     }, [fields, isMobile]);

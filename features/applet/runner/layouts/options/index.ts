@@ -1,4 +1,4 @@
-export { default as HorizontalSearchLayout } from "./HorizontalSearchLayout";
+export { default as HorizontalSearchLayout } from "./horizontal-layout/HorizontalSearchLayout";
 export { default as VerticalAppletInputLayout } from "./VerticalAppletInputLayout";
 export { default as StepperSearchLayout } from "./StepperSearchLayout";
 export { default as FlatAppletInputLayout } from "./FlatAppletInputLayout";
@@ -14,8 +14,9 @@ export { default as FloatingCardSearchLayout } from "./FloatingCardSearchLayout"
 export { default as SidebarSearchLayout } from "./SidebarSearchLayout";
 export { default as CarouselSearchLayout } from "./CarouselSearchLayout";
 export { default as CardStackSearchLayout } from "./CardStackSearchLayout";
-export { default as ContextualSearchLayout } from "./ContextualSearchLayout";
-export { default as ChatSearchLayout } from "./ChatSearchLayout";
-export { default as MapBasedSearchLayout } from "./MapBasedSearchLayout";
+export { default as ContextualSearchLayout } from "./concepts/ContextualSearchLayout";
+export { default as ChatSearchLayout } from "./concepts/ChatSearchLayout";
+export { default as MapBasedSearchLayout } from "./concepts/MapBasedSearchLayout";
 export { FullWidthSidebarSearchLayout } from "./SidebarSearchLayout";
 export { default as FlatAppletInputLayoutAccordion } from "./FlatAppletInputLayoutAccordion";
+export { default as StepperAppletFieldInputLayout } from "./StepperAppletFieldInputLayout";

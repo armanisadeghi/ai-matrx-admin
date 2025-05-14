@@ -1,4 +1,6 @@
-// MobileFieldRow.tsx
+// features\applet\runner\layouts\options\horizontal-layout\MobileAppletBrokerContainer.tsx
+"use client";
+
 import React, { useState, ReactNode, Children, cloneElement, isValidElement, ReactElement, useEffect } from 'react';
 
 // Define the expected shape of child components' props

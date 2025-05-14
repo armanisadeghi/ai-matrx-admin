@@ -196,18 +196,41 @@ export type AppletLayoutOption =
     | "chat"
     | "mapBased"
     | "fullWidthSidebar"
-    | "input-bar"
+    | "stepper-field"
     | "flat-accordion";
 
 
 export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
 
+export type KnownMethod = "renderChat" | "changeApplet" | "renderModal" | "renderSampleApplet" | "none";
+
+export interface HeaderExtraButtonsConfig {
+    label: string;
+    icon?: ReactNode;
+    actionType?: "button" | "link" | "redux" | "none";
+    onClick?: () => void;
+    route?: string;
+    reduxAction?: string;
+    knownMethod?: KnownMethod;
+}
+
 
 
 export type CustomActionButton = {
   label: string;
-  actionType: string;
-  knownMethod: string;
+  icon?: ReactNode;
+  actionType?: "button" | "link" | "redux" | "none";
+  onClick?: () => void;
+  route?: string;
+  reduxAction?: string;
+  knownMethod?: KnownMethod;
+}
+
+
+export type AppletListItemConfig = {
+  appletId: string;
+  label: string;
+  slug: string;
 }
 
 
@@ -221,7 +244,7 @@ export type CustomAppConfig = {
   creator?: string;
   primaryColor?: string;
   accentColor?: string;
-  appletList?: { appletId: string; label: string; slug: string }[];
+  appletList?: AppletListItemConfig[];
   extraButtons?: CustomActionButton[];
   layoutType?: AppLayoutOptions;
   imageUrl?: string;

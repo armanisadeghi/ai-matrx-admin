@@ -30,10 +30,12 @@ import {
     NumberInputField,
 } from "@/features/applet/runner/fields";
 import { FieldDefinition } from "@/types/customAppTypes";
-import DraggableTableField from "../fields/concepts/DraggableTableField";
-import DraggableEditableTableField from "../fields/concepts/DraggableEditableTableField";
-import DragEditModifyTableField from "../fields/concepts/DragEditModifyTableField";
-import DragTableRowAndColumnField from "../fields/concepts/DragTableRowAndColumnField";
+import DraggableTableField from "./concepts/DraggableTableField";
+import DraggableEditableTableField from "./concepts/DraggableEditableTableField";
+import DragEditModifyTableField from "./concepts/DragEditModifyTableField";
+import DragTableRowAndColumnField from "./concepts/DragTableRowAndColumnField";
+
+
 export interface FieldControllerProps {
     field: FieldDefinition;
     appletId: string;
@@ -41,7 +43,7 @@ export interface FieldControllerProps {
     source?: string;
 }
 
-export const fieldController = ({ field, appletId, isMobile, source = "applet" }: FieldControllerProps) => {
+export const AppletFieldController = ({ field, appletId, isMobile, source = "applet" }: FieldControllerProps) => {
     switch (field.component) {
         case "textarea": {
             return <TextareaField field={field} appletId={appletId} isMobile={isMobile} source={source} disabled={false} />;
@@ -174,69 +176,4 @@ export const fieldController = ({ field, appletId, isMobile, source = "applet" }
     }
 };
 
-/* for testing.
-
-        case "textarea":
-        case "radio": {
-            return (
-                <div className="flex flex-col gap-6 w-full">
-                    <TextareaField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <SelectField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <RadioGroupField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <CheckboxGroupField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <DateField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <MultiDateField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <SearchableSelectField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <DirectMultiSelectField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <MultiSearchableSelectField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <ButtonSelectionField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <SortableField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <ButtonGroupField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <StepperNumberField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <SimpleNumberField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <SliderField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <SwitchField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <JsonField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <FileUploadField field={field} appletId={appletId} isMobile={isMobile} />
-                    <hr className="border-gray-300 dark:border-gray-700" />
-
-                    <InputField field={field} appletId={appletId} isMobile={isMobile} />
-                </div>
-            );
-        }
-
-*/
+export default AppletFieldController;

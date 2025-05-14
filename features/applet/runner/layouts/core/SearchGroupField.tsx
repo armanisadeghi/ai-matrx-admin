@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import SearchField from "@/features/applet/runner/layouts/core/SearchField";
 import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
 import { ContainerRenderProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
@@ -28,7 +28,7 @@ const SearchGroupField: React.FC<ContainerRenderProps> = ({
     useEffect(() => {
         fields.forEach((field) => {
             if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, fieldController({ field, appletId, isMobile, source }));
+                fieldRefs.current.set(field.id, AppletFieldController({ field, appletId, isMobile, source }));
             }
         });
     }, [fields, isMobile]);

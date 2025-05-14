@@ -1,8 +1,10 @@
-// File: components/search/layouts/HorizontalSearchLayout.tsx
+// File: features/applet/runner/layouts/options/horizontal-layout/HorizontalSearchLayout.tsx
+"use client";
+
 import React from "react";
-import { AppletInputProps } from "../AppletLayoutManager";
-import { SearchGroupField } from "../core";
-import AppletBrokerContainer from "../../search-bar/container/AppletBrokerContainer";
+import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
+import { SearchGroupField } from "@/features/applet/runner/layouts/core";
+import AppletBrokerContainer from "@/features/applet/runner/layouts/options/horizontal-layout/AppletBrokerContainer";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 

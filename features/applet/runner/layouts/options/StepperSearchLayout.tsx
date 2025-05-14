@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import StepperSearchGroup from "@/features/applet/runner/layouts/core/StepperSearchGroup";
 import UniformHeightWrapper from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
-import SearchGroupHeader from "@/features/applet/runner/layouts/helpers/SearchContainerHeader";
+import SearchGroupHeader from "@/features/applet/runner/layouts/core/SearchContainerHeader";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 

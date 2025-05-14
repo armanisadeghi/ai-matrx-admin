@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 
@@ -134,7 +134,7 @@ const ChatSearchLayout: React.FC<AppletInputProps> = ({
                         {field.label}
                       </label>
                       <div className="field-control" onChange={() => handleFieldComplete(field.id)}>
-                        {fieldController({ field, appletId, isMobile, source })}
+                        {AppletFieldController({ field, appletId, isMobile, source })}
                       </div>
                       {field.helpText && (
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>

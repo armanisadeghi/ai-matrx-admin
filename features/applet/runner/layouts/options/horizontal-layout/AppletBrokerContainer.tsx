@@ -1,4 +1,6 @@
-// features\applet\runner\components\search-bar\container\AppletBrokerContainer.tsx
+// features\applet\runner\layouts\options\horizontal-layout\AppletBrokerContainer.tsx
+"use client";
+
 import React from 'react';
 import { useIsMobile } from "@/hooks/use-mobile";
 import DesktopAppletBrokerContainer from './DesktopAppletBrokerContainer';

@@ -17,7 +17,7 @@ import {
     selectAppRuntimeAppletList,
 } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
 import { getAppIcon } from "@/features/applet/styles/StyledComponents";
-import { HeaderExtraButtonsConfig } from "../../field-components/types";
+
 
 interface MobileAppHeaderProps {
     appId?: string;
@@ -37,7 +37,7 @@ export const MobileAppHeader = ({ appId, activeAppletSlug, isDemo = false }: Mob
     const profilePhoto = user.userMetadata.picture || null;
 
     const config = useAppSelector(selectAppRuntimeConfig);
-    const extraButtons = useAppSelector(selectAppRuntimeExtraButtons) as HeaderExtraButtonsConfig[] | undefined;
+    const extraButtons = useAppSelector(selectAppRuntimeExtraButtons);
     const iconName = useAppSelector(selectAppRuntimeMainAppIcon);
     const appletList = useAppSelector(selectAppRuntimeAppletList) || [];
 

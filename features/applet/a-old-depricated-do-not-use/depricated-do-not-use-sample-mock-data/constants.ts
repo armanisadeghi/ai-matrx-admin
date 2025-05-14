@@ -1,13 +1,17 @@
-import {
-    AvailableAppletConfigs,
-    AppletContainersConfig,
-    CustomAppConfig,
-    HeaderExtraButtonsConfig,
-    GroupFieldConfig,
-    AppletListItemConfig,
-} from "@/features/applet/a-old-depricated-do-not-use/runner-depreciated-do-not-use/components/field-components/types";
 import { starterAppletConfig } from "./starter-applet";
 import { advancedAppletCreatorDefinition } from "./applet-creator";
+
+
+
+
+type AppletContainerConfig = any;
+type AppletFieldConfig = any;
+type AppletContainersConfig = any
+type GroupFieldConfig = any;
+type AppletListItemConfig = any;
+type AvailableAppletConfigs = any;
+type CustomAppConfig = any;
+type CustomActionButton = any;
 
 const staysConfig: AppletContainersConfig[] = [
     {
@@ -1014,7 +1018,7 @@ export const travelAgentListConfig: AppletListItemConfig[] = [
     { value: "starter-app", label: "Starter App" },
 ];
 
-export const extraButtonsConfig: HeaderExtraButtonsConfig[] = [
+export const extraButtonsConfig: CustomActionButton[] = [
     {
         label: "Travel Agent Chat",
         actionType: "button",

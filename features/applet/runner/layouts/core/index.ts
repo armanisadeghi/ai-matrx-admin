@@ -5,14 +5,16 @@ import SearchGroupField from './SearchGroupField';
 import StepperSearchGroup from './StepperSearchGroup';
 import UniformHeightWrapper, { UniformHeightContext, UniformHeightProvider } from './UniformHeightWrapper';
 import VerticalSearchGroup from './VerticalSearchGroup';
+import ContainerFieldRenderer from './ContainerFieldRenderer';
 
 export {
-  OpenContainerGroup as OpenSearchGroup,
+  OpenContainerGroup,
   SearchField,
   SearchGroupField,
   StepperSearchGroup,
   UniformHeightWrapper,
   UniformHeightContext,
   UniformHeightProvider,
-  VerticalSearchGroup
+  VerticalSearchGroup,
+  ContainerFieldRenderer,
 };

@@ -1,4 +1,6 @@
-// features\applet\runner\components\search-bar\container\DesktopAppletBrokerContainer.tsx
+// features\applet\runner\layouts\options\horizontal-layout\DesktopAppletBrokerContainer.tsx
+"use client";
+
 import React, { useState, ReactNode, Children, cloneElement, isValidElement, ReactElement } from 'react';
 
 // Define the expected shape of child components' props

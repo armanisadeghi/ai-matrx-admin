@@ -28,6 +28,7 @@ import { PiTabsBold } from "react-icons/pi";
 import { TbCarouselHorizontal } from "react-icons/tb";
 import { AppletLayoutOption } from '@/types';
 import { AppLayoutOptions } from '@/types/customAppTypes';
+import { BsBarChartSteps } from "react-icons/bs";
 
 export interface AppletLayoutOptionInfo {
   value: AppletLayoutOption;
@@ -186,13 +187,13 @@ export const appletLayoutOptions: Record<AppletLayoutOption, AppletLayoutOptionI
     icon: <SidebarOpen size={24} />,
     experimental: false
   },
-  "input-bar": {
-    value: "input-bar",
-    title: "Input Bar Layout",
-    description: "Focused layout with prominent input control for command or search interfaces",
-    icon: <Terminal size={24} />,
+  "stepper-field": {
+    value: "stepper-field",
+    title: "Stepper Field Layout",
+    description: "Stepper field layout for sequential input fields without their containers",
+    icon: <BsBarChartSteps size={24} />,
     experimental: false
-  }
+  },
 };
 
 // Helper to convert the object to an array for easier mapping in components

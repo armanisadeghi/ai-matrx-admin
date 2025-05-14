@@ -51,13 +51,13 @@ export const IconsHeader: React.FC<DesktopAppHeaderProps> = ({
                                     <div className="flex items-center space-x-4 overflow-x-auto hide-scrollbar">
                                         {appletList.map((applet) => (
                                             <div 
-                                                key={applet.value}
+                                                key={applet.slug}
                                                 className={`w-8 h-8 flex items-center justify-center rounded-md cursor-pointer transition-colors
-                                                    ${activeAppletSlug === applet.value 
+                                                    ${activeAppletSlug === applet.slug 
                                                         ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300' 
                                                         : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                     }`}
-                                                onClick={() => handleAppletChange(applet.value)}
+                                                onClick={() => handleAppletChange(applet.slug)}
                                                 title={applet.label}
                                             >
                                                 {/* Simple letter icon (first letter of label) */}

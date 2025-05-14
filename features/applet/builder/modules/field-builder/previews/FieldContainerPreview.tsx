@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { FieldDefinition } from "@/types";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import { getSubmitButton } from "@/features/applet/styles/StyledComponents";
 import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
 
@@ -75,7 +75,7 @@ const FieldContainerPreview: React.FC<any> = ({ fields, appletId, source, classN
 
             fields.forEach((field) => {
                 if (!newFieldComponents.has(field.id)) {
-                    newFieldComponents.set(field.id, fieldController({ field, appletId, source, isMobile }));
+                    newFieldComponents.set(field.id, AppletFieldController({ field, appletId, source, isMobile }));
                     hasNewComponents = true;
                 }
             });

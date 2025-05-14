@@ -23,6 +23,7 @@ import {
     MapBasedSearchLayout,
     FullWidthSidebarSearchLayout,
     FlatAppletInputLayoutAccordion,
+    StepperAppletFieldInputLayout,
 } from "@/features/applet/runner/layouts/options";
 import { ReactNode, useState } from "react";
 import { AppletLayoutOption, FieldDefinition } from "@/types";
@@ -51,6 +52,7 @@ export interface ContainerRenderProps {
     actionButton?: ReactNode;
     className?: string;
     hideContainerPlaceholder?: boolean;
+    hideFieldLabels?: boolean;
     children?: ReactNode;
     preventClose?: boolean;
     source: string;
@@ -362,6 +364,19 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
         case "flat-accordion":
             return (
                 <FlatAppletInputLayoutAccordion
+                    appletId={appletId}
+                    activeContainerId={activeContainerId}
+                    setActiveContainerId={setActiveContainerId}
+                    actionButton={actionButton}
+                    className={className}
+                    isMobile={isMobile}
+                    source={source}
+                />
+            );
+
+        case "stepper-field":
+            return (
+                <StepperAppletFieldInputLayout
                     appletId={appletId}
                     activeContainerId={activeContainerId}
                     setActiveContainerId={setActiveContainerId}

@@ -3,7 +3,7 @@ import React from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
 
 const FlatAppletInputLayout: React.FC<AppletInputProps> = ({
@@ -40,7 +40,7 @@ const FlatAppletInputLayout: React.FC<AppletInputProps> = ({
                                         required={field.required}
                                         className="mb-2"
                                     />
-                                    {fieldController({ field, appletId, isMobile, source })}
+                                    {AppletFieldController({ field, appletId, isMobile, source })}
                                 </div>
                             ))}
                         </div>

@@ -36,7 +36,7 @@ export const SingleDropdownWithSearchHeader: React.FC<DesktopAppHeaderProps> = (
                 isDemo: isDemoMode
             }) => {
                 // Find the active applet from the list
-                const activeApplet = appletList.find(applet => applet.value === activeAppletSlug);
+                const activeApplet = appletList.find(applet => applet.slug === activeAppletSlug);
                 
                 return (
                     <header className={finalHeaderClass}>

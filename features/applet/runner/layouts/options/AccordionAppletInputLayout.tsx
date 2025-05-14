@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { ChevronDown } from "lucide-react";
-import { fieldController } from "@/features/applet/runner/field-components/FieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
@@ -36,7 +36,7 @@ const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
 
                 // Render each field
                 container.fields.forEach((field) => {
-                    groupFieldRefs.set(field.id, fieldController({ field, appletId, isMobile, source }));
+                    groupFieldRefs.set(field.id, AppletFieldController({ field, appletId, isMobile, source }));
                 });
             }
         });
