@@ -63,7 +63,12 @@ export interface FieldOption {
   iconName?: string; // Icon name from lucide-react.
   parentId?: string; // Used to create a hierarchy of options.
   metadata?: any; // Used to store any additional data for the option.
+  order?: number; // Used to sort the options.
+  [key: string]: any;       // Extensibility for future needs
 }
+
+
+
 
 export interface FieldOptionsRuntime extends FieldOption {
   isSelected: boolean; // Used to determine if the option is selected.

@@ -1,236 +1,297 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import {
-  startOAuthFlow,
-  exchangeCodeForToken,
-  generateMockData,
-} from "./utils/oauth";
-import { ProviderState } from "./types/oauth";
-import { OAUTH_PROVIDERS } from "./providers/providers";
-import OAuthProvider from "./components/OAuthProvider";
-import TokenDisplay from "./components/TokenDisplay";
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { OAUTH_PROVIDERS } from './providers/providers';
+import { startOAuthFlow, exchangeCodeForToken } from './utils/oauth';
+import { ProviderState } from './types/oauth';
+import OAuthProvider from './components/OAuthProvider';
+import TokenDisplay from './components/TokenDisplay';
+import SlackManager from './components/SlackManager';
 
-export default function Home() {
+export default function SlackApp() {
   const searchParams = useSearchParams();
-  const [providerStates, setProviderStates] = useState<
-    Record<string, ProviderState>
-  >({});
+  const [activeTab, setActiveTab] = useState<'oauth' | 'direct'>('direct');
+  const [directToken, setDirectToken] = useState<string>('');
+  const [isUsingDirectToken, setIsUsingDirectToken] = useState<boolean>(false);
+  const [directTokenError, setDirectTokenError] = useState<string | null>(null);
 
-  // Initialize provider states
+  const [providerStates, setProviderStates] = useState<Record<string, ProviderState>>({
+    slack: {
+      isLoading: false,
+      isConnected: false,
+      token: null,
+      data: null,
+      error: null
+    }
+  });
+
+  // Process OAuth callbacks
   useEffect(() => {
-    const initialStates: Record<string, ProviderState> = {};
+    if (activeTab !== 'oauth') return;
 
-    Object.keys(OAUTH_PROVIDERS).forEach((provider) => {
-      initialStates[provider] = {
-        isLoading: false,
-        isConnected: false,
-        token: null,
-        data: null,
-        error: null,
-      };
-    });
+    const provider = searchParams.get('provider');
+    const code = searchParams.get('code');
+    const error = searchParams.get('error');
 
-    setProviderStates(initialStates);
-  }, []);
+    if (!provider) return;
 
-  // Handle OAuth callbacks via URL parameters
-  useEffect(() => {
-    const provider = searchParams.get("provider");
-    const code = searchParams.get("code");
-    const error = searchParams.get("error");
-
-    if (!provider || !Object.keys(OAUTH_PROVIDERS).includes(provider)) return;
-
-    // Handle error from OAuth provider
+    // Handle OAuth error
     if (error) {
-      setProviderStates((current) => ({
-        ...current,
+      console.error(`OAuth error for ${provider}:`, error);
+      setProviderStates(prev => ({
+        ...prev,
         [provider]: {
-          ...current[provider],
+          ...prev[provider],
           isLoading: false,
-          error: `Authentication error: ${error}`,
-        },
+          error: `Authentication failed: ${error}`
+        }
       }));
-
-      // Clean up URL parameters
-      window.history.replaceState({}, "", "/");
       return;
     }
 
-    // Handle successful authorization code
-    if (code) {
-      handleAuthCode(provider, code);
-
-      // Clean up URL parameters
-      window.history.replaceState({}, "", "/");
+    // Process OAuth code
+    if (code && !providerStates[provider]?.isConnected) {
+      handleOAuthCode(provider, code);
     }
-  }, [searchParams]);
+  }, [searchParams, activeTab]);
 
-  // Handle the authorization code
-  const handleAuthCode = async (provider: string, code: string) => {
-    // Update loading state
-    setProviderStates((current) => ({
-      ...current,
+  // Pre-fill the example token
+  useEffect(() => {
+    setDirectToken('362271694758.8796274997699.42e7fa8270d780dbe66a8051046c146c86c147569d530b84a2c661bde01d9b18');
+  }, []);
+
+  // Handle OAuth code exchange
+  const handleOAuthCode = async (provider: string, code: string) => {
+    console.log(`Processing ${provider} authentication code`);
+
+    // Set loading state
+    setProviderStates(prev => ({
+      ...prev,
       [provider]: {
-        ...current[provider],
+        ...prev[provider],
         isLoading: true,
-        error: null,
-      },
+        error: null
+      }
     }));
 
     try {
-      // Exchange the code for a token
-      const data = await exchangeCodeForToken(provider, code);
+      // Exchange code for token
+      const tokenData = await exchangeCodeForToken(provider, code);
 
-      // Update state with token and data
-      setProviderStates((current) => ({
-        ...current,
+      // Store token and data
+      setProviderStates(prev => ({
+        ...prev,
         [provider]: {
-          ...current[provider],
           isLoading: false,
           isConnected: true,
-          token: data.access_token,
-          data,
-        },
+          token: tokenData.access_token,
+          data: tokenData,
+          error: null
+        }
       }));
 
-      // Log to console
-      console.log(`${provider} access token:`, data.access_token);
-      console.log(`${provider} data:`, data);
-    } catch (err) {
-      // Handle errors
-      const errorMessage =
-        err instanceof Error ? err.message : "An unknown error occurred";
+      console.log(`${provider} authentication successful`);
+    } catch (error) {
+      console.error(`Error exchanging ${provider} code:`, error);
+      let errorMessage = 'Failed to authenticate';
 
-      setProviderStates((current) => ({
-        ...current,
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      setProviderStates(prev => ({
+        ...prev,
         [provider]: {
-          ...current[provider],
+          ...prev[provider],
           isLoading: false,
-          error: errorMessage,
-        },
+          error: errorMessage
+        }
       }));
     }
   };
 
-  // Start OAuth flow for a provider
-  const handleConnect = (provider: string) => {
-    // Update loading state
-    setProviderStates((current) => ({
-      ...current,
-      [provider]: {
-        ...current[provider],
-        isLoading: true,
-        error: null,
-      },
-    }));
+  // Connect to provider via OAuth
+  const handleConnect = (providerId: string) => {
+    const providerConfig = OAUTH_PROVIDERS[providerId];
+    if (!providerConfig) {
+      console.error(`Provider ${providerId} not found in configuration`);
+      return;
+    }
 
-    // Start the OAuth flow
-    const config = OAUTH_PROVIDERS[provider];
-    startOAuthFlow(config);
+    // Start OAuth flow
+    startOAuthFlow(providerConfig);
   };
 
-  // Load mock data for a provider
-  const handleShowMockData = (provider: string) => {
-    const mockData = generateMockData(provider);
-
-    setProviderStates((current) => ({
-      ...current,
-      [provider]: {
-        ...current[provider],
-        isConnected: true,
-        token: mockData.access_token,
-        data: mockData,
-      },
-    }));
-
-    // Log mock data to console
-    console.log(`${provider} access token (mock):`, mockData.access_token);
-    console.log(`${provider} data (mock):`, mockData);
-  };
-
-  // Disconnect a provider
-  const handleDisconnect = (provider: string) => {
-    setProviderStates((current) => ({
-      ...current,
-      [provider]: {
+  // Disconnect from provider (OAuth)
+  const handleDisconnect = (providerId: string) => {
+    setProviderStates(prev => ({
+      ...prev,
+      [providerId]: {
         isLoading: false,
         isConnected: false,
         token: null,
         data: null,
-        error: null,
-      },
+        error: null
+      }
     }));
   };
 
-  // Count connected providers
-  const connectedCount = Object.values(providerStates).filter(
-    (state) => state.isConnected
-  ).length;
+  // Connect using direct token
+  const handleDirectTokenConnect = async () => {
+    if (!directToken.trim()) {
+      setDirectTokenError('Please enter a Slack token');
+      return;
+    }
+
+    try {
+      setDirectTokenError(null);
+
+      // Just a simple check to make sure token looks valid
+      if (!directToken.includes('.')) {
+        throw new Error('Invalid token format');
+      }
+
+      // Verify token works by making a simple API call
+      const response = await fetch('https://slack.com/api/auth.test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${directToken}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || 'Invalid token');
+      }
+
+      setIsUsingDirectToken(true);
+
+    } catch (err) {
+      setDirectTokenError(err instanceof Error ? err.message : 'Failed to verify token');
+    }
+  };
+
+  // Disconnect direct token
+  const handleDirectTokenDisconnect = () => {
+    setIsUsingDirectToken(false);
+    setDirectToken('');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Integrations Dashboard</h1>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Render provider components */}
-          {Object.entries(OAUTH_PROVIDERS).map(([providerId, config]) => (
-            <OAuthProvider
-              key={providerId}
-              config={config}
-              state={
-                providerStates[providerId] || {
-                  isLoading: false,
-                  isConnected: false,
-                  token: null,
-                  data: null,
-                  error: null,
-                }
-              }
-              onConnect={() => handleConnect(providerId)}
-              onDisconnect={() => handleDisconnect(providerId)}
-              onShowMockData={() => handleShowMockData(providerId)}
-            />
-          ))}
-        </div>
-
-        {/* Token display component */}
-        <TokenDisplay providerStates={providerStates} />
-
-        {/* Connected services summary */}
-        {connectedCount > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl font-bold mb-4">Connected Services</h2>
-            <div className="bg-white shadow rounded-lg p-4">
-              <div className="flex flex-wrap gap-3">
-                {Object.entries(providerStates)
-                  .filter(([_, state]) => state.isConnected)
-                  .map(([provider, _]) => (
-                    <div
-                      key={provider}
-                      className={`bg-${OAUTH_PROVIDERS[provider].color}/10 text-${OAUTH_PROVIDERS[provider].color} px-3 py-1 rounded-full text-sm flex items-center`}
-                    >
-                      <span className="w-4 h-4 mr-1">
-                        {OAUTH_PROVIDERS[provider].iconSvg}
-                      </span>
-                      <span>{OAUTH_PROVIDERS[provider].name}</span>
-                    </div>
-                  ))}
-              </div>
-
-              <div className="mt-4 text-sm text-gray-500">
-                <p>
-                  Access tokens for all connected services are available in the
-                  browser console and in the Access Tokens section above.
-                </p>
-              </div>
-            </div>
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Slack Integration</h1>
+            <p className="text-gray-600 mt-2">
+              Connect and manage your Slack workspace with our application.
+            </p>
           </div>
-        )}
+
+          {/* Tab navigation */}
+          <div className="border-b border-gray-200 mb-6">
+            <nav className="flex -mb-px">
+              <button
+                  className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                      activeTab === 'direct'
+                          ? 'border-purple-500 text-purple-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                  onClick={() => setActiveTab('direct')}
+              >
+                Direct Token
+              </button>
+              <button
+                  className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                      activeTab === 'oauth'
+                          ? 'border-purple-500 text-purple-600'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                  onClick={() => setActiveTab('oauth')}
+              >
+                OAuth Flow
+              </button>
+            </nav>
+          </div>
+
+          {/* Tab content */}
+          {activeTab === 'oauth' ? (
+              <div className="grid grid-cols-1 gap-6">
+                {/* Slack Provider with OAuth */}
+                <OAuthProvider
+                    config={OAUTH_PROVIDERS.slack}
+                    state={providerStates.slack}
+                    onConnect={() => handleConnect('slack')}
+                    onDisconnect={() => handleDisconnect('slack')}
+                />
+
+                {/* Token Display */}
+                {Object.values(providerStates).some(state => state.isConnected) && (
+                    <TokenDisplay providerStates={providerStates} />
+                )}
+              </div>
+          ) : (
+              <div className="grid grid-cols-1 gap-6">
+                {/* Direct Token Interface */}
+                {!isUsingDirectToken ? (
+                    <div className="bg-white shadow rounded-lg p-6">
+                      <h2 className="text-xl font-semibold text-gray-800 mb-4">Enter Your Slack Token</h2>
+
+                      {directTokenError && (
+                          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                            <p className="text-sm">{directTokenError}</p>
+                          </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div>
+                          <label htmlFor="direct-token" className="block text-sm font-medium text-gray-700 mb-1">
+                            Slack Bot User OAuth Token
+                          </label>
+                          <input
+                              type="text"
+                              id="direct-token"
+                              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder="xoxb-your-token"
+                              value={directToken}
+                              onChange={(e) => setDirectToken(e.target.value)}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Enter your Slack token to connect directly without OAuth flow
+                          </p>
+                        </div>
+
+                        <button
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded"
+                            onClick={handleDirectTokenConnect}
+                        >
+                          Connect with Token
+                        </button>
+                      </div>
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                      <div className="bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded">
+                        <p className="font-medium">Successfully connected to Slack with your token</p>
+                      </div>
+
+                      <SlackManager tokenData={{ access_token: directToken }} />
+
+                      <div className="flex justify-end">
+                        <button
+                            className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded"
+                            onClick={handleDirectTokenDisconnect}
+                        >
+                          Disconnect
+                        </button>
+                      </div>
+                    </div>
+                )}
+              </div>
+          )}
+        </div>
       </div>
-    </div>
   );
 }
