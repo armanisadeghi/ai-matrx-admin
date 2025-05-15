@@ -1,48 +1,42 @@
 'use client';
 
-import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { brokerConceptActions, brokerConceptSelectors } from '@/lib/redux/brokerSlice';
+import { useAppSelector, useAppDispatch } from '@/lib/redux';
+import { brokerConceptSelectors, brokerConceptActions } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
-import { useState, useMemo, useCallback } from 'react';
+import { SlackChannel } from '../../../slack/slackClientUtils';
 
 export function ChannelSelector() {
   const dispatch = useAppDispatch();
-  const [isLoading, setIsLoading] = useState(false);
   
-  // Get token from broker
+  // Get token and channel data from brokers
   const token = useAppSelector(state => 
     brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
   );
-  
-  // Get channels list from broker or initialize empty
   const channelsJson = useAppSelector(state => 
     brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.channels)
   );
-  
-  // Memoize the parsed channels to prevent unnecessary re-renders
-  const channels = useMemo(() => {
-    if (!channelsJson) return [];
-    try {
-      return JSON.parse(channelsJson);
-    } catch (e) {
-      console.error('Error parsing channels JSON:', e);
-      return [];
-    }
-  }, [channelsJson]);
-  
-  // Get selected channel from broker
   const selectedChannel = useAppSelector(state => 
     brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
   );
   
-  // Memoize the fetch channels function to prevent unnecessary re-renders
-  const fetchChannels = useCallback(async () => {
-    if (!token) {
-      return;
-    }
-    
-    setIsLoading(true);
-    
+  // Parse channels or use empty array if not available
+  const channels: SlackChannel[] = channelsJson ? JSON.parse(channelsJson) : [];
+  
+  // No token = no channels to select
+  if (!token) {
+    return null;
+  }
+  
+  // Handle channel selection
+  const handleChannelSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    dispatch(brokerConceptActions.setText({
+      idArgs: SLACK_BROKER_IDS.selectedChannel,
+      text: e.target.value
+    }));
+  };
+  
+  // Refresh channels
+  const handleRefreshChannels = async () => {
     try {
       const response = await fetch('/api/slack/proxy', {
         method: 'POST',
@@ -72,62 +66,44 @@ export function ChannelSelector() {
         idArgs: SLACK_BROKER_IDS.channels,
         text: JSON.stringify(channelsList)
       }));
-    } catch (err) {
-      console.error('Error fetching channels:', err);
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('Error refreshing channels:', error);
     }
-  }, [token, dispatch]);
-  
-  // Select a channel - memoize this function
-  const handleChannelChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch(brokerConceptActions.setText({
-      idArgs: SLACK_BROKER_IDS.selectedChannel,
-      text: e.target.value
-    }));
-  }, [dispatch]);
-  
-  // Get selected channel name - memoize the result
-  const selectedChannelName = useMemo(() => {
-    const channel = channels.find((c: any) => c.id === selectedChannel);
-    return channel ? `#${channel.name}` : selectedChannel;
-  }, [channels, selectedChannel]);
+  };
   
   return (
-    <div className="space-y-2">
-      <label className="block font-medium text-slate-800 dark:text-slate-200">Channel:</label>
-      <div className="flex gap-2">
-        <select
-          value={selectedChannel || ''}
-          onChange={handleChannelChange}
-          className="w-full p-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-md focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500"
-          disabled={isLoading || channels.length === 0}
-        >
-          <option value="">Select a channel</option>
-          {channels.map((channel: any) => (
-            <option key={channel.id} value={channel.id} className="bg-white dark:bg-slate-800">
-              #{channel.name}
-            </option>
-          ))}
-        </select>
+    <div className="mb-6 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <label htmlFor="channel-select" className="font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+          Select Channel:
+        </label>
         
-        <button
-          onClick={fetchChannels}
-          disabled={!token || isLoading}
-          className="bg-slate-600 hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white px-4 py-2 rounded-md transition-colors disabled:opacity-50"
-        >
-          {isLoading ? 'Loading...' : 'Refresh'}
-        </button>
-      </div>
-      
-      {selectedChannel && (
-        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-md">
-          <p className="text-sm flex items-center text-slate-800 dark:text-slate-200">
-            <span className="bg-green-600 h-2 w-2 rounded-full mr-2"></span>
-            Current target: {selectedChannelName}
-          </p>
+        <div className="flex-1 flex gap-2">
+          <select
+            id="channel-select"
+            value={selectedChannel || ''}
+            onChange={handleChannelSelect}
+            className="flex-1 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-md p-2 focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500"
+          >
+            <option value="">Select a channel</option>
+            {channels.map(channel => (
+              <option key={channel.id} value={channel.id}>
+                #{channel.name}
+              </option>
+            ))}
+          </select>
+          
+          <button
+            onClick={handleRefreshChannels}
+            className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 p-2 rounded-md transition-colors"
+            aria-label="Refresh Channels"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 } 

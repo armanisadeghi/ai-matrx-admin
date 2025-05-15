@@ -1,24 +1,38 @@
 // app/(authenticated)/tests/slack/with-brokers/page.tsx
 
-import { BrokerFormExample } from "./components/BrokerForm";
-import { SlackUploader } from "./components/SlackUploader";
-import { BrokerSlackManager } from "./components/BrokerSlackManager";
+'use client';
+
+import { BrokerSlackClient } from './components/BrokerSlackClient';
+import { SlackAuthentication } from './components/SlackAuthentication';
+import { ChannelSelector } from './components/ChannelSelector';
+import { BrokerFileUploader } from './components/BrokerFileUploader';
+import { BrokerFormExample } from './components/BrokerForm';
 
 export default function SlackWithBrokersPage() {
     return (
-        <div className="p-6 bg-slate-50 dark:bg-slate-950 min-h-screen">
-            <h1 className="text-2xl font-bold mb-8 text-slate-900 dark:text-slate-100">Slack Integration</h1>
+        <div className="p-6 bg-slate-50 dark:bg-slate-950">
+            <h1 className="text-2xl font-bold mb-6 text-slate-800 dark:text-slate-200">
+                Slack Integration with Brokers
+            </h1>
             
-            <div className="grid grid-cols-1 gap-8">
-                {/* The broker registration happens in layout.tsx */}
-                <BrokerSlackManager />
+            <BrokerSlackClient>
+                {/* Authentication component that provides the Slack connection UI */}
+                <SlackAuthentication />
                 
-                <div className="mt-8 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-300">
-                    <h3 className="font-semibold mb-2">About this integration:</h3>
-                    <p className="mb-2">This Slack integration uses our broker system to manage state between components and persist data on the server.</p>
-                    <p>User tokens are saved in localStorage for demonstration purposes only.</p>
+                {/* Channel selector appears only when authenticated */}
+                <ChannelSelector />
+                
+                {/* File uploader that will use the authenticated token */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="p-6 bg-white dark:bg-slate-900 rounded-lg shadow-md">
+                        <BrokerFileUploader />
+                    </div>
+                    
+                    <div className="p-6 bg-white dark:bg-slate-900 rounded-lg shadow-md">
+                        <BrokerFormExample />
+                    </div>
                 </div>
-            </div>
+            </BrokerSlackClient>
         </div>
     );
 }
