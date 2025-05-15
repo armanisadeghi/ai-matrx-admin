@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Trash2, X, RefreshCw, Save } from "lucide-react";
+import { Trash2, X, RefreshCw, Save, Unlink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { addField, removeField } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
@@ -20,9 +20,10 @@ interface ContainerCardProps {
     isActive: boolean;
     onSelect: (containerId: string) => void;
     onDelete: (containerId: string, event: React.MouseEvent) => void;
+    onDetach?: (containerId: string, event: React.MouseEvent) => void;
 }
 
-const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, isActive, onSelect, onDelete }) => {
+const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, isActive, onSelect, onDelete, onDetach }) => {
     const dispatch = useAppDispatch();
     const [isDragOver, setIsDragOver] = useState(false);
     const [ignoreContainerMismatch, setIgnoreContainerMismatch] = useState(false);
@@ -184,18 +185,45 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
 
     if (!container) {
         return (
-            <div className="p-3 border rounded-lg cursor-pointer transition-all w-full">
-                <div className="flex justify-between items-center">
-                    <p className="text-gray-500 dark:text-gray-400">Container not found</p>
-                    {!containersMatch && !ignoreContainerMismatch && (
-                        <ContainerComparisonModal
-                            appletId={appletId}
-                            containerId={containerId}
-                            onRecompile={handleRecompile}
-                            onSetAsIdentical={handleSetAsIdentical}
-                            onCancel={handleCancel}
-                        />
-                    )}
+            <div className="p-3 border rounded-lg transition-all w-full border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20">
+                <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <p className="text-amber-700 dark:text-amber-300 font-medium">Missing Container</p>
+                            <p className="text-xs text-amber-600 dark:text-amber-400">
+                                This container exists in the applet but the source container is missing from the system
+                            </p>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                            {!containersMatch && !ignoreContainerMismatch && (
+                                <ContainerComparisonModal
+                                    appletId={appletId}
+                                    containerId={containerId}
+                                    onRecompile={handleRecompile}
+                                    onSetAsIdentical={handleSetAsIdentical}
+                                    onCancel={handleCancel}
+                                    onDetach={onDetach ? (e) => onDetach(containerId, e) : undefined}
+                                />
+                            )}
+                            {onDetach && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={(e) => onDetach(containerId, e)}
+                                    className="h-7 w-7 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/20 text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300"
+                                    title="Detach container (remove from applet but keep in system)"
+                                >
+                                    <Unlink className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                    <div className="text-xs text-amber-600 dark:text-amber-400 mt-1 bg-amber-100 dark:bg-amber-900/40 p-2 rounded-md">
+                        <p>
+                            <strong>Note:</strong> This may not be a problem if the applet has a compiled container version, but you 
+                            can detach it if it's causing issues.
+                        </p>
+                    </div>
                 </div>
             </div>
         );
@@ -240,11 +268,23 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                                 onCancel={handleCancel}
                             />
                         )}
+                        {onDetach && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => onDetach(container.id, e)}
+                                className="h-7 w-7 rounded-full hover:bg-amber-100 dark:hover:bg-amber-900/20 text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300"
+                                title="Detach container (remove from applet but keep in system)"
+                            >
+                                <Unlink className="h-4 w-4" />
+                            </Button>
+                        )}
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={(e) => onDelete(container.id, e)}
                             className="h-7 w-7 rounded-full hover:bg-red-100 dark:hover:bg-red-900/20 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300"
+                            title="Remove container"
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>

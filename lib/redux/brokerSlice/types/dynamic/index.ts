@@ -1,48 +1,100 @@
-import { PayloadAction } from '@reduxjs/toolkit';
-import { createSelector } from 'reselect';
-import { RootState } from '@/lib/redux';
-import { BrokerState, BrokerIdentifier } from '../../core/types';
-import { ensureBrokerIdAndMapping, getBrokerId } from '../../core/helpers';
+import { PayloadAction } from "@reduxjs/toolkit";
+import { createSelector } from "reselect";
+import { RootState } from "@/lib/redux";
+import { BrokerState, BrokerIdentifier } from "../../core/types";
+import { getBrokerId } from "../../core/helpers";
 
+// Reducers for handling generic, untyped data in brokers
 export const dynamicReducers = {
-  setBrokerDynamic(state: BrokerState, action: PayloadAction<{
-    idArgs: BrokerIdentifier;
-    value: any;
-  }>) {
-    const { idArgs, value } = action.payload;
-    const targetBrokerId = ensureBrokerIdAndMapping(state, idArgs, true);
-    if (!targetBrokerId) {
-      state.error = 'No brokerId could be resolved or created for dynamic value';
-      return;
-    }
-    state.brokers[targetBrokerId] = value;
-    state.error = undefined;
-  },
-  clearBrokerDynamic(state: BrokerState, action: PayloadAction<{
-    idArgs: BrokerIdentifier;
-  }>) {
-    const { idArgs } = action.payload;
-    const targetBrokerId = getBrokerId(state, idArgs);
-    if (!targetBrokerId) {
-      state.error = 'BrokerId not found for clearing dynamic value';
-      return;
-    }
-    state.brokers[targetBrokerId] = undefined;
-    state.error = undefined;
-  },
+    // Sets a dynamic value for a broker
+    setDynamicValue(
+        state: BrokerState,
+        action: PayloadAction<{
+            idArgs: BrokerIdentifier;
+            value: any;
+        }>
+    ) {
+        const { idArgs, value } = action.payload;
+        const targetBrokerId = getBrokerId(state, idArgs);
+        if (!targetBrokerId) return;
+        
+        state.brokers[targetBrokerId] = value;
+        state.error = undefined;
+    },
+
+    // Updates a dynamic value for a broker (alias for consistency)
+    updateDynamicValue(
+        state: BrokerState,
+        action: PayloadAction<{
+            idArgs: BrokerIdentifier;
+            value: any;
+        }>
+    ) {
+        const { idArgs, value } = action.payload;
+        const targetBrokerId = getBrokerId(state, idArgs);
+        if (!targetBrokerId) return;
+        
+        state.brokers[targetBrokerId] = value;
+        state.error = undefined;
+    },
+
+    // Clears a broker's dynamic value
+    clearDynamicValue(
+        state: BrokerState,
+        action: PayloadAction<{
+            idArgs: BrokerIdentifier;
+        }>
+    ) {
+        const { idArgs } = action.payload;
+        const targetBrokerId = getBrokerId(state, idArgs);
+        if (!targetBrokerId) return;
+        
+        // Create new brokers object without the specified broker
+        const { [targetBrokerId]: removed, ...newBrokers } = state.brokers;
+        state.brokers = newBrokers;
+        state.error = undefined;
+    },
 };
 
-const selectBrokerDynamic = createSelector(
-  [(state: RootState, idArgs: BrokerIdentifier) => state.brokerConcept.brokers[getBrokerId(state.brokerConcept, idArgs) || '']],
-  (brokerValue): any => brokerValue
+// Input selectors to avoid object creation in selectors
+const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
+
+// Selectors
+const selectDynamicValue = createSelector(
+    [
+        (state: RootState) => state.brokerConcept,
+        selectIdArgs
+    ],
+    (brokerConcept, idArgs): any => {
+        const brokerId = getBrokerId(brokerConcept, idArgs);
+        return brokerId ? brokerConcept.brokers[brokerId] : undefined;
+    }
 );
 
-const selectBrokerDynamicType = createSelector(
-  [selectBrokerDynamic],
-  (value): string => typeof value
+const selectDynamicValueType = createSelector(
+    [selectDynamicValue], 
+    (value): string => typeof value
+);
+
+const selectDynamicValueExists = createSelector(
+    [selectDynamicValue],
+    (value): boolean => value !== undefined
+);
+
+const selectDynamicValueIsNull = createSelector(
+    [selectDynamicValue],
+    (value): boolean => value === null
+);
+
+const selectDynamicValueIsObject = createSelector(
+    [selectDynamicValue],
+    (value): boolean => value !== null && typeof value === 'object'
 );
 
 export const dynamicSelectors = {
-  selectBrokerDynamic,
-  selectBrokerDynamicType,
+    selectDynamicValue,
+    selectDynamicValueType,
+    selectDynamicValueExists,
+    selectDynamicValueIsNull,
+    selectDynamicValueIsObject,
 };
