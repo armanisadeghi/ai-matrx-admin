@@ -7,12 +7,11 @@ import { FieldDefinition } from "@/types/customAppTypes";
 
 const TextareaField: React.FC<{
     field: FieldDefinition;
-    appletId: string;
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
-    const { id, label, placeholder, componentProps } = field;
+}> = ({ field, isMobile, source="applet", disabled=false }) => {
+    const { id, placeholder, componentProps } = field;
     const { 
         rows,
         maxLength,
@@ -57,6 +56,7 @@ const TextareaField: React.FC<{
                 maxLength={maxLength}
                 spellCheck={spellCheck}
                 style={resizeStyle}
+                disabled={disabled}
             />
         </div>
     );

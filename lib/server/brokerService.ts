@@ -1,5 +1,5 @@
 // lib/server/brokerService.ts
-import { BrokerIdentifier } from '../redux/brokerSlice/core/types';
+import { BrokerIdentifier } from '../redux/brokerSlice/types';
 import { brokerCache } from './brokerCache';
 import { cookies } from 'next/headers';
 

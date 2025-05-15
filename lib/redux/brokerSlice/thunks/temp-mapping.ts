@@ -1,6 +1,6 @@
 // core/thunks.ts
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { BrokerMapEntry, BrokerIdentifier } from "./types";
+import { BrokerMapEntry, BrokerIdentifier } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { brokerConceptActions } from "../index";
 
@@ -14,15 +14,12 @@ export interface TempBrokerConfig {
     // Pattern for generating IDs
     itemIdPattern?: (index: number) => string;
     brokerIdPattern?: (index: number) => string;
-    // Whether to auto-cleanup on unmount
-    autoCleanup?: boolean;
 }
 
 export interface TempBrokerResult {
     sourceId: string;
     entries: BrokerMapEntry[];
     identifiers: BrokerIdentifier[];
-    cleanup: () => void;
 }
 
 // Create temporary broker mappings
@@ -59,25 +56,12 @@ export const createTempBrokerMappings = createAsyncThunk<TempBrokerResult, TempB
         }
 
         // Add to broker map
-        const action = await dispatch(brokerConceptActions.addMapEntries(entries));
-
-        // Create cleanup function
-        const cleanup = () => {
-            identifiers.forEach((id) => {
-                dispatch(
-                    brokerConceptActions.removeMapEntry({
-                        source: id.source,
-                        itemId: id.itemId,
-                    })
-                );
-            });
-        };
+        dispatch(brokerConceptActions.addMapEntries(entries));
 
         return {
             sourceId,
             entries,
             identifiers,
-            cleanup,
         };
     }
 );
@@ -87,7 +71,6 @@ export const createTempBroker = createAsyncThunk<
     {
         identifier: BrokerIdentifier;
         entry: BrokerMapEntry;
-        cleanup: () => void;
     },
     {
         source: string;
@@ -109,6 +92,5 @@ export const createTempBroker = createAsyncThunk<
     return {
         identifier: result.identifiers[0],
         entry: result.entries[0],
-        cleanup: result.cleanup,
     };
 });

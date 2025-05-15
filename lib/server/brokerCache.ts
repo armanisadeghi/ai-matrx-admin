@@ -1,7 +1,7 @@
 // lib/server/brokerCache.ts
 import { createClient } from 'redis';
 import { cookies } from 'next/headers';
-import { BrokerIdentifier } from '../redux/brokerSlice/core/types';
+import { BrokerIdentifier } from '../redux/brokerSlice/types';
 
 class ServerBrokerCache {
   private redis: ReturnType<typeof createClient>;

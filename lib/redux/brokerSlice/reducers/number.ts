@@ -2,8 +2,8 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
-import { getBrokerId } from "../../core/helpers";
-import { BrokerState, BrokerIdentifier } from "../../core/types";
+import { getBrokerId } from "../utils";
+import { BrokerState, BrokerIdentifier } from "../types";
 
 
 // Type guards
@@ -130,56 +130,3 @@ export const numberReducers = {
     },
 };
 
-// Input selector
-const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
-
-// Selectors
-const selectNumber = createSelector(
-    [
-        (state: RootState) => state.brokerConcept,
-        selectIdArgs
-    ],
-    (brokerConcept, idArgs): number | undefined => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
-        if (!brokerId) return undefined;
-        
-        const brokerValue = brokerConcept.brokers[brokerId];
-        return isNumber(brokerValue) ? brokerValue : undefined;
-    }
-);
-
-const selectInteger = createSelector(
-    [selectNumber],
-    (value): number | undefined => {
-        return value !== undefined && Number.isInteger(value) ? value : undefined;
-    }
-);
-
-const selectNumberExists = createSelector(
-    [selectNumber],
-    (value): boolean => value !== undefined
-);
-
-const selectIsPositive = createSelector(
-    [selectNumber],
-    (value): boolean => value !== undefined && value > 0
-);
-
-const selectIsNegative = createSelector(
-    [selectNumber],
-    (value): boolean => value !== undefined && value < 0
-);
-
-const selectAbsoluteValue = createSelector(
-    [selectNumber],
-    (value): number | undefined => value !== undefined ? Math.abs(value) : undefined
-);
-
-export const numberSelectors = {
-    selectNumber,
-    selectInteger,
-    selectNumberExists,
-    selectIsPositive,
-    selectIsNegative,
-    selectAbsoluteValue,
-};

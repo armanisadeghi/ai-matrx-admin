@@ -1,8 +1,8 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
-import { BrokerState, BrokerIdentifier } from "../../core/types";
-import { getBrokerId } from "../../core/helpers";
+import { BrokerState, BrokerIdentifier } from "../types";
+import { getBrokerId } from "../utils";
 
 // Reducers for handling generic, untyped data in brokers
 export const dynamicReducers = {
@@ -56,45 +56,3 @@ export const dynamicReducers = {
     },
 };
 
-// Input selectors to avoid object creation in selectors
-const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
-
-// Selectors
-const selectDynamicValue = createSelector(
-    [
-        (state: RootState) => state.brokerConcept,
-        selectIdArgs
-    ],
-    (brokerConcept, idArgs): any => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
-        return brokerId ? brokerConcept.brokers[brokerId] : undefined;
-    }
-);
-
-const selectDynamicValueType = createSelector(
-    [selectDynamicValue], 
-    (value): string => typeof value
-);
-
-const selectDynamicValueExists = createSelector(
-    [selectDynamicValue],
-    (value): boolean => value !== undefined
-);
-
-const selectDynamicValueIsNull = createSelector(
-    [selectDynamicValue],
-    (value): boolean => value === null
-);
-
-const selectDynamicValueIsObject = createSelector(
-    [selectDynamicValue],
-    (value): boolean => value !== null && typeof value === 'object'
-);
-
-export const dynamicSelectors = {
-    selectDynamicValue,
-    selectDynamicValueType,
-    selectDynamicValueExists,
-    selectDynamicValueIsNull,
-    selectDynamicValueIsObject,
-};

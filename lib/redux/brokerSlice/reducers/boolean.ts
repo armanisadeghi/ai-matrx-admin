@@ -2,8 +2,8 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
-import { BrokerState, BrokerIdentifier } from "../../core/types";
-import { getBrokerId } from "../../core/helpers";
+import { BrokerState, BrokerIdentifier } from "../types";
+import { getBrokerId } from "../utils";
 
 // Type guard
 const isBoolean = (value: any): value is boolean => typeof value === "boolean";
@@ -89,42 +89,3 @@ export const booleanReducers = {
     },
 };
 
-// Input selector
-const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
-
-// Selectors
-const selectBoolean = createSelector(
-    [
-        (state: RootState) => state.brokerConcept,
-        selectIdArgs
-    ],
-    (brokerConcept, idArgs): boolean | undefined => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
-        if (!brokerId) return undefined;
-        
-        const brokerValue = brokerConcept.brokers[brokerId];
-        return isBoolean(brokerValue) ? brokerValue : undefined;
-    }
-);
-
-const selectIsTrue = createSelector(
-    [selectBoolean],
-    (value): boolean => value === true
-);
-
-const selectIsFalse = createSelector(
-    [selectBoolean],
-    (value): boolean => value === false
-);
-
-const selectBooleanExists = createSelector(
-    [selectBoolean],
-    (value): boolean => value !== undefined
-);
-
-export const booleanSelectors = {
-    selectBoolean,
-    selectIsTrue,
-    selectIsFalse,
-    selectBooleanExists,
-};

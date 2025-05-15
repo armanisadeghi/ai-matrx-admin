@@ -16,7 +16,7 @@ import { ensureValidWidthClass } from "@/features/applet/constants/field-constan
 import { GripHorizontal, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FieldDefinition } from "@/types/customAppTypes";
-import { BrokerIdentifier } from "@/lib/redux/brokerSlice/core/types";
+import { BrokerIdentifier } from "@/lib/redux/brokerSlice/types";
 
 // Use action creators from brokerConceptActions
 const { setTable, updateCell, addRow, removeRow, addColumn, removeColumn, updateColumn, updateRowOrder, updateColumnOrder } =
