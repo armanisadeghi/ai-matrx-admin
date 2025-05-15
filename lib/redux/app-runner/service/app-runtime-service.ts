@@ -97,6 +97,18 @@ export async function fetchAppById(id: string): Promise<{
     return transformAppWithApplets(rawData);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 // Fetch app by slug
 export async function fetchAppBySlug(slug: string): Promise<{ 
     appConfig: CustomAppConfig;
@@ -107,6 +119,20 @@ export async function fetchAppBySlug(slug: string): Promise<{
     console.log("fetchAppBySlug rawData", rawData);
     return transformAppWithApplets(rawData);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Transform and return app with applets config data
 export async function fetchTransformedAppAndApplets(idOrSlug: string, isSlug: boolean = true): Promise<{ 

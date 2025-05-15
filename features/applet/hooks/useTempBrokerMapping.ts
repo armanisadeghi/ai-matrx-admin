@@ -4,7 +4,8 @@ import { useAppDispatch } from "@/lib/redux/hooks";
 import { v4 as uuidv4 } from "uuid";
 import { ComponentType } from "@/types/customAppTypes";
 import { componentOptions } from "@/features/applet/constants/field-constants";
-import { setBrokerMapConcept } from "@/lib/redux/app-runner/slices/brokerSliceConcept";
+import { brokerConceptActions } from "@/lib/redux/brokerSlice";
+
 
 export default function useTempBrokerMapping(fieldId: string) {
     const [stableAppletId] = useState(() => uuidv4());
@@ -35,7 +36,7 @@ export default function useTempBrokerMapping(fieldId: string) {
         });
         
         dispatch(setBrokerMap(mappings));
-        dispatch(setBrokerMapConcept(mappings));
+        dispatch(brokerConceptActions.setMap(mappings));
 
         console.warn('NOTICE: useTempBrokerMapping -> Conceptual broker mapping being set to the broker map concept slice')
   

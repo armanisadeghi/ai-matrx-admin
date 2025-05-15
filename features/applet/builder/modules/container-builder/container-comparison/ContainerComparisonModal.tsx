@@ -4,7 +4,7 @@ import { useAppDispatch } from "@/lib/redux/hooks"; // Need this import
 import { RootState } from "@/lib/redux/store";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Unlink } from "lucide-react";
 import { ContainerComparisonDetails } from "./ContainerComparisonDetails";
 import { selectContainerComparisonResult, selectDoContainersMatch } from "@/lib/redux/app-builder/selectors/containerMatchSelectors";
 import { selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors"; // Need this
@@ -16,6 +16,7 @@ interface ContainerComparisonModalProps {
     onRecompile?: () => void;
     onSetAsIdentical?: () => void;
     onCancel?: () => void;
+    onDetach?: (event: React.MouseEvent) => void;
 }
 
 export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> = ({
@@ -24,6 +25,7 @@ export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> =
     onRecompile,
     onSetAsIdentical,
     onCancel,
+    onDetach,
 }) => {
     const dispatch = useAppDispatch();
     const [open, setOpen] = React.useState(false);
@@ -50,6 +52,11 @@ export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> =
     
     const handleCancel = () => {
         onCancel?.();
+        setOpen(false);
+    };
+
+    const handleDetach = (e: React.MouseEvent) => {
+        onDetach?.(e);
         setOpen(false);
     };
     
@@ -94,13 +101,25 @@ export const ContainerComparisonModal: React.FC<ContainerComparisonModalProps> =
                 <ContainerComparisonDetails appletId={appletId} containerId={containerId} />
                 <div className="flex justify-end gap-3 mt-6 pt-4 border-t dark:border-zinc-700">
                     {missingDatabaseContainer && (
-                        <Button 
-                            variant="default" 
-                            onClick={handleCreateContainer}
-                            className="bg-blue-600 hover:bg-blue-700"
-                        >
-                            Create Container
-                        </Button>
+                        <>
+                            <Button 
+                                variant="default" 
+                                onClick={handleCreateContainer}
+                                className="bg-blue-600 hover:bg-blue-700"
+                            >
+                                Create Container
+                            </Button>
+                            {onDetach && (
+                                <Button 
+                                    variant="outline" 
+                                    onClick={handleDetach}
+                                    className="flex items-center gap-1 text-amber-600 border-amber-300 dark:text-amber-400 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/50"
+                                >
+                                    <Unlink className="h-4 w-4" />
+                                    Detach Container
+                                </Button>
+                            )}
+                        </>
                     )}
                     <Button variant="destructive" onClick={handleRecompile} disabled={!onRecompile || missingDatabaseContainer}>
                         Recompile

@@ -20,6 +20,7 @@ interface ContainerComparisonModalProps {
     onRecompile?: () => void;
     onSetAsIdentical?: () => void;
     onCancel?: () => void;
+    onDetach?: (event: React.MouseEvent) => void;
 }
 
 

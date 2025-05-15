@@ -40,7 +40,7 @@ import { fieldBuilderSlice } from "./app-builder/slices/fieldBuilderSlice";
 import customAppRuntimeSlice from "./app-runner/slices/customAppRuntimeSlice";
 import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSlice";
 import brokersSlice from "./app-runner/slices/brokerSlice";
-import brokerConceptSlice from "./brokerSlice";
+import brokerConceptSlice from "./brokerSlice/slice";
 
 
 

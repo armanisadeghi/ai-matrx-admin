@@ -47,6 +47,11 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, o
     const [containerToDelete, setContainerToDelete] = useState<string | null>(null);
     const [isDeletingContainer, setIsDeletingContainer] = useState<boolean>(false);
 
+    // Detach dialog state
+    const [isDetachDialogOpen, setIsDetachDialogOpen] = useState<boolean>(false);
+    const [containerToDetach, setContainerToDetach] = useState<string | null>(null);
+    const [isDetachingContainer, setIsDetachingContainer] = useState<boolean>(false);
+
     // Selectors
     const activeContainerId = useAppSelector(selectActiveContainerId);
     const allContainerIds = useAppSelector(selectAllContainerIds);
@@ -147,6 +152,49 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, o
         }
     };
 
+    // Handle container detachment (remove from applet without deleting)
+    const openDetachDialog = (containerId: string, event: React.MouseEvent) => {
+        // Stop the click event from bubbling up to the parent (container selection)
+        event.stopPropagation();
+        setContainerToDetach(containerId);
+        setIsDetachDialogOpen(true);
+    };
+
+    const handleDetachContainer = async () => {
+        if (!containerToDetach || !appletId) return;
+
+        setIsDetachingContainer(true);
+
+        try {
+            // Dispatch the remove container action
+            dispatch(removeContainer({ appletId, containerId: containerToDetach }));
+
+            // If this was the active container, clear it
+            if (activeContainerId === containerToDetach) {
+                dispatch(setActiveContainer(null));
+            }
+
+            // Notify the user
+            toast({
+                title: "Success",
+                description: "Container removed from applet but still available for reuse.",
+            });
+
+            // Return a resolved promise to indicate success
+            return Promise.resolve();
+        } catch (error) {
+            console.error("Error removing container:", error);
+            toast({
+                title: "Error",
+                description: "Failed to remove container from applet.",
+                variant: "destructive",
+            });
+            return Promise.reject(error);
+        } finally {
+            setIsDetachingContainer(false);
+        }
+    };
+
     // Handle container deletion
     const openDeleteDialog = (containerId: string, event: React.MouseEvent) => {
         // Stop the click event from bubbling up to the parent (container selection)
@@ -201,6 +249,17 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, o
         }
     };
 
+    const handleSaveAfterDetach = async () => {
+        if (!appletId) return Promise.resolve();
+
+        try {
+            return saveAndRecompileApplet();
+        } catch (error) {
+            console.error("Error saving applet after detaching container:", error);
+            return Promise.reject(error);
+        }
+    };
+
     return (
         <>
             {/* DeleteConfirmationDialog component */}
@@ -215,6 +274,20 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, o
                 hasSecondStep={true}
                 secondStepButtonText="Remove & Save Immediately"
                 onSecondStepConfirm={handleSaveAfterDelete}
+            />
+
+            {/* DetachConfirmationDialog component */}
+            <ConfirmationDialog
+                open={isDetachDialogOpen}
+                onOpenChange={setIsDetachDialogOpen}
+                handleDeleteGroup={handleDetachContainer}
+                loading={isDetachingContainer}
+                title="Detach Container"
+                description="Are you sure you want to remove this container from the applet? The container will still be available in the system for reuse."
+                deleteButtonText="Detach Container"
+                hasSecondStep={true}
+                secondStepButtonText="Detach & Save Immediately"
+                onSecondStepConfirm={handleSaveAfterDetach}
             />
 
             <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden">
@@ -280,6 +353,7 @@ const ContainersList: React.FC<ContainersListProps> = ({ appletId, appletName, o
                                     isActive={activeContainerId === container.id}
                                     onSelect={handleContainerSelect}
                                     onDelete={openDeleteDialog}
+                                    onDetach={openDetachDialog}
                                 />
                             ))}
                         </div>

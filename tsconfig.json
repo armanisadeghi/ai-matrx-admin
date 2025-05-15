@@ -3,7 +3,7 @@
         "lib": ["dom", "dom.iterable", "esnext"],
         "target": "es2018",
         "allowJs": true,
-        "types": ["lodash"],
+        "types": ["node", "react", "react-dom"],
         "skipLibCheck": true,
         "noEmit": true,
         "esModuleInterop": true,
@@ -43,31 +43,32 @@
     "include": [
         "**/*.ts",
         "**/*.tsx",
+        "**/*.js",
+        "**/*.jsx",
         ".next/types/**/*.ts",
         "tests/**/*",
         "scripts/**/*",
         "node_modules/flowbite-react/lib/esm/index.d.ts",
         "global.d.ts",
         "cartesia.d.ts",
-        "components/FileManager/FilePreview/pdf-preview/PDFPreview.tsx",
-        "features/rich-text-editor/utils/PatternUtilsOLD.ts",
-        "app/(authenticated)/demo/component-demo/json-again/grok",
-        "components/socket/form-builder/DynamicFormBackUp.tsx",
-        "features/scraper/utils/json-path-navigation-util.ts"
-, "components/matrx/buttons/InlineCopyButtonGoogle.tsx"    ],
-    "exclude": ["node_modules", "_armani", "_dev"],
+        "components/**/*",
+        "features/**/*",
+        "app/**/*"
+    ],
+    "exclude": ["node_modules", "_armani", "_dev", ".next", "out"],
     "ts-node": {
         "require": ["tsconfig-paths/register"],
         "transpileOnly": true,
         "compilerOptions": {
-            "types": ["lodash", "node"],
+            "types": ["node"],
             "lib": ["dom", "dom.iterable", "esnext"],
             "module": "commonjs",
             "moduleResolution": "node",
             "baseUrl": ".",
             "paths": {
                 "@/*": ["./*"],
-                "@components/ui/*": ["./components/ui/*"]
+                "@components/ui/*": ["./components/ui/*"],
+                "@components/*": ["./components/*"]
             }
         }
     }

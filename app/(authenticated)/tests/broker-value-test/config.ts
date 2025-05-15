@@ -10,8 +10,8 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
-        path: 'link-here',
+        title: 'Normal Broker Fields',
+        path: 'normal-broker-fields',
         relative: true,
         description: ''
     },

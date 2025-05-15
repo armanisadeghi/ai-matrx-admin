@@ -11,7 +11,6 @@ const DesktopMenu = () => {
             <div className="flex-shrink-0">
                 <LogoHorizontal size="md" />
             </div>
-
             <nav className="ml-6 space-x-4">
                 <a href="#" className="text-foreground/60 hover:text-foreground">Platform</a>
                 <a href="#" className="text-foreground/60 hover:text-foreground">Developers</a>
@@ -19,14 +18,17 @@ const DesktopMenu = () => {
                 <a href="#" className="text-foreground/60 hover:text-foreground">Docs</a>
                 <a href="#" className="text-foreground/60 hover:text-foreground">Blog</a>
             </nav>
-
             <div className="ml-auto flex items-center space-x-3">
                 <StandaloneThemeSwitcher initialTheme={'dark'}/>
                 <Link href="/dashboard">
-                    <Button variant="primary">Dashboard</Button>
+                    <Button className="bg-slate-700 hover:bg-slate-600 text-white dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-white">
+                        Dashboard
+                    </Button>
                 </Link>
                 <Link href="/sign-up">
-                    <Button>Get Started</Button>
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white">
+                        Get Started
+                    </Button>
                 </Link>
             </div>
         </div>
@@ -39,31 +41,30 @@ const MobileMenu = () => {
             <div className="flex-shrink-0">
                 <LogoHorizontal size="md" />
             </div>
-
             <div className="ml-auto flex items-center space-x-3">
                 <Link href="/dashboard">
-                    <Button variant="outline">Dashboard</Button>
+                    <Button className="bg-slate-700 hover:bg-slate-600 text-white dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-white">
+                        Dashboard
+                    </Button>
                 </Link>
                 <StandaloneThemeSwitcher initialTheme={'dark'}/>
-
                 <details className="relative">
                     <summary className="list-none">
                         <Button
-                            variant="ghost"
+                            className="bg-transparent hover:bg-slate-200 dark:hover:bg-slate-800 p-2"
                             size="icon"
                         >
                             <Menu className="h-5 w-5" />
                         </Button>
                     </summary>
-
-                    <div className="absolute right-0 mt-2 w-48 bg-background border border-border/40 rounded-md shadow-lg">
+                    <div className="absolute right-0 mt-2 w-48 bg-background border border-slate-200 dark:border-slate-800 rounded-md shadow-lg">
                         <nav className="py-2">
-                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-accent">Solution</a>
-                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-accent">Developers</a>
-                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-accent">Pricing</a>
-                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-accent">Docs</a>
-                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-accent">Blog</a>
-                            <Link href="/dashboard" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-accent">
+                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Platform</a>
+                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Developers</a>
+                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Pricing</a>
+                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Docs</a>
+                            <a href="#" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">Blog</a>
+                            <Link href="/dashboard" className="block px-4 py-2 text-foreground/60 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Dashboard
                             </Link>
                         </nav>
@@ -76,7 +77,7 @@ const MobileMenu = () => {
 
 const TopMenu = () => {
     return (
-        <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-50 w-full bg-background">
             <DesktopMenu />
             <MobileMenu />
         </header>
