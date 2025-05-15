@@ -264,7 +264,7 @@ export function BrokerFileUploader() {
         <div className="space-y-2">
           <label className="block text-sm font-medium text-slate-800 dark:text-slate-200">Select File</label>
           <FileUploadWithStorage
-            useMiniUploader={true}
+            useMiniUploader={false}
             multiple={false}
             saveTo="private"
             onUploadComplete={handleUploadComplete}
