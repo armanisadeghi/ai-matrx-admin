@@ -6,7 +6,7 @@ import os from 'os';
 import path from 'path';
 import { writeFile } from 'fs/promises';
 import { getServerBroker } from '@/lib/server/brokerService';
-import { cookies } from 'next/headers';
+// Import cookies only if needed - removed for now
 
 // Define broker identifiers
 const BROKER_IDS = {
@@ -23,14 +23,22 @@ export async function POST(request: NextRequest) {
   let tempFilePath = null;
   
   try {
-    // Get session ID from cookies or headers
-    const cookiesObj = await cookies();
-    const sessionId = cookiesObj.get('session-id')?.value || 
-                     request.headers.get('x-session-id');
+    // Get session ID from headers - simplified approach
+    const sessionId = request.headers.get('x-session-id');
+    
+    // Log session ID detection for debugging
+    console.log('Session ID detection:', {
+      fromHeader: !!sessionId,
+      sessionId
+    });
     
     if (!sessionId) {
       return NextResponse.json(
-        { ok: false, error: 'No session ID found' },
+        { 
+          ok: false, 
+          error: 'No session ID found',
+          help: 'Please ensure you have an x-session-id header' 
+        },
         { status: 401 }
       );
     }
@@ -75,7 +83,8 @@ export async function POST(request: NextRequest) {
           error: 'Missing required values',
           details: {
             hasToken: !!token,
-            hasChannel: !!channel
+            hasChannel: !!channel,
+            sessionId
           }
         },
         { status: 400 }
@@ -83,7 +92,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract filename from URL or use broker value
-    const urlFilename = fileUrl.split('/').pop().split('?')[0];
+    const urlFilename = fileUrl.split('/').pop()?.split('?')[0] || 'file';
     const uploadFilename = filename || urlFilename;
     const uploadTitle = requestTitle || title || uploadFilename;
     const uploadComment = requestComment || initialComment || '';
@@ -204,7 +213,8 @@ export async function POST(request: NextRequest) {
 // Configure the API route to handle large files
 export const config = {
   api: {
-    bodyParser: false,
-    responseLimit: '50mb',
+    bodyParser: {
+      sizeLimit: '50mb',
+    },
   },
 };

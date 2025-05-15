@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { brokerConceptActions, brokerConceptSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
@@ -16,6 +16,29 @@ export function BrokerFileUploader() {
   const [statusMessage, setStatusMessage] = useState('');
   const [shouldNotify, setShouldNotify] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFileResult[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  
+  // Get session ID from cookies once on mount
+  useEffect(() => {
+    // Function to get cookie by name
+    const getCookie = (name: string): string | null => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+      return null;
+    };
+    
+    // Get and set session ID
+    const id = getCookie('session-id');
+    setSessionId(id);
+    
+    // If no session ID in cookies, generate one and store it
+    if (!id) {
+      const generatedId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      document.cookie = `session-id=${generatedId}; path=/; max-age=86400`;
+      setSessionId(generatedId);
+    }
+  }, []);
   
   // Get values from brokers
   const token = useAppSelector(state => 
@@ -109,6 +132,12 @@ export function BrokerFileUploader() {
       return;
     }
     
+    if (!sessionId) {
+      setUploadStatus('error');
+      setStatusMessage('Session ID not found. Please refresh the page and try again.');
+      return;
+    }
+    
     let progressInterval: NodeJS.Timeout | undefined;
     
     try {
@@ -134,6 +163,7 @@ export function BrokerFileUploader() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-session-id': sessionId
         },
         body: JSON.stringify({
           fileUrl: fileDetails.url,
@@ -181,7 +211,7 @@ export function BrokerFileUploader() {
     } finally {
       setIsSlackUploading(false);
     }
-  }, [token, selectedChannel, uploadedFiles, filename, title, initialComment, shouldNotify, resetForm]);
+  }, [token, selectedChannel, uploadedFiles, filename, title, initialComment, shouldNotify, resetForm, sessionId]);
   
   // Format file size for display - memoize function
   const formatFileSize = useCallback((bytes: number): string => {
