@@ -4,9 +4,12 @@ import { useAppSelector, useAppDispatch } from '@/lib/redux';
 import { brokerConceptSelectors, brokerConceptActions } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 import { SlackChannel } from '../../../slack/slackClientUtils';
+import { Hash, RefreshCw, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export function ChannelSelector() {
   const dispatch = useAppDispatch();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Get token and channel data from brokers
   const token = useAppSelector(state => 
@@ -37,6 +40,10 @@ export function ChannelSelector() {
   
   // Refresh channels
   const handleRefreshChannels = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    
     try {
       const response = await fetch('/api/slack/proxy', {
         method: 'POST',
@@ -66,17 +73,30 @@ export function ChannelSelector() {
         idArgs: SLACK_BROKER_IDS.channels,
         text: JSON.stringify(channelsList)
       }));
+      
+      // Auto-select first channel if none selected
+      if (channelsList.length > 0 && !selectedChannel) {
+        dispatch(brokerConceptActions.setText({
+          idArgs: SLACK_BROKER_IDS.selectedChannel,
+          text: channelsList[0].id
+        }));
+      }
     } catch (error) {
       console.error('Error refreshing channels:', error);
+    } finally {
+      setIsRefreshing(false);
     }
   };
   
   return (
-    <div className="mb-6 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+    <div className="mb-6 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <label htmlFor="channel-select" className="font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
-          Select Channel:
-        </label>
+        <div className="flex items-center gap-2">
+          <Hash className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+          <label htmlFor="channel-select" className="font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap">
+            Select Channel:
+          </label>
+        </div>
         
         <div className="flex-1 flex gap-2">
           <select
@@ -95,15 +115,24 @@ export function ChannelSelector() {
           
           <button
             onClick={handleRefreshChannels}
-            className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 p-2 rounded-md transition-colors"
+            disabled={isRefreshing}
+            className="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 p-2 rounded-md transition-colors flex items-center justify-center disabled:opacity-50"
             aria-label="Refresh Channels"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            {isRefreshing ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-5 w-5" />
+            )}
           </button>
         </div>
       </div>
+      
+      {channels.length === 0 && (
+        <div className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+          No channels found. Click refresh to load available channels.
+        </div>
+      )}
     </div>
   );
 } 

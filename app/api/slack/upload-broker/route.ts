@@ -12,6 +12,7 @@ import { cookies } from 'next/headers';
 const BROKER_IDS = {
   token: { source: 'api', itemId: 'slack_token' },
   channels: { source: 'slack', itemId: 'slack_channels' },
+  selectedChannel: { source: 'slack', itemId: 'selected_channel' },
   filename: { source: 'slack', itemId: 'slack_filename' },
   title: { source: 'slack', itemId: 'slack_title' },
   initialComment: { source: 'slack', itemId: 'slack_initial_comment' },
@@ -34,92 +35,116 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get values from brokers instead of form data
-    const [token, channels, filename, title, initialComment] = await Promise.all([
+    // Get values from brokers
+    const [token, brokerChannels, selectedChannel, filename, title, initialComment] = await Promise.all([
       getServerBroker(BROKER_IDS.token, sessionId),
       getServerBroker(BROKER_IDS.channels, sessionId),
+      getServerBroker(BROKER_IDS.selectedChannel, sessionId),
       getServerBroker(BROKER_IDS.filename, sessionId),
       getServerBroker(BROKER_IDS.title, sessionId),
       getServerBroker(BROKER_IDS.initialComment, sessionId),
     ]);
 
-    // File still needs to come from form data (can't be brokered)
-    const formData = await request.formData();
-    const fileData = formData.get('file') as File;
+    // Get data from the request body
+    const body = await request.json();
+    const { 
+      fileUrl, 
+      fileType, 
+      fileDetails,
+      channel: requestChannel, // Allow channel to be provided in request
+      title: requestTitle,
+      initialComment: requestComment,
+      notify
+    } = body;
 
-    if (!fileData) {
+    if (!fileUrl) {
       return NextResponse.json(
-        { ok: false, error: 'No file provided' },
+        { ok: false, error: 'No file URL provided' },
         { status: 400 }
       );
     }
 
-    // Validate required broker values
-    if (!token || !channels) {
+    // Use request channel first, then selected channel from broker, then fallback to generic channels
+    const channel = requestChannel || selectedChannel || brokerChannels;
+
+    // Validate required values
+    if (!token || !channel) {
       return NextResponse.json(
         { 
           ok: false, 
-          error: 'Missing required broker values',
+          error: 'Missing required values',
           details: {
             hasToken: !!token,
-            hasChannels: !!channels
+            hasChannel: !!channel
           }
         },
         { status: 400 }
       );
     }
 
-    // Use broker values or fallbacks
-    const uploadFilename = filename || fileData.name;
-    const uploadTitle = title || uploadFilename;
+    // Extract filename from URL or use broker value
+    const urlFilename = fileUrl.split('/').pop().split('?')[0];
+    const uploadFilename = filename || urlFilename;
+    const uploadTitle = requestTitle || title || uploadFilename;
+    const uploadComment = requestComment || initialComment || '';
 
     // Initialize the Slack Web Client with the broker token
     const client = new WebClient(token as string);
 
     try {
-      // Try to join the channel (same as before)
-      console.log(`Attempting to join channel ${channels} before upload...`);
+      // Try to join the channel
+      console.log(`Attempting to join channel ${channel} before upload...`);
       try {
-        await client.conversations.join({ channel: channels as string });
-        console.log(`Successfully joined channel ${channels}`);
+        await client.conversations.join({ channel: channel as string });
+        console.log(`Successfully joined channel ${channel}`);
       } catch (joinError: any) {
         console.log(`Note: Could not explicitly join channel: ${joinError.message}`);
       }
 
-      console.log(`Processing file upload: ${uploadFilename} (${fileData.size} bytes) to channel ${channels}`);
+      console.log(`Processing file upload: ${uploadFilename} to channel ${channel}`);
 
-      // Convert File to Buffer
-      const arrayBuffer = await fileData.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      // Download the file from the URL
+      console.log(`Downloading file from: ${fileUrl}`);
+      const fileResponse = await fetch(fileUrl);
+      
+      if (!fileResponse.ok) {
+        throw new Error(`Failed to download file: ${fileResponse.statusText}`);
+      }
+      
+      const fileBuffer = Buffer.from(await fileResponse.arrayBuffer());
 
       // Create a temporary file
       const tmpDir = os.tmpdir();
       tempFilePath = path.join(tmpDir, `slack-upload-${Date.now()}-${uploadFilename}`);
       
       console.log(`Writing to temporary file: ${tempFilePath}`);
-      await writeFile(tempFilePath, buffer);
+      await writeFile(tempFilePath, fileBuffer);
 
       console.log('Uploading file to Slack...');
       
       try {
         // Upload the file using broker values
-        const result = await client.filesUploadV2({
-          channel_id: channels as string,
+        const uploadOptions: any = {
+          channel_id: channel as string,
           filename: uploadFilename,
           title: uploadTitle as string,
           file: tempFilePath,
-          initial_comment: initialComment as string || undefined
-        });
+        };
+        
+        // Only add initial_comment if it exists
+        if (uploadComment) {
+          uploadOptions.initial_comment = uploadComment as string;
+        }
+        
+        // Handle notification preference if specified
+        if (notify !== undefined) {
+          uploadOptions.notify = Boolean(notify);
+        }
+
+        const result = await client.filesUploadV2(uploadOptions);
 
         console.log('Upload successful:', result.ok);
         
-        // Optionally, save the result to a broker
-        // await setServerBroker(
-        //   { source: 'slack', itemId: 'last_upload_result' },
-        //   result,
-        //   sessionId
-        // );
-
         return NextResponse.json(result);
       } catch (uploadError: any) {
         if (uploadError.message && uploadError.message.includes('not_in_channel')) {
@@ -160,9 +185,9 @@ export async function POST(request: NextRequest) {
     
     // Log which brokers might be missing
     console.error('Broker availability:', {
-      token: await getServerBroker(BROKER_IDS.token).then(v => !!v),
-      channels: await getServerBroker(BROKER_IDS.channels).then(v => !!v),
-      filename: await getServerBroker(BROKER_IDS.filename).then(v => !!v),
+      token: await getServerBroker(BROKER_IDS.token).then(v => !!v).catch(() => false),
+      channels: await getServerBroker(BROKER_IDS.channels).then(v => !!v).catch(() => false),
+      selectedChannel: await getServerBroker(BROKER_IDS.selectedChannel).then(v => !!v).catch(() => false),
     });
     
     return NextResponse.json(

@@ -3,15 +3,8 @@
 
 import { brokerConceptSelectors, BrokerIdentifier, brokerConceptActions, useServerBrokerSync } from "@/lib/redux/brokerSlice";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
+import { SLACK_BROKER_IDS } from "./BrokerSlackClient";
 
-// Define broker identifiers
-const BROKER_IDS = {
-  token: { source: 'api', itemId: 'slack_token' },
-  channels: { source: 'slack', itemId: 'slack_channels' },
-  filename: { source: 'slack', itemId: 'slack_filename' },
-  title: { source: 'slack', itemId: 'slack_title' },
-  initialComment: { source: 'slack', itemId: 'slack_initial_comment' },
-} as const;
 
 interface BrokerFormConfig {
     fields: {
@@ -121,19 +114,33 @@ export function BrokerForm({ fields, onSubmit, brokerSync = true }: BrokerFormCo
 }
 
 export function BrokerFormExample() {
+    // Get token to check if authenticated
+    const token = useAppSelector(state => 
+        brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
+    );
+    
+    // Don't show the example if not authenticated
+    if (!token) {
+        return (
+            <div className="p-6 bg-white dark:bg-slate-900 rounded-lg shadow-md">
+                <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-slate-200">Slack Messages with Brokers</h2>
+                <p className="text-slate-600 dark:text-slate-400">Please connect your Slack account first to use this feature.</p>
+            </div>
+        );
+    }
+    
     return (
         <div className="p-6 bg-white dark:bg-slate-900 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-slate-200">Slack Upload with Brokers</h2>
+            <h2 className="text-xl font-bold mb-4 text-slate-800 dark:text-slate-200">Slack Messages with Brokers</h2>
             <BrokerForm
                 fields={[
-                    { broker: BROKER_IDS.token, label: "Slack Token", type: "password", required: true },
-                    { broker: BROKER_IDS.channels, label: "Channel ID", type: "text", required: true },
-                    { broker: BROKER_IDS.title, label: "Title", type: "text" },
-                    { broker: BROKER_IDS.initialComment, label: "Comment", type: "textarea" },
+                    { broker: SLACK_BROKER_IDS.selectedChannel, label: "Channel", type: "text", required: true },
+                    { broker: SLACK_BROKER_IDS.title, label: "Title", type: "text" },
+                    { broker: SLACK_BROKER_IDS.initialComment, label: "Message", type: "textarea", required: true },
                 ]}
                 onSubmit={async (values) => {
                     console.log("Form submitted with broker values", values);
-                    alert("Form submitted! Check console for values.");
+                    alert("Message submitted! Check console for values.");
                 }}
             />
         </div>

@@ -41,6 +41,11 @@ const StateViewerOverlay: React.FC<StateViewerOverlayProps> = ({ isOpen, onClose
             content: <GenericSliceViewer sliceKey="customAppRuntime" state={completeState.customAppRuntime} />,
         },
         {
+            id: "brokerConcept",
+            label: "Broker Concept",
+            content: <GenericSliceViewer sliceKey="brokerConcept" state={completeState.brokerConcept} />,
+        },
+        {
             id: "brokers",
             label: "Brokers",
             content: <GenericSliceViewer sliceKey="brokers" state={completeState.brokers} />,
