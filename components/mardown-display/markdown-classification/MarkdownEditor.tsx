@@ -1,12 +1,27 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import type { ReactNode } from "react";
+import { Tabs, TabsList, TabsTrigger, TabsContent, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui";
+import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
+import { knownConfigOptions, processMarkdownWithConfig } from "./known-configs";
+import { markdownSamples } from "./markdown-samples";
 
 // Dynamic imports for client-side only
 const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
+
+// Dynamically import our view renderer
+const ConfigViewRenderer = dynamic(() => import("./custom-views/ConfigViewRenderer"), { 
+  ssr: false,
+  loading: () => (
+    <div className="animate-pulse p-4 space-y-4">
+      <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
+      <div className="h-40 bg-slate-200 dark:bg-slate-700 rounded"></div>
+    </div>
+  )
+});
 
 // Import SyntaxHighlighter properly
 const SyntaxHighlighter = dynamic(
@@ -73,6 +88,8 @@ console.log("Hello, World!");
 `);
   const [ast, setAst] = useState<MdastNode | null>(null);
   const [parsedMarkdown, setParsedMarkdown] = useState<string>("");
+  const [selectedConfig, setSelectedConfig] = useState<string>("candidateProfile");
+  const [processedData, setProcessedData] = useState<any>(null);
 
   // Handle parsing Markdown on button click
   const handleParse = useCallback(async () => {
@@ -82,10 +99,40 @@ console.log("Hello, World!");
       const tree = processor.parse(markdown);
       setAst(tree as unknown as MdastNode);
       setParsedMarkdown(markdown);
+      
+      // Process with selected config
+      if (selectedConfig) {
+        const config = knownConfigOptions[selectedConfig].config;
+        const result = processMarkdownWithConfig({ 
+          ast: tree as unknown as MdastNode, 
+          config 
+        });
+        setProcessedData(result);
+      }
     } catch (error) {
       console.error("Error parsing Markdown:", error);
     }
-  }, [markdown]);
+  }, [markdown, selectedConfig]);
+
+  const handleConfigChange = (value: string) => {
+    setSelectedConfig(value);
+    // Reprocess with new config if we already have an AST
+    if (ast) {
+      const config = knownConfigOptions[value].config;
+      const result = processMarkdownWithConfig({ 
+        ast, 
+        config 
+      });
+      setProcessedData(result);
+    }
+  };
+
+  // Handle sample selection
+  const handleSampleSelect = (sampleKey: string) => {
+    if (markdownSamples[sampleKey]) {
+      setMarkdown(markdownSamples[sampleKey]);
+    }
+  };
 
   // Define code rendering component with proper typing
   const CodeComponent = ({ node, inline, className, children, ...props }: CodeProps) => {
@@ -130,60 +177,146 @@ console.log("Hello, World!");
   
   return (
     <div className="flex h-full overflow-hidden bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      {/* Left Side: Markdown Input */}
-      <div className="flex-1 p-6 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+      {/* Left Side: Markdown Input - 1/3 of the screen */}
+      <div className="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+        <div className="border-b border-gray-200 dark:border-gray-700 p-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Select a sample:</p>
+          <Select onValueChange={handleSampleSelect}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose a markdown sample" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(markdownSamples).map(([key]) => (
+                <SelectItem key={key} value={key}>
+                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <textarea
           value={markdown}
           onChange={(e) => setMarkdown(e.target.value)}
           placeholder="Paste your Markdown here..."
-          className="flex-1 resize-none p-4 font-mono text-base border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 resize-none font-mono text-base border-0 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0"
           aria-label="Markdown input"
         />
         <button
           onClick={handleParse}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="m-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label="Parse Markdown"
         >
           Parse Markdown
         </button>
       </div>
 
-      {/* Right Side: Rendered Output and AST */}
-      <div className="flex-1 p-6 flex flex-col gap-6 overflow-y-auto">
-        {/* Rendered Markdown */}
-        <div className="flex-1">
-          <h2 className="text-xl font-semibold mb-4">Rendered Markdown</h2>
-          {parsedMarkdown ? (
-            <div className={`prose ${mode === "dark" ? "prose-invert" : ""} max-w-none`}>
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  code: CodeComponent
-                }}
-              >
-                {parsedMarkdown}
-              </ReactMarkdown>
-            </div>
-          ) : (
-            <p className="text-gray-500 dark:text-gray-400">
-              Click "Parse Markdown" to see the output.
-            </p>
-          )}
-        </div>
+      {/* Right Side: Tabs for Analysis - 2/3 of the screen */}
+      <div className="w-2/3 flex flex-col overflow-y-auto">
+        <Tabs defaultValue="rendered" className="w-full h-full">
+          <TabsList className="mx-2 my-1 gap-1 bg-transparent">
+            <TabsTrigger value="rendered">Rendered Markdown</TabsTrigger>
+            <TabsTrigger value="ast">Raw AST</TabsTrigger>
+            <TabsTrigger value="explorer">JSON Explorer</TabsTrigger>
+            <TabsTrigger value="processor">Config Processor</TabsTrigger>
+            <TabsTrigger value="structured">Structured View</TabsTrigger>
+          </TabsList>
+          
+          {/* Tab 1: Rendered Markdown */}
+          <TabsContent value="rendered" className="h-full overflow-auto">
+            {parsedMarkdown ? (
+              <div className={`prose ${mode === "dark" ? "prose-invert" : ""} max-w-none m-2`}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    code: CodeComponent
+                  }}
+                >
+                  {parsedMarkdown}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 m-2">
+                Click "Parse Markdown" to see the output.
+              </p>
+            )}
+          </TabsContent>
 
-        {/* AST Output */}
-        <div className="flex-1">
-          <h2 className="text-xl font-semibold mb-4">MDAST JSON Structure</h2>
-          {ast ? (
-            <pre className="p-4 bg-gray-800 dark:bg-gray-950 text-gray-100 rounded-md overflow-x-auto">
-              <code>{JSON.stringify(ast, null, 2)}</code>
-            </pre>
-          ) : (
-            <p className="text-gray-500 dark:text-gray-400">
-              Click "Parse Markdown" to see the AST.
-            </p>
-          )}
-        </div>
+          {/* Tab 2: Raw AST JSON */}
+          <TabsContent value="ast" className="h-full overflow-auto">
+            {ast ? (
+              <pre className="bg-gray-800 dark:bg-gray-950 text-gray-100 rounded-md overflow-x-auto h-full m-0 p-2">
+                <code>{JSON.stringify(ast, null, 2)}</code>
+              </pre>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 m-2">
+                Click "Parse Markdown" to see the AST.
+              </p>
+            )}
+          </TabsContent>
+
+          {/* Tab 3: JSON Explorer */}
+          <TabsContent value="explorer" className="h-full overflow-auto">
+            {ast ? (
+              <div className="h-full">
+                <RawJsonExplorer pageData={ast} />
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 m-2">
+                Click "Parse Markdown" to see the JSON Explorer.
+              </p>
+            )}
+          </TabsContent>
+
+          {/* Tab 4: Config Processor */}
+          <TabsContent value="processor" className="h-full overflow-auto">
+            <div className="m-2 flex flex-col h-full">
+              <div className="mb-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Select a configuration:</p>
+                <Select value={selectedConfig} onValueChange={handleConfigChange}>
+                  <SelectTrigger className="w-full max-w-xs">
+                    <SelectValue placeholder="Select a configuration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(knownConfigOptions).map(([key, option]) => (
+                      <SelectItem key={key} value={key}>
+                        {option.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {processedData ? (
+                <div className="flex-1 h-full overflow-auto">
+                  <RawJsonExplorer pageData={processedData} />
+                </div>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400">
+                  Click "Parse Markdown" to process with the selected configuration.
+                </p>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* New Tab: Structured View */}
+          <TabsContent value="structured" className="h-full overflow-auto p-0">
+            {processedData ? (
+              <ConfigViewRenderer configKey={selectedConfig} data={processedData} />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  Click "Parse Markdown" to see the structured view
+                </p>
+                <button
+                  onClick={handleParse}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Parse Markdown
+                </button>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
