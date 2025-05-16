@@ -1,7 +1,7 @@
 // File: features/applet/layouts/core/SimpleFields.tsx
 "use client";
 import React from "react";
-import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 import { normalizeFieldDefinition } from "@/features/applet/utils/field-normalization";
 import { FieldDefinition, ComponentType, ComponentProps } from "@/types/customAppTypes";
 

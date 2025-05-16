@@ -4,7 +4,7 @@ import React from "react";
 import { ContainerRenderProps } from "../AppletLayoutManager";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
 const StepperSearchGroup: React.FC<ContainerRenderProps> = ({
     id,

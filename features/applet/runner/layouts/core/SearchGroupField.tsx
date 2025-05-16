@@ -2,7 +2,7 @@
 import React from "react";
 import SearchField from "@/features/applet/runner/layouts/core/SearchField";
 import { ContainerRenderProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
 const SearchGroupField: React.FC<ContainerRenderProps> = ({
     id,

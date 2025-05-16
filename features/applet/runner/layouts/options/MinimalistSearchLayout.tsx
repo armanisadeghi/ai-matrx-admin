@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
 export const gridColsOptions = [
   { value: "grid-cols-1", label: "1 Column" },

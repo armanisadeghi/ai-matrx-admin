@@ -4,7 +4,7 @@ import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutM
 import { ChevronDown } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
 const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
     appletId,

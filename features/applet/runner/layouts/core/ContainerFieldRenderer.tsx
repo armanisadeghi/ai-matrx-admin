@@ -1,7 +1,7 @@
 "use client";
 import { FieldDefinition } from "@/types";
 import React from "react";
-import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
 interface ContainerFieldRendererProps {
     fields: FieldDefinition[];

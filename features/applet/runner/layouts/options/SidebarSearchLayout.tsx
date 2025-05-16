@@ -10,7 +10,7 @@ import {
     selectAppletRuntimeName,
 } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { getAppletIcon } from "@/features/applet/styles/StyledComponents";
-import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
 interface SidebarSearchLayoutProps extends AppletInputProps {
     fullWidth?: boolean;

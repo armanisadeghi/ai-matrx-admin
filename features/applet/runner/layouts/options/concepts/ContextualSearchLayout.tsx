@@ -3,7 +3,7 @@ import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutM
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { contextStyles, ContextStyleType } from "@/features/applet/styles/contextStyles";
-import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
 // TODO: Use the logic already created for automated entity icons to find a context and use it, if one is not available.
 // But this could easily be set by the user for each container.
