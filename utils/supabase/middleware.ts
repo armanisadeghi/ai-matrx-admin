@@ -5,7 +5,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
-    request,
+    request: {
+      headers: request.headers,
+    },
   })
 
   const supabase = createServerClient(
@@ -13,53 +15,75 @@ export async function updateSession(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() {
-            return request.cookies.getAll()
+          get(name) {
+            return request.cookies.get(name)?.value
           },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-            supabaseResponse = NextResponse.next({
-              request,
+          set(name, value, options) {
+            request.cookies.set({
+              name,
+              value,
+              ...options,
             })
-            cookiesToSet.forEach(({ name, value, options }) =>
-                supabaseResponse.cookies.set(name, value, options)
-            )
+            supabaseResponse = NextResponse.next({
+              request: {
+                headers: request.headers,
+              },
+            })
+            supabaseResponse.cookies.set({
+              name,
+              value,
+              ...options,
+            })
+          },
+          remove(name, options) {
+            request.cookies.set({
+              name,
+              value: '',
+              ...options,
+            })
+            supabaseResponse = NextResponse.next({
+              request: {
+                headers: request.headers,
+              },
+            })
+            supabaseResponse.cookies.set({
+              name,
+              value: '',
+              ...options,
+            })
           },
         },
       }
   )
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+  // This is the critical part! getUser() will check the JWT validity and
+  // automatically refresh the token if needed, updating the cookies
+  const { data } = await supabase.auth.getUser()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  console.log("Middleware checking auth for path:", request.nextUrl.pathname)
 
   if (
-      !user &&
+      !data.user &&
       !request.nextUrl.pathname.startsWith('/login') &&
-      !request.nextUrl.pathname.startsWith('/auth')
+      !request.nextUrl.pathname.startsWith('/auth') &&
+      !request.nextUrl.pathname.startsWith('/_next') &&
+      !request.nextUrl.pathname.includes('.') // Don't redirect for static assets
   ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+    // Get the full requested URL path and search params
+    const fullPath = request.nextUrl.pathname + request.nextUrl.search
+    
+    console.log("Middleware - Original path requested:", fullPath)
+    
+    // Create the login URL with the redirectTo parameter
+    const loginUrl = new URL('/login', request.url)
+    
+    // Set redirectTo parameter - ensure URL is clean
+    loginUrl.searchParams.set('redirectTo', fullPath)
+    
+    console.log("Middleware - Redirecting to:", loginUrl.toString())
+    
+    return NextResponse.redirect(loginUrl)
   }
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
-  // creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
 
   return supabaseResponse
 }

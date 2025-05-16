@@ -16,28 +16,46 @@ export async function signUpAction (formData: FormData): Promise<void> {
   const origin = (await headers()).get("origin");
   const redirectTo = formData.get("redirectTo") as string || "/dashboard";
 
+  console.log("SignUpAction - Email:", email);
+  console.log("SignUpAction - RedirectTo:", redirectTo);
+  console.log("SignUpAction - Origin:", origin);
+
   if (!email || !password) {
-    throw new Error("Email and password are required");
+    console.error("SignUpAction - Missing email or password");
+    return encodedRedirect("error", "/sign-up", "Email and password are required");
   }
 
-  const { error } = await supabase.auth.signUp({
+  // Simplify the redirectTo URL - just use the base callback URL
+  const callbackUrl = `${origin}/auth/callback`;
+  console.log("SignUpAction - Using callback URL:", callbackUrl);
+
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
+      emailRedirectTo: callbackUrl,
     },
   });
 
+  console.log("SignUpAction - Response data:", data);
+
   if (error) {
-    console.error(error.code + " " + error.message);
+    console.error("SignUpAction - Error:", error.code, error.message);
     return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect(
-        "success",
-        "/sign-up",
-        "Thanks for signing up! Please check your email for a verification link.",
-    );
+  } 
+  
+  // Check if the user object exists in the response
+  if (!data.user) {
+    console.error("SignUpAction - No user returned");
+    return encodedRedirect("error", "/sign-up", "Signup failed. Please try again.");
   }
+  
+  // If we get here, the signup was successful and verification email was sent
+  return encodedRedirect(
+    "success",
+    "/sign-up",
+    "Thanks for signing up! Please check your email for a verification link."
+  );
 };
 
 

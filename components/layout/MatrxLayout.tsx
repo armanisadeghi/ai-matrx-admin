@@ -3,10 +3,10 @@
 import Image from "next/image";
 import {cn} from "@/lib/utils";
 import Link, {LinkProps} from "next/link";
-import {usePathname} from 'next/navigation';
+import {usePathname, useRouter} from 'next/navigation';
 import React, {useState, createContext, useContext, useEffect} from "react";
 import {AnimatePresence, motion} from "framer-motion";
-import {IconMenu2, IconX, IconMaximize, IconMinimize} from "@tabler/icons-react";
+import {IconMenu2, IconX, IconMaximize, IconMinimize, IconLogout, IconUser} from "@tabler/icons-react";
 import {Logo} from "@/components/layout/MatrixLogo";
 import {appSidebarLinks} from "@/constants";
 import {Settings, User} from "lucide-react";
@@ -17,6 +17,13 @@ import {Tooltip, TooltipContent, TooltipTrigger,} from "@/components/ui/tooltip"
 import {CollapseToggleButton} from "./CollapseToggleButton";
 import { BACKGROUND_PATTERN } from "@/constants/chat";
 import { getGlobalIsAdmin } from "@/lib/globalState";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { createClient } from "@/utils/supabase/client";
 
 interface Links {
     label: string;
@@ -122,6 +129,24 @@ export function LayoutWithSidebar(
     );
 }
 
+// Logout function component to handle user logout
+function LogoutAction() {
+    const router = useRouter();
+    
+    const handleLogout = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        router.push('/login');
+    };
+    
+    return (
+        <DropdownMenuItem onClick={handleLogout} className="text-red-500 dark:text-red-400">
+            <IconLogout className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+        </DropdownMenuItem>
+    );
+}
+
 export interface SidebarLayoutProps {
     className?: string;
     children: React.ReactNode;
@@ -180,29 +205,69 @@ export function SidebarLayout(
                     </div>
                     <div>
                         <ThemeSwitcher open={open}/>
-                        <SidebarLink
-                            link={{
-                                label: userName,
-                                href: "#",
-                                icon: (
-                                    <Image
-                                        src={userProfilePhoto || "/happy-robot-avatar.jpg"}
-                                        className={cn(
-                                            "h-7 w-7 flex-shrink-0 rounded-full",
-                                            open ? "h-7 w-7" : "h-5 w-5",
-                                        )}
-                                        width={50}
-                                        height={50}
-                                        alt="Avatar"
-                                    />
-                                ),
-                            }}
+                        <UserProfileDropdown 
+                            userName={userName}
+                            userProfilePhoto={userProfilePhoto}
+                            open={open}
                         />
                     </div>
                 </SidebarBody>
             </Sidebar>
             {children}
         </div>
+    );
+}
+
+// User profile dropdown component
+function UserProfileDropdown({ userName, userProfilePhoto, open }: { 
+    userName: string, 
+    userProfilePhoto: string | null,
+    open: boolean
+}) {
+    return (
+        <DropdownMenu>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <button className={cn(
+                            "group/sidebar flex w-full items-center justify-start gap-2 rounded-sm px-2 py-2",
+                            "hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                            "transition-colors duration-200 ease-in-out"
+                        )}>
+                            <Image
+                                src={userProfilePhoto || "/happy-robot-avatar.jpg"}
+                                className={cn(
+                                    "h-7 w-7 flex-shrink-0 rounded-full",
+                                    open ? "h-7 w-7" : "h-5 w-5",
+                                )}
+                                width={50}
+                                height={50}
+                                alt="Avatar"
+                            />
+                            {open && (
+                                <div className="inline-block text-neutral-700 dark:text-neutral-200 text-sm">
+                                    {userName}
+                                </div>
+                            )}
+                        </button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                {!open && (
+                    <TooltipContent side="right">
+                        {userName}
+                    </TooltipContent>
+                )}
+            </Tooltip>
+            <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard/profile" className="flex items-center">
+                        <IconUser className="mr-2 h-4 w-4" />
+                        <span>Profile Settings</span>
+                    </Link>
+                </DropdownMenuItem>
+                <LogoutAction />
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 
@@ -364,25 +429,6 @@ export const SidebarLink: React.FC<{
     const pathname = usePathname();
     const isActive = pathname === link.href;
 
-    const linkContent = (
-        <>
-            {link.icon}
-            <motion.span
-                animate={{
-                    display: open ? "inline-block" : "none",
-                    opacity: open ? 1 : 0,
-                }}
-                className={cn(
-                    "!m-0 inline-block whitespace-pre !p-0 text-sm",
-                    "text-neutral-700 dark:text-neutral-200",
-                    "transition duration-150"
-                )}
-            >
-                {link.label}
-            </motion.span>
-        </>
-    );
-
     return (
         <Tooltip>
             <TooltipTrigger asChild>
@@ -397,12 +443,17 @@ export const SidebarLink: React.FC<{
                     )}
                     {...props}
                 >
-                    {linkContent}
+                    {link.icon}
+                    {open && (
+                        <div className="inline-block text-neutral-700 dark:text-neutral-200 text-sm">
+                            {link.label}
+                        </div>
+                    )}
                 </Link>
             </TooltipTrigger>
             {!open && (
                 <TooltipContent side="right">
-                    <p>{link.label}</p>
+                    {link.label}
                 </TooltipContent>
             )}
         </Tooltip>

@@ -1,7 +1,6 @@
-
 // File: app/(auth-pages)/sign-up/hold-hold-page.tsx
 
-import { signUpWithGoogleAction, signUpWithGithubAction } from "@/actions/auth.actions";
+import { signUpAction, signUpWithGoogleAction, signUpWithGithubAction } from "@/actions/auth.actions";
 import { AuthMessageType } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { IconBrandGithub, IconBrandGoogle } from "@tabler/icons-react";
 import AuthPageContainer from "@/components/auth/auth-page-container";
-import { signup } from "../login/actions";
 
 
 interface SignUpProps {
@@ -55,25 +53,7 @@ export default async function SignUp({ searchParams }: SignUpProps) {
             }
             message={message as AuthMessageType}
         >
-            <form action={signup} className="space-y-6" suppressHydrationWarning={true}>
-                <div>
-                    <Label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Full name
-                    </Label>
-                    <div className="mt-1" suppressHydrationWarning={true}>
-                        <Input
-                            id="name"
-                            name="name"
-                            type="text"
-                            autoComplete="name"
-                            required
-                            className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-neutral-700 dark:text-white"
-                            placeholder="John Doe"
-                            data-lpignore="true"
-                        />
-                    </div>
-                </div>
-
+            <form action={signUpAction} className="space-y-6" suppressHydrationWarning={true}>
                 <div>
                     <Label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Email address

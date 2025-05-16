@@ -22,6 +22,7 @@ import JsonToCollapsible from "@/components/matrx/matrx-collapsible/json-to-coll
 import StreamTextTab from "./tabs/StreamTextTab";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
+import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import {
     selectTaskResponsesByTaskId,
     selectResponseTextByListenerId,
@@ -126,6 +127,11 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                                         Collapsible JSON
                                     </TabsTrigger>
                                     <TabsTrigger
+                                        value="rawJsonExplorer"
+                                    >
+                                        JSON Explorer
+                                    </TabsTrigger>
+                                    <TabsTrigger
                                         value="markdown"
                                     >
                                         Markdown
@@ -179,6 +185,11 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                                         defaultExpanded={true}
                                         className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl  p-2 pr-4"
                                     />
+                                </TabsContent>
+                                <TabsContent value="rawJsonExplorer">
+                                    <div className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl p-2">
+                                        <RawJsonExplorer pageData={JSON.stringify(selectedObject)} />
+                                    </div>
                                 </TabsContent>
                                 {/* Debug View Tab */}
                                 <DebugViewTab

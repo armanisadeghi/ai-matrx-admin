@@ -24,7 +24,14 @@ export default async function SignIn({ searchParams }: SignInProps) {
         }, {} as Record<string, string>)
     ).toString();
 
-    const redirectTo = (awaitedSearchParams.redirectTo as string) || '/dashboard';
+    // Get redirectTo from search params directly, without additional decoding
+    const redirectTo = typeof awaitedSearchParams.redirectTo === 'string' 
+        ? awaitedSearchParams.redirectTo
+        : '/dashboard';
+    
+    console.log("Login page - Raw redirectTo param:", awaitedSearchParams.redirectTo);
+    console.log("Login page - Using redirectTo:", redirectTo);
+    
     const error = awaitedSearchParams.error as string;
     const success = awaitedSearchParams.success as string;
 
@@ -44,6 +51,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
 
     // Create action bindings with redirectTo
     const loginWithRedirect = login.bind(null, redirectTo);
+    const signupWithRedirect = signup.bind(null, redirectTo);
     const googleLoginWithRedirect = loginWithGoogle.bind(null, redirectTo);
     const githubLoginWithRedirect = loginWithGithub.bind(null, redirectTo);
 
@@ -64,6 +72,9 @@ export default async function SignIn({ searchParams }: SignInProps) {
             message={message}
         >
             <form action={loginWithRedirect} className="space-y-6">
+                {/* Hidden input to pass redirectTo in case the binding fails */}
+                <input type="hidden" name="redirectTo" value={redirectTo} />
+                
                 <div>
                     <Label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Email address
@@ -132,6 +143,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
 
                 <div className="mt-6 grid grid-cols-2 gap-3">
                     <form action={googleLoginWithRedirect}>
+                        <input type="hidden" name="redirectTo" value={redirectTo} />
                         <SubmitButton 
                             pendingText="Connecting..." 
                             className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
@@ -142,6 +154,7 @@ export default async function SignIn({ searchParams }: SignInProps) {
                     </form>
 
                     <form action={githubLoginWithRedirect}>
+                        <input type="hidden" name="redirectTo" value={redirectTo} />
                         <SubmitButton 
                             pendingText="Connecting..." 
                             className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-neutral-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors duration-200"
