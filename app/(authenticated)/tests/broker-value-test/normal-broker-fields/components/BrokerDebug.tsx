@@ -2,30 +2,30 @@ import { brokerConceptSelectors } from "@/lib/redux/brokerSlice";
 import { useAppSelector } from "@/lib/redux";
 import { BrokerIdentifier } from "@/lib/redux/brokerSlice/types";
 
-function BrokerDebug({ brokers }: { brokers: Record<string, BrokerIdentifier> }) {
+function BrokerDebug({ brokerMappedItems }: { brokerMappedItems: Record<string, BrokerIdentifier> }) {
   const brokerMap = useAppSelector(brokerConceptSelectors.selectMap);
   
-  const brokerMappingDetails = Object.entries(brokers).map(([key, broker]) => {
+  const brokerMappingDetails = Object.entries(brokerMappedItems).map(([key, brokerMappedItem]) => {
     let mapEntry = null;
-    if (broker.source && broker.itemId) {
-      const mapKey = `${broker.source}:${broker.itemId}`;
+    if (brokerMappedItem.source && brokerMappedItem.id) {
+      const mapKey = `${brokerMappedItem.source}:${brokerMappedItem.id}`;
       mapEntry = brokerMap[mapKey];
     }
-    return { key, broker, mapEntry };
+    return { key, brokerMappedItem, mapEntry };
   });
 
   const brokerValues = useAppSelector(state => {
     const result: Record<string, any> = {};
-    Object.entries(brokers).forEach(([key, broker]) => {
-      result[key] = brokerConceptSelectors.selectValue(state, broker);
+    Object.entries(brokerMappedItems).forEach(([key, brokerMappedItem]) => {
+      result[key] = brokerConceptSelectors.selectValueWithoutBrokerId(state, brokerMappedItem);
     });
     return result;
   });
 
   const brokerHasValues = useAppSelector(state => {
     const result: Record<string, boolean> = {};
-    Object.entries(brokers).forEach(([key, broker]) => {
-      result[key] = brokerConceptSelectors.selectHasValue(state, broker);
+    Object.entries(brokerMappedItems).forEach(([key, brokerMappedItem]) => {
+      result[key] = brokerConceptSelectors.selectHasValue(state, brokerMappedItem);
     });
     return result;
   });
@@ -49,16 +49,15 @@ function BrokerDebug({ brokers }: { brokers: Record<string, BrokerIdentifier> })
           </tr>
         </thead>
         <tbody>
-          {brokerMappingDetails.map(({ key, broker, mapEntry }) => (
+          {brokerMappingDetails.map(({ key, brokerMappedItem, mapEntry }) => (
             <tr key={key} className="border-b border-gray-200 dark:border-gray-700">
               <td className="px-4 py-2 font-medium">{key}</td>
               <td className="px-4 py-2 font-mono text-xs">
-                {broker.brokerId ? (
-                  <span>brokerId: {broker.brokerId}</span>
+                {brokerMappedItem.brokerId ? (
+                  <span>brokerId: {brokerMappedItem.brokerId}</span>
                 ) : (
                   <span>
-                    source: {broker.source}, itemId: {broker.itemId}
-                    {broker.sourceId ? `, sourceId: ${broker.sourceId}` : ""}
+                    source: {brokerMappedItem.source}, id: {brokerMappedItem.id}
                     {mapEntry && <div className="mt-1 text-gray-500 dark:text-gray-400">mapped to: {mapEntry.brokerId}</div>}
                   </span>
                 )}

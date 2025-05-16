@@ -17,7 +17,14 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
   // Create a stable reference to the brokers array
   const stableBrokers = useMemo(() => brokers, [
     // We stringify the brokers to create a proper dependency
-    JSON.stringify(brokers.map(b => `${b.source}:${b.itemId}:${b.brokerId || ''}`))
+    JSON.stringify(brokers.map(b => {
+      // Handle both variants of the BrokerIdentifier type
+      if ('brokerId' in b) {
+        return `brokerId:${b.brokerId}`;
+      } else {
+        return `${b.source}:${b.id}`;
+      }
+    }))
   ]);
   
   // Create a memoized selector that will only recompute when the actual values change

@@ -29,7 +29,7 @@ export default function BrokerFieldDemoPage() {
         return <div className="p-8 text-gray-800 dark:text-gray-200">Loading demo brokers...</div>;
     }
 
-    const brokers = {
+    const brokerMappedItems = {
         firstName: tempBrokers.identifiers[0],
         lastName: tempBrokers.identifiers[1],
         age: tempBrokers.identifiers[2],
@@ -70,14 +70,14 @@ export default function BrokerFieldDemoPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
-                            <WithBroker broker={brokers.firstName} type="text" defaultValue="">
+                            <WithBroker brokerMappedItem={brokerMappedItems.firstName} type="text" defaultValue="">
                                 <WiredTextInput placeholder="Enter first name" className="w-full" />
                             </WithBroker>
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
-                            <WithBroker broker={brokers.lastName} type="text" defaultValue="">
+                            <WithBroker brokerMappedItem={brokerMappedItems.lastName} type="text" defaultValue="">
                                 <WiredTextInput placeholder="Enter last name" className="w-full" />
                             </WithBroker>
                         </div>
@@ -86,7 +86,7 @@ export default function BrokerFieldDemoPage() {
                     {/* Email Input */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                        <WithBroker broker={brokers.email} type="text" defaultValue="">
+                        <WithBroker brokerMappedItem={brokerMappedItems.email} type="text" defaultValue="">
                             <WiredTextInput placeholder="email@example.com" className="w-full" />
                         </WithBroker>
                     </div>
@@ -94,7 +94,7 @@ export default function BrokerFieldDemoPage() {
                     {/* Number Input */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Age</label>
-                        <WithBroker broker={brokers.age} type="number" defaultValue={0}>
+                        <WithBroker brokerMappedItem={brokerMappedItems.age} type="number" defaultValue={0}>
                             <WiredNumberInput min={0} max={150} placeholder="Age" />
                         </WithBroker>
                     </div>
@@ -104,7 +104,7 @@ export default function BrokerFieldDemoPage() {
                     {/* Select Component */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Theme Preference</label>
-                        <WithBroker broker={brokers.theme} type="text" defaultValue="light">
+                        <WithBroker brokerMappedItem={brokerMappedItems.theme} type="text" defaultValue="light">
                             <WiredSelect options={themeOptions} placeholder="Choose theme" />
                         </WithBroker>
                     </div>
@@ -112,7 +112,7 @@ export default function BrokerFieldDemoPage() {
                     {/* Country Select */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country</label>
-                        <WithBroker broker={brokers.country} type="text" defaultValue="">
+                        <WithBroker brokerMappedItem={brokerMappedItems.country} type="text" defaultValue="">
                             <WiredSelect options={countryOptions} placeholder="Select country" />
                         </WithBroker>
                     </div>
@@ -121,7 +121,7 @@ export default function BrokerFieldDemoPage() {
 
                     {/* Toggle Component */}
                     <div>
-                        <WithBroker broker={brokers.notifications} type="boolean" defaultValue={false}>
+                        <WithBroker brokerMappedItem={brokerMappedItems.notifications} type="boolean" defaultValue={false}>
                             <WiredToggle label="Enable email notifications" />
                         </WithBroker>
                     </div>
@@ -129,7 +129,7 @@ export default function BrokerFieldDemoPage() {
                     {/* Slider Component */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Volume</label>
-                        <WithBroker broker={brokers.volume} type="number" defaultValue={50}>
+                        <WithBroker brokerMappedItem={brokerMappedItems.volume} type="number" defaultValue={50}>
                             <WiredSlider min={0} max={100} step={5} />
                         </WithBroker>
                     </div>
@@ -138,7 +138,7 @@ export default function BrokerFieldDemoPage() {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
                         <WithBroker
-                            broker={brokers.startDate}
+                            brokerMappedItem={brokerMappedItems.startDate}
                             type="dynamic"
                             transformer={{
                                 fromBroker: (value) => (value ? new Date(value) : null),
@@ -156,7 +156,7 @@ export default function BrokerFieldDemoPage() {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
                         <BrokerField
-                            broker={brokers.bio}
+                            brokerMappedItem={brokerMappedItems.bio}
                             type="text"
                             defaultValue=""
                         >
@@ -178,7 +178,7 @@ export default function BrokerFieldDemoPage() {
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md dark:shadow-gray-900 p-6">
                     <div className="sticky top-6">
                         <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Live Broker Values</h2>
-                        <BrokerDebug brokers={brokers} />
+                        <BrokerDebug brokerMappedItems={brokerMappedItems} />
                     </div>
                 </div>
             </div>

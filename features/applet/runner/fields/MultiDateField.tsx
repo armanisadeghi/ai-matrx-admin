@@ -23,7 +23,8 @@ const MultiDateField: React.FC<{
   source?: string;
   isMobile?: boolean;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -164,7 +165,7 @@ const MultiDateField: React.FC<{
   const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={`${safeWidthClass} ${className}`}>
       {/* Display selected dates as badges */}
       {selectedDates.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-2">

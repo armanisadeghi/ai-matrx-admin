@@ -2,7 +2,7 @@
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerIdentifier } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 
 // Type guards
@@ -20,7 +20,7 @@ const selectNumber = createSelector(
         selectIdArgs
     ],
     (brokerConcept, idArgs): number | undefined => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
+        const brokerId = resolveBrokerId(brokerConcept, idArgs);
         if (!brokerId) return undefined;
         
         const brokerValue = brokerConcept.brokers[brokerId];

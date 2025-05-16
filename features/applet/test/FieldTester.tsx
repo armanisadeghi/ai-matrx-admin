@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/core/AppletFieldController";
 
 
 const advancedAppletCreatorDefinitionFAKE_FAKE_FAKE_FAKE = [

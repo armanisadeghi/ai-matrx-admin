@@ -17,7 +17,8 @@ const SortableField: React.FC<{
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false }) => {
+    className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, options, componentProps } = field;
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);
@@ -133,7 +134,7 @@ const SortableField: React.FC<{
     const sortedItems = [...items].sort((a, b) => a.order - b.order);
     
     return (
-        <div className={`${safeWidthClass}`}>
+        <div className={`${safeWidthClass} ${className}`}>
             <DragDropContext onDragEnd={handleOnDragEnd}>
                 <Droppable droppableId={`sortable-${id}`} isDropDisabled={disabled}>
                     {(provided, snapshot) => (

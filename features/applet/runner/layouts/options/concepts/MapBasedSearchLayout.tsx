@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
+import { AppletFieldController } from "@/features/applet/runner/fields/core/AppletFieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { MoveVertical, Plus, PlusSquare, Filter, Search, X } from "lucide-react";

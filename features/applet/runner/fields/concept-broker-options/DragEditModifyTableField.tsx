@@ -30,7 +30,8 @@ const DragEditModifyTableField: React.FC<{
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false }) => {
+    className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id: fieldId, options, componentProps } = field;
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);
@@ -227,7 +228,7 @@ const DragEditModifyTableField: React.FC<{
     if (customContent) return <>{customContent}</>;
 
     return (
-        <div className={safeWidthClass}>
+        <div className={`${safeWidthClass} ${className}`}>
             <DragDropContext onDragEnd={handleDragEnd}>
                 <div className="w-full overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
                     <table ref={tableRef} className="min-w-full border-collapse" style={{ tableLayout: "auto" }}>

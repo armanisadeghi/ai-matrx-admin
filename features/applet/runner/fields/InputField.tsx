@@ -10,7 +10,8 @@ const InputField: React.FC<{
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+    className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
     const { id, label, placeholder, required, componentProps } = field;
     const { 
         maxLength,
@@ -50,7 +51,7 @@ const InputField: React.FC<{
     }
     
     return (
-        <div className={safeWidthClass}>
+        <div className={`${safeWidthClass} ${className}`}>
             {valuePrefix && (
                 <span className="text-gray-500 dark:text-gray-400 mr-1">{valuePrefix}</span>
             )}

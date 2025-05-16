@@ -9,7 +9,7 @@ export function useTempBroker(
     source: string,
     options?: {
         sourceId?: string;
-        itemId?: string;
+        id?: string;
         brokerId?: string;
     }
 ) {
@@ -22,7 +22,7 @@ export function useTempBroker(
             .then(result => {
                 setIdentifier(result.identifier);
             });
-    }, [dispatch, source, options?.sourceId, options?.itemId, options?.brokerId]);
+    }, [dispatch, source, options?.sourceId, options?.id, options?.brokerId]);
     
     return identifier;
 }

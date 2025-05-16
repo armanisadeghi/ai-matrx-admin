@@ -2801,3 +2801,13 @@ Test time? You're ready!`
 export const getFlashcardSet = (name: string) => {
     return flashcardSets[name as keyof typeof flashcardSets];
 };
+
+export const getFlashcardSetOptions = () => {
+    return Object.keys(flashcardSets).map((key) => ({
+        value: key,
+        label: key
+            .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+            .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
+            .trim(), // Remove leading/trailing spaces
+    }));
+};

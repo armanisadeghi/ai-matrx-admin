@@ -17,6 +17,8 @@
 
 ## Introduction
 
+The Broker System is a sophisticated state management framework designed to streamline data handling across a full-stack application, integrating React (frontend) and Python (backend) via Socket.IO for real-time synchronization. It replaces traditional state management approaches (e.g., Redux with local state or context) by introducing "brokers"—smart, globally accessible variables that automatically synchronize across components, APIs, and the backend. Below, I’ll break down the system’s core components, functionality, and benefits to ensure a comprehensive understanding before addressing potential updates.
+
 The Broker System is the foundation of our application's state management, providing a unified way to handle all runtime values across React and Python. Think of brokers as "smart variables" that automatically sync between all components, APIs, and even across the network to our Python backend.
 
 ### What is a Broker?

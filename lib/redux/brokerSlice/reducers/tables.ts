@@ -3,7 +3,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/redux";
 import { BrokerState, BrokerIdentifier } from "../types";
 import { Table, Column, Row } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard for Table
 const isTable = (value: any): value is Table =>
@@ -46,7 +46,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, table } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         state.brokers[targetBrokerId] = normalizeTable(table);
@@ -64,7 +64,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, rowId, columnId, value } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -98,7 +98,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, rowData } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -131,7 +131,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, rowId } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -158,7 +158,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, column, defaultValue = "" } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -198,7 +198,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, columnId } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -231,7 +231,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, columnId, updates } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -262,7 +262,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, rowIds } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -294,7 +294,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs, columnIds } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -325,7 +325,7 @@ export const tableReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];

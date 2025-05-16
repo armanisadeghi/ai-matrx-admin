@@ -1,14 +1,18 @@
+// lib/redux/brokerSlice/utils.ts
+
 import { BrokerState, BrokerIdentifier, BrokerMapEntry } from './types';
 
-export const getBrokerId = (state: BrokerState, idArgs: BrokerIdentifier): string | undefined => {
-  if (idArgs.brokerId) return idArgs.brokerId;
-  if (idArgs.source && idArgs.itemId) {
-      const mapKey = `${idArgs.source}:${idArgs.itemId}`;
-      const brokerId = state.brokerMap[mapKey]?.brokerId;
-      if (!brokerId) {
-          console.error(`No brokerId found for mapKey: ${mapKey}`);
-      }
-      return brokerId;
+export const resolveBrokerId = (state: BrokerState, idArgs: BrokerIdentifier): string | undefined => {
+  if ('brokerId' in idArgs) {
+    return idArgs.brokerId;
+  }
+  if ('source' in idArgs && 'id' in idArgs) {
+    const mapKey = `${idArgs.source}:${idArgs.id}`;
+    const brokerId = state.brokerMap[mapKey]?.brokerId;
+    if (!brokerId) {
+      console.warn(`No brokerId found for mapKey: ${mapKey}`);
+    }
+    return brokerId;
   }
   console.error(`Invalid BrokerIdentifier: ${JSON.stringify(idArgs)}`);
   return undefined;

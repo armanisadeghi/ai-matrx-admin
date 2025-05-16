@@ -3,7 +3,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerState, BrokerIdentifier } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard
 const isBoolean = (value: any): value is boolean => typeof value === "boolean";
@@ -19,7 +19,7 @@ export const booleanReducers = {
         }>
     ) {
         const { idArgs, value } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         state.brokers[targetBrokerId] = value;
@@ -34,7 +34,7 @@ export const booleanReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         const currentValue = state.brokers[targetBrokerId];
@@ -50,7 +50,7 @@ export const booleanReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         state.brokers[targetBrokerId] = true;
@@ -65,7 +65,7 @@ export const booleanReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         state.brokers[targetBrokerId] = false;
@@ -80,7 +80,7 @@ export const booleanReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         const { [targetBrokerId]: removed, ...newBrokers } = state.brokers;

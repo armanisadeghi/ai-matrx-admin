@@ -21,7 +21,8 @@ const DirectMultiSelectField: React.FC<{
   source?: string;
   isMobile?: boolean;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -254,7 +255,7 @@ const DirectMultiSelectField: React.FC<{
   };
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={`${safeWidthClass} ${className}`}>
       {/* Search input */}
       <div className="relative mb-2">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />

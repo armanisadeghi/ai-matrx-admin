@@ -2,7 +2,7 @@ import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerIdentifier } from "../types";
 import { Table, Column, Row } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard for Table
 const isTable = (value: any): value is Table =>
@@ -23,7 +23,7 @@ const selectTable = createSelector(
         selectIdArgs
     ],
     (brokerConcept, idArgs): Table | undefined => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
+        const brokerId = resolveBrokerId(brokerConcept, idArgs);
         if (!brokerId) return undefined;
         
         const brokerValue = brokerConcept.brokers[brokerId];

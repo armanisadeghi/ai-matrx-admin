@@ -16,6 +16,7 @@ interface SearchableSelectFieldProps {
     source?: string;
     isMobile?: boolean;
     disabled?: boolean;
+    className?: string;
 }
 
 const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
@@ -24,6 +25,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
     source = "applet",
     isMobile,
     disabled = false,
+    className = "",
 }) => {
     const { id, label, placeholder, options, componentProps, includeOther } = field;
     const { width, customContent } = componentProps;
@@ -116,7 +118,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
     const isOtherSelected = selectedOption?.id === "other";
 
     return (
-        <div className={safeWidthClass}>
+        <div className={`${safeWidthClass} ${className}`}>
             <Popover>
                 <PopoverTrigger asChild>
                     <Button

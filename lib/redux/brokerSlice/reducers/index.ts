@@ -7,3 +7,4 @@ export * from "./number";
 export * from "./options";
 export * from "./tables";
 export * from "./text";
+export * from "./dangerous";

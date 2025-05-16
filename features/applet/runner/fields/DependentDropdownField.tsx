@@ -28,7 +28,8 @@ const DependentDropdownField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -46,6 +47,13 @@ const DependentDropdownField: React.FC<{
   
   const safeWidthClass = ensureValidWidthClass(width);
   
+  useEffect(() => {
+    if (className) {
+      console.warn("Dependent Dropdown Field is not using the given classname prop because additional updates are required to support it. Classname given:", className);
+    }
+  }, [className]);
+
+
   const dispatch = useAppDispatch();
   const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
   

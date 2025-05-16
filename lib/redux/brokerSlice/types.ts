@@ -1,13 +1,14 @@
-// Shared interfaces used across all data types
+// lib/redux/brokerSlice/types.ts
+
 export type BrokerIdentifier =
-  | { brokerId: string; source?: never; itemId?: never; sourceId?: never }
-  | { brokerId?: never; source: string; sourceId?: string; itemId: string };
+  | { brokerId: string; source?: string; id?: string }
+  | { source: string; id: string; brokerId?: string };
 
 export interface BrokerMapEntry {
+  brokerId: string;
+  id: string;
   source: string;
   sourceId: string;
-  itemId: string;
-  brokerId: string;
 }
 
 export interface BrokerState {
@@ -19,9 +20,8 @@ export interface BrokerState {
 export interface DynamicBrokerMapEntry {
   source: string;
   sourceId: string;
-  itemId: string;
+  id: string;
 }
-
 
 export interface FieldOption {
   id: string;
@@ -48,8 +48,8 @@ export interface Column {
   name: string;
   type?: string;
   order?: number;
-  isFixed?: boolean;        // Whether the column is draggable/deletable
-  minWidthClass?: string;   // CSS class for minimum width
+  isFixed?: boolean;
+  minWidthClass?: string;
 }
 
 export interface Row {

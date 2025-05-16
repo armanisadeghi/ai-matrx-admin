@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import UniformHeightWrapper from "@/features/applet/runner/layouts/core/UniformHeightWrapper";
 import { ChevronRight, Send } from "lucide-react";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -11,8 +10,7 @@ import {
     selectAppletRuntimeName,
 } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { getAppletIcon } from "@/features/applet/styles/StyledComponents";
-import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
-
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
 
 interface SidebarSearchLayoutProps extends AppletInputProps {
     fullWidth?: boolean;
@@ -32,35 +30,33 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
     const appletIconName = useAppSelector((state) => selectAppletRuntimeAppletIcon(state, appletId));
     const appletAccentColor = useAppSelector((state) => selectAppletRuntimeAccentColor(state, appletId));
     const appletName = useAppSelector((state) => selectAppletRuntimeName(state, appletId));
-
     const appletIcon = getAppletIcon({ appletIconName, size: 28, appletAccentColor });
-
     const [hoveredContainerId, setHoveredContainerId] = useState<string | null>(null);
-
+    
     // Find current container index to determine if it's the last one
     const currentContainerIndex = appletContainers.findIndex((container) => container.id === activeContainerId);
     const isLastContainer = currentContainerIndex === appletContainers.length - 1;
-
+    
     // Function to navigate to the next container
     const handleNext = () => {
         if (currentContainerIndex < appletContainers.length - 1) {
             setActiveContainerId(appletContainers[currentContainerIndex + 1].id);
         }
     };
-
+    
     // Layout type identifier for UniformHeightWrapper
     const layoutType = fullWidth ? "fullWidthSidebar" : "sidebar";
-
+    
     // Width classes based on layout type
     const containerWidthClass = fullWidth ? "w-full" : "w-full max-w-6xl mx-auto";
-
+    
     // Set first container as active on mount if no active container
     useEffect(() => {
         if (appletContainers.length > 0 && !activeContainerId) {
             setActiveContainerId(appletContainers[0].id);
         }
     }, [appletContainers, activeContainerId, setActiveContainerId]);
-
+    
     return (
         <div
             className={`${containerWidthClass} border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700 ${className}`}
@@ -95,7 +91,7 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
                         ))}
                     </div>
                 </div>
-
+                
                 {/* Main content area with relative positioning */}
                 <div className="flex-grow p-6 bg-white dark:bg-gray-900 relative flex flex-col">
                     {/* Content container with fixed height */}
@@ -119,26 +115,26 @@ const SidebarSearchLayout: React.FC<SidebarSearchLayoutProps> = ({
                                             <p className="mt-2 text-gray-600 dark:text-gray-400">{container.description}</p>
                                         )}
                                     </div>
-
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                                        {container.fields.map((field) => (
-                                            <div key={field.id} className="mb-5 last:mb-0">
-                                                <CustomFieldLabelAndHelpText
-                                                    fieldId={field.id}
-                                                    fieldLabel={field.label}
-                                                    helpText={field.helpText}
-                                                    required={field.required}
-                                                    className="mb-2"
-                                                />
-                                                {AppletFieldController({ field, appletId, isMobile, source })}
-                                            </div>
-                                        ))}
+                                        <FieldsWithLabels
+                                            fields={container.fields}
+                                            appletId={appletId}
+                                            isMobile={isMobile}
+                                            source={source}
+                                            className="contents"
+                                            wrapperClassName="mb-5 last:mb-0"
+                                            showLabels={true}
+                                            showHelpText={true}
+                                            showRequired={true}
+                                            labelPosition="top"
+                                            labelClassName="mb-2"
+                                        />
                                     </div>
                                 </div>
                             </UniformHeightWrapper>
                         ))}
                     </div>
-
+                    
                     {/* Footer with action button - always at the bottom */}
                     <div className="flex justify-end">
                         {actionButton ||

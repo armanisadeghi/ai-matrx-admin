@@ -2,7 +2,7 @@ import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerIdentifier } from "../types";
 import { FieldOptionsRuntime } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard for FieldOptionsRuntime array
 const isOptionsArray = (value: any): value is FieldOptionsRuntime[] =>
@@ -12,7 +12,7 @@ const isOptionsArray = (value: any): value is FieldOptionsRuntime[] =>
 const selectBrokerOptions = createSelector(
     [
         (state: RootState, idArgs: BrokerIdentifier) => {
-            const brokerId = getBrokerId(state.brokerConcept, idArgs);
+            const brokerId = resolveBrokerId(state.brokerConcept, idArgs);
             return brokerId ? state.brokerConcept.brokers[brokerId] : undefined;
         },
     ],

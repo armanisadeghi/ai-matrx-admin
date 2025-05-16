@@ -1,7 +1,7 @@
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerIdentifier } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard for text values
 const isTextValue = (value: any): value is string => typeof value === "string";
@@ -14,7 +14,7 @@ const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
 // Get the broker ID
 const selectBrokerId = createSelector(
     [selectBrokerConceptState, selectIdArgs],
-    (brokerConcept, idArgs) => getBrokerId(brokerConcept, idArgs)
+    (brokerConcept, idArgs) => resolveBrokerId(brokerConcept, idArgs)
 );
 
 // Get the broker value

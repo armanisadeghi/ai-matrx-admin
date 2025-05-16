@@ -24,7 +24,8 @@ const CheckboxGroupField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -319,7 +320,7 @@ const CheckboxGroupField: React.FC<{
   });
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={`${safeWidthClass} ${className}`}>
       <div
         role="group"
         aria-labelledby={`${id}-label`}

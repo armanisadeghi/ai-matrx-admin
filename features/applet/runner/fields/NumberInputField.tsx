@@ -10,7 +10,8 @@ const NumberInputField: React.FC<{
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false }) => {
+    className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, placeholder, componentProps, required } = field;
 
     const { width, customContent, min, max, step } = componentProps;
@@ -62,7 +63,7 @@ const NumberInputField: React.FC<{
     }
 
     return (
-        <div className={safeWidthClass}>
+        <div className={`${safeWidthClass} ${className}`}>
             <div className="grid grid-cols-2 items-center">
                 {/* Left side - always present */}
                 <div className="flex flex-col">

@@ -3,7 +3,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/redux";
 import { BrokerState, BrokerIdentifier } from "../types";
 import { FieldOption, FieldOptionsRuntime } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard for FieldOptionsRuntime array
 const isOptionsArray = (value: any): value is FieldOptionsRuntime[] =>
@@ -45,7 +45,7 @@ export const optionsReducers = {
         }>
     ) {
         const { idArgs, options: inputOptions, initialSelectedIds = [], initialOtherTexts = [] } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         let runtimeOptions: FieldOptionsRuntime[] = inputOptions.map(normalizeToRuntimeOption);
@@ -79,7 +79,7 @@ export const optionsReducers = {
         }>
     ) {
         const { idArgs, optionId, isSelected } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -109,7 +109,7 @@ export const optionsReducers = {
         }>
     ) {
         const { idArgs, optionId, properties } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -136,7 +136,7 @@ export const optionsReducers = {
         }>
     ) {
         const { idArgs, optionId, otherText } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -166,7 +166,7 @@ export const optionsReducers = {
         }>
     ) {
         const { idArgs, option: optionInput, selectAfterAdding = false } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         let options = state.brokers[targetBrokerId] as FieldOptionsRuntime[] | undefined;
@@ -197,7 +197,7 @@ export const optionsReducers = {
         }>
     ) {
         const { idArgs, optionId } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -221,7 +221,7 @@ export const optionsReducers = {
         }>
     ) {
         const { idArgs, optionIds } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         const brokerValue = state.brokers[targetBrokerId];
@@ -246,7 +246,7 @@ export const optionsReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
 
         state.brokers[targetBrokerId] = [];

@@ -30,7 +30,7 @@ export interface BrokerFieldProps<T = any> {
 }
 
 export interface BrokerFieldConfig<T = any> {
-  broker: BrokerIdentifier;
+  brokerMappedItem: BrokerIdentifier;
   type?: 'text' | 'number' | 'boolean' | 'options' | 'table' | 'dynamic';
   defaultValue?: T;
   disabled?: boolean;
@@ -49,7 +49,7 @@ type BrokerFieldRenderProps<T> = {
 } & BrokerFieldConfig<T>;
 
 function BrokerField<T = any>({
-  broker,
+  brokerMappedItem,
   type = 'dynamic',
   defaultValue,
   disabled = false,
@@ -61,17 +61,17 @@ function BrokerField<T = any>({
   const brokerValue = useAppSelector(state => {
     switch (type) {
       case 'text':
-        return brokerConceptSelectors.selectText(state, broker);
+        return brokerConceptSelectors.selectText(state, brokerMappedItem);
       case 'number':
-        return brokerConceptSelectors.selectNumber(state, broker);
+        return brokerConceptSelectors.selectNumber(state, brokerMappedItem);
       case 'boolean':
-        return brokerConceptSelectors.selectBoolean(state, broker);
+        return brokerConceptSelectors.selectBoolean(state, brokerMappedItem);
       case 'options':
-        return brokerConceptSelectors.selectBrokerOptions(state, broker);
+        return brokerConceptSelectors.selectBrokerOptions(state, brokerMappedItem);
       case 'table':
-        return brokerConceptSelectors.selectTable(state, broker);
+        return brokerConceptSelectors.selectTable(state, brokerMappedItem);
       default:
-        return brokerConceptSelectors.selectValue(state, broker);
+        return brokerConceptSelectors.selectValueWithoutBrokerId(state, brokerMappedItem);
     }
   });
 
@@ -87,37 +87,37 @@ function BrokerField<T = any>({
     switch (type) {
       case 'text':
         dispatch(brokerConceptActions.setText({
-          idArgs: broker,
+          idArgs: brokerMappedItem,
           text: valueToStore as string
         }));
         break;
       case 'number':
         dispatch(brokerConceptActions.setNumber({
-          idArgs: broker,
+          idArgs: brokerMappedItem,
           value: valueToStore as number
         }));
         break;
       case 'boolean':
         dispatch(brokerConceptActions.setBoolean({
-          idArgs: broker,
+          idArgs: brokerMappedItem,
           value: valueToStore as boolean
         }));
         break;
       case 'options':
         dispatch(brokerConceptActions.setOptions({
-          idArgs: broker,
+          idArgs: brokerMappedItem,
           options: valueToStore as any
         }));
         break;
       case 'table':
         dispatch(brokerConceptActions.setTable({
-          idArgs: broker,
+          idArgs: brokerMappedItem,
           table: valueToStore as any
         }));
         break;
       default:
-        dispatch(brokerConceptActions.setValue({
-          idArgs: broker,
+        dispatch(brokerConceptActions.setValueWithoutBrokerId({
+          idArgs: brokerMappedItem,
           value: valueToStore
         }));
     }
@@ -137,7 +137,7 @@ interface WithBrokerProps<T = any> extends BrokerFieldConfig<T> {
 
 function WithBroker<T = any>({
   children,
-  broker,
+  brokerMappedItem,
   type,
   defaultValue,
   disabled,
@@ -145,7 +145,7 @@ function WithBroker<T = any>({
 }: WithBrokerProps<T>) {
   return (
     <BrokerField<T> 
-      broker={broker}
+      brokerMappedItem={brokerMappedItem}
       type={type}
       defaultValue={defaultValue}
       disabled={disabled}
@@ -366,7 +366,7 @@ function BrokerValueDisplay({ brokers }: { brokers: Record<string, BrokerIdentif
   const values = useAppSelector(state => {
     const result: Record<string, any> = {};
     Object.entries(brokers).forEach(([key, broker]) => {
-      result[key] = brokerConceptSelectors.selectValue(state, broker);
+      result[key] = brokerConceptSelectors.selectValueWithoutBrokerId(state, broker);
     });
     return result;
   });

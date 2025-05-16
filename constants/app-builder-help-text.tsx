@@ -98,6 +98,7 @@ export const ContainerLabelAndHelpText = ({ fieldName, fieldLabel, required }: A
     );
 };
 
+// Enhanced CustomFieldLabelAndHelpText component
 export interface CustomFieldLabelAndHelpTextProps {
     fieldId: string;
     fieldLabel: string;
@@ -105,10 +106,37 @@ export interface CustomFieldLabelAndHelpTextProps {
     required?: boolean;
     className?: string;
     onAiAssistance?: () => void;
+    // New props
+    showRequired?: boolean;
+    showHelpText?: boolean;
+    labelPosition?: "top" | "left" | "right";
 }
 
-export const CustomFieldLabelAndHelpText = ({ fieldId, fieldLabel, helpText, required=false, className="", onAiAssistance }: CustomFieldLabelAndHelpTextProps) => {
+export interface CustomFieldLabelAndHelpTextProps {
+    fieldId: string;
+    fieldLabel: string;
+    helpText?: string;
+    required?: boolean;
+    className?: string;
+    onAiAssistance?: () => void;
+    // New props
+    showRequired?: boolean;
+    showHelpText?: boolean;
+    labelPosition?: "top" | "left" | "right";
+}
 
+export const CustomFieldLabelAndHelpText = ({ 
+    fieldId, 
+    fieldLabel, 
+    helpText, 
+    required = false, 
+    className = "", 
+    onAiAssistance,
+    // Default values for backward compatibility
+    showRequired = true,
+    showHelpText = true,
+    labelPosition = "top"
+}: CustomFieldLabelAndHelpTextProps) => {
     const handleAiAssistance = () => {
         console.log("AI Assistance");
         if (onAiAssistance) {
@@ -116,13 +144,66 @@ export const CustomFieldLabelAndHelpText = ({ fieldId, fieldLabel, helpText, req
         }
     };
 
+    // Top position (default) - vertical layout
+    if (labelPosition === "top") {
+        return (
+            <div className={cn("flex items-center gap-1", className)}>
+                <Label htmlFor={fieldId} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                    {fieldLabel}
+                    {required && showRequired && <span className="pl-1 text-red-500">*</span>}
+                </Label>
+                {showHelpText && helpText && (
+                    <HelpIcon 
+                        text={helpText} 
+                        required={required} 
+                        title={fieldLabel} 
+                        onAiAssistance={handleAiAssistance}
+                    />
+                )}
+            </div>
+        );
+    }
+    
+    // Left position - horizontal layout with label on left
+    if (labelPosition === "left") {
+        return (
+            <div className={cn("flex items-center", className)}>
+                <div className="flex items-center gap-1 min-w-[120px] mr-2">
+                    <Label htmlFor={fieldId} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
+                        {fieldLabel}
+                        {required && showRequired && <span className="pl-1 text-red-500">*</span>}
+                    </Label>
+                    {showHelpText && helpText && (
+                        <HelpIcon 
+                            text={helpText} 
+                            required={required} 
+                            title={fieldLabel} 
+                            onAiAssistance={handleAiAssistance}
+                        />
+                    )}
+                </div>
+            </div>
+        );
+    }
+    
+    // Right position - horizontal layout with label on right
     return (
-        <div className={cn("flex items-center gap-1", className)}>
-            <Label htmlFor={fieldId} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer">
-                {fieldLabel}
-                {required && <span className="pl-1 text-red-500">*</span>}
-            </Label>
-            <HelpIcon text={helpText} required={required} title={fieldLabel} onAiAssistance={handleAiAssistance}/>
+        <div className={cn("flex items-center justify-between", className)}>
+            <div className="flex-1"></div>
+            <div className="flex items-center gap-1 min-w-[120px] ml-2 text-right">
+                <Label htmlFor={fieldId} className="text-sm font-medium text-gray-900 dark:text-gray-100 cursor-pointer text-right">
+                    {fieldLabel}
+                    {required && showRequired && <span className="pl-1 text-red-500">*</span>}
+                </Label>
+                {showHelpText && helpText && (
+                    <HelpIcon 
+                        text={helpText} 
+                        required={required} 
+                        title={fieldLabel} 
+                        onAiAssistance={handleAiAssistance}
+                    />
+                )}
+            </div>
         </div>
     );
 };

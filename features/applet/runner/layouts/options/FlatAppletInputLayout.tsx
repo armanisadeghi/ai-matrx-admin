@@ -3,8 +3,7 @@ import React from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
-import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
 
 const FlatAppletInputLayout: React.FC<AppletInputProps> = ({
     appletId,
@@ -14,6 +13,7 @@ const FlatAppletInputLayout: React.FC<AppletInputProps> = ({
     source = "applet",
 }) => {
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
+    
     return (
         <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
             <div className="border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 p-6">
@@ -28,30 +28,26 @@ const FlatAppletInputLayout: React.FC<AppletInputProps> = ({
                                 )}
                             </div>
                         )}
-
                         {/* Group fields */}
                         <div className="grid grid-cols-1 gap-y-6">
-                            {container.fields.map((field) => (
-                                <div key={field.id}>
-                                    <CustomFieldLabelAndHelpText
-                                        fieldId={field.id}
-                                        fieldLabel={field.label}
-                                        helpText={field.helpText}
-                                        required={field.required}
-                                        className="mb-2"
-                                    />
-                                    {AppletFieldController({ field, appletId, isMobile, source })}
-                                </div>
-                            ))}
+                            <FieldsWithLabels
+                                fields={container.fields}
+                                appletId={appletId}
+                                isMobile={isMobile}
+                                source={source}
+                                wrapperClassName="mb-0" // Override the default margin
+                                showLabels={true}
+                                showHelpText={true}
+                                showRequired={true}
+                                labelPosition="top"
+                            />
                         </div>
-
                         {/* Add a subtle divider between groups if not the last container */}
                         {groupIndex < appletContainers.length - 1 && (
                             <div className="border-b-3 border-gray-200 dark:border-gray-700 mt-8"></div>
                         )}
                     </div>
                 ))}
-
                 <div className="flex justify-end mt-8">{actionButton}</div>
             </div>
         </div>

@@ -2,10 +2,9 @@
 import React, { useRef, useEffect } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { ChevronDown } from "lucide-react";
-import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
 
 const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
     appletId,
@@ -18,34 +17,21 @@ const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
     containerDescriptionLocation = "container-header",
 }) => {
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
-
     const contentRefs = useRef<Map<string, React.RefObject<HTMLDivElement>>>(new Map());
-    const fieldRefs = useRef<Map<string, Map<string, React.ReactNode>>>(new Map());
-
+    
     // Initialize content refs for each container
     useEffect(() => {
         appletContainers.forEach((container) => {
             if (!contentRefs.current.has(container.id)) {
                 contentRefs.current.set(container.id, React.createRef<HTMLDivElement>());
             }
-
-            // Initialize field refs for this container
-            if (!fieldRefs.current.has(container.id)) {
-                const groupFieldRefs = new Map<string, React.ReactNode>();
-                fieldRefs.current.set(container.id, groupFieldRefs);
-
-                // Render each field
-                container.fields.forEach((field) => {
-                    groupFieldRefs.set(field.id, AppletFieldController({ field, appletId, isMobile, source }));
-                });
-            }
         });
-
+        
         // Ensure we always have an active container
         if (!activeContainerId && appletContainers.length > 0) {
             setActiveContainerId(appletContainers[0].id);
         }
-    }, [appletContainers, activeContainerId]);
+    }, [appletContainers, activeContainerId, setActiveContainerId]);
 
     const toggleGroup = (groupId: string) => {
         if (groupId === activeContainerId) {
@@ -56,7 +42,6 @@ const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
             setActiveContainerId(groupId);
         }
     };
-
 
     return (
         <div className={`w-full max-w-4xl mx-auto p-4 ${className}`}>
@@ -78,7 +63,6 @@ const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
                                 </div>
                                 <div><ChevronDown size={20} className={`transition-transform duration-300 ${isActive ? 'rotate-180' : ''}`} /></div>
                             </button>
-
                             <div
                                 className="overflow-hidden transition-[height] duration-500 ease-in-out border-b border-gray-200 dark:border-gray-700"
                                 style={{
@@ -89,28 +73,24 @@ const AccordionAppletInputLayout: React.FC<AppletInputProps> = ({
                                     {container.description && containerDescriptionLocation === "container-body" && (
                                         <div className="pr-1 mb-5 text-sm text-gray-500 dark:text-gray-400 ">{container.description}</div>
                                     )}
-
-                                    <div>
-                                        {container.fields.map((field) => (
-                                            <div key={field.id} className="mb-5 last:mb-0">
-                                                <CustomFieldLabelAndHelpText
-                                                    fieldId={field.id}
-                                                    fieldLabel={field.label}
-                                                    helpText={field.helpText}
-                                                    required={field.required}
-                                                    className="mb-2"
-                                                />
-                                                {fieldRefs.current.get(container.id)?.get(field.id)}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <FieldsWithLabels
+                                        fields={container.fields}
+                                        appletId={appletId}
+                                        isMobile={isMobile}
+                                        source={source}
+                                        wrapperClassName="mb-5 last:mb-0"
+                                        showLabels={true}
+                                        showHelpText={true}
+                                        showRequired={true}
+                                        labelPosition="top"
+                                        labelClassName="mb-2"
+                                    />
                                 </div>
                             </div>
                         </div>
                     );
                 })}
             </div>
-
             <div className="flex justify-end mt-4">{actionButton}</div>
         </div>
     );

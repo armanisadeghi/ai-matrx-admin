@@ -11,7 +11,8 @@ const SimpleNumberField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -156,7 +157,7 @@ const SimpleNumberField: React.FC<{
   }
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={`${safeWidthClass} ${className}`}>
       <div className="relative">
         {valuePrefix && (
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">

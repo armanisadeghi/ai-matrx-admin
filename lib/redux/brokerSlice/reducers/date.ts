@@ -3,7 +3,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerState, BrokerIdentifier } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard
 const isValidDate = (value: any): value is string => {
@@ -23,7 +23,7 @@ export const dateReducers = {
         }>
     ) {
         const { idArgs, value } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         const dateString = value instanceof Date ? value.toISOString() : value;
@@ -45,7 +45,7 @@ export const dateReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         state.brokers[targetBrokerId] = new Date().toISOString();
@@ -61,7 +61,7 @@ export const dateReducers = {
         }>
     ) {
         const { idArgs, days } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         const currentValue = state.brokers[targetBrokerId];
@@ -80,7 +80,7 @@ export const dateReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         const { [targetBrokerId]: removed, ...newBrokers } = state.brokers;

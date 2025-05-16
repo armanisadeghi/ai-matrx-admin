@@ -10,7 +10,8 @@ const TextareaField: React.FC<{
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, isMobile, source="applet", disabled=false }) => {
+    className?: string; // Add this new prop
+}> = ({ field, isMobile, source="applet", disabled=false, className="" }) => {
     const { id, placeholder, componentProps } = field;
     const { 
         rows,
@@ -36,7 +37,7 @@ const TextareaField: React.FC<{
     };
     
     const textareaClassName =
-        "w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 placeholder-gray-400 dark:placeholder-gray-400 placeholder-text-xs";
+        "w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-inherit placeholder-gray-400 dark:placeholder-gray-400 placeholder-text-xs";
     
     const resizeStyle = { resize: "vertical" } as React.CSSProperties;
     
@@ -45,7 +46,7 @@ const TextareaField: React.FC<{
     }
     
     return (
-        <div className={`${safeWidthClass}`}>
+        <div className={`${safeWidthClass} ${className}`}>
             <textarea
                 id={`${id}-textarea`}
                 className={textareaClassName}

@@ -1,7 +1,7 @@
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerIdentifier } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 
 // Input selectors to avoid object creation in selectors
@@ -14,7 +14,7 @@ const selectDynamicValue = createSelector(
         selectIdArgs
     ],
     (brokerConcept, idArgs): any => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
+        const brokerId = resolveBrokerId(brokerConcept, idArgs);
         return brokerId ? brokerConcept.brokers[brokerId] : undefined;
     }
 );

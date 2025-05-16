@@ -2,7 +2,7 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerState, BrokerIdentifier } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Reducers for handling generic, untyped data in brokers
 export const dynamicReducers = {
@@ -15,7 +15,7 @@ export const dynamicReducers = {
         }>
     ) {
         const { idArgs, value } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         state.brokers[targetBrokerId] = value;
@@ -31,7 +31,7 @@ export const dynamicReducers = {
         }>
     ) {
         const { idArgs, value } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         state.brokers[targetBrokerId] = value;
@@ -46,7 +46,7 @@ export const dynamicReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         // Create new brokers object without the specified broker

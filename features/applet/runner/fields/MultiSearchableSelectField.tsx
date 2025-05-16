@@ -28,7 +28,8 @@ const MultiSearchableSelectField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -210,7 +211,7 @@ const MultiSearchableSelectField: React.FC<{
   });
   
   return (
-    <div className={safeWidthClass}>
+    <div className={`${safeWidthClass} ${className}`}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

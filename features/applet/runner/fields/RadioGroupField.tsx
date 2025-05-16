@@ -17,7 +17,8 @@ const RadioGroupField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -33,6 +34,12 @@ const RadioGroupField: React.FC<{
     direction = "vertical",
     gridCols = "grid-cols-1"
   } = componentProps;
+
+  useEffect(() => {
+    if (className) {
+      console.warn("Radio Group Field is not using the given classname prop because additional updates are required to support it. Classname given:", className);
+    }
+  }, [className]);
   
   const safeWidthClass = ensureValidWidthClass(width);
   

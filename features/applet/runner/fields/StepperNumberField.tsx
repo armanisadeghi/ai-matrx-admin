@@ -13,7 +13,8 @@ const StepperNumberField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -176,7 +177,7 @@ const StepperNumberField: React.FC<{
   }
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={`${safeWidthClass} ${className}`}>
       <div
         className={cn(
           "flex items-center h-10 rounded-md border border-gray-300 dark:border-gray-700",

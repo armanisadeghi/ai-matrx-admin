@@ -21,20 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { 
+  createTable, 
+  type FieldDefinition, 
+  VALID_DATA_TYPES 
+} from '@/utils/user-table-utls/table-utils';
 
 
 interface CreateTableModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (tableId: string) => void;
-}
-
-interface FieldDefinition {
-  field_name: string;
-  display_name: string;
-  data_type: string;
-  field_order: number;
-  is_required: boolean;
 }
 
 export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateTableModalProps) {
@@ -102,45 +99,24 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!tableName.trim()) {
-      setError('Table name is required');
-      return;
-    }
-    
     try {
       setLoading(true);
       setError(null);
       
       // Prepare fields if any were added
-      const initialFields = addFields && fields.length > 0 
-        ? fields 
-        : null;
+      const initialFields = addFields && fields.length > 0 ? fields : null;
       
-      console.log("Creating table with params:", {
-        p_table_name: tableName,
-        p_description: description,
-        p_is_public: isPublic,
-        p_authenticated_read: authenticatedRead,
-        p_initial_fields: initialFields ? JSON.stringify(initialFields) : null
+      // Call the utility function
+      const result = await createTable(supabase, {
+        tableName,
+        description,
+        isPublic,
+        authenticatedRead,
+        fields: initialFields
       });
       
-      // Call the RPC function
-      const { data, error } = await supabase.rpc('create_new_user_table', {
-        p_table_name: tableName,
-        p_description: description,
-        p_is_public: isPublic,
-        p_authenticated_read: authenticatedRead,
-        p_initial_fields: initialFields ? JSON.stringify(initialFields) : null
-      });
-      
-      if (error) {
-        console.error("Supabase RPC error:", error);
-        throw error;
-      }
-      
-      if (!data || !data.success) {
-        console.error("API response error:", data);
-        throw new Error(data?.error || 'Failed to create table');
+      if (!result.success) {
+        throw new Error(result.error);
       }
       
       // Reset form
@@ -152,7 +128,9 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
       setFields([]);
       
       // Call success callback with the new table ID
-      onSuccess(data.table_id);
+      if (result.tableId) {
+        onSuccess(result.tableId);
+      }
       onClose();
     } catch (err) {
       console.error('Error creating table:', err);
@@ -168,6 +146,7 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
     }
   };
 
+  
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[600px]">
@@ -307,12 +286,11 @@ export default function CreateTableModal({ isOpen, onClose, onSuccess }: CreateT
                                 <SelectValue placeholder="Select type" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="string">Text</SelectItem>
-                                <SelectItem value="number">Number</SelectItem>
-                                <SelectItem value="integer">Integer</SelectItem>
-                                <SelectItem value="boolean">Boolean</SelectItem>
-                                <SelectItem value="date">Date</SelectItem>
-                                <SelectItem value="datetime">Date & Time</SelectItem>
+                                {VALID_DATA_TYPES.map((type) => (
+                                  <SelectItem key={type} value={type}>
+                                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>

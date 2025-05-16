@@ -29,6 +29,6 @@ export { default as NumberInputField } from './NumberInputField';
 // Export common components
 export { default as SelectionPills } from './common/SelectionPills';
 export { default as ValidationMessage } from './common/ValidationMessage';
-export { default as AppletFieldController } from './AppletFieldController';
+export { default as AppletFieldController } from './core/AppletFieldController';
 // Export types
 export type { SelectedOptionValue } from './SelectField';

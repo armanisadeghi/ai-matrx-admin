@@ -18,7 +18,8 @@ const DraggableTableField: React.FC<{
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false }) => {
+    className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, options, componentProps } = field;
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);
@@ -104,7 +105,7 @@ const DraggableTableField: React.FC<{
     const TableColumns = () => <colgroup><col className="w-10" /><col className="w-1/3" /><col /></colgroup>;
 
     return (
-        <div className={`${safeWidthClass}`}>
+        <div className={`${safeWidthClass} ${className}`}>
             <div className="w-full overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
                 <table ref={tableRef} className="w-full border-collapse" style={{ tableLayout: 'fixed' }}>
                     <TableColumns />

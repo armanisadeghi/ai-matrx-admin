@@ -2,7 +2,7 @@
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerIdentifier } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard
 const isBoolean = (value: any): value is boolean => typeof value === "boolean";
@@ -17,7 +17,7 @@ const selectBoolean = createSelector(
         selectIdArgs
     ],
     (brokerConcept, idArgs): boolean | undefined => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
+        const brokerId = resolveBrokerId(brokerConcept, idArgs);
         if (!brokerId) return undefined;
         
         const brokerValue = brokerConcept.brokers[brokerId];

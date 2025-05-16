@@ -43,7 +43,8 @@ const RangeSliderField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -194,7 +195,7 @@ const RangeSliderField: React.FC<{
   }
   
   return (
-    <div className={safeWidthClass}>
+    <div className={`${safeWidthClass} ${className}`}>
       <div className="mb-6 space-y-6">
         {/* Current range display */}
         <div className="flex justify-between items-center mb-2">

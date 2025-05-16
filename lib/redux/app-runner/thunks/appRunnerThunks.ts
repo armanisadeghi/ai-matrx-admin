@@ -20,7 +20,8 @@ import {
   ValidationResult
 } from '../validations/appRunnerValidations';
 import { setBrokerMap } from '../slices/brokerSlice';
-import { setBrokerMapConcept } from '../slices/brokerSliceConcept';
+import { brokerConceptActions } from '../../brokerSlice';
+
 
 
 
@@ -139,7 +140,7 @@ export const fetchAppWithApplets = createAsyncThunk(
       
       
       dispatch(setBrokerMap(brokerMappings));
-      dispatch(setBrokerMapConcept(brokerMappings));
+      dispatch(brokerConceptActions.addOrUpdateRegisterEntries(brokerMappings));
 
       console.warn('NOTICE: fetchAppWithApplets -> Conceptual broker mapping being set to the broker map concept slice')
 

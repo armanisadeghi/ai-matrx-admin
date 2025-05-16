@@ -8,11 +8,10 @@ import { HeroUIProvider } from "@heroui/react"; // Changed from NextUIProvider
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/styles/themes";
 import StoreProvider from "@/providers/StoreProvider";
+import { GlobalBrokerRegistration } from "@/providers/GlobalBrokerRegistration";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { InitialReduxState } from "@/types/reduxTypes";
-// import { SocketProvider } from "@/providers/SocketProvider";
 import { RefProvider } from "@/lib/refs";
-import { RecoilRoot } from "recoil";
 import { ToastProvider } from "@/providers";
 import { AudioModalProvider } from "@/providers/AudioModalProvider";
 import { ModuleHeaderProvider } from "@/providers/ModuleHeaderProvider";
@@ -31,6 +30,7 @@ import { PersistentDOMConnector } from "@/providers/persistance/PersistentDOMCon
 import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 import { UniformHeightProvider } from "@/features/applet/runner/layouts/core";
+import { GlobalBrokersInitializer } from "@/components/broker/UserBrokerInitializer";
 
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
@@ -53,12 +53,14 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
 
     return (
         <SchemaProvider initialSchema={initialReduxState?.globalCache}>
-            <RecoilRoot>
-                <StoreProvider initialState={initialReduxState}>
+            <StoreProvider initialState={initialReduxState}>
+                <GlobalBrokerRegistration>
+
+                    <GlobalBrokersInitializer user={initialReduxState.user} />
+
                     <ThemeProvider defaultTheme="dark" enableSystem={false}>
                         <PersistentComponentProvider>
                             <EntityProvider>
-                                {/* <SocketProvider> */}
                                 <DialogProvider>
                                     <ContextMenuProvider>
                                         <ChipMenuProvider>
@@ -74,12 +76,12 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                             <AudioModalProvider>
                                                                                 <ModuleHeaderProvider>
                                                                                     <GoogleAPIProvider>
-                                                                                            <UniformHeightProvider>
-                                                                                                <SelectedImagesProvider>
-                                                                                                    <PersistentDOMConnector />
-                                                                                                    {children}
-                                                                                                </SelectedImagesProvider>
-                                                                                            </UniformHeightProvider>
+                                                                                        <UniformHeightProvider>
+                                                                                            <SelectedImagesProvider>
+                                                                                                <PersistentDOMConnector />
+                                                                                                {children}
+                                                                                            </SelectedImagesProvider>
+                                                                                        </UniformHeightProvider>
                                                                                     </GoogleAPIProvider>
                                                                                 </ModuleHeaderProvider>
                                                                                 <Toaster />
@@ -95,12 +97,11 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                         </ChipMenuProvider>
                                     </ContextMenuProvider>
                                 </DialogProvider>
-                                {/* </SocketProvider> */}
                             </EntityProvider>
                         </PersistentComponentProvider>
                     </ThemeProvider>
-                </StoreProvider>
-            </RecoilRoot>
+                </GlobalBrokerRegistration>
+            </StoreProvider>
         </SchemaProvider>
     );
 }

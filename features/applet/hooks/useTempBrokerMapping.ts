@@ -36,7 +36,7 @@ export default function useTempBrokerMapping(fieldId: string) {
         });
         
         dispatch(setBrokerMap(mappings));
-        dispatch(brokerConceptActions.setMap(mappings));
+        dispatch(brokerConceptActions.addOrUpdateRegisterEntries(mappings));
 
         console.warn('NOTICE: useTempBrokerMapping -> Conceptual broker mapping being set to the broker map concept slice')
   

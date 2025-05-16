@@ -13,7 +13,8 @@ const TagInputField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -155,7 +156,7 @@ const TagInputField: React.FC<{
   }
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={`${safeWidthClass} ${className}`}>
       <div 
         className={cn(
           "flex flex-wrap gap-2 px-2 py-1.5 border rounded-md min-h-[38px] cursor-text",

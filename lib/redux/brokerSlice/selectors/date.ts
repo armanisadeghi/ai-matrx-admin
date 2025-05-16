@@ -2,7 +2,7 @@
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
 import { BrokerIdentifier } from "../types";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 
 // Type guard
 const isValidDate = (value: any): value is string => {
@@ -21,7 +21,7 @@ const selectDate = createSelector(
         selectIdArgs
     ],
     (brokerConcept, idArgs): Date | undefined => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
+        const brokerId = resolveBrokerId(brokerConcept, idArgs);
         if (!brokerId) return undefined;
         
         const brokerValue = brokerConcept.brokers[brokerId];
@@ -35,7 +35,7 @@ const selectDateString = createSelector(
         selectIdArgs
     ],
     (brokerConcept, idArgs): string | undefined => {
-        const brokerId = getBrokerId(brokerConcept, idArgs);
+        const brokerId = resolveBrokerId(brokerConcept, idArgs);
         if (!brokerId) return undefined;
         
         const brokerValue = brokerConcept.brokers[brokerId];

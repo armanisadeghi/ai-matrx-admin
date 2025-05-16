@@ -17,7 +17,8 @@ const DateField: React.FC<{
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false }) => {
+    className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, placeholder, componentProps, required } = field;
     const { width, customContent, minDate, maxDate } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);
@@ -62,7 +63,7 @@ const DateField: React.FC<{
     }
     
     return (
-        <div className={safeWidthClass} onBlur={handleBlur}>
+        <div className={`${safeWidthClass} ${className}`} onBlur={handleBlur}>
             <Popover>
                 <PopoverTrigger asChild>
                     <Button

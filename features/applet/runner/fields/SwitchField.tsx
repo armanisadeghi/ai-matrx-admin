@@ -35,7 +35,8 @@ const SwitchField: React.FC<{
     isMobile?: boolean;
     source?: string;
     disabled?: boolean;
-}> = ({ field, appletId, isMobile, source = "applet", disabled = false }) => {
+    className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source = "applet", disabled = false, className = "" }) => {
     const { id, label, componentProps, defaultValue } = field;
 
     const { width, customContent, onLabel = "On", offLabel = "Off", direction = "horizontal" } = componentProps;
@@ -81,7 +82,7 @@ const SwitchField: React.FC<{
     }
 
     return (
-        <div className={`${safeWidthClass}`}>
+        <div className={`${safeWidthClass} ${className}`}>
             <div
                 className={cn(
                     "flex items-center",

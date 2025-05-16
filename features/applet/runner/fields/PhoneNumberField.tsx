@@ -41,7 +41,8 @@ const PhoneNumberField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -221,7 +222,7 @@ const PhoneNumberField: React.FC<{
   }
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={`${safeWidthClass} ${className}`}>
       <div className="flex flex-wrap gap-2">
         {/* Country Code Dropdown */}
         <div className="w-48">

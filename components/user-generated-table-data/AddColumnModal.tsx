@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from '@/utils/supabase/client';
+import { addColumn, VALID_DATA_TYPES } from '@/utils/user-table-utls/table-utils';
 
 interface AddColumnModalProps {
   tableId: string;
@@ -54,60 +55,22 @@ export default function AddColumnModal({ tableId, isOpen, onClose, onSuccess }: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!displayName.trim()) {
-      setError('Display name is required');
-      return;
-    }
-    
     try {
       setLoading(true);
       setError(null);
       
-      // Format default value based on data type
-      let formattedDefaultValue = null;
-      if (defaultValue) {
-        switch (dataType) {
-          case 'number':
-            formattedDefaultValue = parseFloat(defaultValue);
-            break;
-          case 'integer':
-            formattedDefaultValue = parseInt(defaultValue);
-            break;
-          case 'boolean':
-            formattedDefaultValue = defaultValue.toLowerCase() === 'true';
-            break;
-          default:
-            formattedDefaultValue = defaultValue;
-        }
-      }
-      
-      console.log("Adding column with params:", {
-        p_table_id: tableId,
-        p_field_name: fieldName,
-        p_display_name: displayName,
-        p_data_type: dataType,
-        p_is_required: isRequired,
-        p_default_value: formattedDefaultValue !== null ? formattedDefaultValue : null
+      // Use the utility function
+      const result = await addColumn(supabase, {
+        tableId,
+        fieldName,
+        displayName,
+        dataType,
+        isRequired,
+        defaultValue: defaultValue || null
       });
       
-      // Call the RPC function
-      const { data, error } = await supabase.rpc('add_column_to_user_table', {
-        p_table_id: tableId,
-        p_field_name: fieldName,
-        p_display_name: displayName,
-        p_data_type: dataType,
-        p_is_required: isRequired,
-        p_default_value: formattedDefaultValue !== null ? formattedDefaultValue : null
-      });
-      
-      if (error) {
-        console.error("Supabase RPC error:", error);
-        throw error;
-      }
-      
-      if (!data || !data.success) {
-        console.error("API response error:", data);
-        throw new Error(data?.error || 'Failed to add column');
+      if (!result.success) {
+        throw new Error(result.error);
       }
       
       // Reset form and close modal
@@ -180,12 +143,11 @@ export default function AddColumnModal({ tableId, isOpen, onClose, onSuccess }: 
                 <SelectValue placeholder="Select data type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="string">Text</SelectItem>
-                <SelectItem value="number">Number</SelectItem>
-                <SelectItem value="integer">Integer</SelectItem>
-                <SelectItem value="boolean">Boolean</SelectItem>
-                <SelectItem value="date">Date</SelectItem>
-                <SelectItem value="datetime">Date & Time</SelectItem>
+                {VALID_DATA_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -210,6 +172,8 @@ export default function AddColumnModal({ tableId, isOpen, onClose, onSuccess }: 
                 dataType === 'number' || dataType === 'integer' ? '0' : 
                 dataType === 'date' ? 'YYYY-MM-DD' :
                 dataType === 'datetime' ? 'YYYY-MM-DD HH:MM:SS' : 
+                dataType === 'json' ? '{}' :
+                dataType === 'array' ? '[]' :
                 'Default text'
               }`}
             />

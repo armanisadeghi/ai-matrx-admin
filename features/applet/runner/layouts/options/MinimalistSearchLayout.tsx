@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
 
 export const gridColsOptions = [
   { value: "grid-cols-1", label: "1 Column" },
@@ -53,7 +52,7 @@ const MinimalistSearchLayout: React.FC<MinimalistSearchLayoutProps> = ({
 }) => {
     const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
-
+    
     return (
         <div className={`w-full max-w-5xl mx-auto p-4 ${className}`}>
             <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-8">
@@ -83,18 +82,19 @@ const MinimalistSearchLayout: React.FC<MinimalistSearchLayoutProps> = ({
                                 }`}
                             >
                                 <div className={`grid md:${gridClass} gap-6`}>
-                                    {container.fields.map((field) => (
-                                        <div key={field.id}>
-                                            <CustomFieldLabelAndHelpText
-                                                fieldId={field.id}
-                                                fieldLabel={field.label}
-                                                helpText={field.helpText}
-                                                required={field.required}
-                                                className="mb-2"
-                                            />
-                                            {AppletFieldController({ field, appletId, isMobile: false, source })}
-                                        </div>
-                                    ))}
+                                    <FieldsWithLabels
+                                        fields={container.fields}
+                                        appletId={appletId}
+                                        isMobile={false}
+                                        source={source}
+                                        className="contents" // Use contents to preserve the grid layout
+                                        wrapperClassName=""
+                                        showLabels={true}
+                                        showHelpText={true}
+                                        showRequired={true}
+                                        labelPosition="top"
+                                        labelClassName="mb-2"
+                                    />
                                 </div>
                             </div>
                         </div>

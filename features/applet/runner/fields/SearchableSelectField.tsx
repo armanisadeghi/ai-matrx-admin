@@ -36,7 +36,8 @@ const SearchableSelectField: React.FC<{
   source?: string;
   isMobile?: boolean;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string; // Add this new prop
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -154,7 +155,7 @@ const SearchableSelectField: React.FC<{
   });
   
   return (
-    <div className={safeWidthClass}>
+    <div className={`${safeWidthClass} ${className}`}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button

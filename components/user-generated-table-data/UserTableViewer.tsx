@@ -210,6 +210,30 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
     setShowDeleteModal(true);
   };
   
+  // Add this helper function somewhere in the component, before the return statement
+  const formatCellValue = (value: any, dataType: string) => {
+    if (value === null || value === undefined) return '—';
+    
+    // Format based on data type
+    switch (dataType) {
+      case 'json':
+        return typeof value === 'object' ? JSON.stringify(value) : value;
+      case 'array':
+        return Array.isArray(value) ? JSON.stringify(value) : value;
+      case 'boolean':
+        return value ? 'True' : 'False';
+      case 'date':
+      case 'datetime':
+        try {
+          return new Date(value).toLocaleString();
+        } catch (e) {
+          return value;
+        }
+      default:
+        return value;
+    }
+  };
+  
   if (loading && !tableInfo) return <TableLoadingComponent />;
   if (error) return (
     <div className="py-6 text-center text-red-500 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
@@ -354,7 +378,7 @@ const UserTableViewer = ({ tableId, showTableSelector = false }: UserTableViewer
                   {fields.map((field) => (
                     <TableCell key={`${row.id}-${field.id}`} className="py-3">
                       {row.data[field.field_name] !== null 
-                        ? row.data[field.field_name]
+                        ? formatCellValue(row.data[field.field_name], field.data_type)
                         : '—'}
                     </TableCell>
                   ))}

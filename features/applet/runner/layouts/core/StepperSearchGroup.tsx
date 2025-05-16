@@ -1,12 +1,10 @@
-// File: features\applet\layouts\core\StepperSearchGroup.tsx
 "use client";
 // For the stepper layout
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { ContainerRenderProps } from "../AppletLayoutManager";
-import { AppletFieldController } from "../../fields/AppletFieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import { CustomFieldLabelAndHelpText } from "@/constants/app-builder-help-text";
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
 
 const StepperSearchGroup: React.FC<ContainerRenderProps> = ({
     id,
@@ -19,35 +17,21 @@ const StepperSearchGroup: React.FC<ContainerRenderProps> = ({
     hideFieldLabels = false,
 }) => {
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
-    const fieldRefs = useRef<Map<string, React.ReactNode>>(new Map());
-
-    useEffect(() => {
-        fields.forEach((field) => {
-            if (!fieldRefs.current.has(field.id)) {
-                fieldRefs.current.set(field.id, AppletFieldController({ field, appletId, isMobile, source }));
-            }
-        });
-    }, [fields, isMobile]);
-
+    
     return (
         <div className="w-full">
-            {fields.map((field) => (
-                <div key={field.id} className="mb-5 last:mb-0">
-                    {!hideFieldLabels && (
-                        <CustomFieldLabelAndHelpText
-                            fieldId={field.id}
-                            fieldLabel={field.label}
-                            helpText={field.helpText}
-                            required={field.required}
-                            className="mb-2"
-                        />
-                    )}
-
-                    {hideFieldLabels && <div className="mb-3"></div>}
-                    
-                    {fieldRefs.current.get(field.id)}
-                </div>
-            ))}
+            <FieldsWithLabels
+                fields={fields}
+                appletId={appletId}
+                isMobile={isMobile}
+                source={source}
+                wrapperClassName="mb-5 last:mb-0"
+                showLabels={!hideFieldLabels}
+                showHelpText={true}
+                showRequired={true}
+                labelPosition="top"
+                labelClassName="mb-2"
+            />
         </div>
     );
 };

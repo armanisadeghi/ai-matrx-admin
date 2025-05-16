@@ -2,7 +2,7 @@
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "reselect";
 import { RootState } from "@/lib/redux";
-import { getBrokerId } from "../utils";
+import { resolveBrokerId } from "../utils";
 import { BrokerState, BrokerIdentifier } from "../types";
 
 
@@ -21,7 +21,7 @@ export const numberReducers = {
         }>
     ) {
         const { idArgs, value } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         state.brokers[targetBrokerId] = value;
@@ -37,7 +37,7 @@ export const numberReducers = {
         }>
     ) {
         const { idArgs, value } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         if (!Number.isInteger(value)) {
@@ -58,7 +58,7 @@ export const numberReducers = {
         }>
     ) {
         const { idArgs, amount = 1 } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         const currentValue = state.brokers[targetBrokerId];
@@ -79,7 +79,7 @@ export const numberReducers = {
         }>
     ) {
         const { idArgs, amount = 1 } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         const currentValue = state.brokers[targetBrokerId];
@@ -102,7 +102,7 @@ export const numberReducers = {
         }>
     ) {
         const { idArgs, value, min, max } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         let boundedValue = value;
@@ -121,7 +121,7 @@ export const numberReducers = {
         }>
     ) {
         const { idArgs } = action.payload;
-        const targetBrokerId = getBrokerId(state, idArgs);
+        const targetBrokerId = resolveBrokerId(state, idArgs);
         if (!targetBrokerId) return;
         
         const { [targetBrokerId]: removed, ...newBrokers } = state.brokers;

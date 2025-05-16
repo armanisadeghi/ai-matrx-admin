@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { AppletFieldController } from "@/features/applet/runner/fields/AppletFieldController";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { contextStyles, ContextStyleType } from "@/features/applet/styles/contextStyles";
-
+import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithLabels";
 
 // TODO: Use the logic already created for automated entity icons to find a context and use it, if one is not available.
 // But this could easily be set by the user for each container.
-
-
 // For testing, we're only using these 4 contexts
 const TESTING_CONTEXTS: ContextStyleType[] = ["hotels", "flights", "dining", "activities"];
 
@@ -24,9 +21,8 @@ const ContextualSearchLayout: React.FC<AppletInputProps> = ({
 }) => {
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
     const [context, setContext] = useState<ContextStyleType>("hotels");
-
     const currentStyle = contextStyles[context];
-
+    
     return (
         <div
             className={`w-full ${className}`}
@@ -55,30 +51,28 @@ const ContextualSearchLayout: React.FC<AppletInputProps> = ({
                         ))}
                     </div>
                 </div>
-
                 <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90">
                     <h2 className="text-2xl font-medium text-center mb-8">Find the perfect {context}</h2>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {appletContainers.map((container) => (
                             <div key={container.id} className="space-y-6">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{container.label}</h3>
-
-                                {container.fields.map((field) => (
-                                    <div key={field.id}>
-                                        <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                                            {field.label}
-                                        </label>
-                                        {AppletFieldController({ field, appletId, isMobile, source })}
-                                        {field.helpText && (
-                                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{field.helpText}</p>
-                                        )}
-                                    </div>
-                                ))}
+                                <FieldsWithLabels
+                                    fields={container.fields}
+                                    appletId={appletId}
+                                    isMobile={isMobile}
+                                    source={source}
+                                    className="space-y-6"
+                                    wrapperClassName=""
+                                    showLabels={true}
+                                    showHelpText={true}
+                                    showRequired={false} // The original doesn't show required indicators
+                                    labelPosition="top"
+                                    labelClassName="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+                                />
                             </div>
                         ))}
                     </div>
-
                     <div className="mt-10 flex justify-center">{actionButton}</div>
                 </div>
             </div>

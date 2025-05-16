@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { BrokerMapEntry, BrokerState, BrokerIdentifier } from "./types";
-import { tableReducers, textReducers, dynamicReducers, numberReducers, booleanReducers, dateReducers, optionsReducers } from "./reducers";
-import { getBrokerId } from "./utils";
+import { tableReducers, textReducers, dynamicReducers, numberReducers, booleanReducers, dateReducers, optionsReducers, dangerousReducers } from "./reducers";
+import { resolveBrokerId } from "./utils";
 
 const initialState: BrokerState = {
     brokers: {},
@@ -13,90 +13,33 @@ const brokerConceptSlice = createSlice({
     name: "brokerConcept",
     initialState,
     reducers: {
-        setMap(state: BrokerState, action: PayloadAction<BrokerMapEntry[]>) {
-            const newMap: BrokerState["brokerMap"] = {};
-            action.payload.forEach((entry) => {
-                const key = `${entry.source}:${entry.itemId}`;
-                newMap[key] = entry;
-            });
-            state.brokerMap = newMap;
-            state.error = undefined;
-        },
-
-        // Adds or updates a single broker mapping entry
-        updateMapEntry(state: BrokerState, action: PayloadAction<BrokerMapEntry>) {
+        // Adds or updates a single broker register entry
+        addOrUpdateRegisterEntry(state: BrokerState, action: PayloadAction<BrokerMapEntry>) {
             const entry = action.payload;
-            const mapKey = `${entry.source}:${entry.itemId}`;
+            if (!entry.sourceId) {
+                console.warn(`Missing sourceId for BrokerMapEntry: ${JSON.stringify(entry)}`);
+                return;
+            }
+            const mapKey = `${entry.source}:${entry.id}`;
             state.brokerMap[mapKey] = entry;
+            // Initialize broker value as undefined if not already present
+            if (!state.brokers[entry.brokerId]) {
+                state.brokers[entry.brokerId] = undefined;
+            }
             state.error = undefined;
         },
 
-        // Removes a specific broker mapping
-        removeMapEntry(state: BrokerState, action: PayloadAction<{ source: string; itemId: string }>) {
-            const { source, itemId } = action.payload;
-            const mapKey = `${source}:${itemId}`;
-
-            // Create new brokerMap without the specified entry
-            const { [mapKey]: removed, ...newMap } = state.brokerMap;
-            state.brokerMap = newMap;
-            state.error = undefined;
-        },
-
-        // Clears all broker mappings
-        clearMap(state: BrokerState) {
-            state.brokerMap = {};
-            state.error = undefined;
-        },
-
-        // Sets a broker's value
-        setValue(state: BrokerState, action: PayloadAction<{ idArgs: BrokerIdentifier; value: any }>) {
-            const { idArgs, value } = action.payload;
-            const targetBrokerId = getBrokerId(state, idArgs);
-            if (!targetBrokerId) return;
-
-            state.brokers[targetBrokerId] = value;
-            state.error = undefined;
-        },
-
-        // Updates a broker's value
-        updateValue(state: BrokerState, action: PayloadAction<{ idArgs: BrokerIdentifier; value: any }>) {
-            const { idArgs, value } = action.payload;
-            const targetBrokerId = getBrokerId(state, idArgs);
-            if (!targetBrokerId) return;
-
-            state.brokers[targetBrokerId] = value;
-            state.error = undefined;
-        },
-
-        // Removes a broker's value
-        removeValue(state: BrokerState, action: PayloadAction<{ idArgs: BrokerIdentifier }>) {
-            const { idArgs } = action.payload;
-            const targetBrokerId = getBrokerId(state, idArgs);
-            if (!targetBrokerId) return;
-
-            // Create new brokers object without the specified broker
-            const { [targetBrokerId]: removed, ...newBrokers } = state.brokers;
-            state.brokers = newBrokers;
-            state.error = undefined;
-        },
-
-        // Clears all broker values
-        clearAllValues(state: BrokerState) {
-            state.brokers = {};
-            state.error = undefined;
-        },
-
-        // Clears the error state
-        clearError(state: BrokerState) {
-            state.error = undefined;
-        },
-
-        addMapEntries(state: BrokerState, action: PayloadAction<BrokerMapEntry[]>) {
+        // Adds or updates multiple broker register entries
+        addOrUpdateRegisterEntries(state: BrokerState, action: PayloadAction<BrokerMapEntry[]>) {
             const entries = action.payload;
             entries.forEach((entry) => {
-                const key = `${entry.source}:${entry.itemId}`;
+                if (!entry.sourceId) {
+                    console.warn(`Missing sourceId for BrokerMapEntry: ${JSON.stringify(entry)}`);
+                    return;
+                }
+                const key = `${entry.source}:${entry.id}`;
                 state.brokerMap[key] = entry;
-                // Initialize broker value as undefined
+                // Initialize broker value as undefined if not already present
                 if (!state.brokers[entry.brokerId]) {
                     state.brokers[entry.brokerId] = undefined;
                 }
@@ -104,17 +47,65 @@ const brokerConceptSlice = createSlice({
             state.error = undefined;
         },
 
-        // Remove multiple map entries at once
-        removeMapEntries(state: BrokerState, action: PayloadAction<BrokerIdentifier[]>) {
+        // Removes a specific broker register entry
+        removeRegisterEntry(state: BrokerState, action: PayloadAction<{ source: string; id: string }>) {
+            const { source, id } = action.payload;
+            const mapKey = `${source}:${id}`;
+            const { [mapKey]: removed, ...newMap } = state.brokerMap;
+            state.brokerMap = newMap;
+            state.error = undefined;
+        },
+
+        // Removes multiple specific broker register entries
+        removeRegisterEntries(state: BrokerState, action: PayloadAction<BrokerIdentifier[]>) {
             const identifiers = action.payload;
             const newMap = { ...state.brokerMap };
-
-            identifiers.forEach(({ source, itemId }) => {
-                const key = `${source}:${itemId}`;
-                delete newMap[key];
+            identifiers.forEach((idArgs) => {
+                if ('source' in idArgs && 'id' in idArgs) {
+                    const key = `${idArgs.source}:${idArgs.id}`;
+                    delete newMap[key];
+                }
             });
-
             state.brokerMap = newMap;
+            state.error = undefined;
+        },
+
+        // Sets a broker's value by direct brokerId
+        setValue(state: BrokerState, action: PayloadAction<{ brokerId: string; value: any }>) {
+            const { brokerId, value } = action.payload;
+            state.brokers[brokerId] = value;
+            state.error = undefined;
+        },
+
+        // Sets a broker's value using source and id (requires mapping)
+        setValueWithoutBrokerId(state: BrokerState, action: PayloadAction<{ idArgs: BrokerIdentifier; value: any }>) {
+            const { idArgs, value } = action.payload;
+            const targetBrokerId = resolveBrokerId(state, idArgs);
+            if (!targetBrokerId) return;
+            state.brokers[targetBrokerId] = value;
+            state.error = undefined;
+        },
+
+        // Removes a broker's value by direct brokerId
+        removeValue(state: BrokerState, action: PayloadAction<{ brokerId: string }>) {
+            const { brokerId } = action.payload;
+            const { [brokerId]: removed, ...newBrokers } = state.brokers;
+            state.brokers = newBrokers;
+            state.error = undefined;
+        },
+
+        // Removes a broker's value using source and id (requires mapping)
+        removeValueWithoutBrokerId(state: BrokerState, action: PayloadAction<{ idArgs: BrokerIdentifier }>) {
+            const { idArgs } = action.payload;
+            const targetBrokerId = resolveBrokerId(state, idArgs);
+            if (!targetBrokerId) return;
+            const { [targetBrokerId]: removed, ...newBrokers } = state.brokers;
+            state.brokers = newBrokers;
+            state.error = undefined;
+        },
+
+        // Clears the error state
+        clearError(state: BrokerState) {
             state.error = undefined;
         },
 
@@ -125,6 +116,7 @@ const brokerConceptSlice = createSlice({
         ...numberReducers,
         ...booleanReducers,
         ...dateReducers,
+        ...dangerousReducers,
     },
 });
 

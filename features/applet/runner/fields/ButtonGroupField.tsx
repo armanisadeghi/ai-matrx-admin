@@ -20,7 +20,8 @@ const ButtonColumnField: React.FC<{
   isMobile?: boolean;
   source?: string;
   disabled?: boolean;
-}> = ({ field, appletId, isMobile, source="applet", disabled=false }) => {
+  className?: string;
+}> = ({ field, appletId, isMobile, source="applet", disabled=false, className="" }) => {
   const { 
     id, 
     label, 
@@ -224,7 +225,7 @@ const ButtonColumnField: React.FC<{
   }
   
   return (
-    <div className={`${safeWidthClass}`}>
+    <div className={`${safeWidthClass} ${className}`}>
       <div
         role={multiSelect ? "group" : "radiogroup"}
         aria-labelledby={`${id}-label`}

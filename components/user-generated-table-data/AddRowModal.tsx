@@ -1,6 +1,5 @@
 'use client'
 
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -18,16 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { supabase } from '@/utils/supabase/client';
-
-interface TableField {
-  id: string;
-  field_name: string;
-  display_name: string;
-  data_type: string;
-  field_order: number;
-  is_required: boolean;
-  default_value: any;
-}
+import { getTableDetails, addRow, type TableField } from '@/utils/user-table-utls/table-utils';
 
 interface AddRowModalProps {
   tableId: string;
@@ -51,15 +41,14 @@ export default function AddRowModal({ tableId, isOpen, onClose, onSuccess }: Add
       try {
         setLoadingFields(true);
         
-        const { data, error } = await supabase.rpc('get_user_table_complete', {
-          p_table_id: tableId
-        });
+        const result = await getTableDetails(supabase, tableId);
         
-        if (error) throw error;
-        if (!data.success) throw new Error(data.error || 'Failed to load table fields');
+        if (!result.success || !result.fields) {
+          throw new Error(result.error || 'Failed to load table fields');
+        }
         
         // Filter out any ID fields that should be auto-generated
-        const filteredFields = data.fields.filter((field: TableField) => {
+        const filteredFields = result.fields.filter((field: TableField) => {
           const fieldNameLower = field.field_name.toLowerCase();
           // Skip fields named exactly 'id' or ending with '_id'
           return fieldNameLower !== 'id' && !fieldNameLower.endsWith('_id');
@@ -111,19 +100,15 @@ export default function AddRowModal({ tableId, isOpen, onClose, onSuccess }: Add
       setLoading(true);
       setError(null);
       
-      console.log("Adding row with data:", {
-        p_table_id: tableId,
-        p_data: rowData
+      // Use the utility function
+      const result = await addRow(supabase, {
+        tableId,
+        data: rowData
       });
       
-      // Call the RPC function
-      const { data, error } = await supabase.rpc('add_data_row_to_user_table', {
-        p_table_id: tableId,
-        p_data: rowData
-      });
-      
-      if (error) throw error;
-      if (!data.success) throw new Error(data.error || 'Failed to add row');
+      if (!result.success) {
+        throw new Error(result.error);
+      }
       
       // Reset form and close modal
       setRowData({});
@@ -201,6 +186,50 @@ export default function AddRowModal({ tableId, isOpen, onClose, onSuccess }: Add
             type="datetime-local"
             value={value || ''}
             onChange={(e) => handleValueChange(field.field_name, e.target.value)}
+          />
+        );
+        
+      case 'json':
+        return (
+          <Input
+            id={field.field_name}
+            value={value === null || value === undefined ? '' : 
+                  typeof value === 'object' ? JSON.stringify(value) : value}
+            onChange={(e) => {
+              try {
+                // Try to parse as JSON if possible
+                const jsonValue = e.target.value.trim() === '' ? null : JSON.parse(e.target.value);
+                handleValueChange(field.field_name, jsonValue);
+              } catch {
+                // If not valid JSON, store as string
+                handleValueChange(field.field_name, e.target.value);
+              }
+            }}
+            placeholder={`Enter JSON (e.g., {"key": "value"})`}
+          />
+        );
+        
+      case 'array':
+        return (
+          <Input
+            id={field.field_name}
+            value={value === null || value === undefined ? '' : 
+                  Array.isArray(value) ? JSON.stringify(value) : value}
+            onChange={(e) => {
+              try {
+                // Try to parse as array if possible
+                const arrayValue = e.target.value.trim() === '' ? null : JSON.parse(e.target.value);
+                if (Array.isArray(arrayValue) || arrayValue === null) {
+                  handleValueChange(field.field_name, arrayValue);
+                } else {
+                  handleValueChange(field.field_name, [arrayValue]);
+                }
+              } catch {
+                // If not valid array, store as string
+                handleValueChange(field.field_name, e.target.value);
+              }
+            }}
+            placeholder={`Enter array elements (e.g., ["item1", "item2"])`}
           />
         );
         
