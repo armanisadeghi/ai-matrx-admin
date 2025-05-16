@@ -174,6 +174,25 @@ const socketTasksSlice = createSlice({
       }
     },
 
+    updateArrayItemById: (
+      state,
+      action: PayloadAction<{
+        taskId: string;
+        field: string;
+        id: string | number;
+        item: any;
+      }>
+    ) => {
+      const { taskId, field, id, item } = action.payload;
+      const task = state.tasks[taskId];
+      if (task && task.taskData[field] && Array.isArray(task.taskData[field])) {
+        const index = task.taskData[field].findIndex((entry: any) => entry?.id === id);
+        if (index >= 0) {
+          task.taskData[field] = updateArrayItemHelper(task.taskData[field], index, item);
+        }
+      }
+    },
+
     removeArrayItem: (
       state,
       action: PayloadAction<{
@@ -300,6 +319,7 @@ export const {
   addToArrayField,
   setArrayField,
   updateArrayItem,
+  updateArrayItemById,
   removeArrayItem,
   validateTask,
   setTaskStatus,

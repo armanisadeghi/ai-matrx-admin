@@ -27,7 +27,7 @@ import {
 } from "@/features/applet/runner/layouts/options";
 import { ReactNode, useState } from "react";
 import { AppletLayoutOption, FieldDefinition } from "@/types";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
     selectAppletRuntimeAccentColor,
     selectAppletRuntimeActiveApplet,
@@ -37,6 +37,7 @@ import {
 } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { getSubmitButton } from "@/features/applet/styles/StyledComponents";
 import { useIsMobile } from "@/hooks/use-mobile";
+import useAppletRecipe from "../../hooks/useAppletRecipe";
 
 export interface ContainerRenderProps {
     id: string;
@@ -76,6 +77,7 @@ export interface AppletInputProps {
     actionButton?: ReactNode;
     className?: string;
     containerDescriptionLocation?: "container-header" | "container-body";
+    initialExpanded?: boolean;
 }
 
 interface AppletLayoutManagerProps {
@@ -83,10 +85,13 @@ interface AppletLayoutManagerProps {
     source?: string;
     layoutTypeOverride?: AppletLayoutOption;
     className?: string;
+    handleSubmit?: () => void;
+    initialExpanded?: boolean;
 }
 
-const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, layoutTypeOverride, className, source = "applet" }) => {
+const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, layoutTypeOverride, className, source = "applet", handleSubmit, initialExpanded = true }) => {
     const isMobile = useIsMobile();
+    const dispatch = useAppDispatch();
     const [activeContainerId, setActiveContainerId] = useState<string | null>(null);
 
     const appletLayoutType = useAppSelector((state) => selectAppletRuntimeLayoutType(state, appletId || ""));
@@ -95,6 +100,9 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
     const activeApplet = useAppSelector((state) => selectAppletRuntimeActiveApplet(state)) || null;
 
     const containerDescriptionLocation = "container-header";  // "container-header" or "container-body"
+
+
+
 
     const submitButton = getSubmitButton({
         color: accentColor,
@@ -108,7 +116,11 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
 
     const layoutType = layoutTypeOverride || appletLayoutType;
 
-    const actionButton = <div className="ml-2">{submitButton}</div>;
+    const actionButton = (
+        <div className="ml-2" onClick={handleSubmit}>
+            {submitButton}
+        </div>
+    );
 
     switch (layoutType) {
         case "oneColumn":
@@ -371,6 +383,7 @@ const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, lay
                     className={className}
                     isMobile={isMobile}
                     source={source}
+                    initialExpanded={initialExpanded}
                 />
             );
 

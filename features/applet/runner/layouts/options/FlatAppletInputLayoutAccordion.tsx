@@ -6,15 +6,18 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
+
+
 const FlatAppletInputLayoutAccordion: React.FC<AppletInputProps> = ({
     appletId,
     actionButton,
     className = "",
     isMobile = false,
     source = "applet",
+    initialExpanded = true,
 }) => {
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
-    const [expanded, setExpanded] = useState(true); // Open by default
+    const [expanded, setExpanded] = useState(initialExpanded);
     const contentRef = useRef<HTMLDivElement>(null);
     
     const handleToggle = () => {

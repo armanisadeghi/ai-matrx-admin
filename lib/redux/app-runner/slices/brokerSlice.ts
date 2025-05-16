@@ -190,4 +190,27 @@ export const selectBrokerId = createSelector(
   }
 );
 
+export const selectMultipleBrokerValues = createSelector(
+  [
+    selectBrokersState,
+    (_: RootState, brokerIds: string[]) => brokerIds,
+  ],
+  (brokersState, brokerIds) => {
+    return brokerIds.reduce<Record<string, any>>((result, brokerId) => {
+      result[brokerId] = brokersState.brokers[brokerId];
+      return result;
+    }, {});
+  }
+);
+
+export const selectMultipleBrokerValuesArray = createSelector(
+  [
+    selectBrokersState,
+    (_: RootState, brokerIds: string[]) => brokerIds,
+  ],
+  (brokersState, brokerIds) => {
+    return brokerIds.map(brokerId => brokersState.brokers[brokerId]);
+  }
+);
+
 export default brokersSlice.reducer;
