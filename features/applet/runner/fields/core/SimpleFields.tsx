@@ -5,7 +5,7 @@ import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlab
 import { normalizeFieldDefinition } from "@/features/applet/utils/field-normalization";
 import { FieldDefinition, ComponentType, ComponentProps } from "@/types/customAppTypes";
 
-// Make a more flexible type that allows partial componentProps
+
 export type SimpleField = {
   id: string;  // Required
   component: ComponentType;  // Required
@@ -19,7 +19,7 @@ export type SimpleField = {
   iconName?: string;
   defaultValue?: any;
   options?: FieldDefinition['options'];
-  componentProps?: Partial<ComponentProps>;  // Make componentProps partial
+  componentProps?: Partial<ComponentProps>;
 };
 
 interface SimpleFieldsProps {

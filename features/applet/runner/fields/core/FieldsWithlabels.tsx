@@ -18,7 +18,7 @@ interface FieldsListProps {
     showRequired?: boolean;
     labelPosition?: "top" | "left" | "right";
     labelClassName?: string;
-    emptyLabelSpacing?: string; // New prop for spacing when labels are hidden
+    emptyLabelSpacing?: string;
 }
 
 const FieldsWithLabels: React.FC<FieldsListProps> = ({
