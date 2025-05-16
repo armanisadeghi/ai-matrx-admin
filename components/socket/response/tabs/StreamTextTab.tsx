@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TabsContent, ScrollArea } from "@/components/ui";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
+import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import { cleanMarkdown } from '@/utils/markdown-processors/clean-markdown-to-text';
 import MarkdownRenderer from '@/components/mardown-display/MarkdownRenderer';
 
@@ -64,7 +65,11 @@ const StreamTextTab = ({ streamingResponse }: StreamOutputTabProps) => {
                         Rendered
                     </button>
                 </div>
-                <CopyButton content={displayMode === 'markdown' ? streamingResponse : displayContent} />
+                {displayMode === 'markdown' ? (
+                    <MarkdownCopyButton markdownContent={streamingResponse} />
+                ) : (
+                    <CopyButton content={displayContent} />
+                )}
             </div>
             <ScrollArea className="w-full rounded-md border p-2 h-full">
                 {displayMode === 'markdown' && streamingResponse.length > 1 ? (

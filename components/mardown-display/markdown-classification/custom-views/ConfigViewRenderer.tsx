@@ -113,29 +113,36 @@ export const ConfigViewRenderer: React.FC<ConfigViewRendererProps> = ({ configKe
   const ViewComponent = viewEntry.component;
   
   return (
-    <div className="flex flex-col h-full w-full p-2">
-      {availableViews.length > 1 && (
-        <div className="mb-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Select view:</p>
-          <Select value={selectedView} onValueChange={setSelectedView}>
-            <SelectTrigger className="w-full max-w-xs">
-              <SelectValue placeholder="Select a view" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableViews.map((viewType) => {
-                const entry = getViewForConfig(configType, viewType);
-                return (
-                  <SelectItem key={viewType} value={viewType}>
-                    {entry?.name || viewType}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+    <div className="flex flex-col h-full w-full overflow-auto">
+      <div className="flex-shrink-0 p-2">
+        {availableViews.length > 1 && (
+          <div className="mb-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Select view:</p>
+            <Select value={selectedView} onValueChange={setSelectedView}>
+              <SelectTrigger className="w-full max-w-xs">
+                <SelectValue placeholder="Select a view" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableViews.map((viewType) => {
+                  const entry = getViewForConfig(configType, viewType);
+                  return entry ? (
+                    <SelectItem key={viewType} value={viewType}>
+                      {entry.name}
+                      {entry.description && (
+                        <span className="ml-1 text-xs text-slate-500 dark:text-slate-400">
+                          - {entry.description}
+                        </span>
+                      )}
+                    </SelectItem>
+                  ) : null;
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
       
-      <div className="flex-1 overflow-auto w-full">
+      <div className="flex-grow">
         <Suspense fallback={<ViewSkeleton />}>
           <ViewErrorBoundary>
             <ViewComponent data={data} />

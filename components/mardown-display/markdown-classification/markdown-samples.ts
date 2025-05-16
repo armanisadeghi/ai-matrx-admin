@@ -172,6 +172,43 @@ Senior Living Sales professional with experience in Assisted Living (AL) and Mem
 - Prefers weekend availability if possible
 - Open to relocation for the right opportunity`;
 
+const appSuggestions = `# App Suggestions
+
+---
+
+## 1. Suggestion
+
+- **App Name:** AudioTasker
+
+- **App Description:**  
+  AudioTasker revolutionizes task management by harnessing the power of audio. Users can create and organize task lists from voice notes, podcasts, and audiobooks. With AI-driven transcription and smart tagging, users can quickly identify and prioritize tasks, ensuring a seamless workflow.
+
+- **Image Description:**  
+  A real person sitting in a modern home office with a laptop open. Audio file tabs on the laptop screen. A voice recorder nearby. Minimalist decor with a few scattered notes. Soft lighting. Focused expression. Productive atmosphere.
+
+---
+
+## 2. Suggestion
+
+- **App Name:** VoiceList
+
+- **App Description:**  
+  VoiceList is an innovative tool that transforms spoken words into actionable tasks. By leveraging AI-powered speech recognition, users can effortlessly turn voice notes into structured lists, complete with tags, due dates, and reminders. This app streamlines task management, saving users time and mental energy.
+
+- **Image Description:**  
+  A real woman listening to an audio file on her phone. Task list on her tablet. Calm expression. Modern background with a few plants. Soft colors. Minimalist style. Serene atmosphere.
+
+---
+
+## 3. Suggestion
+
+- **App Name:** SpeakTask
+
+- **App Description:**  
+  SpeakTask is a game-changing app that empowers users to create and manage tasks using the spoken word. With its advanced speech recognition technology, users can quickly capture and organize tasks from audio files, ensuring they stay on top of their workload. The app's intuitive interface and smart features make task management a breeze.
+
+- **Image Description:**  
+  A real person talking on their phone while walking in a bustling city. Task list on their wristwatch. Urban background with people passing by. Bright colors. Dynamic atmosphere. Focused expression.`
 
 
 export const markdownSamples = {
@@ -179,5 +216,5 @@ export const markdownSamples = {
     candidateProfileFull,
     candidateProfileLimitedMarkdown,
     candidateProfileStructured,
+    appSuggestions,
 };
-

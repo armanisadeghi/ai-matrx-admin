@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 
 const CandidateProfileView = ({ data }) => {
-  const { extracted } = data;
+  // Handle missing or malformed data gracefully
+  const extracted = data?.extracted || {};
   
   return (
     <div className="max-w-5xl mx-auto rounded-xl overflow-hidden shadow-lg bg-white dark:bg-slate-800 transition-colors duration-200">
@@ -21,8 +22,8 @@ const CandidateProfileView = ({ data }) => {
             <User size={30} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{extracted.name}</h1>
-            <p className="text-slate-200 mt-1 italic">{extracted.intro}</p>
+            <h1 className="text-2xl font-bold text-white">{extracted.name || 'Unnamed Candidate'}</h1>
+            <p className="text-slate-200 mt-1 italic">{extracted.intro || 'No introduction available'}</p>
           </div>
         </div>
       </div>
@@ -36,33 +37,42 @@ const CandidateProfileView = ({ data }) => {
             <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Professional Experience</h2>
           </div>
           
-          <div className="space-y-6">
-            {extracted.key_experiences.map((experience, index) => (
-              <div 
-                key={index} 
-                className="bg-white dark:bg-slate-700 rounded-lg p-5 shadow-sm border border-slate-100 dark:border-slate-600"
-              >
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3">{experience.company}</h3>
-                <ul className="space-y-2">
-                  {experience.details.map((detail, detailIndex) => (
-                    <li key={detailIndex} className="flex items-start">
-                      <ChevronRight className="text-slate-400 dark:text-slate-500 mr-2 mt-1 flex-shrink-0" size={16} />
-                      <span className="text-slate-600 dark:text-slate-300">{detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          {extracted.key_experiences && extracted.key_experiences.length > 0 ? (
+            <div className="space-y-6">
+              {extracted.key_experiences.map((experience, index) => (
+                <div 
+                  key={index} 
+                  className="bg-white dark:bg-slate-700 rounded-lg p-5 shadow-sm border border-slate-100 dark:border-slate-600"
+                >
+                  <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-3">{experience.company || 'Unknown Company'}</h3>
+                  {experience.details && experience.details.length > 0 ? (
+                    <ul className="space-y-2">
+                      {experience.details.map((detail, detailIndex) => (
+                        <li key={detailIndex} className="flex items-start">
+                          <ChevronRight className="text-slate-400 dark:text-slate-500 mr-2 mt-1 flex-shrink-0" size={16} />
+                          <span className="text-slate-600 dark:text-slate-300">{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-slate-500 dark:text-slate-400">No details available</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-slate-500 dark:text-slate-400">No professional experience data available</p>
+          )}
         </div>
         
         {/* Additional Accomplishments */}
-        {extracted.additional_accomplishments && extracted.additional_accomplishments.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center mb-4">
-              <Award className="text-slate-500 dark:text-slate-400 mr-2" size={20} />
-              <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Additional Accomplishments</h2>
-            </div>
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <Award className="text-slate-500 dark:text-slate-400 mr-2" size={20} />
+            <h2 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Additional Accomplishments</h2>
+          </div>
+          
+          {extracted.additional_accomplishments && extracted.additional_accomplishments.length > 0 ? (
             <div className="bg-white dark:bg-slate-700 rounded-lg p-5 shadow-sm border border-slate-100 dark:border-slate-600">
               <ul className="space-y-2">
                 {extracted.additional_accomplishments.map((accomplishment, index) => (
@@ -73,8 +83,10 @@ const CandidateProfileView = ({ data }) => {
                 ))}
               </ul>
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-slate-500 dark:text-slate-400">No additional accomplishments data available</p>
+          )}
+        </div>
         
         {/* Bottom Grid: Location, Compensation, Availability */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -84,14 +96,18 @@ const CandidateProfileView = ({ data }) => {
               <MapPin className="text-slate-500 dark:text-slate-400 mr-2" size={18} />
               <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Location</h3>
             </div>
-            <ul className="space-y-2">
-              {extracted.location.map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <ChevronRight className="text-slate-400 dark:text-slate-500 mr-2 mt-1 flex-shrink-0" size={16} />
-                  <span className="text-slate-600 dark:text-slate-300">{item}</span>
-                </li>
-              ))}
-            </ul>
+            {extracted.location && extracted.location.length > 0 ? (
+              <ul className="space-y-2">
+                {extracted.location.map((item, index) => (
+                  <li key={index} className="flex items-start">
+                    <ChevronRight className="text-slate-400 dark:text-slate-500 mr-2 mt-1 flex-shrink-0" size={16} />
+                    <span className="text-slate-600 dark:text-slate-300">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-slate-500 dark:text-slate-400">No location information available</p>
+            )}
           </div>
           
           {/* Compensation */}
@@ -100,14 +116,18 @@ const CandidateProfileView = ({ data }) => {
               <DollarSign className="text-slate-500 dark:text-slate-400 mr-2" size={18} />
               <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Compensation</h3>
             </div>
-            <ul className="space-y-2">
-              {extracted.compensation.map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <ChevronRight className="text-slate-400 dark:text-slate-500 mr-2 mt-1 flex-shrink-0" size={16} />
-                  <span className="text-slate-600 dark:text-slate-300">{item}</span>
-                </li>
-              ))}
-            </ul>
+            {extracted.compensation && extracted.compensation.length > 0 ? (
+              <ul className="space-y-2">
+                {extracted.compensation.map((item, index) => (
+                  <li key={index} className="flex items-start">
+                    <ChevronRight className="text-slate-400 dark:text-slate-500 mr-2 mt-1 flex-shrink-0" size={16} />
+                    <span className="text-slate-600 dark:text-slate-300">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-slate-500 dark:text-slate-400">No compensation information available</p>
+            )}
           </div>
           
           {/* Availability */}
@@ -116,14 +136,18 @@ const CandidateProfileView = ({ data }) => {
               <Clock className="text-slate-500 dark:text-slate-400 mr-2" size={18} />
               <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Availability</h3>
             </div>
-            <ul className="space-y-2">
-              {extracted.availability.map((item, index) => (
-                <li key={index} className="flex items-start">
-                  <ChevronRight className="text-slate-400 dark:text-slate-500 mr-2 mt-1 flex-shrink-0" size={16} />
-                  <span className="text-slate-600 dark:text-slate-300">{item}</span>
-                </li>
-              ))}
-            </ul>
+            {extracted.availability && extracted.availability.length > 0 ? (
+              <ul className="space-y-2">
+                {extracted.availability.map((item, index) => (
+                  <li key={index} className="flex items-start">
+                    <ChevronRight className="text-slate-400 dark:text-slate-500 mr-2 mt-1 flex-shrink-0" size={16} />
+                    <span className="text-slate-600 dark:text-slate-300">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-slate-500 dark:text-slate-400">No availability information available</p>
+            )}
           </div>
         </div>
       </div>

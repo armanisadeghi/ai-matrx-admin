@@ -12,8 +12,8 @@ import {
     TabsContent,
     ScrollArea,
 } from "@/components/ui";
-import { useState } from "react";
-import { CopyButton } from "@/components/matrx/buttons/CopyButton";
+import { useState, useMemo } from "react";
+import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import DebugViewTab from "./tabs/DebugViewTab";
 import PropertiesBrowserTab from "./tabs/PropertiesBrowserTab";
 import StructuredDataTab from "./tabs/StructuredDataTab";
@@ -23,6 +23,7 @@ import StreamTextTab from "./tabs/StreamTextTab";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
+import FullscreenMarkdownEditor from "@/components/mardown-display/markdown-classification/FullscreenMarkdownEditor";
 import {
     selectTaskResponsesByTaskId,
     selectResponseTextByListenerId,
@@ -72,8 +73,8 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
         });
     };
 
-    const selectedObject = socketResponse[selectedObjectIndex] || {};
-    const objectProperties = getObjectProperties(selectedObject);
+    const selectedObject = useMemo(() => socketResponse[selectedObjectIndex] || {}, [socketResponse, selectedObjectIndex]);
+    const objectProperties = useMemo(() => getObjectProperties(selectedObject), [selectedObject]);
 
     const toggleDisplayMode = (propPath: string) => {
         setDisplayModes((prev) => ({
@@ -91,8 +92,16 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                             <AccordionTrigger className="flex-1">
                                 <CardTitle>Response</CardTitle>
                             </AccordionTrigger>
-                            <div onClick={(e) => e.stopPropagation()}>
-                                <CopyButton content={textResponse} label="Copy Raw" className="ml-2" />
+                            <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
+                                <FullscreenMarkdownEditor
+                                    initialMarkdown={textResponse}
+                                    triggerLabel="Edit Markdown"
+                                    triggerClassName={`border border-gray-300 dark:border-gray-600 rounded-md ${textResponse.length <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
+                                    showSampleSelector={false}
+                                    showConfigSelector={true}
+                                    showLoadingSimulator={false}
+                                />
+                                <MarkdownCopyButton markdownContent={textResponse} className="ml-2" />
                             </div>
                         </div>
                     </CardHeader>
@@ -106,9 +115,19 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                                         Text
                                     </TabsTrigger>
                                     <TabsTrigger
+                                        value="markdown"
+                                    >
+                                        Markdown
+                                    </TabsTrigger>
+                                    <TabsTrigger
                                         value="structured"
                                     >
                                         Structured ({socketResponse.length})
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="rawJsonExplorer"
+                                    >
+                                        Explorer
                                     </TabsTrigger>
                                     <TabsTrigger
                                         disabled={socketResponse.length === 0}
@@ -119,22 +138,12 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                                     <TabsTrigger
                                         value="properties"
                                     >
-                                        Recursive Browser
+                                        Recursive
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="jsonToCollapsible"
                                     >
-                                        Collapsible JSON
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="rawJsonExplorer"
-                                    >
-                                        JSON Explorer
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="markdown"
-                                    >
-                                        Markdown
+                                        Collapsible
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="debug"
@@ -151,7 +160,9 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                                                 expandButtonTitle="View in fullscreen"
                                                 closeButtonTitle="Exit fullscreen"
                                             >
-                                                <MarkdownRenderer content={textResponse} type="message" />
+                                                <div className="relative">
+                                                    <MarkdownRenderer content={textResponse} type="message" />
+                                                </div>
                                             </FullscreenWrapper>
                                         )}
                                     </ScrollArea>
@@ -188,7 +199,9 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                                 </TabsContent>
                                 <TabsContent value="rawJsonExplorer">
                                     <div className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl p-2">
-                                        <RawJsonExplorer pageData={JSON.stringify(selectedObject)} />
+                                        {useMemo(() => (
+                                            <RawJsonExplorer pageData={selectedObject} />
+                                        ), [selectedObject])}
                                     </div>
                                 </TabsContent>
                                 {/* Debug View Tab */}
