@@ -129,39 +129,7 @@ const DirectMarkdownRenderer = ({
 
     const ViewComponent = viewEntry.component;
     const LoadingComponent = getViewLoadingComponent(configType, viewType);
-    
-    
-    // Special handling for candidateProfileStructured to diagnose issue
-    if (configKey === 'candidateProfileStructured' && processedData) {
 
-        // Check the expected structure for ModernCandidateProfile
-        const expectedKeys = ['name', 'intro', 'key_experiences', 'location', 'compensation', 'availability'];
-        const missingKeys = expectedKeys.filter(key => !processedData.extracted[key]);
-        
-        if (missingKeys.length > 0) {
-            console.error('Missing required fields for ModernCandidateProfile:', missingKeys);
-        }
-        
-        if (Array.isArray(processedData.extracted.key_experiences)) {
-            console.log('key_experiences is properly formatted as an array with', processedData.extracted.key_experiences.length, 'items');
-        } else if (processedData.extracted.key_experiences) {
-            console.error('key_experiences is not properly formatted as an array:', typeof processedData.extracted.key_experiences);
-        }
-        
-        return (
-            <div className={className}>
-                <Suspense
-                    fallback={
-                        <div className={className}>
-                            <LoadingComponent />
-                        </div>
-                    }
-                >
-                    <ViewComponent data={processedData} />
-                </Suspense>
-            </div>
-        );
-    }
     
     return (
         <div className={className}>
