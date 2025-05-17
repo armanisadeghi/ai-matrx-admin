@@ -176,6 +176,8 @@ const aiTrainingDataFieldOverrides: AllFieldOverrides = {};
 
 const appletFieldOverrides: AllFieldOverrides = {};
 
+const appletContainersFieldOverrides: AllFieldOverrides = {};
+
 const argFieldOverrides: AllFieldOverrides = {};
 
 const audioLabelFieldOverrides: AllFieldOverrides = {};
@@ -231,6 +233,8 @@ const categoryFieldOverrides: AllFieldOverrides = {};
 const compiledRecipeFieldOverrides: AllFieldOverrides = {};
 
 const componentGroupsFieldOverrides: AllFieldOverrides = {};
+
+const containerFieldsFieldOverrides: AllFieldOverrides = {};
 
 const conversationFieldOverrides: AllFieldOverrides = {};
 
@@ -372,6 +376,8 @@ const recipeToolFieldOverrides: AllFieldOverrides = {};
 
 const registeredFunctionFieldOverrides: AllFieldOverrides = {};
 
+const schemaTemplatesFieldOverrides: AllFieldOverrides = {};
+
 const scrapeBaseConfigFieldOverrides: AllFieldOverrides = {};
 
 const scrapeCachePolicyFieldOverrides: AllFieldOverrides = {};
@@ -462,6 +468,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     aiSettings: aiSettingsFieldOverrides,
     aiTrainingData: aiTrainingDataFieldOverrides,
     applet: appletFieldOverrides,
+    appletContainers: appletContainersFieldOverrides,
     arg: argFieldOverrides,
     audioLabel: audioLabelFieldOverrides,
     audioRecording: audioRecordingFieldOverrides,
@@ -475,6 +482,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     category: categoryFieldOverrides,
     compiledRecipe: compiledRecipeFieldOverrides,
     componentGroups: componentGroupsFieldOverrides,
+    containerFields: containerFieldsFieldOverrides,
     conversation: conversationFieldOverrides,
     customAppConfigs: customAppConfigsFieldOverrides,
     customAppletConfigs: customAppletConfigsFieldOverrides,
@@ -512,6 +520,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     recipeProcessor: recipeProcessorFieldOverrides,
     recipeTool: recipeToolFieldOverrides,
     registeredFunction: registeredFunctionFieldOverrides,
+    schemaTemplates: schemaTemplatesFieldOverrides,
     scrapeBaseConfig: scrapeBaseConfigFieldOverrides,
     scrapeCachePolicy: scrapeCachePolicyFieldOverrides,
     scrapeConfiguration: scrapeConfigurationFieldOverrides,

@@ -174,6 +174,23 @@ const appletEntityOverrides: EntityOverrides<'applet'> = {
 
 
 
+const appletContainersEntityOverrides: EntityOverrides<'appletContainers'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const argEntityOverrides: EntityOverrides<'arg'> = {
     schemaType: null,
     entityName: null,
@@ -379,6 +396,23 @@ const compiledRecipeEntityOverrides: EntityOverrides<'compiledRecipe'> = {
 
 
 const componentGroupsEntityOverrides: EntityOverrides<'componentGroups'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const containerFieldsEntityOverrides: EntityOverrides<'containerFields'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1008,6 +1042,23 @@ const recipeToolEntityOverrides: EntityOverrides<'recipeTool'> = {
 
 
 const registeredFunctionEntityOverrides: EntityOverrides<'registeredFunction'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
+const schemaTemplatesEntityOverrides: EntityOverrides<'schemaTemplates'> = {
     schemaType: null,
     entityName: null,
     uniqueTableId: null,
@@ -1697,6 +1748,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     aiSettings: aiSettingsEntityOverrides,
     aiTrainingData: aiTrainingDataEntityOverrides,
     applet: appletEntityOverrides,
+    appletContainers: appletContainersEntityOverrides,
     arg: argEntityOverrides,
     audioLabel: audioLabelEntityOverrides,
     audioRecording: audioRecordingEntityOverrides,
@@ -1710,6 +1762,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     category: categoryEntityOverrides,
     compiledRecipe: compiledRecipeEntityOverrides,
     componentGroups: componentGroupsEntityOverrides,
+    containerFields: containerFieldsEntityOverrides,
     conversation: conversationEntityOverrides,
     customAppConfigs: customAppConfigsEntityOverrides,
     customAppletConfigs: customAppletConfigsEntityOverrides,
@@ -1747,6 +1800,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     recipeProcessor: recipeProcessorEntityOverrides,
     recipeTool: recipeToolEntityOverrides,
     registeredFunction: registeredFunctionEntityOverrides,
+    schemaTemplates: schemaTemplatesEntityOverrides,
     scrapeBaseConfig: scrapeBaseConfigEntityOverrides,
     scrapeCachePolicy: scrapeCachePolicyEntityOverrides,
     scrapeConfiguration: scrapeConfigurationEntityOverrides,

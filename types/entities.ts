@@ -125,6 +125,15 @@ export type Applet = {
     theme?: string;
 }
 
+export type AppletContainers = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    appletId: string;
+    containerId: string;
+    order: number;
+}
+
 export type Arg = {
     id: string;
     name: string;
@@ -262,6 +271,15 @@ export type ComponentGroups = {
     publicRead?: boolean;
 }
 
+export type ContainerFields = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    fieldId: string;
+    containerId: string;
+    order: number;
+}
+
 export type Conversation = {
     id: string;
     createdAt: Date;
@@ -322,6 +340,7 @@ export type CustomAppletConfigs = {
     subcategoryId?: string;
     imageUrl?: string;
     appId?: string;
+    brokerMap?: Record<string, unknown>;
 }
 
 export type DataBroker = {
@@ -686,6 +705,15 @@ export type RegisteredFunction = {
     className?: string;
     description?: string;
     returnBroker?: string;
+}
+
+export type SchemaTemplates = {
+    id: string;
+    templateName: string;
+    description?: string;
+    fields: Record<string, unknown>;
+    version: number;
+    createdAt?: Date;
 }
 
 export type ScrapeBaseConfig = {

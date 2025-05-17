@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import { configRegistry } from '../json-config-system/config-registry';
+import { getLoadingComponent } from './loading-components';
 
 // Define types for our registry
 export type ConfigViewType = 'default' | 'alternative' | 'modern' | string;
@@ -96,7 +97,7 @@ export const configViewMappings: Record<string, string[]> = {
 // This defines the default view to use for each config type
 export const defaultViews: Record<string, string> = {
   candidate_profile: 'standard',
-  candidate_profile_structured: 'standard',
+  candidate_profile_structured: 'modern',
   candidate_profile_modern: 'modern',
   candidate_profile_modern_one_column: 'modernOneColumnView',
   app_suggestions: 'appSuggestions',
@@ -168,12 +169,28 @@ export function getAvailableViewsForConfigType(configType: string): string[] {
 export function getViewForConfig(configType: string, viewType: ConfigViewType = 'default'): ConfigViewEntry | null {
   // If the config type isn't registered, fall back to candidate_profile
   const configMap = configViewRegistry[configType] || configViewRegistry['candidate_profile'];
-  if (!configMap) return viewEntries.standard;
+  if (!configMap) {
+    console.warn(`[registry] No config map found for ${configType}, falling back to candidate_profile`);
+    return viewEntries.standard;
+  }
   
   // If the requested view type doesn't exist in this config, fall back to default
   if (!configMap[viewType]) {
+    console.warn(`[registry] No view type ${viewType} found for ${configType}, falling back to default`);
     return configMap['default'] || viewEntries.standard;
   }
   
+  console.log(`[registry] Found view for ${configType}/${viewType}:`, {
+    viewId: configMap[viewType].id,
+    viewName: configMap[viewType].name,
+    isDefault: viewType === 'default'
+  });
+  
   return configMap[viewType];
+}
+
+// Helper function to get the loading component for a specific view type
+export function getViewLoadingComponent(configType: string, viewType: ConfigViewType = 'default'): React.ComponentType<any> {
+  // Use the getLoadingComponent function from loading-components.tsx
+  return getLoadingComponent(configType || 'default');
 } 

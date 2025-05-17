@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { AppletInputProps } from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { selectAppletRuntimeContainers } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeContainers, selectAppletRuntimeName } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import FieldsWithLabels from "@/features/applet/runner/fields/core/FieldsWithlabels";
 
 
@@ -19,6 +19,7 @@ const FlatAppletInputLayoutAccordion: React.FC<AppletInputProps> = ({
     const appletContainers = useAppSelector((state) => selectAppletRuntimeContainers(state, appletId));
     const [expanded, setExpanded] = useState(initialExpanded);
     const contentRef = useRef<HTMLDivElement>(null);
+    const appletName = useAppSelector((state) => selectAppletRuntimeName(state, appletId));
     
     const handleToggle = () => {
         setExpanded(!expanded);
@@ -34,7 +35,7 @@ const FlatAppletInputLayoutAccordion: React.FC<AppletInputProps> = ({
                     }`}
                     onClick={handleToggle}
                 >
-                    <h3 className="text-lg font-medium text-rose-500">Information</h3>
+                    <h3 className="text-lg font-medium text-rose-500">{appletName} Input</h3>
                     <div>{expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}</div>
                 </button>
                 

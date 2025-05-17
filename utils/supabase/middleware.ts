@@ -15,42 +15,23 @@ export async function updateSession(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name) {
-            return request.cookies.get(name)?.value
+          getAll() {
+            return request.cookies.getAll();
           },
-          set(name, value, options) {
-            request.cookies.set({
-              name,
-              value,
-              ...options,
-            })
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
             supabaseResponse = NextResponse.next({
               request: {
                 headers: request.headers,
               },
-            })
-            supabaseResponse.cookies.set({
-              name,
-              value,
-              ...options,
-            })
-          },
-          remove(name, options) {
-            request.cookies.set({
-              name,
-              value: '',
-              ...options,
-            })
-            supabaseResponse = NextResponse.next({
-              request: {
-                headers: request.headers,
-              },
-            })
-            supabaseResponse.cookies.set({
-              name,
-              value: '',
-              ...options,
-            })
+            });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              supabaseResponse.cookies.set({
+                name,
+                value,
+                ...options,
+              })
+            );
           },
         },
       }
@@ -60,7 +41,6 @@ export async function updateSession(request: NextRequest) {
   // automatically refresh the token if needed, updating the cookies
   const { data } = await supabase.auth.getUser()
 
-  console.log("Middleware checking auth for path:", request.nextUrl.pathname)
 
   if (
       !data.user &&
@@ -72,7 +52,6 @@ export async function updateSession(request: NextRequest) {
     // Get the full requested URL path and search params
     const fullPath = request.nextUrl.pathname + request.nextUrl.search
     
-    console.log("Middleware - Original path requested:", fullPath)
     
     // Create the login URL with the redirectTo parameter
     const loginUrl = new URL('/login', request.url)
@@ -80,7 +59,6 @@ export async function updateSession(request: NextRequest) {
     // Set redirectTo parameter - ensure URL is clean
     loginUrl.searchParams.set('redirectTo', fullPath)
     
-    console.log("Middleware - Redirecting to:", loginUrl.toString())
     
     return NextResponse.redirect(loginUrl)
   }

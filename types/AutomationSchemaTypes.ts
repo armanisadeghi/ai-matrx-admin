@@ -95,6 +95,7 @@ export type AutomationTableName =
     | 'aiSettings'
     | 'aiTrainingData'
     | 'applet'
+    | 'appletContainers'
     | 'arg'
     | 'audioLabel'
     | 'audioRecording'
@@ -108,6 +109,7 @@ export type AutomationTableName =
     | 'category'
     | 'compiledRecipe'
     | 'componentGroups'
+    | 'containerFields'
     | 'conversation'
     | 'customAppConfigs'
     | 'customAppletConfigs'
@@ -145,6 +147,7 @@ export type AutomationTableName =
     | 'recipeProcessor'
     | 'recipeTool'
     | 'registeredFunction'
+    | 'schemaTemplates'
     | 'scrapeBaseConfig'
     | 'scrapeCachePolicy'
     | 'scrapeConfiguration'
@@ -296,6 +299,15 @@ export type AppletData = Expand<EntityDataMixed<"applet">>;
 export type AppletState = EntityStateType<"applet">;
 export type AppletRecordMap = Record<"appletRecordId", AppletData>;
 
+export type AppletContainersType = AutomationEntity<"appletContainers">;
+export type AppletContainersDataRequired = Expand<EntityData<"appletContainers">>;
+export type AppletContainersDataOptional = Expand<EntityDataOptional<"appletContainers">>;
+export type AppletContainersRecordWithKey = Expand<EntityDataWithKey<"appletContainers">>;
+export type AppletContainersProcessed = Expand<ProcessedEntityData<"appletContainers">>;
+export type AppletContainersData = Expand<EntityDataMixed<"appletContainers">>;
+export type AppletContainersState = EntityStateType<"appletContainers">;
+export type AppletContainersRecordMap = Record<"appletContainersRecordId", AppletContainersData>;
+
 export type ArgType = AutomationEntity<"arg">;
 export type ArgDataRequired = Expand<EntityData<"arg">>;
 export type ArgDataOptional = Expand<EntityDataOptional<"arg">>;
@@ -412,6 +424,15 @@ export type ComponentGroupsProcessed = Expand<ProcessedEntityData<"componentGrou
 export type ComponentGroupsData = Expand<EntityDataMixed<"componentGroups">>;
 export type ComponentGroupsState = EntityStateType<"componentGroups">;
 export type ComponentGroupsRecordMap = Record<"componentGroupsRecordId", ComponentGroupsData>;
+
+export type ContainerFieldsType = AutomationEntity<"containerFields">;
+export type ContainerFieldsDataRequired = Expand<EntityData<"containerFields">>;
+export type ContainerFieldsDataOptional = Expand<EntityDataOptional<"containerFields">>;
+export type ContainerFieldsRecordWithKey = Expand<EntityDataWithKey<"containerFields">>;
+export type ContainerFieldsProcessed = Expand<ProcessedEntityData<"containerFields">>;
+export type ContainerFieldsData = Expand<EntityDataMixed<"containerFields">>;
+export type ContainerFieldsState = EntityStateType<"containerFields">;
+export type ContainerFieldsRecordMap = Record<"containerFieldsRecordId", ContainerFieldsData>;
 
 export type ConversationType = AutomationEntity<"conversation">;
 export type ConversationDataRequired = Expand<EntityData<"conversation">>;
@@ -745,6 +766,15 @@ export type RegisteredFunctionProcessed = Expand<ProcessedEntityData<"registered
 export type RegisteredFunctionData = Expand<EntityDataMixed<"registeredFunction">>;
 export type RegisteredFunctionState = EntityStateType<"registeredFunction">;
 export type RegisteredFunctionRecordMap = Record<"registeredFunctionRecordId", RegisteredFunctionData>;
+
+export type SchemaTemplatesType = AutomationEntity<"schemaTemplates">;
+export type SchemaTemplatesDataRequired = Expand<EntityData<"schemaTemplates">>;
+export type SchemaTemplatesDataOptional = Expand<EntityDataOptional<"schemaTemplates">>;
+export type SchemaTemplatesRecordWithKey = Expand<EntityDataWithKey<"schemaTemplates">>;
+export type SchemaTemplatesProcessed = Expand<ProcessedEntityData<"schemaTemplates">>;
+export type SchemaTemplatesData = Expand<EntityDataMixed<"schemaTemplates">>;
+export type SchemaTemplatesState = EntityStateType<"schemaTemplates">;
+export type SchemaTemplatesRecordMap = Record<"schemaTemplatesRecordId", SchemaTemplatesData>;
 
 export type ScrapeBaseConfigType = AutomationEntity<"scrapeBaseConfig">;
 export type ScrapeBaseConfigDataRequired = Expand<EntityData<"scrapeBaseConfig">>;

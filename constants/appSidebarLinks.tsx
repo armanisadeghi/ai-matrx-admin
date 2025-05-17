@@ -36,6 +36,7 @@ import {
     LayoutPanelLeft,
     Puzzle,
     Workflow,
+    BookOpen,
 } from "lucide-react";
 import React from "react";
 import { IoLogoReact } from "react-icons/io5";
@@ -276,6 +277,12 @@ export const secondaryLinks = [
         label: "Applet Components",
         href: "/tests/applet-tests/input-components-4", // https://lucide.dev/icons/
         icon: <LayoutPanelLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    },
+    // tests/markdown-tests/
+    {
+        label: "Markdown Tests",
+        href: "/tests/markdown-tests", // https://lucide.dev/icons/
+        icon: <BookOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
     },
     {
         label: "Final Form Test",

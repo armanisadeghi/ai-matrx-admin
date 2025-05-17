@@ -63,6 +63,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "description", "creator", "type", "compiledRecipeId", "slug", "createdAt", "userId", "isPublic", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "subcategoryId", "ctaText", "theme"]
 },
+  appletContainers: {
+  nativeFields: ["id", "createdAt", "updatedAt", "appletId", "containerId", "order"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "appletId", "containerId", "order"]
+},
   arg: {
   nativeFields: ["id", "name", "required", "default", "dataType", "ready", "registeredFunction"],
   primaryKeyFields: ["id"],
@@ -128,6 +133,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["createdAt", "updatedAt", "label", "shortLabel", "description", "hideDescription", "helpText", "fields", "userId", "isPublic", "authenticatedRead", "publicRead"]
 },
+  containerFields: {
+  nativeFields: ["id", "createdAt", "updatedAt", "fieldId", "containerId", "order"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "fieldId", "containerId", "order"]
+},
   conversation: {
   nativeFields: ["id", "createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords", "group"],
   primaryKeyFields: ["id"],
@@ -139,9 +149,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "mainAppIcon", "mainAppSubmitIcon", "creator", "primaryColor", "accentColor", "appletList", "extraButtons", "layoutType", "imageUrl"]
 },
   customAppletConfigs: {
-  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId"],
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId", "brokerMap"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId", "brokerMap"]
 },
   dataBroker: {
   nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent"],
@@ -312,6 +322,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "name", "modulePath", "className", "description", "returnBroker"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["name", "modulePath", "className", "description", "returnBroker"]
+},
+  schemaTemplates: {
+  nativeFields: ["id", "templateName", "description", "fields", "version", "createdAt"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["templateName", "description", "fields", "version", "createdAt"]
 },
   scrapeBaseConfig: {
   nativeFields: ["id", "selectorType", "exact", "partial", "regex", "createdAt", "updatedAt", "isPublic", "authenticatedRead"],

@@ -931,6 +931,92 @@ export const useAppletWithFetch = (): UseAppletWithFetchReturn => {
 
 
 
+type UseAppletContainersWithFetchReturn = {
+    appletContainersSelectors: EntitySelectors<"appletContainers">;
+    appletContainersActions: EntityActions<"appletContainers">;
+    appletContainersRecords: Record<MatrxRecordId, AppletContainersData>;
+    appletContainersUnsavedRecords: Record<MatrxRecordId, Partial<AppletContainersData>>;
+    appletContainersSelectedRecordIds: MatrxRecordId[];
+    appletContainersIsLoading: boolean;
+    appletContainersIsError: boolean;
+    appletContainersQuickRefRecords: QuickReferenceRecord[];
+    addAppletContainersMatrxId: (recordId: MatrxRecordId) => void;
+    addAppletContainersMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeAppletContainersMatrxId: (recordId: MatrxRecordId) => void;
+    removeAppletContainersMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addAppletContainersPkValue: (pkValue: string) => void;
+    addAppletContainersPkValues: (pkValues: Record<string, unknown>) => void;
+    removeAppletContainersPkValue: (pkValue: string) => void;
+    removeAppletContainersPkValues: (pkValues: Record<string, unknown>) => void;
+    isAppletContainersMissingRecords: boolean;
+    setAppletContainersShouldFetch: (shouldFetch: boolean) => void;
+    setAppletContainersFetchMode: (fetchMode: FetchMode) => void;
+    fetchAppletContainersQuickRefs: () => void;
+    fetchAppletContainersOne: (recordId: MatrxRecordId) => void;
+    fetchAppletContainersOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchAppletContainersAll: () => void;
+    fetchAppletContainersPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useAppletContainersWithFetch = (): UseAppletContainersWithFetchReturn => {
+    const {
+        selectors: appletContainersSelectors,
+        actions: appletContainersActions,
+        allRecords: appletContainersRecords,
+        unsavedRecords: appletContainersUnsavedRecords,
+        selectedRecordIds: appletContainersSelectedRecordIds,
+        isLoading: appletContainersIsLoading,
+        isError: appletContainersIsError,
+        quickRefRecords: appletContainersQuickRefRecords,
+        addMatrxId: addAppletContainersMatrxId,
+        addMatrxIds: addAppletContainersMatrxIds,
+        removeMatrxId: removeAppletContainersMatrxId,
+        removeMatrxIds: removeAppletContainersMatrxIds,
+        addPkValue: addAppletContainersPkValue,
+        addPkValues: addAppletContainersPkValues,
+        removePkValue: removeAppletContainersPkValue,
+        removePkValues: removeAppletContainersPkValues,
+        isMissingRecords: isAppletContainersMissingRecords,
+        setShouldFetch: setAppletContainersShouldFetch,
+        setFetchMode: setAppletContainersFetchMode,
+        fetchQuickRefs: fetchAppletContainersQuickRefs,
+        fetchOne: fetchAppletContainersOne,
+        fetchOneWithFkIfk: fetchAppletContainersOneWithFkIfk,
+        fetchAll: fetchAppletContainersAll,
+        fetchPaginated: fetchAppletContainersPaginated,
+
+    } = useEntityWithFetch("appletContainers");
+
+    return {
+        appletContainersSelectors,
+        appletContainersActions,
+        appletContainersRecords,
+        appletContainersUnsavedRecords,
+        appletContainersSelectedRecordIds,
+        appletContainersIsLoading,
+        appletContainersIsError,
+        appletContainersQuickRefRecords,
+        addAppletContainersMatrxId,
+        addAppletContainersMatrxIds,
+        removeAppletContainersMatrxId,
+        removeAppletContainersMatrxIds,
+        addAppletContainersPkValue,
+        addAppletContainersPkValues,
+        removeAppletContainersPkValue,
+        removeAppletContainersPkValues,
+        isAppletContainersMissingRecords,
+        setAppletContainersShouldFetch,
+        setAppletContainersFetchMode,
+        fetchAppletContainersQuickRefs,
+        fetchAppletContainersOne,
+        fetchAppletContainersOneWithFkIfk,
+        fetchAppletContainersAll,
+        fetchAppletContainersPaginated,
+    };
+};
+
+
+
 type UseArgWithFetchReturn = {
     argSelectors: EntitySelectors<"arg">;
     argActions: EntityActions<"arg">;
@@ -2044,6 +2130,92 @@ export const useComponentGroupsWithFetch = (): UseComponentGroupsWithFetchReturn
         fetchComponentGroupsOneWithFkIfk,
         fetchComponentGroupsAll,
         fetchComponentGroupsPaginated,
+    };
+};
+
+
+
+type UseContainerFieldsWithFetchReturn = {
+    containerFieldsSelectors: EntitySelectors<"containerFields">;
+    containerFieldsActions: EntityActions<"containerFields">;
+    containerFieldsRecords: Record<MatrxRecordId, ContainerFieldsData>;
+    containerFieldsUnsavedRecords: Record<MatrxRecordId, Partial<ContainerFieldsData>>;
+    containerFieldsSelectedRecordIds: MatrxRecordId[];
+    containerFieldsIsLoading: boolean;
+    containerFieldsIsError: boolean;
+    containerFieldsQuickRefRecords: QuickReferenceRecord[];
+    addContainerFieldsMatrxId: (recordId: MatrxRecordId) => void;
+    addContainerFieldsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeContainerFieldsMatrxId: (recordId: MatrxRecordId) => void;
+    removeContainerFieldsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addContainerFieldsPkValue: (pkValue: string) => void;
+    addContainerFieldsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeContainerFieldsPkValue: (pkValue: string) => void;
+    removeContainerFieldsPkValues: (pkValues: Record<string, unknown>) => void;
+    isContainerFieldsMissingRecords: boolean;
+    setContainerFieldsShouldFetch: (shouldFetch: boolean) => void;
+    setContainerFieldsFetchMode: (fetchMode: FetchMode) => void;
+    fetchContainerFieldsQuickRefs: () => void;
+    fetchContainerFieldsOne: (recordId: MatrxRecordId) => void;
+    fetchContainerFieldsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchContainerFieldsAll: () => void;
+    fetchContainerFieldsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useContainerFieldsWithFetch = (): UseContainerFieldsWithFetchReturn => {
+    const {
+        selectors: containerFieldsSelectors,
+        actions: containerFieldsActions,
+        allRecords: containerFieldsRecords,
+        unsavedRecords: containerFieldsUnsavedRecords,
+        selectedRecordIds: containerFieldsSelectedRecordIds,
+        isLoading: containerFieldsIsLoading,
+        isError: containerFieldsIsError,
+        quickRefRecords: containerFieldsQuickRefRecords,
+        addMatrxId: addContainerFieldsMatrxId,
+        addMatrxIds: addContainerFieldsMatrxIds,
+        removeMatrxId: removeContainerFieldsMatrxId,
+        removeMatrxIds: removeContainerFieldsMatrxIds,
+        addPkValue: addContainerFieldsPkValue,
+        addPkValues: addContainerFieldsPkValues,
+        removePkValue: removeContainerFieldsPkValue,
+        removePkValues: removeContainerFieldsPkValues,
+        isMissingRecords: isContainerFieldsMissingRecords,
+        setShouldFetch: setContainerFieldsShouldFetch,
+        setFetchMode: setContainerFieldsFetchMode,
+        fetchQuickRefs: fetchContainerFieldsQuickRefs,
+        fetchOne: fetchContainerFieldsOne,
+        fetchOneWithFkIfk: fetchContainerFieldsOneWithFkIfk,
+        fetchAll: fetchContainerFieldsAll,
+        fetchPaginated: fetchContainerFieldsPaginated,
+
+    } = useEntityWithFetch("containerFields");
+
+    return {
+        containerFieldsSelectors,
+        containerFieldsActions,
+        containerFieldsRecords,
+        containerFieldsUnsavedRecords,
+        containerFieldsSelectedRecordIds,
+        containerFieldsIsLoading,
+        containerFieldsIsError,
+        containerFieldsQuickRefRecords,
+        addContainerFieldsMatrxId,
+        addContainerFieldsMatrxIds,
+        removeContainerFieldsMatrxId,
+        removeContainerFieldsMatrxIds,
+        addContainerFieldsPkValue,
+        addContainerFieldsPkValues,
+        removeContainerFieldsPkValue,
+        removeContainerFieldsPkValues,
+        isContainerFieldsMissingRecords,
+        setContainerFieldsShouldFetch,
+        setContainerFieldsFetchMode,
+        fetchContainerFieldsQuickRefs,
+        fetchContainerFieldsOne,
+        fetchContainerFieldsOneWithFkIfk,
+        fetchContainerFieldsAll,
+        fetchContainerFieldsPaginated,
     };
 };
 
@@ -5226,6 +5398,92 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
         fetchRegisteredFunctionOneWithFkIfk,
         fetchRegisteredFunctionAll,
         fetchRegisteredFunctionPaginated,
+    };
+};
+
+
+
+type UseSchemaTemplatesWithFetchReturn = {
+    schemaTemplatesSelectors: EntitySelectors<"schemaTemplates">;
+    schemaTemplatesActions: EntityActions<"schemaTemplates">;
+    schemaTemplatesRecords: Record<MatrxRecordId, SchemaTemplatesData>;
+    schemaTemplatesUnsavedRecords: Record<MatrxRecordId, Partial<SchemaTemplatesData>>;
+    schemaTemplatesSelectedRecordIds: MatrxRecordId[];
+    schemaTemplatesIsLoading: boolean;
+    schemaTemplatesIsError: boolean;
+    schemaTemplatesQuickRefRecords: QuickReferenceRecord[];
+    addSchemaTemplatesMatrxId: (recordId: MatrxRecordId) => void;
+    addSchemaTemplatesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeSchemaTemplatesMatrxId: (recordId: MatrxRecordId) => void;
+    removeSchemaTemplatesMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addSchemaTemplatesPkValue: (pkValue: string) => void;
+    addSchemaTemplatesPkValues: (pkValues: Record<string, unknown>) => void;
+    removeSchemaTemplatesPkValue: (pkValue: string) => void;
+    removeSchemaTemplatesPkValues: (pkValues: Record<string, unknown>) => void;
+    isSchemaTemplatesMissingRecords: boolean;
+    setSchemaTemplatesShouldFetch: (shouldFetch: boolean) => void;
+    setSchemaTemplatesFetchMode: (fetchMode: FetchMode) => void;
+    fetchSchemaTemplatesQuickRefs: () => void;
+    fetchSchemaTemplatesOne: (recordId: MatrxRecordId) => void;
+    fetchSchemaTemplatesOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchSchemaTemplatesAll: () => void;
+    fetchSchemaTemplatesPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useSchemaTemplatesWithFetch = (): UseSchemaTemplatesWithFetchReturn => {
+    const {
+        selectors: schemaTemplatesSelectors,
+        actions: schemaTemplatesActions,
+        allRecords: schemaTemplatesRecords,
+        unsavedRecords: schemaTemplatesUnsavedRecords,
+        selectedRecordIds: schemaTemplatesSelectedRecordIds,
+        isLoading: schemaTemplatesIsLoading,
+        isError: schemaTemplatesIsError,
+        quickRefRecords: schemaTemplatesQuickRefRecords,
+        addMatrxId: addSchemaTemplatesMatrxId,
+        addMatrxIds: addSchemaTemplatesMatrxIds,
+        removeMatrxId: removeSchemaTemplatesMatrxId,
+        removeMatrxIds: removeSchemaTemplatesMatrxIds,
+        addPkValue: addSchemaTemplatesPkValue,
+        addPkValues: addSchemaTemplatesPkValues,
+        removePkValue: removeSchemaTemplatesPkValue,
+        removePkValues: removeSchemaTemplatesPkValues,
+        isMissingRecords: isSchemaTemplatesMissingRecords,
+        setShouldFetch: setSchemaTemplatesShouldFetch,
+        setFetchMode: setSchemaTemplatesFetchMode,
+        fetchQuickRefs: fetchSchemaTemplatesQuickRefs,
+        fetchOne: fetchSchemaTemplatesOne,
+        fetchOneWithFkIfk: fetchSchemaTemplatesOneWithFkIfk,
+        fetchAll: fetchSchemaTemplatesAll,
+        fetchPaginated: fetchSchemaTemplatesPaginated,
+
+    } = useEntityWithFetch("schemaTemplates");
+
+    return {
+        schemaTemplatesSelectors,
+        schemaTemplatesActions,
+        schemaTemplatesRecords,
+        schemaTemplatesUnsavedRecords,
+        schemaTemplatesSelectedRecordIds,
+        schemaTemplatesIsLoading,
+        schemaTemplatesIsError,
+        schemaTemplatesQuickRefRecords,
+        addSchemaTemplatesMatrxId,
+        addSchemaTemplatesMatrxIds,
+        removeSchemaTemplatesMatrxId,
+        removeSchemaTemplatesMatrxIds,
+        addSchemaTemplatesPkValue,
+        addSchemaTemplatesPkValues,
+        removeSchemaTemplatesPkValue,
+        removeSchemaTemplatesPkValues,
+        isSchemaTemplatesMissingRecords,
+        setSchemaTemplatesShouldFetch,
+        setSchemaTemplatesFetchMode,
+        fetchSchemaTemplatesQuickRefs,
+        fetchSchemaTemplatesOne,
+        fetchSchemaTemplatesOneWithFkIfk,
+        fetchSchemaTemplatesAll,
+        fetchSchemaTemplatesPaginated,
     };
 };
 

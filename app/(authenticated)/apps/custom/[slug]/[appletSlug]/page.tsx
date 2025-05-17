@@ -7,22 +7,24 @@ import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import {
     selectAppletRuntimeBySlug,
     selectAppletRuntimeActiveAppletId,
-    selectAppletRuntimeContainers,
-    selectAppletRuntimeLayoutType,
     setActiveAppletId,
     selectAppletIdBySlug,
     selectAppletRuntimeIsInitialized,
 } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
-import { selectAppRuntimeId, selectAppRuntimeIsInitialized } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
+import { selectAppRuntimeIsInitialized } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
 import { LoadingSpinner } from "@/components/ui/spinner";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import useAppletRecipe from "@/features/applet/hooks/useAppletRecipe";
-import SocketAccordionResponse from "@/components/socket/response/SocketAccordionResponse";
-import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
-import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
-import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectResponseTextByListenerId, selectResponseEndedByListenerId } from "@/lib/redux/socket-io";
-import { Cog } from "lucide-react";
+import ResponseLayoutManager from "@/features/applet/runner/response/ResponseLayoutManager";
+
+
+const SLUG_TO_VIEW_MAP = {
+    "core-info-generator": "appSuggestions",
+    "candidate-write-up-not-used": "candidateProfileStructured",
+}
+
+
+
 
 export default function AppletPage() {
     const params = useParams();
@@ -35,18 +37,14 @@ export default function AppletPage() {
     const applet = useAppSelector((state) => selectAppletRuntimeBySlug(state, appletSlug));
     const appletId = useAppSelector((state) => selectAppletIdBySlug(state, appletSlug));
     const activeAppletId = useAppSelector(selectAppletRuntimeActiveAppletId);
-    const containers = applet ? useAppSelector((state) => selectAppletRuntimeContainers(state, applet.id)) : null;
-    const layoutType = applet ? useAppSelector((state) => selectAppletRuntimeLayoutType(state, applet.id)) : null;
-    const appId = useAppSelector(selectAppRuntimeId);
     const [taskSubmitted, setTaskSubmitted] = useState(false);
-    const [showConfig, setShowConfig] = useState(false);
-
     const [socketTaskId, setSocketTaskId] = useState<string | null>(null);
 
     const { taskId, submitRecipe } = useAppletRecipe({ appletId });
-    const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
-    const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
-    const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
+
+    const viewName = SLUG_TO_VIEW_MAP[appletSlug] || "default";
+
+    console.log("AppletPage viewName", viewName);
 
     useEffect(() => {
         if (taskId) {
@@ -77,46 +75,11 @@ export default function AppletPage() {
         );
     }
 
-    const toggleConfig = () => {
-        setShowConfig(prev => !prev);
-    };
-
     return (
         <div className="h-full w-full">
             {!taskSubmitted && <AppletLayoutManager appletId={appletId} handleSubmit={handleSubmit} />}
-            {taskSubmitted && (
-                <div className="w-full overflow-y-auto px-2 h-full space-y-2 scrollbar-none">
-                    <AppletLayoutManager
-                        appletId={appletId}
-                        layoutTypeOverride="flat-accordion"
-                        initialExpanded={false}
-                        handleSubmit={handleSubmit}
-                    />
-                    <FullscreenWrapper
-                        buttonPosition="top-right-inside"
-                        expandButtonTitle="View in fullscreen"
-                        closeButtonTitle="Exit fullscreen"
-                    >
-                        <div className="w-full max-w-4xl mx-auto p-4">
-                            <MarkdownRenderer content={textResponse} type="message" className="bg-slate-50 dark:bg-slate-900" />
-                        </div>
-                    </FullscreenWrapper>
 
-                    {isTaskComplete && (
-                        <div className="flex justify-end mb-2">
-                            <button 
-                                onClick={toggleConfig}
-                                className="p-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
-                                aria-label="Toggle configuration"
-                        >
-                            <Cog className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
-                        </button>
-                        </div>
-                    )}
-
-                    {showConfig && <SocketAccordionResponse taskId={taskId} />}
-                </div>
-            )}
+            {taskSubmitted && taskId && <ResponseLayoutManager appletId={appletId} taskId={taskId} handleSubmit={handleSubmit} viewName={viewName}/>}
         </div>
     );
 }

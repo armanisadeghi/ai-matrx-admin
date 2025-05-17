@@ -40,6 +40,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  appletContainers: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   arg: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
@@ -89,6 +93,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   componentGroups: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  containerFields: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
@@ -237,6 +245,10 @@ export const primaryKeys = {
     databaseColumns: ['id'],
   },
   registeredFunction: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  schemaTemplates: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
