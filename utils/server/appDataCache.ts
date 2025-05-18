@@ -34,7 +34,6 @@ export const getAppData = cache(async (slug: string | null = null, id: string | 
   const requestId = Math.random().toString(36).substring(2, 10);
   const startTime = Date.now();
   
-  console.log(`[CACHE-DEBUG ${requestId}] getAppData called:`, { slug, id, cacheId });
   
   try {
     if (!slug && !id) {
@@ -42,7 +41,6 @@ export const getAppData = cache(async (slug: string | null = null, id: string | 
       return null;
     }
     
-    console.log(`[CACHE-DEBUG ${requestId}] Creating Supabase client`);
     
     let supabase;
     try {
@@ -52,7 +50,6 @@ export const getAppData = cache(async (slug: string | null = null, id: string | 
       throw new Error(`Failed to initialize database client: ${clientError.message}`);
     }
     
-    console.log(`[CACHE-DEBUG ${requestId}] Calling RPC fetch_app_and_applet_config:`, { p_id: id, p_slug: slug });
     
     const { data, error, status } = await supabase.rpc("fetch_app_and_applet_config", {
       p_id: id,
@@ -60,7 +57,6 @@ export const getAppData = cache(async (slug: string | null = null, id: string | 
     });
     
     const endTime = Date.now();
-    console.log(`[CACHE-DEBUG ${requestId}] RPC completed in ${endTime - startTime}ms with status: ${status}`);
 
     if (error) {
       console.error(`[CACHE-DEBUG ${requestId}] Database error:`, {
@@ -87,14 +83,8 @@ export const getAppData = cache(async (slug: string | null = null, id: string | 
       console.error(`[CACHE-DEBUG ${requestId}] Invalid data structure - applets is not an array:`, data);
       // Try to fix if possible
       data.applets = data.applets ? [data.applets] : [];
-      console.log(`[CACHE-DEBUG ${requestId}] Fixed applets array:`, data.applets);
     }
 
-    console.log(`[CACHE-DEBUG ${requestId}] Fetch successful:`, {
-      appId: data.app_config.id,
-      appName: data.app_config.name,
-      appletCount: data.applets.length
-    });
     
     return data as AppData;
   } catch (error) {
@@ -114,7 +104,6 @@ export const getAppData = cache(async (slug: string | null = null, id: string | 
 // Helper to get applet by slug
 export const getAppletBySlug = async (appSlug: string, appletSlug: string): Promise<AppletConfig | null> => {
   const requestId = Math.random().toString(36).substring(2, 10);
-  console.log(`[CACHE-DEBUG ${requestId}] getAppletBySlug called:`, { appSlug, appletSlug });
   
   try {
     const appData = await getAppData(appSlug);
@@ -130,10 +119,6 @@ export const getAppletBySlug = async (appSlug: string, appletSlug: string): Prom
       return null;
     }
     
-    console.log(`[CACHE-DEBUG ${requestId}] Found applet:`, {
-      appletId: applet.id,
-      appletName: applet.name
-    });
     
     return applet;
   } catch (error) {

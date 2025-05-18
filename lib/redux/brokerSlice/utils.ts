@@ -6,8 +6,8 @@ export const resolveBrokerId = (state: BrokerState, idArgs: BrokerIdentifier): s
   if ('brokerId' in idArgs) {
     return idArgs.brokerId;
   }
-  if ('source' in idArgs && 'id' in idArgs) {
-    const mapKey = `${idArgs.source}:${idArgs.id}`;
+  if ('source' in idArgs && 'mappedItemId' in idArgs) {
+    const mapKey = `${idArgs.source}:${idArgs.mappedItemId}`;
     const brokerId = state.brokerMap[mapKey]?.brokerId;
     if (!brokerId) {
       console.warn(`No brokerId found for mapKey: ${mapKey}`);

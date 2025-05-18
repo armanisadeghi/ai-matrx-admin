@@ -1,9 +1,9 @@
 import { AppThunk } from "@/lib/redux/store";
 import { componentDefinitionsSlice } from "../slices/componentDefinitionsSlice";
-import { brokerValuesSlice } from "../slices/brokerValuesSlice";
 import { fetchAppConfig } from "@/lib/redux/app-runner/service/applet-service";
 import { CustomAppConfig } from "@/types/customAppTypes";
 import { loadApplet } from "./loadApplet";
+import brokerSlice, { brokerActions } from "@/lib/redux/brokerSlice/slice";
 
 interface LoadAppResult {
     success: boolean;
@@ -17,7 +17,7 @@ export const loadApp =
     async (dispatch) => {
         try {
             dispatch(componentDefinitionsSlice.actions.setLoading(true));
-            dispatch(brokerValuesSlice.actions.setLoading(true));
+            dispatch(brokerActions.setLoading(true));
 
             // 1. Fetch app configuration
             const { appConfig, applets, compiledRecipes } = await fetchAppConfig({ slug, id });
@@ -26,7 +26,6 @@ export const loadApp =
             // 2. Clear existing state if requested
             if (clearExisting) {
                 dispatch(componentDefinitionsSlice.actions.clearAppConfig(appId));
-                dispatch(brokerValuesSlice.actions.clearNeededBrokers(appId));
             }
 
             // 3. Store app configuration
@@ -39,13 +38,6 @@ export const loadApp =
                 // Load applet
                 const result = await dispatch(loadApplet({ appId, applet }));
 
-                // Add recipe brokers to neededBrokers
-                const recipe = compiledRecipes[appletId];
-                if (recipe && recipe.brokers) {
-                    const brokerIds = Object.values(recipe.brokers).map((broker) => broker.id);
-                    dispatch(brokerValuesSlice.actions.addNeededBrokers({ appId, brokerIds }));
-                }
-
                 appletResults.push({
                     appletId,
                     success: result.success,
@@ -54,7 +46,7 @@ export const loadApp =
             }
 
             dispatch(componentDefinitionsSlice.actions.setLoading(false));
-            dispatch(brokerValuesSlice.actions.setLoading(false));
+            dispatch(brokerActions.setLoading(false));
 
             return {
                 success: true,
@@ -64,9 +56,9 @@ export const loadApp =
         } catch (error: any) {
             console.error("Error loading app:", error);
             dispatch(componentDefinitionsSlice.actions.setError(error.message));
-            dispatch(brokerValuesSlice.actions.setError(error.message));
+            dispatch(brokerActions.setError(error.message));
             dispatch(componentDefinitionsSlice.actions.setLoading(false));
-            dispatch(brokerValuesSlice.actions.setLoading(false));
+            dispatch(brokerActions.setLoading(false));
             return {
                 success: false,
                 error: error.message,

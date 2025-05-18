@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd"; // Added DropResult type
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,8 @@ const DraggableTableField: React.FC<{
     const safeWidthClass = ensureValidWidthClass(width);
 
     const dispatch = useAppDispatch();
-    const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
+    const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: id }));
+    const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
 
     const [tableData, setTableData] = useState<TableOption[]>([]);
     const tableRef = useRef<HTMLTableElement>(null);
@@ -38,7 +39,7 @@ const DraggableTableField: React.FC<{
             initialData = stateValue as TableOption[]; // Added type assertion for clarity
         } else if (options && options.length > 0) {
             initialData = options.map((option, index) => ({ ...option, order: index }));
-            dispatch(updateBrokerValue({ source: source, itemId: id, value: initialData }));
+            dispatch(brokerActions.setValue({ brokerId, value: initialData }));
         } else if (stateValue && Array.isArray(stateValue)) {
             // Ensure all items have an order property
             initialData = stateValue.map((item, index) => ({
@@ -51,7 +52,7 @@ const DraggableTableField: React.FC<{
                 !(stateValue[index] && typeof stateValue[index].order === 'number')
             );
             if (needsUpdateInRedux) {
-                dispatch(updateBrokerValue({ source: source, itemId: id, value: initialData }));
+                dispatch(brokerActions.setValue({ brokerId, value: initialData }));
             }
         }
         setTableData([...initialData].sort((a, b) => a.order - b.order));
@@ -86,9 +87,8 @@ const DraggableTableField: React.FC<{
             }));
             
             dispatch(
-                updateBrokerValue({
-                    source: source,
-                    itemId: id,
+                brokerActions.setValue({
+                    brokerId,
                     value: reorderedDataWithOrder,
                 })
             );

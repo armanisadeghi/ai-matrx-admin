@@ -9,7 +9,7 @@ import {
     DraggableRubric
 } from "@hello-pangea/dnd";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -55,7 +55,8 @@ const DraggableEditableTableField: React.FC<{
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);
     const dispatch = useAppDispatch();
-    const stateValue = useAppSelector((state) => selectBrokerValue(state, source, fieldId));
+    const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: fieldId }));
+    const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
 
     const [tableRows, setTableRows] = useState<TableRowData[]>([]);
     const [columns, setColumns] = useState<ColumnDefinition[]>(defaultColumns);
@@ -135,7 +136,7 @@ const DraggableEditableTableField: React.FC<{
 
     const updateReduxState = (rows: TableRowData[], cols: ColumnDefinition[]) => {
         const newState: TableState = { rows, columns: cols };
-        dispatch(updateBrokerValue({ source, itemId: fieldId, value: newState }));
+        dispatch(brokerActions.setValue({ brokerId, value: newState }));
     };
 
     // --- Drag End Handler ---

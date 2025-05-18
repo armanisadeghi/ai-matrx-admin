@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { brokerConceptActions, brokerConceptSelectors } from '@/lib/redux/brokerSlice';
+import { brokerActions, brokerSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 import { MessageSquare, Shield, CheckCircle2, XCircle, Loader2, ChevronRight } from 'lucide-react';
 import { FaSlack } from "react-icons/fa";
@@ -28,7 +28,7 @@ export function SlackAuthentication() {
   
   // Get token from broker
   const token = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.token)
   );
   
   useEffect(() => {
@@ -50,7 +50,7 @@ export function SlackAuthentication() {
       
       // Auto-select first token if we have one and no token is set
       if (parsedTokens.length > 0 && !token) {
-        dispatch(brokerConceptActions.setText({
+        dispatch(brokerActions.setText({
           idArgs: SLACK_BROKER_IDS.token,
           text: parsedTokens[0]
         }));
@@ -63,7 +63,7 @@ export function SlackAuthentication() {
     
     if (urlToken) {
       setIsConnecting(true);
-      dispatch(brokerConceptActions.setText({
+      dispatch(brokerActions.setText({
         idArgs: SLACK_BROKER_IDS.token,
         text: urlToken
       }));
@@ -83,7 +83,7 @@ export function SlackAuthentication() {
   
   const handleDisconnect = () => {
     if (token) {
-      dispatch(brokerConceptActions.setText({
+      dispatch(brokerActions.setText({
         idArgs: SLACK_BROKER_IDS.token,
         text: ''
       }));
@@ -96,7 +96,7 @@ export function SlackAuthentication() {
   };
   
   const handleSwitchToken = (savedToken: string) => {
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.token,
       text: savedToken
     }));

@@ -6,7 +6,7 @@ import { createTask } from "@/lib/redux/socket-io/thunks/createTaskThunk";
 import { submitTask } from "@/lib/redux/socket-io/thunks/submitTaskThunk";
 import { useEffect, useState, useCallback } from "react";
 import { selectTaskDataById, selectTaskValidationState } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectMultipleBrokerValues } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors } from "@/lib/redux/brokerSlice";
 
 export interface NeededBroker {
     id: string;
@@ -53,7 +53,7 @@ export function useAppletRecipe({ appletId }: UseAppletRecipeProps) {
     );
 
     // Get the raw broker values from Redux state
-    const rawBrokerValues = useAppSelector((state) => selectMultipleBrokerValues(state, neededBrokerIds || []));
+    const rawBrokerValues = useAppSelector((state) => brokerSelectors.selectMultipleValues(state, neededBrokerIds || []));
 
     // Transform raw broker values into the structure expected by the task
     const brokerValues = Object.entries(rawBrokerValues || {}).reduce<Record<string, any>>((acc, [id, value]) => {

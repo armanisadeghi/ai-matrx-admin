@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import React, { useEffect, useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripVertical, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,12 +24,26 @@ const SortableField: React.FC<{
     const { id, label, options, componentProps } = field;
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);
+
     const dispatch = useAppDispatch();
-    const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
-    
+    const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: id }));
+    const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
+
+    const updateBrokerValue = useCallback(
+        (updatedValue: any) => {
+            dispatch(
+                brokerActions.setValue({
+                    brokerId,
+                    value: updatedValue,
+                })
+            );
+        },
+        [dispatch, brokerId]
+    );
+
     const [items, setItems] = useState<SortableItem[]>([]);
     const [activeItemId, setActiveItemId] = useState<string | null>(null);
-    
+
     // Initialize items from options or state
     useEffect(() => {
         if (stateValue) {
@@ -40,99 +56,73 @@ const SortableField: React.FC<{
                 order: index,
             }));
             setItems(initialItems);
-            dispatch(
-                updateBrokerValue({
-                    source: source,
-                    itemId: id,
-                    value: initialItems,
-                })
-            );
+            updateBrokerValue(initialItems);
         }
     }, [options, stateValue, dispatch, id, source]);
-    
+
     // Handler for drag end
     const handleOnDragEnd = (result: any) => {
         if (!result.destination || disabled) return;
-        
+
         const updatedItems = Array.from(items);
         const [reorderedItem] = updatedItems.splice(result.source.index, 1);
         updatedItems.splice(result.destination.index, 0, reorderedItem);
-        
+
         const reorderedItems = updatedItems.map((item, index) => ({
             ...item,
             order: index,
         }));
-        
+
         setItems(reorderedItems);
-        dispatch(
-            updateBrokerValue({
-                source: source,
-                itemId: id,
-                value: reorderedItems,
-            })
-        );
+        updateBrokerValue(reorderedItems);
     };
-    
+
     // Handler for moving item up
     const handleMoveUp = (itemId: string) => {
         if (disabled) return;
         setActiveItemId(itemId);
-        
+
         const itemIndex = items.findIndex((item) => item.id === itemId);
         if (itemIndex > 0) {
             const updatedItems = [...items];
-            [updatedItems[itemIndex - 1], updatedItems[itemIndex]] = 
-            [updatedItems[itemIndex], updatedItems[itemIndex - 1]];
-            
+            [updatedItems[itemIndex - 1], updatedItems[itemIndex]] = [updatedItems[itemIndex], updatedItems[itemIndex - 1]];
+
             const reorderedItems = updatedItems.map((item, index) => ({
                 ...item,
                 order: index,
             }));
-            
+
             setItems(reorderedItems);
-            dispatch(
-                updateBrokerValue({
-                    source: source,
-                    itemId: id,
-                    value: reorderedItems,
-                })
-            );
+            updateBrokerValue(reorderedItems);
         }
     };
-    
+
     // Handler for moving item down
     const handleMoveDown = (itemId: string) => {
         if (disabled) return;
         setActiveItemId(itemId);
-        
+
         const itemIndex = items.findIndex((item) => item.id === itemId);
         if (itemIndex < items.length - 1) {
             const updatedItems = [...items];
-            [updatedItems[itemIndex], updatedItems[itemIndex + 1]] = 
-            [updatedItems[itemIndex + 1], updatedItems[itemIndex]];
-            
+            [updatedItems[itemIndex], updatedItems[itemIndex + 1]] = [updatedItems[itemIndex + 1], updatedItems[itemIndex]];
+
             const reorderedItems = updatedItems.map((item, index) => ({
                 ...item,
                 order: index,
             }));
-            
+
             setItems(reorderedItems);
-            dispatch(
-                updateBrokerValue({
-                    source: source,
-                    itemId: id,
-                    value: reorderedItems,
-                })
-            );
+            updateBrokerValue(reorderedItems);
         }
     };
-    
+
     if (customContent) {
         return <>{customContent}</>;
     }
-    
+
     const sortedItems = [...items].sort((a, b) => a.order - b.order);
-    
+
     return (
         <div className={`${safeWidthClass} ${className}`}>
             <DragDropContext onDragEnd={handleOnDragEnd}>
@@ -147,17 +137,12 @@ const SortableField: React.FC<{
                                 snapshot.isDraggingOver && "border-blue-400 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20"
                             )}
                             style={{
-                                position: 'relative',
-                                minHeight: '120px',
+                                position: "relative",
+                                minHeight: "120px",
                             }}
                         >
                             {sortedItems.map((item, index) => (
-                                <Draggable 
-                                    key={item.id} 
-                                    draggableId={item.id} 
-                                    index={index}
-                                    isDragDisabled={disabled}
-                                >
+                                <Draggable key={item.id} draggableId={item.id} index={index} isDragDisabled={disabled}>
                                     {(provided, snapshot) => (
                                         <div
                                             ref={provided.innerRef}
@@ -166,13 +151,14 @@ const SortableField: React.FC<{
                                             style={{
                                                 ...provided.draggableProps.style,
                                                 opacity: snapshot.isDragging ? 0.9 : 1,
-                                                cursor: 'move',
+                                                cursor: "move",
                                             }}
                                             className={cn(
                                                 "relative flex items-center p-4 bg-white dark:bg-gray-800",
                                                 "transition-shadow duration-200",
                                                 "border-b border-gray-100 dark:border-gray-700 last:border-b-0",
-                                                snapshot.isDragging && "shadow-2xl dark:shadow-2xl shadow-gray-300/70 dark:shadow-gray-900/90 z-50",
+                                                snapshot.isDragging &&
+                                                    "shadow-2xl dark:shadow-2xl shadow-gray-300/70 dark:shadow-gray-900/90 z-50",
                                                 activeItemId === item.id && "bg-blue-50 dark:bg-blue-900/20",
                                                 "group"
                                             )}
@@ -181,26 +167,26 @@ const SortableField: React.FC<{
                                             <div className="mr-3">
                                                 <GripVertical className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                                             </div>
-                                            
+
                                             {/* Item content */}
                                             <div className="flex-1 min-w-0">
                                                 <div
                                                     className={cn(
                                                         "text-sm font-medium",
-                                                        activeItemId === item.id ? "text-blue-700 dark:text-blue-300" : "text-gray-700 dark:text-gray-300"
+                                                        activeItemId === item.id
+                                                            ? "text-blue-700 dark:text-blue-300"
+                                                            : "text-gray-700 dark:text-gray-300"
                                                     )}
                                                 >
                                                     {item.label}
                                                 </div>
                                                 {item.description && (
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                                        {item.description}
-                                                    </div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{item.description}</div>
                                                 )}
                                             </div>
-                                            
+
                                             {/* Up/down buttons - prevent drag on these */}
-                                            <div 
+                                            <div
                                                 className="flex items-center space-x-1 ml-2"
                                                 onMouseDown={(e) => e.stopPropagation()}
                                                 onTouchStart={(e) => e.stopPropagation()}
@@ -249,7 +235,7 @@ const SortableField: React.FC<{
                     )}
                 </Droppable>
             </DragDropContext>
-            
+
             {/* Instructions */}
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 Drag and drop items to reorder, or use the up and down arrows

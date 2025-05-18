@@ -133,7 +133,6 @@ export const createFieldComponent = async (fieldDefinition: FieldBuilder): Promi
     const dbData = await fieldDefinitionToDBFormat(fieldDefinition);
 
 
-    console.log("Creating field component with data:", JSON.stringify(dbData, null, 2));
 
     try {
         const { data, error } = await supabase.from("field_components").insert(dbData).select().single();

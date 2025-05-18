@@ -4,20 +4,20 @@ import { BrokerIdentifier } from "../types";
 import { resolveBrokerId } from "../utils";
 
 // Core Selectors
-const selectBrokerConceptSlice = (state: RootState) => state.brokerConcept;
+const selectBrokerSlice = (state: RootState) => state.broker;
 
 const selectError = createSelector(
-    [selectBrokerConceptSlice], 
+    [selectBrokerSlice], 
     (state) => state.error
 );
 
 const selectMap = createSelector(
-    [selectBrokerConceptSlice], 
+    [selectBrokerSlice], 
     (state) => state.brokerMap
 );
 
 const selectAllValues = createSelector(
-    [selectBrokerConceptSlice], 
+    [selectBrokerSlice], 
     (state) => state.brokers
 );
 
@@ -29,7 +29,7 @@ const selectBrokerIdInput = (_: RootState, brokerId: string) => brokerId;
 
 // Selects brokerId from idArgs (for mapped entities)
 const selectBrokerId = createSelector(
-    [selectBrokerConceptSlice, selectIdArgs], 
+    [selectBrokerSlice, selectIdArgs], 
     (state, idArgs) => resolveBrokerId(state, idArgs)
 );
 
@@ -48,14 +48,14 @@ const selectValueWithoutBrokerId = createSelector(
 // Checks if a brokerId is registered in brokerMap
 const selectIsBrokerIdMapped = createSelector(
     [selectMap, selectBrokerIdInput],
-    (map, brokerId) => Object.values(map).some(entry => entry.id === brokerId)
+    (map, brokerId) => Object.values(map).some(entry => entry.mappedItemId === brokerId)
 );
 
 // Selects a mapping entry by source and id
 const selectMapEntry = createSelector(
-    [selectMap, (_: RootState, source: string, id: string) => ({ source, id })],
-    (map, { source, id }) => {
-        const mapKey = `${source}:${id}`;
+    [selectMap, (_: RootState, source: string, mappedItemId: string) => ({ source, mappedItemId })],
+    (map, { source, mappedItemId }) => {
+        const mapKey = `${source}:${mappedItemId}`;
         return map[mapKey];
     }
 );
@@ -64,6 +64,23 @@ const selectMapEntry = createSelector(
 const selectHasValue = createSelector(
     [selectValueWithoutBrokerId],
     (value) => value !== undefined
+);
+
+
+const selectMultipleValues = createSelector(
+    [selectAllValues, (_: RootState, brokerIds: string[]) => brokerIds],
+    (brokers, brokerIds) => {
+        if (!brokerIds || brokerIds.length === 0) {
+            return {};
+        }
+        
+        return brokerIds.reduce<Record<string, any>>((acc, brokerId) => {
+            if (brokerId) {
+                acc[brokerId] = brokers[brokerId];
+            }
+            return acc;
+        }, {});
+    }
 );
 
 export const coreSelectors = {
@@ -76,4 +93,5 @@ export const coreSelectors = {
     selectIsBrokerIdMapped,
     selectMapEntry,
     selectHasValue,
+    selectMultipleValues,
 };

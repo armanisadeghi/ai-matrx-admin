@@ -67,7 +67,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     };
 
     const handleSaveEdit = (newContent: string) => {
-        console.log("Saving edited content:", newContent);
         setCurrentContent(newContent);
         onContentChange?.(newContent);
         setIsEditorOpen(false);
@@ -98,8 +97,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     };
 
     const handleMatrxBrokerChange = (updatedBrokerContent: string, originalBrokerContent: string) => {
-        console.log("Updating matrx broker content:", updatedBrokerContent);
-        console.log("Original content:", originalBrokerContent);
         const updatedContent = currentContent.replace(originalBrokerContent, updatedBrokerContent);
         setCurrentContent(updatedContent);
         onContentChange?.(updatedContent);
@@ -115,7 +112,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     const blocks = splitContentIntoBlocks(processedContent);
 
     const renderBlock = (block: ContentBlock, index: number) => {
-        console.log("Rendering block:", block, "index:", index);
         switch (block.type) {
             case "image":
                 return <ImageBlock key={index} src={block.src!} alt={block.alt} />;
@@ -153,7 +149,6 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
             case "structured_info":
                 return <StructuredPlanBlock key={index} content={block.content} />;
             case "matrxBroker":
-                console.log("--> Rendering matrx broker block:", block);
                 return <MatrxBrokerBlock key={index} content={block.content} metadata={block.metadata} onUpdate={handleMatrxBrokerChange} />;
             case "text":
             case "info":

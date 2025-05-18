@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { brokerConceptActions } from "@/lib/redux/brokerSlice";
+import { brokerActions } from "@/lib/redux/brokerSlice";
 
 // Add TypeScript declarations for experimental browser APIs
 interface NetworkInformation extends EventTarget {
@@ -38,7 +38,7 @@ export function useSetGlobalBasics() {
         
         // Browser Info
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_BROWSER_INFO",
                 value: nav.userAgent,
             })
@@ -47,7 +47,7 @@ export function useSetGlobalBasics() {
         // Device Type (Basic detection)
         const isMobile = /Mobi|Android/i.test(nav.userAgent);
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_DEVICE_TYPE",
                 value: isMobile ? "mobile" : "desktop",
             })
@@ -55,7 +55,7 @@ export function useSetGlobalBasics() {
 
         // Screen Resolution
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_SCREEN_RESOLUTION",
                 value: `${window.screen.width}x${window.screen.height}`,
             })
@@ -63,7 +63,7 @@ export function useSetGlobalBasics() {
 
         // Language Preference
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_BROWSER_LANGUAGE",
                 value: nav.language || nav.languages[0],
             })
@@ -71,7 +71,7 @@ export function useSetGlobalBasics() {
 
         // Current Date
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_CURRENT_DATE",
                 value: new Date().toISOString().split("T")[0], // e.g., "2025-05-15"
             })
@@ -79,7 +79,7 @@ export function useSetGlobalBasics() {
 
         // Current Timestamp
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_CURRENT_TIMESTAMP",
                 value: Date.now(),
             })
@@ -87,7 +87,7 @@ export function useSetGlobalBasics() {
 
         // Formatted Date
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_FORMATTED_DATE",
                 value: new Date().toLocaleDateString(), // e.g., "5/15/2025"
             })
@@ -95,7 +95,7 @@ export function useSetGlobalBasics() {
 
         // User Timezone
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_USER_TIMEZONE",
                 value: Intl.DateTimeFormat().resolvedOptions().timeZone, // e.g., "America/New_York"
             })
@@ -103,7 +103,7 @@ export function useSetGlobalBasics() {
 
         // Platform/OS
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_PLATFORM",
                 value: nav.platform || "unknown", // e.g., "Win32", "MacIntel"
             })
@@ -111,7 +111,7 @@ export function useSetGlobalBasics() {
 
         // Cookies Enabled
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_COOKIES_ENABLED",
                 value: nav.cookieEnabled, // true or false
             })
@@ -120,7 +120,7 @@ export function useSetGlobalBasics() {
         // Color Scheme Preference
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_COLOR_SCHEME",
                 value: prefersDark ? "dark" : "light",
             })
@@ -128,7 +128,7 @@ export function useSetGlobalBasics() {
         
         // Network Status
         dispatch(
-            brokerConceptActions.setValue({
+            brokerActions.setValue({
                 brokerId: "GLOBAL_NETWORK_STATUS",
                 value: nav.onLine ? "online" : "offline",
             })
@@ -137,7 +137,7 @@ export function useSetGlobalBasics() {
         // Connection Type (if supported)
         if (nav.connection) {
             dispatch(
-                brokerConceptActions.setValue({
+                brokerActions.setValue({
                     brokerId: "GLOBAL_CONNECTION_TYPE",
                     value: nav.connection.effectiveType || "unknown", // e.g., "4g", "wifi"
                 })
@@ -147,7 +147,7 @@ export function useSetGlobalBasics() {
         // Event Listeners for Network Changes
         const updateNetworkStatus = () => {
             dispatch(
-                brokerConceptActions.setValue({
+                brokerActions.setValue({
                     brokerId: "GLOBAL_NETWORK_STATUS",
                     value: nav.onLine ? "online" : "offline",
                 })
@@ -160,7 +160,7 @@ export function useSetGlobalBasics() {
         if (nav.connection) {
             const updateConnectionType = () => {
                 dispatch(
-                    brokerConceptActions.setValue({
+                    brokerActions.setValue({
                         brokerId: "GLOBAL_CONNECTION_TYPE",
                         value: nav.connection.effectiveType || "unknown",
                     })
@@ -172,7 +172,7 @@ export function useSetGlobalBasics() {
         // Window Dimensions
         const updateWindowDimensions = () => {
             dispatch(
-                brokerConceptActions.setValue({
+                brokerActions.setValue({
                     brokerId: "GLOBAL_WINDOW_DIMENSIONS",
                     value: {
                         width: window.innerWidth,
@@ -193,7 +193,7 @@ export function useSetGlobalBasics() {
             nav.getBattery().then((battery) => {
                 const updateBatteryStatus = () => {
                     dispatch(
-                        brokerConceptActions.setValue({
+                        brokerActions.setValue({
                             brokerId: "GLOBAL_BATTERY_STATUS",
                             value: {
                                 level: battery.level * 100, // e.g., 75 (%)
@@ -213,7 +213,7 @@ export function useSetGlobalBasics() {
         } else {
             // Fallback if Battery API is unsupported
             dispatch(
-                brokerConceptActions.setValue({
+                brokerActions.setValue({
                     brokerId: "GLOBAL_BATTERY_STATUS",
                     value: null,
                 })
@@ -224,7 +224,7 @@ export function useSetGlobalBasics() {
         const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
         const updateColorScheme = () => {
             dispatch(
-                brokerConceptActions.setValue({
+                brokerActions.setValue({
                     brokerId: "GLOBAL_COLOR_SCHEME",
                     value: mediaQuery.matches ? "dark" : "light",
                 })
@@ -242,7 +242,7 @@ export function useSetGlobalBasics() {
             nav.geolocation.getCurrentPosition(
                 (position) => {
                     dispatch(
-                        brokerConceptActions.setValue({
+                        brokerActions.setValue({
                             brokerId: "GLOBAL_USER_COORDINATES",
                             value: {
                                 latitude: position.coords.latitude,
@@ -254,7 +254,7 @@ export function useSetGlobalBasics() {
                 (error) => {
                     console.warn("Geolocation unavailable:", error);
                     dispatch(
-                        brokerConceptActions.setValue({
+                        brokerActions.setValue({
                             brokerId: "GLOBAL_USER_COORDINATES",
                             value: null,
                         })
@@ -273,7 +273,7 @@ export function useSetGlobalBasics() {
             if (nav.connection) {
                 const updateConnectionType = () => {
                     dispatch(
-                        brokerConceptActions.setValue({
+                        brokerActions.setValue({
                             brokerId: "GLOBAL_CONNECTION_TYPE",
                             value: nav.connection.effectiveType || "unknown",
                         })

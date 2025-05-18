@@ -1,7 +1,7 @@
 // components/BrokerForm.tsx
 "use client";
 
-import { brokerConceptSelectors, BrokerIdentifier, brokerConceptActions, useServerBrokerSync } from "@/lib/redux/brokerSlice";
+import { brokerSelectors, BrokerIdentifier, brokerActions, useServerBrokerSync } from "@/lib/redux/brokerSlice";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { SLACK_BROKER_IDS } from "./BrokerSlackClient";
 
@@ -25,7 +25,7 @@ export function BrokerForm({ fields, onSubmit, brokerSync = true }: BrokerFormCo
         const fieldValues: Record<string, any> = {};
         fields.forEach((field) => {
             const key = JSON.stringify(field.broker);
-            fieldValues[key] = brokerConceptSelectors.selectValue(state, field.broker);
+            fieldValues[key] = brokerSelectors.selectValue(state, field.broker);
         });
         return fieldValues;
     });
@@ -64,7 +64,7 @@ export function BrokerForm({ fields, onSubmit, brokerSync = true }: BrokerFormCo
                                 value={value as string}
                                 onChange={(e) =>
                                     dispatch(
-                                        brokerConceptActions.setText({
+                                        brokerActions.setText({
                                             idArgs: field.broker,
                                             text: e.target.value,
                                         })
@@ -81,14 +81,14 @@ export function BrokerForm({ fields, onSubmit, brokerSync = true }: BrokerFormCo
                                     if (field.type === "number") {
                                         const numValue = Number(e.target.value);
                                         dispatch(
-                                            brokerConceptActions.setNumber({
+                                            brokerActions.setNumber({
                                                 idArgs: field.broker,
                                                 value: numValue,
                                             })
                                         );
                                     } else {
                                         dispatch(
-                                            brokerConceptActions.setText({
+                                            brokerActions.setText({
                                                 idArgs: field.broker,
                                                 text: e.target.value,
                                             })
@@ -116,7 +116,7 @@ export function BrokerForm({ fields, onSubmit, brokerSync = true }: BrokerFormCo
 export function BrokerFormExample() {
     // Get token to check if authenticated
     const token = useAppSelector(state => 
-        brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
+        brokerSelectors.selectText(state, SLACK_BROKER_IDS.token)
     );
     
     // Don't show the example if not authenticated

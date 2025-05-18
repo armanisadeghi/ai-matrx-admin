@@ -10,12 +10,12 @@ const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
 // Selectors
 const selectDynamicValue = createSelector(
     [
-        (state: RootState) => state.brokerConcept,
+        (state: RootState) => state.broker,
         selectIdArgs
     ],
-    (brokerConcept, idArgs): any => {
-        const brokerId = resolveBrokerId(brokerConcept, idArgs);
-        return brokerId ? brokerConcept.brokers[brokerId] : undefined;
+    (broker, idArgs): any => {
+        const brokerId = resolveBrokerId(broker, idArgs);
+        return brokerId ? broker.brokers[brokerId] : undefined;
     }
 );
 

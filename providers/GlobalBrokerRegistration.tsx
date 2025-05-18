@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect } from "react";
 import { useAppDispatch } from "@/lib/redux";
-import { brokerConceptActions } from "@/lib/redux/brokerSlice";
+import { brokerActions } from "@/lib/redux/brokerSlice";
 
 // Define the system-wide broker entries that should be registered
 const SYSTEM_BROKERS = [
@@ -42,7 +42,7 @@ export function GlobalBrokerRegistration({ children }: GlobalBrokerRegistrationP
     // Register all system-wide brokers on initial mount
     useEffect(() => {
         // Only register the broker mappings - no values are set here
-        dispatch(brokerConceptActions.addOrUpdateRegisterEntries(SYSTEM_BROKERS));
+        dispatch(brokerActions.addOrUpdateRegisterEntries(SYSTEM_BROKERS));
         console.log("System-wide broker mappings registered");
     }, [dispatch]);
 

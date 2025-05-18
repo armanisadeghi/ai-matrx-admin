@@ -495,7 +495,7 @@ importers:
         specifier: latest
         version: 7.0.2(react@19.1.0)
       react-syntax-highlighter:
-        specifier: latest
+        specifier: ^15.6.1
         version: 15.6.1(react@19.1.0)
       react-table:
         specifier: latest
@@ -648,6 +648,9 @@ importers:
       '@types/react-katex':
         specifier: latest
         version: 3.0.4
+      '@types/react-syntax-highlighter':
+        specifier: ^15.5.13
+        version: 15.5.13
       '@types/react-table':
         specifier: latest
         version: 7.7.20
@@ -4851,6 +4854,9 @@ packages:
     resolution: {integrity: sha512-HHM3nxyUZ3zAylX8ZEyrDNd2XZOnQ0D5XfunJF5FLQnZbHHYq4UWvW1QfelQNXv1ICNkwYhfxjwfnqivYB6bFg==}
     peerDependencies:
       '@types/react': '*'
+
+  '@types/react-syntax-highlighter@15.5.13':
+    resolution: {integrity: sha512-uLGJ87j6Sz8UaBAooU0T6lWJ0dBmjZgN1PZTrj05TNql2/XpC6+4HhMT5syIdFUUt+FASfCeLLv4kBygNU+8qA==}
 
   '@types/react-table@7.7.20':
     resolution: {integrity: sha512-ahMp4pmjVlnExxNwxyaDrFgmKxSbPwU23sGQw2gJK4EhCvnvmib2s/O/+y1dfV57dXOwpr2plfyBol+vEHbi2w==}
@@ -18168,6 +18174,10 @@ snapshots:
       '@types/react': 19.1.4
 
   '@types/react-reconciler@0.28.9(@types/react@19.1.4)':
+    dependencies:
+      '@types/react': 19.1.4
+
+  '@types/react-syntax-highlighter@15.5.13':
     dependencies:
       '@types/react': 19.1.4
 

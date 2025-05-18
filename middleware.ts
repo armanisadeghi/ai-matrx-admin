@@ -5,7 +5,6 @@ import { updateSession } from '@/utils/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
     // Log which URL is being processed by the middleware
-    console.log("Middleware processing URL:", request.nextUrl.pathname)
     return await updateSession(request)
 }
 

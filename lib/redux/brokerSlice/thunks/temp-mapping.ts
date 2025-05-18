@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { BrokerMapEntry, BrokerIdentifier } from "../types";
 import { v4 as uuidv4 } from "uuid";
-import { brokerConceptActions } from "../index";
+import { brokerActions } from "../index";
 
 export interface TempBrokerConfig {
     source: string;
@@ -67,20 +67,20 @@ export const createTempBrokerMappings = createAsyncThunk<TempBrokerResult, TempB
             const entry: BrokerMapEntry = {
                 source,
                 sourceId,
-                id,
+                mappedItemId: id,
                 brokerId,
             };
 
             entries.push(entry);
-            identifiers.push({ source, id });
+            identifiers.push({ source, mappedItemId: id });
         }
 
         // Add to broker map
-        dispatch(brokerConceptActions.addOrUpdateRegisterEntries(entries));
+        dispatch(brokerActions.addOrUpdateRegisterEntries(entries));
 
         // Provide cleanup function
         const cleanup = () => {
-            dispatch(brokerConceptActions.removeRegisterEntries(identifiers));
+            dispatch(brokerActions.removeRegisterEntries(identifiers));
         };
 
         return {

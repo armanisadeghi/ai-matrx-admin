@@ -36,21 +36,9 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import { configRegistry } from "./json-config-system/config-registry";
 
-// Dynamic import for Prism themes
-const lightTheme = dynamic(
-  () =>
-    import("react-syntax-highlighter/dist/esm/styles/prism").then(
-      (mod) => mod.prism
-    ),
-  { ssr: false }
-);
-const darkTheme = dynamic(
-  () =>
-    import("react-syntax-highlighter/dist/esm/styles/prism").then(
-      (mod) => mod.dracula
-    ),
-  { ssr: false }
-);
+// Import themes directly but use them only on client side
+import { prism, dracula } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { useState as useStateImport, useEffect as useEffectImport } from "react";
 
 // Define types for the AST
 interface MdastNode {
@@ -219,7 +207,7 @@ console.log("Hello, World!");
             {/* @ts-ignore - TypeScript doesn't properly handle dynamic components */}
             <SyntaxHighlighter
               language={match[1]}
-              style={darkTheme}
+              style={dracula}
               PreTag="div"
               showLineNumbers
               useInlineStyles
@@ -232,7 +220,7 @@ console.log("Hello, World!");
             {/* @ts-ignore - TypeScript doesn't properly handle dynamic components */}
             <SyntaxHighlighter
               language={match[1]}
-              style={lightTheme}
+              style={prism}
               PreTag="div"
               showLineNumbers
               useInlineStyles

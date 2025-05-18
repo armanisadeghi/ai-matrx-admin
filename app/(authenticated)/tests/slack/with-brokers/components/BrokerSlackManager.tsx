@@ -6,7 +6,7 @@ import { ChannelSelector } from './ChannelSelector';
 import { BrokerFileUploader } from './BrokerFileUploader';
 import { BrokerSlackClient } from './BrokerSlackClient';
 import { useAppSelector } from '@/lib/redux';
-import { brokerConceptSelectors } from '@/lib/redux/brokerSlice';
+import { brokerSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 
 export function BrokerSlackManager() {
@@ -14,10 +14,10 @@ export function BrokerSlackManager() {
   
   // Get token and channel from broker
   const token = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.token)
   );
   const selectedChannel = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
   );
   
   // Tab change handler - memoized

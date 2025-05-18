@@ -12,7 +12,7 @@ import {
     TabsContent,
     ScrollArea,
 } from "@/components/ui";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import DebugViewTab from "./tabs/DebugViewTab";
 import PropertiesBrowserTab from "./tabs/PropertiesBrowserTab";
@@ -34,14 +34,16 @@ import {
     selectResponseEndedByListenerId,
     selectAllResponses,
 } from "@/lib/redux/socket-io";
-import { useAppSelector } from "@/lib/redux";
+import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import { brokerActions } from "@/lib/redux/brokerSlice";
 
 export function SocketAccordionResponse({ taskId }: { taskId: string }) {
     // Change this line to set the default value to "response"
     const [accordionValue, setAccordionValue] = useState<string | undefined>("response");
     const [selectedObjectIndex, setSelectedObjectIndex] = useState(0);
     const [displayModes, setDisplayModes] = useState<Record<string, boolean>>({});
+    const dispatch = useAppDispatch();
 
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
     const allResponses = useAppSelector(selectAllResponses);
@@ -52,6 +54,7 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
     const errorsResponse = useAppSelector(selectResponseErrorsByListenerId(firstListenerId));
     const hasErrors = useAppSelector(selectHasResponseErrorsByListenerId(firstListenerId));
     const hasEnded = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
+
 
     // Rest of your component remains the same
     const safeStringify = (value: any, indent = 2): string => {

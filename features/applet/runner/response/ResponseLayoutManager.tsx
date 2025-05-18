@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { Cog } from "lucide-react";
-import { useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectResponseTextByListenerId, selectResponseEndedByListenerId } from "@/lib/redux/socket-io";
 import SocketAccordionResponse from "@/components/socket/response/SocketAccordionResponse";
@@ -10,6 +10,7 @@ import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import { DirectMarkdownRenderer, configRegistry } from "@/components/mardown-display/markdown-classification";
+import { brokerActions } from "@/lib/redux/brokerSlice";
 
 interface ResponseLayoutManagerProps {
   appletId: string;
@@ -20,13 +21,23 @@ interface ResponseLayoutManagerProps {
 
 export default function ResponseLayoutManager({ appletId, taskId, viewName, handleSubmit }: ResponseLayoutManagerProps) {
   const [showConfig, setShowConfig] = useState(false);
-  
+  const dispatch = useAppDispatch();
   const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
   const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
   const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
 
   // Check if the viewName corresponds to a registered config
   const hasCustomView = useMemo(() => viewName !== 'default' && Object.keys(configRegistry).includes(viewName), [viewName]);
+
+  useEffect(() => {
+    if (isTaskComplete) {
+        dispatch(brokerActions.setValue({
+            brokerId: `response-${appletId}`,
+            value: textResponse
+        }));
+    }
+}, [isTaskComplete, textResponse, dispatch]);
+
 
   useEffect(() => {
     console.log("ResponseLayoutManager viewName", viewName);
@@ -63,16 +74,18 @@ export default function ResponseLayoutManager({ appletId, taskId, viewName, hand
               configKey={viewName} 
               className="bg-slate-50 dark:bg-slate-900" 
               isLoading={!isTaskComplete}
+              source="applet"
+              sourceId={appletId}
             />
           )}
         </div>
       </FullscreenWrapper>
 
       {isTaskComplete && (
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end mb-10">
           <button 
             onClick={toggleConfig}
-            className="p-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
+            className="p-6 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
             aria-label="Toggle configuration"
           >
             <Cog className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />

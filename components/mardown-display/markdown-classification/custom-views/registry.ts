@@ -5,11 +5,18 @@ import { getLoadingComponent } from './loading-components';
 // Define types for our registry
 export type ConfigViewType = 'default' | 'alternative' | 'modern' | string;
 
+export interface Extractor {
+  brokerId: string;
+  path: string;
+  type: "list" | "single" | "map" | "text";
+}
+
 export interface ConfigViewEntry {
   id: string;        // Unique identifier for the view
   name: string;      // Display name
   component: React.ComponentType<any>;
   description?: string; // Optional description
+  extractors?: Extractor[];
 }
 
 export interface ConfigViewMap {
@@ -67,7 +74,19 @@ export const viewEntries: Record<string, ConfigViewEntry> = {
     id: 'appSuggestions',
     name: 'App Suggestions',
     component: viewComponents.appSuggestions,
-    description: 'Display of app suggestions'
+    description: 'Display of app suggestions',
+    extractors: [
+      {
+        brokerId: 'app-suggestion-entry',
+        path: 'data["extracted"]["suggestions"]',
+        type: "list"
+      },
+      {
+        brokerId: 'image-descriptions',
+        path: 'data["extracted"]["suggestions"][?]["image_description"]',
+        type: "text"
+      }
+    ]
   },
   
 

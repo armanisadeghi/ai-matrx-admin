@@ -1,7 +1,7 @@
 // hooks/useServerBrokerSync.ts
 import { useEffect, useRef, useMemo } from 'react';
 import { useAppSelector } from '@/lib/redux';
-import { brokerConceptSelectors, BrokerIdentifier } from '@/lib/redux/brokerSlice';
+import { brokerSelectors, BrokerIdentifier } from '@/lib/redux/brokerSlice';
 import { createSelector } from 'reselect';
 import { RootState } from '@/lib/redux';
 
@@ -36,7 +36,7 @@ export function useServerBrokerSync({ brokers, syncInterval = 30000, syncOnChang
         stableBrokers.forEach(idArgs => {
           const key = JSON.stringify(idArgs);
           // Use existing helpers to get broker values
-          const brokerId = brokerConceptSelectors.selectBrokerId(
+          const brokerId = brokerSelectors.selectBrokerId(
             { brokerConcept } as RootState, 
             idArgs
           );

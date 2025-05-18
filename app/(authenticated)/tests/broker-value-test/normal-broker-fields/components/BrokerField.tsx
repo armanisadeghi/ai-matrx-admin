@@ -3,7 +3,7 @@
 
 import React, { ReactElement } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { brokerConceptActions, brokerConceptSelectors, BrokerIdentifier } from "@/lib/redux/brokerSlice";
+import { brokerActions, brokerSelectors, BrokerIdentifier } from "@/lib/redux/brokerSlice";
 
 // ============================================
 // Core BrokerField Types and Interfaces
@@ -47,17 +47,17 @@ export function BrokerField<T = any>({
     const brokerValue = useAppSelector((state) => {
         switch (type) {
             case "text":
-                return brokerConceptSelectors.selectText(state, broker);
+                return brokerSelectors.selectText(state, broker);
             case "number":
-                return brokerConceptSelectors.selectNumber(state, broker);
+                return brokerSelectors.selectNumber(state, broker);
             case "boolean":
-                return brokerConceptSelectors.selectBoolean(state, broker);
+                return brokerSelectors.selectBoolean(state, broker);
             case "options":
-                return brokerConceptSelectors.selectBrokerOptions(state, broker);
+                return brokerSelectors.selectBrokerOptions(state, broker);
             case "table":
-                return brokerConceptSelectors.selectTable(state, broker);
+                return brokerSelectors.selectTable(state, broker);
             default:
-                return brokerConceptSelectors.selectValueWithoutBrokerId(state, broker);
+                return brokerSelectors.selectValueWithoutBrokerId(state, broker);
         }
     });
 
@@ -69,7 +69,7 @@ export function BrokerField<T = any>({
         switch (type) {
             case "text":
                 dispatch(
-                    brokerConceptActions.setText({
+                    brokerActions.setText({
                         idArgs: broker,
                         text: valueToStore as string,
                     })
@@ -77,7 +77,7 @@ export function BrokerField<T = any>({
                 break;
             case "number":
                 dispatch(
-                    brokerConceptActions.setNumber({
+                    brokerActions.setNumber({
                         idArgs: broker,
                         value: valueToStore as number,
                     })
@@ -85,7 +85,7 @@ export function BrokerField<T = any>({
                 break;
             case "boolean":
                 dispatch(
-                    brokerConceptActions.setBoolean({
+                    brokerActions.setBoolean({
                         idArgs: broker,
                         value: valueToStore as boolean,
                     })
@@ -93,7 +93,7 @@ export function BrokerField<T = any>({
                 break;
             case "options":
                 dispatch(
-                    brokerConceptActions.setOptions({
+                    brokerActions.setOptions({
                         idArgs: broker,
                         options: valueToStore as any,
                     })
@@ -101,7 +101,7 @@ export function BrokerField<T = any>({
                 break;
             case "table":
                 dispatch(
-                    brokerConceptActions.setTable({
+                    brokerActions.setTable({
                         idArgs: broker,
                         table: valueToStore as any,
                     })
@@ -109,7 +109,7 @@ export function BrokerField<T = any>({
                 break;
             default:
                 dispatch(
-                    brokerConceptActions.setValueWithoutBrokerId({
+                    brokerActions.setValueWithoutBrokerId({
                         idArgs: broker,
                         value: valueToStore,
                     })

@@ -9,7 +9,7 @@ import { ChannelSelector } from './components/ChannelSelector';
 import { BrokerFileUploader } from './components/BrokerFileUploader';
 import { BrokerFormExample } from './components/BrokerForm';
 import { useAppSelector } from '@/lib/redux';
-import { brokerConceptSelectors } from '@/lib/redux/brokerSlice';
+import { brokerSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './components/BrokerSlackClient';
 import { MessageSquare, Upload, Users, Hash, Bell } from 'lucide-react';
 
@@ -19,7 +19,7 @@ type SlackTab = 'files' | 'messages' | 'users' | 'channels';
 export default function SlackWithBrokersPage() {
     // Get token to determine authentication state
     const token = useAppSelector(state => 
-        brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
+        brokerSelectors.selectText(state, SLACK_BROKER_IDS.token)
     );
     
     // State for the active tab

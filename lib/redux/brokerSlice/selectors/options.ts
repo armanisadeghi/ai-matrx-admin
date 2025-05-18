@@ -12,8 +12,8 @@ const isOptionsArray = (value: any): value is FieldOptionsRuntime[] =>
 const selectBrokerOptions = createSelector(
     [
         (state: RootState, idArgs: BrokerIdentifier) => {
-            const brokerId = resolveBrokerId(state.brokerConcept, idArgs);
-            return brokerId ? state.brokerConcept.brokers[brokerId] : undefined;
+            const brokerId = resolveBrokerId(state.broker, idArgs);
+            return brokerId ? state.broker.brokers[brokerId] : undefined;
         },
     ],
     (brokerValue): FieldOptionsRuntime[] | undefined => {

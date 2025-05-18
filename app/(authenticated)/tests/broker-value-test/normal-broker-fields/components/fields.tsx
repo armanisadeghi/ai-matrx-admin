@@ -3,7 +3,7 @@
 
 import React, { ComponentType, ReactElement } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { useTempBrokers, brokerConceptActions, brokerConceptSelectors, BrokerIdentifier } from '@/lib/redux/brokerSlice';
+import { useTempBrokers, brokerActions, brokerSelectors, BrokerIdentifier } from '@/lib/redux/brokerSlice';
 import {
   Input,
   Textarea,
@@ -61,17 +61,17 @@ function BrokerField<T = any>({
   const brokerValue = useAppSelector(state => {
     switch (type) {
       case 'text':
-        return brokerConceptSelectors.selectText(state, brokerMappedItem);
+        return brokerSelectors.selectText(state, brokerMappedItem);
       case 'number':
-        return brokerConceptSelectors.selectNumber(state, brokerMappedItem);
+        return brokerSelectors.selectNumber(state, brokerMappedItem);
       case 'boolean':
-        return brokerConceptSelectors.selectBoolean(state, brokerMappedItem);
+        return brokerSelectors.selectBoolean(state, brokerMappedItem);
       case 'options':
-        return brokerConceptSelectors.selectBrokerOptions(state, brokerMappedItem);
+        return brokerSelectors.selectBrokerOptions(state, brokerMappedItem);
       case 'table':
-        return brokerConceptSelectors.selectTable(state, brokerMappedItem);
+        return brokerSelectors.selectTable(state, brokerMappedItem);
       default:
-        return brokerConceptSelectors.selectValueWithoutBrokerId(state, brokerMappedItem);
+        return brokerSelectors.selectValueWithoutBrokerId(state, brokerMappedItem);
     }
   });
 
@@ -86,37 +86,37 @@ function BrokerField<T = any>({
 
     switch (type) {
       case 'text':
-        dispatch(brokerConceptActions.setText({
+        dispatch(brokerActions.setText({
           idArgs: brokerMappedItem,
           text: valueToStore as string
         }));
         break;
       case 'number':
-        dispatch(brokerConceptActions.setNumber({
+        dispatch(brokerActions.setNumber({
           idArgs: brokerMappedItem,
           value: valueToStore as number
         }));
         break;
       case 'boolean':
-        dispatch(brokerConceptActions.setBoolean({
+        dispatch(brokerActions.setBoolean({
           idArgs: brokerMappedItem,
           value: valueToStore as boolean
         }));
         break;
       case 'options':
-        dispatch(brokerConceptActions.setOptions({
+        dispatch(brokerActions.setOptions({
           idArgs: brokerMappedItem,
           options: valueToStore as any
         }));
         break;
       case 'table':
-        dispatch(brokerConceptActions.setTable({
+        dispatch(brokerActions.setTable({
           idArgs: brokerMappedItem,
           table: valueToStore as any
         }));
         break;
       default:
-        dispatch(brokerConceptActions.setValueWithoutBrokerId({
+        dispatch(brokerActions.setValueWithoutBrokerId({
           idArgs: brokerMappedItem,
           value: valueToStore
         }));
@@ -366,7 +366,7 @@ function BrokerValueDisplay({ brokers }: { brokers: Record<string, BrokerIdentif
   const values = useAppSelector(state => {
     const result: Record<string, any> = {};
     Object.entries(brokers).forEach(([key, broker]) => {
-      result[key] = brokerConceptSelectors.selectValueWithoutBrokerId(state, broker);
+      result[key] = brokerSelectors.selectValueWithoutBrokerId(state, broker);
     });
     return result;
   });

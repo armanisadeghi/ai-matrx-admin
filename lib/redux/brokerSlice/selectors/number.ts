@@ -16,14 +16,14 @@ const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
 // Selectors
 const selectNumber = createSelector(
     [
-        (state: RootState) => state.brokerConcept,
+        (state: RootState) => state.broker,
         selectIdArgs
     ],
-    (brokerConcept, idArgs): number | undefined => {
-        const brokerId = resolveBrokerId(brokerConcept, idArgs);
+    (broker, idArgs): number | undefined => {
+        const brokerId = resolveBrokerId(broker, idArgs);
         if (!brokerId) return undefined;
         
-        const brokerValue = brokerConcept.brokers[brokerId];
+        const brokerValue = broker.brokers[brokerId];
         return isNumber(brokerValue) ? brokerValue : undefined;
     }
 );

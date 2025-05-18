@@ -8,19 +8,19 @@ const isTextValue = (value: any): value is string => typeof value === "string";
 
 
 // Input selectors - properly memoized to avoid recreating objects
-const selectBrokerConceptState = (state: RootState) => state.brokerConcept;
+const selectBrokerState = (state: RootState) => state.broker;
 const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
 
 // Get the broker ID
 const selectBrokerId = createSelector(
-    [selectBrokerConceptState, selectIdArgs],
-    (brokerConcept, idArgs) => resolveBrokerId(brokerConcept, idArgs)
+    [selectBrokerState, selectIdArgs],
+    (broker, idArgs) => resolveBrokerId(broker, idArgs)
 );
 
 // Get the broker value
 const selectBrokerValue = createSelector(
-    [selectBrokerConceptState, selectBrokerId],
-    (brokerConcept, brokerId) => brokerId ? brokerConcept.brokers[brokerId] : undefined
+    [selectBrokerState, selectBrokerId],
+    (broker, brokerId) => brokerId ? broker.brokers[brokerId] : undefined
 );
 
 // Selectors

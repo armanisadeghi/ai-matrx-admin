@@ -57,7 +57,7 @@ Brokers are mapped in the system using a combination of source and itemId:
 interface BrokerMapEntry {
   source: string;    // e.g., "applet", "user", "client", "api", "preferences", etc...
   sourceId: string;  // e.g., "some-uuid", "user-123", "client-456"
-  itemId: string;    // e.g., "auth_token", "some-preference-name-or-id"
+  mappedItemId: string;    // e.g., "auth_token", "some-preference-name-or-id"
   brokerId: string;  // e.g., "550e8400-e29b-41d4-a716-446655440000" - defined in the database explicitly.
 }
 ```

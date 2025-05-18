@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { brokerConceptSelectors, brokerConceptActions, BrokerIdentifier } from "@/lib/redux/brokerSlice"; // Update to the new brokerSlice path
+import { brokerSelectors, brokerActions, BrokerIdentifier } from "@/lib/redux/brokerSlice"; // Update to the new brokerSlice path
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,16 +31,16 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);
     const dispatch = useAppDispatch();
-    const idArgs: BrokerIdentifier = { source, itemId: id };
+    const idArgs: BrokerIdentifier = { source, mappedItemId: id };
 
     // Updated selector names
-    const brokerOptions = useAppSelector((state) => brokerConceptSelectors.selectBrokerOptions(state, idArgs));
-    const selectedOptions = useAppSelector((state) => brokerConceptSelectors.selectSelectedOptions(state, idArgs));
-    const otherOption = useAppSelector((state) => brokerConceptSelectors.selectOptionById(state, idArgs, "other"));
+    const brokerOptions = useAppSelector((state) => brokerSelectors.selectBrokerOptions(state, idArgs));
+    const selectedOptions = useAppSelector((state) => brokerSelectors.selectSelectedOptions(state, idArgs));
+    const otherOption = useAppSelector((state) => brokerSelectors.selectOptionById(state, idArgs, "other"));
 
     // UI-only state for search query
     const [searchQuery, setSearchQuery] = useState("");
-    const filteredOptions = useAppSelector((state) => brokerConceptSelectors.selectFilteredOptions(state, idArgs, searchQuery));
+    const filteredOptions = useAppSelector((state) => brokerSelectors.selectFilteredOptions(state, idArgs, searchQuery));
 
     // Initialize options if not set
     useEffect(() => {
@@ -62,7 +62,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
                 });
             }
             dispatch(
-                brokerConceptActions.setOptions({
+                brokerActions.setOptions({
                     idArgs,
                     options: initialOptions,
                 })
@@ -76,7 +76,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
         selectedOptions.forEach((opt) => {
             if (opt.id !== optionId) {
                 dispatch(
-                    brokerConceptActions.updateOptionSelectionState({
+                    brokerActions.updateOptionSelectionState({
                         idArgs,
                         optionId: opt.id,
                         isSelected: false,
@@ -87,7 +87,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
 
         // Select new option
         dispatch(
-            brokerConceptActions.updateOptionSelectionState({
+            brokerActions.updateOptionSelectionState({
                 idArgs,
                 optionId,
                 isSelected: true,
@@ -100,7 +100,7 @@ const SearchableSelectFieldConcept: React.FC<SearchableSelectFieldProps> = ({
     const handleOtherTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const otherText = e.target.value;
         dispatch(
-            brokerConceptActions.updateOption({
+            brokerActions.updateOption({
                 idArgs,
                 optionId: "other",
                 properties: { otherText, isSelected: true },

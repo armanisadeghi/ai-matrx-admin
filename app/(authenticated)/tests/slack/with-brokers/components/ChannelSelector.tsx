@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppSelector, useAppDispatch } from '@/lib/redux';
-import { brokerConceptSelectors, brokerConceptActions } from '@/lib/redux/brokerSlice';
+import { brokerSelectors, brokerActions } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 import { SlackChannel } from '../../../slack/slackClientUtils';
 import { Hash, RefreshCw, Loader2 } from 'lucide-react';
@@ -13,13 +13,13 @@ export function ChannelSelector() {
   
   // Get token and channel data from brokers
   const token = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.token)
   );
   const channelsJson = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.channels)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.channels)
   );
   const selectedChannel = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
   );
   
   // Parse channels or use empty array if not available
@@ -32,7 +32,7 @@ export function ChannelSelector() {
   
   // Handle channel selection
   const handleChannelSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.selectedChannel,
       text: e.target.value
     }));
@@ -69,14 +69,14 @@ export function ChannelSelector() {
       }));
       
       // Store channels in broker
-      dispatch(brokerConceptActions.setText({
+      dispatch(brokerActions.setText({
         idArgs: SLACK_BROKER_IDS.channels,
         text: JSON.stringify(channelsList)
       }));
       
       // Auto-select first channel if none selected
       if (channelsList.length > 0 && !selectedChannel) {
-        dispatch(brokerConceptActions.setText({
+        dispatch(brokerActions.setText({
           idArgs: SLACK_BROKER_IDS.selectedChannel,
           text: channelsList[0].id
         }));

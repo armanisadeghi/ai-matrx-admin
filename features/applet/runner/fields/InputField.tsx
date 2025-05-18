@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { FieldDefinition } from "@/types/customAppTypes";
 
@@ -31,13 +31,13 @@ const InputField: React.FC<{
     const safeWidthClass = ensureValidWidthClass(width);
     
     const dispatch = useAppDispatch();
-    const value = useAppSelector((state) => selectBrokerValue(state, source, id));
+    const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: id }));
+    const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         dispatch(
-            updateBrokerValue({
-                source: source,
-                itemId: id,
+            brokerActions.setValue({
+                brokerId,
                 value: e.target.value,
             })
         );
@@ -59,7 +59,7 @@ const InputField: React.FC<{
                 id={`${id}-input`}
                 className={inputClassName}
                 type={inputType}
-                value={value ?? ""}
+                value={stateValue ?? ""}
                 onChange={handleChange}
                 placeholder={placeholder}
                 required={required}

@@ -1,5 +1,5 @@
 // lib/redux/brokerSlice/hooks/useTempBroker.ts
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useAppDispatch } from "@/lib/redux";
 import { createTempBroker, createTempBrokerMappings } from "@/lib/redux/brokerSlice/thunks/temp-mapping";
 import { BrokerIdentifier } from "@/lib/redux/brokerSlice/types";
@@ -64,16 +64,49 @@ export function useTempBrokers(
 // Hook specifically for preview scenarios
 export function usePreviewBrokers(fieldId: string, componentTypes: string[]) {
     const dispatch = useAppDispatch();
-    const [result, setResult] = useState<{
-        sourceId: string;
-        getIdentifier: (componentType?: string) => BrokerIdentifier;
-    } | null>(null);
+    const [state, setState] = useState<{
+        sourceId: string | null;
+        identifierMap: Map<string | undefined, BrokerIdentifier> | null;
+        isComplete: boolean;
+    }>({
+        sourceId: null,
+        identifierMap: null,
+        isComplete: false
+    });
+    
+    // Flag to avoid unnecessary re-renders
+    const effectRanRef = useRef(false);
+    const prevFieldIdRef = useRef(fieldId);
+    const prevTypesRef = useRef<string[]>(componentTypes);
+    
+    // Only reset the effect flag if dependencies actually change
+    if (prevFieldIdRef.current !== fieldId || 
+        JSON.stringify(prevTypesRef.current) !== JSON.stringify(componentTypes)) {
+        effectRanRef.current = false;
+        prevFieldIdRef.current = fieldId;
+        prevTypesRef.current = [...componentTypes];
+    }
+    
+    // Memoize the getIdentifier function so it doesn't change on every render
+    const getIdentifier = useCallback((componentType?: string) => {
+        if (!state.identifierMap) {
+            throw new Error("Broker identifiers have not been initialized yet");
+        }
+        const identifier = state.identifierMap.get(componentType);
+        if (!identifier) {
+            return state.identifierMap.get(undefined)!;
+        }
+        return identifier;
+    }, [state.identifierMap]);
     
     useEffect(() => {
+        // Skip if this effect has already been run for the current dependencies
+        if (effectRanRef.current) return;
+        
         const baseConfig = {
             source: "preview",
             count: 1 + componentTypes.length,
-            itemIdPattern: (index: number) => {
+            idPattern: (index: number) => {
                 if (index === 0) return fieldId;
                 return `${fieldId}-${componentTypes[index - 1]}`;
             }
@@ -82,21 +115,41 @@ export function usePreviewBrokers(fieldId: string, componentTypes: string[]) {
         dispatch(createTempBrokerMappings(baseConfig))
             .unwrap()
             .then(result => {
-                const identifierMap = new Map<string | undefined, BrokerIdentifier>();
-                identifierMap.set(undefined, result.identifiers[0]);
+                // Only proceed if we're still mounted with the same dependencies
+                if (prevFieldIdRef.current !== fieldId || 
+                    JSON.stringify(prevTypesRef.current) !== JSON.stringify(componentTypes)) {
+                    return;
+                }
+                
+                // Create the map of identifiers
+                const newMap = new Map<string | undefined, BrokerIdentifier>();
+                newMap.set(undefined, result.identifiers[0]);
                 
                 componentTypes.forEach((type, index) => {
-                    identifierMap.set(type, result.identifiers[index + 1]);
+                    newMap.set(type, result.identifiers[index + 1]);
                 });
                 
-                setResult({
+                // Update all state in one go to prevent multiple renders
+                setState({
                     sourceId: result.sourceId,
-                    getIdentifier: (componentType?: string) => {
-                        return identifierMap.get(componentType) || result.identifiers[0];
-                    }
+                    identifierMap: newMap,
+                    isComplete: true
                 });
+                
+                // Mark that this effect has run for these dependencies
+                effectRanRef.current = true;
             });
     }, [dispatch, fieldId, componentTypes]);
     
-    return result;
+    // Don't return anything until everything is ready
+    if (!state.sourceId || !state.identifierMap || !state.isComplete) {
+        return null;
+    }
+    
+    // Return an object with the memoized getIdentifier function
+    return {
+        sourceId: state.sourceId,
+        getIdentifier,
+        isComplete: state.isComplete
+    };
 }

@@ -1,6 +1,8 @@
-import React from "react";
+"use client";
+
+import React, { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { FieldDefinition } from "@/types/customAppTypes";
 
@@ -19,7 +21,20 @@ const NumberInputField: React.FC<{
     const safeWidthClass = ensureValidWidthClass(width);
 
     const dispatch = useAppDispatch();
-    const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
+    const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: id }));
+    const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
+
+    const updateBrokerValue = useCallback(
+        (updatedValue: any) => {
+            dispatch(
+                brokerActions.setValue({
+                    brokerId,
+                    value: updatedValue,
+                })
+            );
+        },
+        [dispatch, brokerId]
+    );
 
     // Make sure we're working with a number
     const numericValue = typeof stateValue === "number" ? stateValue : 0;
@@ -27,25 +42,13 @@ const NumberInputField: React.FC<{
     // Handle increment
     const handleIncrement = () => {
         const newValue = Math.min(numericValue + (step || 1), max || Infinity);
-        dispatch(
-            updateBrokerValue({
-                source: source,
-                itemId: id,
-                value: newValue,
-            })
-        );
+        updateBrokerValue(newValue);
     };
 
     // Handle decrement
     const handleDecrement = () => {
         const newValue = Math.max(numericValue - (step || 1), min || 0);
-        dispatch(
-            updateBrokerValue({
-                source: source,
-                itemId: id,
-                value: newValue,
-            })
-        );
+        updateBrokerValue(newValue);
     };
 
     const displaySubtitle = placeholder;

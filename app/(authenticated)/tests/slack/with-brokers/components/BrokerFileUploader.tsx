@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { brokerConceptActions, brokerConceptSelectors } from '@/lib/redux/brokerSlice';
+import { brokerActions, brokerSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 import { Upload, FileText, MessageSquare, Send, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { FileUploadWithStorage, UploadedFileResult } from '@/components/ui/file-upload/FileUploadWithStorage';
@@ -42,19 +42,19 @@ export function BrokerFileUploader() {
   
   // Get values from brokers
   const token = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.token)
   );
   const selectedChannel = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
   );
   const filename = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.filename)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.filename)
   );
   const title = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.title)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.title)
   );
   const initialComment = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.initialComment) || ''
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.initialComment) || ''
   );
   
   // Handle file upload complete
@@ -65,14 +65,14 @@ export function BrokerFileUploader() {
     if (results.length > 0) {
       const fileName = results[0].details?.filename || 'file';
       
-      dispatch(brokerConceptActions.setText({
+      dispatch(brokerActions.setText({
         idArgs: SLACK_BROKER_IDS.filename,
         text: fileName
       }));
       
       // Set default title to match filename if not already set
       if (!title) {
-        dispatch(brokerConceptActions.setText({
+        dispatch(brokerActions.setText({
           idArgs: SLACK_BROKER_IDS.title,
           text: fileName
         }));
@@ -90,7 +90,7 @@ export function BrokerFileUploader() {
   
   // Handle comment change - memoize callback
   const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.initialComment,
       text: e.target.value
     }));
@@ -98,7 +98,7 @@ export function BrokerFileUploader() {
   
   // Handle title change - memoize callback
   const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.title,
       text: e.target.value
     }));
@@ -110,15 +110,15 @@ export function BrokerFileUploader() {
     setProgress(0);
     
     // Clear fields in broker
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.filename,
       text: ''
     }));
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.title,
       text: ''
     }));
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.initialComment,
       text: ''
     }));

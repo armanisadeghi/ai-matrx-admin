@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAppDispatch } from "@/lib/redux";
-import { brokerConceptActions } from "@/lib/redux/brokerSlice";
+import { brokerActions } from "@/lib/redux/brokerSlice";
 import { SLACK_BROKER_IDS } from "./components/BrokerSlackClient";
 import { LoadingSpinner } from "@/components/ui/spinner";
 
@@ -20,7 +20,7 @@ export default function SlackBrokersLayout({ children }: { children: React.React
             };
         });
         
-        dispatch(brokerConceptActions.addOrUpdateRegisterEntries(brokerMappings));
+        dispatch(brokerActions.addOrUpdateRegisterEntries(brokerMappings));
         
         setInitialized(true);
     }, [dispatch]);

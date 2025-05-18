@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { brokerConceptActions, brokerConceptSelectors, useServerBrokerSync } from '@/lib/redux/brokerSlice';
+import { brokerActions, brokerSelectors, useServerBrokerSync } from '@/lib/redux/brokerSlice';
 import { SlackChannel } from '../../../slack/slackClientUtils';
 
 // Define broker identifiers
@@ -27,18 +27,18 @@ export function BrokerSlackClient({ children }: BrokerSlackClientProps) {
   
   // Get token from broker
   const token = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.token)
   );
   
   // Get channels list from broker or initialize empty
   const channelsJson = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.channels)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.channels)
   );
   const channels: SlackChannel[] = channelsJson ? JSON.parse(channelsJson) : [];
   
   // Get selected channel from broker
   const selectedChannel = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.selectedChannel)
   );
 
   // Sync brokers with server - use syncOnMount: false since we've registered them in SlackBrokerProvider
@@ -89,7 +89,7 @@ export function BrokerSlackClient({ children }: BrokerSlackClientProps) {
       }));
       
       // Store channels in broker
-      dispatch(brokerConceptActions.setText({
+      dispatch(brokerActions.setText({
         idArgs: SLACK_BROKER_IDS.channels,
         text: JSON.stringify(channelsList)
       }));
@@ -105,7 +105,7 @@ export function BrokerSlackClient({ children }: BrokerSlackClientProps) {
   
   // Set selected channel
   const setChannel = (channelId: string) => {
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.selectedChannel,
       text: channelId
     }));
@@ -113,7 +113,7 @@ export function BrokerSlackClient({ children }: BrokerSlackClientProps) {
   
   // Set token
   const setSlackToken = (newToken: string) => {
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.token,
       text: newToken
     }));

@@ -284,7 +284,7 @@ export type CustomAppletConfig = {
   accentColor?: string;
   layoutType?: AppletLayoutOption;
   containers?: AppletContainer[];
-  dataSourceConfig?: any;
+  dataSourceConfig?: AppletSourceConfig;
   resultComponentConfig?: any;
   nextStepConfig?: any;
   compiledRecipeId?: string;

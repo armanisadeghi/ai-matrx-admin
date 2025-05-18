@@ -20,6 +20,7 @@ import ResponseLayoutManager from "@/features/applet/runner/response/ResponseLay
 
 const SLUG_TO_VIEW_MAP = {
     "core-info-generator": "appSuggestions",
+    "applet-description-generator": "appSuggestions",
     "candidate-write-up-not-used": "candidateProfileStructured",
 }
 

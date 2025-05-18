@@ -13,14 +13,14 @@ const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
 // Selectors
 const selectBoolean = createSelector(
     [
-        (state: RootState) => state.brokerConcept,
+        (state: RootState) => state.broker,
         selectIdArgs
     ],
-    (brokerConcept, idArgs): boolean | undefined => {
-        const brokerId = resolveBrokerId(brokerConcept, idArgs);
+    (broker, idArgs): boolean | undefined => {
+        const brokerId = resolveBrokerId(broker, idArgs);
         if (!brokerId) return undefined;
         
-        const brokerValue = brokerConcept.brokers[brokerId];
+        const brokerValue = broker.brokers[brokerId];
         return isBoolean(brokerValue) ? brokerValue : undefined;
     }
 );

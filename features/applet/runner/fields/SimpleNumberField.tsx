@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import React, { useEffect, useState, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { cn } from "@/lib/utils";
 import { FieldDefinition } from "@/types/customAppTypes";
@@ -34,9 +36,22 @@ const SimpleNumberField: React.FC<{
   const safeWidthClass = ensureValidWidthClass(width);
   
   const dispatch = useAppDispatch();
-  const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
-  
-  // Local state for the input value
+  const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: id }));
+  const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
+
+  const updateBrokerValue = useCallback(
+      (updatedValue: any) => {
+          dispatch(
+              brokerActions.setValue({
+                  brokerId,
+                  value: updatedValue,
+              })
+          );
+      },
+      [dispatch, brokerId]
+  );
+
+// Local state for the input value
   const [inputValue, setInputValue] = useState<string>("");
   
   // Initialize state if needed
@@ -44,13 +59,7 @@ const SimpleNumberField: React.FC<{
     if (stateValue === undefined && defaultValue !== undefined) {
       const initialValue = Number(defaultValue);
       
-      dispatch(
-        updateBrokerValue({
-          source: source,
-          itemId: id,
-          value: initialValue,
-        })
-      );
+      updateBrokerValue(initialValue);
       
       setInputValue(String(initialValue));
     } else if (stateValue !== undefined) {
@@ -82,13 +91,9 @@ const SimpleNumberField: React.FC<{
           validValue = Math.min(max, validValue);
         }
         
-        dispatch(
-          updateBrokerValue({
-            source: source,
-            itemId: id,
-            value: validValue,
-          })
-        );
+        updateBrokerValue({
+          value: validValue,
+        });
       }
     }
   };
@@ -100,22 +105,14 @@ const SimpleNumberField: React.FC<{
       if (required) {
         const resetValue = 0;
         setInputValue(String(resetValue));
-        dispatch(
-          updateBrokerValue({
-            source: source,
-            itemId: id,
-            value: resetValue,
-          })
-        );
+        updateBrokerValue({
+          value: resetValue,
+        });
       } else {
         setInputValue("");
-        dispatch(
-          updateBrokerValue({
-            source: source,
-            itemId: id,
-            value: null,
-          })
-        );
+        updateBrokerValue({
+          value: null,
+        });
       }
       return;
     }
@@ -133,13 +130,9 @@ const SimpleNumberField: React.FC<{
       }
       
       setInputValue(String(validValue));
-      dispatch(
-        updateBrokerValue({
-          source: source,
-          itemId: id,
-          value: validValue,
-        })
-      );
+      updateBrokerValue({
+        value: validValue,
+      });
     }
   };
   

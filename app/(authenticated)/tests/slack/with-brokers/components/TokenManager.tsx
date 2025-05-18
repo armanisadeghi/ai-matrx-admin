@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux';
-import { brokerConceptActions, brokerConceptSelectors } from '@/lib/redux/brokerSlice';
+import { brokerActions, brokerSelectors } from '@/lib/redux/brokerSlice';
 import { SLACK_BROKER_IDS } from './BrokerSlackClient';
 
 export function TokenManager() {
@@ -11,7 +11,7 @@ export function TokenManager() {
   
   // Get token from broker
   const token = useAppSelector(state => 
-    brokerConceptSelectors.selectText(state, SLACK_BROKER_IDS.token) || ''
+    brokerSelectors.selectText(state, SLACK_BROKER_IDS.token) || ''
   );
   
   // Load saved tokens from localStorage on component mount
@@ -30,7 +30,7 @@ export function TokenManager() {
   
   // Update token in broker state - memoize callback
   const setToken = useCallback((newToken: string) => {
-    dispatch(brokerConceptActions.setText({
+    dispatch(brokerActions.setText({
       idArgs: SLACK_BROKER_IDS.token,
       text: newToken
     }));

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -24,7 +24,20 @@ const DateField: React.FC<{
     const safeWidthClass = ensureValidWidthClass(width);
     
     const dispatch = useAppDispatch();
-    const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
+    const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: id }));
+    const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
+
+    const updateBrokerValue = useCallback(
+        (updatedValue: any) => {
+            dispatch(
+                brokerActions.setValue({
+                    brokerId,
+                    value: updatedValue,
+                })
+            );
+        },
+        [dispatch, brokerId]
+    );
     
     // Use the validation hook
     const { handleBlur, showValidation } = useFieldValidation();
@@ -44,13 +57,7 @@ const DateField: React.FC<{
     
     // Handler for date selection
     const handleDateSelect = (date: Date | undefined) => {
-        dispatch(
-            updateBrokerValue({
-                source: source,
-                itemId: id,
-                value: date ? date.toISOString() : null,
-            })
-        );
+        updateBrokerValue(date ? date.toISOString() : null);
     };
     
     // Parse date from state if available

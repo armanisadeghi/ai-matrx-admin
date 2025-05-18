@@ -8,6 +8,10 @@ import remarkGfm from "remark-gfm";
 import { processMarkdownWithConfig } from "./json-config-system/config-processor";
 import { configRegistry } from "./json-config-system/config-registry";
 import { getConfigTypeFromKey, getViewForConfig, getViewLoadingComponent } from "./custom-views/registry";
+import { brokerActions } from "@/lib/redux/brokerSlice";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { processExtractors } from "./json-config-system/extractor-utils";
+
 
 interface DirectMarkdownRendererProps {
     markdown: string;
@@ -15,6 +19,8 @@ interface DirectMarkdownRendererProps {
     viewType?: string;
     className?: string;
     isLoading?: boolean;
+    source?: string;
+    sourceId?: string;
 }
 
 const DirectMarkdownRenderer = ({
@@ -23,6 +29,8 @@ const DirectMarkdownRenderer = ({
     viewType = "default",
     className = "",
     isLoading = false,
+    source,
+    sourceId,
 }: DirectMarkdownRendererProps) => {
     const [processedData, setProcessedData] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
@@ -30,9 +38,48 @@ const DirectMarkdownRenderer = ({
     const [lastMarkdown, setLastMarkdown] = useState<string>('');
     const [timeUnchanged, setTimeUnchanged] = useState<number>(0);
     const [failsafeTriggered, setFailsafeTriggered] = useState<boolean>(false);
-
+    const dispatch = useAppDispatch();
 
     const configType = useMemo(() => getConfigTypeFromKey(configKey), [configKey]);
+    
+    useEffect(() => {
+        if (source && sourceId && processedData && processedData.extracted) {
+            // Dispatch the main data broker
+            dispatch(brokerActions.setValue({
+                brokerId: `${configType}-${sourceId}`,
+                value: processedData.extracted
+            }));
+
+            // Only dispatch miscellaneous data if it exists and has content
+            if (processedData.miscellaneous) {
+                const hasMiscContent = 
+                    Array.isArray(processedData.miscellaneous) 
+                        ? processedData.miscellaneous.length > 0
+                        : typeof processedData.miscellaneous === 'object'
+                            ? Object.keys(processedData.miscellaneous).length > 0
+                            : Boolean(processedData.miscellaneous);
+                
+                if (hasMiscContent) {
+                    dispatch(brokerActions.setValue({
+                        brokerId: `${configType}-${sourceId}-miscellaneous`,
+                        value: processedData.miscellaneous
+                    }));
+                }
+            }
+            
+            // Process any extractors defined in the view
+            const viewEntry = configType ? getViewForConfig(configType, viewType) : null;
+            if (viewEntry && viewEntry.extractors) {
+                // Wrap processedData in a data object to match extractor paths
+                processExtractors(
+                    { data: processedData }, 
+                    viewEntry.extractors, 
+                    dispatch, 
+                    sourceId
+                );
+            }
+        }
+    }, [source, sourceId, processedData, dispatch, configType, viewType]);
 
     useEffect(() => {
         if (markdown === lastMarkdown) {
@@ -130,7 +177,6 @@ const DirectMarkdownRenderer = ({
     const ViewComponent = viewEntry.component;
     const LoadingComponent = getViewLoadingComponent(configType, viewType);
 
-    
     return (
         <div className={className}>
             <Suspense

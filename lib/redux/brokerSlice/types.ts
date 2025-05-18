@@ -1,12 +1,12 @@
 // lib/redux/brokerSlice/types.ts
 
 export type BrokerIdentifier =
-  | { brokerId: string; source?: string; id?: string }
-  | { source: string; id: string; brokerId?: string };
+  | { brokerId: string; source?: string; mappedItemId?: string }
+  | { source: string; mappedItemId: string; brokerId?: string };
 
 export interface BrokerMapEntry {
   brokerId: string;
-  id: string;
+  mappedItemId: string;
   source: string;
   sourceId: string;
 }
@@ -20,7 +20,7 @@ export interface BrokerState {
 export interface DynamicBrokerMapEntry {
   source: string;
   sourceId: string;
-  id: string;
+  mappedItemId: string;
 }
 
 export interface FieldOption {

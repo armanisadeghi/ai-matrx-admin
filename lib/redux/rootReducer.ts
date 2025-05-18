@@ -32,15 +32,16 @@ import socketConnectionReducer from "./socket-io/slices/socketConnectionsSlice";
 import socketResponseReducer from "./socket-io/slices/socketResponseSlice";
 import socketTasksReducer from "./socket-io/slices/socketTasksSlice";
 import { componentDefinitionsSlice } from "./app-runner/slices/componentDefinitionsSlice";
-import { brokerValuesSlice } from "./app-runner/slices/brokerValuesSlice";
 import { appBuilderSlice } from "./app-builder/slices/appBuilderSlice";
 import { appletBuilderSlice } from "./app-builder/slices/appletBuilderSlice";
 import { containerBuilderSlice } from "./app-builder/slices/containerBuilderSlice";
 import { fieldBuilderSlice } from "./app-builder/slices/fieldBuilderSlice";
 import customAppRuntimeSlice from "./app-runner/slices/customAppRuntimeSlice";
 import customAppletRuntimeSlice from "./app-runner/slices/customAppletRuntimeSlice";
-import brokersSlice from "./app-runner/slices/brokerSlice";
-import brokerConceptSlice from "./brokerSlice/slice";
+
+// import { brokerValuesSlice } from "./app-runner/slices/brokerValuesSlice";
+// import brokersSlice from "./app-runner/slices/brokerSlice";
+import brokerSlice from "./brokerSlice/slice";
 
 
 
@@ -115,7 +116,6 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         socketTasks: socketTasksReducer,
 
         componentDefinitions: componentDefinitionsSlice.reducer,
-        brokerValues: brokerValuesSlice.reducer,
 
         appBuilder: appBuilderSlice.reducer,
         appletBuilder: appletBuilderSlice.reducer,
@@ -125,9 +125,8 @@ export const createRootReducer = (initialState: InitialReduxState) => {
         customAppRuntime: customAppRuntimeSlice,
         customAppletRuntime: customAppletRuntimeSlice,
 
-        brokers: brokersSlice, // Current broker implementation
 
-        brokerConcept: brokerConceptSlice, // Concept broker implementation
+        broker: brokerSlice, // Concept broker implementation
 
     });
 };

@@ -17,28 +17,28 @@ const selectIdArgs = (_: RootState, idArgs: BrokerIdentifier) => idArgs;
 // Selectors
 const selectDate = createSelector(
     [
-        (state: RootState) => state.brokerConcept,
+        (state: RootState) => state.broker,
         selectIdArgs
     ],
-    (brokerConcept, idArgs): Date | undefined => {
-        const brokerId = resolveBrokerId(brokerConcept, idArgs);
+    (broker, idArgs): Date | undefined => {
+        const brokerId = resolveBrokerId(broker, idArgs);
         if (!brokerId) return undefined;
         
-        const brokerValue = brokerConcept.brokers[brokerId];
+        const brokerValue = broker.brokers[brokerId];
         return isValidDate(brokerValue) ? new Date(brokerValue) : undefined;
     }
 );
 
 const selectDateString = createSelector(
     [
-        (state: RootState) => state.brokerConcept,
+        (state: RootState) => state.broker,
         selectIdArgs
     ],
-    (brokerConcept, idArgs): string | undefined => {
-        const brokerId = resolveBrokerId(brokerConcept, idArgs);
+    (broker, idArgs): string | undefined => {
+        const brokerId = resolveBrokerId(broker, idArgs);
         if (!brokerId) return undefined;
         
-        const brokerValue = brokerConcept.brokers[brokerId];
+        const brokerValue = broker.brokers[brokerId];
         return isValidDate(brokerValue) ? brokerValue : undefined;
     }
 );

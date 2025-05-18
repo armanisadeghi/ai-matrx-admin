@@ -4,8 +4,10 @@ import {
   AppletLayoutOption, 
   AppletContainer, 
   BrokerMapping,
-  CustomAppletConfig 
+  CustomAppletConfig,
 } from '@/types/customAppTypes';
+
+
 
 interface CustomAppletRuntimeState {
   applets: Record<string, CustomAppletConfig>;
@@ -16,7 +18,7 @@ interface CustomAppletRuntimeState {
 }
 
 const initialState: CustomAppletRuntimeState = {
-  applets: {},
+  applets: {} as Record<string, CustomAppletConfig>,
   activeAppletId: null,
   status: 'uninitialized',
   isDebug: false,
@@ -73,7 +75,7 @@ export const selectAppletRuntimeById = (state: RootState, appletId: string) => s
 // Select applet by slug
 export const selectAppletRuntimeBySlug = (state: RootState, slug: string) => {
   const applets = state.customAppletRuntime.applets;
-  return Object.values(applets).find(applet => applet.slug === slug) || null;
+  return (Object.values(applets) as CustomAppletConfig[]).find(applet => applet.slug === slug) || null;
 };
 
 export const selectAppletIdBySlug = (state: RootState, slug: string) => {

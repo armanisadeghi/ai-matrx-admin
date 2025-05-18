@@ -74,14 +74,16 @@ const StreamingCode: React.FC<StreamingCodeProps> = ({ code, language, fontSize 
                 language={language}
                 linesCount={code.split("\n").length}
                 isEditing={isEditing}
-                isExpanded={isExpanded}
+                isFullScreen={isExpanded}
+                isCollapsed={isCollapsed}
                 code={code}
                 handleCopy={handleCopy}
                 handleDownload={handleDownload}
                 toggleEdit={toggleEdit}
-                toggleExpand={toggleExpand}
+                toggleFullScreen={toggleExpand}
                 toggleCollapse={toggleCollapse}
                 isCopied={isCopied}
+                isMobile={false}
             />
 
             <div className="relative">

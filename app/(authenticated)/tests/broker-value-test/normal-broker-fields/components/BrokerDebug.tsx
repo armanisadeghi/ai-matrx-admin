@@ -1,9 +1,9 @@
-import { brokerConceptSelectors } from "@/lib/redux/brokerSlice";
+import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import { useAppSelector } from "@/lib/redux";
 import { BrokerIdentifier } from "@/lib/redux/brokerSlice/types";
 
 function BrokerDebug({ brokerMappedItems }: { brokerMappedItems: Record<string, BrokerIdentifier> }) {
-  const brokerMap = useAppSelector(brokerConceptSelectors.selectMap);
+  const brokerMap = useAppSelector(brokerSelectors.selectMap);
   
   const brokerMappingDetails = Object.entries(brokerMappedItems).map(([key, brokerMappedItem]) => {
     let mapEntry = null;
@@ -17,7 +17,7 @@ function BrokerDebug({ brokerMappedItems }: { brokerMappedItems: Record<string, 
   const brokerValues = useAppSelector(state => {
     const result: Record<string, any> = {};
     Object.entries(brokerMappedItems).forEach(([key, brokerMappedItem]) => {
-      result[key] = brokerConceptSelectors.selectValueWithoutBrokerId(state, brokerMappedItem);
+      result[key] = brokerSelectors.selectValueWithoutBrokerId(state, brokerMappedItem);
     });
     return result;
   });
@@ -25,7 +25,7 @@ function BrokerDebug({ brokerMappedItems }: { brokerMappedItems: Record<string, 
   const brokerHasValues = useAppSelector(state => {
     const result: Record<string, boolean> = {};
     Object.entries(brokerMappedItems).forEach(([key, brokerMappedItem]) => {
-      result[key] = brokerConceptSelectors.selectHasValue(state, brokerMappedItem);
+      result[key] = brokerSelectors.selectHasValue(state, brokerMappedItem);
     });
     return result;
   });

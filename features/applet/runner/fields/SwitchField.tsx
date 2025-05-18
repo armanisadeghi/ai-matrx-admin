@@ -1,6 +1,8 @@
-import React, { useEffect } from "react";
+"use client";
+
+import React, { useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue, updateBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
+import { brokerSelectors, brokerActions } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { cn } from "@/lib/utils";
 // Import the shadcn/ui components
@@ -44,7 +46,20 @@ const SwitchField: React.FC<{
     const safeWidthClass = ensureValidWidthClass(width);
 
     const dispatch = useAppDispatch();
-    const stateValue = useAppSelector((state) => selectBrokerValue(state, source, id));
+    const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: id }));
+    const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
+
+    const updateBrokerValue = useCallback(
+        (updatedValue: any) => {
+            dispatch(
+                brokerActions.setValue({
+                    brokerId,
+                    value: updatedValue,
+                })
+            );
+        },
+        [dispatch, brokerId]
+    );
 
     // Initialize state if needed
     useEffect(() => {
@@ -52,25 +67,13 @@ const SwitchField: React.FC<{
             // Initialize with default value (default to false/off)
             const initialValue = defaultValue !== undefined ? !!defaultValue : false;
 
-            dispatch(
-                updateBrokerValue({
-                    source: source,
-                    itemId: id,
-                    value: initialValue,
-                })
-            );
+            updateBrokerValue(initialValue);
         }
     }, [stateValue, defaultValue, dispatch, id, source]);
 
     // Handler for switch toggle
     const handleToggle = (checked: boolean) => {
-        dispatch(
-            updateBrokerValue({
-                source: source,
-                itemId: id,
-                value: checked,
-            })
-        );
+        updateBrokerValue(checked);
     };
 
     // Get the current switched state

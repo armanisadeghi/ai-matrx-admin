@@ -10,8 +10,7 @@ import {
     DraggableRubric,
 } from "@hello-pangea/dnd";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectBrokerValue } from "@/lib/redux/app-runner/slices/brokerSlice";
-import { brokerConceptActions, brokerConceptSelectors } from "@/lib/redux/brokerSlice";
+import { brokerActions, brokerSelectors } from "@/lib/redux/brokerSlice";
 import { ensureValidWidthClass } from "@/features/applet/constants/field-constants";
 import { GripHorizontal, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,9 +19,9 @@ import { BrokerIdentifier } from "@/lib/redux/brokerSlice/types";
 
 // Use action creators from brokerConceptActions
 const { setTable, updateCell, addRow, removeRow, addColumn, removeColumn, updateColumn, updateRowOrder, updateColumnOrder } =
-    brokerConceptActions;
+    brokerActions;
 
-const { selectTable, selectSortedRows, selectSortedColumns } = brokerConceptSelectors;
+const { selectTable, selectSortedRows, selectSortedColumns } = brokerSelectors;
 
 const DragEditModifyTableField: React.FC<{
     field: FieldDefinition;
@@ -36,10 +35,12 @@ const DragEditModifyTableField: React.FC<{
     const { width, customContent } = componentProps;
     const safeWidthClass = ensureValidWidthClass(width);
     const dispatch = useAppDispatch();
-    const idArgs: BrokerIdentifier = { source, itemId: fieldId };
+    const brokerId = useAppSelector((state) => brokerSelectors.selectBrokerId(state, { source, mappedItemId: fieldId }));
+    const stateValue = useAppSelector((state) => brokerSelectors.selectValue(state, brokerId));
+
+    const idArgs: BrokerIdentifier = { source, mappedItemId: fieldId };
 
     // Redux state
-    const stateValue = useAppSelector((state) => selectBrokerValue(state, source, fieldId));
     const table = useAppSelector((state) => selectTable(state, idArgs));
     const sortedRows = useAppSelector((state) => selectSortedRows(state, idArgs));
     const sortedColumns = useAppSelector((state) => selectSortedColumns(state, idArgs));
