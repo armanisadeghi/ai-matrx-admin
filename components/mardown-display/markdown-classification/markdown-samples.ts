@@ -348,6 +348,69 @@ const grokSample = `To optimize your website for search engines (SEO), focus on 
 If you need tools or specific strategies, let me know!`;
 
 
+const googleLongSample = `Okay, let's break down the most important things for proper SEO (Search Engine Optimization). The goal of SEO is to increase the quantity and quality of traffic to your website through organic search engine results.
+
+Here are the core pillars and most important actions within them:
+
+1.  **High-Quality, Valuable Content (Content is King):**
+    *   **Understand Your Audience & Their Intent:** What questions are they asking? What problems do they need to solve? What information are they looking for? Create content that *answers* these queries comprehensively.
+    *   **Originality & Value:** Your content should be unique, insightful, and provide genuine value. Avoid duplicate content or thin, low-effort pages.
+    *   **Readability & Engagement:** Use clear language, good formatting (headings, subheadings, bullet points, short paragraphs), images, and videos to keep users engaged.
+    *   **Freshness:** Regularly update existing content and publish new, relevant content.
+
+2.  **Keyword Research:**
+    *   **Identify Relevant Terms:** Find the keywords and phrases your target audience is actually typing into search engines.
+    *   **Search Volume & Competition:** Prioritize keywords with decent search volume that you can realistically rank for. Long-tail keywords (more specific, longer phrases) often have lower competition and higher conversion rates.
+    *   **User Intent:** Understand *why* someone is searching for a particular keyword (informational, navigational, transactional, commercial). Tailor your content to match that intent.
+    *   **Tools:** Use tools like Google Keyword Planner, Ahrefs, SEMrush, Ubersuggest, or even just Google's "People also ask" and "Related searches" sections.
+
+3.  **On-Page SEO (Optimizing Your Actual Web Pages):**
+    *   **Title Tags:** Craft compelling, keyword-rich title tags (under 60 characters) for each page. This is what appears as the blue link in search results.
+    *   **Meta Descriptions:** Write engaging meta descriptions (under 160 characters) that accurately summarize the page and encourage clicks. Include your target keyword naturally.
+    *   **Header Tags (H1-H6):** Use a single H1 tag for your main page title (often including the primary keyword). Use H2-H6 tags to structure content logically and incorporate related keywords.
+    *   **URL Structure:** Create clean, descriptive, and keyword-rich URLs (e.g., \`yourdomain.com/seo-optimization-tips\` instead of \`yourdomain.com/page123.html\`).
+    *   **Image Optimization:** Use descriptive alt text for all images, incorporating relevant keywords. Compress images for faster loading.
+    *   **Internal Linking:** Link relevant pages within your own website. This helps distribute link equity (ranking power) and helps users and search engines navigate your site.
+    *   **Content Optimization:** Naturally integrate your target keywords and related terms (LSI keywords) throughout your content. Don't "keyword stuff."
+
+4.  **Technical SEO (Ensuring Your Site is Search Engine Friendly):**
+    *   **Site Speed & Core Web Vitals:** A fast-loading website is crucial for user experience and rankings. Optimize images, leverage browser caching, minify code, etc. Google's Core Web Vitals (LCP, FID, CLS) are key metrics.
+    *   **Mobile-Friendliness:** Your site *must* be responsive and work flawlessly on all devices, especially mobile. Google uses mobile-first indexing.
+    *   **Crawlability & Indexability:**
+        *   **Robots.txt:** Tell search engine crawlers which parts of your site they can or cannot crawl.
+        *   **XML Sitemap:** Submit an XML sitemap to Google Search Console to help search engines discover all your important pages.
+    *   **HTTPS (Secure Site):** Ensure your site uses HTTPS for security. This is a ranking factor.
+    *   **Site Architecture:** A logical site structure makes it easy for users and search engines to find content.
+    *   **Structured Data (Schema Markup):** Implement schema markup to help search engines understand the content on your pages better (e.g., for reviews, recipes, events). This can lead to rich snippets in search results.
+
+5.  **Off-Page SEO (Building Authority & Trust):**
+    *   **Link Building (Backlinks):** Earn high-quality backlinks from reputable, relevant websites. This is one of the most significant ranking factors. Focus on quality over quantity.
+        *   Strategies: Guest blogging, creating linkable assets (infographics, tools, studies), broken link building, digital PR.
+    *   **Brand Mentions:** Even unlinked mentions of your brand can contribute to your authority.
+    *   **Local SEO (If Applicable):** If you have a local business, optimize your Google Business Profile, build local citations (listings in directories), and encourage local reviews.
+
+6.  **User Experience (UX):**
+    *   **Easy Navigation:** Users should be able to find what they're looking for quickly and easily.
+    *   **Clear Call-to-Actions (CTAs):** Guide users towards desired actions.
+    *   **Reduce Bounce Rate & Increase Dwell Time:** If users land on your page and immediately leave (bounce), or don't spend much time there, it signals to Google that your page might not be relevant or valuable.
+    *   **Accessibility:** Ensure your website is accessible to people with disabilities.
+
+7.  **Monitoring & Analysis:**
+    *   **Google Search Console:** Essential for understanding how Google sees your site, submitting sitemaps, finding errors, and tracking keyword performance.
+    *   **Google Analytics:** Track website traffic, user behavior, conversions, and other important metrics.
+    *   **Rank Tracking:** Monitor your rankings for target keywords.
+    *   **Adapt & Iterate:** SEO is an ongoing process. Analyze your data, see what's working, and make adjustments to your strategy.
+
+**Key Takeaways for "Most Important":**
+
+*   **Content is the foundation.** Without great content, the rest is much harder.
+*   **Understand user intent and match it with your keywords and content.**
+*   **Make your site technically sound and fast, especially on mobile.**
+*   **Earn quality backlinks to build authority.**
+*   **Prioritize user experience.**
+
+SEO is a marathon, not a sprint. Be patient, consistent, and always focus on providing value to your users, and search engines will likely reward you.`;
+
 export const markdownSamples = {
     candidateProfileShort,
     candidateProfileFull,
@@ -358,4 +421,5 @@ export const markdownSamples = {
     googleGeminiSample,
     claudeSample,
     grokSample,
+    googleLongSample,
 };

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui";
 import { processMarkdownWithConfig } from "./json-config-system/config-processor";
 import { basicSample, markdownSamples } from "./markdown-samples";
-import { configRegistry } from "./json-config-system/config-registry";
+import { configRegistry } from "./json-config-system/known-configs-from-json";
 import MarkdownInput from "./MarkdownInput";
 import MarkdownProcessingTabs from "./MarkdownProcessingTabs";
 
@@ -59,12 +59,23 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             const tree = processor.parse(text);
             setAst(tree as unknown as MdastNode);
 
-            const config = configRegistry[configKey]?.config;
-            if (config) {
-                const result = processMarkdownWithConfig({
-                    ast: tree as unknown as MdastNode,
-                    config,
-                });
+            const configEntry = configRegistry[configKey];
+            if (configEntry) {
+                let result;
+                
+                // Use custom processor if available, otherwise use standard processor
+                if (configEntry.customProcessor) {
+                    result = configEntry.customProcessor(tree);
+                } else if (configEntry.config) {
+                    result = processMarkdownWithConfig({
+                        ast: tree as unknown as MdastNode,
+                        config: configEntry.config,
+                    });
+                } else {
+                    console.error(`Configuration '${configKey}' has neither config nor customProcessor`);
+                    return;
+                }
+                
                 setProcessedData(result);
             }
         } catch (error) {

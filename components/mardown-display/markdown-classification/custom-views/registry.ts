@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { configRegistry } from '../json-config-system/config-registry';
+import { configRegistry } from '../json-config-system/known-configs-from-json';
 import { getLoadingComponent } from './loading-components';
 
 // Define types for our registry
@@ -37,6 +37,7 @@ export const viewComponents = {
   modernView: lazy(() => import('./ModernCandidateProfile')),
   modernOneColumnView: lazy(() => import('./ModernOneColumnProfile')),
   appSuggestions: lazy(() => import('./AppSuggestionsDisplay')),
+  contentStructureView: lazy(() => import('./ContentStructureView')),
 
   // Add new view components here
   // newView: lazy(() => import('./NewViewComponent')),
@@ -88,6 +89,12 @@ export const viewEntries: Record<string, ConfigViewEntry> = {
       }
     ]
   },
+  contentStructure: {
+    id: 'contentStructure',
+    name: 'Content Structure View',
+    component: viewComponents.contentStructureView,
+    description: 'View for displaying structured content with intro, items and outro'
+  },
   
 
   // Add new view entries here
@@ -107,6 +114,7 @@ export const configViewMappings: Record<string, string[]> = {
   candidate_profile_structured: ['standard', 'collapsible', 'modern', 'modernOneColumnView'],
   candidate_profile_modern: ['modern', 'standard', 'collapsible', 'modernOneColumnView'],
   app_suggestions: ['appSuggestions'],
+  content_structure: ['contentStructure'], // Use the content structure view for this type
 
   // Add new mappings here
   // new_config_type: ['standard', 'newViewType'],
@@ -120,6 +128,7 @@ export const defaultViews: Record<string, string> = {
   candidate_profile_modern: 'modern',
   candidate_profile_modern_one_column: 'modernOneColumnView',
   app_suggestions: 'appSuggestions',
+  content_structure: 'contentStructure', // Default view for content_structure is our new view
 
   // Add new defaults here
   // new_config_type: 'newViewType',

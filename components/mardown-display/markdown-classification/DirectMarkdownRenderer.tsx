@@ -6,7 +6,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import { processMarkdownWithConfig } from "./json-config-system/config-processor";
-import { configRegistry } from "./json-config-system/config-registry";
+import { configRegistry } from "./json-config-system/known-configs-from-json";
 import { getConfigTypeFromKey, getViewForConfig, getViewLoadingComponent } from "./custom-views/registry";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
@@ -105,8 +105,8 @@ const DirectMarkdownRenderer = ({
         setError(null);
 
         try {
-            const config = configRegistry[configKey]?.config;
-            if (!config) {
+            const configEntry = configRegistry[configKey];
+            if (!configEntry) {
                 setError(`Configuration '${configKey}' not found`);
                 setProcessing(false);
                 return;
@@ -117,10 +117,20 @@ const DirectMarkdownRenderer = ({
                     const processor = unified().use(remarkParse).use(remarkGfm);
                     const tree = processor.parse(markdown);
 
-                    const result = processMarkdownWithConfig({
-                        ast: tree as any,
-                        config,
-                    });
+                    let result;
+                    // Use custom processor if available, otherwise use standard processor
+                    if (configEntry.customProcessor) {
+                        result = configEntry.customProcessor(tree);
+                    } else if (configEntry.config) {
+                        result = processMarkdownWithConfig({
+                            ast: tree as any,
+                            config: configEntry.config,
+                        });
+                    } else {
+                        setError(`Configuration '${configKey}' has neither config nor customProcessor`);
+                        setProcessing(false);
+                        return;
+                    }
 
                     setProcessedData(result);
                     setProcessing(false);

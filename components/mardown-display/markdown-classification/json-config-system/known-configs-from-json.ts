@@ -1,5 +1,16 @@
 import { MarkdownConfig } from "./config-processor";
-import { ConfigEntry } from "./config-registry";
+
+// Define type for custom processor function
+export type CustomProcessorFn = (ast: any) => { extracted: any; miscellaneous?: any };
+
+export interface ConfigEntry {
+  id: string;        // Unique identifier for the config
+  name: string;      // Display name
+  type: string;      // Type identifier (e.g., "candidate_profile")
+  config?: MarkdownConfig; // The configuration (optional if customProcessor is provided)
+  description?: string; // Optional description
+  customProcessor?: CustomProcessorFn; // Optional custom processor function
+}
 
 export const candidateProfileConfig: MarkdownConfig = {
     type: "candidate_profile",
@@ -457,6 +468,27 @@ export const configRegistry: Record<string, ConfigEntry> = {
         type: "google_seo",
         config: googleSeoConfig,
         description: "Configuration for parsing Google SEO tips",
+    },
+
+    // Custom processors
+    "structured-content": {
+        id: "structured-content",
+        name: "Structured Content",
+        type: "content_structure",
+        customProcessor: (ast) => {
+            // Import needed for this to work
+            const { transformAstToContent } = require('./custom-extractor-1');
+            
+            // Process the AST with our custom transformer
+            const result = transformAstToContent(ast);
+            
+            // Return the original structure - don't force it into a different format
+            return {
+                extracted: result,
+                miscellaneous: []
+            };
+        },
+        description: "Extracts intro, ordered list items, and outro from markdown content"
     },
 
     // Add new configs here
