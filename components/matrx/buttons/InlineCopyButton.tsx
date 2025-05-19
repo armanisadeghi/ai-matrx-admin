@@ -1,10 +1,16 @@
 'use client';
 import { useState } from 'react';
 import { Copy, CheckCircle2 } from 'lucide-react';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 
 interface InlineCopyButtonProps {
   content: string | object;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'center-right' | 'center-left';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
   showTooltip?: boolean;
@@ -61,8 +67,7 @@ export const InlineCopyButton = ({
   onCopyError
 }: InlineCopyButtonProps) => {
   const [copied, setCopied] = useState(false);
-  const [showTooltipState, setShowTooltipState] = useState(false);
-
+  
   // Size mapping
   const sizeClasses = {
     xs: 'h-4 w-4',
@@ -71,15 +76,45 @@ export const InlineCopyButton = ({
     lg: 'h-7 w-7',
     xl: 'h-8 w-8'
   };
-
+  
   // Position mapping
   const positionClasses = {
     'top-right': 'absolute top-1 right-1',
     'top-left': 'absolute top-1 left-1',
     'bottom-right': 'absolute bottom-1 right-1',
-    'bottom-left': 'absolute bottom-1 left-1'
+    'bottom-left': 'absolute bottom-1 left-1',
+    'center-right': 'absolute top-1/2 right-1 -translate-y-1/2',
+    'center-left': 'absolute top-1/2 left-1 -translate-y-1/2'
   };
-
+  
+  // Determine the appropriate tooltip side based on button position
+  const getTooltipSide = () => {
+    switch (position) {
+      case 'top-right':
+      case 'top-left':
+        return 'top';
+      case 'bottom-right':
+      case 'bottom-left':
+        return 'bottom';
+      case 'center-right':
+        return 'left';
+      case 'center-left':
+        return 'right';
+      default:
+        return 'top';
+    }
+  };
+  
+  // Determine the tooltip alignment
+  const getTooltipAlign = () => {
+    if (position.includes('left')) {
+      return 'start';
+    } else if (position.includes('right')) {
+      return 'end';
+    }
+    return 'center';
+  };
+  
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent event from bubbling up
     
@@ -104,7 +139,6 @@ export const InlineCopyButton = ({
       }
       
       // Use the ClipboardItem API with plain text format to ensure no styling is copied
-      // This is the key change to prevent color copying
       const clipboardItem = new ClipboardItem({
         'text/plain': new Blob([textToCopy], { type: 'text/plain' })
       });
@@ -133,46 +167,51 @@ export const InlineCopyButton = ({
       }
     }
   };
-
-  const handleMouseEnter = () => {
-    if (showTooltip) {
-      setShowTooltipState(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setShowTooltipState(false);
-  };
-
-  return (
-    <div 
-      className={`${positionClasses[position]} ${className} inline-flex z-10`}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+  
+  // Button content
+  const buttonContent = (
+    <button
+      onClick={handleCopy}
+      className="bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded-md transition-colors duration-200 z-10"
+      aria-label={tooltipText}
     >
-        <button
-          onClick={handleCopy}
-          className="bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 p-1 rounded-md transition-colors duration-200 z-10"
-          aria-label={tooltipText}
-        >
-          {copied ? (
-            <CheckCircle2 className={`${sizeClasses[size]} text-green-500`} />
-          ) : (
-            <Copy className={`${sizeClasses[size]} text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200`} />
-          )}
-        </button>
-        
-        {showTooltipState && !copied && (
-          <div className="absolute top-full mt-1 right-0 bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
-            {tooltipText}
-          </div>
-        )}
-        
-        {copied && showTooltip && (
-          <div className="absolute top-full mt-1 right-0 bg-green-600 text-white text-xs rounded py-1 px-2 whitespace-nowrap z-20">
-            Copied!
-          </div>
-        )}
+      {copied ? (
+        <CheckCircle2 className={`${sizeClasses[size]} text-green-500`} />
+      ) : (
+        <Copy className={`${sizeClasses[size]} text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200`} />
+      )}
+    </button>
+  );
+  
+  // If tooltips aren't needed, just return the button
+  if (!showTooltip) {
+    return (
+      <div className={`${positionClasses[position]} ${className} inline-flex z-10`}>
+        {buttonContent}
+      </div>
+    );
+  }
+  
+  // The current tooltip text based on copied state
+  const currentTooltipText = copied ? "Copied!" : tooltipText;
+  
+  return (
+    <div className={`${positionClasses[position]} ${className} inline-flex z-10`}>
+      <TooltipProvider>
+        <Tooltip open={showTooltip ? undefined : false} delayDuration={300}>
+          <TooltipTrigger asChild>
+            {buttonContent}
+          </TooltipTrigger>
+          <TooltipContent 
+            className={copied ? "bg-green-600 text-white" : ""}
+            side={getTooltipSide()}
+            sideOffset={5}
+            align={getTooltipAlign()}
+          >
+            {currentTooltipText}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };

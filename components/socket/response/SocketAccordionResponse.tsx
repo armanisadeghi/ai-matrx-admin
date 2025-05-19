@@ -102,7 +102,6 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                                     triggerClassName={`border border-gray-300 dark:border-gray-600 rounded-md ${textResponse.length <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
                                     showSampleSelector={false}
                                     showConfigSelector={true}
-                                    showLoadingSimulator={false}
                                 />
                                 <MarkdownCopyButton markdownContent={textResponse} className="ml-2" />
                             </div>

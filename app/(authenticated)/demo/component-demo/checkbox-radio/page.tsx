@@ -1,4 +1,3 @@
-/*
 // '@/app/demo/component-demo/radio-checkbox/page.tsx'
 'use client';
 
@@ -14,29 +13,30 @@ import {
     SelectItem
 } from '@/components/ui/select';
 import TextDivider from '@/components/matrx/TextDivider';
-import { MatrxRadioGroup } from '@/components/ui/samples';
+import { MatrxRadioGroup, MatrxRadioGroupItem } from '@/components/ui/samples';
 import MatrxCheckbox from '@/components/matrx/MatrxCheckbox';
+
+// Define the types from the component
+type Orientation = 'horizontal' | 'vertical';
+type Size = 'xs' | 's' | 'm' | 'lg' | 'xl';
+type AnimationLevel = 'none' | 'minimal' | 'full';
 
 export default function DemoPage() {
     const [radioValue, setRadioValue] = useState('option1');
     const [checkboxValue, setCheckboxValue] = useState(false);
-    const [advancedRadioProps, setAdvancedRadioProps] = useState({
-        layout: 'vertical',
-        columns: 1,
-        density: 'normal',
-        size: 'md',
-        variant: 'default',
-        error: '',
-        hint: '',
+    const [advancedRadioProps, setAdvancedRadioProps] = useState<{
+        orientation: Orientation;
+        gap: Size;
+        animationLevel: AnimationLevel;
+    }>({
+        orientation: 'vertical',
+        gap: 'm',
+        animationLevel: 'full',
     });
 
     const [advancedCheckboxProps, setAdvancedCheckboxProps] = useState({
-        density: 'normal',
-        size: 'md',
-        variant: 'default',
-        error: '',
-        hint: '',
-        animation: 'subtle',
+        id: 'demoCheckbox',
+        lineThrough: false,
     });
 
     const handleAdvancedRadioChange = (key: string, value: any) => {
@@ -64,29 +64,21 @@ export default function DemoPage() {
                     <TabsTrigger value="all">All Variations</TabsTrigger>
                 </TabsList>
 
-                {/!* Basic Example Tab *!/}
+                {/* Basic Example Tab */}
                 <TabsContent value="basic">
                     <Card>
                         <CardHeader>
                             <CardTitle>Basic Radio Group</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <MatrxRadioGroup
-                                label="Choose an Option"
-                                layout="vertical"
-                                size="md"
-                                density="normal"
+                            <MatrxRadioGroup 
+                                value={radioValue} 
+                                onValueChange={setRadioValue}
+                                orientation="vertical"
+                                className="space-y-2"
                             >
-                                <MatrxCheckbox
-                                    field={{ name: 'option1', label: 'Option 1' }}
-                                    checked={radioValue === 'option1'}
-                                    onChange={() => setRadioValue('option1')}
-                                />
-                                <MatrxCheckbox
-                                    field={{ name: 'option2', label: 'Option 2' }}
-                                    checked={radioValue === 'option2'}
-                                    onChange={() => setRadioValue('option2')}
-                                />
+                                <MatrxRadioGroupItem value="option1" label="Option 1" />
+                                <MatrxRadioGroupItem value="option2" label="Option 2" />
                             </MatrxRadioGroup>
                         </CardContent>
                     </Card>
@@ -97,14 +89,17 @@ export default function DemoPage() {
                         </CardHeader>
                         <CardContent>
                             <MatrxCheckbox
-                                field={{ name: 'checkbox', label: 'Accept Terms' }}
+                                id="terms"
                                 checked={checkboxValue}
                                 onChange={setCheckboxValue}
-                            />
+                            >
+                                <MatrxCheckbox.Indicator />
+                                <MatrxCheckbox.Label>Accept Terms</MatrxCheckbox.Label>
+                            </MatrxCheckbox>
                         </CardContent>
                     </Card>
 
-                    {/!* State Display Card *!/}
+                    {/* State Display Card */}
                     <Card className="mt-4">
                         <CardHeader>
                             <CardTitle>Current State</CardTitle>
@@ -115,10 +110,10 @@ export default function DemoPage() {
                     </Card>
                 </TabsContent>
 
-                {/!* Advanced Example Tab *!/}
+                {/* Advanced Example Tab */}
                 <TabsContent value="advanced">
                     <div className="grid grid-cols-4 gap-4">
-                        {/!* Controls Card *!/}
+                        {/* Controls Card */}
                         <div className="col-span-1">
                             <Card>
                                 <CardHeader>
@@ -127,10 +122,10 @@ export default function DemoPage() {
                                 <CardContent>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">Layout</label>
+                                            <label className="block text-sm font-medium mb-1">Orientation</label>
                                             <Select
-                                                value={advancedRadioProps.layout}
-                                                onValueChange={(value) => handleAdvancedRadioChange('layout', value)}
+                                                value={advancedRadioProps.orientation}
+                                                onValueChange={(value) => handleAdvancedRadioChange('orientation', value)}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />
@@ -138,89 +133,42 @@ export default function DemoPage() {
                                                 <SelectContent>
                                                     <SelectItem value="vertical">Vertical</SelectItem>
                                                     <SelectItem value="horizontal">Horizontal</SelectItem>
-                                                    <SelectItem value="grid">Grid</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">Columns</label>
-                                            <input
-                                                type="number"
-                                                value={advancedRadioProps.columns}
-                                                onChange={(e) => handleAdvancedRadioChange('columns', Number(e.target.value))}
-                                                className="border border-gray-300 rounded-md p-1"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Density</label>
+                                            <label className="block text-sm font-medium mb-1">Gap</label>
                                             <Select
-                                                value={advancedRadioProps.density}
-                                                onValueChange={(value) => handleAdvancedRadioChange('density', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="compact">Compact</SelectItem>
-                                                    <SelectItem value="normal">Normal</SelectItem>
-                                                    <SelectItem value="comfortable">Comfortable</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Size</label>
-                                            <Select
-                                                value={advancedRadioProps.size}
-                                                onValueChange={(value) => handleAdvancedRadioChange('size', value)}
+                                                value={advancedRadioProps.gap}
+                                                onValueChange={(value) => handleAdvancedRadioChange('gap', value)}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="xs">Extra Small</SelectItem>
-                                                    <SelectItem value="sm">Small</SelectItem>
-                                                    <SelectItem value="md">Medium</SelectItem>
+                                                    <SelectItem value="s">Small</SelectItem>
+                                                    <SelectItem value="m">Medium</SelectItem>
                                                     <SelectItem value="lg">Large</SelectItem>
                                                     <SelectItem value="xl">Extra Large</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">Variant</label>
+                                            <label className="block text-sm font-medium mb-1">Animation Level</label>
                                             <Select
-                                                value={advancedRadioProps.variant}
-                                                onValueChange={(value) => handleAdvancedRadioChange('variant', value)}
+                                                value={advancedRadioProps.animationLevel}
+                                                onValueChange={(value) => handleAdvancedRadioChange('animationLevel', value)}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="default">Default</SelectItem>
-                                                    <SelectItem value="primary">Primary</SelectItem>
-                                                    <SelectItem value="secondary">Secondary</SelectItem>
-                                                    <SelectItem value="destructive">Destructive</SelectItem>
-                                                    <SelectItem value="ghost">Ghost</SelectItem>
-                                                    <SelectItem value="link">Link</SelectItem>
+                                                    <SelectItem value="none">None</SelectItem>
+                                                    <SelectItem value="minimal">Minimal</SelectItem>
+                                                    <SelectItem value="full">Full</SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Error</label>
-                                            <input
-                                                type="text"
-                                                value={advancedRadioProps.error}
-                                                onChange={(e) => handleAdvancedRadioChange('error', e.target.value)}
-                                                className="border border-gray-300 rounded-md p-1"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Hint</label>
-                                            <input
-                                                type="text"
-                                                value={advancedRadioProps.hint}
-                                                onChange={(e) => handleAdvancedRadioChange('hint', e.target.value)}
-                                                className="border border-gray-300 rounded-md p-1"
-                                            />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -233,100 +181,26 @@ export default function DemoPage() {
                                 <CardContent>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-1">Density</label>
+                                            <label className="block text-sm font-medium mb-1">Line Through</label>
                                             <Select
-                                                value={advancedCheckboxProps.density}
-                                                onValueChange={(value) => handleAdvancedCheckboxChange('density', value)}
+                                                value={advancedCheckboxProps.lineThrough ? "true" : "false"}
+                                                onValueChange={(value) => handleAdvancedCheckboxChange('lineThrough', value === "true")}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="compact">Compact</SelectItem>
-                                                    <SelectItem value="normal">Normal</SelectItem>
-                                                    <SelectItem value="comfortable">Comfortable</SelectItem>
+                                                    <SelectItem value="true">Enabled</SelectItem>
+                                                    <SelectItem value="false">Disabled</SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Size</label>
-                                            <Select
-                                                value={advancedCheckboxProps.size}
-                                                onValueChange={(value) => handleAdvancedCheckboxChange('size', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="xs">Extra Small</SelectItem>
-                                                    <SelectItem value="sm">Small</SelectItem>
-                                                    <SelectItem value="md">Medium</SelectItem>
-                                                    <SelectItem value="lg">Large</SelectItem>
-                                                    <SelectItem value="xl">Extra Large</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Variant</label>
-                                            <Select
-                                                value={advancedCheckboxProps.variant}
-                                                onValueChange={(value) => handleAdvancedCheckboxChange('variant', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="default">Default</SelectItem>
-                                                    <SelectItem value="primary">Primary</SelectItem>
-                                                    <SelectItem value="secondary">Secondary</SelectItem>
-                                                    <SelectItem value="destructive">Destructive</SelectItem>
-                                                    <SelectItem value="ghost">Ghost</SelectItem>
-                                                    <SelectItem value="link">Link</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Animation</label>
-                                            <Select
-                                                value={advancedCheckboxProps.animation}
-                                                onValueChange={(value) => handleAdvancedCheckboxChange('animation', value)}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="none">None</SelectItem>
-                                                    <SelectItem value="subtle">Subtle</SelectItem>
-                                                    <SelectItem value="smooth">Smooth</SelectItem>
-                                                    <SelectItem value="energetic">Energetic</SelectItem>
-                                                    <SelectItem value="playful">Playful</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Error</label>
-                                            <input
-                                                type="text"
-                                                value={advancedCheckboxProps.error}
-                                                onChange={(e) => handleAdvancedCheckboxChange('error', e.target.value)}
-                                                className="border border-gray-300 rounded-md p-1"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1">Hint</label>
-                                            <input
-                                                type="text"
-                                                value={advancedCheckboxProps.hint}
-                                                onChange={(e) => handleAdvancedCheckboxChange('hint', e.target.value)}
-                                                className="border border-gray-300 rounded-md p-1"
-                                            />
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
                         </div>
 
-                        {/!* Component Card *!/}
+                        {/* Component Card */}
                         <div className="col-span-3">
                             <Card>
                                 <CardHeader>
@@ -334,25 +208,14 @@ export default function DemoPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <MatrxRadioGroup
-                                        label="Choose an Option"
-                                        layout={advancedRadioProps.layout}
-                                        columns={advancedRadioProps.columns}
-                                        density={advancedRadioProps.density}
-                                        size={advancedRadioProps.size}
-                                        variant={advancedRadioProps.variant}
-                                        error={advancedRadioProps.error}
-                                        hint={advancedRadioProps.hint}
+                                        value={radioValue}
+                                        onValueChange={setRadioValue}
+                                        orientation={advancedRadioProps.orientation}
+                                        gap={advancedRadioProps.gap}
+                                        animationLevel={advancedRadioProps.animationLevel}
                                     >
-                                        <MatrxCheckbox
-                                            field={{ name: 'option1', label: 'Option 1' }}
-                                            checked={radioValue === 'option1'}
-                                            onChange={() => setRadioValue('option1')}
-                                        />
-                                        <MatrxCheckbox
-                                            field={{ name: 'option2', label: 'Option 2' }}
-                                            checked={radioValue === 'option2'}
-                                            onChange={() => setRadioValue('option2')}
-                                        />
+                                        <MatrxRadioGroupItem value="option1" label="Option 1" />
+                                        <MatrxRadioGroupItem value="option2" label="Option 2" />
                                     </MatrxRadioGroup>
                                 </CardContent>
                             </Card>
@@ -363,22 +226,20 @@ export default function DemoPage() {
                                 </CardHeader>
                                 <CardContent>
                                     <MatrxCheckbox
-                                        field={{ name: 'checkbox', label: 'Accept Terms' }}
+                                        id={advancedCheckboxProps.id}
                                         checked={checkboxValue}
                                         onChange={setCheckboxValue}
-                                        density={advancedCheckboxProps.density}
-                                        size={advancedCheckboxProps.size}
-                                        variant={advancedCheckboxProps.variant}
-                                        animation={advancedCheckboxProps.animation}
-                                        error={advancedCheckboxProps.error}
-                                        hint={advancedCheckboxProps.hint}
-                                    />
+                                        lineThrough={advancedCheckboxProps.lineThrough}
+                                    >
+                                        <MatrxCheckbox.Indicator />
+                                        <MatrxCheckbox.Label>Accept Terms</MatrxCheckbox.Label>
+                                    </MatrxCheckbox>
                                 </CardContent>
                             </Card>
                         </div>
                     </div>
 
-                    {/!* State Display Card *!/}
+                    {/* State Display Card */}
                     <Card className="mt-4">
                         <CardHeader>
                             <CardTitle>Current State</CardTitle>
@@ -389,7 +250,7 @@ export default function DemoPage() {
                     </Card>
                 </TabsContent>
 
-                {/!* All Variations Tab *!/}
+                {/* All Variations Tab */}
                 <TabsContent value="all">
                     <Card>
                         <CardHeader>
@@ -398,93 +259,45 @@ export default function DemoPage() {
                         <CardContent>
                             <TextDivider text="Vertical Layout" />
                             <MatrxRadioGroup
-                                label="Choose an Option"
-                                layout="vertical"
-                                size="md"
-                                density="normal"
+                                value={radioValue}
+                                onValueChange={setRadioValue}
+                                orientation="vertical"
                             >
-                                <MatrxCheckbox
-                                    field={{ name: 'option1', label: 'Option 1' }}
-                                    checked={radioValue === 'option1'}
-                                    onChange={() => setRadioValue('option1')}
-                                />
-                                <MatrxCheckbox
-                                    field={{ name: 'option2', label: 'Option 2' }}
-                                    checked={radioValue === 'option2'}
-                                    onChange={() => setRadioValue('option2')}
-                                />
+                                <MatrxRadioGroupItem value="option1" label="Option 1" />
+                                <MatrxRadioGroupItem value="option2" label="Option 2" />
                             </MatrxRadioGroup>
 
                             <TextDivider text="Horizontal Layout" />
                             <MatrxRadioGroup
-                                label="Choose an Option"
-                                layout="horizontal"
-                                size="md"
-                                density="normal"
+                                value={radioValue}
+                                onValueChange={setRadioValue}
+                                orientation="horizontal"
                             >
-                                <MatrxCheckbox
-                                    field={{ name: 'option1', label: 'Option 1' }}
-                                    checked={radioValue === 'option1'}
-                                    onChange={() => setRadioValue('option1')}
-                                />
-                                <MatrxCheckbox
-                                    field={{ name: 'option2', label: 'Option 2' }}
-                                    checked={radioValue === 'option2'}
-                                    onChange={() => setRadioValue('option2')}
-                                />
+                                <MatrxRadioGroupItem value="option1" label="Option 1" />
+                                <MatrxRadioGroupItem value="option2" label="Option 2" />
                             </MatrxRadioGroup>
 
-                            <TextDivider text="Grid Layout" />
-                            <MatrxRadioGroup
-                                label="Choose an Option"
-                                layout="grid"
-                                columns={2}
-                                size="md"
-                                density="normal"
-                            >
+                            <TextDivider text="Checkbox Variations" />
+                            <div className="space-y-2">
                                 <MatrxCheckbox
-                                    field={{ name: 'option1', label: 'Option 1' }}
-                                    checked={radioValue === 'option1'}
-                                    onChange={() => setRadioValue('option1')}
-                                />
+                                    id="checkbox1"
+                                    checked={checkboxValue}
+                                    onChange={setCheckboxValue}
+                                >
+                                    <MatrxCheckbox.Indicator />
+                                    <MatrxCheckbox.Label>Default Checkbox</MatrxCheckbox.Label>
+                                </MatrxCheckbox>
+                                
                                 <MatrxCheckbox
-                                    field={{ name: 'option2', label: 'Option 2' }}
-                                    checked={radioValue === 'option2'}
-                                    onChange={() => setRadioValue('option2')}
-                                />
-                            </MatrxRadioGroup>
-
-                            <TextDivider text="Checkbox Variants" />
-                            <MatrxCheckbox
-                                field={{ name: 'checkbox', label: 'Accept Terms' }}
-                                checked={checkboxValue}
-                                onChange={setCheckboxValue}
-                                variant="primary"
-                            />
-                            <MatrxCheckbox
-                                field={{ name: 'checkbox', label: 'Accept Terms' }}
-                                checked={checkboxValue}
-                                onChange={setCheckboxValue}
-                                variant="secondary"
-                            />
-                            <MatrxCheckbox
-                                field={{ name: 'checkbox', label: 'Accept Terms' }}
-                                checked={checkboxValue}
-                                onChange={setCheckboxValue}
-                                variant="destructive"
-                            />
-                            <MatrxCheckbox
-                                field={{ name: 'checkbox', label: 'Accept Terms' }}
-                                checked={checkboxValue}
-                                onChange={setCheckboxValue}
-                                variant="ghost"
-                            />
-                            <MatrxCheckbox
-                                field={{ name: 'checkbox', label: 'Accept Terms' }}
-                                checked={checkboxValue}
-                                onChange={setCheckboxValue}
-                                variant="link"
-                            />
+                                    id="checkbox2"
+                                    checked={checkboxValue}
+                                    onChange={setCheckboxValue}
+                                    lineThrough={true}
+                                >
+                                    <MatrxCheckbox.Indicator />
+                                    <MatrxCheckbox.Label>Checkbox with Line-through</MatrxCheckbox.Label>
+                                </MatrxCheckbox>
+                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -492,4 +305,4 @@ export default function DemoPage() {
         </div>
     );
 }
-*/
+

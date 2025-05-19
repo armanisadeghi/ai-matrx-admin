@@ -12,7 +12,6 @@ import { brokerActions } from "@/lib/redux/brokerSlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
 import { processExtractors } from "./json-config-system/extractor-utils";
 
-
 interface DirectMarkdownRendererProps {
     markdown: string;
     configKey: string;
@@ -35,58 +34,58 @@ const DirectMarkdownRenderer = ({
     const [processedData, setProcessedData] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [processing, setProcessing] = useState(false);
-    const [lastMarkdown, setLastMarkdown] = useState<string>('');
+    const [lastMarkdown, setLastMarkdown] = useState<string>("");
     const [timeUnchanged, setTimeUnchanged] = useState<number>(0);
     const [failsafeTriggered, setFailsafeTriggered] = useState<boolean>(false);
     const dispatch = useAppDispatch();
 
     const configType = useMemo(() => getConfigTypeFromKey(configKey), [configKey]);
-    
+
     useEffect(() => {
         if (source && sourceId && processedData && processedData.extracted) {
             // Dispatch the main data broker
-            dispatch(brokerActions.setValue({
-                brokerId: `${configType}-${sourceId}`,
-                value: processedData.extracted
-            }));
+            dispatch(
+                brokerActions.setValue({
+                    brokerId: `${configType}-${sourceId}`,
+                    value: processedData.extracted,
+                })
+            );
 
             // Only dispatch miscellaneous data if it exists and has content
             if (processedData.miscellaneous) {
-                const hasMiscContent = 
-                    Array.isArray(processedData.miscellaneous) 
-                        ? processedData.miscellaneous.length > 0
-                        : typeof processedData.miscellaneous === 'object'
-                            ? Object.keys(processedData.miscellaneous).length > 0
-                            : Boolean(processedData.miscellaneous);
-                
+                const hasMiscContent = Array.isArray(processedData.miscellaneous)
+                    ? processedData.miscellaneous.length > 0
+                    : typeof processedData.miscellaneous === "object"
+                    ? Object.keys(processedData.miscellaneous).length > 0
+                    : Boolean(processedData.miscellaneous);
+
                 if (hasMiscContent) {
-                    dispatch(brokerActions.setValue({
-                        brokerId: `${configType}-${sourceId}-miscellaneous`,
-                        value: processedData.miscellaneous
-                    }));
+                    dispatch(
+                        brokerActions.setValue({
+                            brokerId: `${configType}-${sourceId}-miscellaneous`,
+                            value: processedData.miscellaneous,
+                        })
+                    );
                 }
             }
-            
+
             // Process any extractors defined in the view
             const viewEntry = configType ? getViewForConfig(configType, viewType) : null;
             if (viewEntry && viewEntry.extractors) {
                 // Wrap processedData in a data object to match extractor paths
-                processExtractors(
-                    { data: processedData }, 
-                    viewEntry.extractors, 
-                    dispatch, 
-                    sourceId
-                );
+                processExtractors({ data: processedData }, viewEntry.extractors, dispatch, sourceId);
             }
         }
     }, [source, sourceId, processedData, dispatch, configType, viewType]);
 
     useEffect(() => {
         if (markdown === lastMarkdown) {
-            setTimeUnchanged(prev => {
+            setTimeUnchanged((prev) => {
                 const newTime = prev + 1;
                 if (newTime >= 3 && !failsafeTriggered && isLoading) {
-                    console.warn('[DirectMarkdownRenderer] Failsafe triggered: Markdown content unchanged for 3 seconds while still loading. Rendering anyway due to known socket task bug where end message is not sent. Please fix this issue.');
+                    console.warn(
+                        "[DirectMarkdownRenderer] Failsafe triggered: Markdown content unchanged for 3 seconds while still loading. Rendering anyway due to known socket task bug where end message is not sent. Please fix this issue."
+                    );
                     setFailsafeTriggered(true);
                     return 0;
                 }
@@ -102,7 +101,6 @@ const DirectMarkdownRenderer = ({
             return;
         }
 
-        
         setProcessing(true);
         setError(null);
 
@@ -118,12 +116,12 @@ const DirectMarkdownRenderer = ({
                 try {
                     const processor = unified().use(remarkParse).use(remarkGfm);
                     const tree = processor.parse(markdown);
-                    
+
                     const result = processMarkdownWithConfig({
                         ast: tree as any,
                         config,
                     });
-                    
+
                     setProcessedData(result);
                     setProcessing(false);
                 } catch (err) {
@@ -145,7 +143,7 @@ const DirectMarkdownRenderer = ({
     }
 
     const viewEntry = configType ? getViewForConfig(configType, viewType) : null;
-    
+
     if (!viewEntry) {
         console.error(`[DirectMarkdownRenderer] View not found for ${configKey}:`, { configType, viewType });
         return (
@@ -156,7 +154,13 @@ const DirectMarkdownRenderer = ({
     }
 
     if (isLoading || processing || (!processedData && !failsafeTriggered)) {
-        console.log(`[DirectMarkdownRenderer] Showing loading for ${configKey}:`, { configType, viewType, isLoading, processing, failsafeTriggered });
+        console.log(`[DirectMarkdownRenderer] Showing loading for ${configKey}:`, {
+            configType,
+            viewType,
+            isLoading,
+            processing,
+            failsafeTriggered,
+        });
         const LoadingComponent = getViewLoadingComponent(configType, viewType);
         return (
             <div className={className}>

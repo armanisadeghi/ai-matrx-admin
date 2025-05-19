@@ -11,7 +11,6 @@ interface FullscreenMarkdownEditorProps {
   initialMarkdown?: string;
   showSampleSelector?: boolean;
   showConfigSelector?: boolean;
-  showLoadingSimulator?: boolean;
 }
 
 const FullscreenMarkdownEditor = ({ 
@@ -20,7 +19,6 @@ const FullscreenMarkdownEditor = ({
   initialMarkdown,
   showSampleSelector = true,
   showConfigSelector = true,
-  showLoadingSimulator = true
 }: FullscreenMarkdownEditorProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -59,7 +57,6 @@ const FullscreenMarkdownEditor = ({
                 initialMarkdown={initialMarkdown}
                 showSampleSelector={showSampleSelector}
                 showConfigSelector={showConfigSelector}
-                showLoadingSimulator={showLoadingSimulator}
               />
             </div>
           </div>

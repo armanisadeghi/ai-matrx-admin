@@ -210,8 +210,8 @@ function extractData(node: any, ast: any, index: number, extraction: any, proces
 
         case "nested":
             const results = [];
+
             let currentIndex = index + 1; // Start with the next node after the match
-            
             while (currentIndex < ast.children.length) {
                 const currNode = ast.children[currentIndex];
                 

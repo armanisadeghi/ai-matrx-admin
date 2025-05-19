@@ -203,7 +203,7 @@ export const candidateProfileStructuredConfig: MarkdownConfig = {
                 type: "list",
                 matchNext: { type: "list" },
             },
-        }
+        },
     ],
     fallback: {
         appendTo: "miscellaneous",
@@ -378,6 +378,47 @@ export const appSuggestionsConfig: MarkdownConfig = {
     },
 };
 
+export const googleSeoConfig: MarkdownConfig = {
+    type: "seo_tips",
+    sections: [
+        {
+            key: "title",
+            match: { type: "paragraph" },
+            extraction: { type: "text" },
+        },
+        {
+            key: "tips",
+            match: { type: "list" },
+            extraction: {
+                type: "nested",
+                structure: {
+                    tip: {
+                        match: { type: "listItem" },
+                        extract: [
+                            { key: "title", type: "text", target: "strong" },
+                            { key: "details", type: "text" },
+                        ],
+                    },
+                },
+            },
+        },
+        {
+            key: "underlying_principle",
+            match: {
+                type: "paragraph",
+                containsStrong: true,
+            },
+            extraction: {
+                type: "text",
+                target: "substringAfterColon",
+            },
+        },
+    ],
+    fallback: {
+        appendTo: "miscellaneous",
+    },
+};
+
 export const configRegistry: Record<string, ConfigEntry> = {
     // Candidate profile configs
     candidateProfile: {
@@ -409,6 +450,13 @@ export const configRegistry: Record<string, ConfigEntry> = {
         type: "app_suggestions",
         config: appSuggestionsConfig,
         description: "Configuration for parsing app suggestions",
+    },
+    googleSeo: {
+        id: "googleSeo",
+        name: "Google SEO",
+        type: "google_seo",
+        config: googleSeoConfig,
+        description: "Configuration for parsing Google SEO tips",
     },
 
     // Add new configs here

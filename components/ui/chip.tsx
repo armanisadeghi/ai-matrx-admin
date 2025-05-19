@@ -5,12 +5,12 @@ import { cn } from '@/utils/cn';
 
 // type MatrxVariant = "default" | "destructive" | "success" | "outline" | "secondary" | "ghost" | "link" | "primary"
 
-type ChipVariants = MatrxVariant | 'warning' | 'danger' | 'purple' | 'pink' | 'indigo' | 'teal' | 'orange';
+type ChipVariants = MatrxVariant | 'warning' | 'danger' | 'purple' | 'pink' | 'indigo' | 'teal' | 'orange'  | string;
 
 type ChipProps = {
     children: React.ReactNode;
     variant?: ChipVariants;
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | string;
     onRemove?: (() => void) | null;
     gradient?: boolean;
 };
@@ -18,7 +18,7 @@ type ChipProps = {
 type EnhancedChipProps = {
     children: React.ReactNode;
     variant?: ChipVariants;
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | string;
     onRemove?: (() => void) | null;
     gradient?: boolean;
     icon?: React.ComponentType<any>;
