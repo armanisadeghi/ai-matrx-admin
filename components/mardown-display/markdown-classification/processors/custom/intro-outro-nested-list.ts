@@ -18,7 +18,7 @@ export interface AstNode {
 export interface ContentItem {
     id: number;
     title: string;
-    text: string;
+    text: string | string[];
 }
 
 export interface ContentSection {
@@ -30,6 +30,7 @@ export interface OutputContent {
     intro: ContentSection;
     items: ContentItem[];
     outro: ContentSection;
+    hasNestedLists: boolean;
 }
 
 // Helper function to extract text from a node and its children
@@ -78,9 +79,9 @@ function extractTitleAndText(paragraph: AstNode): { title: string; text: string 
 }
 
 // Helper function to process nested lists
-function extractNestedListText(list: AstNode): string {
+function extractNestedListText(list: AstNode): string[] {
     if (list.type !== "list" || !list.children) {
-        return "";
+        return [];
     }
 
     const nestedItems: string[] = [];
@@ -99,8 +100,7 @@ function extractNestedListText(list: AstNode): string {
         }
     }
 
-    // Join nested items with newlines for readability
-    return nestedItems.join("\n");
+    return nestedItems;
 }
 
 interface IntroOutroListProcessorInput {
@@ -108,7 +108,7 @@ interface IntroOutroListProcessorInput {
     config: any;
 }
 
-export function introOutroListProcessor({ ast, config }: IntroOutroListProcessorInput): OutputContent {
+export function introOutroNestedListProcessor({ ast, config }: IntroOutroListProcessorInput): OutputContent {
     if (config) {
         console.warn("IntroOutroListProcessor Does NOT use configs but a config was provided. Config was: ", JSON.stringify(config, null, 2));
     }
@@ -116,6 +116,7 @@ export function introOutroListProcessor({ ast, config }: IntroOutroListProcessor
         intro: { title: "", text: "" },
         items: [],
         outro: { title: "", text: "" },
+        hasNestedLists: false,
     };
 
     if (ast.type !== "root" || !ast.children) {
@@ -138,7 +139,7 @@ export function introOutroListProcessor({ ast, config }: IntroOutroListProcessor
                     if (listItem.type === "listItem" && listItem.children) {
                         let itemTitle = "";
                         let itemText = "";
-                        let nestedText = "";
+                        let nestedItems: string[] = [];
 
                         // Process all children of the list item
                         for (const itemChild of listItem.children) {
@@ -148,12 +149,15 @@ export function introOutroListProcessor({ ast, config }: IntroOutroListProcessor
                                 itemText = text || extractText(itemChild);
                             } else if (itemChild.type === "list") {
                                 // Handle nested list
-                                nestedText = extractNestedListText(itemChild);
+                                nestedItems = extractNestedListText(itemChild);
+                                if (nestedItems.length > 0) {
+                                    output.hasNestedLists = true;
+                                }
                             }
                         }
 
-                        // Combine paragraph text and nested list text
-                        const finalText = [itemText, nestedText].filter(Boolean).join("\n").trim();
+                        // Assign text: use nestedItems if present, otherwise use itemText
+                        const finalText = nestedItems.length > 0 ? nestedItems : itemText;
 
                         output.items.push({
                             id: id++,
@@ -181,4 +185,4 @@ export function introOutroListProcessor({ ast, config }: IntroOutroListProcessor
     return output;
 }
 
-export default introOutroListProcessor;
+export default introOutroNestedListProcessor;

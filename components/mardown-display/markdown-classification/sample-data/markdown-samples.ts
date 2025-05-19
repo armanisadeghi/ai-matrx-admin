@@ -1,5 +1,3 @@
-
-
 const candidateProfileShort = `# Candidate Profile: **Mike**
 
 Senior Living Sales professional with **15+ months** experience in AL and MC.
@@ -38,7 +36,7 @@ Senior Living Sales professional with **15+ months** experience in AL and MC.
 
 ### Compensation Expectation  
 - Current base: **$76,000**
-- Commission: **7% of every move-in community fee** plus one month’s rent; additional bonus for hitting metrics.
+- Commission: **7% of every move-in community fee** plus one month's rent; additional bonus for hitting metrics.
 
 ---
 
@@ -91,7 +89,7 @@ Senior Living Sales professional with **15+ months** experience in AL and MC. Cu
 
 ### Compensation Expectation  
 - Current base: **$76,000**
-- Commission: **7% of every move-in community fee** plus one month’s rent; additional bonus for hitting metrics.
+- Commission: **7% of every move-in community fee** plus one month's rent; additional bonus for hitting metrics.
 - Targeting **$76,000+ base**; open to slightly less for strong growth opportunity or if local.
 - Requires higher base for roles with longer commute (e.g., Manhattan/Brooklyn).
 
@@ -208,10 +206,9 @@ const appSuggestions = `# App Suggestions
   SpeakTask is a game-changing app that empowers users to create and manage tasks using the spoken word. With its advanced speech recognition technology, users can quickly capture and organize tasks from audio files, ensuring they stay on top of their workload. The app's intuitive interface and smart features make task management a breeze.
 
 - **Image Description:**  
-  A real person talking on their phone while walking in a bustling city. Task list on their wristwatch. Urban background with people passing by. Bright colors. Dynamic atmosphere. Focused expression.`
+  A real person talking on their phone while walking in a bustling city. Task list on their wristwatch. Urban background with people passing by. Bright colors. Dynamic atmosphere. Focused expression.`;
 
-
-export const basicSample = `Here’s a **concise list of the most important SEO essentials**:
+export const gptSample = `Here's a **concise list of the most important SEO essentials**:
 
 ---
 
@@ -281,7 +278,7 @@ export const basicSample = `Here’s a **concise list of the most important SEO 
 
 Want guidance specific to a **Next.js + Tailwind** site or tools to audit your SEO?`;
 
-const googleGeminiSample = `Okay, here are the most important things for proper SEO, concisely:
+const googleSampleShort = `Okay, here are the most important things for proper SEO, concisely:
 
 1.  **High-Quality, Relevant Content:** Create content that genuinely helps your target audience, answers their questions, and naturally incorporates keywords they search for. *This is king.*
 2.  **Keyword Research:** Understand what terms your audience uses to find solutions or information you provide. Target these keywords.
@@ -315,7 +312,6 @@ Based on the latest SEO practices for 2025, here are the most important things t
 
 Implementing these practices will help you maintain visibility and drive results in the evolving search landscape of 2025.`;
 
-
 const grokSample = `To optimize your website for search engines (SEO), focus on these key areas:
 
 1. **Keyword Research**: Identify relevant, high-traffic keywords with low competition using tools like Google Keyword Planner or Ahrefs. Target 3–5 primary keywords per page.
@@ -331,7 +327,7 @@ const grokSample = `To optimize your website for search engines (SEO), focus on 
 
 4. **Technical SEO**:
    - **Site Speed**: Optimize images, use caching, and enable compression (aim for <3-second load time).
-   - **Mobile-Friendliness**: Ensure responsive design (test with Google’s Mobile-Friendly Test).
+   - **Mobile-Friendliness**: Ensure responsive design (test with Google's Mobile-Friendly Test).
    - **XML Sitemap**: Submit an updated sitemap to Google Search Console.
    - **Fix Broken Links**: Use tools like Screaming Frog to identify and repair 404 errors.
 
@@ -347,8 +343,7 @@ const grokSample = `To optimize your website for search engines (SEO), focus on 
 
 If you need tools or specific strategies, let me know!`;
 
-
-const googleLongSample = `Okay, let's break down the most important things for proper SEO (Search Engine Optimization). The goal of SEO is to increase the quantity and quality of traffic to your website through organic search engine results.
+const googleSampleLong = `Okay, let's break down the most important things for proper SEO (Search Engine Optimization). The goal of SEO is to increase the quantity and quality of traffic to your website through organic search engine results.
 
 Here are the core pillars and most important actions within them:
 
@@ -411,15 +406,148 @@ Here are the core pillars and most important actions within them:
 
 SEO is a marathon, not a sprint. Be patient, consistent, and always focus on providing value to your users, and search engines will likely reward you.`;
 
+const gptSectionedList = `Perfect — thank you for the clear answers. Here's a highly specific and practical **Western Europe travel guide** for a **2-week solo luxury/mid-high budget trip** during **spring/summer**, using **Eurail + flights**:
+
+---
+
+## 🧭 Suggested 2-Week Itinerary (Western Europe, Efficient, Balanced)
+
+### **Week 1 – Culture & City Life**
+
+* **Day 1–3: Paris, France**
+
+  * Fly into Paris (CDG)
+  * Stay in Le Marais or Saint-Germain (safe, central, walkable)
+  * Must-do: Eiffel Tower at night, Seine River cruise, Musée d’Orsay, food tour in Montmartre
+  * Restaurant: *Septime* (Michelin-star, book ahead)
+
+* **Day 4–5: Amsterdam, Netherlands** *(3.5h by high-speed Thalys train)*
+
+  * Stay: De Pijp or Jordaan
+  * Must-do: Van Gogh Museum, canal tour, Anne Frank House (book early)
+  * Rent a bike and explore like a local
+  * Coffeeshops: If interested, try reputable ones like *Boerejongens*
+
+* **Day 6–7: Berlin, Germany** *(6h by train, or fly for speed)*
+
+  * Stay: Prenzlauer Berg or Mitte
+  * Must-do: Berlin Wall, Museum Island, nightlife (Berghain if you're curious)
+  * Restaurant: *Nobelhart & Schmutzig* for modern German tasting menu
+
+---
+
+### **Week 2 – Nature, Relaxation, and Romance**
+
+* **Day 8–9: Munich + Neuschwanstein Castle**
+
+  * Fast train (ICE) from Berlin (\~4h)
+  * Half-day trip to Neuschwanstein Castle (via Füssen)
+  * Beer garden: Hofbräuhaus, Augustiner Keller
+
+* **Day 10–11: Lucerne or Interlaken, Switzerland** *(train \~5.5h with views)*
+
+  * Stay in Lucerne (lakeside city) or Interlaken (closer to mountains)
+  * Activities: Mount Pilatus gondola, Jungfrau train (highest in Europe), paragliding (Interlaken)
+
+* **Day 12–14: Milan or Lake Como, Italy** *(train \~3h from Lucerne)*
+
+  * Option 1: Milan for fashion, art (Last Supper, Duomo)
+  * Option 2: Lake Como for luxury and nature (stay in Bellagio or Varenna)
+  * End: Fly out of Milan (MXP or LIN)
+
+---
+
+## 🚄 Eurail Tips
+
+* Get a **Global Eurail Pass** (7 travel days in 1 month) – perfect for your itinerary.
+* Use the **Rail Planner App** (works offline, shows which trains require seat reservations).
+* **High-speed trains (France, Germany, Netherlands)** often require reservations — book 2–3 days in advance.
+
+---
+
+## 🧳 Packing Tips (Spring/Summer)
+
+* Pack light — 1 carry-on + personal item. Use compression cubes.
+* Layers: Europe spring can be 10–25°C (50–77°F), with some rain.
+* Light jacket + travel umbrella
+* Power adapter: **Type C & E/F plugs (Europlug)**
+* Comfortable, stylish shoes (you’ll walk 15k+ steps/day)
+
+---
+
+## 📱 Apps to Download
+
+| App                  | Purpose                                    |
+| -------------------- | ------------------------------------------ |
+| **Google Maps**      | Offline maps & saved lists                 |
+| **Rail Planner**     | Eurail offline train schedule              |
+| **Omio / Trainline** | Buy point-to-point train tickets           |
+| **Citymapper**       | Urban transit (esp. Paris, Berlin)         |
+| **Wise or Revolut**  | Avoid bad ATM/credit card FX fees          |
+| **Uber / Bolt**      | Ride-sharing (especially in Berlin, Milan) |
+| **WhatsApp**         | Messaging (Europeans use it over SMS)      |
+
+---
+
+## 💡 Local Tips by Country
+
+**France**
+
+* Always say *Bonjour* when entering shops
+* Tap water is safe, and carafes of free water available if you ask
+
+**Netherlands**
+
+* Biking is king — stay out of bike lanes
+* Most locals speak perfect English
+
+**Germany**
+
+* Be punctual — especially for trains and reservations
+* Sunday = most shops closed
+
+**Switzerland**
+
+* Very safe, extremely clean, and expensive
+* Trains are scenic and punctual — enjoy the ride
+
+**Italy**
+
+* Book trains in advance (Trenitalia or Italo)
+* Coperto (cover charge) is normal at restaurants
+* Always validate regional train tickets before boarding (look for little yellow machines)
+
+---
+
+## 🛂 Border, Safety & Money
+
+* Schengen Area = no internal border checks
+* Cash is rarely needed (except for some bathrooms or small local spots)
+* Carry a **Visa or Mastercard** (Amex is not accepted widely)
+* Pickpocketing: Watch out in Paris, Milan, Amsterdam trains — use anti-theft daypack or money belt
+
+---
+
+Would you like a **custom map with this route**, or hotel and food recommendations for each city? I can also provide **train booking links**, or help you optimize based on **specific interests** (e.g., art, hiking, nightlife, fashion, food). Just let me know.`;
+
 export const markdownSamples = {
     candidateProfileShort,
     candidateProfileFull,
     candidateProfileLimitedMarkdown,
     candidateProfileStructured,
     appSuggestions,
-    basicSample,
-    googleGeminiSample,
+    gptSample,
+    googleSampleShort,
+    googleSampleLong,
     claudeSample,
     grokSample,
-    googleLongSample,
+    gptSectionedList,
+};
+
+/**
+ * Get all available sample IDs from markdownSamples
+ * @returns Array of sample IDs
+ */
+export const getAllMarkdownSampleIds = (): string[] => {
+    return Object.keys(markdownSamples);
 };

@@ -28,9 +28,9 @@ import {
 import { copyToClipboard } from "../utils/basic-utils";
 import { Bookmark } from "../types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { configRegistry } from "@/components/mardown-display/markdown-classification/processors/json-config-system/known-configs-from-json";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getConfigEntry, getConfigSelectOptions } from "@/components/mardown-display/markdown-classification/processors/json-config-system/config-registry";
 
 interface UnifiedBookmarkManagerProps {
   onJumpToBookmark?: (bookmark: Bookmark) => void;
@@ -241,7 +241,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
             <SelectItem value="all">All Configs</SelectItem>
             {uniqueConfigKeys.map(key => (
               <SelectItem key={key} value={key}>
-                {configRegistry[key]?.name || key}
+                {getConfigEntry(key)?.name || key}
               </SelectItem>
             ))}
           </SelectContent>
@@ -321,7 +321,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                   <span>Created {formatDate(bookmark.createdAt)}</span>
                                   {bookmark.configKey && bookmark.configKey !== 'default' && (
                                     <Badge variant="outline" className="text-[10px] h-4">
-                                      {configRegistry[bookmark.configKey]?.name || bookmark.configKey}
+                                      {getConfigEntry(bookmark.configKey)?.name || bookmark.configKey}
                                     </Badge>
                                   )}
                                 </div>
@@ -436,7 +436,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                                       <span>{bookmark.lastAccessed ? new Date(bookmark.lastAccessed).toLocaleString() : "Never"}</span>
                                       
                                       <span className="text-gray-500 dark:text-gray-400 font-medium">Config:</span> 
-                                      <span>{configRegistry[bookmark.configKey || 'default']?.name || bookmark.configKey || 'Default'}</span>
+                                      <span>{getConfigEntry(bookmark.configKey || 'default')?.name || bookmark.configKey || 'Default'}</span>
                                       
                                       <span className="text-gray-500 dark:text-gray-400 font-medium">Config Key:</span> 
                                       <span className="font-mono">{bookmark.configKey || "default"}</span>
@@ -582,7 +582,7 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                 onValueChange={(value) => setEditingBookmark({
                   ...editingBookmark, 
                   configKey: value,
-                  configName: configRegistry[value]?.name || value
+                  configName: getConfigEntry(value)?.name || value
                 })}
               >
                 <SelectTrigger className="h-10">
@@ -590,9 +590,9 @@ const UnifiedBookmarkManager: React.FC<UnifiedBookmarkManagerProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="default">Default</SelectItem>
-                  {Object.keys(configRegistry).map(key => (
-                    <SelectItem key={key} value={key}>
-                      {configRegistry[key].name}
+                  {getConfigSelectOptions().map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

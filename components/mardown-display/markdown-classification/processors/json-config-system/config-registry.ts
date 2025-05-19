@@ -1,34 +1,82 @@
-import { MarkdownConfig } from "./config-processor";
-import { configRegistry } from "./known-configs-from-json";
+import {
+    candidateProfileConfig,
+    candidateProfileStructuredConfig,
+    candidateProfileTextConfig,
+    appSuggestionsConfig,
+    googleSeoConfig,
+} from "./configs";
 
-export interface ConfigEntry {
-  id: string;        // Unique identifier for the config
-  name: string;      // Display name
-  type: string;      // Type identifier (e.g., "candidate_profile")
-  config: MarkdownConfig; // The actual configuration
-  description?: string; // Optional description
+interface JsonProcessorConfigDefinition {
+    id: string;
+    name: string;
+    type: string;
+    config: any;
+    description: string;
 }
 
+// Individual definitions
+const CANDIDATE_PROFILE_DEFINITION: JsonProcessorConfigDefinition = {
+    id: "candidateProfile",
+    name: "Candidate Profile",
+    type: "candidate_profile",
+    config: candidateProfileConfig,
+    description: "Standard configuration for parsing candidate profiles",
+};
 
+const CANDIDATE_PROFILE_STRUCTURED_DEFINITION: JsonProcessorConfigDefinition = {
+    id: "candidateProfileStructured",
+    name: "Candidate Profile Structured",
+    type: "candidate_profile_structured",
+    config: candidateProfileStructuredConfig,
+    description: "Configuration for parsing structured candidate profiles",
+};
 
-// Get all available config entries
-export function getAllConfigs(): ConfigEntry[] {
-  return Object.values(configRegistry);
-}
+const CANDIDATE_PROFILE_TEXT_DEFINITION: JsonProcessorConfigDefinition = {
+    id: "candidateProfileText",
+    name: "Candidate Profile Text",
+    type: "candidate_profile_text",
+    config: candidateProfileTextConfig,
+    description: "Configuration for parsing candidate profiles as text",
+};
 
-// Get config by ID
-export function getConfigById(configId: string): ConfigEntry | null {
-  return configRegistry[configId] || null;
-}
+const APP_SUGGESTIONS_DEFINITION: JsonProcessorConfigDefinition = {
+    id: "appSuggestions",
+    name: "App Suggestions",
+    type: "app_suggestions",
+    config: appSuggestionsConfig,
+    description: "Configuration for parsing app suggestions",
+};
 
-// Get configs by type
-export function getConfigsByType(configType: string): ConfigEntry[] {
-  return Object.values(configRegistry).filter(entry => entry.type === configType);
-}
+const GOOGLE_SEO_DEFINITION: JsonProcessorConfigDefinition = {
+    id: "googleSeo",
+    name: "Google SEO",
+    type: "google_seo",
+    config: googleSeoConfig,
+    description: "Configuration for parsing Google SEO tips",
+};
 
-// Get config types
-export function getAllConfigTypes(): string[] {
-  return [...new Set(Object.values(configRegistry).map(entry => entry.type))];
-}
+// Registry array
+export const JSON_CONFIG_SYSTEM_REGISTRY = [
+    CANDIDATE_PROFILE_DEFINITION,
+    CANDIDATE_PROFILE_STRUCTURED_DEFINITION,
+    CANDIDATE_PROFILE_TEXT_DEFINITION,
+    APP_SUGGESTIONS_DEFINITION,
+    GOOGLE_SEO_DEFINITION,
+];
 
-export { configRegistry };
+// Utility functions
+export const getConfigSelectOptions = () => {
+    return JSON_CONFIG_SYSTEM_REGISTRY.map((config) => ({
+        value: config.id,
+        label: config.name,
+        description: config.description,
+    }));
+};
+
+export const getConfigEntry = (configId: string) => {
+    return JSON_CONFIG_SYSTEM_REGISTRY.find((c) => c.id === configId) || null;
+};
+
+export const hasConfig = (configId: string) => {
+    return JSON_CONFIG_SYSTEM_REGISTRY.some((c) => c.id === configId);
+};

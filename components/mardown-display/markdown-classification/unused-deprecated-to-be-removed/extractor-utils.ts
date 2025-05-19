@@ -1,6 +1,20 @@
-import { Extractor } from "../../custom-views/registry";
 import { AppDispatch } from "@/lib/redux/store";
 import { brokerActions } from "@/lib/redux/brokerSlice";
+
+
+export interface Extractor {
+  brokerId: string;
+  path: string;
+  type: "list" | "single" | "map" | "text";
+}
+
+export interface ConfigViewEntry {
+  id: string;
+  name: string;
+  component: React.ComponentType<any>;
+  description?: string;
+  extractors?: Extractor[];
+}
 
 /**
  * Safely extracts a value from an object using a path string

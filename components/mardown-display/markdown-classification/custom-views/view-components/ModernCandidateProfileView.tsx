@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Minus, Briefcase, MapPin, DollarSign, Calendar, Award, MessageSquare } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import DefaultErrorFallback from '@/components/mardown-display/markdown-classification/custom-views/common/DefaultErrorFallback';
+import FlexibleLoadingComponent from '@/components/mardown-display/markdown-classification/custom-views/common/DefaultLoadingComponent';
 
-const CandidateProfileWithCollapse = ({ data }) => {
+const CandidateProfileWithCollapseDisplay = ({ data }) => {
   // Handle missing or malformed data gracefully
   const extracted = data?.extracted || {};
   const [expandedSection, setExpandedSection] = useState(null);
@@ -194,6 +197,57 @@ const CandidateProfileWithCollapse = ({ data }) => {
   );
 };
 
+interface CandidateProfileWithCollapseProps {
+  data: any;
+  isLoading?: boolean;
+}
 
 // Export component
-export default CandidateProfileWithCollapse;
+export default function CandidateProfileWithCollapseView({ data, isLoading = false }: CandidateProfileWithCollapseProps) {
+  const isMobile = useIsMobile();
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (isMobile) {
+      console.log("This view doesn't currently have a separate mobile view");
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [data]);
+
+  if (isLoading) {
+    return <FlexibleLoadingComponent 
+      baseColor="indigo"
+      accentColor="violet"
+      title="Candidate Profile"
+      subtitle="Loading profile information"
+      stages={[
+        "Retrieving candidate data...",
+        "Loading professional experience...",
+        "Processing qualifications...",
+        "Finalizing profile view..."
+      ]}
+      placeholderItems={3}
+      size="large"
+    />;
+  }
+
+  try {
+    if (!data || hasError) {
+      return <DefaultErrorFallback
+        title="Candidate Profile Error"
+        message="There was an error displaying the candidate profile."
+      />;
+    }
+    return <CandidateProfileWithCollapseDisplay data={data} />;
+  } catch (error) {
+    console.error("Error rendering CandidateProfileWithCollapseDisplay:", error);
+    setHasError(true);
+    return <DefaultErrorFallback
+      title="Candidate Profile Error"
+      message="There was an error displaying the candidate profile."
+    />;
+  }
+}

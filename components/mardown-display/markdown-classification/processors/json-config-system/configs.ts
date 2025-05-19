@@ -1,5 +1,5 @@
 import { MarkdownConfig } from "./config-processor";
-import { ConfigEntry } from "./config-registry";
+
 
 export const candidateProfileConfig: MarkdownConfig = {
     type: "candidate_profile",
@@ -419,40 +419,40 @@ export const googleSeoConfig: MarkdownConfig = {
     },
 };
 
-export const configRegistry: Record<string, ConfigEntry> = {
-    candidateProfile: {
-        id: "candidateProfile",
-        name: "Candidate Profile",
-        type: "candidate_profile",
-        config: candidateProfileConfig,
-        description: "Standard configuration for parsing candidate profiles",
-    },
-    candidateProfileStructured: {
-        id: "candidateProfileStructured",
-        name: "Candidate Profile Structured",
-        type: "candidate_profile_structured",
-        config: candidateProfileStructuredConfig,
-        description: "Configuration for parsing structured candidate profiles",
-    },
-    candidateProfileText: {
-        id: "candidateProfileText",
-        name: "Candidate Profile Text",
-        type: "candidate_profile_text",
-        config: candidateProfileTextConfig,
-        description: "Configuration for parsing candidate profiles as text",
-    },
-    appSuggestions: {
-        id: "appSuggestions",
-        name: "App Suggestions",
-        type: "app_suggestions",
-        config: appSuggestionsConfig,
-        description: "Configuration for parsing app suggestions",
-    },
-    googleSeo: {
-        id: "googleSeo",
-        name: "Google SEO",
-        type: "google_seo",
-        config: googleSeoConfig,
-        description: "Configuration for parsing Google SEO tips",
-    },
-};
+// export const jsonConfigSystemRegistry: Record<string, ConfigEntry> = {
+//     candidateProfile: {
+//         id: "candidateProfile",
+//         name: "Candidate Profile",
+//         type: "candidate_profile",
+//         config: candidateProfileConfig,
+//         description: "Standard configuration for parsing candidate profiles",
+//     },
+//     candidateProfileStructured: {
+//         id: "candidateProfileStructured",
+//         name: "Candidate Profile Structured",
+//         type: "candidate_profile_structured",
+//         config: candidateProfileStructuredConfig,
+//         description: "Configuration for parsing structured candidate profiles",
+//     },
+//     candidateProfileText: {
+//         id: "candidateProfileText",
+//         name: "Candidate Profile Text",
+//         type: "candidate_profile_text",
+//         config: candidateProfileTextConfig,
+//         description: "Configuration for parsing candidate profiles as text",
+//     },
+//     appSuggestions: {
+//         id: "appSuggestions",
+//         name: "App Suggestions",
+//         type: "app_suggestions",
+//         config: appSuggestionsConfig,
+//         description: "Configuration for parsing app suggestions",
+//     },
+//     googleSeo: {
+//         id: "googleSeo",
+//         name: "Google SEO",
+//         type: "google_seo",
+//         config: googleSeoConfig,
+//         description: "Configuration for parsing Google SEO tips",
+//     },
+// };

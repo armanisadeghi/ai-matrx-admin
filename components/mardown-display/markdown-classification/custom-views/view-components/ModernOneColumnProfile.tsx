@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Plus, 
   Minus, 
@@ -10,8 +10,12 @@ import {
   Building,
   MessageSquare
 } from 'lucide-react';
+import FlexibleLoadingComponent from '@/components/mardown-display/markdown-classification/custom-views/common/DefaultLoadingComponent';
+import { useIsMobile } from '@/hooks/use-mobile';
+import DefaultErrorFallback from '@/components/mardown-display/markdown-classification/custom-views/common/DefaultErrorFallback';
 
-const ModernOneColumnProfile = ({ data }) => {
+
+const ModernOneColumnProfileDisplay = ({ data }) => {
   // Handle missing or malformed data gracefully
   const extracted = data?.extracted || {};
   const [expandedSection, setExpandedSection] = useState(null);
@@ -202,5 +206,56 @@ const ModernOneColumnProfile = ({ data }) => {
   );
 };
 
+interface ModernOneColumnProfileProps {
+  data: any;
+  isLoading?: boolean;
+}
 
-export default ModernOneColumnProfile;
+export default function ModernOneColumnProfileView({ data, isLoading = false }: ModernOneColumnProfileProps) {
+  const isMobile = useIsMobile();
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (isMobile) {
+      console.log("This view doesn't currently have a separate mobile view");
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [data]);
+
+  if (isLoading) {
+    return <FlexibleLoadingComponent 
+      baseColor="indigo"
+      accentColor="violet"
+      title="Candidate Profile"
+      subtitle="Loading detailed candidate information"
+      stages={[
+        "Retrieving candidate details...",
+        "Processing experience history...",
+        "Analyzing qualifications...",
+        "Preparing comprehensive profile..."
+      ]}
+      placeholderItems={4}
+      size="large"
+    />;
+  }
+
+  try {
+    if (!data || hasError) {
+      return <DefaultErrorFallback
+        title="Candidate Profile Error"
+        message="There was an error displaying the candidate profile."
+      />;
+    }
+    return <ModernOneColumnProfileDisplay data={data} />;
+  } catch (error) {
+    console.error("Error rendering ModernOneColumnProfileDisplay:", error);
+    setHasError(true);
+    return <DefaultErrorFallback
+      title="Candidate Profile Error"
+      message="There was an error displaying the candidate profile."
+    />;
+  }
+}

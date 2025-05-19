@@ -9,25 +9,24 @@ import SocketAccordionResponse from "@/components/socket/response/SocketAccordio
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { DirectMarkdownRenderer, configRegistry } from "@/components/mardown-display/markdown-classification";
 import { brokerActions } from "@/lib/redux/brokerSlice";
+import { hasCoordinator } from "@/components/mardown-display/markdown-classification/markdown-coordinator";
+import DirectMarkdownRenderer from "@/components/mardown-display/markdown-classification/DirectMarkdownRenderer";
 
 interface ResponseLayoutManagerProps {
   appletId: string;
   taskId: string;
-  viewName: string
+  coordinatorId: string;
   handleSubmit: () => void;
 }
 
-export default function ResponseLayoutManager({ appletId, taskId, viewName, handleSubmit }: ResponseLayoutManagerProps) {
+export default function ResponseLayoutManager({ appletId, taskId, coordinatorId, handleSubmit }: ResponseLayoutManagerProps) {
   const [showConfig, setShowConfig] = useState(false);
   const dispatch = useAppDispatch();
   const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
   const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
   const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
-
-  // Check if the viewName corresponds to a registered config
-  const hasCustomView = useMemo(() => viewName !== 'default' && Object.keys(configRegistry).includes(viewName), [viewName]);
+  const hasCustomView = useMemo(() => hasCoordinator(coordinatorId), [coordinatorId]);
 
   useEffect(() => {
     if (isTaskComplete) {
@@ -39,10 +38,6 @@ export default function ResponseLayoutManager({ appletId, taskId, viewName, hand
 }, [isTaskComplete, textResponse, dispatch]);
 
 
-  useEffect(() => {
-    console.log("ResponseLayoutManager viewName", viewName);
-    console.log("ResponseLayoutManager hasCustomView", hasCustomView);
-  }, [viewName, hasCustomView]);
 
   const toggleConfig = () => {
     setShowConfig(prev => !prev);
@@ -71,7 +66,7 @@ export default function ResponseLayoutManager({ appletId, taskId, viewName, hand
           {hasCustomView && (
             <DirectMarkdownRenderer 
               markdown={textResponse} 
-              configKey={viewName} 
+              coordinatorId={coordinatorId}
               className="bg-slate-50 dark:bg-slate-900" 
               isLoading={!isTaskComplete}
               source="applet"

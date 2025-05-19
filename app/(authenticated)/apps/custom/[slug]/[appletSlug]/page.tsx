@@ -18,10 +18,10 @@ import useAppletRecipe from "@/features/applet/hooks/useAppletRecipe";
 import ResponseLayoutManager from "@/features/applet/runner/response/ResponseLayoutManager";
 
 
-const SLUG_TO_VIEW_MAP = {
-    "core-info-generator": "appSuggestions",
-    "applet-description-generator": "appSuggestions",
-    "candidate-write-up-not-used": "candidateProfileStructured",
+const SLUG_TO_COORDINATOR_MAP = {
+    "core-info-generator": "app_suggestions",
+    "applet-description-generator": "app_suggestions",
+    "candidate-write-up-not-used": "candidate_profile_structured",
 }
 
 
@@ -43,9 +43,7 @@ export default function AppletPage() {
 
     const { taskId, submitRecipe } = useAppletRecipe({ appletId });
 
-    const viewName = SLUG_TO_VIEW_MAP[appletSlug] || "default";
-
-    console.log("AppletPage viewName", viewName);
+    const coordinatorId = SLUG_TO_COORDINATOR_MAP[appletSlug] || "default";
 
     useEffect(() => {
         if (taskId) {
@@ -80,7 +78,7 @@ export default function AppletPage() {
         <div className="h-full w-full">
             {!taskSubmitted && <AppletLayoutManager appletId={appletId} handleSubmit={handleSubmit} />}
 
-            {taskSubmitted && taskId && <ResponseLayoutManager appletId={appletId} taskId={taskId} handleSubmit={handleSubmit} viewName={viewName}/>}
+            {taskSubmitted && taskId && <ResponseLayoutManager appletId={appletId} taskId={taskId} handleSubmit={handleSubmit} coordinatorId={coordinatorId}/>}
         </div>
     );
 }

@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import FlexibleLoadingComponent from '@/components/mardown-display/markdown-classification/custom-views/common/DefaultLoadingComponent';
+import { useIsMobile } from '@/hooks/use-mobile';
+import DefaultErrorFallback from '@/components/mardown-display/markdown-classification/custom-views/common/DefaultErrorFallback';
 
-const CandidateProfileWithCollapse = ({ data }) => {
+const CandidateProfileWithCollapseDisplay = ({ data }) => {
   // Handle missing or malformed data gracefully
   const extracted = data?.extracted || {};
   const [expandedSection, setExpandedSection] = useState(null);
@@ -134,4 +137,56 @@ const CandidateProfileWithCollapse = ({ data }) => {
   );
 };
 
-export default CandidateProfileWithCollapse;
+interface CandidateProfileWithCollapseProps {
+  data: any;
+  isLoading?: boolean;
+}
+
+export default function CandidateProfileWithCollapse({ data, isLoading = false }: CandidateProfileWithCollapseProps) {
+  const isMobile = useIsMobile();
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (isMobile) {
+      console.log("This view doesn't currently have a separate mobile view");
+    }
+  }, [isMobile]);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [data]);
+
+  if (isLoading) {
+    return <FlexibleLoadingComponent 
+      baseColor="slate"
+      accentColor="indigo"
+      title="Candidate Profile"
+      subtitle="Loading candidate information"
+      stages={[
+        "Retrieving profile data...",
+        "Processing experience details...",
+        "Preparing professional information...",
+        "Finalizing candidate profile..."
+      ]}
+      placeholderItems={3}
+      size="medium"
+    />;
+  }
+
+  try {
+    if (!data || hasError) {
+      return <DefaultErrorFallback
+        title="Candidate Profile Error"
+        message="There was an error displaying the candidate profile."
+      />;
+    }
+    return <CandidateProfileWithCollapseDisplay data={data} />;
+  } catch (error) {
+    console.error("Error rendering CandidateProfileWithCollapseDisplay:", error);
+    setHasError(true);
+    return <DefaultErrorFallback
+      title="Candidate Profile Error"
+      message="There was an error displaying the candidate profile."
+    />;
+  }
+}

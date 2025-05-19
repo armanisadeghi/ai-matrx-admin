@@ -1,52 +1,72 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { Suspense } from "react";
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import remarkGfm from "remark-gfm";
-import { processMarkdownWithConfig } from "./processors/json-config-system/config-processor";
-import { configRegistry } from "./processors/json-config-system/config-registry";
-import { getConfigTypeFromKey, getViewForConfig, getViewLoadingComponent } from "./custom-views/registry";
+import { useState, useEffect } from "react";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { processExtractors } from "./processors/json-config-system/extractor-utils";
+import { prepareMarkdownForRendering } from "./markdown-processing-utils";
+import { ViewId } from "./custom-views/view-registry";
+import ViewRenderer from "./custom-views/ViewRenderer";
+import { getDefaultViewId } from "./markdown-coordinator";
 
 interface DirectMarkdownRendererProps {
     markdown: string;
-    configKey: string;
-    viewType?: string;
+    coordinatorId: string;
+    viewId?: ViewId | "default";
     className?: string;
-    isLoading?: boolean;
     source?: string;
     sourceId?: string;
+    isLoading?: boolean;
 }
 
 const DirectMarkdownRenderer = ({
     markdown,
-    configKey,
-    viewType = "default",
+    coordinatorId,
+    viewId = "default",
     className = "",
-    isLoading = false,
     source,
     sourceId,
+    isLoading = false,
 }: DirectMarkdownRendererProps) => {
     const [processedData, setProcessedData] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
-    const [processing, setProcessing] = useState(false);
-    const [lastMarkdown, setLastMarkdown] = useState<string>("");
-    const [timeUnchanged, setTimeUnchanged] = useState<number>(0);
-    const [failsafeTriggered, setFailsafeTriggered] = useState<boolean>(false);
+    const [viewInfo, setViewInfo] = useState<any>(null);
     const dispatch = useAppDispatch();
 
-    const configType = useMemo(() => getConfigTypeFromKey(configKey), [configKey]);
+    // Resolve the actual view ID if 'default' is specified
+    const resolvedViewId = viewId === "default" 
+        ? getDefaultViewId(coordinatorId) as ViewId 
+        : viewId as ViewId;
 
     useEffect(() => {
-        if (source && sourceId && processedData && processedData.extracted) {
+        if (!markdown || !coordinatorId) {
+            return;
+        }
+
+        setError(null);
+
+        async function processMarkdown() {
+            try {
+                const result = await prepareMarkdownForRendering(markdown, coordinatorId, resolvedViewId);
+                setProcessedData(result.processedData);
+                setViewInfo({
+                    coordinatorDefinition: result.coordinatorDefinition,
+                    viewComponentInfo: result.viewComponentInfo
+                });
+            } catch (err) {
+                console.error(`[DirectMarkdownRenderer] Processing error for ${coordinatorId}:`, err);
+                setError(`Error processing markdown: ${err instanceof Error ? err.message : String(err)}`);
+            }
+        }
+
+        processMarkdown();
+    }, [markdown, coordinatorId, resolvedViewId]);
+
+    useEffect(() => {
+        if (source && sourceId && processedData && viewInfo) {
             // Dispatch the main data broker
             dispatch(
                 brokerActions.setValue({
-                    brokerId: `${configType}-${sourceId}`,
+                    brokerId: `${coordinatorId}-${sourceId}`,
                     value: processedData.extracted,
                 })
             );
@@ -62,130 +82,35 @@ const DirectMarkdownRenderer = ({
                 if (hasMiscContent) {
                     dispatch(
                         brokerActions.setValue({
-                            brokerId: `${configType}-${sourceId}-miscellaneous`,
+                            brokerId: `${coordinatorId}-${sourceId}-miscellaneous`,
                             value: processedData.miscellaneous,
                         })
                     );
                 }
             }
-
-            // Process any extractors defined in the view
-            const viewEntry = configType ? getViewForConfig(configType, viewType) : null;
-            if (viewEntry && viewEntry.extractors) {
-                // Wrap processedData in a data object to match extractor paths
-                processExtractors({ data: processedData }, viewEntry.extractors, dispatch, sourceId);
-            }
         }
-    }, [source, sourceId, processedData, dispatch, configType, viewType]);
-
-    useEffect(() => {
-        if (markdown === lastMarkdown) {
-            setTimeUnchanged((prev) => {
-                const newTime = prev + 1;
-                if (newTime >= 3 && !failsafeTriggered && isLoading) {
-                    console.warn(
-                        "[DirectMarkdownRenderer] Failsafe triggered: Markdown content unchanged for 3 seconds while still loading. Rendering anyway due to known socket task bug where end message is not sent. Please fix this issue."
-                    );
-                    setFailsafeTriggered(true);
-                    return 0;
-                }
-                return newTime;
-            });
-        } else {
-            setLastMarkdown(markdown);
-            setTimeUnchanged(0);
-            setFailsafeTriggered(false);
-        }
-
-        if (isLoading || !markdown || !configKey || failsafeTriggered) {
-            return;
-        }
-
-        setProcessing(true);
-        setError(null);
-
-        try {
-            const config = configRegistry[configKey]?.config;
-            if (!config) {
-                setError(`Configuration '${configKey}' not found`);
-                setProcessing(false);
-                return;
-            }
-
-            setTimeout(() => {
-                try {
-                    const processor = unified().use(remarkParse).use(remarkGfm);
-                    const tree = processor.parse(markdown);
-
-                    const result = processMarkdownWithConfig({
-                        ast: tree as any,
-                        config,
-                    });
-
-                    setProcessedData(result);
-                    setProcessing(false);
-                } catch (err) {
-                    console.error(`[DirectMarkdownRenderer] Processing error for ${configKey}:`, err);
-                    setError(`Error processing markdown: ${err instanceof Error ? err.message : String(err)}`);
-                    setProcessing(false);
-                }
-            }, 50);
-        } catch (err) {
-            console.error(`[DirectMarkdownRenderer] Config error for ${configKey}:`, err);
-            setError(`Error processing markdown: ${err instanceof Error ? err.message : String(err)}`);
-            setProcessing(false);
-        }
-    }, [markdown, configKey, isLoading, configType, viewType, lastMarkdown, failsafeTriggered]);
+    }, [source, sourceId, processedData, viewInfo, dispatch, coordinatorId]);
 
     if (error) {
-        console.error(`[DirectMarkdownRenderer] Rendering error for ${configKey}:`, error);
         return <div className={`text-red-600 dark:text-red-400 ${className}`}>{error}</div>;
     }
 
-    const viewEntry = configType ? getViewForConfig(configType, viewType) : null;
-
-    if (!viewEntry) {
-        console.error(`[DirectMarkdownRenderer] View not found for ${configKey}:`, { configType, viewType });
-        return (
-            <div className={`text-red-600 dark:text-red-400 ${className}`}>
-                View not found for configuration type: {configType}, view type: {viewType}
-            </div>
-        );
+    if (!processedData || !viewInfo) {
+        return null;
     }
 
-    if (isLoading || processing || (!processedData && !failsafeTriggered)) {
-        const LoadingComponent = getViewLoadingComponent(configType, viewType);
-        return (
-            <div className={className}>
-                <LoadingComponent />
-            </div>
-        );
-    }
-
-    if (!processedData || !processedData.extracted) {
-        console.error(`[DirectMarkdownRenderer] Invalid data for ${configKey}:`, { processedData });
-        return (
-            <div className={`text-red-600 dark:text-red-400 ${className}`}>
-                Invalid data format. Expected an object with an 'extracted' property.
-            </div>
-        );
-    }
-
-    const ViewComponent = viewEntry.component;
-    const LoadingComponent = getViewLoadingComponent(configType, viewType);
-
+    // Use the ViewRenderer component to handle view resolution and rendering
+    const { viewComponentInfo } = viewInfo;
     return (
-        <div className={className}>
-            <Suspense
-                fallback={
-                    <div className={className}>
-                        <LoadingComponent />
-                    </div>
-                }
-            >
-                <ViewComponent data={processedData} />
-            </Suspense>
-        </div>
+        <ViewRenderer
+            requestedViewId={resolvedViewId}
+            availableViews={viewComponentInfo.availableViews}
+            defaultViewId={viewComponentInfo.defaultViewId}
+            data={processedData}
+            coordinatorId={coordinatorId}
+            className={className}
+            isLoading={isLoading}
+        />
     );
 };
 

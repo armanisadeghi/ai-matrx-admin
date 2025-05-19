@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import MarkdownEditor from "./MarkdownEditor";
+import MarkdownClassificationTester from "./MarkdownClassificationTester";
 import { Button } from "@/components/ui";
 import { Maximize2, X } from "lucide-react";
 
@@ -53,10 +53,9 @@ const FullscreenMarkdownEditor = ({
               </Button>
             </div>
             <div className="flex-1 overflow-hidden">
-              <MarkdownEditor 
+              <MarkdownClassificationTester 
                 initialMarkdown={initialMarkdown}
-                showSampleSelector={showSampleSelector}
-                showConfigSelector={showConfigSelector}
+                showSelectors={showSampleSelector && showConfigSelector}
               />
             </div>
           </div>

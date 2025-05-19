@@ -242,6 +242,9 @@ importers:
       '@types/leaflet':
         specifier: ^1.9.17
         version: 1.9.17
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       '@types/papaparse':
         specifier: ^5.3.16
         version: 5.3.16
@@ -251,6 +254,9 @@ importers:
       '@types/three':
         specifier: latest
         version: 0.176.0
+      '@types/unist':
+        specifier: ^3.0.3
+        version: 3.0.3
       '@types/uuid':
         specifier: latest
         version: 10.0.0
