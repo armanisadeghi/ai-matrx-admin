@@ -5,12 +5,12 @@ import { Suspense } from "react";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
-import { processMarkdownWithConfig } from "./json-config-system/config-processor";
-import { configRegistry } from "./json-config-system/known-configs-from-json";
+import { processMarkdownWithConfig } from "./processors/json-config-system/config-processor";
+import { configRegistry } from "./processors/json-config-system/config-registry";
 import { getConfigTypeFromKey, getViewForConfig, getViewLoadingComponent } from "./custom-views/registry";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { processExtractors } from "./json-config-system/extractor-utils";
+import { processExtractors } from "./processors/json-config-system/extractor-utils";
 
 interface DirectMarkdownRendererProps {
     markdown: string;
@@ -105,8 +105,8 @@ const DirectMarkdownRenderer = ({
         setError(null);
 
         try {
-            const configEntry = configRegistry[configKey];
-            if (!configEntry) {
+            const config = configRegistry[configKey]?.config;
+            if (!config) {
                 setError(`Configuration '${configKey}' not found`);
                 setProcessing(false);
                 return;
@@ -117,20 +117,10 @@ const DirectMarkdownRenderer = ({
                     const processor = unified().use(remarkParse).use(remarkGfm);
                     const tree = processor.parse(markdown);
 
-                    let result;
-                    // Use custom processor if available, otherwise use standard processor
-                    if (configEntry.customProcessor) {
-                        result = configEntry.customProcessor(tree);
-                    } else if (configEntry.config) {
-                        result = processMarkdownWithConfig({
-                            ast: tree as any,
-                            config: configEntry.config,
-                        });
-                    } else {
-                        setError(`Configuration '${configKey}' has neither config nor customProcessor`);
-                        setProcessing(false);
-                        return;
-                    }
+                    const result = processMarkdownWithConfig({
+                        ast: tree as any,
+                        config,
+                    });
 
                     setProcessedData(result);
                     setProcessing(false);
@@ -164,13 +154,6 @@ const DirectMarkdownRenderer = ({
     }
 
     if (isLoading || processing || (!processedData && !failsafeTriggered)) {
-        console.log(`[DirectMarkdownRenderer] Showing loading for ${configKey}:`, {
-            configType,
-            viewType,
-            isLoading,
-            processing,
-            failsafeTriggered,
-        });
         const LoadingComponent = getViewLoadingComponent(configType, viewType);
         return (
             <div className={className}>

@@ -28,7 +28,7 @@ import {
 import { copyToClipboard } from "../utils/basic-utils";
 import { Bookmark } from "../types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { configRegistry } from "@/components/mardown-display/markdown-classification/json-config-system/known-configs-from-json";
+import { configRegistry } from "@/components/mardown-display/markdown-classification/processors/json-config-system/known-configs-from-json";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 

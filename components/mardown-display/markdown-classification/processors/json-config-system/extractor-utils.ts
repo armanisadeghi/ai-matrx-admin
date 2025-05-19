@@ -1,4 +1,4 @@
-import { Extractor } from "../custom-views/registry";
+import { Extractor } from "../../custom-views/registry";
 import { AppDispatch } from "@/lib/redux/store";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 

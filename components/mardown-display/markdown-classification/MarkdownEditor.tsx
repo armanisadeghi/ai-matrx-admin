@@ -13,9 +13,9 @@ import {
     SelectItem,
     Button,
 } from "@/components/ui";
-import { processMarkdownWithConfig } from "./json-config-system/config-processor";
+import { processMarkdownWithConfig } from "./processors/json-config-system/config-processor";
 import { basicSample, markdownSamples } from "./markdown-samples";
-import { configRegistry } from "./json-config-system/known-configs-from-json";
+import { configRegistry } from "./processors/json-config-system/config-registry";
 import MarkdownInput from "./MarkdownInput";
 import MarkdownProcessingTabs from "./MarkdownProcessingTabs";
 
@@ -59,23 +59,12 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
             const tree = processor.parse(text);
             setAst(tree as unknown as MdastNode);
 
-            const configEntry = configRegistry[configKey];
-            if (configEntry) {
-                let result;
-                
-                // Use custom processor if available, otherwise use standard processor
-                if (configEntry.customProcessor) {
-                    result = configEntry.customProcessor(tree);
-                } else if (configEntry.config) {
-                    result = processMarkdownWithConfig({
-                        ast: tree as unknown as MdastNode,
-                        config: configEntry.config,
-                    });
-                } else {
-                    console.error(`Configuration '${configKey}' has neither config nor customProcessor`);
-                    return;
-                }
-                
+            const config = configRegistry[configKey]?.config;
+            if (config) {
+                const result = processMarkdownWithConfig({
+                    ast: tree as unknown as MdastNode,
+                    config,
+                });
                 setProcessedData(result);
             }
         } catch (error) {
