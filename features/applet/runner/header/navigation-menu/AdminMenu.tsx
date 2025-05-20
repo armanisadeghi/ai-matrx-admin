@@ -18,7 +18,7 @@ import { cn } from "@/styles/themes/utils";
 
 // Custom SubTrigger without the right chevron
 const CustomSubTrigger = React.forwardRef<
-    React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
+    React.ComponentRef<typeof DropdownMenuPrimitive.SubTrigger>,
     React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
         inset?: boolean;
     }

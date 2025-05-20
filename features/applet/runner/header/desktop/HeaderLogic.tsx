@@ -2,7 +2,7 @@
 import React from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { 
     selectAppRuntimeConfig,
     selectAppRuntimeExtraButtons,
@@ -14,7 +14,7 @@ import {
 } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
 import { getAppIcon } from "@/features/applet/styles/StyledComponents";
 import { CustomAppHeaderProps } from "../CustomAppHeader";
-import { selectActiveAppletSlug, selectAppletRuntimeActiveApplet } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
+import { selectAppletRuntimeActiveApplet } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { CustomActionButton, AppletListItemConfig, CustomAppConfig } from "@/types";
 
 export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
@@ -44,6 +44,7 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
     children 
 }) => {
     const router = useRouter();
+    const pathname = usePathname();
     const config = useAppSelector(selectAppRuntimeConfig);
     const extraButtons = useAppSelector(selectAppRuntimeExtraButtons);
     const iconName = useAppSelector(selectAppRuntimeMainAppIcon);
@@ -52,7 +53,21 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
     const appletList = useAppSelector(selectAppRuntimeAppletList) || [];
     const layoutType = useAppSelector(selectAppRuntimeLayoutType) as AppLayoutOptions;
     const activeApplet = useAppSelector((state) => selectAppletRuntimeActiveApplet(state)) || null;
-    const activeAppletSlug = useAppSelector(selectActiveAppletSlug);
+    
+    // Get active applet slug from the route instead of the selector
+    const activeAppletSlug = React.useMemo(() => {
+        if (!pathname || !config?.slug) return "";
+        
+        // Assuming route format: /apps/custom/{configSlug}/{appletSlug}
+        const pathParts = pathname.split('/');
+        const configSlugIndex = pathParts.findIndex(part => part === config.slug);
+        
+        if (configSlugIndex !== -1 && pathParts.length > configSlugIndex + 1) {
+            return pathParts[configSlugIndex + 1];
+        }
+        
+        return "";
+    }, [pathname, config?.slug]);
 
     const user = useAppSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";

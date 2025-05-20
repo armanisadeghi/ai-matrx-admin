@@ -36,21 +36,6 @@ const BrokerStateViewer = () => {
             case "number":
                 return <span className="font-mono">{value}</span>;
             case "string":
-                // Check if it's a long string
-                if (value.length > 100) {
-                    return (
-                        <Accordion type="single" collapsible className="w-full">
-                            <AccordionItem value="item-1" className="border-none">
-                                <AccordionTrigger className="py-1 text-xs">Show content ({value.length} chars)</AccordionTrigger>
-                                <AccordionContent>
-                                    <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-md font-mono text-xs whitespace-pre-wrap max-h-48 overflow-auto">
-                                        {value}
-                                    </div>
-                                </AccordionContent>
-                            </AccordionItem>
-                        </Accordion>
-                    );
-                }
                 // Check if it's a URL
                 if (value.startsWith("http")) {
                     return (
@@ -58,13 +43,21 @@ const BrokerStateViewer = () => {
                             href={value}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline truncate block max-w-md"
+                            className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline block max-w-full"
                         >
                             {value}
                         </a>
                     );
                 }
-                return <span className="font-mono truncate block max-w-md">{value}</span>;
+                
+                // Always show full string, with scrolling if needed
+                return (
+                    <div className="font-mono text-xs whitespace-pre-wrap break-words">
+                        <ScrollArea className="max-h-48 w-full rounded-md bg-slate-100 dark:bg-slate-800 p-2">
+                            {value}
+                        </ScrollArea>
+                    </div>
+                );
             case "object":
                 if (Array.isArray(value)) {
                     return (
@@ -87,18 +80,11 @@ const BrokerStateViewer = () => {
                     );
                 }
                 return (
-                    <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="item-1" className="border-none">
-                            <AccordionTrigger className="py-1 text-xs">Object ({Object.keys(value).length} properties)</AccordionTrigger>
-                            <AccordionContent>
-                                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-md">
-                                    <ScrollArea className="h-full max-h-48 w-full">
-                                        <ObjectViewer data={value} />
-                                    </ScrollArea>
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
+                    <ScrollArea className="h-full max-h-48 w-full">
+                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-md">
+                            <ObjectViewer data={value} />
+                        </div>
+                    </ScrollArea>
                 );
             default:
                 return String(value);
@@ -113,33 +99,32 @@ const BrokerStateViewer = () => {
                     <div key={key} className="py-1">
                         <span className="font-semibold text-xs text-gray-700 dark:text-gray-300">{key}:</span>{" "}
                         {typeof value === "object" && value !== null ? (
-                            <Accordion type="single" collapsible className="w-full">
-                                <AccordionItem value={`item-${index}`} className="border-none">
-                                    <AccordionTrigger className="py-1 text-xs">
-                                        {Array.isArray(value)
-                                            ? `Array (${value.length} items)`
-                                            : `Object (${Object.keys(value).length} properties)`}
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                        <div className="pl-4 border-l-2 border-slate-200 dark:border-slate-700">
-                                            {Array.isArray(value) ? (
-                                                value.map((item, idx) => (
-                                                    <div key={idx} className="py-1">
-                                                        <span className="text-gray-500 dark:text-gray-400">[{idx}]:</span>{" "}
-                                                        {typeof item === "object" && item !== null ? (
-                                                            <ObjectViewer data={item} level={level + 1} />
-                                                        ) : (
-                                                            formatValue(item)
-                                                        )}
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <ObjectViewer data={value} level={level + 1} />
-                                            )}
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
+                            Array.isArray(value) ? (
+                                <div className="pl-4 border-l-2 border-slate-200 dark:border-slate-700">
+                                    {value.length === 0 ? (
+                                        <span className="text-gray-400 italic">Empty array</span>
+                                    ) : (
+                                        value.map((item, idx) => (
+                                            <div key={idx} className="py-1">
+                                                <span className="text-gray-500 dark:text-gray-400">[{idx}]:</span>{" "}
+                                                {typeof item === "object" && item !== null ? (
+                                                    <ObjectViewer data={item} level={level + 1} />
+                                                ) : (
+                                                    formatValue(item)
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="pl-4 border-l-2 border-slate-200 dark:border-slate-700">
+                                    {Object.keys(value).length === 0 ? (
+                                        <span className="text-gray-400 italic">Empty object</span>
+                                    ) : (
+                                        <ObjectViewer data={value} level={level + 1} />
+                                    )}
+                                </div>
+                            )
                         ) : (
                             formatValue(value)
                         )}
