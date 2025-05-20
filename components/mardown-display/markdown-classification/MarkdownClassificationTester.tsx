@@ -21,7 +21,7 @@ interface MarkdownClassificationTesterProps {
 
 const MarkdownClassificationTester = ({
     initialMarkdown,
-    initialCoordinatorId,
+    initialCoordinatorId = "dynamic",
     showSelectors = true,
 }: MarkdownClassificationTesterProps) => {
     const { mode } = useTheme();

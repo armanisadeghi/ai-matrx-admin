@@ -1,6 +1,6 @@
-import { getProcessorEntry, hasProcessor } from './processors/processor-registry';
-import { getConfigEntry, hasConfig } from './processors/json-config-system/config-registry';
-import { getViewComponent as getViewComponentFromRegistry, ViewId } from './custom-views/view-registry';
+import { getProcessorEntry, hasProcessor } from "./processors/processor-registry";
+import { getConfigEntry, hasConfig } from "./processors/json-config-system/config-registry";
+import { getViewComponent as getViewComponentFromRegistry, ViewId } from "./custom-views/view-registry";
 
 export interface CoordinatorDefinition {
     id: string;
@@ -22,7 +22,13 @@ const CANDIDATE_PROFILE_DEFINITION: CoordinatorDefinition = {
     processor: "ast-to-json-with-config",
     config: "candidateProfile",
     defaultView: "candidateProfile",
-    availableViews: ["candidateProfile", "candidateProfileCollapsible", "modernCandidateProfile", "modernOneColumnCandidateProfile", "dynamic"],
+    availableViews: [
+        "candidateProfile",
+        "candidateProfileCollapsible",
+        "modernCandidateProfile",
+        "modernOneColumnCandidateProfile",
+        "dynamic",
+    ],
     sampleData: ["candidateProfileShort", "candidateProfileFull"],
 };
 
@@ -34,7 +40,13 @@ const CANDIDATE_PROFILE_STRUCTURED_DEFINITION: CoordinatorDefinition = {
     processor: "ast-to-json-with-config",
     config: "candidateProfileStructured",
     defaultView: "modernCandidateProfile",
-    availableViews: ["candidateProfile", "candidateProfileCollapsible", "modernCandidateProfile", "modernOneColumnCandidateProfile", "dynamic"],
+    availableViews: [
+        "candidateProfile",
+        "candidateProfileCollapsible",
+        "modernCandidateProfile",
+        "modernOneColumnCandidateProfile",
+        "dynamic",
+    ],
     sampleData: ["candidateProfileStructured"],
 };
 
@@ -46,7 +58,13 @@ const CANDIDATE_PROFILE_TEXT_DEFINITION: CoordinatorDefinition = {
     processor: "ast-to-json-with-config",
     config: "candidateProfileText",
     defaultView: "modernCandidateProfile",
-    availableViews: ["candidateProfile", "candidateProfileCollapsible", "modernCandidateProfile", "modernOneColumnCandidateProfile", "dynamic"],
+    availableViews: [
+        "candidateProfile",
+        "candidateProfileCollapsible",
+        "modernCandidateProfile",
+        "modernOneColumnCandidateProfile",
+        "dynamic",
+    ],
     sampleData: ["candidateProfileLimitedMarkdown"],
 };
 
@@ -70,7 +88,7 @@ const GOOGLE_SEO_DEFINITION: CoordinatorDefinition = {
     processor: "intro-outro-list",
     config: null,
     defaultView: "introOutroList",
-    availableViews: ["introOutroList", "keyPoints", "dynamic", ],
+    availableViews: ["introOutroList", "keyPoints", "dynamic"],
     sampleData: ["googleSampleShort", "googleSampleLong"],
 };
 
@@ -82,7 +100,7 @@ const CLAUDE_SEO_DEFINITION: CoordinatorDefinition = {
     processor: "intro-outro-list",
     config: null,
     defaultView: "keyPoints",
-    availableViews: ["introOutroList", "keyPoints", "dynamic", ],
+    availableViews: ["introOutroList", "keyPoints", "dynamic"],
     sampleData: ["claudeSample"],
 };
 
@@ -94,7 +112,7 @@ const GROK_SEO_DEFINITION: CoordinatorDefinition = {
     processor: "intro-outro-nested-list",
     config: null,
     defaultView: "introOutroList",
-    availableViews: ["introOutroList", "keyPointsNestedList",  "keyPoints", "dynamic", ],
+    availableViews: ["introOutroList", "keyPointsNestedList", "keyPoints", "dynamic"],
     sampleData: ["grokSample"],
 };
 
@@ -106,7 +124,7 @@ const GPT_SEO_DEFINITION: CoordinatorDefinition = {
     processor: "heading-list",
     config: null,
     defaultView: "keyPoints",
-    availableViews: ["keyPointsNestedList", "keyPoints", "dynamic", ],
+    availableViews: ["keyPointsNestedList", "keyPoints", "dynamic"],
     sampleData: ["gptSample"],
 };
 
@@ -118,10 +136,32 @@ const SECTIONED_LIST_DEFINITION: CoordinatorDefinition = {
     processor: "sectioned-list",
     config: null,
     defaultView: "keyPointsNestedList",
-    availableViews: ["introOutroList", "keyPointsNestedList",  "keyPoints", "dynamic", ],
+    availableViews: ["introOutroList", "keyPointsNestedList", "keyPoints", "dynamic"],
     sampleData: ["gptSectionedList"],
 };
 
+const DYNAMIC_DEFINITION: CoordinatorDefinition = {
+    id: "dynamic",
+    label: "Dynamic",
+    description: "Dynamic configuration for parsing markdown",
+    rawProcessor: "ast",
+    processor: "sectioned-list",
+    config: null,
+    defaultView: "dynamic",
+    availableViews: [
+        "dynamic",
+        "candidateProfile",
+        "candidateProfileCollapsible",
+        "modernCandidateProfile",
+        "modernOneColumnCandidateProfile",
+        "appSuggestions",
+        "introOutroList",
+        "keyPointsNestedList",
+        "keyPoints",
+        "travelGuide",
+    ],
+    sampleData: ["dynamic"],
+};
 
 const COORDINATOR_DEFINITIONS = [
     CANDIDATE_PROFILE_DEFINITION,
@@ -157,10 +197,10 @@ export const hasCoordinator = (coordinatorId: string): boolean => {
 export const getProcessor = (coordinatorId: string) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return null;
-    
+
     const processorId = coordinator.processor;
     if (!hasProcessor(processorId)) return null;
-    
+
     return getProcessorEntry(processorId);
 };
 
@@ -170,10 +210,10 @@ export const getProcessor = (coordinatorId: string) => {
 export const getProcessorConfig = (coordinatorId: string) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return null;
-    
+
     const configId = coordinator.config;
     if (!hasConfig(configId)) return null;
-    
+
     return getConfigEntry(configId);
 };
 
@@ -183,7 +223,7 @@ export const getProcessorConfig = (coordinatorId: string) => {
 export const getViewComponent = (coordinatorId: string) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return null;
-    
+
     const defaultViewId = coordinator.defaultView;
     return getViewComponentFromRegistry(defaultViewId);
 };
@@ -194,10 +234,10 @@ export const getViewComponent = (coordinatorId: string) => {
 export const getSpecificViewComponent = (coordinatorId: string, viewId: ViewId) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return null;
-    
+
     // Check if the requested view is available for this coordinator
     if (!coordinator.availableViews.includes(viewId)) return null;
-    
+
     return getViewComponentFromRegistry(viewId);
 };
 
@@ -207,10 +247,10 @@ export const getSpecificViewComponent = (coordinatorId: string, viewId: ViewId) 
 export const getViewConfig = (coordinatorId: string) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return null;
-    
+
     return {
         defaultView: coordinator.defaultView,
-        availableViews: coordinator.availableViews
+        availableViews: coordinator.availableViews,
     };
 };
 
@@ -220,7 +260,7 @@ export const getViewConfig = (coordinatorId: string) => {
 export const getAvailableViews = (coordinatorId: string) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return [];
-    
+
     return coordinator.availableViews;
 };
 
@@ -230,7 +270,7 @@ export const getAvailableViews = (coordinatorId: string) => {
 export const getDefaultViewId = (coordinatorId: string) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return null;
-    
+
     return coordinator.defaultView;
 };
 
@@ -240,7 +280,7 @@ export const getDefaultViewId = (coordinatorId: string) => {
 export const getSampleDataIds = (coordinatorId: string) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return [];
-    
+
     return coordinator.sampleData;
 };
 
@@ -250,13 +290,13 @@ export const getSampleDataIds = (coordinatorId: string) => {
 export const getCoordinatorBundle = (coordinatorId: string) => {
     const coordinator = getCoordinatorConfig(coordinatorId);
     if (!coordinator) return null;
-    
+
     return {
         coordinator,
         processor: getProcessor(coordinatorId),
         processorConfig: getProcessorConfig(coordinatorId),
         defaultViewComponent: getViewComponent(coordinatorId),
         viewConfig: getViewConfig(coordinatorId),
-        sampleDataIds: getSampleDataIds(coordinatorId)
+        sampleDataIds: getSampleDataIds(coordinatorId),
     };
 };
