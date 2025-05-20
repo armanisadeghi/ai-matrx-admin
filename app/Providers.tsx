@@ -31,6 +31,7 @@ import GoogleAPIProvider from "@/providers/google-provider/GoogleApiProvider";
 import { SelectedImagesProvider } from "@/components/image/context/SelectedImagesProvider";
 import { UniformHeightProvider } from "@/features/applet/runner/layouts/core";
 import { GlobalBrokersInitializer } from "@/components/broker/UserBrokerInitializer";
+import ClientOverlayProvider from "@/components/overlays/ClientOverlayProvider";
 
 const allowedBuckets = ["userContent", "Audio", "Images", "Documents", "Code", "any-file"] as const;
 
@@ -79,6 +80,7 @@ export function Providers({ children, initialReduxState }: ProvidersProps) {
                                                                                         <UniformHeightProvider>
                                                                                             <SelectedImagesProvider>
                                                                                                 <PersistentDOMConnector />
+                                                                                                <ClientOverlayProvider />
                                                                                                 {children}
                                                                                             </SelectedImagesProvider>
                                                                                         </UniformHeightProvider>

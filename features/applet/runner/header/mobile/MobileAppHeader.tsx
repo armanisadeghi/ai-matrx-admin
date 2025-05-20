@@ -25,12 +25,14 @@ interface MobileAppHeaderProps {
     isDemo?: boolean;
     isDebug?: boolean;
     activeAppletSlug?: string;
+    isCreator?: boolean;
+    isAdmin?: boolean;
   }
   
 
 
 
-export const MobileAppHeader = ({ appId, activeAppletSlug, isDemo = false }: MobileAppHeaderProps) => {
+export const MobileAppHeader = ({ appId, activeAppletSlug, isDemo = false, isCreator, isAdmin }: MobileAppHeaderProps) => {
     const router = useRouter();
     const user = useAppSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";

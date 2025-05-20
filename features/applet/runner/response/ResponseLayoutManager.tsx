@@ -1,17 +1,16 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { Cog } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectResponseTextByListenerId, selectResponseEndedByListenerId } from "@/lib/redux/socket-io";
-import SocketAccordionResponse from "@/components/socket/response/SocketAccordionResponse";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
-import { brokerActions } from "@/lib/redux/brokerSlice";
+import { brokerActions, brokerSelectors } from "@/lib/redux/brokerSlice";
 import { hasCoordinator } from "@/components/mardown-display/markdown-classification/markdown-coordinator";
 import DirectMarkdownRenderer from "@/components/mardown-display/markdown-classification/DirectMarkdownRenderer";
+import AdminToolsMenu from "./AdminToolsMenu";
 
 interface ResponseLayoutManagerProps {
   appletId: string;
@@ -20,13 +19,22 @@ interface ResponseLayoutManagerProps {
   handleSubmit: () => void;
 }
 
+export const ADMIN_USER_IDS = [
+  "4cf62e4e-2679-484f-b652-034e697418df",
+  "8f7f17ba-935b-4967-8105-7c6b554f41f1",
+  "6555aa73-c647-4ecf-8a96-b60e315b6b18",
+];
+
+
 export default function ResponseLayoutManager({ appletId, taskId, coordinatorId, handleSubmit }: ResponseLayoutManagerProps) {
-  const [showConfig, setShowConfig] = useState(false);
   const dispatch = useAppDispatch();
   const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
   const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
   const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
   const hasCustomView = useMemo(() => hasCoordinator(coordinatorId), [coordinatorId]);
+
+  const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"));
+  const isAdmin = useAppSelector((state) => brokerSelectors.selectValue(state, "GLOBAL_USER_IS_ADMIN"));
 
   useEffect(() => {
     if (isTaskComplete) {
@@ -35,13 +43,7 @@ export default function ResponseLayoutManager({ appletId, taskId, coordinatorId,
             value: textResponse
         }));
     }
-}, [isTaskComplete, textResponse, dispatch]);
-
-
-
-  const toggleConfig = () => {
-    setShowConfig(prev => !prev);
-  };
+}, [isTaskComplete, textResponse, dispatch, appletId]);
 
   return (
     <div className="w-full overflow-y-auto px-2 h-full space-y-2 scrollbar-none">
@@ -76,19 +78,14 @@ export default function ResponseLayoutManager({ appletId, taskId, coordinatorId,
         </div>
       </FullscreenWrapper>
 
-      {isTaskComplete && (
-        <div className="flex justify-end mb-10">
-          <button 
-            onClick={toggleConfig}
-            className="p-6 rounded-full bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors"
-            aria-label="Toggle configuration"
-          >
-            <Cog className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
-          </button>
+      {isTaskComplete && (userIsCreator || isAdmin) && (
+        <div className="fixed right-4 top-1/3 z-10">
+          <AdminToolsMenu
+            taskId={taskId}
+            initialMarkdown={textResponse}
+          />
         </div>
       )}
-
-      {showConfig && <SocketAccordionResponse taskId={taskId} />}
     </div>
   );
 }

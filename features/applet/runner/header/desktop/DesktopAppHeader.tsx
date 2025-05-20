@@ -16,6 +16,8 @@ export interface DesktopAppHeaderProps {
   isDemo?: boolean;
   isDebug?: boolean;
   activeAppletSlug?: string;
+  isCreator?: boolean;
+  isAdmin?: boolean;
 }
 
 

@@ -10,9 +10,22 @@ import { AstNode } from "./processors/types";
 import { ViewId } from "./custom-views/view-registry";
 import { MarkdownConfig } from "./processors/json-config-system/config-processor";
 
+// Helper to check if code is running on client side
+const isClient = typeof window !== 'undefined';
+
 export const parseMarkdownToAst = (markdownText: string): AstNode => {
-    const processor = unified().use(remarkParse).use(remarkGfm);
-    return processor.parse(markdownText) as unknown as AstNode;
+    // Only run parser on the client side
+    if (!isClient) {
+        return { type: 'root', children: [] } as unknown as AstNode;
+    }
+    
+    try {
+        const processor = unified().use(remarkParse).use(remarkGfm);
+        return processor.parse(markdownText) as unknown as AstNode;
+    } catch (error) {
+        console.error("Error parsing markdown to AST:", error);
+        return { type: 'root', children: [] } as unknown as AstNode;
+    }
 };
 
 export const prepareMarkdownForRendering = async (
@@ -29,6 +42,33 @@ export const prepareMarkdownForRendering = async (
         availableViews: ViewId[];
     };
 }> => {
+    // Return empty data if running on server
+    if (!isClient) {
+        // Create a minimal valid CoordinatorDefinition for server rendering
+        const emptyCoordinatorDefinition: CoordinatorDefinition = {
+            id: 'empty',
+            label: 'Empty',
+            description: 'Empty coordinator for server rendering',
+            rawProcessor: 'ast',
+            processor: 'empty',
+            config: null,
+            defaultView: 'raw' as ViewId,
+            availableViews: ['raw' as ViewId],
+            sampleData: []
+        };
+        
+        return {
+            ast: { type: 'root', children: [] } as unknown as AstNode,
+            processedData: null,
+            coordinatorDefinition: emptyCoordinatorDefinition,
+            processorConfig: null,
+            viewComponentInfo: {
+                defaultViewId: 'raw' as ViewId,
+                availableViews: ['raw' as ViewId],
+            },
+        };
+    }
+    
     try {
         // 1. Get the AST, which all processors need.
         const ast = parseMarkdownToAst(markdown);

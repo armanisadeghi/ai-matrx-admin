@@ -4,7 +4,9 @@ import { setAppRuntimeConfig, setAppRuntimeLoading, resetAppRuntimeConfig } from
 import { setAppletRuntimeConfig, setAppletRuntimeLoading, resetAppletRuntimeConfig } from "../slices/customAppletRuntimeSlice";
 import { validateAppWithApplets, ValidationOptions, ValidationResult } from "../validations/appRunnerValidations";
 import { brokerActions, BrokerMapEntry } from "@/lib/redux/brokerSlice";
+import { coreSelectors as brokerSelectors } from "@/lib/redux/brokerSlice/selectors/core";
 import { CustomAppletConfig, CustomAppConfig, BrokerMapping } from "@/types/customAppTypes";
+import { RootState } from "@/lib/redux";
 
 // Object to store validation results for retrieval later
 const validationStore: Record<string, ValidationResult> = {};
@@ -66,7 +68,7 @@ export const fetchAppWithApplets = createAsyncThunk(
             defaultAppletId?: string | null;
             validationOptions?: ValidationOptions;
         },
-        { dispatch, rejectWithValue }
+        { dispatch, rejectWithValue, getState }
     ) => {
         const requestId = Math.random().toString(36).substring(2, 10);
 
@@ -93,6 +95,25 @@ export const fetchAppWithApplets = createAsyncThunk(
             // Fetch app data with timeout
             const appData = await fetchWithTimeout();
             const { appConfig, applets } = appData;
+
+            // Check if the app's userId matches the global user ID
+            const state = getState() as RootState;
+            const globalUserId = brokerSelectors.selectValue(state, "GLOBAL_USER_ID");
+            
+            // Set the APPLET_USER_IS_ADMIN broker value based on userId comparison
+            if (appConfig.userId && globalUserId) {
+                const isUserAdmin = appConfig.userId === globalUserId;
+                dispatch(brokerActions.setValue({
+                    brokerId: "APPLET_USER_IS_ADMIN",
+                    value: isUserAdmin
+                }));
+            } else {
+                // If either userId is missing, default to false
+                dispatch(brokerActions.setValue({
+                    brokerId: "APPLET_USER_IS_ADMIN",
+                    value: false
+                }));
+            }
 
             const activeAppletId = determineActiveAppletId(appConfig, applets, defaultAppletId);
 

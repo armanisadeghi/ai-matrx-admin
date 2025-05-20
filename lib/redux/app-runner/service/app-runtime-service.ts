@@ -67,7 +67,7 @@ export async function fetchAppAndAppletConfig(id: string | null = null, slug: st
     if (!id && !slug) {
         throw new Error("Either id or slug must be provided");
     }
-    
+
     try {
         let data;
         if (id) {
@@ -75,11 +75,11 @@ export async function fetchAppAndAppletConfig(id: string | null = null, slug: st
         } else if (slug) {
             data = await clientFetchAppBySlug(slug);
         }
-        
+
         if (!data) {
             throw new Error("No data returned from app fetch");
         }
-        
+
         return data;
     } catch (error: any) {
         console.error("Error in fetchAppAndAppletConfig:", error);
@@ -88,7 +88,7 @@ export async function fetchAppAndAppletConfig(id: string | null = null, slug: st
 }
 
 // Fetch app by ID
-export async function fetchAppById(id: string): Promise<{ 
+export async function fetchAppById(id: string): Promise<{
     appConfig: CustomAppConfig;
     applets: CustomAppletConfig[];
 }> {
@@ -97,20 +97,8 @@ export async function fetchAppById(id: string): Promise<{
     return transformAppWithApplets(rawData);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 // Fetch app by slug
-export async function fetchAppBySlug(slug: string): Promise<{ 
+export async function fetchAppBySlug(slug: string): Promise<{
     appConfig: CustomAppConfig;
     applets: CustomAppletConfig[];
 }> {
@@ -120,22 +108,11 @@ export async function fetchAppBySlug(slug: string): Promise<{
     return transformAppWithApplets(rawData);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Transform and return app with applets config data
-export async function fetchTransformedAppAndApplets(idOrSlug: string, isSlug: boolean = true): Promise<{ 
+export async function fetchTransformedAppAndApplets(
+    idOrSlug: string,
+    isSlug: boolean = true
+): Promise<{
     appConfig: CustomAppConfig;
     applets: CustomAppletConfig[];
 }> {
@@ -145,87 +122,89 @@ export async function fetchTransformedAppAndApplets(idOrSlug: string, isSlug: bo
 export function transformAppWithApplets(rawConfig: AppAndAppletConfig): {
     appConfig: CustomAppConfig;
     applets: CustomAppletConfig[];
-  } {
+} {
     // Handle error case
-    if ('error' in rawConfig) {
-      throw new Error(rawConfig.error);
+    if ("error" in rawConfig) {
+        throw new Error(rawConfig.error);
     }
-  
+
     const { app_config: config, applets: rawApplets } = rawConfig;
-  
+
     // Transform applets into CustomAppletConfig structures
     const applets: CustomAppletConfig[] = rawApplets.map((applet) => {
-      return {
-        id: applet.id || '',
-        name: applet.name || 'Unnamed Applet',
-        description: applet.description || undefined,
-        slug: applet.slug || '',
-        appletIcon: applet.applet_icon || undefined,
-        appletSubmitText: applet.applet_submit_text || undefined,
-        creator: applet.creator || undefined,
-        primaryColor: applet.primary_color,
-        accentColor: applet.accent_color,
-        layoutType: applet.layout_type as AppletLayoutOption || undefined,
-        containers: Array.isArray(applet.containers) ? applet.containers as AppletContainer[] : [],
-        dataSourceConfig: applet.data_source_config,
-        brokerMap: Array.isArray(applet.broker_map) ? applet.broker_map as BrokerMapping[] : undefined,
-        resultComponentConfig: applet.result_component_config,
-        nextStepConfig: applet.next_step_config,
-        compiledRecipeId: applet.compiled_recipe_id || undefined,
-        subcategoryId: applet.subcategory_id || undefined,
-        imageUrl: applet.image_url || undefined,
-        appId: applet.app_id,
-      };
+        return {
+            id: applet.id || "",
+            name: applet.name || "Unnamed Applet",
+            description: applet.description || undefined,
+            slug: applet.slug || "",
+            appletIcon: applet.applet_icon || undefined,
+            appletSubmitText: applet.applet_submit_text || undefined,
+            creator: applet.creator || undefined,
+            primaryColor: applet.primary_color,
+            accentColor: applet.accent_color,
+            layoutType: (applet.layout_type as AppletLayoutOption) || undefined,
+            containers: Array.isArray(applet.containers) ? (applet.containers as AppletContainer[]) : [],
+            dataSourceConfig: applet.data_source_config,
+            brokerMap: Array.isArray(applet.broker_map) ? (applet.broker_map as BrokerMapping[]) : undefined,
+            resultComponentConfig: applet.result_component_config,
+            nextStepConfig: applet.next_step_config,
+            compiledRecipeId: applet.compiled_recipe_id || undefined,
+            subcategoryId: applet.subcategory_id || undefined,
+            imageUrl: applet.image_url || undefined,
+            appId: applet.app_id,
+            userId: applet.user_id || undefined,
+        };
     });
-  
+
     // Generate appletList from applets array
     const appletList = applets
-      .filter(
-        (applet): applet is CustomAppletConfig & { id: string; name: string; slug: string } =>
-          applet.id !== '' && applet.name !== 'Unnamed Applet' && applet.slug !== ''
-      )
-      .map((applet) => ({
-        appletId: applet.id,
-        label: applet.name,
-        slug: applet.slug,
-      }));
-  
+        .filter(
+            (applet): applet is CustomAppletConfig & { id: string; name: string; slug: string } =>
+                applet.id !== "" && applet.name !== "Unnamed Applet" && applet.slug !== ""
+        )
+        .map((applet) => ({
+            appletId: applet.id,
+            label: applet.name,
+            slug: applet.slug,
+        }));
+
     // Transform app_config into CustomAppRuntimeConfig
     const appConfig: CustomAppConfig = {
-      id: config.id || '',
-      name: config.name || 'Unnamed App',
-      description: config.description || '',
-      slug: config.slug || '',
-      mainAppIcon: config.main_app_icon || undefined,
-      mainAppSubmitIcon: config.main_app_submit_icon || undefined,
-      creator: config.creator || undefined,
-      primaryColor: config.primary_color,
-      accentColor: config.accent_color,
-      appletList: appletList.length > 0 ? appletList : undefined,
-      extraButtons:
-        config.extra_buttons !== null && Array.isArray(config.extra_buttons)
-          ? config.extra_buttons
-              .filter(
-                (btn: any) =>
-                  typeof btn?.label === 'string' &&
-                  typeof btn?.actionType === 'string' &&
-                  typeof btn?.knownMethod === 'string' &&
-                  btn.label.trim() !== '' &&
-                  btn.actionType.trim() !== '' &&
-                  btn.knownMethod.trim() !== ''
-              )
-              .map((btn: any) => ({
-                label: btn.label,
-                actionType: btn.actionType,
-                knownMethod: btn.knownMethod,
-              }))
-          : undefined,
-      layoutType: config.layout_type as AppLayoutOptions || undefined,
-      imageUrl: config.image_url || undefined,
+        id: config.id || "",
+        name: config.name || "Unnamed App",
+        description: config.description || "",
+        slug: config.slug || "",
+        mainAppIcon: config.main_app_icon || undefined,
+        mainAppSubmitIcon: config.main_app_submit_icon || undefined,
+        creator: config.creator || undefined,
+        primaryColor: config.primary_color,
+        accentColor: config.accent_color,
+        appletList: appletList.length > 0 ? appletList : undefined,
+        extraButtons:
+            config.extra_buttons !== null && Array.isArray(config.extra_buttons)
+                ? config.extra_buttons
+                      .filter(
+                          (btn: any) =>
+                              typeof btn?.label === "string" &&
+                              typeof btn?.actionType === "string" &&
+                              typeof btn?.knownMethod === "string" &&
+                              btn.label.trim() !== "" &&
+                              btn.actionType.trim() !== "" &&
+                              btn.knownMethod.trim() !== ""
+                      )
+                      .map((btn: any) => ({
+                          label: btn.label,
+                          actionType: btn.actionType,
+                          knownMethod: btn.knownMethod,
+                      }))
+                : undefined,
+        layoutType: (config.layout_type as AppLayoutOptions) || undefined,
+        imageUrl: config.image_url || undefined,
+        userId: config.user_id || undefined,
     };
-  
+
     return {
-      appConfig,
-      applets,
+        appConfig,
+        applets,
     };
-  }
+}

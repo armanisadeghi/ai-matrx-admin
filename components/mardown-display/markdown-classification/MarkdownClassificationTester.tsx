@@ -21,10 +21,11 @@ interface MarkdownClassificationTesterProps {
 
 const MarkdownClassificationTester = ({
     initialMarkdown,
-    initialCoordinatorId = "candidate_profile",
+    initialCoordinatorId,
     showSelectors = true,
 }: MarkdownClassificationTesterProps) => {
     const { mode } = useTheme();
+
 
     // Main state
     const [markdown, setMarkdown] = useState<string>(initialMarkdown || "");
@@ -38,6 +39,14 @@ const MarkdownClassificationTester = ({
     const [selectedSampleId, setSelectedSampleId] = useState<string>("");
     const [selectedProcessorId, setSelectedProcessorId] = useState<string>("");
     const [selectedViewId, setSelectedViewId] = useState<ViewId | null>(null);
+
+    useEffect(() => {
+        if (initialMarkdown) {
+            setMarkdown(initialMarkdown);
+            setParsedMarkdown(initialMarkdown);
+        }
+    }, [initialMarkdown]);
+
 
     // Get all available sample IDs
     const allSampleIds = useMemo(() => {
@@ -210,7 +219,7 @@ const MarkdownClassificationTester = ({
             )}
 
 
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden p-2">
                 {/* Left Side: Markdown Input & Preview */}
                 <MarkdownInput markdown={markdown} parsedMarkdown={parsedMarkdown} onMarkdownChange={setMarkdown} mode={mode} />
 

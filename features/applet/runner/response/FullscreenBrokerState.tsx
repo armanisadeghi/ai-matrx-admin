@@ -1,0 +1,113 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Database } from "lucide-react";
+import FullScreenOverlay from "@/components/official/FullScreenOverlay";
+import BrokerStateViewer from "./BrokerStateViewer";
+import BrokerMapViewer from "./BrokerMapViewer";
+
+interface FullscreenBrokerStateProps {
+  triggerClassName?: string;
+  triggerLabel?: string;
+  onOpen?: () => void;
+  onClose?: () => void;
+  isOpen?: boolean; // External control of open state
+}
+
+const FullscreenBrokerState = ({
+  triggerClassName,
+  triggerLabel = "Broker State",
+  onOpen,
+  onClose,
+  isOpen: externalIsOpen,
+}: FullscreenBrokerStateProps) => {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("brokers");
+  
+  // Use external isOpen state if provided, otherwise use internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+
+  const handleClose = () => {
+    if (externalIsOpen === undefined) {
+      setInternalIsOpen(false);
+    }
+    onClose?.();
+  };
+  
+  const handleOpen = () => {
+    if (externalIsOpen === undefined) {
+      setInternalIsOpen(true);
+    }
+    onOpen?.();
+  };
+
+  const tabs = [
+    {
+      id: "brokers",
+      label: "Brokers",
+      content: (
+        <div className="p-4 h-full overflow-auto">
+          <BrokerStateViewer />
+        </div>
+      ),
+    },
+    {
+      id: "brokerMap",
+      label: "Broker Map",
+      content: (
+        <div className="p-4 h-full overflow-auto">
+          <BrokerMapViewer />
+        </div>
+      ),
+    },
+  ];
+
+  // If we're only being used as a controlled component without a trigger button
+  if (externalIsOpen !== undefined && !triggerLabel) {
+    return (
+      <FullScreenOverlay
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Broker State"
+        description="View and analyze broker state and broker map"
+        tabs={tabs}
+        initialTab={activeTab}
+        onTabChange={setActiveTab}
+        width="95vw"
+        height="90vh"
+      />
+    );
+  }
+
+  return (
+    <>
+      {triggerLabel && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleOpen}
+          className={triggerClassName}
+          aria-label={`Open ${triggerLabel}`}
+        >
+          <Database className="h-4 w-4 mr-2" />
+          {triggerLabel}
+        </Button>
+      )}
+
+      <FullScreenOverlay
+        isOpen={isOpen}
+        onClose={handleClose}
+        title="Broker State"
+        description="View and analyze broker state and broker map"
+        tabs={tabs}
+        initialTab={activeTab}
+        onTabChange={setActiveTab}
+        width="95vw"
+        height="90vh"
+      />
+    </>
+  );
+};
+
+export default FullscreenBrokerState; 

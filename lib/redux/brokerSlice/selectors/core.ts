@@ -6,6 +6,7 @@ import { resolveBrokerId } from "../utils";
 // Core Selectors
 const selectBrokerSlice = (state: RootState) => state.broker;
 
+
 const selectError = createSelector(
     [selectBrokerSlice], 
     (state) => state.error
@@ -84,6 +85,7 @@ const selectMultipleValues = createSelector(
 );
 
 export const coreSelectors = {
+    selectBrokerSlice,
     selectError,
     selectMap,
     selectAllValues,

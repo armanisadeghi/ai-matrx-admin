@@ -13,7 +13,9 @@ export const IconsHeader: React.FC<DesktopAppHeaderProps> = ({
     appId, 
     headerClassName,
     isDemo = false,
-    activeAppletSlug = ''
+    activeAppletSlug = '',
+    isCreator,
+    isAdmin,
 }) => {
     const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";
     const finalHeaderClass = headerClassName || defaultHeaderClass;

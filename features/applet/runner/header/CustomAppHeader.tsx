@@ -8,6 +8,7 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppRuntimeIsInitialized } from "@/lib/redux/app-runner/slices/customAppRuntimeSlice";
 import { selectActiveAppletSlug } from "@/lib/redux/app-runner/slices/customAppletRuntimeSlice";
 import { LoadingSpinner } from "@/components/ui/spinner";
+import { brokerSelectors } from "@/lib/redux/brokerSlice";
 
 export interface CustomAppHeaderProps {
   appId?: string;
@@ -21,6 +22,8 @@ export const CustomAppHeader = ({ appId, isDemo = false, isDebug = false, initia
   const isMobile = useIsMobile();
   const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
   const activeAppletSlug = initialActiveAppletSlug || useAppSelector(selectActiveAppletSlug);
+  const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"));
+  const isAdmin = useAppSelector((state) => brokerSelectors.selectValue(state, "GLOBAL_USER_IS_ADMIN"));
 
 
   if (isDebug) {
@@ -37,9 +40,9 @@ export const CustomAppHeader = ({ appId, isDemo = false, isDebug = false, initia
 
 
   return isMobile ? (
-    <MobileAppHeader appId={appId} activeAppletSlug={activeAppletSlug} isDemo={isDemo}/>
+    <MobileAppHeader appId={appId} activeAppletSlug={activeAppletSlug} isDemo={isDemo} isCreator={userIsCreator} isAdmin={isAdmin} />
   ) : (
-    <DesktopAppHeader appId={appId} activeAppletSlug={activeAppletSlug} isDemo={isDemo} />
+    <DesktopAppHeader appId={appId} activeAppletSlug={activeAppletSlug} isDemo={isDemo} isCreator={userIsCreator} isAdmin={isAdmin} />
   );
 };
 

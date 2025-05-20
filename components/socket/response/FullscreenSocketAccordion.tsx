@@ -1,58 +1,41 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import MarkdownClassificationTester from "./MarkdownClassificationTester";
 import { Button } from "@/components/ui";
 import { Maximize2, X } from "lucide-react";
+import SocketAccordionResponse from "./SocketAccordionResponse";
 
-interface FullscreenMarkdownEditorProps {
+interface FullscreenSocketAccordionProps {
   triggerClassName?: string;
   triggerLabel?: string;
-  initialMarkdown?: string;
-  showSampleSelector?: boolean;
-  showConfigSelector?: boolean;
+  taskId?: string;
   onOpen?: () => void;
   onClose?: () => void;
   isOpen?: boolean; // External control of open state
 }
 
-const FullscreenMarkdownEditor = ({ 
+const FullscreenSocketAccordion = ({ 
   triggerClassName,
-  triggerLabel = "Markdown Editor",
-  initialMarkdown,
-  showSampleSelector = true,
-  showConfigSelector = true,
+  triggerLabel = "Socket Admin",
+  taskId,
   onOpen,
   onClose,
   isOpen: externalIsOpen,
-}: FullscreenMarkdownEditorProps) => {
+}: FullscreenSocketAccordionProps) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
   
   // Use external isOpen state if provided, otherwise use internal state
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
 
-  const openEditor = () => {
+  const openDialog = () => {
     if (externalIsOpen === undefined) {
       setInternalIsOpen(true);
     }
     onOpen?.();
   };
   
-  const closeEditor = (e?: React.MouseEvent | MouseEvent) => {
-    // If event exists, check if it was a click on the backdrop
-    if (e && overlayRef.current && contentRef.current) {
-      // If the click was inside the content, don't close
-      if (contentRef.current.contains(e.target as Node)) {
-        return;
-      }
-      // Only close if click was directly on the overlay backdrop
-      if (e.target !== overlayRef.current) {
-        return;
-      }
-    }
-    
+  const closeDialog = () => {
     if (externalIsOpen === undefined) {
       setInternalIsOpen(false);
     }
@@ -60,55 +43,50 @@ const FullscreenMarkdownEditor = ({
   };
 
   useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (contentRef.current && !contentRef.current.contains(event.target as Node)) {
+        closeDialog();
+      }
+    };
+
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        closeEditor();
+        closeDialog();
       }
     };
 
     if (isOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
       document.addEventListener('keydown', handleEscKey);
     }
 
     return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
       document.removeEventListener('keydown', handleEscKey);
     };
   }, [isOpen]);
 
-  // Prevent events from select elements causing overlay to close
-  const handleContentClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
   // If we're only being used as a controlled component without a trigger button
   if (externalIsOpen !== undefined && !triggerLabel) {
     return isOpen ? (
-      <div 
-        ref={overlayRef}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-        onClick={(e) => closeEditor(e)}
-      >
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div 
           ref={contentRef}
           className="w-[95vw] h-[90vh] bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col overflow-hidden"
-          onClick={handleContentClick}
         >
           <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Creator Content Admin View</h2>
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Socket Admin</h2>
             <Button
               variant="ghost" 
               size="sm" 
-              onClick={() => closeEditor()}
+              onClick={closeDialog}
               aria-label="Close"
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <MarkdownClassificationTester 
-              initialMarkdown={initialMarkdown}
-              showSelectors={showSampleSelector && showConfigSelector}
-            />
+          <div className="flex-1 overflow-auto p-4">
+            {taskId && <SocketAccordionResponse taskId={taskId} />}
           </div>
         </div>
       </div>
@@ -121,7 +99,7 @@ const FullscreenMarkdownEditor = ({
         <Button 
           variant="outline" 
           size="sm" 
-          onClick={openEditor} 
+          onClick={openDialog} 
           className={triggerClassName}
           aria-label={`Open ${triggerLabel}`}
         >
@@ -131,32 +109,24 @@ const FullscreenMarkdownEditor = ({
       )}
 
       {isOpen && (
-        <div 
-          ref={overlayRef}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={(e) => closeEditor(e)}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div 
             ref={contentRef}
-            className="w-[95vw] h-[95vh] bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col overflow-hidden"
-            onClick={handleContentClick}
+            className="w-[95vw] h-[90vh] bg-white dark:bg-gray-800 rounded-lg shadow-xl flex flex-col overflow-hidden"
           >
             <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{triggerLabel || "Markdown Editor"}</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{triggerLabel || "Socket Admin"}</h2>
               <Button
                 variant="ghost" 
                 size="sm" 
-                onClick={() => closeEditor()}
+                onClick={closeDialog}
                 aria-label="Close"
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <MarkdownClassificationTester 
-                initialMarkdown={initialMarkdown}
-                showSelectors={showSampleSelector && showConfigSelector}
-              />
+            <div className="flex-1 overflow-auto p-4">
+              {taskId && <SocketAccordionResponse taskId={taskId} />}
             </div>
           </div>
         </div>
@@ -165,4 +135,4 @@ const FullscreenMarkdownEditor = ({
   );
 };
 
-export default FullscreenMarkdownEditor; 
+export default FullscreenSocketAccordion; 

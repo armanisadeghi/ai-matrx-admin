@@ -7,6 +7,19 @@ import { SocketTask } from "@/lib/redux/socket-io/socket.types";
 // ==================== Task Selectors ====================
 export const selectAllTasks = (state: RootState): Record<string, SocketTask> => state.socketTasks.tasks as Record<string, SocketTask>;
 
+// ==================== Current Task Selectors ====================
+export const selectCurrentTaskId = (state: RootState): string | null => state.socketTasks.currentTaskId;
+
+export const selectCurrentTask = createSelector(
+    [selectAllTasks, selectCurrentTaskId],
+    (tasks, currentTaskId) => currentTaskId ? tasks[currentTaskId] : null
+);
+
+export const selectCurrentTaskFirstListenerId = createSelector(
+    [selectCurrentTask],
+    (currentTask) => currentTask?.listenerIds[0] || null
+);
+
 export const selectTaskById = createSelector(
     [selectAllTasks, (_, taskId: string) => taskId],
     (tasks, taskId) => tasks[taskId]

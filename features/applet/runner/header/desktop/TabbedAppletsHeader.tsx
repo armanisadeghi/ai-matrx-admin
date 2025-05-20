@@ -5,7 +5,7 @@ import { ThemeSwitcherIcon } from "@/styles/themes";
 import { HeaderTabGroup } from "../common/HeaderTabs";
 import AppSelector from "../common/AppSelector";
 import ButtonMenu from "../common/ButtonMenu";
-import NavigationMenu from "../NavigationMenu";
+import NavigationMenu from "../navigation-menu/NavigationMenu";
 import { HeaderLogic } from "./HeaderLogic";
 import { DesktopAppHeaderProps } from "./DesktopAppHeader";
 
@@ -14,6 +14,8 @@ export const TabbedAppletsHeader: React.FC<DesktopAppHeaderProps> = ({
     headerClassName,
     isDemo = false,
     activeAppletSlug,
+    isCreator,
+    isAdmin,
 }) => {
     // Use the default header class if no custom className is provided
     const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";

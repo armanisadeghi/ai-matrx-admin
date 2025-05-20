@@ -9,25 +9,25 @@ const SYSTEM_BROKERS = [
     {
         source: "system",
         sourceId: "global",
-        id: "user",
+        mappedItemId: "user",
         brokerId: "GLOBAL_USER_OBJECT",
     },
     {
         source: "system",
         sourceId: "global",
-        id: "userId",
+        mappedItemId: "userId",
         brokerId: "GLOBAL_USER_ID",
     },
     {
         source: "system",
         sourceId: "global",
-        id: "userName",
+        mappedItemId: "userName",
         brokerId: "GLOBAL_USER_NAME",
     },
     {
         source: "system",
         sourceId: "global",
-        id: "userProfileImage",
+        mappedItemId: "userProfileImage",
         brokerId: "GLOBAL_USER_PROFILE_IMAGE",
     },
 ];

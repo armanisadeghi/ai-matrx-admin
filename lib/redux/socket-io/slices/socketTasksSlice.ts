@@ -5,10 +5,12 @@ import { SocketTask } from "../socket.types";
 
 interface TasksState {
   tasks: Record<string, SocketTask>;
+  currentTaskId: string | null;
 }
 
 const initialState: TasksState = {
   tasks: {},
+  currentTaskId: null,
 };
 
 const setNestedValue = (obj: any, path: string, value: any): any => {
@@ -250,6 +252,7 @@ const socketTasksSlice = createSlice({
       if (task) {
         task.listenerIds = listenerIds;
         task.status = "submitted";
+        state.currentTaskId = taskId;
       }
     },
 
@@ -264,6 +267,9 @@ const socketTasksSlice = createSlice({
       const task = state.tasks[taskId];
       if (task) {
         task.isStreaming = isStreaming;
+        if (isStreaming) {
+          state.currentTaskId = taskId;
+        }
       }
     },
 
