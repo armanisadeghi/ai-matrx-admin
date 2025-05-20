@@ -1,8 +1,10 @@
 "use client";
-import React from "react";
-import { DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Crown, FileText, Server, Cpu, Paintbrush, Code, Database, Sparkles } from "lucide-react";
+import React, { useMemo } from "react";
+import { DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Crown, FileText, Server, Cpu, Paintbrush, Code, Database, Sparkles, Layout } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { brokerSelectors } from "@/lib/redux/brokerSlice";
 import {
@@ -12,10 +14,52 @@ import {
 } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { selectResponseEndedByListenerId, selectResponseTextByListenerId } from "@/lib/redux/socket-io";
 import { openOverlay, selectIsOverlayOpen } from "@/lib/redux/slices/overlaySlice";
+import { appletLayoutOptionsArray } from "@/features/applet/constants/layout-options";
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import { cn } from "@/styles/themes/utils";
+
+// Custom SubTrigger without the right chevron
+const CustomSubTrigger = React.forwardRef<
+    React.ComponentRef<typeof DropdownMenuPrimitive.SubTrigger>,
+    React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
+        inset?: boolean;
+    }
+>(({ className, inset, children, ...props }, ref) => (
+    <DropdownMenuPrimitive.SubTrigger
+        ref={ref}
+        className={cn(
+            "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent",
+            inset && "pl-8",
+            className
+        )}
+        {...props}
+    >
+        {children}
+    </DropdownMenuPrimitive.SubTrigger>
+));
+CustomSubTrigger.displayName = "CustomSubTrigger";
 
 // Creator Menu component
 export const CreatorMenu: React.FC = () => {
     const dispatch = useAppDispatch();
+    const pathname = usePathname();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Check if we're on an applet page
+    const isAppletPage = pathname.startsWith("/apps/custom/");
+    
+    // Parse the current path to get slug and appletSlug if we're on an applet page
+    const pathParts = isAppletPage ? pathname.split('/').filter(Boolean) : [];
+    const currentApp = pathParts.length >= 3 ? pathParts[2] : '';
+    const currentApplet = pathParts.length >= 4 ? pathParts[3] : '';
+
+    // Function to navigate to the same page with a different layout
+    const changeLayout = (layout: string) => {
+        const params = new URLSearchParams(searchParams);
+        params.set('lt', layout);
+        router.push(`${pathname}?${params.toString()}`);
+    };
 
     // Get user role information from Redux
     const userIsCreator = useAppSelector((state) => brokerSelectors.selectValue(state, "APPLET_USER_IS_ADMIN"));
@@ -35,7 +79,7 @@ export const CreatorMenu: React.FC = () => {
 
     // All menu items combined in a single array
     const menuItems = [
-        // Admin tools/overlays
+        // Creator links
         {
             id: "brokerState",
             icon: <Cpu className="h-4 w-4 text-teal-500" />,
@@ -86,7 +130,6 @@ export const CreatorMenu: React.FC = () => {
                 );
             },
         },
-        // Creator links
         {
             id: "manage",
             icon: <Code className="h-4 w-4 text-emerald-500" />,
@@ -101,14 +144,7 @@ export const CreatorMenu: React.FC = () => {
             type: "link",
             href: "#",
         },
-        {
-            id: "analytics",
-            icon: <Sparkles className="h-4 w-4 text-amber-500" />,
-            label: "Analytics",
-            type: "link",
-            href: "#",
-        },
-
+        // Layout variations now handled separately as a submenu
         {
             id: "settings",
             icon: <Database className="h-4 w-4 text-blue-500" />,
@@ -166,6 +202,49 @@ export const CreatorMenu: React.FC = () => {
                 }
                 return null;
             })}
+
+            {/* Layout Variations Submenu - Only show if we're on an applet page */}
+            {isAppletPage && (
+                <DropdownMenuSub>
+                    <CustomSubTrigger className="px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 group">
+                        <div className="flex items-center gap-3 w-full">
+                            <div className="w-5 h-5 flex items-center justify-center transition-transform group-hover:scale-110">
+                                <Layout className="h-4 w-4 text-amber-500" />
+                            </div>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Layout Variations</span>
+                        </div>
+                    </CustomSubTrigger>
+                    <DropdownMenuPortal>
+                        <DropdownMenuSubContent className="w-64" sideOffset={2} alignOffset={-5}>
+                            <ScrollArea className="h-[400px] w-full p-1">
+                                {appletLayoutOptionsArray.map((layout) => (
+                                    <DropdownMenuItem key={layout.value} asChild>
+                                        <div
+                                            className="flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Prevent dropdown from closing
+                                                changeLayout(layout.value);
+                                            }}
+                                        >
+                                            <div className="w-5 h-5 flex items-center justify-center">
+                                                {layout.icon}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                                    {layout.title}
+                                                </span>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                    {layout.description}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </DropdownMenuItem>
+                                ))}
+                            </ScrollArea>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                </DropdownMenuSub>
+            )}
         </>
     );
 };
