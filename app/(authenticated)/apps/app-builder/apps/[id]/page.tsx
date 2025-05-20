@@ -19,16 +19,33 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Info, Database, Code, Users, Layout } from 'lucide-react';
+import { 
+    ArrowRight, 
+    Info, 
+    Database, 
+    Code, 
+    Users, 
+    Layout, 
+    Palette, 
+    Lock, 
+    Activity, 
+    Book,
+    FileText
+} from 'lucide-react';
 import { SmartAppletList } from "@/features/applet/builder/modules/smart-parts";
 import { CustomAppletConfig } from "@/types/customAppTypes";
 
 // Tab Components
 import TabLayout from './components/TabLayout';
-import OverviewTab from './components/OverviewTab';
+import BasicInfoTab from './components/BasicInfoTab';
+import VisualDetailsTab from './components/VisualDetailsTab';
+import AccessTab from './components/AccessTab';
 import JsonConfigTab from './components/JsonConfigTab';
 import AppletsTab from './components/AppletsTab';
 import AppLayoutTab from './components/AppLayoutTab';
+import AppActionsTab from './components/AppActionsTab';
+import AppDataContextTab from './components/AppDataContextTab';
+import AdditionalInfoTab from './components/AdditionalInfoTab';
 
 export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
 
@@ -137,10 +154,22 @@ export default function AppViewPage({ params }: { params: Promise<{ id: string }
 
     const tabs = [
         {
-            id: 'overview',
+            id: 'basic-info',
             label: 'Overview',
             icon: <Info className="h-4 w-4" />,
-            content: <OverviewTab appId={id} />,
+            content: <BasicInfoTab appId={id} />,
+        },
+        {
+            id: 'visual-details',
+            label: 'Visuals',
+            icon: <Palette className="h-4 w-4" />,
+            content: <VisualDetailsTab appId={id} />,
+        },
+        {
+            id: 'access',
+            label: 'Access',
+            icon: <Lock className="h-4 w-4" />,
+            content: <AccessTab appId={id} />,
         },
         {
             id: 'applets',
@@ -155,8 +184,26 @@ export default function AppViewPage({ params }: { params: Promise<{ id: string }
             content: <AppLayoutTab appId={id} />,
         },
         {
+            id: 'actions',
+            label: 'Actions',
+            icon: <Activity className="h-4 w-4" />,
+            content: <AppActionsTab appId={id} />,
+        },
+        {
+            id: 'data-context',
+            label: 'Data',
+            icon: <Database className="h-4 w-4" />,
+            content: <AppDataContextTab appId={id} />,
+        },
+        {
+            id: 'additional-info',
+            label: 'Info',
+            icon: <FileText className="h-4 w-4" />,
+            content: <AdditionalInfoTab appId={id} />,
+        },
+        {
             id: 'json',
-            label: 'JSON Config',
+            label: 'Config',
             icon: <Code className="h-4 w-4" />,
             content: <JsonConfigTab appId={id} />,
         },

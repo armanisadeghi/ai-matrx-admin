@@ -270,3 +270,13 @@ export const selectAppIsPublic = createSelector(
   [(state: RootState, id: string) => state.appBuilder.apps[id]],
   (app) => app ? app.isPublic : null
 );
+
+export const selectAppDataContext = createSelector(
+  [(state: RootState, id: string) => state.appBuilder.apps[id]],
+  (app) => app ? app.appDataContext : null
+);
+
+
+
+
+

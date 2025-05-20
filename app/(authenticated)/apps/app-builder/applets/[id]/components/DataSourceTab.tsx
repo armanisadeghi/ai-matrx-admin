@@ -12,27 +12,17 @@ interface DataSourceTabProps {
 export default function DataSourceTab({ dataSourceConfig }: DataSourceTabProps) {
   if (!dataSourceConfig || !dataSourceConfig.sourceType) {
     return (
-      <Card className="p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Data Source</h3>
+      <div className="space-y-4">
+        <Card className="p-4">
           <p className="text-gray-500 dark:text-gray-400">No data source configuration found for this applet.</p>
-        </div>
-      </Card>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-          Data Source
-        </h3>
-        <p className="text-gray-500 dark:text-gray-400">
-          This applet uses a {dataSourceConfig.sourceType} data source.
-        </p>
-      </div>
-
-      <Card className="p-6">
+      <Card className="p-4">
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Source Type:</p>

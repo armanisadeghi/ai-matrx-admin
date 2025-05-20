@@ -15,16 +15,28 @@ import {
   ArrowRight, 
   Link, 
   Workflow, 
-  Info 
+  Info, 
+  Palette,
+  Rows,
+  Box,
+  FileCode,
+  AppWindow,
+  Utensils
 } from 'lucide-react';
 
 // Tab Components
 import TabLayout from './components/TabLayout';
 import OverviewTab from './components/OverviewTab';
+import VisualsTab from './components/VisualsTab';
+import LayoutTab from './components/LayoutTab';
 import ContainersTab from './components/ContainersTab';
+import FieldsTab from './components/FieldsTab';
 import DataSourceTab from './components/DataSourceTab';
 import JsonConfigTab from './components/JsonConfigTab';
-import ReferencesTab from './components/ReferencesTab';
+import AppTab from './components/AppTab';
+import RecipeTab from './components/RecipeTab';
+import ConfigTab from './components/ConfigTab';
+import InfoTab from './components/InfoTab';
 import BrokerMappingsTab from './components/BrokerMappingsTab';
 
 // Types
@@ -223,12 +235,31 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
           description={applet.description}
           slug={applet.slug}
           creator={applet.creator}
-          imageUrl={applet.imageUrl}
+        />
+      ),
+    },
+    {
+      id: 'visuals',
+      label: 'Visuals',
+      icon: <Palette className="h-4 w-4" />,
+      content: (
+        <VisualsTab 
           primaryColor={applet.primaryColor}
           accentColor={applet.accentColor}
           appletIcon={applet.appletIcon}
-          appletSubmitText={applet.appletSubmitText}
+          imageUrl={applet.imageUrl}
+          name={applet.name}
+        />
+      ),
+    },
+    {
+      id: 'layout',
+      label: 'Layout',
+      icon: <Rows className="h-4 w-4" />,
+      content: (
+        <LayoutTab 
           layoutType={applet.layoutType}
+          appletSubmitText={applet.appletSubmitText}
           overviewLabel={applet.overviewLabel}
         />
       ),
@@ -236,18 +267,24 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
     {
       id: 'containers',
       label: 'Containers',
-      icon: <LayoutIcon className="h-4 w-4" />,
+      icon: <Box className="h-4 w-4" />,
       content: <ContainersTab containers={applet.containers} />,
     },
     {
+      id: 'fields',
+      label: 'Fields',
+      icon: <LayoutIcon className="h-4 w-4" />,
+      content: <FieldsTab containers={applet.containers} />,
+    },
+    {
       id: 'datasource',
-      label: 'Data Source',
+      label: 'Data',
       icon: <Database className="h-4 w-4" />,
       content: <DataSourceTab dataSourceConfig={applet.dataSourceConfig} />,
     },
     {
       id: 'result',
-      label: 'Result Config',
+      label: 'Result',
       icon: <Code className="h-4 w-4" />,
       content: (
         <JsonConfigTab 
@@ -272,22 +309,43 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
       ),
     },
     {
-      id: 'references',
-      label: 'References',
-      icon: <Link className="h-4 w-4" />,
+      id: 'app',
+      label: 'App',
+      icon: <AppWindow className="h-4 w-4" />,
       content: (
-        <ReferencesTab 
+        <AppTab 
           appId={applet.appId}
-          compiledRecipeId={applet.compiledRecipeId}
           subcategoryId={applet.subcategoryId}
         />
       ),
     },
     {
+      id: 'recipe',
+      label: 'Recipe',
+      icon: <Utensils className="h-4 w-4" />,
+      content: (
+        <RecipeTab 
+          compiledRecipeId={applet.compiledRecipeId}
+        />
+      ),
+    },
+    {
       id: 'brokers',
-      label: 'Broker Mappings',
+      label: 'Brokers',
       icon: <Workflow className="h-4 w-4" />,
       content: <BrokerMappingsTab brokerMap={applet.brokerMap} />,
+    },
+    {
+      id: 'config',
+      label: 'Config',
+      icon: <FileCode className="h-4 w-4" />,
+      content: <ConfigTab applet={applet} />,
+    },
+    {
+      id: 'info',
+      label: 'Info',
+      icon: <Info className="h-4 w-4" />,
+      content: <InfoTab id={applet.id} />,
     },
   ];
   

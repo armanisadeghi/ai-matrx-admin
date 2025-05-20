@@ -35,6 +35,7 @@ export interface AppBuilder extends CustomAppConfig {
     isTemplated?: boolean;
     templateType?: 'simple' | 'complex';
     slugStatus?: 'unchecked' | 'unique' | 'notUnique';
+    appDataContext?: any;
 }
 
 export interface RuntimeBrokerDefinition {

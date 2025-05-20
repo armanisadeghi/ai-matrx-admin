@@ -16,16 +16,28 @@ import {
   Link, 
   Workflow, 
   Info,
-  History
+  History,
+  Palette,
+  Rows,
+  Box,
+  FileCode,
+  AppWindow,
+  Utensils
 } from 'lucide-react';
 
 // Tab Components
 import EditTabLayout from './components/EditTabLayout';
 import OverviewEditTab from './components/OverviewEditTab';
+import VisualsEditTab from './components/VisualsEditTab';
+import LayoutEditTab from './components/LayoutEditTab';
 import ContainersEditTab from './components/ContainersEditTab';
+import FieldsEditTab from './components/FieldsEditTab';
 import DataSourceEditTab from './components/DataSourceEditTab';
 import JsonConfigEditTab from './components/JsonConfigEditTab';
-import ReferencesEditTab from './components/ReferencesEditTab';
+import AppEditTab from './components/AppEditTab';
+import RecipeEditTab from './components/RecipeEditTab';
+import ConfigEditTab from './components/ConfigEditTab';
+import InfoEditTab from './components/InfoEditTab';
 import BrokerMappingsEditTab from './components/BrokerMappingsEditTab';
 import LegacyEditorTab from './components/LegacyEditorTab';
 
@@ -103,6 +115,12 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
     handleFieldUpdate(field, value);
   };
 
+  // Handle updating the entire applet
+  const handleFullAppletUpdate = (updatedApplet: AppletBuilder) => {
+    setEditedApplet(updatedApplet);
+    setHasChanges(true);
+  };
+
   // Handle saving all changes
   const handleSave = async () => {
     console.log("Saving changes:", editedApplet);
@@ -139,12 +157,33 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
           description={editedApplet.description}
           slug={editedApplet.slug}
           creator={editedApplet.creator}
-          imageUrl={editedApplet.imageUrl}
+          onUpdate={handleFieldUpdate}
+        />
+      ),
+    },
+    {
+      id: 'visuals',
+      label: 'Visuals',
+      icon: <Palette className="h-4 w-4" />,
+      content: (
+        <VisualsEditTab 
           primaryColor={editedApplet.primaryColor}
           accentColor={editedApplet.accentColor}
           appletIcon={editedApplet.appletIcon}
-          appletSubmitText={editedApplet.appletSubmitText}
+          imageUrl={editedApplet.imageUrl}
+          name={editedApplet.name}
+          onUpdate={handleFieldUpdate}
+        />
+      ),
+    },
+    {
+      id: 'layout',
+      label: 'Layout',
+      icon: <Rows className="h-4 w-4" />,
+      content: (
+        <LayoutEditTab 
           layoutType={editedApplet.layoutType}
+          appletSubmitText={editedApplet.appletSubmitText}
           overviewLabel={editedApplet.overviewLabel}
           onUpdate={handleFieldUpdate}
         />
@@ -153,7 +192,7 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
     {
       id: 'containers',
       label: 'Containers',
-      icon: <LayoutIcon className="h-4 w-4" />,
+      icon: <Box className="h-4 w-4" />,
       content: (
         <ContainersEditTab 
           containers={editedApplet.containers} 
@@ -162,8 +201,19 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       ),
     },
     {
+      id: 'fields',
+      label: 'Fields',
+      icon: <LayoutIcon className="h-4 w-4" />,
+      content: (
+        <FieldsEditTab 
+          containers={editedApplet.containers} 
+          onUpdate={handleContainersUpdate} 
+        />
+      ),
+    },
+    {
       id: 'datasource',
-      label: 'Data Source',
+      label: 'Data',
       icon: <Database className="h-4 w-4" />,
       content: (
         <DataSourceEditTab 
@@ -174,7 +224,7 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
     },
     {
       id: 'result',
-      label: 'Result Config',
+      label: 'Result',
       icon: <Code className="h-4 w-4" />,
       content: (
         <JsonConfigEditTab 
@@ -199,21 +249,31 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       ),
     },
     {
-      id: 'references',
-      label: 'References',
-      icon: <Link className="h-4 w-4" />,
+      id: 'app',
+      label: 'App',
+      icon: <AppWindow className="h-4 w-4" />,
       content: (
-        <ReferencesEditTab 
+        <AppEditTab 
           appId={editedApplet.appId}
-          compiledRecipeId={editedApplet.compiledRecipeId}
           subcategoryId={editedApplet.subcategoryId}
           onUpdate={handleFieldUpdate}
         />
       ),
     },
     {
+      id: 'recipe',
+      label: 'Recipe',
+      icon: <Utensils className="h-4 w-4" />,
+      content: (
+        <RecipeEditTab 
+          compiledRecipeId={editedApplet.compiledRecipeId}
+          onUpdate={handleFieldUpdate}
+        />
+      ),
+    },
+    {
       id: 'brokers',
-      label: 'Broker Mappings',
+      label: 'Brokers',
       icon: <Workflow className="h-4 w-4" />,
       content: (
         <BrokerMappingsEditTab 
@@ -223,8 +283,30 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       ),
     },
     {
+      id: 'config',
+      label: 'Config',
+      icon: <FileCode className="h-4 w-4" />,
+      content: (
+        <ConfigEditTab 
+          applet={editedApplet} 
+          onUpdate={handleFullAppletUpdate} 
+        />
+      ),
+    },
+    {
+      id: 'info',
+      label: 'Info',
+      icon: <Info className="h-4 w-4" />,
+      content: (
+        <InfoEditTab 
+          id={editedApplet.id}
+          onUpdate={handleFieldUpdate}
+        />
+      ),
+    },
+    {
       id: 'legacy',
-      label: 'Legacy Editor',
+      label: 'Legacy',
       icon: <History className="h-4 w-4" />,
       content: <LegacyEditorTab applet={editedApplet} />,
     },

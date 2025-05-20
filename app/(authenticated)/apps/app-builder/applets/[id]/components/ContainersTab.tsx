@@ -13,17 +13,8 @@ interface ContainersTabProps {
 export default function ContainersTab({ containers = [] }: ContainersTabProps) {
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-          Containers ({containers.length})
-        </h3>
-        <p className="text-gray-500 dark:text-gray-400">
-          Containers organize fields into logical groups within the applet.
-        </p>
-      </div>
-
       {containers.length === 0 ? (
-        <Card className="p-6">
+        <Card className="p-4">
           <p className="text-gray-500 dark:text-gray-400">No containers defined for this applet.</p>
         </Card>
       ) : (

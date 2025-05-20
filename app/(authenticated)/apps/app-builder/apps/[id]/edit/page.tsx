@@ -7,14 +7,30 @@ import { setActiveAppWithFetchThunk, saveAppThunk } from "@/lib/redux/app-builde
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import { Info, Code, Users, Layout, History } from 'lucide-react';
+import { 
+    Info, 
+    Code, 
+    Users, 
+    Layout, 
+    History, 
+    Palette, 
+    Lock, 
+    Activity, 
+    Database, 
+    FileText 
+} from 'lucide-react';
 
 // Tab Components
 import EditTabLayout from './components/EditTabLayout';
-import OverviewEditTab from './components/OverviewEditTab';
+import BasicInfoEditTab from './components/BasicInfoEditTab';
+import VisualDetailsEditTab from './components/VisualDetailsEditTab';
+import AccessEditTab from './components/AccessEditTab';
 import JsonConfigEditTab from './components/JsonConfigEditTab';
 import AppletsEditTab from './components/AppletsEditTab';
 import AppLayoutEditTab from './components/AppLayoutEditTab';
+import AppActionsEditTab from './components/AppActionsEditTab';
+import AppDataContextEditTab from './components/AppDataContextEditTab';
+import AdditionalInfoEditTab from './components/AdditionalInfoEditTab';
 import LegacyEditorTab from './components/LegacyEditorTab';
 
 interface AppEditPageProps {
@@ -74,10 +90,22 @@ export default function AppEditPage({ params }: AppEditPageProps) {
 
     const tabs = [
         {
-            id: 'overview',
+            id: 'basic-info',
             label: 'Overview',
             icon: <Info className="h-4 w-4" />,
-            content: <OverviewEditTab appId={id} />,
+            content: <BasicInfoEditTab appId={id} />,
+        },
+        {
+            id: 'visual-details',
+            label: 'Visuals',
+            icon: <Palette className="h-4 w-4" />,
+            content: <VisualDetailsEditTab appId={id} />,
+        },
+        {
+            id: 'access',
+            label: 'Access',
+            icon: <Lock className="h-4 w-4" />,
+            content: <AccessEditTab appId={id} />,
         },
         {
             id: 'applets',
@@ -92,14 +120,32 @@ export default function AppEditPage({ params }: AppEditPageProps) {
             content: <AppLayoutEditTab appId={id} />,
         },
         {
+            id: 'actions',
+            label: 'Actions',
+            icon: <Activity className="h-4 w-4" />,
+            content: <AppActionsEditTab appId={id} />,
+        },
+        {
+            id: 'data-context',
+            label: 'Data',
+            icon: <Database className="h-4 w-4" />,
+            content: <AppDataContextEditTab appId={id} />,
+        },
+        {
+            id: 'additional-info',
+            label: 'Info',
+            icon: <FileText className="h-4 w-4" />,
+            content: <AdditionalInfoEditTab appId={id} />,
+        },
+        {
             id: 'json',
-            label: 'JSON Config',
+            label: 'Config',
             icon: <Code className="h-4 w-4" />,
             content: <JsonConfigEditTab appId={id} />,
         },
         {
             id: 'legacy',
-            label: 'Legacy Editor',
+            label: 'Legacy',
             icon: <History className="h-4 w-4" />,
             content: <LegacyEditorTab appId={id} />,
         },

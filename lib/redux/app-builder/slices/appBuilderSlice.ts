@@ -32,6 +32,7 @@ export const DEFAULT_APP: Partial<AppBuilder> = {
     isDirty: false,
     isLocal: true,
     slugStatus: "unchecked",
+    appDataContext: {},
 };
 
 

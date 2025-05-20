@@ -12,26 +12,16 @@ interface BrokerMappingsTabProps {
 export default function BrokerMappingsTab({ brokerMap = [] }: BrokerMappingsTabProps) {
   if (brokerMap.length === 0) {
     return (
-      <Card className="p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Broker Mappings</h3>
+      <div className="space-y-4">
+        <Card className="p-4">
           <p className="text-gray-500 dark:text-gray-400">No broker mappings defined for this applet.</p>
-        </div>
-      </Card>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-          Broker Mappings ({brokerMap.length})
-        </h3>
-        <p className="text-gray-500 dark:text-gray-400">
-          Broker mappings connect fields to data sources.
-        </p>
-      </div>
-
       <Card className="overflow-hidden">
         <Table>
           <TableHeader>
