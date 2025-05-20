@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import {
     selectAppById,
@@ -22,6 +22,77 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { SmartAppletList } from "@/features/applet/builder/modules/smart-parts";
 import { CustomAppletConfig } from "@/types/customAppTypes";
+
+export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdown" | "singleDropdownWithSearch" | "icons";
+
+export type KnownMethod = "renderChat" | "changeApplet" | "renderModal" | "renderSampleApplet" | "none";
+
+export interface HeaderExtraButtonsConfig {
+    label: string;
+    icon?: ReactNode;
+    actionType?: "button" | "link" | "redux" | "none";
+    onClick?: () => void;
+    route?: string;
+    reduxAction?: string;
+    knownMethod?: KnownMethod;
+}
+
+
+
+export type CustomActionButton = {
+    label: string;
+    icon?: ReactNode;
+    actionType?: "button" | "link" | "redux" | "none";
+    onClick?: () => void;
+    route?: string;
+    reduxAction?: string;
+    knownMethod?: KnownMethod;
+  }
+  
+  
+  export type AppletListItemConfig = {
+    appletId: string;
+    label: string;
+    slug: string;
+  }
+  
+  
+  export type CustomAppConfig = {
+    id?: string;
+    name: string;
+    description: string;
+    slug: string;
+    mainAppIcon?: string;
+    mainAppSubmitIcon?: string;
+    creator?: string;
+    primaryColor?: string;
+    accentColor?: string;
+    appletList?: AppletListItemConfig[];
+    extraButtons?: CustomActionButton[];
+    layoutType?: AppLayoutOptions;
+    appDataContext?: any;
+    imageUrl?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    userId?: string;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+  };
+  
+export interface AppBuilder extends CustomAppConfig {
+    appletIds: string[];
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+    isDirty?: boolean;
+    isLocal?: boolean;
+    isTemplated?: boolean;
+    templateType?: 'simple' | 'complex';
+    slugStatus?: 'unchecked' | 'unique' | 'notUnique';
+}
+
+
 
 export default function AppViewPage({ params }: { params: Promise<{ id: string }> }) {
     // Use React.use() to unwrap the params Promise
