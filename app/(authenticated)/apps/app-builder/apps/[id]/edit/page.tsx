@@ -2,12 +2,20 @@
 
 import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectAppById, selectAppLoading, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
-import { setActiveAppWithFetchThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
+import { selectAppById, selectAppLoading, selectAppName, selectHasUnsavedAppChanges } from "@/lib/redux/app-builder/selectors/appSelectors";
+import { setActiveAppWithFetchThunk, saveAppThunk } from "@/lib/redux/app-builder/thunks/appBuilderThunks";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
-import AppEditor from '@/features/applet/builder/modules/app-builder/AppEditor';
+import { Info, Code, Users, Layout, History } from 'lucide-react';
+
+// Tab Components
+import EditTabLayout from './components/EditTabLayout';
+import OverviewEditTab from './components/OverviewEditTab';
+import JsonConfigEditTab from './components/JsonConfigEditTab';
+import AppletsEditTab from './components/AppletsEditTab';
+import AppLayoutEditTab from './components/AppLayoutEditTab';
+import LegacyEditorTab from './components/LegacyEditorTab';
 
 interface AppEditPageProps {
     params: Promise<{
@@ -26,6 +34,7 @@ export default function AppEditPage({ params }: AppEditPageProps) {
 
     // Get the app data from Redux
     const app = useAppSelector((state) => selectAppById(state, id));
+    const appName = useAppSelector((state) => selectAppName(state, id));
     const isLoading = useAppSelector(selectAppLoading);
     const hasUnsavedChanges = useAppSelector(selectHasUnsavedAppChanges);
 
@@ -34,31 +43,23 @@ export default function AppEditPage({ params }: AppEditPageProps) {
         if (id) {
             dispatch(setActiveAppWithFetchThunk(id));
         }
-
-        // Clean up when unmounting
-        return () => {
-            // Optional: reset active app when navigating away
-            // dispatch(setActiveApp(null));
-        };
     }, [id, dispatch]);
 
-    // Handle save success - navigate to the app view
-    const handleSaveSuccess = (appId: string) => {
-        router.push(`/apps/app-builder/apps/${appId}`);
-        toast({
-            title: "Success",
-            description: "App saved successfully",
-        });
-    };
-
-    // Handle cancel - go back to apps list or view
-    const handleCancel = () => {
-        if (hasUnsavedChanges) {
-            if (confirm("You have unsaved changes. Are you sure you want to leave?")) {
-                router.push(`/apps/app-builder/apps/${id}`);
-            }
-        } else {
-            router.push(`/apps/app-builder/apps/${id}`);
+    // Handle save
+    const handleSave = async () => {
+        if (!id) return;
+        
+        try {
+            await dispatch(saveAppThunk(id)).unwrap();
+            return Promise.resolve();
+        } catch (error: any) {
+            console.error("Failed to save app:", error);
+            toast({
+                title: "Error",
+                description: error.message || "Failed to save app",
+                variant: "destructive",
+            });
+            return Promise.reject(error);
         }
     };
 
@@ -71,9 +72,49 @@ export default function AppEditPage({ params }: AppEditPageProps) {
         );
     }
 
+    const tabs = [
+        {
+            id: 'overview',
+            label: 'Overview',
+            icon: <Info className="h-4 w-4" />,
+            content: <OverviewEditTab appId={id} />,
+        },
+        {
+            id: 'applets',
+            label: 'Applets',
+            icon: <Users className="h-4 w-4" />,
+            content: <AppletsEditTab appId={id} />,
+        },
+        {
+            id: 'layout',
+            label: 'Layout',
+            icon: <Layout className="h-4 w-4" />,
+            content: <AppLayoutEditTab appId={id} />,
+        },
+        {
+            id: 'json',
+            label: 'JSON Config',
+            icon: <Code className="h-4 w-4" />,
+            content: <JsonConfigEditTab appId={id} />,
+        },
+        {
+            id: 'legacy',
+            label: 'Legacy Editor',
+            icon: <History className="h-4 w-4" />,
+            content: <LegacyEditorTab appId={id} />,
+        },
+    ];
+
     return (
         <div className="space-y-6">
-            <AppEditor appId={id} isCreatingNew={false} onSaveSuccess={handleSaveSuccess} onCancel={handleCancel} />
+            <EditTabLayout
+                title={appName || 'Untitled App'}
+                subtitle={`ID: ${id}`}
+                tabs={tabs}
+                id={id}
+                onSave={handleSave}
+                hasChanges={hasUnsavedChanges}
+            />
             <Toaster />
         </div>
     );
