@@ -82,14 +82,16 @@ export interface AppletInputProps {
 
 interface AppletLayoutManagerProps {
     appletId: string;
+    appSlug?: string;
     source?: string;
     layoutTypeOverride?: AppletLayoutOption;
     className?: string;
     handleSubmit?: () => void;
     initialExpanded?: boolean;
+    isPreview?: boolean;
 }
 
-const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, layoutTypeOverride, className, source = "applet", handleSubmit, initialExpanded = true }) => {
+const AppletLayoutManager: React.FC<AppletLayoutManagerProps> = ({ appletId, appSlug, layoutTypeOverride, className, source = "applet", handleSubmit, initialExpanded = true, isPreview = false }) => {
     const isMobile = useIsMobile();
     const dispatch = useAppDispatch();
     const [activeContainerId, setActiveContainerId] = useState<string | null>(null);
