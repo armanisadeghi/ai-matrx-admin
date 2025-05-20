@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Database } from "lucide-react";
 import FullScreenOverlay from "@/components/official/FullScreenOverlay";
-import BrokerStateViewer from "./BrokerStateViewer";
+import BrokerValuesSimpleViewer from "./BrokerValuesSimpleViewer";
 import BrokerMapViewer from "./BrokerMapViewer";
+import BrokerValuesAdvancedViewer from "./BrokerValuesAdvancedViewer";
 
 interface FullscreenBrokerStateProps {
   triggerClassName?: string;
@@ -45,10 +46,10 @@ const FullscreenBrokerState = ({
   const tabs = [
     {
       id: "brokers",
-      label: "Brokers",
+      label: "Brokers (Simplified)",
       content: (
         <div className="p-4 h-full overflow-auto">
-          <BrokerStateViewer />
+          <BrokerValuesSimpleViewer />
         </div>
       ),
     },
@@ -61,6 +62,15 @@ const FullscreenBrokerState = ({
         </div>
       ),
     },
+    {
+      id: "brokerValues",
+      label: "Brokers (Advanced)",
+      content: (
+        <div className="p-4 h-full overflow-auto">
+          <BrokerValuesAdvancedViewer />
+        </div>
+      ),
+    },
   ];
 
   // If we're only being used as a controlled component without a trigger button
@@ -69,7 +79,7 @@ const FullscreenBrokerState = ({
       <FullScreenOverlay
         isOpen={isOpen}
         onClose={handleClose}
-        title="Broker State"
+        title="Live Broker Viewer Admin"
         description="View and analyze broker state and broker map"
         tabs={tabs}
         initialTab={activeTab}
@@ -98,7 +108,7 @@ const FullscreenBrokerState = ({
       <FullScreenOverlay
         isOpen={isOpen}
         onClose={handleClose}
-        title="Broker State"
+        title="Live Broker Viewer Admin"
         description="View and analyze broker state and broker map"
         tabs={tabs}
         initialTab={activeTab}

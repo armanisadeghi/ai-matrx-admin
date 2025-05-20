@@ -5,19 +5,176 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux';
 import { 
   selectAppletById,
   selectAppletLoading,
-  selectAppletName, 
-  selectAppletDescription,
-  selectAppletCreator,
-  selectAppletSlug,
-  selectAppletImageUrl,
-  selectAppletPrimaryColor,
-  selectAppletAccentColor
 } from '@/lib/redux/app-builder/selectors/appletSelectors';
 import { setActiveAppletWithFetchThunk } from '@/lib/redux/app-builder/thunks/appletBuilderThunks';
-import { useRouter } from 'next/navigation';
-import { Card } from '@/components/ui/card';
-import Image from 'next/image';
 import { toast } from '@/components/ui/use-toast';
+import { 
+  LayoutIcon, 
+  Database, 
+  Code, 
+  ArrowRight, 
+  Link, 
+  Workflow, 
+  Info 
+} from 'lucide-react';
+
+// Tab Components
+import TabLayout from './components/TabLayout';
+import OverviewTab from './components/OverviewTab';
+import ContainersTab from './components/ContainersTab';
+import DataSourceTab from './components/DataSourceTab';
+import JsonConfigTab from './components/JsonConfigTab';
+import ReferencesTab from './components/ReferencesTab';
+import BrokerMappingsTab from './components/BrokerMappingsTab';
+
+// Types
+import { ComponentType, ComponentProps, FieldOption } from '@/types/customAppTypes';
+
+export interface FieldDefinition {
+  id: string;
+  label: string;
+  description: string;
+  helpText: string;
+  component: ComponentType;
+  required: boolean;
+  placeholder: string;
+  componentProps: ComponentProps;
+  includeOther: boolean;
+  group?: string;
+  iconName?: string;
+  defaultValue?: any;
+  options?: FieldOption[];
+}
+
+export type AppletContainer = {
+  id: string;
+  label: string;
+  shortLabel?: string;
+  description?: string;
+  hideDescription?: boolean;
+  helpText?: string;
+  gridCols?: string;
+  fields: FieldDefinition[];
+};
+
+export interface WorkflowSourceConfig {
+  sourceType: "workflow";
+  id: string;
+  workflowId: string;
+  [key: string]: any;
+}
+
+export interface ApiSourceConfig {
+  sourceType: "api";
+  id: string;
+  [key: string]: any;
+}
+
+export interface DatabaseSourceConfig {
+  sourceType: "database";
+  id: string;
+  [key: string]: any;
+}
+
+export interface OtherSourceConfig {
+  sourceType: "other";
+  id: string;
+  [key: string]: any;
+}
+
+export interface NeededBroker {
+  id: string;
+  name: string;
+  required: boolean;
+  dataType: string;
+  defaultValue: string;
+}
+
+export interface RecipeSourceConfig {
+  id: string;
+  compiledId: string;
+  version: number;
+  neededBrokers: NeededBroker[];
+}
+
+export interface AppletSourceConfig {
+  sourceType?: "recipe" | "workflow" | "api" | "database" | "other" | string;
+  config?: RecipeSourceConfig | WorkflowSourceConfig | ApiSourceConfig | DatabaseSourceConfig | OtherSourceConfig;
+}
+
+
+export interface Broker {
+  id: string;
+  name: string;
+  required: boolean;
+  dataType: string;
+  defaultValue: string;
+  inputComponent: string;
+}
+
+export interface BrokerMapping {
+  appletId: string;
+  fieldId: string;
+  brokerId: string;
+}
+
+export type AppletLayoutOption =
+    | "horizontal"
+    | "vertical"
+    | "stepper"
+    | "flat"
+    | "open"
+    | "oneColumn"
+    | "twoColumn"
+    | "threeColumn"
+    | "fourColumn"
+    | "tabs"
+    | "accordion"
+    | "minimalist"
+    | "floatingCard"
+    | "sidebar"
+    | "carousel"
+    | "cardStack"
+    | "contextual"
+    | "chat"
+    | "mapBased"
+    | "fullWidthSidebar"
+    | "stepper-field"
+    | "flat-accordion";
+
+export type CustomAppletConfig = {
+  id: string;
+  name: string;
+  description?: string;
+  slug: string;
+  appletIcon?: string;
+  appletSubmitText?: string;
+  creator?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  layoutType?: AppletLayoutOption;
+  containers?: AppletContainer[];
+  dataSourceConfig?: AppletSourceConfig;
+  resultComponentConfig?: any;
+  nextStepConfig?: any;
+  compiledRecipeId?: string;
+  subcategoryId?: string;
+  imageUrl?: string;
+  appId?: string;
+  brokerMap?: BrokerMapping[];
+  overviewLabel?: string;  // "This will replace the message for Minimalist Layout as well as show after submission if things are put together. (eg. What are you looking for?)"
+};
+
+export interface AppletBuilder extends CustomAppletConfig {
+  isPublic?: boolean;
+  authenticatedRead?: boolean;
+  publicRead?: boolean;
+  isDirty?: boolean;
+  isLocal?: boolean;
+  slugStatus?: 'unchecked' | 'unique' | 'notUnique';
+}
+
+
 
 export default function AppletViewPage({ params }: { params: Promise<{ id: string }> }) {
   // Use React.use() to unwrap the params Promise
@@ -25,17 +182,9 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
   const { id } = resolvedParams;
 
   const dispatch = useAppDispatch();
-  const router = useRouter();
   
   // Get applet data from Redux
   const applet = useAppSelector((state) => selectAppletById(state, id));
-  const appletName = useAppSelector((state) => selectAppletName(state, id));
-  const appletDescription = useAppSelector((state) => selectAppletDescription(state, id));
-  const appletCreator = useAppSelector((state) => selectAppletCreator(state, id));
-  const appletSlug = useAppSelector((state) => selectAppletSlug(state, id));
-  const appletImageUrl = useAppSelector((state) => selectAppletImageUrl(state, id));
-  const primaryColor = useAppSelector((state) => selectAppletPrimaryColor(state, id));
-  const accentColor = useAppSelector((state) => selectAppletAccentColor(state, id));
   const isLoading = useAppSelector(selectAppletLoading);
   
   // Set active applet when component mounts
@@ -53,11 +202,6 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
     }
   }, [id, dispatch]);
   
-  // Handle edit button click
-  const handleEdit = () => {
-    router.push(`/apps/app-builder/applets/${id}/edit`);
-  };
-  
   // Loading state
   if (isLoading || !applet) {
     return (
@@ -66,90 +210,93 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
       </div>
     );
   }
+
+  const tabs = [
+    {
+      id: 'overview',
+      label: 'Overview',
+      icon: <Info className="h-4 w-4" />,
+      content: (
+        <OverviewTab 
+          id={applet.id}
+          name={applet.name}
+          description={applet.description}
+          slug={applet.slug}
+          creator={applet.creator}
+          imageUrl={applet.imageUrl}
+          primaryColor={applet.primaryColor}
+          accentColor={applet.accentColor}
+          appletIcon={applet.appletIcon}
+          appletSubmitText={applet.appletSubmitText}
+          layoutType={applet.layoutType}
+          overviewLabel={applet.overviewLabel}
+        />
+      ),
+    },
+    {
+      id: 'containers',
+      label: 'Containers',
+      icon: <LayoutIcon className="h-4 w-4" />,
+      content: <ContainersTab containers={applet.containers} />,
+    },
+    {
+      id: 'datasource',
+      label: 'Data Source',
+      icon: <Database className="h-4 w-4" />,
+      content: <DataSourceTab dataSourceConfig={applet.dataSourceConfig} />,
+    },
+    {
+      id: 'result',
+      label: 'Result Config',
+      icon: <Code className="h-4 w-4" />,
+      content: (
+        <JsonConfigTab 
+          title="Result Component Configuration"
+          description="Configuration for the component that displays results after form submission."
+          data={applet.resultComponentConfig}
+          emptyMessage="No result component configuration defined for this applet."
+        />
+      ),
+    },
+    {
+      id: 'nextStep',
+      label: 'Next Steps',
+      icon: <ArrowRight className="h-4 w-4" />,
+      content: (
+        <JsonConfigTab 
+          title="Next Step Configuration"
+          description="Configuration for what happens after form submission."
+          data={applet.nextStepConfig}
+          emptyMessage="No next step configuration defined for this applet."
+        />
+      ),
+    },
+    {
+      id: 'references',
+      label: 'References',
+      icon: <Link className="h-4 w-4" />,
+      content: (
+        <ReferencesTab 
+          appId={applet.appId}
+          compiledRecipeId={applet.compiledRecipeId}
+          subcategoryId={applet.subcategoryId}
+        />
+      ),
+    },
+    {
+      id: 'brokers',
+      label: 'Broker Mappings',
+      icon: <Workflow className="h-4 w-4" />,
+      content: <BrokerMappingsTab brokerMap={applet.brokerMap} />,
+    },
+  ];
   
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left column: Details */}
-        <div className="space-y-6">
-          <Card className="p-6">
-            <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Applet Details</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</p>
-                <p className="text-gray-900 dark:text-gray-100">{appletName || 'Untitled Applet'}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</p>
-                <p className="text-gray-900 dark:text-gray-100">{appletSlug || 'No slug set'}</p>
-              </div>
-              
-              {appletCreator && (
-                <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Created by</p>
-                  <p className="text-gray-900 dark:text-gray-100">{appletCreator}</p>
-                </div>
-              )}
-              
-              {appletDescription && (
-                <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</p>
-                  <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{appletDescription}</p>
-                </div>
-              )}
-              
-              <div className="flex space-x-4">
-                {primaryColor && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Primary Color</p>
-                    <div 
-                      className="w-8 h-8 rounded border border-gray-200 dark:border-gray-700 mt-1"
-                      style={{ backgroundColor: primaryColor }}
-                    />
-                  </div>
-                )}
-                
-                {accentColor && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Accent Color</p>
-                    <div 
-                      className="w-8 h-8 rounded border border-gray-200 dark:border-gray-700 mt-1"
-                      style={{ backgroundColor: accentColor }}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
-        </div>
-        
-        {/* Right column: Image and quick actions */}
-        <div className="space-y-6">
-          {appletImageUrl && (
-            <Card className="p-6">
-              <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Preview Image</h3>
-              <div className="relative w-full h-48 rounded-md overflow-hidden">
-                <Image
-                  src={appletImageUrl}
-                  alt={appletName || 'Applet preview'}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </Card>
-          )}
-        </div>
-      </div>
-      
-      {/* Placeholder for future sections like associated containers, etc. */}
-      <Card className="p-6">
-        <h3 className="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">Containers</h3>
-        <p className="text-gray-500 dark:text-gray-400">
-          This applet has {applet.containers?.length || 0} containers.
-        </p>
-      </Card>
-    </div>
+    <TabLayout 
+      title={applet.name || 'Untitled Applet'} 
+      subtitle={`ID: ${applet.id}`}
+      tabs={tabs}
+      id={applet.id}
+    />
   );
 } 

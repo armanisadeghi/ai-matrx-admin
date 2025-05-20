@@ -88,32 +88,33 @@ export const CreatorMenu: React.FC = () => {
         },
         // Creator links
         {
+            id: "manage",
+            icon: <Code className="h-4 w-4 text-emerald-500" />,
+            label: "Manage Applets",
+            type: "link",
+            href: "/apps/builder",
+        },
+        {
             id: "edit",
             icon: <Paintbrush className="h-4 w-4 text-violet-500" />,
             label: "Edit Content",
             type: "link",
-            href: "/creator/edit",
+            href: "#",
         },
         {
             id: "analytics",
             icon: <Sparkles className="h-4 w-4 text-amber-500" />,
             label: "Analytics",
             type: "link",
-            href: "/creator/analytics",
+            href: "#",
         },
-        {
-            id: "manage",
-            icon: <Code className="h-4 w-4 text-emerald-500" />,
-            label: "Manage Applets",
-            type: "link",
-            href: "/creator/manage",
-        },
+
         {
             id: "settings",
             icon: <Database className="h-4 w-4 text-blue-500" />,
             label: "Creator Settings",
             type: "link",
-            href: "/creator/settings",
+            href: "#",
         },
     ];
 
