@@ -4,78 +4,77 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Database, Workflow, Code } from 'lucide-react';
-import { AppletSourceConfig } from '../../page';
+import { Label } from '@/components/ui/label';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { selectAppletDataSourceConfig } from '@/lib/redux/app-builder/selectors/appletSelectors';
+import { setDataSourceConfig } from '@/lib/redux/app-builder/slices/appletBuilderSlice';
 
 interface DataSourceEditTabProps {
-  dataSourceConfig?: AppletSourceConfig;
-  onUpdate: (dataSourceConfig: AppletSourceConfig) => void;
+  appletId: string;
 }
 
-export default function DataSourceEditTab({ dataSourceConfig, onUpdate }: DataSourceEditTabProps) {
-  // Placeholder for data source selection
-  const handleSourceTypeChange = (value: string) => {
-    console.log('Selected source type:', value);
-    // In a real implementation, this would update the data source type
+export default function DataSourceEditTab({ appletId }: DataSourceEditTabProps) {
+  const dispatch = useAppDispatch();
+  const dataSourceConfig = useAppSelector(state => selectAppletDataSourceConfig(state, appletId)) || {};
+  
+  const sourceTypes = ['recipe', 'workflow', 'api', 'database', 'other'];
+  
+  const handleSourceTypeChange = (type: string) => {
+    dispatch(setDataSourceConfig({
+      id: appletId,
+      dataSourceConfig: {
+        ...dataSourceConfig,
+        sourceType: type,
+        config: dataSourceConfig.config || { id: `${type}-config-${Date.now()}` }
+      }
+    }));
   };
-
-  const sourceTypes = [
-    { id: 'recipe', label: 'Recipe', icon: <Code className="h-4 w-4 mr-2" /> },
-    { id: 'workflow', label: 'Workflow', icon: <Workflow className="h-4 w-4 mr-2" /> },
-    { id: 'database', label: 'Database', icon: <Database className="h-4 w-4 mr-2" /> },
-    { id: 'api', label: 'API', icon: <Code className="h-4 w-4 mr-2" /> },
-    { id: 'other', label: 'Other', icon: <Code className="h-4 w-4 mr-2" /> },
-  ];
 
   return (
     <div className="space-y-4">
-      <div className="mb-4">
-        <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
-          Data Source Configuration
-        </h3>
-        <p className="text-gray-500 dark:text-gray-400">
-          Configure the data source for this applet.
-        </p>
-      </div>
-
-      <Card className="p-6">
+      <Card className="p-4">
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Source Type</p>
-              <Select 
-                value={dataSourceConfig?.sourceType || ''} 
-                onValueChange={handleSourceTypeChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a source type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sourceTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id}>
-                      <div className="flex items-center">
-                        {type.icon}
-                        {type.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">Data Source Type</Label>
+            <Select
+              value={dataSourceConfig.sourceType || ''}
+              onValueChange={handleSourceTypeChange}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select source type" />
+              </SelectTrigger>
+              <SelectContent>
+                {sourceTypes.map(type => (
+                  <SelectItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-gray-500 dark:text-gray-400">
-              Data source configuration editing will be implemented with dedicated components.
-              This is a placeholder. The actual editing interface will depend on the selected source type.
-            </p>
-            
-            {dataSourceConfig?.sourceType && (
-              <p className="text-gray-500 dark:text-gray-400 mt-2">
-                Currently using a {dataSourceConfig.sourceType} data source.
-              </p>
-            )}
-          </div>
+          {dataSourceConfig.sourceType && (
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <Label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {dataSourceConfig.sourceType.charAt(0).toUpperCase() + dataSourceConfig.sourceType.slice(1)} Configuration
+                </Label>
+                <Button variant="outline" size="sm">
+                  Configure
+                </Button>
+              </div>
+              
+              {dataSourceConfig.config ? (
+                <pre className="mt-2 p-4 bg-gray-50 dark:bg-gray-800 rounded overflow-auto text-xs text-gray-900 dark:text-gray-100">
+                  {JSON.stringify(dataSourceConfig.config, null, 2)}
+                </pre>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400 mt-2">
+                  No configuration data available.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </Card>
     </div>

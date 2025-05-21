@@ -6,20 +6,40 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, Check } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks';
+import { 
+  selectAppletResultComponentConfig,
+  selectAppletNextStepConfig
+} from '@/lib/redux/app-builder/selectors/appletSelectors';
+import {
+  setResultComponentConfig,
+  setNextStepConfig
+} from '@/lib/redux/app-builder/slices/appletBuilderSlice';
 
 interface JsonConfigEditTabProps {
   title: string;
   description?: string;
-  data: any;
-  onUpdate: (value: any) => void;
+  appletId: string;
+  configType: 'resultComponentConfig' | 'nextStepConfig';
 }
 
 export default function JsonConfigEditTab({
   title,
   description,
-  data,
-  onUpdate
+  appletId,
+  configType
 }: JsonConfigEditTabProps) {
+  const dispatch = useAppDispatch();
+  
+  // Select the appropriate data based on configType
+  const data = useAppSelector(state => {
+    if (configType === 'resultComponentConfig') {
+      return selectAppletResultComponentConfig(state, appletId);
+    } else {
+      return selectAppletNextStepConfig(state, appletId);
+    }
+  });
+
   const [jsonText, setJsonText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState(true);
@@ -60,7 +80,12 @@ export default function JsonConfigEditTab({
     
     try {
       const parsedData = JSON.parse(jsonText);
-      onUpdate(parsedData);
+      
+      if (configType === 'resultComponentConfig') {
+        dispatch(setResultComponentConfig({ id: appletId, resultComponentConfig: parsedData }));
+      } else {
+        dispatch(setNextStepConfig({ id: appletId, nextStepConfig: parsedData }));
+      }
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);

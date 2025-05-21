@@ -229,13 +229,7 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
       label: 'Overview',
       icon: <Info className="h-4 w-4" />,
       content: (
-        <OverviewTab 
-          id={applet.id}
-          name={applet.name}
-          description={applet.description}
-          slug={applet.slug}
-          creator={applet.creator}
-        />
+        <OverviewTab appletId={applet.id} />
       ),
     },
     {
@@ -243,13 +237,7 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
       label: 'Visuals',
       icon: <Palette className="h-4 w-4" />,
       content: (
-        <VisualsTab 
-          primaryColor={applet.primaryColor}
-          accentColor={applet.accentColor}
-          appletIcon={applet.appletIcon}
-          imageUrl={applet.imageUrl}
-          name={applet.name}
-        />
+        <VisualsTab appletId={applet.id} />
       ),
     },
     {
@@ -258,6 +246,7 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
       icon: <Rows className="h-4 w-4" />,
       content: (
         <LayoutTab 
+          appletId={applet.id}
           layoutType={applet.layoutType}
           appletSubmitText={applet.appletSubmitText}
           overviewLabel={applet.overviewLabel}
@@ -268,19 +257,19 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
       id: 'containers',
       label: 'Containers',
       icon: <Box className="h-4 w-4" />,
-      content: <ContainersTab containers={applet.containers} />,
+      content: <ContainersTab appletId={applet.id} />,
     },
     {
       id: 'fields',
       label: 'Fields',
       icon: <LayoutIcon className="h-4 w-4" />,
-      content: <FieldsTab containers={applet.containers} />,
+      content: <FieldsTab appletId={applet.id} />,
     },
     {
       id: 'datasource',
       label: 'Data',
       icon: <Database className="h-4 w-4" />,
-      content: <DataSourceTab dataSourceConfig={applet.dataSourceConfig} />,
+      content: <DataSourceTab appletId={applet.id} />,
     },
     {
       id: 'result',

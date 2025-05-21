@@ -15,7 +15,7 @@ export default function PreviewLoadingWithMessage({ isLoading, isPreview }: Prev
     if (!isLoading && isPreview) {
       const timer = setTimeout(() => {
         setShowMessage(false);
-      }, 1000);
+      }, 2000);
       
       return () => clearTimeout(timer);
     }
@@ -28,7 +28,7 @@ export default function PreviewLoadingWithMessage({ isLoading, isPreview }: Prev
   return (
     <div className="h-full w-full flex flex-col items-center justify-center gap-3">
       <LoadingSpinner />
-      <p className="text-indigo-600 dark:text-indigo-400 font-medium text-base">
+      <p className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-semibold text-lg px-4 py-2 rounded-md shadow-sm border border-indigo-200 dark:border-indigo-800 transition-all">
         Not intended to match the exact sizing and spacing
       </p>
     </div>

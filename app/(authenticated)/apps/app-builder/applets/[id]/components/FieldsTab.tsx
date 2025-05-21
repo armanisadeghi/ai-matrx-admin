@@ -2,20 +2,24 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
-import { FieldDefinition, AppletContainer } from '../page';
+import { FieldDefinition } from '../page';
+import { useAppSelector } from '@/lib/redux';
+import { selectAppletContainers } from '@/lib/redux/app-builder/selectors/appletSelectors';
 
 interface FieldsTabProps {
-  containers?: AppletContainer[];
+  appletId: string;
 }
 
-export default function FieldsTab({ containers }: FieldsTabProps) {
+export default function FieldsTab({ appletId }: FieldsTabProps) {
+  const containers = useAppSelector(state => selectAppletContainers(state, appletId)) || [];
+  
   // Flatten all fields from all containers
-  const allFields = containers?.reduce<FieldDefinition[]>((acc, container) => {
+  const allFields = containers.reduce<FieldDefinition[]>((acc, container) => {
     if (container.fields?.length) {
       return [...acc, ...container.fields];
     }
     return acc;
-  }, []) || [];
+  }, []);
 
   return (
     <div className="space-y-4">

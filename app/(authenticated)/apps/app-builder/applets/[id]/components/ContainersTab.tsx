@@ -5,12 +5,16 @@ import { Card } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { AppletContainer, FieldDefinition } from '../page';
+import { useAppSelector } from '@/lib/redux';
+import { selectAppletContainers } from '@/lib/redux/app-builder/selectors/appletSelectors';
 
 interface ContainersTabProps {
-  containers?: AppletContainer[];
+  appletId: string;
 }
 
-export default function ContainersTab({ containers = [] }: ContainersTabProps) {
+export default function ContainersTab({ appletId }: ContainersTabProps) {
+  const containers = useAppSelector(state => selectAppletContainers(state, appletId)) || [];
+  
   return (
     <div className="space-y-4">
       {containers.length === 0 ? (

@@ -1,129 +1,106 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { FieldDefinition, AppletContainer } from '../../page';
+import { Plus } from 'lucide-react';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectAppletContainers } from '@/lib/redux/app-builder/selectors/appletSelectors';
+import { FieldDefinition } from '../../page';
 
 interface FieldsEditTabProps {
-  containers?: AppletContainer[];
-  onUpdate: (containers: AppletContainer[]) => void;
+  appletId: string;
 }
 
-export default function FieldsEditTab({ containers = [], onUpdate }: FieldsEditTabProps) {
+export default function FieldsEditTab({ appletId }: FieldsEditTabProps) {
+  const containers = useAppSelector(state => selectAppletContainers(state, appletId)) || [];
+  
   // Flatten all fields from all containers
-  const allFields = containers?.reduce<{field: FieldDefinition, containerIndex: number, fieldIndex: number}[]>((acc, container, containerIndex) => {
+  const allFields = containers.reduce<FieldDefinition[]>((acc, container) => {
     if (container.fields?.length) {
-      return [
-        ...acc, 
-        ...container.fields.map((field, fieldIndex) => ({
-          field,
-          containerIndex,
-          fieldIndex
-        }))
-      ];
+      return [...acc, ...container.fields];
     }
     return acc;
-  }, []) || [];
+  }, []);
 
-  const [editingField, setEditingField] = useState<{field: FieldDefinition, containerIndex: number, fieldIndex: number} | null>(null);
-
-  const handleEditField = (field: FieldDefinition, containerIndex: number, fieldIndex: number) => {
-    setEditingField({ field, containerIndex, fieldIndex });
-    // In a real implementation, this would open a modal or form for editing
-    console.log("Edit field:", field);
-  };
-
-  const handleDeleteField = (containerIndex: number, fieldIndex: number) => {
-    if (confirm("Are you sure you want to delete this field?")) {
-      const newContainers = [...containers];
-      newContainers[containerIndex].fields.splice(fieldIndex, 1);
-      onUpdate(newContainers);
-    }
-  };
-
+  // Handler for adding a new field
   const handleAddField = () => {
-    // In a real implementation, this would open a modal or form for adding a field
-    console.log("Add new field");
+    // This would open a modal or redirect to a field creation page
+    console.log('Add field clicked');
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Total fields: {allFields.length}
-        </p>
-        <Button 
-          onClick={handleAddField}
-          size="sm"
-          className="flex items-center gap-1"
-        >
-          <Plus className="h-4 w-4" />
-          Add Field
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+            Fields ({allFields.length})
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            Manage all fields across all containers.
+          </p>
+        </div>
+        
+        <Button onClick={handleAddField} disabled={containers.length === 0}>
+          <Plus className="h-4 w-4 mr-2" /> Add Field
         </Button>
       </div>
 
       {allFields.length === 0 ? (
-        <Card className="p-4">
-          <p className="text-gray-500 dark:text-gray-400">No fields defined for this applet.</p>
+        <Card className="p-6 flex flex-col items-center justify-center h-64">
+          <p className="text-gray-500 dark:text-gray-400 mb-4">
+            {containers.length === 0 
+              ? 'You need to create a container first before adding fields.' 
+              : 'No fields defined for this applet.'}
+          </p>
+          <Button onClick={handleAddField} disabled={containers.length === 0}>
+            <Plus className="h-4 w-4 mr-2" /> 
+            {containers.length === 0 ? 'Create Container First' : 'Create First Field'}
+          </Button>
         </Card>
       ) : (
         <div className="space-y-4">
-          {allFields.map(({ field, containerIndex, fieldIndex }) => (
+          {allFields.map((field) => (
             <Card key={field.id} className="p-4 border-l-4 border-indigo-500 dark:border-indigo-400">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center flex-wrap gap-2">
-                  <h4 className="font-medium text-gray-900 dark:text-gray-100">{field.label}</h4>
-                  {field.required && (
-                    <Badge className="bg-red-500 text-white">Required</Badge>
-                  )}
-                  <Badge variant="outline">{field.component}</Badge>
-                </div>
-                <div className="flex space-x-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleEditField(field, containerIndex, fieldIndex)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleDeleteField(containerIndex, fieldIndex)}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-500" />
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <p className="text-sm text-gray-500 dark:text-gray-400">ID: {field.id}</p>
-                {field.description && (
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {field.description}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2 md:col-span-1">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{field.label}</h4>
+                      {field.required && (
+                        <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                          Required
+                        </span>
+                      )}
+                    </div>
+                    <Button variant="ghost" size="sm" className="h-8 px-2">
+                      Edit
+                    </Button>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">ID: {field.id}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Component: {field.component}
                   </p>
-                )}
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Container: {containers[containerIndex].label}
-                </p>
+                </div>
+                
+                <div className="space-y-2 md:col-span-2">
+                  {field.description && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{field.description}</p>
+                    </div>
+                  )}
+                  
+                  {field.placeholder && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Placeholder</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{field.placeholder}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </Card>
           ))}
-        </div>
-      )}
-
-      {/* Field editor placeholder - in a real implementation, this would be a modal or expanded form */}
-      {editingField && (
-        <div className="mt-4">
-          <Card className="p-4 bg-gray-50 dark:bg-gray-800">
-            <p className="text-sm font-medium mb-2">Editing field: {editingField.field.label}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              This is a placeholder for the field editor UI.
-            </p>
-          </Card>
         </div>
       )}
     </div>

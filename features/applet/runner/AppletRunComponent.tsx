@@ -14,7 +14,7 @@ import { LoadingSpinner } from "@/components/ui/spinner";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import useAppletRecipe from "@/features/applet/hooks/useAppletRecipe";
 import ResponseLayoutManager from "@/features/applet/runner/response/ResponseLayoutManager";
-import PreviewLoadingWithMessage from "@/features/applet/builder/previews/PreviewDisclaimer";
+import PreviewLoadingWithMessage from "@/features/applet/builder/previews/PreviewLoadingWithMessage";
 import { AppletLayoutOption } from "@/types";
 import { useToastManager } from "@/hooks/useToastManager";
 

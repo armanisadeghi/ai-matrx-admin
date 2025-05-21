@@ -153,11 +153,6 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       content: (
         <OverviewEditTab 
           id={editedApplet.id}
-          name={editedApplet.name}
-          description={editedApplet.description}
-          slug={editedApplet.slug}
-          creator={editedApplet.creator}
-          onUpdate={handleFieldUpdate}
         />
       ),
     },
@@ -167,12 +162,7 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       icon: <Palette className="h-4 w-4" />,
       content: (
         <VisualsEditTab 
-          primaryColor={editedApplet.primaryColor}
-          accentColor={editedApplet.accentColor}
-          appletIcon={editedApplet.appletIcon}
-          imageUrl={editedApplet.imageUrl}
-          name={editedApplet.name}
-          onUpdate={handleFieldUpdate}
+          id={editedApplet.id}
         />
       ),
     },
@@ -182,6 +172,7 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       icon: <Rows className="h-4 w-4" />,
       content: (
         <LayoutEditTab 
+          appletId={editedApplet.id}
           layoutType={editedApplet.layoutType}
           appletSubmitText={editedApplet.appletSubmitText}
           overviewLabel={editedApplet.overviewLabel}
@@ -194,9 +185,8 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       label: 'Containers',
       icon: <Box className="h-4 w-4" />,
       content: (
-        <ContainersEditTab 
-          containers={editedApplet.containers} 
-          onUpdate={handleContainersUpdate} 
+        <ContainersEditTab
+          appletId={editedApplet.id}
         />
       ),
     },
@@ -205,9 +195,8 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       label: 'Fields',
       icon: <LayoutIcon className="h-4 w-4" />,
       content: (
-        <FieldsEditTab 
-          containers={editedApplet.containers} 
-          onUpdate={handleContainersUpdate} 
+        <FieldsEditTab
+          appletId={editedApplet.id}
         />
       ),
     },
@@ -216,9 +205,8 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
       label: 'Data',
       icon: <Database className="h-4 w-4" />,
       content: (
-        <DataSourceEditTab 
-          dataSourceConfig={editedApplet.dataSourceConfig} 
-          onUpdate={handleDataSourceUpdate} 
+        <DataSourceEditTab
+          appletId={editedApplet.id}
         />
       ),
     },
@@ -230,8 +218,8 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
         <JsonConfigEditTab 
           title="Result Component Configuration"
           description="Configure how results are displayed after form submission."
-          data={editedApplet.resultComponentConfig}
-          onUpdate={(value) => handleJsonConfigUpdate('resultComponentConfig', value)}
+          appletId={editedApplet.id}
+          configType="resultComponentConfig"
         />
       ),
     },
@@ -243,8 +231,8 @@ export default function AppletEditPage({ params }: { params: Promise<{ id: strin
         <JsonConfigEditTab 
           title="Next Step Configuration"
           description="Configure what happens after form submission."
-          data={editedApplet.nextStepConfig}
-          onUpdate={(value) => handleJsonConfigUpdate('nextStepConfig', value)}
+          appletId={editedApplet.id}
+          configType="nextStepConfig"
         />
       ),
     },

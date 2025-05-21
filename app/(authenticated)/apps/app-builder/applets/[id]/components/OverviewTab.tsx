@@ -2,55 +2,25 @@
 
 import React from 'react';
 import { Card } from '@/components/ui/card';
+import AppletOverview from '@/features/applet/builder/modules/smart-parts/applets/AppletOverview';
 
 interface OverviewTabProps {
-  id: string;
-  name: string;
-  description?: string;
-  slug: string;
-  creator?: string;
+  appletId: string;
+  isNew?: boolean;
+  isReadOnly?: boolean;
 }
 
 export default function OverviewTab({
-  id,
-  name,
-  description,
-  slug,
-  creator
+  appletId,
+  isNew = false,
+  isReadOnly = false
 }: OverviewTabProps) {
+  // When in read-only mode, we might still want to show the old view
+  // But default to the editable mode using our refactored component
   return (
     <div className="space-y-4">
-      <Card className="p-4">
-        <div className="space-y-4">
-          <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">ID</p>
-            <p className="text-gray-900 dark:text-gray-100">{id}</p>
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</p>
-            <p className="text-gray-900 dark:text-gray-100">{name || 'Untitled Applet'}</p>
-          </div>
-          
-          <div>
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</p>
-            <p className="text-gray-900 dark:text-gray-100">{slug || 'No slug set'}</p>
-          </div>
-          
-          {creator && (
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Created by</p>
-              <p className="text-gray-900 dark:text-gray-100">{creator}</p>
-            </div>
-          )}
-          
-          {description && (
-            <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Description</p>
-              <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{description}</p>
-            </div>
-          )}
-        </div>
+      <Card className="p-4 shadow-sm">
+        <AppletOverview appletId={appletId} isNew={isNew} />
       </Card>
     </div>
   );
