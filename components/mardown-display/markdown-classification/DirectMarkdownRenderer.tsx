@@ -8,6 +8,9 @@ import { ViewId } from "./custom-views/view-registry";
 import ViewRenderer from "./custom-views/ViewRenderer";
 import { getDefaultViewId } from "./markdown-coordinator";
 
+// Helper to check if code is running on client side
+const isClient = typeof window !== 'undefined';
+
 interface DirectMarkdownRendererProps {
     markdown: string;
     coordinatorId: string;
@@ -30,6 +33,7 @@ const DirectMarkdownRenderer = ({
     const [processedData, setProcessedData] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
     const [viewInfo, setViewInfo] = useState<any>(null);
+    const [rendering, setRendering] = useState(true);
     const dispatch = useAppDispatch();
 
     // Resolve the actual view ID if 'default' is specified
@@ -38,23 +42,31 @@ const DirectMarkdownRenderer = ({
         : viewId as ViewId;
 
     useEffect(() => {
-        if (!markdown || !coordinatorId) {
+        // Skip processing on server or when missing data
+        if (!isClient || !markdown || !coordinatorId) {
             return;
         }
 
         setError(null);
+        setRendering(true);
 
         async function processMarkdown() {
             try {
                 const result = await prepareMarkdownForRendering(markdown, coordinatorId, resolvedViewId);
-                setProcessedData(result.processedData);
-                setViewInfo({
-                    coordinatorDefinition: result.coordinatorDefinition,
-                    viewComponentInfo: result.viewComponentInfo
-                });
+                if (isClient) { // Double-check we're still on client before setting state
+                    setProcessedData(result.processedData);
+                    setViewInfo({
+                        coordinatorDefinition: result.coordinatorDefinition,
+                        viewComponentInfo: result.viewComponentInfo
+                    });
+                    setRendering(false);
+                }
             } catch (err) {
                 console.error(`[DirectMarkdownRenderer] Processing error for ${coordinatorId}:`, err);
-                setError(`Error processing markdown: ${err instanceof Error ? err.message : String(err)}`);
+                if (isClient) { // Double-check we're still on client before setting state
+                    setError(`Error processing markdown: ${err instanceof Error ? err.message : String(err)}`);
+                    setRendering(false);
+                }
             }
         }
 
@@ -62,41 +74,48 @@ const DirectMarkdownRenderer = ({
     }, [markdown, coordinatorId, resolvedViewId]);
 
     useEffect(() => {
-        if (source && sourceId && processedData && viewInfo) {
-            // Dispatch the main data broker
-            dispatch(
-                brokerActions.setValue({
-                    brokerId: `${coordinatorId}-${sourceId}`,
-                    value: processedData.extracted,
-                })
-            );
+        if (!isClient || !source || !sourceId || !processedData || !viewInfo) {
+            return;
+        }
+        
+        // Dispatch the main data broker
+        dispatch(
+            brokerActions.setValue({
+                brokerId: `${coordinatorId}-${sourceId}`,
+                value: processedData.extracted,
+            })
+        );
 
-            // Only dispatch miscellaneous data if it exists and has content
-            if (processedData.miscellaneous) {
-                const hasMiscContent = Array.isArray(processedData.miscellaneous)
-                    ? processedData.miscellaneous.length > 0
-                    : typeof processedData.miscellaneous === "object"
-                    ? Object.keys(processedData.miscellaneous).length > 0
-                    : Boolean(processedData.miscellaneous);
+        // Only dispatch miscellaneous data if it exists and has content
+        if (processedData.miscellaneous) {
+            const hasMiscContent = Array.isArray(processedData.miscellaneous)
+                ? processedData.miscellaneous.length > 0
+                : typeof processedData.miscellaneous === "object"
+                ? Object.keys(processedData.miscellaneous).length > 0
+                : Boolean(processedData.miscellaneous);
 
-                if (hasMiscContent) {
-                    dispatch(
-                        brokerActions.setValue({
-                            brokerId: `${coordinatorId}-${sourceId}-miscellaneous`,
-                            value: processedData.miscellaneous,
-                        })
-                    );
-                }
+            if (hasMiscContent) {
+                dispatch(
+                    brokerActions.setValue({
+                        brokerId: `${coordinatorId}-${sourceId}-miscellaneous`,
+                        value: processedData.miscellaneous,
+                    })
+                );
             }
         }
     }, [source, sourceId, processedData, viewInfo, dispatch, coordinatorId]);
+
+    // Handle server-side rendering
+    if (!isClient) {
+        return <div className={className}>Loading...</div>;
+    }
 
     if (error) {
         return <div className={`text-red-600 dark:text-red-400 ${className}`}>{error}</div>;
     }
 
-    if (!processedData || !viewInfo) {
-        return null;
+    if (rendering || !processedData || !viewInfo) {
+        return <div className={className}>Processing markdown...</div>;
     }
 
     // Use the ViewRenderer component to handle view resolution and rendering

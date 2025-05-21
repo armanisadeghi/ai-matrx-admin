@@ -3,9 +3,10 @@ import { getAppData } from '@/utils/server/appDataCache';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const params = await context.params;
     const { id } = params;
     
     if (!id) {

@@ -27,12 +27,20 @@ interface MobileAppHeaderProps {
     activeAppletSlug?: string;
     isCreator?: boolean;
     isAdmin?: boolean;
-  }
+    isPreview?: boolean;
+}
   
 
 
 
-export const MobileAppHeader = ({ appId, activeAppletSlug, isDemo = false, isCreator, isAdmin }: MobileAppHeaderProps) => {
+export const MobileAppHeader = ({ 
+    appId, 
+    activeAppletSlug, 
+    isDemo = false, 
+    isCreator, 
+    isAdmin,
+    isPreview = false
+}: MobileAppHeaderProps) => {
     const router = useRouter();
     const user = useAppSelector((state: RootState) => state.user);
     const displayName = user.userMetadata.name || user.userMetadata.fullName || user.email?.split("@")[0] || "User";
@@ -48,9 +56,9 @@ export const MobileAppHeader = ({ appId, activeAppletSlug, isDemo = false, isCre
         return getAppIcon({
             color: config?.accentColor,
             icon: iconName,
-            size: 24,
+            size: isPreview ? 18 : 24,
         });
-    }, [config?.accentColor, iconName]);
+    }, [config?.accentColor, iconName, isPreview]);
 
     // Setup tab navigation function that uses routing instead of state
     const handleTabChange = (tabSlug: string) => {
@@ -60,8 +68,8 @@ export const MobileAppHeader = ({ appId, activeAppletSlug, isDemo = false, isCre
     };
 
     return (
-        <div className="w-full bg-white dark:bg-gray-900 transition-colors">
-            <div className="flex items-center justify-between p-2">
+        <div className="w-full h-full bg-white dark:bg-gray-900 transition-colors">
+            <div className={`flex items-center justify-between ${isPreview ? 'p-1' : 'p-2'}`}>
                 {/* Left section - App icon */}
                 <div className="shrink-0">
                     <Link href={`/apps/custom/${config.slug}`}>{activeAppIcon}</Link>
@@ -81,16 +89,18 @@ export const MobileAppHeader = ({ appId, activeAppletSlug, isDemo = false, isCre
 
                 {/* Right section - Theme switcher and profile */}
                 <div className="flex items-center gap-1 shrink-0">
-                    {extraButtons && extraButtons.length > 0 && <ButtonMenu buttons={extraButtons} />}
-                    {(isDemo || !appId) && <AppSelector />}
-                    <ThemeSwitcherIcon className="text-gray-800 dark:text-gray-200" />
-                    <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
-                        {profilePhoto ? (
-                            <Image src={profilePhoto} width={32} height={32} alt={displayName} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full bg-gray-500 dark:bg-gray-600 rounded-full"></div>
-                        )}
-                    </div>
+                    {extraButtons && extraButtons.length > 0 && !isPreview && <ButtonMenu buttons={extraButtons} />}
+                    {(isDemo || !appId) && !isPreview && <AppSelector />}
+                    <ThemeSwitcherIcon className={`text-gray-800 dark:text-gray-200 ${isPreview ? 'w-4 h-4' : ''}`} />
+                    {!isPreview && (
+                        <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
+                            {profilePhoto ? (
+                                <Image src={profilePhoto} width={32} height={32} alt={displayName} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full bg-gray-500 dark:bg-gray-600 rounded-full"></div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

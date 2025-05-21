@@ -14,6 +14,7 @@ import { LoadingSpinner } from "@/components/ui/spinner";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
 import useAppletRecipe from "@/features/applet/hooks/useAppletRecipe";
 import ResponseLayoutManager from "@/features/applet/runner/response/ResponseLayoutManager";
+import PreviewLoadingWithMessage from "@/features/applet/builder/previews/PreviewDisclaimer";
 import { AppletLayoutOption } from "@/types";
 import { useToastManager } from "@/hooks/useToastManager";
 
@@ -29,6 +30,7 @@ interface AppletRunComponentProps {
     layoutTypeOverride?: AppletLayoutOption;
     isPreview?: boolean;
     allowSubmit?: boolean;
+    isFullScreenPreview?: boolean;
 }
 
 export default function AppletRunComponent({
@@ -37,6 +39,7 @@ export default function AppletRunComponent({
     layoutTypeOverride,
     isPreview,
     allowSubmit = true,
+    isFullScreenPreview = false,
 }: AppletRunComponentProps) {
     const dispatch = useAppDispatch();
     const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
@@ -78,26 +81,36 @@ export default function AppletRunComponent({
     }, [dispatch, isAppInitialized, applet, activeAppletId]);
 
     // Show loading state until app is initialized and applet data is available
-    if (!isAppInitialized || !isAppletInitialized || !applet || !appletId) {
+    const isLoading = !isAppInitialized || !isAppletInitialized || !applet || !appletId;
+    
+    if (isLoading) {
         return (
             <div className="h-full w-full flex items-center justify-center">
-                <LoadingSpinner />
+                {isPreview ? (
+                    <PreviewLoadingWithMessage isLoading={isLoading} isPreview={!!isPreview} />
+                ) : (
+                    <LoadingSpinner />
+                )}
             </div>
         );
     }
 
     return (
         <div className="h-full w-full">
+            <PreviewLoadingWithMessage isLoading={isLoading} isPreview={!!isPreview} />
+            
             {!taskSubmitted && (
-                <AppletLayoutManager
-                    appSlug={appSlug}
-                    appletId={appletId}
-                    handleSubmit={handleSubmit}
-                    layoutTypeOverride={layoutTypeOverride}
-                    isPreview={isPreview}
-                />
+                <>
+                    {isPreview && <div className="py-4"></div>}
+                    <AppletLayoutManager
+                        appSlug={appSlug}
+                        appletId={appletId}
+                        handleSubmit={handleSubmit}
+                        layoutTypeOverride={layoutTypeOverride}
+                        isPreview={isPreview}
+                    />
+                </>
             )}
-
             {taskSubmitted && taskId && (
                 <ResponseLayoutManager
                     appSlug={appSlug}

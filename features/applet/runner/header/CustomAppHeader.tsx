@@ -16,9 +16,17 @@ export interface CustomAppHeaderProps {
   isDemo?: boolean;
   isDebug?: boolean;
   initialActiveAppletSlug?: string;
+  isPreview?: boolean;
 }
 
-export const CustomAppHeader = ({ appId, isDemo = false, isDebug = false, initialActiveAppletSlug }: CustomAppHeaderProps) => {
+export const CustomAppHeader = ({ 
+  appId, 
+  isDemo = false, 
+  isDebug = false, 
+  initialActiveAppletSlug,
+  isPreview = false,
+  headerClassName,
+}: CustomAppHeaderProps) => {
   const isMobile = useIsMobile();
   const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
   const activeAppletSlug = initialActiveAppletSlug || useAppSelector(selectActiveAppletSlug);
@@ -38,11 +46,33 @@ export const CustomAppHeader = ({ appId, isDemo = false, isDebug = false, initia
     );
   }
 
+  // Use reduced height styling for preview mode
+  const headerClasses = `sticky top-0 w-full z-40 ${
+    isPreview ? 'h-10' : 'h-14'
+  } ${headerClassName || ''} bg-white dark:bg-gray-900 transition-colors shadow-sm`;
 
   return isMobile ? (
-    <MobileAppHeader appId={appId} activeAppletSlug={activeAppletSlug} isDemo={isDemo} isCreator={userIsCreator} isAdmin={isAdmin} />
+    <div className={headerClasses}>
+      <MobileAppHeader 
+        appId={appId} 
+        activeAppletSlug={activeAppletSlug} 
+        isDemo={isDemo} 
+        isCreator={userIsCreator} 
+        isAdmin={isAdmin}
+        isPreview={isPreview} 
+      />
+    </div>
   ) : (
-    <DesktopAppHeader appId={appId} activeAppletSlug={activeAppletSlug} isDemo={isDemo} isCreator={userIsCreator} isAdmin={isAdmin} />
+    <div className={headerClasses}>
+      <DesktopAppHeader 
+        appId={appId} 
+        activeAppletSlug={activeAppletSlug} 
+        isDemo={isDemo} 
+        isCreator={userIsCreator} 
+        isAdmin={isAdmin}
+        isPreview={isPreview} 
+      />
+    </div>
   );
 };
 

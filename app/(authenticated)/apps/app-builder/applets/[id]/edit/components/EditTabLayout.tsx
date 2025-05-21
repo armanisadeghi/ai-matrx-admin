@@ -1,7 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Save, X, Menu, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Save, X, Menu, Eye, EyeOff, Maximize, Minimize, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/use-toast';
@@ -11,6 +11,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAppSelector } from '@/lib/redux/hooks';
+import { 
+  selectAppletById,
+} from '@/lib/redux/app-builder/selectors/appletSelectors';
+import LiveAppAndAppletPreview from '@/features/applet/builder/previews/LiveAppAndAppletPreview';
+
 
 interface TabItem {
   id: string;
@@ -39,8 +45,11 @@ export default function EditTabLayout({
   const [activeTab, setActiveTab] = useState(tabs[0].id);
   const [isSaving, setIsSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [previewKey, setPreviewKey] = useState(Date.now()); // Key to force refresh
   const router = useRouter();
-  
+  const applet = useAppSelector((state) => selectAppletById(state, id));
+
   const handleTabChange = (value: string) => {
     setActiveTab(value);
   };
@@ -63,6 +72,7 @@ export default function EditTabLayout({
         title: "Changes saved",
         description: "Your changes have been saved successfully.",
       });
+      refreshPreview(); // Refresh preview after save
     } catch (error) {
       console.error('Failed to save changes:', error);
       toast({
@@ -88,6 +98,58 @@ export default function EditTabLayout({
   const togglePreview = () => {
     setShowPreview(!showPreview);
   };
+  
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // Function to refresh the preview
+  const refreshPreview = useCallback(() => {
+    setPreviewKey(Date.now());
+  }, []);
+
+  // If fullscreen is active, show only the preview
+  if (isFullscreen && applet?.slug) {
+    return (
+      <div className="fixed inset-0 z-50 bg-gray-100 dark:bg-gray-900 flex flex-col">
+        <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300">{applet.name} - Preview</h3>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={refreshPreview}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={toggleFullscreen}
+              className="flex items-center gap-1"
+            >
+              <Minimize className="h-4 w-4" />
+              Exit Fullscreen
+            </Button>
+          </div>
+        </div>
+        <div className="flex-1">
+          <LiveAppAndAppletPreview
+            key={previewKey}
+            appId={applet.appId}
+            appletSlug={applet.slug}
+            isPreview={true}
+            hideHeader={false}
+            forceHeaderDisplay={true}
+            isFullScreenPreview={true}
+            className="h-full w-full"
+          />
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6 pb-20">      
@@ -149,13 +211,28 @@ export default function EditTabLayout({
           </div>
           
           {showPreview && (
-            <div className="md:w-2/3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 h-[calc(100vh-500px)] sticky top-4">
-              <div className="text-center p-4 h-full flex flex-col items-center justify-center">
-                <h3 className="text-lg font-medium mb-2 text-gray-700 dark:text-gray-300">Applet Preview</h3>
-                <p className="text-gray-500 dark:text-gray-400">
-                  A live preview of your applet will appear here as you make changes.
-                </p>
-              </div>
+            <div className="md:w-2/3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 h-[calc(100vh-500px)] sticky top-4 overflow-hidden">
+              {applet?.slug ? (
+                <div className="h-full">
+                  <LiveAppAndAppletPreview
+                    key={previewKey}
+                    appId={applet.appId}
+                    appletSlug={applet.slug}
+                    isPreview={true}
+                    hideHeader={false}
+                    forceHeaderDisplay={true}
+                    isFullScreenPreview={false}
+                    className="h-full w-full"
+                  />
+                </div>
+              ) : (
+                <div className="text-center p-4 h-full flex flex-col items-center justify-center">
+                  <h3 className="text-lg font-medium mb-2 text-gray-700 dark:text-gray-300">Applet Preview</h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Save your applet with a valid slug to see the preview.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -163,14 +240,53 @@ export default function EditTabLayout({
       
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Button 
-            variant="outline" 
-            onClick={handleBack}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <Button
+              variant="outline"
+              onClick={togglePreview}
+              className="flex items-center gap-2 ml-2"
+            >
+              {showPreview ? (
+                <>
+                  <EyeOff className="h-4 w-4" />
+                  Hide Preview
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4" />
+                  Show Preview
+                </>
+              )}
+            </Button>
+            {showPreview && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={refreshPreview}
+                  className="flex items-center gap-2 ml-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh Preview
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={toggleFullscreen}
+                  className="flex items-center gap-2 ml-2"
+                >
+                  <Maximize className="h-4 w-4" />
+                  Fullscreen
+                </Button>
+              </>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <Button 
               variant="outline" 

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { ThemeSwitcherIcon } from "@/styles/themes";
+import { ThemeSwitcherIcon } from "@/styles/themes/ThemeSwitcher";
 import { HeaderTabGroup } from "../common/HeaderTabs";
 import AppSelector from "../common/AppSelector";
 import ButtonMenu from "../common/ButtonMenu";
@@ -16,6 +16,7 @@ export const TabbedAppletsHeader: React.FC<DesktopAppHeaderProps> = ({
     activeAppletSlug,
     isCreator,
     isAdmin,
+    isPreview,
 }) => {
     // Use the default header class if no custom className is provided
     const defaultHeaderClass = "sticky top-0 w-full z-40 h-14 bg-white dark:bg-gray-900 transition-colors shadow-sm";
@@ -25,6 +26,7 @@ export const TabbedAppletsHeader: React.FC<DesktopAppHeaderProps> = ({
         <HeaderLogic
             appId={appId}
             isDemo={isDemo}
+            isPreview={isPreview}
         >
             {({
                 activeAppIcon,
@@ -35,20 +37,25 @@ export const TabbedAppletsHeader: React.FC<DesktopAppHeaderProps> = ({
                 profilePhoto,
                 activeAppletSlug,
                 handleAppletChange,
-                isDemo: isDemoMode
+                isDemo: isDemoMode,
+                isPreview: isPreviewMode
             }) => (
                 <header className={finalHeaderClass}>
                     {/* Top Navigation with primary grid */}
-                    <div className="grid grid-cols-12 items-center h-full pt-2 pb-2 px-6">
+                    <div className={`grid grid-cols-12 items-center h-full ${isPreviewMode ? 'px-2 py-1' : 'pt-2 pb-2 px-6'}`}>
                         {/* Left section - Icon and Tabs (8/12) */}
                         <div className="col-span-12 lg:col-span-8">
                             {/* Nested grid for icon and tabs */}
                             <div className="flex items-center">
                                 <div className="shrink-0 mr-4">
                                     <div>
-                                        <Link href={`/apps/custom/${config.slug}`}>
-                                            {activeAppIcon}
-                                        </Link>
+                                        {isPreviewMode ? (
+                                            <div>{activeAppIcon}</div>
+                                        ) : (
+                                            <Link href={`/apps/custom/${config.slug}`}>
+                                                {activeAppIcon}
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                                 {/* Tabs - with overflow handling */}
@@ -75,7 +82,6 @@ export const TabbedAppletsHeader: React.FC<DesktopAppHeaderProps> = ({
                             )}
                             <ThemeSwitcherIcon className="hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200" />
                             
-                            {/* Replace the old user icon/menu with the new NavigationMenu component */}
                             <NavigationMenu />
                         </div>
                     </div>

@@ -1,8 +1,9 @@
 "use client";
 
-import { unified } from "unified";
-import remarkParse from "remark-parse";
-import remarkGfm from "remark-gfm";
+// We'll dynamically import these only on the client side
+// import { unified } from "unified";
+// import remarkParse from "remark-parse";
+// import remarkGfm from "remark-gfm";
 
 import { CoordinatorDefinition, getCoordinatorConfig, getProcessor, getProcessorConfig } from "./markdown-coordinator";
 
@@ -13,13 +14,20 @@ import { MarkdownConfig } from "./processors/json-config-system/config-processor
 // Helper to check if code is running on client side
 const isClient = typeof window !== 'undefined';
 
-export const parseMarkdownToAst = (markdownText: string): AstNode => {
+export const parseMarkdownToAst = async (markdownText: string): Promise<AstNode> => {
     // Only run parser on the client side
     if (!isClient) {
         return { type: 'root', children: [] } as unknown as AstNode;
     }
     
     try {
+        // Dynamically import the modules only on client side
+        const [unified, remarkParse, remarkGfm] = await Promise.all([
+            import('unified').then(m => m.unified),
+            import('remark-parse').then(m => m.default),
+            import('remark-gfm').then(m => m.default)
+        ]);
+        
         const processor = unified().use(remarkParse).use(remarkGfm);
         return processor.parse(markdownText) as unknown as AstNode;
     } catch (error) {
@@ -59,7 +67,7 @@ export const prepareMarkdownForRendering = async (
         
         return {
             ast: { type: 'root', children: [] } as unknown as AstNode,
-            processedData: null,
+            processedData: { extracted: {}, miscellaneous: {} },
             coordinatorDefinition: emptyCoordinatorDefinition,
             processorConfig: null,
             viewComponentInfo: {
@@ -71,7 +79,7 @@ export const prepareMarkdownForRendering = async (
     
     try {
         // 1. Get the AST, which all processors need.
-        const ast = parseMarkdownToAst(markdown);
+        const ast = await parseMarkdownToAst(markdown);
 
         // 2. Get the coordinator definition.
         const coordinatorDefinition = getCoordinatorConfig(coordinatorId);

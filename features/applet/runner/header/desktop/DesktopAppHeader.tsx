@@ -18,6 +18,7 @@ export interface DesktopAppHeaderProps {
   activeAppletSlug?: string;
   isCreator?: boolean;
   isAdmin?: boolean;
+  isPreview?: boolean;
 }
 
 

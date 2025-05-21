@@ -22,6 +22,7 @@ export type AppLayoutOptions = "tabbedApplets" | "singleDropdown" | "multiDropdo
 export interface HeaderLogicProps extends CustomAppHeaderProps {
     children: (props: HeaderUIProps) => React.ReactNode;
     activeAppletSlug?: string;
+    isPreview?: boolean;
 }
 
 export interface HeaderUIProps {
@@ -36,11 +37,13 @@ export interface HeaderUIProps {
     handleAppletChange: (appletSlug: string) => void;
     isDemo: boolean;
     appId?: string;
+    isPreview?: boolean;
 }
 
 export const HeaderLogic: React.FC<HeaderLogicProps> = ({ 
     appId, 
     isDemo = false,
+    isPreview = false,
     children 
 }) => {
     const router = useRouter();
@@ -78,12 +81,15 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
         return getAppIcon({
             color: accentColor,
             icon: iconName,
-            size: 24,
+            size: isPreview ? 18 : 24,
         });
-    }, [primaryColor, iconName]);
+    }, [primaryColor, iconName, isPreview]);
     
     // Setup tab navigation function that uses routing instead of state
     const handleAppletChange = (appletSlug: string) => {
+        // Skip navigation in preview mode
+        if (isPreview) return;
+        
         if (config?.slug && appletSlug) {
             router.push(`/apps/custom/${config.slug}/${appletSlug}`);
         }
@@ -100,7 +106,8 @@ export const HeaderLogic: React.FC<HeaderLogicProps> = ({
         activeAppletSlug,
         handleAppletChange,
         isDemo,
-        appId
+        appId,
+        isPreview
     });
 };
 
