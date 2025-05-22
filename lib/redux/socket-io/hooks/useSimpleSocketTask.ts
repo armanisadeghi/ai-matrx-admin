@@ -1,42 +1,60 @@
 import { useCallback, useState } from "react";
-import { RecipeToChatTaskData } from "@/components/playground/hooks/recipes/recipe-task-utils";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { createTask } from "../../socket-io/thunks/createTaskThunk";
-import { submitTask } from "../../socket-io/thunks";
+import { createTask } from "../thunks/createTaskThunk";
+import { submitTask } from "../thunks";
 
-export const useCockpitSocket = (getTasks: () => Promise<RecipeToChatTaskData[]>) => {
+interface UseSimpleSocketTaskProps {
+    initialService?: string;
+    initialTask?: string;
+    initialTaskData?: any[];
+}
+
+export const useSimpleSocketTask = ({ initialService, initialTask, initialTaskData }: UseSimpleSocketTaskProps) => {
     const dispatch = useAppDispatch();
+    const [service, setService] = useState<string>(initialService || "");
+    const [taskName, setTaskName] = useState<string>(initialTask || "");
+    const [taskDataList, setTaskDataList] = useState<any[]>(initialTaskData || []);
     const [taskIds, setTaskIds] = useState<string[]>([]);
-    const [neededBrokerIds, setNeededBrokerIds] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const addTaskData = (taskData: any) => {
+        setTaskDataList([...taskDataList, taskData]);
+    };
+
+    const removeTaskData = (index: number) => {
+        setTaskDataList(taskDataList.filter((_, i) => i !== index));
+    };
+
+    const clearTaskData = () => {
+        setTaskDataList([]);
+    };
 
     const handleSetTasks = async () => {
         try {
             setIsLoading(true);
             setError(null);
-            
-            const tasks = await getTasks();
+
             const newTaskIds: string[] = [];
-            
+
             // Create each task individually
-            for (const taskData of tasks) {
+            for (const taskData of taskDataList) {
                 try {
                     const newTaskId = await dispatch(
                         createTask({
-                            service: "ai_chat_service",
-                            taskName: "run_recipe_to_chat",
+                            service,
+                            taskName,
                             initialData: taskData,
                         })
                     ).unwrap();
-                    
+
                     newTaskIds.push(newTaskId);
                 } catch (err: any) {
                     console.error("Failed to create task:", err);
                     setError((prev) => prev || err.message);
                 }
             }
-            
+
             setTaskIds(newTaskIds);
             return newTaskIds;
         } catch (err: any) {
@@ -51,28 +69,26 @@ export const useCockpitSocket = (getTasks: () => Promise<RecipeToChatTaskData[]>
     const handleSend = useCallback(async () => {
         setIsLoading(true);
         setError(null);
-        
+
         try {
-            // First create all tasks and get their IDs
             const createdTaskIds = await handleSetTasks();
-            
+
             if (createdTaskIds.length === 0) {
                 setError("No tasks were created to submit");
                 setIsLoading(false);
                 return;
             }
-            
-            // Submit each task
-            const submissionPromises = createdTaskIds.map(taskId => 
-                dispatch(submitTask({ taskId })).unwrap()
-                    .catch(error => {
+
+            const submissionPromises = createdTaskIds.map((taskId) =>
+                dispatch(submitTask({ taskId }))
+                    .unwrap()
+                    .catch((error) => {
                         console.error(`Failed to submit task ${taskId}:`, error);
                         throw error;
                     })
             );
-            
+
             await Promise.all(submissionPromises);
-            
         } catch (error: any) {
             console.error("Error in task submission process:", error);
             setError("Failed to process one or more requests.");
@@ -83,12 +99,17 @@ export const useCockpitSocket = (getTasks: () => Promise<RecipeToChatTaskData[]>
 
     return {
         taskIds,
-        neededBrokerIds,
         isLoading,
         error,
         handleSetTasks,
         handleSend,
+        setService,
+        setTaskName,
+        setTaskDataList,
+        addTaskData,
+        removeTaskData,
+        clearTaskData,
     };
 };
 
-export type UseCockpitSocketHook = ReturnType<typeof useCockpitSocket>;
+export type UseSimpleSocketTaskReturn = ReturnType<typeof useSimpleSocketTask>;

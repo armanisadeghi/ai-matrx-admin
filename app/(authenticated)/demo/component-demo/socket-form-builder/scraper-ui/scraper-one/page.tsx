@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import DynamicForm from "@/components/socket/form-builder/DynamicForm";
 import ScraperResults from "../scraper-two/ScraperResults";
-import { useScraperSocket } from "@/lib/redux/socket/hooks/task-socket-hooks/useScraperSocket";
+import { useScraperSocket } from "@/lib/redux/socket-io/hooks/useScraperSocket";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { ResponsiveSocketHeader } from "@/components/socket-io/headers/ResponsiveSocketHeader";
 import { useAppSelector } from "@/lib/redux/hooks";

@@ -9,7 +9,7 @@ import {
     RecipeTaskData,
     useRecipeCompiler,
 } from "@/components/playground/hooks/recipes/useCompileRecipe";
-import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
+import { useCockpitSocket } from "@/lib/redux/socket-io/hooks/useCockpitRecipe";
 import { useDoubleJoinedActiveParentProcessing } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
 import { useCreateRecord } from "@/app/entities/hooks/crud/useDirectCreateRecord";
 import { useOrchestrateSave } from "@/hooks/useOrchestrateSave";

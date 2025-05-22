@@ -5,7 +5,7 @@ import { createRecipeTaskData } from "@/components/playground/hooks/recipes/reci
 import { usePrepareRecipeToRun } from "@/hooks/run-recipe/usePrepareRecipeToRun";
 import { CompiledRecipe } from "@/components/playground/hooks/recipes/useCompileRecipe";
 import { useCallback, useState } from "react";
-import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
+import { useCockpitSocket } from "@/lib/redux/socket-io/hooks/useCockpitRecipe";
 import { parseMarkdownContent } from "@/components/brokers/output/markdown-utils";
 import FunMarkdownRenderer from "./FunMarkdown";
 import AnimatedEventComponent from "@/components/brokers/output/AnimatedEventComponent";
