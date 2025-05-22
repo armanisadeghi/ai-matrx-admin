@@ -1,14 +1,14 @@
-import { RunGenericHookType } from "@/hooks/run-recipe/useRunApps";
 import { AppletTheme } from "./applet-themes";
-import { CompiledToSocketHook } from "@/lib/redux/socket/hooks/useCompiledToSocket";
 
+
+// TO BE DELETED
 
 export interface BrokerComponentsDisplayProps {
-    prepareRecipeHook: RunGenericHookType;
+    prepareRecipeHook: any;
     recipeTitle?: string;
     recipeDescription?: string;
     recipeActionText?: string;
     theme?: AppletTheme;
-    socketHook?: CompiledToSocketHook;
+    socketHook?: any;
     onSubmit?: () => void;
 }
