@@ -8,12 +8,17 @@ import EnhancedContentRenderer from "@/components/mardown-display/EnhancedMarkdo
 import { Copy } from "lucide-react";
 import { DisplayTheme } from "@/components/mardown-display/themes";
 
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors";
+import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors";
+import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors";
+
 interface ResultPanelProps {
     id: string;
     order: number;
     number: number;
     label: string;
-    streamingText: string;
+    taskId: string;
     onDelete?: (id: string) => void;
     onDragDrop?: (draggedId: string, targetId: string) => void;
     onLabelChange?: (id: string, newLabel: string) => void;
@@ -28,7 +33,7 @@ export function EnhancedResultsPanel({
     order,
     number,
     label,
-    streamingText,
+    taskId,
     onDelete,
     onDragDrop,
     onLabelChange,
@@ -42,6 +47,12 @@ export function EnhancedResultsPanel({
     const [previousSize, setPreviousSize] = useState(50);
     const [viewMode, setViewMode] = useState("rendered");
     const [showCopySuccess, setShowCopySuccess] = useState(false);
+
+    
+    const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
+    const streamingText = useAppSelector(selectResponseTextByListenerId(firstListenerId));
+    const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
+
 
     const toggleCollapse = () => {
         if (isCollapsed) {

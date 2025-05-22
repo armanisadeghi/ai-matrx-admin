@@ -1,5 +1,5 @@
 import { BrokerValueRecordWithKey, DataBrokerData, DataBrokerRecordWithKey } from "@/types";
-import { BrokerValue, RecipeOverrides, RecipeTaskData } from "./useCompileRecipe";
+import { BrokersForBackend, BrokerValue, RecipeOverrides, RecipeTaskData } from "./useCompileRecipe";
 import { CompiledRecipeEntry } from "@/hooks/run-recipe/types";
 import { CompiledRecipe } from "@/components/playground/hooks/recipes/useCompileRecipe";
 
@@ -14,6 +14,7 @@ export function createRecipeTaskBrokers(matchingBrokers: DataBrokerRecordWithKey
         data_type: broker.dataType,
         required: true,
         value: broker.defaultValue,
+        fieldComponentId: broker.fieldComponentId,
         ready: true,
     }));
 }
@@ -38,6 +39,7 @@ export function createRuntimeBrokers({ matchingBrokers, brokerValueRecordsWithBr
             data_type: matchingBroker.dataType || "str",
             required: true,
             value: brokerValue,
+            fieldComponentId: matchingBroker.fieldComponentId,
             ready: true,
         };
     });
@@ -142,6 +144,7 @@ export function createEnhancedRecipePayload(
             data_type: broker.dataType || "str",
             required: true,
             value: brokerValue,
+            fieldComponentId: broker.fieldComponentId,
             ready: true,
         };
     });
@@ -156,4 +159,114 @@ export function createEnhancedRecipePayload(
             overrides: override,
         },
     }));
+}
+
+
+export type NewBrokerValue = {
+    id: string;
+    value: string;
+    fieldComponentId: string;
+    ready: boolean;
+}
+
+
+export function createBrokerValues(matchingBrokers: BrokersForBackend[]): NewBrokerValue[] {
+    if (!matchingBrokers) {
+        return [];
+    }
+
+    return matchingBrokers.map((broker) => ({
+        id: broker.id,
+        value: broker.default_value,
+        fieldComponentId: broker.field_component_id,
+        ready: true,
+    }));
+}
+
+
+
+export function createNewRecipeOverrides(settingsList: Record<string, any>[]): RecipeOverrides[] {
+    return settingsList.map((settings) => {
+        // Handle different formats of tools
+        let toolsValue = [];
+        if (Array.isArray(settings.tools)) {
+            // If tools is already an array of strings, use it directly
+            toolsValue = settings.tools;
+        } else if (settings.tools?.selectedToolIds && Array.isArray(settings.tools.selectedToolIds)) {
+            // Legacy format: extract selectedToolIds
+            toolsValue = settings.tools.selectedToolIds;
+        }
+
+        return {
+            model_override: settings.model,
+            processor_overrides: {},
+            other_overrides: Object.fromEntries(
+                Object.entries({
+                    max_tokens: settings.maxTokens,
+                    temperature: settings.temperature,
+                    top_p: settings.topP,
+                    frequency_penalty: settings.frequencyPenalty,
+                    presence_penalty: settings.presencePenalty,
+                    response_format: settings.responseFormat,
+                    size: settings.size,
+                    quality: settings.quality,
+                    count: settings.count,
+                    audio_voice: settings.audioVoice,
+                    audio_format: settings.audioFormat,
+                    modalities: settings.modalities,
+                    tools: toolsValue,
+                    system_message_override: settings.systemMessageOverride,
+                }).filter(([_, value]) => value !== "default")
+            ),
+        };
+    });
+}
+
+
+export type RecipeToChatTaskData = {
+    chat_config: {
+        recipe_id: string;
+        version: string;
+        prepare_for_next_call: boolean;
+        save_new_conversation: boolean;
+        include_classified_output: boolean;
+        tools_override: string[];
+        allow_default_values: boolean;
+        allow_removal_of_unmatched: boolean;
+        [key: string]: any;
+    },
+    broker_values: NewBrokerValue[];
+}
+
+export function createRecipeToChatTaskDataList(compiledRecipe: CompiledRecipe): RecipeToChatTaskData[] {
+    if (!compiledRecipe) {
+        return [];
+    }
+
+    const { id, brokers, settings } = compiledRecipe;
+    const recipeTaskBrokers = createBrokerValues(brokers as BrokersForBackend[]);
+    const recipeOverrides = createRecipeOverrides(settings);
+
+    return recipeOverrides.map((override) => {
+        const toolsOverride = Array.isArray(override.other_overrides.tools) 
+            ? override.other_overrides.tools 
+            : [];
+            
+        const { tools, ...otherOverridesWithoutTools } = override.other_overrides;
+        
+        return {
+            chat_config: {
+                recipe_id: id,
+                version: "latest",
+                prepare_for_next_call: true,
+                save_new_conversation: true,
+                include_classified_output: true,
+                tools_override: toolsOverride,
+                allow_default_values: true,
+                allow_removal_of_unmatched: false,
+                ...otherOverridesWithoutTools
+            },
+            broker_values: recipeTaskBrokers,
+        };
+    });
 }

@@ -42,7 +42,7 @@ import { formatPlaceholder } from "@/components/socket/utils/label-util";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { 
   selectFieldValue, 
-  selectTestMode, 
+  selectConnectionTestMode, 
   selectTaskNameById,
   updateTaskFieldByPath 
 } from "@/lib/redux/socket-io";
@@ -82,7 +82,7 @@ const SocketTaskTimePicker: React.FC<SocketTaskTimePickerProps> = ({
 
   // Get the current value from Redux store using selectors
   const timeValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
-  const testMode = useAppSelector(selectTestMode);
+  const testMode = useAppSelector(selectConnectionTestMode);
   const taskName = useAppSelector((state) => selectTaskNameById(state, taskId));
 
   // Initialize the field in Redux on component mount

@@ -8,13 +8,17 @@ import DraggableToolbar, { ToolbarAction } from "../components/DraggableToolbar"
 import { Eye, Code, FileText, Copy, Braces, Plus } from "lucide-react";
 import { FcDownLeft } from "react-icons/fc";
 import { AiOutlineDoubleLeft } from "react-icons/ai";
+import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors";
+import { selectResponseTextByListenerId } from "@/lib/redux/socket-io/selectors";
+import { selectResponseEndedByListenerId } from "@/lib/redux/socket-io/selectors";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface ResultPanelProps {
     id: string;
     order: number;
     number: number;
     label: string;
-    streamingText: string;
+    taskId: string;
     onDelete?: (id: string) => void;
     onDragDrop?: (draggedId: string, targetId: string) => void;
     onLabelChange?: (id: string, newLabel: string) => void;
@@ -29,7 +33,7 @@ export function ResultPanel({
     order,
     number,
     label,
-    streamingText,
+    taskId,
     onDelete,
     onDragDrop,
     onLabelChange,
@@ -44,6 +48,13 @@ export function ResultPanel({
     const [viewMode, setViewMode] = useState<"rendered" | "raw" | "processed" | "parsedAsJson">("rendered");
     const [showCopySuccess, setShowCopySuccess] = useState(false);
 
+    const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
+    const streamingText = useAppSelector(selectResponseTextByListenerId(firstListenerId));
+    const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
+
+    
+    
+    
     const toggleCollapse = () => {
         if (isCollapsed) {
             setIsCollapsed(false);

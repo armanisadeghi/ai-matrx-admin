@@ -6,7 +6,7 @@ export interface BasePanelProps {
     order: number;
     number: number;
     label: string;
-    streamingText: string;
+    taskId: string;
     onDelete?: (id: string) => void;
     onDragDrop?: (draggedId: string, targetId: string) => void;
     onLabelChange?: (id: string, newLabel: string) => void;

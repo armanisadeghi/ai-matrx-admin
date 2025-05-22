@@ -1,6 +1,5 @@
 // components/admin/AdminIndicator.tsx
 import React, { useState, useRef, useEffect } from "react";
-import { useSocketConnection, SocketConnectionHook } from "@/lib/redux/socket/useSocketConnection";
 import SmallIndicator from "./SmallIndicator";
 import MediumIndicator from "./MediumIndicator";
 import LargeIndicator from "./LargeIndicator";
@@ -27,17 +26,6 @@ interface Position {
 }
 
 const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
-  const {
-    socketManager,
-    isConnected,
-    isAuthenticated,
-    getAvailableServers,
-    connectToServer,
-    overrideNamespace,
-    clearServerOverride,
-    currentServer,
-    currentNamespace,
-  } = useSocketConnection();
 
   const [size, setSize] = useState<IndicatorSize>("small");
   const [position, setPosition] = useState<Position>({ x: 20, y: 60 });
@@ -120,17 +108,9 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
           >
             <MediumIndicator 
               user={user}
-              isConnected={isConnected}
-              isAuthenticated={isAuthenticated}
-              currentServer={currentServer}
-              currentNamespace={currentNamespace}
               onDragStart={handleMouseDown}
               onSizeUp={() => cycleSize("up")}
               onSizeDown={() => cycleSize("down")}
-              getAvailableServers={getAvailableServers}
-              connectToServer={connectToServer}
-              overrideNamespace={overrideNamespace}
-              clearServerOverride={clearServerOverride}
             />
           </div>
         );
@@ -138,8 +118,6 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
         return (
           <LargeIndicator 
             user={user}
-            isConnected={isConnected}
-            currentServer={currentServer}
             onSizeDown={() => setSize("medium")}
             onSizeSmall={() => setSize("small")}
           />
@@ -160,8 +138,6 @@ const AdminIndicator: React.FC<AdminIndicatorProps> = ({ user }) => {
             }}
           >
             <SmallIndicator 
-              isConnected={isConnected}
-              currentServer={currentServer}
               onDragStart={handleMouseDown}
               onSizeChange={() => cycleSize("up")}
             />

@@ -6,7 +6,7 @@ import { useAppSelector, useEntityTools } from "@/lib/redux";
 import { DataBrokerRecordWithKey, RecipeRecordWithKey } from "@/types";
 import { createNormalizer } from "@/utils/dataSchemaNormalizer";
 import { useCallback, useMemo } from "react";
-import { createRecipeTaskBrokers, createRecipeOverrides, createRecipeTaskDataList } from "./recipe-task-utils";
+import { createRecipeTaskBrokers, createRecipeOverrides, createRecipeTaskDataList, createRecipeToChatTaskDataList } from "./recipe-task-utils";
 
 export type BasicMessage = {
     type: "text" | "base64_image" | "blob" | "image_url" | "other" | string;
@@ -81,6 +81,7 @@ export interface BrokerValue {
     data_type: string;
     value: unknown;
     ready: boolean;
+    fieldComponentId: string;
     [key: string]: unknown;
 }
 
@@ -90,12 +91,22 @@ export interface RecipeTaskData {
     overrides: RecipeOverrides;
 }
 
-const pickBrokerFields = (broker) => ({
+export type BrokersForBackend = {
+    id: string;
+    name: string;
+    default_value: string;
+    data_type: string;
+    field_component_id: string;
+    input_component: string;
+    required: boolean;
+}
+const pickBrokerFields = (broker: DataBrokerRecordWithKey): BrokersForBackend => ({
     id: broker.id,
     name: broker.name,
     default_value: broker.defaultValue,
     data_type: broker.dataType,
-    inputComponent: broker.inputComponent,
+    field_component_id: broker.fieldComponentId,
+    input_component: broker.inputComponent,
     required: true,
 });
 
@@ -127,8 +138,6 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
             string,
             any
         >[];
-
-
         
         const compiledRecipe = {
             id: recipeRecord?.id,
@@ -142,9 +151,10 @@ export function useRecipeCompiler({ activeRecipeMatrxId, activeRecipeId, message
         const recipeTaskBrokers = createRecipeTaskBrokers(matchingBrokers);
         const recipeOverrides = createRecipeOverrides(settingsList);
         const recipeTaskDataList = createRecipeTaskDataList(compiledRecipe);
+        const recipeToChatTaskDataList = createRecipeToChatTaskDataList(compiledRecipe);
 
 
-        return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
+        return { compiledRecipe, recipeTaskBrokers, recipeOverrides, recipeTaskDataList, recipeToChatTaskDataList };
     }, [activeRecipeId, activeRecipeMatrxId, messages, processedSettings, recipeRecord?.name]);
 
     return {

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LiveProvider, LiveError, LivePreview } from 'react-live';
 import * as UIComponents from '@/components/ui';
-import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { supabase } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -54,8 +53,6 @@ const DynamicComponentRenderer = ({ code, containerClassName = '' }) => {
     // UI Components - spread all components
     ...UIComponents,
     
-    // Socket management
-    SocketManager,
     
     // Redux
     useAppDispatch,

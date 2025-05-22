@@ -12,24 +12,61 @@ import {
   truncateText,
   isScraperLoading,
 } from "@/features/scraper/utils/scraper-utils";
-import { SocketHook } from "@/lib/redux/socket/hooks/useSocket";
 
-interface SocketResponseProps {
-  socketHook: SocketHook;
+import { useAppSelector } from "@/lib/redux/hooks";
+import { 
+  selectTaskStatus, 
+  selectPrimaryResponseEndedByTaskId, 
+  selectPrimaryResponseDataByTaskId 
+} from "@/lib/redux/socket-io";
+
+interface ScraperResponse {
+  isError?: boolean;
+  error?: string;
+  statusValue?: string;
+  overview?: {
+    uuid?: string;
+    website?: string;
+    url?: string;
+    page_title?: string;
+    char_count?: number;
+    has_structured_content?: boolean;
+    table_count?: number;
+    code_block_count?: number;
+    list_count?: number;
+  };
+  textData?: string;
+  organizedData?: any;
+  contentFilterDetails?: any[];
+  noiseRemoverDetails?: any[];
 }
 
-const ScraperResults = ({ socketHook }: SocketResponseProps) => {
-  const { responses, streamingResponse } = socketHook;
-  const [scrapedData, setScrapedData] = useState<any[]>([]);
+interface SocketResponseProps {
+  taskId: string;
+}
+
+const ScraperResults = ({ taskId }: SocketResponseProps) => {
+  const [scrapedData, setScrapedData] = useState<ScraperResponse[]>([]);
   const [expandedSections, setExpandedSections] = useState<{ [key: number]: { metadata: boolean; removal: boolean } }>({});
-  const [isLoading, setIsLoading] = useState(false);
+  
+  // Get data from Redux store
+  const taskStatus = useAppSelector(state => selectTaskStatus(state, taskId));
+  const isTaskCompleted = useAppSelector(state => selectPrimaryResponseEndedByTaskId(taskId)(state));
+  const responseData = useAppSelector(state => selectPrimaryResponseDataByTaskId(taskId)(state));
+  
+  const isLoading = taskStatus === "submitted" && !isTaskCompleted;
 
   useEffect(() => {
-    const filteredResponses = filterContentResponses(responses);
-    const processedData = filteredResponses.map((response) => extractScraperData(response));
-    setScrapedData(processedData);
-    setIsLoading(isScraperLoading(streamingResponse));
-  }, [responses, streamingResponse]);
+    if (responseData) {
+      // Handle both array and non-array response formats
+      const dataArray = Array.isArray(responseData) ? responseData : [responseData];
+      
+      // Filter and process scraper responses
+      const filteredResponses = filterContentResponses(dataArray);
+      const processedData = filteredResponses.map((response) => extractScraperData(response));
+      setScrapedData(processedData);
+    }
+  }, [responseData]);
 
   const toggleSection = (index: number, section: "metadata" | "removal") => {
     setExpandedSections((prev) => ({
@@ -43,8 +80,7 @@ const ScraperResults = ({ socketHook }: SocketResponseProps) => {
 
   const handleCopy = (text: string, index: number) => {
     const success = copyToClipboard(text);
-    if (success) {
-    } else {
+    if (!success) {
       alert("Failed to copy content. Check console for details.");
     }
   };
@@ -91,7 +127,7 @@ const ScraperResults = ({ socketHook }: SocketResponseProps) => {
                 Result {index + 1}: {pageTitle}
               </h2>
               <button
-                onClick={() => handleCopy(textData, index)}
+                onClick={() => handleCopy(textData || "", index)}
                 className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200 transition"
               >
                 <Copy size={16} />
@@ -163,18 +199,18 @@ const ScraperResults = ({ socketHook }: SocketResponseProps) => {
               {expandedSections[index]?.metadata && (
                 <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-4 rounded-md">
                   <p><strong>Status:</strong> {statusValue}</p>
-                  <p><strong>UUID:</strong> {overview.uuid || "N/A"}</p>
-                  <p><strong>Website:</strong> {overview.website || "N/A"}</p>
-                  <p><strong>URL:</strong> {overview.url || "N/A"}</p>
-                  <p><strong>Page Title:</strong> {overview.page_title || "N/A"}</p>
-                  <p><strong>Character Count:</strong> {overview.char_count || "N/A"}</p>
+                  <p><strong>UUID:</strong> {overview?.uuid || "N/A"}</p>
+                  <p><strong>Website:</strong> {overview?.website || "N/A"}</p>
+                  <p><strong>URL:</strong> {overview?.url || "N/A"}</p>
+                  <p><strong>Page Title:</strong> {overview?.page_title || "N/A"}</p>
+                  <p><strong>Character Count:</strong> {overview?.char_count || "N/A"}</p>
                   <p>
                     <strong>Has Structured Content:</strong>{" "}
-                    {overview.has_structured_content ? "Yes" : "No"}
+                    {overview?.has_structured_content ? "Yes" : "No"}
                   </p>
-                  <p><strong>Table Count:</strong> {overview.table_count || 0}</p>
-                  <p><strong>Code Block Count:</strong> {overview.code_block_count || 0}</p>
-                  <p><strong>List Count:</strong> {overview.list_count || 0}</p>
+                  <p><strong>Table Count:</strong> {overview?.table_count || 0}</p>
+                  <p><strong>Code Block Count:</strong> {overview?.code_block_count || 0}</p>
+                  <p><strong>List Count:</strong> {overview?.list_count || 0}</p>
                 </div>
               )}
             </section>
@@ -191,7 +227,7 @@ const ScraperResults = ({ socketHook }: SocketResponseProps) => {
               {expandedSections[index]?.removal && (
                 <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-4 rounded-md max-h-64 overflow-y-auto">
                   <h4 className="font-medium text-gray-700 mb-2">Content Filter Removals</h4>
-                  {contentFilterDetails.length > 0 ? (
+                  {contentFilterDetails && contentFilterDetails.length > 0 ? (
                     contentFilterDetails.map((item: any, i: number) => (
                       <p key={i} className="mb-1">
                         <strong>Type:</strong> {item.type} | <strong>Details:</strong> {item.details} |{" "}
@@ -202,7 +238,7 @@ const ScraperResults = ({ socketHook }: SocketResponseProps) => {
                     <p className="text-gray-500 italic">No content filter removals.</p>
                   )}
                   <h4 className="font-medium text-gray-700 mt-4 mb-2">Noise Remover Removals</h4>
-                  {noiseRemoverDetails.length > 0 ? (
+                  {noiseRemoverDetails && noiseRemoverDetails.length > 0 ? (
                     noiseRemoverDetails.map((item: any, i: number) => (
                       <p key={i} className="mb-1">
                         <strong>Type:</strong> {item.type} | <strong>Details:</strong> {item.details} |{" "}

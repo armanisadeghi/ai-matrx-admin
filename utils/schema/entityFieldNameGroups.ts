@@ -144,19 +144,19 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "metadata", "label", "isPublic", "description", "keywords", "group"]
 },
   customAppConfigs: {
-  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "mainAppIcon", "mainAppSubmitIcon", "creator", "primaryColor", "accentColor", "appletList", "extraButtons", "layoutType", "imageUrl"],
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "mainAppIcon", "mainAppSubmitIcon", "creator", "primaryColor", "accentColor", "appletList", "extraButtons", "layoutType", "imageUrl", "appDataContext"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "mainAppIcon", "mainAppSubmitIcon", "creator", "primaryColor", "accentColor", "appletList", "extraButtons", "layoutType", "imageUrl"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "mainAppIcon", "mainAppSubmitIcon", "creator", "primaryColor", "accentColor", "appletList", "extraButtons", "layoutType", "imageUrl", "appDataContext"]
 },
   customAppletConfigs: {
-  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId", "brokerMap"],
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId", "brokerMap", "overviewLabel", "dataDestinationConfig"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId", "brokerMap"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "isPublic", "authenticatedRead", "publicRead", "name", "description", "slug", "appletIcon", "appletSubmitText", "creator", "primaryColor", "accentColor", "layoutType", "containers", "dataSourceConfig", "resultComponentConfig", "nextStepConfig", "compiledRecipeId", "subcategoryId", "imageUrl", "appId", "brokerMap", "overviewLabel", "dataDestinationConfig"]
 },
   dataBroker: {
-  nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent"],
+  nativeFields: ["id", "name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent", "fieldComponentId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead", "publicRead"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent"]
+  nativeFieldsNoPk: ["name", "dataType", "defaultValue", "inputComponent", "color", "outputComponent", "fieldComponentId", "userId", "createdAt", "updatedAt", "isPublic", "authenticatedRead", "publicRead"]
 },
   dataInputComponent: {
   nativeFields: ["id", "options", "includeOther", "min", "max", "step", "acceptableFiletypes", "src", "colorOverrides", "additionalParams", "subComponent", "component", "name", "description", "placeholder", "containerClassName", "collapsibleClassName", "labelClassName", "descriptionClassName", "componentClassName", "size", "height", "width", "minHeight", "maxHeight", "minWidth", "maxWidth", "orientation"],

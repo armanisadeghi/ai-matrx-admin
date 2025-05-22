@@ -8,7 +8,7 @@ import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-
 import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
-import { selectTestMode, selectTaskNameById, selectFieldValue } from "@/lib/redux/socket-io";
+import { selectConnectionTestMode, selectTaskNameById, selectFieldValue } from "@/lib/redux/socket-io";
 import { isValidField } from "@/constants/socket-schema";
 import { Label } from "@/components/ui/label";
 
@@ -39,7 +39,7 @@ const SocketTaskCheckbox: React.FC<SocketTaskCheckboxProps> = ({
       dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: initialValue }));
     }, []);
 
-    const testMode = useAppSelector(selectTestMode);
+    const testMode = useAppSelector(selectConnectionTestMode);
     const currentValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
     const taskName = useAppSelector((state) => selectTaskNameById(state, taskId));
 

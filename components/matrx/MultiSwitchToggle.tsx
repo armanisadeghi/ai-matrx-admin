@@ -129,7 +129,7 @@ const MultiSwitchToggle = forwardRef<any, MultiSwitchToggleProps>(({
                                     {button}
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>{state.label}</p>
+                                    {state.label}
                                 </TooltipContent>
                             </Tooltip>
                         ) : (

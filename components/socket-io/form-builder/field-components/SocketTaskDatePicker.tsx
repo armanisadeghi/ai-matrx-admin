@@ -41,7 +41,7 @@ import { formatPlaceholder } from "@/components/socket/utils/label-util";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { 
   selectFieldValue, 
-  selectTestMode, 
+  selectConnectionTestMode, 
   selectTaskNameById,
   updateTaskFieldByPath 
 } from "@/lib/redux/socket-io";
@@ -74,7 +74,7 @@ const SocketTaskDatePicker: React.FC<SocketTaskDatePickerProps> = ({
 
   // Get the current value from Redux store using selectors
   const isoDateValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
-  const testMode = useAppSelector(selectTestMode);
+  const testMode = useAppSelector(selectConnectionTestMode);
   const taskName = useAppSelector((state) => selectTaskNameById(state, taskId));
 
   // Parse the ISO date string to a Date object when available

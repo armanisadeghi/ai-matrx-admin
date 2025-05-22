@@ -30,6 +30,11 @@ export const selectResponseTextByListenerId = (listenerId: string) => (state: Ro
 
 export const selectResponseDataByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.data || [];
 
+export const selectFirstResponseDataByListenerId = (listenerId: string) => (state: RootState) => {
+    const data = state.socketResponse[listenerId]?.data || [];
+    return data.length > 0 ? data[0] : null;
+};
+
 export const selectResponseInfoByListenerId = (listenerId: string) => (state: RootState) => state.socketResponse[listenerId]?.info || [];
 
 export const selectResponseErrorsByListenerId = (listenerId: string) => (state: RootState) =>
@@ -184,6 +189,49 @@ export const selectHasPrimaryResponseErrorsByTaskId = (taskId: string) =>
             if (listenerIds.length === 0) return false;
             const response = responses[listenerIds[0]] as ResponseState;
             return (response?.errors?.length || 0) > 0;
+        }
+    );
+
+// First item convenience selectors for primary response arrays
+export const selectFirstPrimaryResponseDataByTaskId = (taskId: string) =>
+    createSelector(
+        // Use the same input selectors as the parent selector
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        // Implement the logic directly to avoid nested selector calls
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return null;
+            const response = responses[listenerIds[0]] as ResponseState;
+            const data = response?.data || [];
+            return data.length > 0 ? data[0] : null;
+        }
+    );
+
+export const selectFirstPrimaryResponseInfoByTaskId = (taskId: string) =>
+    createSelector(
+        // Use the same input selectors as the parent selector
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        // Implement the logic directly to avoid nested selector calls
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return null;
+            const response = responses[listenerIds[0]] as ResponseState;
+            const info = response?.info || [];
+            return info.length > 0 ? info[0] : null;
+        }
+    );
+
+export const selectFirstPrimaryResponseErrorByTaskId = (taskId: string) =>
+    createSelector(
+        // Use the same input selectors as the parent selector
+        (state: RootState) => selectTaskListenerIds(state, taskId),
+        (state: RootState) => state.socketResponse,
+        // Implement the logic directly to avoid nested selector calls
+        (listenerIds, responses) => {
+            if (listenerIds.length === 0) return null;
+            const response = responses[listenerIds[0]] as ResponseState;
+            const errors = response?.errors || [];
+            return errors.length > 0 ? errors[0] : null;
         }
     );
 

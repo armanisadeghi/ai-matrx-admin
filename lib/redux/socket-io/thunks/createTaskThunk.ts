@@ -8,11 +8,17 @@ import { v4 as uuidv4 } from "uuid";
 
 export const createTask = createAsyncThunk<
   string,
-  { service: string; taskName: string; initialData?: Record<string, any>; connectionId?: string },
+  { 
+    service: string; 
+    taskName: string; 
+    initialData?: Record<string, any>; 
+    connectionId?: string;
+    taskId?: string;
+  },
   { state: RootState }
 >(
   "socketTasks/createTask",
-  async ({ service, taskName, initialData, connectionId }, { dispatch, getState }) => {
+  async ({ service, taskName, initialData, connectionId, taskId }, { dispatch, getState }) => {
     const state = getState();
     const resolvedConnectionId =
       connectionId || selectPrimaryConnection(state)?.connectionId;
@@ -21,10 +27,10 @@ export const createTask = createAsyncThunk<
       throw new Error("No primary connection available and no connectionId provided");
     }
 
-    const taskId = uuidv4();
+    const resolvedTaskId = taskId || uuidv4();
     dispatch(
       initializeTask({
-        taskId,
+        taskId: resolvedTaskId,
         service,
         taskName,
         connectionId: resolvedConnectionId,
@@ -34,12 +40,12 @@ export const createTask = createAsyncThunk<
     if (initialData) {
       dispatch(
         setTaskFields({
-          taskId,
+          taskId: resolvedTaskId,
           fields: initialData,
         })
       );
     }
 
-    return taskId;
+    return resolvedTaskId;
   }
 );

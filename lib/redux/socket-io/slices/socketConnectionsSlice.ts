@@ -6,6 +6,9 @@ import { SocketConnection } from '../socket.types';
 // Extend SocketState to include testMode
 interface ExtendedSocketState extends SocketState {
   testMode: boolean;
+  connectionAttempts: Record<string, number>;
+  lastConnectionError: Record<string, string | null>;
+  reconnectingConnections: Record<string, boolean>;
 }
 
 const initialState: ExtendedSocketState = {
@@ -28,7 +31,10 @@ const initialState: ExtendedSocketState = {
     namespace: SocketConnectionManager.DEFAULT_NAMESPACE,
     selectedPredefined: '',
   },
-  testMode: false, // Add testMode to initial state
+  testMode: false,
+  connectionAttempts: {},
+  lastConnectionError: {},
+  reconnectingConnections: {},
 };
 
 const socketConnectionsSlice = createSlice({
@@ -37,10 +43,16 @@ const socketConnectionsSlice = createSlice({
   reducers: {
     setConnection: (state, action: PayloadAction<SocketConnection>) => {
       state.connections[action.payload.connectionId] = action.payload;
+      // Clear error when connection is set successfully
+      state.lastConnectionError[action.payload.connectionId] = null;
+      state.reconnectingConnections[action.payload.connectionId] = false;
     },
     removeConnection: (state, action: PayloadAction<string>) => {
       if (action.payload !== state.primaryConnectionId) {
         delete state.connections[action.payload];
+        delete state.connectionAttempts[action.payload];
+        delete state.lastConnectionError[action.payload];
+        delete state.reconnectingConnections[action.payload];
       }
     },
     setPrimaryConnection: (state, action: PayloadAction<string>) => {
@@ -64,6 +76,11 @@ const socketConnectionsSlice = createSlice({
       const conn = state.connections[action.payload.connectionId];
       if (conn) {
         conn.connectionStatus = action.payload.status;
+        // Clear reconnecting flag when connected
+        if (action.payload.status === 'connected') {
+          state.reconnectingConnections[action.payload.connectionId] = false;
+          state.connectionAttempts[action.payload.connectionId] = 0;
+        }
       }
     },
     setAuthToken: (state, action: PayloadAction<string | null>) => {
@@ -81,11 +98,21 @@ const socketConnectionsSlice = createSlice({
         conn.isAuthenticated = action.payload.isAuthenticated;
       }
     },
-    changeConnectionUrl: (state, action: PayloadAction<{ connectionId: string; url: string }>) => {},
+    changeConnectionUrl: (state, action: PayloadAction<{ connectionId: string; url: string }>) => {
+      const conn = state.connections[action.payload.connectionId];
+      if (conn) {
+        conn.url = action.payload.url;
+      }
+    },
     changeNamespace: (
       state,
       action: PayloadAction<{ connectionId: string; namespace: string }>
-    ) => {},
+    ) => {
+      const conn = state.connections[action.payload.connectionId];
+      if (conn) {
+        conn.namespace = action.payload.namespace;
+      }
+    },
     disconnectConnection: (state, action: PayloadAction<string>) => {
       const conn = state.connections[action.payload];
       if (conn) {
@@ -98,11 +125,15 @@ const socketConnectionsSlice = createSlice({
       const conn = state.connections[action.payload];
       if (conn) {
         conn.connectionStatus = 'connecting';
+        state.reconnectingConnections[action.payload] = true;
       }
     },
     deleteConnection: (state, action: PayloadAction<string>) => {
       if (action.payload !== state.primaryConnectionId) {
         delete state.connections[action.payload];
+        delete state.connectionAttempts[action.payload];
+        delete state.lastConnectionError[action.payload];
+        delete state.reconnectingConnections[action.payload];
       }
     },
     addConnection: (
@@ -148,9 +179,32 @@ const socketConnectionsSlice = createSlice({
         state.connectionForm.namespace = predefined.namespace;
       }
     },
-    // Add toggleTestMode action
     toggleTestMode: (state) => {
       state.testMode = !state.testMode;
+    },
+    // New actions for reconnection management
+    incrementConnectionAttempt: (state, action: PayloadAction<string>) => {
+      const currentAttempts = state.connectionAttempts[action.payload] || 0;
+      state.connectionAttempts[action.payload] = currentAttempts + 1;
+    },
+    resetConnectionAttempts: (state, action: PayloadAction<string>) => {
+      state.connectionAttempts[action.payload] = 0;
+    },
+    setConnectionError: (state, action: PayloadAction<{ connectionId: string; error: string | null }>) => {
+      state.lastConnectionError[action.payload.connectionId] = action.payload.error;
+    },
+    setReconnecting: (state, action: PayloadAction<{ connectionId: string; isReconnecting: boolean }>) => {
+      state.reconnectingConnections[action.payload.connectionId] = action.payload.isReconnecting;
+    },
+    // Bulk update for connection state during reconnection
+    updateConnectionState: (state, action: PayloadAction<{
+      connectionId: string;
+      updates: Partial<SocketConnection>;
+    }>) => {
+      const conn = state.connections[action.payload.connectionId];
+      if (conn) {
+        Object.assign(conn, action.payload.updates);
+      }
     },
   },
 });
@@ -174,7 +228,11 @@ export const {
   updateFormNamespace,
   selectPredefinedConnection,
   toggleTestMode,
+  incrementConnectionAttempt,
+  resetConnectionAttempts,
+  setConnectionError,
+  setReconnecting,
+  updateConnectionState,
 } = socketConnectionsSlice.actions;
-
 
 export default socketConnectionsSlice.reducer;

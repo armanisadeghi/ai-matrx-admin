@@ -6,13 +6,18 @@ import { Button, Card } from '@/components/ui';
 import MarkdownRenderer from '@/components/mardown-display/MarkdownRenderer';
 import DraggableToolbar, { ToolbarAction } from '../components/DraggableToolbar';
 import { Eye, Code, FileText, Copy } from 'lucide-react';
+import { useAppSelector } from '@/lib/redux/hooks';
+import { selectTaskFirstListenerId } from '@/lib/redux/socket-io/selectors';
+import { selectResponseTextByListenerId } from '@/lib/redux/socket-io/selectors';
+import { selectResponseEndedByListenerId } from '@/lib/redux/socket-io/selectors';
+
 
 interface ResultPanelProps {
     id: string;
     order: number;
     number: number;
     label: string;
-    streamingText: string;
+    taskId: string;
     onDelete?: (id: string) => void;
     onDragDrop?: (draggedId: string, targetId: string) => void;
     onLabelChange?: (id: string, newLabel: string) => void;
@@ -20,12 +25,17 @@ interface ResultPanelProps {
     onDebugClick?: (id: string) => void;
 }
 
-export function CodePanel({ id, order, number, label, streamingText, onDelete, onDragDrop, onLabelChange, debug, onDebugClick }: ResultPanelProps) {
+export function CodePanel({ id, order, number, label, taskId, onDelete, onDragDrop, onLabelChange, debug, onDebugClick }: ResultPanelProps) {
     const panelRef = useRef<ImperativePanelHandle>(null);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [previousSize, setPreviousSize] = useState(50);
     const [viewMode, setViewMode] = useState<'rendered' | 'raw' | 'processed'>('rendered');
     const [showCopySuccess, setShowCopySuccess] = useState(false);
+
+    const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
+    const streamingText = useAppSelector(selectResponseTextByListenerId(firstListenerId));
+    const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
+
 
     const toggleCollapse = () => {
         if (isCollapsed) {

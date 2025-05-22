@@ -10,10 +10,11 @@ import { separatedMarkdownParser } from "./parser-separated";
 import { enhancedMarkdownParser } from "./enhanced-parser";
 import MultiSectionMarkdownCard from "./MultiSectionMarkdownCard";
 import JsonDisplay from "./JsonDisplay";
-import MarkdownRenderer from "./MarkdownRenderer";
-import QuestionnaireRenderer from './QuestionnaireRenderer';
+import QuestionnaireRenderer from "./QuestionnaireRenderer";
 import CandidateProfileBlock from "./blocks/candidate-profiles/CandidateProfileBlock";
 import { User } from "lucide-react";
+import ParseExtractorOptions from "../official/processor-extractor/ParseExtractorOptions";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
 
@@ -72,6 +73,11 @@ const VIEW_MODES = {
         label: "Structured",
         supportedTypes: ["json"],
     },
+    structuredAnalyzer: {
+        icon: FileText,
+        label: "Analyzer",
+        supportedTypes: ["markdown"],
+    },
     candidateProfile: {
         icon: User,
         label: "Profile",
@@ -101,7 +107,6 @@ const EnhancedContentRenderer = ({
     onModeChange = (mode: string) => {},
     onThemeChange = (theme: DisplayTheme) => {},
 }: EnhancedContentRendererProps) => {
-
     const availableModes = useMemo(() => Object.entries(VIEW_MODES), []);
 
     const [activeMode, setActiveMode] = useState(() => {
@@ -158,7 +163,7 @@ const EnhancedContentRenderer = ({
                 }
             case "questionnaire":
                 const parsedContent = separatedMarkdownParser(content);
-                return <QuestionnaireRenderer data={parsedContent} theme={currentTheme}/>;
+                return <QuestionnaireRenderer data={parsedContent} theme={currentTheme} />;
             case "structured":
                 return <JsonDisplay content={content} parseFunction={separatedMarkdownParser} />;
             case "candidateProfile":
@@ -170,16 +175,22 @@ const EnhancedContentRenderer = ({
 
             case "parsedAsJson":
                 return <JsonDisplay content={content} parseFunction={parseMarkdownContent} />;
+            case "structuredAnalyzer":
+                return (
+                    <ParseExtractorOptions
+                        content={content}
+                        processors={[
+                            { name: "markdown-content", label: "Markdown Content Parser", fn: parseMarkdownContent },
+                            { name: "separated-markdown", label: "Separated Markdown Parser", fn: separatedMarkdownParser },
+                        ]}
+                    />
+                );
+
             case "rendered":
             default:
                 return (
-                    <div className='flex-1 p-2 overflow-y-auto overflow-x-hidden scrollbar-thin'>
-                        <MarkdownRenderer
-                            content={content}
-                            type='message'
-                            role='assistant'
-                            fontSize={fontSize}
-                        />
+                    <div className="flex-1 p-2 overflow-y-auto overflow-x-hidden scrollbar-thin bg-inherit">
+                        <MarkdownRenderer content={content} type="message" role="assistant" fontSize={fontSize} />
                     </div>
                 );
         }
@@ -196,9 +207,10 @@ const EnhancedContentRenderer = ({
                                 key={mode}
                                 onClick={() => handleModeChange(mode)}
                                 className={`flex items-center space-x-2 px-3 py-1 rounded-md transition-colors
-                                    ${activeMode === mode
-                                        ? "bg-gray-200 dark:bg-gray-800 text-neutral-700 dark:text-neutral-300"
-                                        : "hover:bg-gray-200 dark:hover:bg-gray-800"
+                                    ${
+                                        activeMode === mode
+                                            ? "bg-gray-200 dark:bg-gray-800 text-neutral-700 dark:text-neutral-300"
+                                            : "hover:bg-gray-200 dark:hover:bg-gray-800"
                                     }`}
                             >
                                 <Icon className="h-4 w-4" />
@@ -222,7 +234,9 @@ const EnhancedContentRenderer = ({
             </div>
 
             {/* Scrollable content section */}
-            <div className={`flex-1 h-full w-full overflow-y-auto p-0 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 scrollbar-hide bg-background`}>
+            <div
+                className={`flex-1 h-full w-full overflow-y-auto p-0 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 scrollbar-hide bg-background`}
+            >
                 {renderContent()}
                 <div className="h-10 pb-10"></div>
             </div>

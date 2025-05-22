@@ -26,7 +26,7 @@ const layoutProps = getUpdatedUnifiedLayoutProps(initialLayoutProps, {
         formStyleOptions: {
             fieldFiltering: {
                 excludeFields: ['id'],
-                defaultShownFields: ['name', 'defaultValue', 'dataType', 'inputComponent','outputComponent', 'color'],
+                defaultShownFields: ['name', 'defaultValue', 'dataType', 'fieldComponentId', 'color'],
             },
         },
     },

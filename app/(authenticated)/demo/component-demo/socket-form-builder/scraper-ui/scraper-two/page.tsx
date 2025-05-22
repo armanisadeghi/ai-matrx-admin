@@ -1,62 +1,75 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import DynamicForm from "@/components/socket/form-builder/DynamicForm";
-import { useSocket } from "@/lib/redux/socket/hooks/useSocket";
-import { useEffect } from "react";
-import { CompactSocketHeader } from "@/components/socket/headers/CompactSocketHeader";
 import ScraperResults from "./ScraperResults";
-import SocketDebugPanel from "@/components/socket/SocketDebugPanel";
-import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
-import { getTaskSchema } from "@/constants/socket-schema";
+import { ResponsiveSocketHeader } from "@/components/socket-io/headers/ResponsiveSocketHeader";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
+import { updateTaskField, setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
+import { v4 as uuidv4 } from "uuid";
 
-
-const DEBUG_MODE = true;
+const SERVICE = "scrape_service";
+const TASK_TYPE = "quick_scrape";
 
 export default function Page() {
-    const taskName = "quick_scrape"
-
-    const schema = getTaskSchema(taskName);
-    console.log(schema);
-
-    const socketHook = useSocket();
-
-    const {
-        setNamespace,
-        setService,
-        setTaskType,
-        setTaskData,
-        handleSend,
-    } = socketHook;
+    const dispatch = useAppDispatch();
+    const [taskId, setTaskId] = useState<string>("");
+    const [taskData, setTaskData] = useState<Record<string, any>>({});
 
     useEffect(() => {
-        setNamespace("UserSession");
-        setService("scrape_service");
-        setTaskType("quick_scrape");
-    }, []);
+        const newTaskId = uuidv4();
+        dispatch(createTask({
+            taskId: newTaskId,
+            service: SERVICE,
+            taskName: TASK_TYPE
+        }));
+        setTaskId(newTaskId);
+    }, [dispatch]);
 
+    // Update task data in Redux when it changes
     const handleChange = (data: any) => {
         setTaskData(data);
+        
+        if (taskId) {
+            // Update all fields at once in Redux
+            dispatch(setTaskFields({
+                taskId,
+                fields: data
+            }));
+        }
     };
 
+    // Handle form submission
     const handleSubmit = (data: any) => {
+        // Update local state
         setTaskData(data);
-        handleSend();
+        
+        if (taskId) {
+            // Make sure Redux has the latest data
+            dispatch(setTaskFields({
+                taskId,
+                fields: data
+            }));
+            
+            // Submit the task to start processing
+            dispatch(submitTask({ taskId }));
+        }
     };
 
     return (
         <div className="flex flex-col gap-4 bg-gray-100 dark:bg-gray-800 rounded-2xl p-4">
-            <CompactSocketHeader socketHook={socketHook} defaultService="scrape_service" defaultTask="quick_scrape" />
-            <DynamicForm taskType={"quick_scrape"} onChange={handleChange} onSubmit={handleSubmit} />
-            <ScraperResults socketHook={socketHook} />
-            {DEBUG_MODE && (
-                <div className="mt-8 bg-gray-100 dark:bg-gray-800 rounded-2xl border border-gray-300 dark:border-gray-600 shadow-sm">
-                    <AccordionWrapper title="Socket Debug Panel" value="socket-debug" defaultOpen={false}>
-                        <div className="pt-4">
-                            <SocketDebugPanel socketHook={socketHook} />
-                        </div>
-                    </AccordionWrapper>
-                </div>
-            )}
+            <div className="sticky top-0 z-50 bg-gray-100 dark:bg-gray-800 pt-0 px-2 pb-2">
+                <ResponsiveSocketHeader 
+                    debugMode={true} 
+                />
+            </div>
+            <DynamicForm 
+                taskType={TASK_TYPE} 
+                onChange={handleChange} 
+                onSubmit={handleSubmit} 
+            />
+            {taskId && <ScraperResults taskId={taskId} />}
         </div>
     );
 }

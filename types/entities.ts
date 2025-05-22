@@ -313,6 +313,7 @@ export type CustomAppConfigs = {
     extraButtons?: Record<string, unknown>;
     layoutType?: string;
     imageUrl?: string;
+    appDataContext?: Record<string, unknown>;
 }
 
 export type CustomAppletConfigs = {
@@ -341,6 +342,8 @@ export type CustomAppletConfigs = {
     imageUrl?: string;
     appId?: string;
     brokerMap?: Record<string, unknown>;
+    overviewLabel?: string;
+    dataDestinationConfig?: Record<string, unknown>;
 }
 
 export type DataBroker = {
@@ -351,6 +354,13 @@ export type DataBroker = {
     inputComponent?: string;
     color?: "amber" | "blue" | "cyan" | "emerald" | "fuchsia" | "gray" | "green" | "indigo" | "lime" | "neutral" | "orange" | "pink" | "purple" | "red" | "rose" | "sky" | "slate" | "stone" | "teal" | "violet" | "yellow" | "zinc" | undefined;
     outputComponent?: string;
+    fieldComponentId?: string;
+    userId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
 }
 
 export type DataInputComponent = {

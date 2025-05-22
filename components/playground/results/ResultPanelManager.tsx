@@ -27,11 +27,8 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
         }
     });
 
-    const {
-        streamingResponses,
-        responseRef,
-        isResponseActive,
-    } = socketHook;
+    const {taskIds } = socketHook;
+
 
     const recordTabs = tabs.filter((tab) => tab.isRecord);
     
@@ -74,7 +71,7 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
                             order: tab.tabId,
                             number: tab.tabId,
                             label: tab.resultLabel,
-                            streamingText: streamingResponses[index] || '',
+                            taskId: taskIds[index] || '',
                             onDelete: deleteSettings,
                             debug: process.env.NODE_ENV === 'development',
                             onDebugClick: (id) => console.log('Debug clicked:', id),

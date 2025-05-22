@@ -1,27 +1,58 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { PageTemplate, Card, FileTextIcon } from "@/features/scraper/parts/reusable/PageTemplate";
-import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
-import { RecipeTaskData } from "@/lib/redux/socket/recipe-class/RecipeTaskData";
-import { RecipeTaskManager } from "@/lib/redux/socket/recipe-class/RecipeTaskManager";
-import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
-import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
-import { CheckSquare, AlertTriangle, Table, FileText, ClipboardList, Search, AlertCircle, ListChecks, Star } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { AlertTriangle, Search, ClipboardList, AlertCircle, ListChecks, Table, FileText } from "lucide-react";
 import { parseFactCheck } from "./fact-check-parsing-util";
+import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
+import { PageTemplate, Card } from "../reusable/PageTemplate";
+import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
+import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
+import { setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
+import { 
+    selectTaskFirstListenerId,
+    selectResponseDataByListenerId,
+    selectPrimaryResponseEndedByTaskId,
+    selectTaskStatus
+} from "@/lib/redux/socket-io";
+import { v4 as uuidv4 } from "uuid";
 
 interface FactCheckerPageProps {
     value: string;
-    overview?: any;
+    overview?: {
+        page_title?: string;
+        char_count?: number;
+        url?: string;
+        website?: string;
+    };
 }
 
+
 const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} }) => {
-    const [streamingResponse, setStreamingResponse] = useState<string>("");
+    const dispatch = useAppDispatch();
+    const [taskId, setTaskId] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const recipeIdFactChecker = "07e85962-71c8-4a2d-acb0-80d1771a4594";
     const brokerId = "59dd12d8-8bec-40ae-af24-09d2cf28a806";
-    const taskManager = new RecipeTaskManager();
+
+    // Redux selectors
+    const taskStatus = useAppSelector(state => taskId ? selectTaskStatus(state, taskId) : null);
+    const isTaskCompleted = useAppSelector(state => taskId ? selectPrimaryResponseEndedByTaskId(taskId)(state) : false);
+    const firstListenerId = useAppSelector(state => taskId ? selectTaskFirstListenerId(state, taskId) : "");
+    const responseData = useAppSelector(selectResponseDataByListenerId(firstListenerId || ""));
+
+    const isLoading = taskStatus === "submitted" && !isTaskCompleted;
+
+    // Extract streaming response from response data
+    const streamingResponse = useMemo(() => {
+        if (!responseData || !Array.isArray(responseData)) return "";
+        
+        // Combine all text responses
+        return responseData
+            .filter(item => typeof item === 'string')
+            .join('');
+    }, [responseData]);
 
     // Get page details from overview if available
     const pageTitle = overview?.page_title || "Content";
@@ -29,49 +60,65 @@ const FactCheckerPage: React.FC<FactCheckerPageProps> = ({ value, overview = {} 
     const pageUrl = overview?.url;
 
     useEffect(() => {
-        let unsubscribe: () => void;
-
         const runTask = async () => {
-            setIsLoading(true);
-            setStreamingResponse("");
+            if (!value || value.trim().length === 0) {
+                return;
+            }
+
+            setError(null);
+            console.log("[FactChecker] value:", value);
 
             try {
-                const taskData = new RecipeTaskData(recipeIdFactChecker, 1)
-                    .setModelOverride("gpt-4o-mini")
-                    .addBroker({ id: brokerId, name: brokerId, value });
+                // Create the task
+                const newTaskId = await dispatch(createTask({
+                    service: "ai_chat_service",
+                    taskName: "run_recipe_to_chat"
+                })).unwrap();
 
-                const eventName = await taskManager.runRecipeTask(taskData);
-                unsubscribe = taskManager.getSocketManager().subscribeToEvent(eventName, (response: any) => {
-                    console.log(`[FactChecker] Response for ${eventName}:`, response);
-                    if (response?.data) {
-                        setStreamingResponse((prev) => prev + response.data);
-                    } else if (typeof response === "string") {
-                        setStreamingResponse((prev) => prev + response);
-                    }
-                });
+                setTaskId(newTaskId);
+
+                // Prepare task data in the new format
+                const taskData = {
+                    chat_config: {
+                        recipe_id: recipeIdFactChecker,
+                        version: "1",
+                        prepare_for_next_call: false,
+                        save_new_conversation: false,
+                        include_classified_output: false,
+                        tools_override: [],
+                        allow_default_values: true,
+                        allow_removal_of_unmatched: true,
+                        model_override: "gpt-4o-mini"
+                    },
+                    broker_values: [
+                        {
+                            id: brokerId,
+                            name: brokerId,
+                            value: value
+                        }
+                    ]
+                };
+
+                // Set the task data
+                dispatch(setTaskFields({
+                    taskId: newTaskId,
+                    fields: taskData
+                }));
+
+                // Submit the task
+                dispatch(submitTask({ taskId: newTaskId }));
+
             } catch (err) {
                 setError(err instanceof Error ? err.message : "An error occurred");
                 console.error("[FactChecker] Task failed:", err);
-            } finally {
-                setIsLoading(false);
             }
         };
 
-        // Only run if value is a non-empty string
-        if (value && value.trim().length > 0) {
-            console.log("[FactChecker] value:", value);
-            runTask();
-        }
-
-        return () => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
-        };
-    }, [value]);
+        runTask();
+    }, [value, dispatch]);
 
     // Parse the full response once and use the parsed content
-    const parsedContent = React.useMemo(() => {
+    const parsedContent = useMemo(() => {
         if (!streamingResponse) return null;
         return parseFactCheck(streamingResponse);
     }, [streamingResponse]);

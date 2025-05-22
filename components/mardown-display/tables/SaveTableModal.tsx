@@ -7,11 +7,46 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToastManager } from "@/hooks/useToastManager";
-import { SocketManager } from "@/lib/redux/socket/SocketManager";
 import UserTableViewer from "@/components/user-generated-table-data/UserTableViewer";
-import { Loader2, X, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { 
+  selectTaskStatus,
+  selectPrimaryResponseEndedByTaskId,
+  selectFirstPrimaryResponseDataByTaskId
+} from "@/lib/redux/socket-io";
+import { createTask, submitTask } from "@/lib/redux/socket-io/thunks";
+import { updateTaskField, setTaskFields } from "@/lib/redux/socket-io/slices/socketTasksSlice";
+import { v4 as uuidv4 } from "uuid";
+
+const getLoadingStates = (tableData: any) => {
+  const rowCount = Array.isArray(tableData) ? tableData.length : 10;
+  const baseMessages = [
+    { text: "Initializing table structure..." },
+    { text: "Analyzing data patterns..." },
+    { text: "Optimizing columns and rows..." },
+    { text: "Creating database entries..." },
+    { text: "Generating table metadata..." },
+    { text: "Setting up data relationships..." },
+    { text: "Finalizing table creation..." },
+    { text: "Almost there! Preparing your table..." }
+  ];
+  
+  // For larger tables, add more detailed steps
+  if (rowCount > 20) {
+    baseMessages.splice(3, 0, { text: "Processing data records..." });
+    baseMessages.splice(5, 0, { text: "Validating data integrity..." });
+  }
+  
+  if (rowCount > 50) {
+    baseMessages.splice(2, 0, { text: "Optimizing for large dataset..." });
+    baseMessages.splice(7, 0, { text: "Running performance checks..." });
+  }
+  
+  return baseMessages;
+};
 
 interface SaveTableResponse {
   table_id: string;
@@ -21,6 +56,7 @@ interface SaveTableResponse {
   field_count: string;
   success: string;
   existing: string;
+  fields?: any[];
 }
 
 interface SaveTableModalProps {
@@ -36,49 +72,63 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
   onSaveComplete,
   tableData 
 }) => {
+  const dispatch = useAppDispatch();
   const [tableName, setTableName] = useState("");
   const [tableDescription, setTableDescription] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveResponse, setSaveResponse] = useState<SaveTableResponse | null>(null);
   const [stage, setStage] = useState<"form" | "saving" | "result">("form");
-  const [isLoading, setIsLoading] = useState(false);
+  const [saveResponse, setSaveResponse] = useState<SaveTableResponse | null>(null);
   
-
-  console.log(JSON.stringify(tableData, null, 2));
-
-  const socketManager = SocketManager.getInstance();
+  // Create a task ID on initial render
+  const [taskId] = useState(() => uuidv4());
+  
+  // Select task-related information from Redux store
+  const taskStatus = useAppSelector(state => selectTaskStatus(state, taskId));
+  const isTaskCompleted = useAppSelector(state => selectPrimaryResponseEndedByTaskId(taskId)(state));
+  const tableResponse = useAppSelector(state => selectFirstPrimaryResponseDataByTaskId(taskId)(state)) as SaveTableResponse;
+  
   const toast = useToastManager();
   const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const responseReceivedRef = useRef(false);
-
-  // Define loading states based on table complexity
-  const getLoadingStates = () => {
-    const rowCount = Array.isArray(tableData) ? tableData.length : 10;
-    const baseMessages = [
-      { text: "Initializing table structure..." },
-      { text: "Analyzing data patterns..." },
-      { text: "Optimizing columns and rows..." },
-      { text: "Creating database entries..." },
-      { text: "Generating table metadata..." },
-      { text: "Setting up data relationships..." },
-      { text: "Finalizing table creation..." },
-      { text: "Almost there! Preparing your table..." }
-    ];
-    
-    // For larger tables, add more detailed steps
-    if (rowCount > 20) {
-      baseMessages.splice(3, 0, { text: "Processing data records..." });
-      baseMessages.splice(5, 0, { text: "Validating data integrity..." });
+  
+  // Initialize the task on component mount
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(createTask({
+        taskId,
+        service: "ai_chat_service",
+        taskName: "convert_normalized_data_to_user_data"
+      }));
+      
+      // Set the initial table data
+      dispatch(setTaskFields({
+        taskId,
+        fields: {
+          data: tableData
+        }
+      }));
     }
-    
-    if (rowCount > 50) {
-      baseMessages.splice(2, 0, { text: "Optimizing for large dataset..." });
-      baseMessages.splice(7, 0, { text: "Running performance checks..." });
+  }, [dispatch, isOpen, taskId, tableData]);
+  
+  // Effect to update the task fields when the user changes the form
+  useEffect(() => {
+    if (taskId && tableName) {
+      dispatch(updateTaskField({
+        taskId,
+        field: "table_name",
+        value: tableName
+      }));
     }
-    
-    return baseMessages;
-  };
-
+  }, [dispatch, taskId, tableName]);
+  
+  useEffect(() => {
+    if (taskId && tableDescription) {
+      dispatch(updateTaskField({
+        taskId,
+        field: "table_description",
+        value: tableDescription
+      }));
+    }
+  }, [dispatch, taskId, tableDescription]);
+  
   // Clear safety timeout on unmount
   useEffect(() => {
     return () => {
@@ -87,7 +137,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
       }
     };
   }, []);
-
+  
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -100,190 +150,87 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           setTableName("");
           setTableDescription("");
         }
-        setIsSaving(false);
-        setIsLoading(false);
       }, 300);
       
       return () => clearTimeout(timeout);
     }
   }, [isOpen, stage, saveResponse]);
-
-  const handleSave = async () => {
+  
+  // Effect to process response data when it changes
+  useEffect(() => {
+    if (tableResponse && tableResponse.table_id && stage === "saving") {
+      setSaveResponse(tableResponse);
+      setStage("result");
+      
+      // Clear safety timeout
+      if (safetyTimeoutRef.current) {
+        clearTimeout(safetyTimeoutRef.current);
+        safetyTimeoutRef.current = null;
+      }
+      
+      toast.success(`Table "${tableResponse.table_name || tableName}" created successfully`);
+      
+      // Call the onSaveComplete callback if provided
+      if (onSaveComplete) {
+        onSaveComplete(tableResponse as SaveTableResponse);
+      }
+    }
+  }, [tableResponse, isTaskCompleted, stage, tableName, toast, onSaveComplete]);
+  
+  // Handle save button click
+  const handleSave = () => {
     if (!tableName.trim()) {
       toast.error("Table name is required");
       return;
     }
-
+    
+    // Don't allow submission if already in progress
+    if (taskStatus === "submitted" || taskStatus === "completed") {
+      return;
+    }
+    
     // Always clear any previous timeout when starting a new save
     if (safetyTimeoutRef.current) {
       clearTimeout(safetyTimeoutRef.current);
       safetyTimeoutRef.current = null;
     }
-
-    setIsSaving(true);
+    
     setStage("saving");
-    setIsLoading(true);
-    console.log("Starting direct socket save process");
-
-    try {
-      // Prepare task payload in the format expected by socketManager
-      const payload = [{
-        task: "convert_normalized_data_to_user_data",
-        index: 0,
-        stream: true,
-        taskData: {
-          data: tableData,
-          table_name: tableName,
-          table_description: tableDescription
-        }
-      }];
-
-      console.log("Prepared task payload:", payload);
+    
+    dispatch(submitTask({ taskId }));
+    
+    safetyTimeoutRef.current = setTimeout(() => {
       
-      // Reset the response received flag
-      responseReceivedRef.current = false;
-      
-      // Call socketManager directly with the properly structured payload
-      await socketManager.startTask("ai_chat_service", payload, (response) => {
-        // Mark that we received a response
-        responseReceivedRef.current = true;
-        
-        console.log("Socket response received:", response);
-        
-        // IMPORTANT: The response format we're getting has table_id directly at the top level
-        // It looks like: {table_id: '123', table_name: 'Name', row_count: '10', ...}
-        
-        try {
-          // Most important: Check for the exact format we're seeing in logs
-          if (response && typeof response === 'object' && response.table_id) {
-            console.log("Found table_id in response:", response.table_id);
-            setSaveResponse(response);
-            setStage("result");
-            setIsSaving(false);
-            setIsLoading(false);
-            
-            // Clear safety timeout
-            if (safetyTimeoutRef.current) {
-              clearTimeout(safetyTimeoutRef.current);
-              safetyTimeoutRef.current = null;
-            }
-            
-            toast.success(`Table "${response.table_name || tableName}" created successfully`);
-            
-            // Call the onSaveComplete callback if provided
-            if (onSaveComplete) {
-              onSaveComplete(response);
-            }
-            
-            return;
-          }
-          
-          // For other cases, fallback to the generic handler
-          if (response?.error) {
-            console.error("Error from socket:", response.error);
-            toast.error(`Failed to save table: ${response.error}`);
-            setStage("form");
-            setIsSaving(false);
-            setIsLoading(false);
-            return;
-          }
-          
-          // Handle other response formats as a backup
-          let tableData = null;
-          
-          if (response?.data?.table_id) {
-            tableData = response.data;
-          } else if (typeof response === 'string') {
-            try {
-              const parsed = JSON.parse(response);
-              if (parsed?.table_id) tableData = parsed;
-              else if (parsed?.data?.table_id) tableData = parsed.data;
-            } catch (e) {}
-          }
-          
-          if (tableData) {
-            console.log("Found table data in alternate format:", tableData);
-            setSaveResponse(tableData);
-            setStage("result");
-            setIsSaving(false);
-            setIsLoading(false);
-            
-            // Clear safety timeout
-            if (safetyTimeoutRef.current) {
-              clearTimeout(safetyTimeoutRef.current);
-              safetyTimeoutRef.current = null;
-            }
-            
-            toast.success(`Table "${tableData.table_name || tableName}" created successfully`);
-            
-            // Call the onSaveComplete callback if provided
-            if (onSaveComplete) {
-              onSaveComplete(tableData);
-            }
-          }
-          
-        } catch (err) {
-          console.error("Error processing response:", err);
-        }
-      });
-      
-      // Set a safety timeout to prevent the spinner from running forever
-      safetyTimeoutRef.current = setTimeout(() => {
-        console.log("Safety timeout reached after 20 seconds");
-        console.log("Got any response?", responseReceivedRef.current);
-        
-        if (stage === "saving") {
-          setStage("form");
-          setIsSaving(false);
-          setIsLoading(false);
-          toast.info("Table creation is still processing in the background");
-        }
-        
-        safetyTimeoutRef.current = null;
-      }, 20000); // Extend timeout to 20 seconds for larger tables
-      
-    } catch (error) {
-      console.error("Error in save process:", error);
-      toast.error("Failed to save table data");
-      setStage("form");
-      setIsSaving(false);
-      setIsLoading(false);
-      
-      // Clear the safety timeout on error
-      if (safetyTimeoutRef.current) {
-        clearTimeout(safetyTimeoutRef.current);
-        safetyTimeoutRef.current = null;
+      if (stage === "saving") {
+        setStage("form");
+        toast.info("Table creation is still processing in the background");
       }
-    }
+      
+      safetyTimeoutRef.current = null;
+    }, 20000); // 20 seconds timeout for larger tables
   };
-
+  
   const handleOpenInNewTab = () => {
     if (saveResponse?.table_id) {
       window.open(`/data/${saveResponse.table_id}`, '_blank');
     }
   };
-
-  const resetForm = () => {
-    setSaveResponse(null);
-    setStage("form");
-    setTableName("");
-    setTableDescription("");
-  };
-
-  // When clicking Done in the result view, notify parent with the saved table info
+  
   const handleDone = () => {
     if (saveResponse && onSaveComplete) {
       onSaveComplete(saveResponse);
     }
     onClose();
   };
-
+  
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && tableName.trim() && !isSaving && stage === "form") {
+    if (e.key === 'Enter' && tableName.trim() && stage === "form") {
       e.preventDefault();
       handleSave();
     }
   };
+
+  const isLoading = taskStatus === "submitted" || stage === "saving";
 
   const renderFormContent = () => (
     <div className="grid gap-4 py-4">
@@ -297,7 +244,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           onChange={(e) => setTableName(e.target.value)}
           placeholder="Enter table name"
           className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
-          disabled={isSaving}
+          disabled={isLoading}
           onKeyDown={handleKeyDown}
         />
       </div>
@@ -313,16 +260,13 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           placeholder="Enter table description"
           rows={3}
           className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 resize-none"
-          disabled={isSaving}
+          disabled={isLoading}
           onKeyDown={handleKeyDown}
         />
       </div>
     </div>
   );
-
-  // No longer needed - replaced by MultiStepLoader
-  const renderSavingContent = () => null;
-
+  
   const renderResultContent = () => saveResponse && (
     <div className="py-0">
       <div className="mb-1 text-left text-sm text-gray-600 dark:text-gray-400 pb-1">
@@ -334,7 +278,7 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
       </div>
     </div>
   );
-
+  
   const renderDialogContent = () => {
     switch (stage) {
       case "saving":
@@ -353,7 +297,6 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           <Button
             variant="outline"
             onClick={() => {
-              setIsLoading(false);
               toast.info("Save operation is continuing in the background");
               onClose();
             }}
@@ -395,16 +338,16 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
             <Button
               variant="default"
               onClick={handleSave}
-              disabled={isSaving}
+              disabled={isLoading}
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white"
             >
-              {isSaving ? "Saving..." : "Save Table"}
+              {isLoading ? "Saving..." : "Save Table"}
             </Button>
           </>
         );
     }
   };
-
+  
   return (
     <>
       <Dialog 
@@ -412,7 +355,6 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
         onOpenChange={(open) => {
           if (!open) {
             if (stage === "saving") {
-              setIsLoading(false);
               toast.info("Save operation is continuing in the background");
             }
             onClose();
@@ -446,10 +388,10 @@ const SaveTableModal: React.FC<SaveTableModalProps> = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      
       {/* Multi-step loader outside the dialog */}
       <MultiStepLoader 
-        loadingStates={getLoadingStates()} 
+        loadingStates={getLoadingStates(tableData)} 
         loading={isLoading} 
         duration={600} 
         loop={false}

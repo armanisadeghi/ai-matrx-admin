@@ -13,6 +13,7 @@ import { useCockpitSocket } from "@/lib/redux/socket/hooks/useCockpitRecipe";
 import { useDoubleJoinedActiveParentProcessing } from "@/app/entities/hooks/relationships/useRelationshipsWithProcessing";
 import { useCreateRecord } from "@/app/entities/hooks/crud/useDirectCreateRecord";
 import { useOrchestrateSave } from "@/hooks/useOrchestrateSave";
+import { RecipeToChatTaskData } from "./recipes/recipe-task-utils";
 
 export function useAiCockpit() {
     const [compiledRecipe, setCompiledRecipe] = useState<CompiledRecipe | null>(null);
@@ -20,6 +21,7 @@ export function useAiCockpit() {
     const [taskBrokers, setTaskBrokers] = useState<BrokerValue[]>([]);
     const [recipeOverrides, setRecipeOverrides] = useState<RecipeOverrides[]>([]);
     const [recipeTaskData, setRecipeTaskData] = useState<RecipeTaskData[]>([]);
+    const [recipeToChatTaskData, setRecipeToChatTaskData] = useState<RecipeToChatTaskData[]>([]);
     const [isSaving, setIsSaving] = useState(false);
 
     const {
@@ -47,12 +49,13 @@ export function useAiCockpit() {
     });
 
     const recompileRecipe = useCallback(() => {
-        const { compiledRecipe: result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList } = compileRecipe();
+        const { compiledRecipe: result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList, recipeToChatTaskDataList } = compileRecipe();
         setCompiledRecipe(result);
         setTaskBrokers(recipeTaskBrokers);
         setRecipeOverrides(recipeOverrides);
         setRecipeTaskData(recipeTaskDataList);
-        return { result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList };
+        setRecipeToChatTaskData(recipeToChatTaskDataList);
+        return { result, recipeTaskBrokers, recipeOverrides, recipeTaskDataList, recipeToChatTaskDataList };
     }, [compileRecipe]);
 
     const saveCompiledRecipe = useCallback(async () => {
@@ -90,8 +93,8 @@ export function useAiCockpit() {
     );
 
     const getLatestTasks = useCallback(async () => {
-        const { recipeTaskDataList } = recompileRecipe();
-        return recipeTaskDataList;
+        const { recipeToChatTaskDataList } = recompileRecipe();
+        return recipeToChatTaskDataList;
     }, [recompileRecipe]);
 
     useEffect(() => {

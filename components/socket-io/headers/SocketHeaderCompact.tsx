@@ -9,7 +9,7 @@ import ConnectionTypeIndicator from "@/components/socket-io/status-indicators/Co
 import { StatusIndicator } from "@/components/socket-io/status-indicators/StatusIndicator";
 import ActiveConnectionSelector from "@/components/socket-io/socket-connection/ActiveConnectionSelector";
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
-import { selectPrimaryConnectionId, selectTestMode } from "@/lib/redux/socket-io";
+import { selectPrimaryConnectionId, selectConnectionTestMode } from "@/lib/redux/socket-io";
 import { ServiceTaskSelector } from "@/components/socket-io/select-components/ServiceTaskSelector";
 import { toggleTestMode } from "@/lib/redux/socket-io/slices/socketConnectionsSlice";
 import SocketDebugModal from "@/components/socket-io/modals/SocketDebugModal";
@@ -32,7 +32,7 @@ export function SocketHeaderCompact({
     onToggleExpand
 }: SocketHeaderCompactProps) {
     const dispatch = useAppDispatch();
-    const testMode = useAppSelector(selectTestMode);
+    const testMode = useAppSelector(selectConnectionTestMode);
     const primaryConnectionId = useAppSelector(selectPrimaryConnectionId);
 
     // Local UI state

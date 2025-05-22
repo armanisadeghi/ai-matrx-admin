@@ -42,7 +42,7 @@ import { SchemaField } from "@/constants/socket-schema";
 import { formatLabel, formatPlaceholder } from "@/components/socket/utils/label-util";
 import { updateTaskFieldByPath } from "@/lib/redux/socket-io/thunks/taskFieldThunks";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { selectFieldValue, selectTestMode, selectTaskNameById } from "@/lib/redux/socket-io";
+import { selectFieldValue, selectConnectionTestMode, selectTaskNameById } from "@/lib/redux/socket-io";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 import { isValidField } from "@/constants/socket-schema";
 import { Label } from "@/components/ui/label";
@@ -73,7 +73,7 @@ const SocketTaskMultiFileUpload: React.FC<SocketTaskMultiFileUploadProps> = ({
 
     // Get the current value from Redux store
     const currentValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
-    const testMode = useAppSelector(selectTestMode);
+    const testMode = useAppSelector(selectConnectionTestMode);
     const taskName = useAppSelector((state) => selectTaskNameById(state, taskId));
 
     // Initialize the value in Redux on component mount
