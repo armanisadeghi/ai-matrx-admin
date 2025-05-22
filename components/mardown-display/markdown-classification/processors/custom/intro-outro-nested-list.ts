@@ -109,8 +109,11 @@ interface IntroOutroListProcessorInput {
 }
 
 export function introOutroNestedListProcessor({ ast, config }: IntroOutroListProcessorInput): OutputContent {
-    if (config) {
-        console.warn("IntroOutroListProcessor Does NOT use configs but a config was provided. Config was: ", JSON.stringify(config, null, 2));
+    if (config && Object.keys(config).length > 0) {
+        console.warn(
+            "IntroOutroListProcessor Does NOT use configs but a config was provided. Config was: ",
+            JSON.stringify(config, null, 2)
+        );
     }
     const output: OutputContent = {
         intro: { title: "", text: "" },

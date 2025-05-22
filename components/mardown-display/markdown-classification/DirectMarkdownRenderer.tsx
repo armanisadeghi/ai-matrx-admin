@@ -3,82 +3,66 @@
 import { useState, useEffect } from "react";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { useAppDispatch } from "@/lib/redux/hooks";
-import { prepareMarkdownForRendering } from "./markdown-processing-utils";
 import { ViewId } from "./custom-views/view-registry";
 import ViewRenderer from "./custom-views/ViewRenderer";
 import { getDefaultViewId } from "./markdown-coordinator";
+import { processMarkdownForRenderingWithCoordinator } from "./markdown-processor-util";
 
-// Helper to check if code is running on client side
-const isClient = typeof window !== 'undefined';
+const isClient = typeof window !== "undefined";
 
 interface DirectMarkdownRendererProps {
     markdown: string;
     coordinatorId: string;
-    viewId?: ViewId | "default";
     className?: string;
     source?: string;
     sourceId?: string;
     isLoading?: boolean;
+    overrideViewId?: ViewId | "default";
 }
 
 const DirectMarkdownRenderer = ({
     markdown,
     coordinatorId,
-    viewId = "default",
     className = "",
     source,
     sourceId,
     isLoading = false,
+    overrideViewId = "default",
 }: DirectMarkdownRendererProps) => {
-    const [processedData, setProcessedData] = useState<any>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [viewInfo, setViewInfo] = useState<any>(null);
-    const [rendering, setRendering] = useState(true);
     const dispatch = useAppDispatch();
+    const [error, setError] = useState<string | null>(null);
+    const [ast, setAst] = useState<any>(null);
+    const [processedData, setProcessedData] = useState<any>(null);
 
-    // Resolve the actual view ID if 'default' is specified
-    const resolvedViewId = viewId === "default" 
-        ? getDefaultViewId(coordinatorId) as ViewId 
-        : viewId as ViewId;
+    const viewId = getDefaultViewId(coordinatorId);
 
     useEffect(() => {
-        // Skip processing on server or when missing data
         if (!isClient || !markdown || !coordinatorId) {
             return;
         }
 
-        setError(null);
-        setRendering(true);
-
-        async function processMarkdown() {
+        const processMarkdown = async () => {
             try {
-                const result = await prepareMarkdownForRendering(markdown, coordinatorId, resolvedViewId);
-                if (isClient) { // Double-check we're still on client before setting state
-                    setProcessedData(result.processedData);
-                    setViewInfo({
-                        coordinatorDefinition: result.coordinatorDefinition,
-                        viewComponentInfo: result.viewComponentInfo
-                    });
-                    setRendering(false);
-                }
+                const result = await processMarkdownForRenderingWithCoordinator({
+                    markdown,
+                    coordinatorId,
+                });
+                setAst(result.ast);
+                setProcessedData(result.processedData);
+                setError(null);
             } catch (err) {
-                console.error(`[DirectMarkdownRenderer] Processing error for ${coordinatorId}:`, err);
-                if (isClient) { // Double-check we're still on client before setting state
-                    setError(`Error processing markdown: ${err instanceof Error ? err.message : String(err)}`);
-                    setRendering(false);
-                }
+                setError(`Error processing markdown: ${err}`);
             }
-        }
+        };
 
         processMarkdown();
-    }, [markdown, coordinatorId, resolvedViewId]);
+    }, [markdown, coordinatorId, overrideViewId]);
 
     useEffect(() => {
-        if (!isClient || !source || !sourceId || !processedData || !viewInfo) {
+        if (!isClient || !source || !sourceId || !processedData) {
             return;
         }
-        
-        // Dispatch the main data broker
+
         dispatch(
             brokerActions.setValue({
                 brokerId: `${coordinatorId}-${sourceId}`,
@@ -103,30 +87,24 @@ const DirectMarkdownRenderer = ({
                 );
             }
         }
-    }, [source, sourceId, processedData, viewInfo, dispatch, coordinatorId]);
 
-    // Handle server-side rendering
-    if (!isClient) {
-        return <div className={className}>Loading...</div>;
-    }
+        dispatch(
+            brokerActions.setValue({
+                brokerId: `${coordinatorId}-${sourceId}-ast`,
+                value: ast,
+            })
+        );
+    }, [source, sourceId, processedData, viewId, dispatch, coordinatorId, ast]);
 
     if (error) {
         return <div className={`text-red-600 dark:text-red-400 ${className}`}>{error}</div>;
     }
 
-    if (rendering || !processedData || !viewInfo) {
-        return <div className={className}>Processing markdown...</div>;
-    }
-
-    // Use the ViewRenderer component to handle view resolution and rendering
-    const { viewComponentInfo } = viewInfo;
     return (
         <ViewRenderer
-            requestedViewId={resolvedViewId}
-            availableViews={viewComponentInfo.availableViews}
-            defaultViewId={viewComponentInfo.defaultViewId}
             data={processedData}
             coordinatorId={coordinatorId}
+            requestedViewId={viewId}
             className={className}
             isLoading={isLoading}
         />

@@ -37,6 +37,7 @@ import {
 import { useAppSelector, useAppDispatch } from "@/lib/redux";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { brokerActions } from "@/lib/redux/brokerSlice";
+import ProcessorExtractor from "@/components/official/processor-extractor/ProcessorExtractor";
 
 export function SocketAccordionResponse({ taskId }: { taskId: string }) {
     // Change this line to set the default value to "response"
@@ -202,7 +203,7 @@ export function SocketAccordionResponse({ taskId }: { taskId: string }) {
                                 <TabsContent value="rawJsonExplorer">
                                     <div className="w-full border border-gray-300 dark:border-gray-600 rounded-2xl p-2">
                                         {useMemo(() => (
-                                            <RawJsonExplorer pageData={selectedObject} />
+                                            <ProcessorExtractor jsonData={selectedObject} configKey={taskId} />
                                         ), [selectedObject])}
                                     </div>
                                 </TabsContent>

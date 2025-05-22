@@ -1,51 +1,26 @@
 "use client";
 
-import { ViewId, resolveView } from "./view-registry";
+import { ViewId, getDefaultViewComponent, getViewComponent } from "./view-registry";
+import { getDefaultViewId } from "../markdown-coordinator";
 
-interface ViewRendererProps {
-    requestedViewId?: ViewId;
-    availableViews: ViewId[];
-    defaultViewId: ViewId;
+interface DefaultViewRendererProps {
     data: any;
-    coordinatorId?: string;
+    coordinatorId: string;
     className?: string;
     isLoading?: boolean;
 }
 
-/**
- * Centralized component for handling view resolution and rendering
- * Encapsulates all the view resolution logic in one place
- */
-export const ViewRenderer = ({
-    requestedViewId,
-    availableViews,
-    defaultViewId,
+export const DefaultViewRenderer = ({
     data,
     coordinatorId,
     className = "",
     isLoading = false
-}: ViewRendererProps) => {
+}: DefaultViewRendererProps) => {
+    const ViewComponent = getDefaultViewComponent(coordinatorId);
     
-    // Make sure defaultViewId is one of the availableViews
-    let finalViewId = requestedViewId || defaultViewId;
-    if (!availableViews.includes(finalViewId)) {
-        console.warn(`Requested view ${finalViewId} not in available views. Falling back to first available view.`);
-        finalViewId = availableViews.length > 0 ? availableViews[0] : "dynamic";
-    }
-    
-    const { component: ViewComponent, resolvedViewId } = resolveView(
-        finalViewId,
-        availableViews,
-        defaultViewId
-    );
 
     if (!ViewComponent) {
-        return (
-            <div className={`text-red-600 dark:text-red-400 ${className}`}>
-                View not found: {resolvedViewId}
-                {coordinatorId && ` for coordinator: ${coordinatorId}`}
-            </div>
-        );
+        return null;
     }
 
     return (
@@ -54,5 +29,104 @@ export const ViewRenderer = ({
         </div>
     );
 };
+
+
+interface DirectViewRendererProps {
+    data: any;
+    viewId: ViewId;
+    className?: string;
+    isLoading?: boolean;
+}
+
+
+export const DirectViewRenderer = ({
+    data,
+    viewId,
+    className = "",
+    isLoading = false
+}: DirectViewRendererProps) => {
+    const ViewComponent = getViewComponent(viewId);
+
+    if (!ViewComponent) {
+        return null;
+    }
+
+    return (
+        <div className={className}>
+            <ViewComponent data={data} isLoading={isLoading} />
+        </div>
+    );
+};
+
+
+interface AstViewRendererProps {
+    ast: any;
+    viewId: ViewId;
+    className?: string;
+    isLoading?: boolean;
+}
+
+export const AstViewRenderer = ({
+    ast,
+    viewId,
+    className = "",
+    isLoading = false
+}: AstViewRendererProps) => {
+
+    const ViewComponent = getViewComponent(viewId);
+
+    if (!ViewComponent) {
+        return null;
+    }
+
+    return (
+        <div className={className}>
+            <ViewComponent data={ast} isLoading={isLoading} />
+        </div>
+    );
+};
+
+
+
+interface ViewRendererProps {
+    data: any;
+    requestedViewId?: ViewId | "default";
+    coordinatorId?: string;
+    className?: string;
+    isLoading?: boolean;
+}
+
+
+export const ViewRenderer = ({
+    coordinatorId,
+    requestedViewId = "default",
+    data,
+    className = "",
+    isLoading = false
+}: ViewRendererProps) => {
+
+    let viewIdToUse: ViewId;
+    
+    if (requestedViewId !== "default") {
+        viewIdToUse = requestedViewId as ViewId;
+    } else if (coordinatorId) {
+        viewIdToUse = getDefaultViewId(coordinatorId) as ViewId;
+    } else {
+        return null; // Cannot determine which view to use
+    }
+
+    const ViewComponent = getViewComponent(viewIdToUse);
+    
+    if (!ViewComponent) {
+        return null;
+    }
+
+    return (
+        <div className={className}>
+            <ViewComponent data={data} isLoading={isLoading} />
+        </div>
+    );
+};
+
 
 export default ViewRenderer; 

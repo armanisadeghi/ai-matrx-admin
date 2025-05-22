@@ -31,6 +31,8 @@ interface AppletRunComponentProps {
     isPreview?: boolean;
     allowSubmit?: boolean;
     isFullScreenPreview?: boolean;
+    responseLayoutTypeOverride?: AppletLayoutOption;
+    coordinatorOverride?: string;
 }
 
 export default function AppletRunComponent({
@@ -40,6 +42,8 @@ export default function AppletRunComponent({
     isPreview,
     allowSubmit = true,
     isFullScreenPreview = false,
+    responseLayoutTypeOverride = "flat-accordion",
+    coordinatorOverride = "default",
 }: AppletRunComponentProps) {
     const dispatch = useAppDispatch();
     const isAppInitialized = useAppSelector(selectAppRuntimeIsInitialized);
@@ -118,8 +122,8 @@ export default function AppletRunComponent({
                     taskId={taskId}
                     handleSubmit={handleSubmit}
                     coordinatorId={coordinatorId}
-                    layoutTypeOverride={layoutTypeOverride}
                     isPreview={isPreview}
+                    responseLayoutTypeOverride={responseLayoutTypeOverride}
                 />
             )}
         </div>

@@ -73,7 +73,11 @@ function extractTitleAndText(paragraph: AstNode): { title: string; text: string 
 
     return {
         title: title, // Empty string if no strong text
-        text: text || extractText(paragraph).replace(/^[-\s:]+/, "").trim(),
+        text:
+            text ||
+            extractText(paragraph)
+                .replace(/^[-\s:]+/, "")
+                .trim(),
     };
 }
 
@@ -109,9 +113,13 @@ interface IntroOutroListProcessorInput {
 }
 
 export function introOutroListProcessor({ ast, config }: IntroOutroListProcessorInput): OutputContent {
-    if (config) {
-        console.warn("IntroOutroListProcessor Does NOT use configs but a config was provided. Config was: ", JSON.stringify(config, null, 2));
+    if (config && Object.keys(config).length > 0) {
+        console.warn(
+            "IntroOutroListProcessor Does NOT use configs but a config was provided. Config was: ",
+            JSON.stringify(config, null, 2)
+        );
     }
+
     const output: OutputContent = {
         intro: { title: "", text: "" },
         items: [],

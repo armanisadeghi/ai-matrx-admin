@@ -135,8 +135,8 @@ const SECTIONED_LIST_DEFINITION: CoordinatorDefinition = {
     rawProcessor: "ast",
     processor: "sectioned-list",
     config: null,
-    defaultView: "keyPointsNestedList",
-    availableViews: ["introOutroList", "keyPointsNestedList", "keyPoints", "dynamic"],
+    defaultView: "travelGuide",
+    availableViews: ["travelGuide", "introOutroList", "keyPointsNestedList", "keyPoints", "dynamic"],
     sampleData: ["gptSectionedList"],
 };
 
@@ -145,7 +145,7 @@ const DYNAMIC_DEFINITION: CoordinatorDefinition = {
     label: "Dynamic",
     description: "Dynamic configuration for parsing markdown",
     rawProcessor: "ast",
-    processor: "sectioned-list",
+    processor: "combined-processor",
     config: null,
     defaultView: "dynamic",
     availableViews: [
@@ -160,7 +160,7 @@ const DYNAMIC_DEFINITION: CoordinatorDefinition = {
         "keyPoints",
         "travelGuide",
     ],
-    sampleData: ["dynamic"],
+    sampleData: ["appDescription"],
 };
 
 const COORDINATOR_DEFINITIONS = [
@@ -173,6 +173,7 @@ const COORDINATOR_DEFINITIONS = [
     GROK_SEO_DEFINITION,
     GPT_SEO_DEFINITION,
     SECTIONED_LIST_DEFINITION,
+    DYNAMIC_DEFINITION,
 ];
 
 export const getCoordinatorSelectOptions = () => {

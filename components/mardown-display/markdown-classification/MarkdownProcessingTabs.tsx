@@ -1,9 +1,8 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent, Button, InlineCopyButton } from "@/components/ui";
-import RawJsonExplorer from "@/components/official/json-explorer/RawJsonExplorer";
 import ProcessorExtractor from "@/components/official/processor-extractor/ProcessorExtractor";
-import { ViewRenderer } from "@/components/mardown-display/markdown-classification/custom-views/ViewRenderer";
+import { ViewRenderer, AstViewRenderer } from "@/components/mardown-display/markdown-classification/custom-views/ViewRenderer";
 import { getCoordinatorConfig } from "@/components/mardown-display/markdown-classification/markdown-coordinator";
 import { ViewId } from "./custom-views/view-registry";
 import { AstNode } from "./processors/types";
@@ -34,6 +33,8 @@ const MarkdownProcessingTabs = ({
     const coordinator = getCoordinatorConfig(selectedCoordinatorId);
     const defaultViewId = coordinator?.defaultView || "dynamic" as ViewId;
     const availableViews = coordinator?.availableViews || [];
+
+    const isDirectAstRenderer = selectedViewId === "astRenderer" || selectedViewId === "modernAstRenderer";
 
     return (
         <div className="w-2/3 flex flex-col">
@@ -87,7 +88,7 @@ const MarkdownProcessingTabs = ({
                 <TabsContent value="processedJson" className="h-full overflow-auto flex-grow">
                     {processedData ? (
                         <div className="h-full">
-                            <RawJsonExplorer pageData={processedData} />
+                            <ProcessorExtractor jsonData={processedData} configKey={selectedCoordinatorId} />
                         </div>
                     ) : (
                         <p className="text-gray-500 dark:text-gray-400 m-2">Click "Parse Markdown" to see the processed JSON data.</p>
@@ -97,16 +98,25 @@ const MarkdownProcessingTabs = ({
 
                 {/* Tab 5: Structured View */}
                 <TabsContent value="structured" className="h-full overflow-auto p-0 flex-grow">
-                    {processedData ? (
-                        <ViewRenderer
-                            requestedViewId={selectedViewId || defaultViewId}
-                            availableViews={availableViews}
-                            defaultViewId={defaultViewId}
-                            data={processedData}
-                            coordinatorId={selectedCoordinatorId}
-                            className="h-full"
-                            isLoading={isLoading}
-                        />
+
+
+                    {processedData || ast ? (
+                        isDirectAstRenderer ? (
+                            <AstViewRenderer
+                                viewId={selectedViewId}
+                                ast={ast}
+                                className="h-full"
+                                isLoading={isLoading}
+                            />
+                        ) : (
+                            <ViewRenderer
+                                requestedViewId={selectedViewId || defaultViewId}
+                                data={processedData}
+                                coordinatorId={selectedCoordinatorId}
+                                className="h-full"
+                                isLoading={isLoading}
+                            />
+                        )
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full p-4 text-center">
                             <p className="text-gray-500 dark:text-gray-400 mb-4">Click "Parse Markdown" to see the structured view</p>

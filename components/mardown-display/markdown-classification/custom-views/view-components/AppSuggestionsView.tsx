@@ -196,7 +196,7 @@ export const AppSuggestionsLoading = () => {
       if (loadingStage < 3) {
         setLoadingStage(prev => prev + 1);
       }
-    }, 3000); // Switch stages every 3 seconds
+    }, 1500); // Switch stages every 1.5 seconds
     
     return () => clearTimeout(timer);
   }, [loadingStage]);
@@ -205,8 +205,13 @@ export const AppSuggestionsLoading = () => {
   const loadingStages = [
     "Analyzing requirements...",
     "Generating app suggestions...",
+    "Determiing unique App names...",
+    "Writing compelling descriptions...",
+    "Coming up with visual inspiration...",
     "Preparing branding options...",
-    "Finalizing recommendations..."
+    "Putting it all together...",
+    "Finalizing recommendations...",
+    "Genearting final output...",
   ];
   
   // Placeholder suggestions for the skeleton UI

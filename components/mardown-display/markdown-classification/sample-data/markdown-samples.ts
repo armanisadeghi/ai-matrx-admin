@@ -530,6 +530,73 @@ const gptSectionedList = `Perfect — thank you for the clear answers. Here's a 
 
 Would you like a **custom map with this route**, or hotel and food recommendations for each city? I can also provide **train booking links**, or help you optimize based on **specific interests** (e.g., art, hiking, nightlife, fashion, food). Just let me know.`;
 
+
+const mergedContentRandom = `# Random Merged Content Sample
+
+A wild mix of **styles** and *flavors* for testing Markdown parsing. Expect **bold chaos**, lists, and 🚀 flair.
+
+---
+
+## 🧭 Key Highlights
+
+**Nebula Inc – Starville, NV**  
+- **88-unit** project (**22 quantum, 66 classic**).
+- Upped metrics from **55% to 72%** in 10 weeks.
+- Hit **max sparkle** in spring; now **3 open nodes**.
+
+- **App Name:** StarSpinner  
+  - **Description:**  
+    An AI tool that spins *random ideas* into task lists. Speak your thoughts, and StarSpinner tags and schedules them.  
+  - **Image Description:**  
+    A coder at a glowing desk, tablet showing task grids. Neon cityscape outside, calm focus within.
+
+---
+
+### SEO Nuggets for 2026
+
+1. **Intent Over Keywords**  
+   - Answer *what* users seek with **E-E-A-T** (Expertise, Experience, Authoritativeness, Trust).  
+
+2. **Tech Tricks**  
+   - **Load Speed**: Target <1.5-second pages.  
+   - **Schema Markup**: Add *rich results* for events or reviews.
+
+---
+
+## Location & Vibes
+
+- Lives in **Starville, NV** (5 min from Nebula Inc).  
+- Open to gigs in **Moonbase, Skyloft**, but *never* Foggy Void.  
+- Ready to jetpack for the right role.
+
+---
+
+### 📱 App Ideas
+
+| App Name      | Purpose                           |
+|---------------|-----------------------------------|
+| **GlowQuest** | Turns voice notes to quests 🌟   |
+| **VibeCheck** | Logs moods with emoji maps 😺   |
+
+---
+
+**Reward Expectations**  
+- Base: **$88,888**  
+- Bonus: **6% of every starpoint** plus a free smoothie.  
+- Flexible for *cool projects*.
+
+---
+
+## 🛂 Travel Hack
+
+- **Stellar Pass**: 4 travel days in 1 month.  
+- Pack *minimal*: One satchel, one vision.  
+- Greet with *“Salutations!”* at warp gates.
+
+---
+
+**Quick Tip**: Monitor chaos with **Nebula Analytics**. Track clicks, vibes, and stardust daily.`;
+
 export const markdownSamples = {
     candidateProfileShort,
     candidateProfileFull,
@@ -542,6 +609,7 @@ export const markdownSamples = {
     claudeSample,
     grokSample,
     gptSectionedList,
+    mergedContentRandom,
 };
 
 /**

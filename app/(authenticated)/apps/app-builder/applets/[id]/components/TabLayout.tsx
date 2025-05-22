@@ -43,7 +43,7 @@ export default function TabLayout({ title, subtitle, tabs, id }: TabLayoutProps)
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         {/* Desktop Tabs */}
         <div className="border-b border-gray-200 dark:border-gray-700 hidden md:block">
-          <TabsList className="bg-transparent p-0 h-auto flex flex-wrap">
+          <TabsList className="bg-transparent p-0 h-auto flex flex-wrap justify-start">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.id}

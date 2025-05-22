@@ -51,17 +51,17 @@ const KeyPointsNestedListDisplay = ({ data }: KeyPointsDisplayProps) => {
             <div className="px-8 py-10 bg-gradient-to-r from-blue-500/90 via-indigo-500/90 to-violet-500/90 text-white">
                 <h1 className="text-3xl font-bold flex items-center gap-3">
                     <BookOpen size={28} className="text-amber-300" />
-                    {data.intro.title || "Key Points"}
+                    {data?.intro?.title || "Key Points"}
                 </h1>
                 <p className="mt-3 text-lg font-light opacity-90">
-                    <InlineMarkdownRenderer text={data.intro.text} className="text-white/90" />
+                    <InlineMarkdownRenderer text={data?.intro?.text || ""} className="text-white/90" />
                 </p>
             </div>
 
             {/* Content Items */}
             <div className="p-6 md:p-8 space-y-6">
-                {data.items.length > 0 ? (
-                    data.items.map((item) => {
+                {data?.items?.length > 0 ? (
+                    data?.items?.map((item) => {
                         const isArray = Array.isArray(item.text);
                         const isExpanded = expandedItems[item.id] || false;
                         const isActive = activeItem === item.id;
@@ -103,7 +103,7 @@ const KeyPointsNestedListDisplay = ({ data }: KeyPointsDisplayProps) => {
                                                         <p className="text-slate-600 dark:text-slate-400">
                                                             <InlineMarkdownRenderer text={item.text[0]} />
                                                         </p>
-                                                        {item.text.length > 1 && (
+                                                        {item?.text?.length > 1 && (
                                                             <>
                                                                 <div className={`space-y-2 pl-4 border-l-2 border-indigo-200 dark:border-indigo-800 ${
                                                                     isExpanded ? "" : "hidden"
@@ -160,14 +160,14 @@ const KeyPointsNestedListDisplay = ({ data }: KeyPointsDisplayProps) => {
             {data.outro && (data.outro.title || data.outro.text) && (
                 <div className="px-8 py-6 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700">
                     <div className="max-w-3xl mx-auto">
-                        {data.outro.title && (
+                        {data?.outro?.title && (
                             <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">
-                                <InlineMarkdownRenderer text={data.outro.title} />
+                                <InlineMarkdownRenderer text={data?.outro?.title} />
                             </h3>
                         )}
-                        {data.outro.text && (
+                        {data?.outro?.text && (
                             <p className="mt-2 text-slate-600 dark:text-slate-400">
-                                <InlineMarkdownRenderer text={data.outro.text} />
+                                <InlineMarkdownRenderer text={data?.outro?.text} />
                             </p>
                         )}
                     </div>
@@ -176,7 +176,7 @@ const KeyPointsNestedListDisplay = ({ data }: KeyPointsDisplayProps) => {
 
             {/* Footer */}
             <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 text-center text-slate-600 dark:text-slate-400 text-sm border-t border-slate-200 dark:border-slate-700">
-                <p>{data.items.length} Key Points • Focus on these for best results</p>
+                <p>{data?.items?.length || 0} Key Points • Focus on these for best results</p>
             </div>
         </div>
     );
@@ -383,7 +383,7 @@ export default function KeyPointsNestedListView({ data, isLoading = false }: Key
         }
 
         // Check for nested lists to enable special rendering if needed
-        const hasNestedLists = data.items.some(item => Array.isArray(item.text) && item.text.length > 1);
+        const hasNestedLists = data.items?.some(item => Array.isArray(item.text) && item.text.length > 1);
         const processedData = {
             ...data,
             hasNestedLists

@@ -142,7 +142,7 @@ const FullscreenMarkdownEditor = ({
             onClick={handleContentClick}
           >
             <div className="flex items-center justify-between p-2 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{triggerLabel || "Markdown Editor"}</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">{triggerLabel || "Content Processing & Classification"}</h2>
               <Button
                 variant="ghost" 
                 size="sm" 

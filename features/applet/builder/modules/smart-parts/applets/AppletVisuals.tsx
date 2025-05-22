@@ -141,7 +141,7 @@ export const AppletVisuals: React.FC<AppletVisualsProps> = ({ appletId, isNew = 
                         initialTab="public-search"
                         initialSearchTerm={appletName}
                         preselectedImageUrl={appletImageUrl}
-                        className="w-full"
+                        className="w-full max-w-md"
                         instanceId={`applet-image-${appletId}`}
                         saveTo="public"
                     />

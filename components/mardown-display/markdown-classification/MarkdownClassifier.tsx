@@ -16,7 +16,7 @@ import { getCoordinatorSelectOptions, getCoordinatorConfig, getSpecificViewCompo
 import MarkdownInput from './MarkdownInput';
 import MarkdownProcessingTabs from './MarkdownProcessingTabs';
 import { ViewId } from './custom-views/view-registry';
-import { prepareMarkdownForRendering } from './markdown-processing-utils';
+import { prepareMarkdownForRendering } from './usePrepareMarkdownForRendering';
 
 interface MarkdownClassifierProps {
   initialMarkdown?: string;

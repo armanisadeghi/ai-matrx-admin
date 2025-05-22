@@ -267,7 +267,7 @@ export default function AppletViewPage({ params }: { params: Promise<{ id: strin
     },
     {
       id: 'datasource',
-      label: 'Data',
+      label: 'Data Sources',
       icon: <Database className="h-4 w-4" />,
       content: <DataSourceTab appletId={applet.id} />,
     },

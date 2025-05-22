@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import { getCoordinatorConfig } from "../markdown-coordinator";
 
 export type ViewId =
     | "candidateProfile"
@@ -10,7 +11,9 @@ export type ViewId =
     | "keyPoints"
     | "introOutroList"
     | "keyPointsNestedList"
-    | "travelGuide";
+    | "travelGuide"
+    | "astRenderer"
+    | "modernAstRenderer";
 
 export const viewComponents = {
     candidateProfileView: lazy(() => import("./view-components/CandidateProfileView")),
@@ -23,6 +26,8 @@ export const viewComponents = {
     introOutroListView: lazy(() => import("./view-components/IntroOutroListView")),
     keyPointsNestedListView: lazy(() => import("./view-components/KeyPointsNestedListView")),
     travelGuideView: lazy(() => import("./view-components/TravelGuideView")),
+    astRendererView: lazy(() => import("./view-components/AstRendererView")),
+    modernAstRendererView: lazy(() => import("./view-components/ModernAstRenderer")),
 };
 
 export interface ViewDefinition {
@@ -124,6 +129,25 @@ const DYNAMIC_VIEW_DEFINITION: ViewDefinition = {
     extractors: [],
 };
 
+const AST_RENDERER_VIEW_DEFINITION: ViewDefinition = {
+    id: "astRenderer",
+    label: "Ast Renderer",
+    description: "Ast Renderer",
+    component: viewComponents.astRendererView,
+    extractors: [],
+};
+
+
+const MODERN_AST_RENDERER_VIEW_DEFINITION: ViewDefinition = {
+    id: "modernAstRenderer",
+    label: "Modern Ast Renderer",
+    description: "Modern Ast Renderer",
+    component: viewComponents.modernAstRendererView,
+    extractors: [],
+};
+
+
+
 export const VIEW_DEFINITIONS = {
     CANDIDATE_PROFILE_VIEW_DEFINITION,
     CANDIDATE_PROFILE_COLLAPSIBLE_VIEW_DEFINITION,
@@ -135,6 +159,8 @@ export const VIEW_DEFINITIONS = {
     INTRO_OUTRO_LIST_VIEW_DEFINITION,
     KEY_POINTS_NESTED_LIST_VIEW_DEFINITION,
     TRAVEL_GUIDE_VIEW_DEFINITION,
+    AST_RENDERER_VIEW_DEFINITION,
+    MODERN_AST_RENDERER_VIEW_DEFINITION,
 };
 
 export const getViewSelectOptions = () => {
@@ -155,26 +181,12 @@ export const hasExtractors = (viewId: ViewId) => {
     return view ? view.extractors.length > 0 : false;
 };
 
-export const getDefaultViewId = (): ViewId => "dynamic";
-
-export const resolveView = (requestedViewId: ViewId | undefined, availableViews: ViewId[], defaultViewId: ViewId) => {
-    // Start with either the requested view or the default view
-    let resolvedViewId = requestedViewId || defaultViewId;
-
-    if (!availableViews.includes(resolvedViewId)) {
-        console.warn(`View ID ${resolvedViewId} not in available views. Falling back to first available view.`);
-        resolvedViewId = availableViews.length > 0 ? availableViews[0] : "dynamic";
-    }
-
-    // Get the component for this view ID
-    const component = getViewComponent(resolvedViewId);
-    
-    if (!component) {
-        console.error(`No component found for view ID: ${resolvedViewId}`);
-    }
-    
-    return {
-        component,
-        resolvedViewId,
-    };
+export const getDefaultViewId = (coordinatorId: string): ViewId => {
+    const coordinator = getCoordinatorConfig(coordinatorId);
+    return coordinator ? coordinator.defaultView : "dynamic";
 };
+
+export const getDefaultViewComponent = (coordinatorId: string) => {
+    return getViewComponent(getDefaultViewId(coordinatorId));
+};
+

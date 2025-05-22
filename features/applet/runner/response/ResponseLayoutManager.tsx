@@ -19,7 +19,7 @@ interface ResponseLayoutManagerProps {
     coordinatorId: string;
     handleSubmit: () => void;
     isPreview?: boolean;
-    layoutTypeOverride?: AppletLayoutOption;
+    responseLayoutTypeOverride?: AppletLayoutOption;
 }
 
 export default function ResponseLayoutManager({
@@ -29,7 +29,7 @@ export default function ResponseLayoutManager({
     coordinatorId,
     handleSubmit,
     isPreview = false,
-    layoutTypeOverride = "flat-accordion",
+    responseLayoutTypeOverride = "flat-accordion",
 }: ResponseLayoutManagerProps) {
     const dispatch = useAppDispatch();
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
@@ -75,7 +75,7 @@ export default function ResponseLayoutManager({
             <AppletLayoutManager
                 appletId={appletId}
                 appSlug={appSlug}
-                layoutTypeOverride={layoutTypeOverride}
+                layoutTypeOverride={responseLayoutTypeOverride}
                 initialExpanded={false}
                 handleSubmit={handleSubmit}
                 isPreview={isPreview}

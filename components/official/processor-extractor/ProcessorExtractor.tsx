@@ -6,7 +6,6 @@ import {
   processDataWithHiddenPaths, 
   normalizeHiddenPaths, 
   isPathHidden as checkPathHidden, 
-   
 } from "./utils/hidden-path-utils";
 import { extractValueByPath } from "./utils/wildcard-utils";
 import { Button } from "@/components/ui/ButtonMine";
