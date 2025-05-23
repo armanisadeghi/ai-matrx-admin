@@ -1,15 +1,18 @@
-// parser.ts
-
 import { parseMarkdownTable } from "./parse-markdown-table";
 
 export interface ListItem {
     name: string;
-    children?: ListItem[]; // sub-items
+    children?: ListItem[];
 }
 
 export interface CodeBlock {
-    language: string; // e.g., "ts", "js", "python"
+    language: string;
     content: string;
+}
+
+export interface JsonBlock {
+    [key: string]: any; // Parsed JSON (object, array, primitive, or null)
+    parseError?: string; // Optional error message if parsing fails
 }
 
 export interface Section {
@@ -18,6 +21,7 @@ export interface Section {
     items: ListItem[];
     tables: { title: string; data: any }[];
     codeBlocks: CodeBlock[];
+    jsonBlocks: JsonBlock[];
     outro: string;
 }
 
@@ -28,7 +32,6 @@ export interface ParsedContent {
 }
 
 export function separatedMarkdownParser(markdown: string): ParsedContent {
-    // Split into lines
     const allLines = markdown.split("\n");
     const isHeading = (line: string) => /^#{1,3}\s+/.test(line.trim());
     const isBoldHeading = (line: string) => /^\*\*[^*]+\*\*$/.test(line.trim());
@@ -36,29 +39,26 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
     const isListItem = (line: string) => /^[*\-]\s+/.test(line.trim()) || /^\d+\.\s+/.test(line.trim());
     const extractBold = (text: string) => text.replace(/\*\*(.*?)\*\*/g, "$1");
 
-    // Final results
     let intro = "";
     let sections: Section[] = [];
     let outro = "";
 
-    // State
     let currentSection: Section | null = null;
-    let hasSeenFirstItem = false; // used to separate a section's intro vs. outro
-    let collectingIntro = true; // top-level intro until the first heading/divider
-    let collectingOutro = false; // after final heading or divider
+    let hasSeenFirstItem = false;
+    let collectingIntro = true;
+    let collectingOutro = false;
     let inCodeBlock = false;
     let codeBlockContent: string[] = [];
-    let codeBlockLanguage = "plaintext"; // Default to plaintext if no language is specified
+    let codeBlockLanguage = "plaintext";
 
-    // Helper: finalize (push) the current section
     function finalizeSection() {
-        if (currentSection) {
-            if (!currentSection.items) {
-                currentSection.items = [];
-            }
+        if (currentSection && (currentSection.intro || currentSection.outro || currentSection.items.length || currentSection.tables.length || currentSection.codeBlocks.length || currentSection.jsonBlocks.length)) {
+            if (!currentSection.items) currentSection.items = [];
+            if (!currentSection.codeBlocks) currentSection.codeBlocks = [];
+            if (!currentSection.jsonBlocks) currentSection.jsonBlocks = [];
             sections.push(currentSection);
-            currentSection = null;
         }
+        currentSection = null;
         hasSeenFirstItem = false;
     }
 
@@ -69,31 +69,40 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
 
         if (trimmed.startsWith("```")) {
             if (inCodeBlock) {
-                // End of code block: finalize and store it
                 const codeContent = codeBlockContent.join("\n");
                 if (!currentSection) {
-                    // Create a standalone section for the code
                     currentSection = {
                         title: "Code Block",
                         intro: "",
                         items: [],
                         tables: [],
                         codeBlocks: [],
+                        jsonBlocks: [],
                         outro: "",
                     };
-                    sections.push(currentSection);
                 }
+
+                // Always store the raw content in codeBlocks
                 currentSection.codeBlocks.push({
                     language: codeBlockLanguage,
                     content: codeContent,
                 });
 
-                // Reset code block state
+                // If JSON, parse and store in jsonBlocks
+                if (codeBlockLanguage.toLowerCase() === "json") {
+                    let jsonBlock: JsonBlock = {};
+                    try {
+                        jsonBlock = JSON.parse(codeContent);
+                    } catch (error) {
+                        jsonBlock.parseError = error instanceof Error ? error.message : "Invalid JSON";
+                    }
+                    currentSection.jsonBlocks.push(jsonBlock);
+                }
+
                 inCodeBlock = false;
                 codeBlockContent = [];
                 codeBlockLanguage = "plaintext";
             } else {
-                // Start of a new code block
                 inCodeBlock = true;
                 codeBlockLanguage = trimmed.slice(3).trim() || "plaintext";
             }
@@ -101,15 +110,12 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
             continue;
         }
 
-        // If inside a code block, store lines
         if (inCodeBlock) {
             codeBlockContent.push(rawLine);
             i++;
             continue;
         }
 
-
-        // 1. Divider => finalize section
         if (isDivider(trimmed)) {
             finalizeSection();
             collectingIntro = false;
@@ -118,7 +124,6 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
             continue;
         }
 
-        // 2. Heading => finalize old section, create new
         if (isHeading(trimmed) || isBoldHeading(trimmed)) {
             finalizeSection();
             collectingIntro = false;
@@ -137,6 +142,7 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
                 items: [],
                 tables: [],
                 codeBlocks: [],
+                jsonBlocks: [],
                 outro: "",
             };
 
@@ -151,11 +157,10 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
                 tableLines.push(allLines[j]);
                 j++;
             }
-        
-            // Attempt to parse as table
+
             const tableBlock = tableLines.join("\n");
             const tableData = parseMarkdownTable(tableBlock);
-        
+
             if (tableData) {
                 if (!currentSection) {
                     currentSection = {
@@ -164,59 +169,46 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
                         items: [],
                         tables: [],
                         codeBlocks: [],
+                        jsonBlocks: [],
                         outro: "",
                     };
-                    sections.push(currentSection);
                 }
-        
+
                 const alreadyExists = currentSection.tables.some(
                     (table) => JSON.stringify(table.data) === JSON.stringify(tableData)
                 );
-        
+
                 if (!alreadyExists) {
                     currentSection.tables.push({
                         title: currentSection.title,
                         data: tableData,
                     });
                 }
-        
+
                 i = j;
                 continue;
             }
         }
-        
-        // 4. If this line is a list item, parse the entire list block
+
         if (isListItem(rawLine)) {
             if (!currentSection) {
-                // top-level list => might be part of intro or outro
                 if (collectingIntro) {
-                    // Use parseListBlock to gather all consecutive list lines
                     const [parsedList, linesConsumed] = parseListBlock(allLines, i, extractBold);
-                    // Flatten them into the 'intro' text if you prefer, or skip that.
-                    // For example, you could just append bullet lines to intro:
                     parsedList.forEach((item) => {
                         intro += (intro ? "\n" : "") + item.name;
-                        // If item.children exist, you'd need to flatten them to text
-                        // or handle them differently. Up to you.
                     });
-
                     i += linesConsumed;
                     continue;
                 } else if (collectingOutro) {
-                    // Similarly for outro
                     const [parsedList, linesConsumed] = parseListBlock(allLines, i, extractBold);
                     parsedList.forEach((item) => {
                         outro += (outro ? "\n" : "") + item.name;
-                        // Flatten or store children, depending on your preference
                     });
-
                     i += linesConsumed;
                     continue;
                 }
             } else {
-                // We are in a section: parse the entire sub-list
                 const [parsedListItems, linesConsumed] = parseListBlock(allLines, i, extractBold);
-                // push them into currentSection.items
                 currentSection.items.push(...parsedListItems);
                 hasSeenFirstItem = true;
                 i += linesConsumed;
@@ -224,9 +216,7 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
             }
         }
 
-        // 5. Plain text
         if (!currentSection) {
-            // not in any section => global intro or outro
             if (collectingIntro) {
                 if (trimmed.length) {
                     intro += (intro ? "\n" : "") + extractBold(trimmed);
@@ -238,9 +228,7 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
                 }
             }
         } else {
-            // within a section
             if (!hasSeenFirstItem) {
-                // goes into section intro
                 if (trimmed.length) {
                     if (currentSection.intro) {
                         currentSection.intro += " ";
@@ -248,7 +236,6 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
                     currentSection.intro += extractBold(trimmed);
                 }
             } else {
-                // goes into section outro
                 if (trimmed.length) {
                     if (currentSection.outro) {
                         currentSection.outro += " ";
@@ -261,18 +248,14 @@ export function separatedMarkdownParser(markdown: string): ParsedContent {
         i++;
     }
 
-    // Finalize the last section if still open
     finalizeSection();
 
     return {
         intro: intro.trim(),
-        sections,
+        sections: sections.filter((section): section is Section => section !== null),
         outro: outro.trim(),
     };
 }
-
-// The same parseListBlock() function, placed below or imported from a separate file.
-// Just make sure it references the same "isListItem" and "extractBold" logic:
 
 function parseListBlock(lines: string[], startIndex: number, extractBold: (text: string) => string): [ListItem[], number] {
     const items: ListItem[] = [];
@@ -329,7 +312,6 @@ function parseListBlock(lines: string[], startIndex: number, extractBold: (text:
     return [items ?? [], i - startIndex];
 }
 
-// Re-use the same check from the main parser if you like
 function isListItem(line: string): boolean {
     const t = line.trim();
     return /^[*\-]\s+/.test(t) || /^\d+\.\s+/.test(t);
