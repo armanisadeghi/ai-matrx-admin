@@ -18,20 +18,6 @@ import MarkdownRenderer from "./MarkdownRenderer";
 
 const EventComponent = dynamic(() => import("@/components/brokers/output/EventComponent"), { ssr: false });
 
-const CONTENT_TYPES = {
-    markdown: (content) => {
-        return /(?:\*\*|\#|\-\s|\[.+\]\(.+\)|\|.*\|)/.test(content);
-    },
-    json: (content) => {
-        try {
-            JSON.parse(content);
-            return true;
-        } catch {
-            return false;
-        }
-    },
-};
-
 const VIEW_MODES = {
     raw: {
         icon: Baseline,
