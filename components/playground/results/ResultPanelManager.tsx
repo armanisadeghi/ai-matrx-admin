@@ -22,7 +22,7 @@ export function ResultPanelManager({ cockpitControls: playgroundControls }: Resu
         renderPanel,
         responseFormats
     } = usePanelSystem({
-        defaultView: 'text',
+        defaultView: 'markdown',
         onViewChange: (view) => {
         }
     });
