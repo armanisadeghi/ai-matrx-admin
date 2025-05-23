@@ -10,11 +10,13 @@ import {
     DropdownMenuPortal,
     DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
-import { ChevronLeft, Crown } from "lucide-react";
+import { ChevronLeft, Crown, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { adminNavigationLinks } from "@/constants/navigation-links";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { cn } from "@/styles/themes/utils";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { selectIsOverlayOpen, toggleOverlay } from "@/lib/redux/slices/overlaySlice";
 
 // Custom SubTrigger without the right chevron
 const CustomSubTrigger = React.forwardRef<
@@ -45,7 +47,14 @@ interface AdminMenuProps {
 }
 
 export const AdminMenu: React.FC<AdminMenuProps> = ({ isAdmin, itemClassName }) => {
+    const dispatch = useAppDispatch();
+    const isAdminIndicatorOpen = useAppSelector((state) => selectIsOverlayOpen(state, "adminIndicator"));
+
     if (!isAdmin) return null;
+
+    const handleToggleAdminIndicator = () => {
+        dispatch(toggleOverlay({ overlayId: "adminIndicator" }));
+    };
 
     return (
         <>
@@ -53,6 +62,22 @@ export const AdminMenu: React.FC<AdminMenuProps> = ({ isAdmin, itemClassName }) 
             <div className="px-2 py-1">
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Admin</span>
             </div>
+
+            {/* Admin Indicator Toggle */}
+            <DropdownMenuItem onClick={handleToggleAdminIndicator}>
+                <div className={`flex items-center gap-3 w-full px-2 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${itemClassName}`}>
+                    <div className="w-5 h-5 flex items-center justify-center">
+                        {isAdminIndicatorOpen ? (
+                            <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        ) : (
+                            <EyeOff className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                        )}
+                    </div>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                        {isAdminIndicatorOpen ? "Hide" : "Show"} Admin Indicator
+                    </span>
+                </div>
+            </DropdownMenuItem>
 
             {/* Group admin links by category */}
             {(() => {
