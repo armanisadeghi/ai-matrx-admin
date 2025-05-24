@@ -26,7 +26,7 @@ import { PanelConfig } from "./types";
 import { lazy } from "react";
 
 // Import the new dynamic panel system
-import { createDynamicPanelWrapper } from './DynamicPanelRender';
+import { createDynamicPanelWrapper } from "./DynamicPanelRender";
 
 // Import the actual rendering components
 import EnhancedMarkdownCard from "@/components/mardown-display/EnhancedMarkdownCard";
@@ -41,44 +41,41 @@ import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 const EventComponent = lazy(() => import("@/components/brokers/output/EventComponent"));
 
 // Create panel components using the new dynamic system
-const RawTextPanel = createDynamicPanelWrapper(
-    ({ content }: { content: string }) => (
-        <pre className="p-4 whitespace-pre-wrap overflow-y-auto font-mono text-sm h-full">{content}</pre>
-    )
-);
+const RawTextPanel = createDynamicPanelWrapper(({ content }: { content: string }) => (
+    <pre className="p-4 whitespace-pre-wrap overflow-y-auto font-mono text-sm h-full">{content}</pre>
+));
 
 const EnhancedMarkdownCardPanel = createDynamicPanelWrapper(
-    ({ content: parsed, ...props }: { content: any; [key: string]: any }) => (
-        <EnhancedMarkdownCard parsed={parsed} {...props} />
-    ),
-    'enhanced',
+    ({ content: parsed, ...props }: { content: any; [key: string]: any }) => <EnhancedMarkdownCard parsed={parsed} {...props} />,
+    "enhanced",
     { theme: "professional", fontSize: 16, className: "" }
 );
 
 const MultiSectionMarkdownCardPanel = createDynamicPanelWrapper(
-    ({ content: parsed, ...props }: { content: any; [key: string]: any }) => (
-        <MultiSectionMarkdownCard parsed={parsed} {...props} />
-    ),
-    'separated',
+    ({ content: parsed, ...props }: { content: any; [key: string]: any }) => <MultiSectionMarkdownCard parsed={parsed} {...props} />,
+    "separated",
     { theme: "professional", fontSize: 16, className: "" }
 );
 
 const EventComponentPanel = createDynamicPanelWrapper(
     ({ content }: { content: any }) => <EventComponent sections={content.sections} tables={[]} />,
-    'markdownContent'
+    "markdownContent"
 );
 
-const QuestionnaireRendererPanel = createDynamicPanelWrapper(    ({ content: data }: { content: any }) => (        <QuestionnaireRenderer data={data} theme="professional" />    ),    'separated');
+const QuestionnaireRendererPanel = createDynamicPanelWrapper(
+    ({ content: data }: { content: any }) => <QuestionnaireRenderer data={data} theme="professional" />,
+    "separated"
+);
 
 const JsonDisplayStructuredPanel = createDynamicPanelWrapper(
     ({ content }: { content: string }) => (
-        <JsonDisplay 
-            content={content} 
+        <JsonDisplay
+            content={content}
             parseFunction={(content: string) => {
                 // Import and use the parser directly since we need the original parseFunction interface
-                const { separatedMarkdownParser } = require('@/components/mardown-display/parser-separated');
+                    const { separatedMarkdownParser } = require("@/components/mardown-display/markdown-classification/processors/custom/parser-separated");
                 return separatedMarkdownParser(content);
-            }} 
+            }}
         />
     )
     // No parser = raw content, JsonDisplay handles parsing internally
@@ -86,13 +83,13 @@ const JsonDisplayStructuredPanel = createDynamicPanelWrapper(
 
 const JsonDisplayParsedPanel = createDynamicPanelWrapper(
     ({ content }: { content: string }) => (
-        <JsonDisplay 
-            content={content} 
+        <JsonDisplay
+            content={content}
             parseFunction={(content: string) => {
                 // Import and use the parser directly
-                const { parseMarkdownContent } = require('@/components/brokers/output/markdown-utils');
-                return parseMarkdownContent(content);
-            }} 
+                const { parseMarkdownSimple } = require("@/components/mardown-display/markdown-classification/processors/custom/simple-markdown-parser");
+                return parseMarkdownSimple(content);
+            }}
         />
     )
     // No parser = raw content, JsonDisplay handles parsing internally
@@ -110,9 +107,9 @@ const CandidateProfileBlockPanel = createDynamicPanelWrapper(
 const ParseExtractorOptionsPanel = createDynamicPanelWrapper(
     ({ content }: { content: string }) => {
         // Import the actual parser functions
-        const { parseMarkdownContent } = require('@/components/brokers/output/markdown-utils');
-        const { separatedMarkdownParser } = require('@/components/mardown-display/parser-separated');
-        
+        const { parseMarkdownContent } = require("@/components/brokers/output/markdown-utils");
+        const { separatedMarkdownParser } = require("@/components/mardown-display/parser-separated");
+
         return (
             <ParseExtractorOptions
                 content={content}
@@ -274,5 +271,4 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
         value: "image",
         defaultProps: {},
     },
-
 };
