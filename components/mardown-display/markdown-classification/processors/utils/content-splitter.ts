@@ -1,5 +1,14 @@
-import { ContentBlock } from "../EnhancedChatMarkdown";
 import { getMetadataFromText, MATRX_PATTERN, MatrxMetadata } from "@/features/rich-text-editor/utils/patternUtils";
+
+export interface ContentBlock {
+    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | string;
+    content: string;
+    language?: string;
+    src?: string;
+    alt?: string;
+    metadata?: any;
+}
+
 
 export const splitContentIntoBlocks = (mdContent: string): ContentBlock[] => {
     const blocks: ContentBlock[] = [];

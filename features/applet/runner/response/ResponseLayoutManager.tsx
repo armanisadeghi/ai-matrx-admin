@@ -3,7 +3,7 @@
 import React, { useMemo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { selectTaskFirstListenerId } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
-import { selectResponseTextByListenerId, selectResponseEndedByListenerId } from "@/lib/redux/socket-io";
+import { selectResponseTextByListenerId, selectResponseEndedByListenerId, selectResponseDataByListenerId } from "@/lib/redux/socket-io";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
@@ -35,6 +35,7 @@ export default function ResponseLayoutManager({
     const dispatch = useAppDispatch();
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
     const textResponse = useAppSelector(selectResponseTextByListenerId(firstListenerId));
+    const dataResponse = useAppSelector(selectResponseDataByListenerId(firstListenerId));
     const isTaskComplete = useAppSelector(selectResponseEndedByListenerId(firstListenerId));
     const hasCustomView = useMemo(() => hasCoordinator(coordinatorId), [coordinatorId]);
 
@@ -107,7 +108,7 @@ export default function ResponseLayoutManager({
                     </div>
                     {isTaskComplete && (
                         <div className="w-full max-w-4xl mx-auto px-4">
-                            <AppletPostActionButtons appletId={appletId} content={textResponse} />
+                            <AppletPostActionButtons appletId={appletId} content={textResponse} data={dataResponse} />
                         </div>
                     )}
                 </FullscreenWrapper>

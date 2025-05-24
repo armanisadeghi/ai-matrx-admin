@@ -1,4 +1,4 @@
-import { MarkdownTableData } from "../../types";
+import { MarkdownTableData } from "../../../types";
 
 
 

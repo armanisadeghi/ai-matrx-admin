@@ -35,14 +35,14 @@ export const selectTaskStatus = createSelector(
 
 export const selectListenerIdsByTaskId = createSelector(
     [selectAllTasks, (_, taskId: string) => taskId],
-    (tasks, taskId) => tasks[taskId]?.listenerIds || []
+    (tasks, taskId) => tasks[taskId]?.listenerIds
 );
 
 export const selectTaskListenerIds = createSelector(
     [selectAllTasks, (_, taskId: string) => taskId],
     (tasks, taskId) => {
         const task = tasks[taskId];
-        return task?.listenerIds || [];
+        return task?.listenerIds;
     }
 );
 
@@ -93,19 +93,20 @@ export const selectTaskDataById = createSelector(
     [selectAllTasks, (_, taskId: string) => taskId],
     (tasks, taskId) => {
         const task = tasks[taskId];
-        return task?.taskData || {};
+        return task?.taskData;
     }
 );
 
+// Properly memoized validation state - only creates new object when values actually change
 export const selectTaskValidationState = createSelector(
-    [selectAllTasks, (_, taskId: string) => taskId],
-    (tasks, taskId) => {
-        const task = tasks[taskId];
-        return {
-            isValid: task?.isValid || false,
-            validationErrors: task?.validationErrors || [],
-        };
-    }
+    [
+        (state: RootState, taskId: string) => selectAllTasks(state)[taskId]?.isValid,
+        (state: RootState, taskId: string) => selectAllTasks(state)[taskId]?.validationErrors,
+    ],
+    (isValid, validationErrors) => ({
+        isValid: isValid || false,
+        validationErrors: validationErrors || [],
+    })
 );
 
 export const selectTasksByConnectionId = createSelector(

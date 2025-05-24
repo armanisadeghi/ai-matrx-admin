@@ -11,7 +11,7 @@ import ImageBlock from "./ImageBlock";
 import TranscriptBlock from "@/components/mardown-display/blocks/transcripts/TranscriptBlock";
 import TasksBlock from "@/components/mardown-display/blocks/tasks/TasksBlock";
 import { MarkdownAnalysisData } from "./analyzer/types";
-import { splitContentIntoBlocks } from "./utils/content-splitter";
+import { ContentBlock, splitContentIntoBlocks } from "../markdown-classification/processors/utils/content-splitter";
 import StructuredPlanBlock from "@/components/mardown-display/blocks/plan/StructuredPlanBlock";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import MatrxBrokerBlock from "../blocks/brokers/MatrxBrokerBlock";
@@ -28,14 +28,6 @@ interface ChatMarkdownDisplayProps {
     allowFullScreenEditor?: boolean;
 }
 
-export interface ContentBlock {
-    type: "text" | "code" | "table" | "thinking" | "image" | "tasks" | "transcript" | "structured_info" | "matrxBroker" | string;
-    content: string;
-    language?: string;
-    src?: string;
-    alt?: string;
-    metadata?: any;
-}
 
 const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     content,

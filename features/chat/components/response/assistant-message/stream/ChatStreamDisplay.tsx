@@ -6,7 +6,7 @@ import { cn } from "@/styles/themes/utils";
 import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
-import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";
+import { parseTaggedContent } from "@/components/mardown-display/markdown-classification/processors/utils/thinking-parser";
 import ThinkingVisualization from "@/components/mardown-display/chat-markdown/ThinkingVisualization";
 import { RootState } from "@/lib/redux/store";
 import ControlledLoadingIndicator from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";

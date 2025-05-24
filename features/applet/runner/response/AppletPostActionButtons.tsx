@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { MessageSquare, Edit3, Sparkles, Share2, Copy, ChevronDown } from "lucide-react";
-import { copyToClipboard } from "../../../../components/matrx/buttons/markdown-copy-utils";
+import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils";
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
 import { FileText } from "lucide-react";
@@ -12,9 +12,10 @@ interface AppletPostActionButtonsProps {
     appletId: string;
     className?: string;
     content?: string;
+    data?: any;
 }
 
-export default function AppletPostActionButtons({ appletId, className = "", content = "" }: AppletPostActionButtonsProps) {
+export default function AppletPostActionButtons({ appletId, className = "", content = "", data = {} }: AppletPostActionButtonsProps) {
     const router = useRouter();
     const [showReviseModal, setShowReviseModal] = useState(false);
     const [reviseComments, setReviseComments] = useState("");
@@ -22,7 +23,18 @@ export default function AppletPostActionButtons({ appletId, className = "", cont
     const [copied, setCopied] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState("below");
     const copyButtonRef = useRef<HTMLButtonElement>(null);
+    const [routePath, setRoutePath] = useState("/chat/");
     
+
+    useEffect(() => {
+        console.log("data", data);
+        if (data[0].conversation_id) {
+            setRoutePath(`/chat/${data[0].conversation_id}`);
+        }
+    }, [data]);
+
+
+
     // Check viewport constraints when showing copy options
     useEffect(() => {
         if (showCopyOptions && copyButtonRef.current) {
@@ -38,7 +50,7 @@ export default function AppletPostActionButtons({ appletId, className = "", cont
     }, [showCopyOptions]);
 
     const handleImproveInChat = () => {
-        router.push("/chat/");
+        router.push(routePath);
     };
 
     const handleReviseSubmit = () => {
