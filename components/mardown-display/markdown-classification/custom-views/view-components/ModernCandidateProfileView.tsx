@@ -7,12 +7,20 @@ import FlexibleLoadingComponent from '@/components/mardown-display/markdown-clas
 const CandidateProfileWithCollapseDisplay = ({ data }) => {
   // Handle missing or malformed data gracefully
   const extracted = data?.extracted || {};
-  const [expandedSection, setExpandedSection] = useState(null);
+  const [expandedSections, setExpandedSections] = useState(new Set(['experience-0']));
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
   
   const toggleSection = (section) => {
-    setExpandedSection(expandedSection === section ? null : section);
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(section)) {
+        newSet.delete(section);
+      } else {
+        newSet.add(section);
+      }
+      return newSet;
+    });
   };
 
   // Section icons mapping for better visual cues
@@ -26,7 +34,7 @@ const CandidateProfileWithCollapseDisplay = ({ data }) => {
   return (
     <div className="max-w-5xl mx-auto overflow-hidden rounded-xl shadow-xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-100 dark:border-slate-700">
       {/* Modern Gradient Header */}
-      <div className="px-8 py-10 bg-gradient-to-r from-indigo-500/90 via-purple-500/90 to-pink-500/90 text-white">
+      <div className="px-8 pt-5 pb-2 bg-gradient-to-r from-indigo-500/90 via-purple-500/90 to-pink-500/90 text-white">
         <h1 className="text-3xl font-bold">{extracted.name || 'Unnamed Candidate'}</h1>
         <p className="mt-3 text-lg font-light opacity-90">{extracted.intro || 'No introduction available'}</p>
       </div>
@@ -56,7 +64,7 @@ const CandidateProfileWithCollapseDisplay = ({ data }) => {
                       {experience.company || 'Unknown Company'}
                     </h3>
                     <span className="text-indigo-500 dark:text-indigo-400">
-                      {expandedSection === `experience-${index}` ? (
+                      {expandedSections.has(`experience-${index}`) ? (
                         <Minus size={20} strokeWidth={2.5} />
                       ) : (
                         <Plus size={20} strokeWidth={2.5} />
@@ -64,7 +72,7 @@ const CandidateProfileWithCollapseDisplay = ({ data }) => {
                     </span>
                   </div>
                   
-                  {expandedSection === `experience-${index}` && (
+                  {expandedSections.has(`experience-${index}`) && (
                     <div className="mt-4 pl-2 animate-fadeIn">
                       {experience.details && experience.details.length > 0 ? (
                         <ul className="space-y-3">
@@ -99,19 +107,19 @@ const CandidateProfileWithCollapseDisplay = ({ data }) => {
                 <div 
                   onClick={() => toggleSection(section)}
                   className={`flex justify-between items-center cursor-pointer p-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ${
-                    expandedSection === section 
+                    expandedSections.has(section) 
                       ? 'bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/30' 
                       : 'bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700'
                   }`}
                 >
                   <h2 className="text-lg font-medium flex items-center gap-2 text-slate-900 dark:text-white">
-                    <span className={expandedSection === section ? 'text-indigo-500' : 'text-slate-500 dark:text-slate-400'}>
+                    <span className={expandedSections.has(section) ? 'text-indigo-500' : 'text-slate-500 dark:text-slate-400'}>
                       {sectionIcons[section]}
                     </span>
                     {section.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </h2>
-                  <span className={expandedSection === section ? 'text-indigo-500' : 'text-slate-500 dark:text-slate-400'}>
-                    {expandedSection === section ? (
+                  <span className={expandedSections.has(section) ? 'text-indigo-500' : 'text-slate-500 dark:text-slate-400'}>
+                    {expandedSections.has(section) ? (
                       <Minus size={18} strokeWidth={2.5} />
                     ) : (
                       <Plus size={18} strokeWidth={2.5} />
@@ -119,7 +127,7 @@ const CandidateProfileWithCollapseDisplay = ({ data }) => {
                   </span>
                 </div>
                 
-                {expandedSection === section && (
+                {expandedSections.has(section) && (
                   <div className="p-4 rounded-xl bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 animate-fadeIn">
                     {hasData ? (
                       <ul className="space-y-3">
@@ -227,6 +235,9 @@ export default function CandidateProfileWithCollapseView({ data, isLoading = fal
         "Retrieving candidate data...",
         "Loading professional experience...",
         "Processing qualifications...",
+        "Organizing accomplishments...",
+        "Extracting key points...",
+        "Organizing key metrics...",
         "Finalizing profile view..."
       ]}
       placeholderItems={3}

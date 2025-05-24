@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Trash2, X, RefreshCw, Save, Unlink } from "lucide-react";
+import { Trash2, X, RefreshCw, Save, Unlink, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { addField, removeField } from "@/lib/redux/app-builder/slices/containerBuilderSlice";
@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 import { selectAppletContainers, selectAppletBrokerMappings, selectAllNeededBrokers, selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectContainerComparisonResult, selectDoContainersMatch, selectContainerComparisonDetails } from "@/lib/redux/app-builder/selectors/containerMatchSelectors";
 import ContainerComparisonModal from "./container-comparison/ContainerComparisonModal";
+import { useFieldAnalysis } from "@/features/applet/hooks/useFieldAnalysis";
 
 interface ContainerCardProps {
     containerId: string;
@@ -118,6 +119,10 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
     }, [containerId, dispatch]);
 
     const container = useAppSelector((state) => selectContainerById(state, containerId));
+
+    // Add field analysis to detect database vs container differences
+    const containerFields = container?.fields || [];
+    const fieldAnalysis = useFieldAnalysis(containerFields, allFields);
 
     const handleRemoveField = (fieldId: string, event: React.MouseEvent) => {
         event.stopPropagation(); // Prevent container selection
@@ -265,6 +270,18 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                             Compiled Version
                         </span>
                     )}
+                    {fieldAnalysis.fieldsDifferentFromCoreField.length > 0 && (
+                        <span className="text-xs bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 py-0.5 px-1.5 rounded-full">
+                            {fieldAnalysis.fieldsDifferentFromCoreField.length} field
+                            {fieldAnalysis.fieldsDifferentFromCoreField.length !== 1 ? 's' : ''} differ from database
+                        </span>
+                    )}
+                    {fieldAnalysis.dirtyCoreFieldsForOurFields.length > 0 && (
+                        <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 py-0.5 px-1.5 rounded-full">
+                            {fieldAnalysis.dirtyCoreFieldsForOurFields.length} database field
+                            {fieldAnalysis.dirtyCoreFieldsForOurFields.length !== 1 ? 's' : ''} modified
+                        </span>
+                    )}
                     <div className="flex items-center space-x-1 ml-auto">
                         {!containersMatch && !ignoreContainerMismatch && (
                             <ContainerComparisonModal
@@ -304,9 +321,14 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                 {container.fields && container.fields.length > 0 ? (
                     <div className="space-y-2 overflow-y-auto max-h-[940px] pr-1">
                         {container.fields.map((field) => {
-                            // Check if the field is dirty
+                            // Check if the field is dirty (unsaved changes)
                             const fieldFromState = allFields.find(f => f.id === field.id);
                             const isFieldDirty = fieldFromState?.isDirty;
+                            
+                            // Check if field differs from database version
+                            const hasDatabaseDifferences = fieldAnalysis.fieldsDifferentFromCoreField.some(f => f.id === field.id);
+                            const isDatabaseFieldDirty = fieldAnalysis.dirtyCoreFieldsForOurFields.some(f => f.id === field.id);
+                            const isFieldMissing = fieldAnalysis.fieldsNotInCoreFields.some(f => f.id === field.id);
                             
                             // Find the broker for this field
                             const brokerMapping = brokerMappings?.find(mapping => mapping.fieldId === field.id);
@@ -330,6 +352,21 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                                                     {isFieldDirty && (
                                                         <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 py-0.5 px-1.5 rounded-full flex-shrink-0">
                                                             Unsaved
+                                                        </span>
+                                                    )}
+                                                    {hasDatabaseDifferences && (
+                                                        <span className="ml-2 text-[10px] bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 py-0.5 px-1.5 rounded-full flex-shrink-0">
+                                                            Database Differs
+                                                        </span>
+                                                    )}
+                                                    {isDatabaseFieldDirty && (
+                                                        <span className="ml-2 text-[10px] bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 py-0.5 px-1.5 rounded-full flex-shrink-0">
+                                                            Database Modified
+                                                        </span>
+                                                    )}
+                                                    {isFieldMissing && (
+                                                        <span className="ml-2 text-[10px] bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-300 py-0.5 px-1.5 rounded-full flex-shrink-0">
+                                                            Missing in DB
                                                         </span>
                                                     )}
                                                 </div>
@@ -356,18 +393,32 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                                         </div>
                                         
                                         {/* ACTIONS SECTION */}
-                                        {isFieldDirty && (
-                                            <div className="flex items-center">
-                                                <button
-                                                    onClick={() => handleSaveField(field.id)}
-                                                    className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/20 text-green-500 dark:text-green-400"
-                                                    title="Save field"
-                                                >
-                                                    <Save className="h-3 w-3" />
-                                                </button>
-                                                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Save changes</span>
-                                            </div>
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                            {isFieldDirty && (
+                                                <div className="flex items-center">
+                                                    <button
+                                                        onClick={() => handleSaveField(field.id)}
+                                                        className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/20 text-green-500 dark:text-green-400"
+                                                        title="Save field"
+                                                    >
+                                                        <Save className="h-3 w-3" />
+                                                    </button>
+                                                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Save changes</span>
+                                                </div>
+                                            )}
+                                            {(hasDatabaseDifferences || isDatabaseFieldDirty) && (
+                                                <div className="flex items-center">
+                                                    <button
+                                                        onClick={() => handleRecompile()}
+                                                        className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-500 dark:text-blue-400"
+                                                        title="Recompile to get latest database version"
+                                                    >
+                                                        <RefreshCw className="h-3 w-3" />
+                                                    </button>
+                                                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Update from database</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             );

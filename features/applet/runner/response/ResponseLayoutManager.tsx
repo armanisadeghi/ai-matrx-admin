@@ -7,6 +7,7 @@ import { selectResponseTextByListenerId, selectResponseEndedByListenerId } from 
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullscreenWrapper from "@/components/matrx/FullscreenWrapper";
 import AppletLayoutManager from "@/features/applet/runner/layouts/AppletLayoutManager";
+import AppletPostActionButtons from "./AppletPostActionButtons";
 import { brokerActions } from "@/lib/redux/brokerSlice";
 import { hasCoordinator } from "@/components/mardown-display/markdown-classification/markdown-coordinator";
 import DirectMarkdownRenderer from "@/components/mardown-display/markdown-classification/DirectMarkdownRenderer";
@@ -71,7 +72,7 @@ export default function ResponseLayoutManager({
     }, [isTaskComplete, textResponse, dispatch, appletId]);
 
     return (
-        <div className="w-full overflow-y-auto px-2 h-full space-y-2 scrollbar-none">
+        <div className="w-full overflow-y-auto px-2 h-full space-y-2 scrollbar-none pb-12">
             <AppletLayoutManager
                 appletId={appletId}
                 appSlug={appSlug}
@@ -80,24 +81,37 @@ export default function ResponseLayoutManager({
                 handleSubmit={handleSubmit}
                 isPreview={isPreview}
             />
-            <FullscreenWrapper buttonPosition="top-right-inside" expandButtonTitle="View in fullscreen" closeButtonTitle="Exit fullscreen">
-                <div className="w-full max-w-4xl mx-auto p-4">
-                    {/* For regular markdown or non-custom views */}
-                    {!hasCustomView && <MarkdownRenderer content={textResponse} type="message" className="bg-slate-50 dark:bg-slate-900" />}
+            <div className="space-y-6">
+                <FullscreenWrapper
+                    buttonPosition="top-right-inside"
+                    expandButtonTitle="View in fullscreen"
+                    closeButtonTitle="Exit fullscreen"
+                >
+                    <div className="w-full max-w-4xl mx-auto p-4">
+                        {/* For regular markdown or non-custom views */}
+                        {!hasCustomView && (
+                            <MarkdownRenderer content={textResponse} type="message" className="bg-slate-50 dark:bg-slate-900" />
+                        )}
 
-                    {/* For custom views - always show the DirectMarkdownRenderer but pass isLoading */}
-                    {hasCustomView && (
-                        <DirectMarkdownRenderer
-                            markdown={textResponse}
-                            coordinatorId={coordinatorId}
-                            className="bg-slate-50 dark:bg-slate-900"
-                            isLoading={!isTaskComplete}
-                            source="applet"
-                            sourceId={appletId}
-                        />
+                        {/* For custom views - always show the DirectMarkdownRenderer but pass isLoading */}
+                        {hasCustomView && (
+                            <DirectMarkdownRenderer
+                                markdown={textResponse}
+                                coordinatorId={coordinatorId}
+                                className="bg-slate-50 dark:bg-slate-900"
+                                isLoading={!isTaskComplete}
+                                source="applet"
+                                sourceId={appletId}
+                            />
+                        )}
+                    </div>
+                    {isTaskComplete && (
+                        <div className="w-full max-w-4xl mx-auto px-4">
+                            <AppletPostActionButtons appletId={appletId} content={textResponse} />
+                        </div>
                     )}
-                </div>
-            </FullscreenWrapper>
+                </FullscreenWrapper>
+            </div>
         </div>
     );
 }

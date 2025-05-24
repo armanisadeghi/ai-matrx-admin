@@ -32,6 +32,25 @@ const CANDIDATE_PROFILE_DEFINITION: CoordinatorDefinition = {
     sampleData: ["candidateProfileShort", "candidateProfileFull"],
 };
 
+const MODERN_CANDIDATE_PROFILE_DEFINITION: CoordinatorDefinition = {
+    id: "modern_candidate_profile",
+    label: "Modern Candidate Profile",
+    description: "Modern configuration for parsing candidate profiles",
+    rawProcessor: "ast",
+    processor: "ast-to-json-with-config",
+    config: "candidateProfile",
+    defaultView: "modernCandidateProfile",
+    availableViews: [
+        "candidateProfile",
+        "candidateProfileCollapsible",
+        "modernCandidateProfile",
+        "modernOneColumnCandidateProfile",
+        "dynamic",
+    ],
+    sampleData: ["candidateProfileShort", "candidateProfileFull"],
+};
+
+
 const CANDIDATE_PROFILE_STRUCTURED_DEFINITION: CoordinatorDefinition = {
     id: "candidate_profile_structured",
     label: "Candidate Profile Structured",
@@ -174,6 +193,7 @@ const COORDINATOR_DEFINITIONS = [
     GPT_SEO_DEFINITION,
     SECTIONED_LIST_DEFINITION,
     DYNAMIC_DEFINITION,
+    MODERN_CANDIDATE_PROFILE_DEFINITION,
 ];
 
 export const getCoordinatorSelectOptions = () => {

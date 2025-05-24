@@ -22,6 +22,7 @@ const SLUG_TO_COORDINATOR_MAP = {
     "core-info-generator": "app_suggestions",
     "applet-description-generator": "app_suggestions",
     "candidate-write-up-not-used": "candidate_profile_structured",
+    "interview-transcript-analyzer": "modern_candidate_profile",
 };
 
 interface AppletRunComponentProps {
