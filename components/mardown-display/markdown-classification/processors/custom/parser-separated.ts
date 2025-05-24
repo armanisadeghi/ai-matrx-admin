@@ -1,4 +1,4 @@
-import { parseMarkdownTable } from "./parse-markdown-table";
+import { parseMarkdownTable } from "../bock-processors/parse-markdown-table";
 
 export interface ListItem {
     name: string;
@@ -316,3 +316,6 @@ function isListItem(line: string): boolean {
     const t = line.trim();
     return /^[*\-]\s+/.test(t) || /^\d+\.\s+/.test(t);
 }
+
+
+export default separatedMarkdownParser;

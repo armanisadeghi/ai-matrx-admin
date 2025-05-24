@@ -34,7 +34,7 @@ const PlaygroundHeaderRight = ({
     <div className="flex items-center pr-4 space-x-3">
       <Button
         size="sm"
-        className="gap-2 bg-primary hover:bg-primaryHover h-8 px-4"
+        className="gap-2 bg-blue-500 hover:bg-blue-600 h-8 px-4"
         onClick={onPlay}
       >
         <Play size={16} className="fill-current" />

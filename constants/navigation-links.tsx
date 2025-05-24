@@ -138,22 +138,7 @@ export const adminNavigationLinks = [
         icon: <Table className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
         category: "Entities",
     },
-    {
-        label: "Applet demo",
-        href: "/apps/demo", // https://lucide.dev/icons/
-        icon: (
-            <LayoutPanelLeft className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />
-        ),
-        category: "Applets",
-    },
-    {
-        label: "Dynamic Layout Demo",
-        href: "/apps/dynamic-layouts/options", // app\(authenticated)\apps\dynamic-layouts
-        icon: (
-            <LayoutPanelLeft className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />
-        ),
-        category: "Applets",
-    },
+
     {
         label: "All Layouts",
         href: "/apps/all-layouts", // https://lucide.dev/icons/
@@ -162,14 +147,25 @@ export const adminNavigationLinks = [
         ),
         category: "Applets",
     },
+
     {
-        label: "App Builder",
+        label: "App Builder Parts",
+        href: "/apps/app-builder", // https://lucide.dev/icons/
+        icon: (
+            <LayoutPanelLeft className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />
+        ),
+        category: "Applets",
+    },
+    {
+        label: "App Builder Wizard",
         href: "/apps/builder", // https://lucide.dev/icons/
         icon: (
             <SiCodemagic className="text-rose-500 dark:text-rose-600 hover:text-rose-600 dark:hover:text-rose-700 h-5 w-5 flex-shrink-0" />
         ),
         category: "App Builder",
     },
+
+
     {
         label: "App Builder Hub",
         href: "/apps/builder/hub", // https://lucide.dev/icons/
@@ -178,6 +174,18 @@ export const adminNavigationLinks = [
         ),
         category: "App Builder",
     },
+
+    
+    {
+        label: "Dynamic Layout Demo",
+        href: "/apps/dynamic-layouts/options", // app\(authenticated)\apps\dynamic-layouts
+        icon: (
+            <LayoutPanelLeft className="text-green-500 dark:text-green-600 hover:text-green-600 dark:hover:text-green-700 h-5 w-5 flex-shrink-0" />
+        ),
+        category: "Applets",
+    },
+
+
     {
         label: "Applet Components",
         href: "/tests/applet-tests/input-components-4", // https://lucide.dev/icons/

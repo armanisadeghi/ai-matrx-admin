@@ -1,7 +1,6 @@
-import { BreakConfig } from "./combined-processor-config-system/break-config-processor";
-import { MarkdownConfig } from "./json-config-system/config-processor";
 import { getConfigObject } from "./json-config-system/config-registry";
 import { AstNode } from "./types";
+import { parseMarkdownToAst } from "../markdown-processor-util";
 
 // Lazy-loaded processor functions
 const getIntroOutroListProcessor = () => import("./custom/intro-outro-list").then(mod => mod.default);
@@ -12,6 +11,9 @@ const getSectionedListProcessor = () => import("./custom/sectioned-list-processo
 const getCombinedProcessor = () => import("./custom/combined-processor").then(mod => mod.default);
 const getCombinedProcessorWithConfig = () => import("./combined-processor-config-system/break-config-processor").then(mod => mod.default);
 const getStructuredASTWithConfig = () => import("./structured-ast-config-system/structured-ast-processor").then(mod => mod.default);
+const getParserSeparated = () => import("./custom/parser-separated").then(mod => mod.default);
+const getParserEnhanced = () => import("./custom/enhanced-parser").then(mod => mod.default);
+const getParseMarkdownSimple = () => import("./custom/simple-markdown-parser").then(mod => mod.default);
 
 export interface Position {
     start: { line: number; column: number; offset: number };
@@ -35,7 +37,12 @@ export interface OutputContent {
     outro: ContentSection;
 }
 
-// Updated interface with a generic type parameter for config
+// Generic processor input - can be either AST-based or markdown-based
+export interface ProcessorInput {
+    [key: string]: any;
+}
+
+// Legacy interface for backward compatibility
 export interface MarkdownProcessor<T = any> {
     ast: AstNode;
     config: T;
@@ -131,6 +138,37 @@ const COMBINED_PROCESSOR_DEFINITION = {
     config: "noConfig",
 };
 
+const PARSER_ENHANCED_DEFINITION = {
+    id: "parser-enhanced",
+    label: "Parser Enhanced",
+    description: "Designed to process a markdown file into a JSON object using a custom config.",
+    processor: getParserEnhanced,
+    input: "markdown",
+    output: "parserEnhanced",
+    config: "noConfig",
+};
+
+const PARSER_SEPARATED_DEFINITION = {
+    id: "parser-separated",
+    label: "Parser Separated",
+    description: "Designed to process a markdown file into a JSON object using a custom config.",
+    processor: getParserSeparated,
+    input: "markdown",
+    output: "parserSeparated",
+    config: "noConfig",
+};
+
+const PARSER_SIMPLE_DEFINITION = {
+    id: "parser-simple",
+    label: "Parser Simple",
+    description: "Designed to process a markdown file into a JSON object using a custom config.",
+    processor: getParseMarkdownSimple,
+    input: "markdown",
+    output: "parserSimple",
+    config: "noConfig",
+};
+
+
 
 // Processor registry as an array
 export const PROCESSOR_REGISTRY = [
@@ -142,6 +180,9 @@ export const PROCESSOR_REGISTRY = [
     COMBINED_PROCESSOR_DEFINITION,
     COMBINED_PROCESSOR_WITH_CONFIG_DEFINITION,
     STRUCTURED_AST_WITH_CONFIG_DEFINITION,
+    PARSER_ENHANCED_DEFINITION,
+    PARSER_SEPARATED_DEFINITION,
+    PARSER_SIMPLE_DEFINITION,
 ];
 
 
@@ -175,7 +216,7 @@ export const getProcessorFunction = (processorId: string) => {
     if (!processorEntry) return null;
     
     // Return a function that handles the dynamic import and calling internally
-    return async (input: MarkdownProcessor<any>) => {
+    return async (input: any) => {
         const processorModule = await processorEntry.processor();
         return processorModule(input);
     };
@@ -205,3 +246,120 @@ export const executeProcessorWithConfigId = async <T = any>(
     return processorFunction({ ast, config }) as Promise<T>;
 };
 
+export const executeMarkdownParser = async (markdown: string, parserId: string) => {
+    const processorFunction = getProcessorFunction(parserId);
+    if (!processorFunction) return null;
+    return processorFunction({ markdown });
+};
+
+
+
+// THIS IS NOT YET FULLY UTILIZED!!!! ----- THIS IS A GREAT TOOL --------
+
+
+/**
+ * Intelligent processor function that handles any combination of inputs
+ * and automatically determines what to pass to the processor based on its definition
+ */
+export const executeIntelligentProcessor = async <T = any>(
+    processorId: string,
+    options: {
+        ast?: AstNode;
+        markdown?: string;
+        config?: any;
+        configId?: string;
+    }
+): Promise<T | null> => {
+    const { ast, markdown, config, configId } = options;
+    
+    // Get processor definition
+    const processorEntry = getProcessorEntry(processorId);
+    if (!processorEntry) {
+        console.warn(`Processor with ID "${processorId}" not found`);
+        return {} as T;
+    }
+    
+    const processorFunction = getProcessorFunction(processorId);
+    if (!processorFunction) {
+        console.warn(`Processor function for ID "${processorId}" could not be loaded`);
+        return {} as T;
+    }
+    
+    // Determine what the processor needs
+    const needsAst = processorEntry.input === "ast";
+    const needsMarkdown = processorEntry.input === "markdown";
+    const needsConfig = processorEntry.config !== "noConfig";
+    
+    // Prepare the input object
+    const processorInput: any = {};
+    
+    // Handle AST requirement
+    if (needsAst) {
+        if (ast) {
+            // We have AST, use it directly
+            processorInput.ast = ast;
+        } else if (markdown) {
+            // We need AST but only have markdown, convert it
+            console.log(`Converting markdown to AST for processor "${processorId}"`);
+            try {
+                processorInput.ast = parseMarkdownToAst(markdown);
+            } catch (error) {
+                console.warn(`Failed to convert markdown to AST for processor "${processorId}":`, error);
+                return {} as T;
+            }
+        } else {
+            console.warn(`Processor "${processorId}" requires AST input but neither AST nor markdown was provided`);
+            return {} as T;
+        }
+    }
+    
+    // Handle markdown requirement
+    if (needsMarkdown) {
+        if (markdown) {
+            // We have markdown, use it directly
+            processorInput.markdown = markdown;
+        } else {
+            console.warn(`Processor "${processorId}" requires markdown input but markdown was not provided`);
+            return {} as T;
+        }
+    }
+    
+    // Handle config requirement
+    if (needsConfig) {
+        let resolvedConfig = config;
+        
+        // If configId is provided, try to get config from registry
+        if (configId && !resolvedConfig) {
+            resolvedConfig = getConfigObject(configId);
+            if (!resolvedConfig) {
+                console.warn(`Config with ID "${configId}" not found for processor "${processorId}"`);
+                return {} as T;
+            }
+        }
+        
+        if (resolvedConfig) {
+            processorInput.config = resolvedConfig;
+        } else {
+            console.warn(`Processor "${processorId}" requires config but none was provided`);
+            return {} as T;
+        }
+    } else {
+        // Processor doesn't need config, but we might still need to pass an empty one
+        // for processors that expect it in their signature but ignore it
+        if (needsAst) {
+            processorInput.config = {};
+        }
+    }
+    
+    // Log what we're about to do
+    const inputKeys = Object.keys(processorInput);
+    console.log(`Executing processor "${processorId}" with inputs: [${inputKeys.join(', ')}]`);
+    
+    try {
+        const result = await processorFunction(processorInput);
+        return result as T;
+    } catch (error) {
+        console.warn(`Error executing processor "${processorId}":`, error);
+        return {} as T;
+    }
+};

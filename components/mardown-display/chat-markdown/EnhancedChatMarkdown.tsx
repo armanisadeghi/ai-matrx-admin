@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/styles/themes/utils";
 import CodeBlock from "@/components/mardown-display/code/CodeBlock";
-import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
+import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
 import MarkdownTable from "@/components/mardown-display/tables/MarkdownTable";
 import ThinkingVisualization from "./ThinkingVisualization";
 import BasicMarkdownContent from "./BasicMarkdownContent";

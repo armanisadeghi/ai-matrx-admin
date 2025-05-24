@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
 import CodeBlock from "./code/CodeBlock";
-import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
+import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
 import MarkdownTable from "./tables/TableWithSeparatedControls";
 import { InlineCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 

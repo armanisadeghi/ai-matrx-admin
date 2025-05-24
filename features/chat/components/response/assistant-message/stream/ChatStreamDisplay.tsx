@@ -3,7 +3,7 @@ import React, { memo, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/styles/themes/utils";
-import { parseMarkdownTable } from "@/components/mardown-display/parse-markdown-table";
+import { parseMarkdownTable } from "@/components/mardown-display/markdown-classification/processors/bock-processors/parse-markdown-table";
 import { getChatActionsWithThunks } from "@/lib/redux/entity/custom-actions/chatActions";
 import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { parseTaggedContent } from "@/components/mardown-display/chat-markdown/utils/thinking-parser";

@@ -1,7 +1,7 @@
 // parser.ts
 
-import { parseMarkdownTable } from "./parse-markdown-table";
-import { ParsedContent, Section } from "./types";
+import { parseMarkdownTable } from "../bock-processors/parse-markdown-table";
+import { ParsedContent, Section } from "../../../types";
 
 export function enhancedMarkdownParser(markdown: string): ParsedContent {
     // Split into lines (preserve full lines for table parsing)
@@ -177,3 +177,5 @@ export function enhancedMarkdownParser(markdown: string): ParsedContent {
         outro: outro.trim(),
     };
 }
+
+export default enhancedMarkdownParser;

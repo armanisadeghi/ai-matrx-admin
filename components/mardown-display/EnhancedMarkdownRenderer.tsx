@@ -2,12 +2,12 @@ import React, { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { AlignCenterVertical, Baseline, Braces, Code, Eye, FileText, LayoutDashboard, LayoutTemplate } from "lucide-react";
 import { Card } from "@/components/ui";
-import { parseMarkdownContent } from "../brokers/output/markdown-utils";
+import { parseMarkdownSimple } from "./markdown-classification/processors/custom/simple-markdown-parser";
 import EnhancedMarkdownCard from "./EnhancedMarkdownCard";
 import { DisplayTheme, SIMPLE_THEME_OPTIONS, THEMES } from "./themes";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { separatedMarkdownParser } from "./parser-separated";
-import { enhancedMarkdownParser } from "./enhanced-parser";
+import { separatedMarkdownParser } from "./markdown-classification/processors/custom/parser-separated";
+import { enhancedMarkdownParser } from "./markdown-classification/processors/custom/enhanced-parser";
 import MultiSectionMarkdownCard from "./MultiSectionMarkdownCard";
 import JsonDisplay from "./JsonDisplay";
 import QuestionnaireRenderer from "./QuestionnaireRenderer";
@@ -141,7 +141,7 @@ const EnhancedContentRenderer = ({
 
             case "sectionCards":
                 try {
-                    const parsedContent = parseMarkdownContent(content);
+                    const parsedContent = parseMarkdownSimple(content);
                     return <EventComponent sections={parsedContent.sections} tables={[]} />;
                 } catch (error) {
                     console.error("Failed to parse content for section cards:", error);
@@ -160,13 +160,13 @@ const EnhancedContentRenderer = ({
                 );
 
             case "parsedAsJson":
-                return <JsonDisplay content={content} parseFunction={parseMarkdownContent} />;
+                return <JsonDisplay content={content} parseFunction={parseMarkdownSimple} />;
             case "structuredAnalyzer":
                 return (
                     <ParseExtractorOptions
                         content={content}
                         processors={[
-                            { name: "markdown-content", label: "Markdown Content Parser", fn: parseMarkdownContent },
+                            { name: "markdown-content", label: "Markdown Content Parser", fn: parseMarkdownSimple },
                             { name: "separated-markdown", label: "Separated Markdown Parser", fn: separatedMarkdownParser },
                         ]}
                     />

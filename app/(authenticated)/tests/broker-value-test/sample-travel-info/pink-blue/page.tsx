@@ -6,7 +6,7 @@ import { usePrepareRecipeToRun } from "@/hooks/run-recipe/usePrepareRecipeToRun"
 import { CompiledRecipe } from "@/components/playground/hooks/recipes/useCompileRecipe";
 import { useCallback, useState } from "react";
 import { useCockpitSocket } from "@/lib/redux/socket-io/hooks/useCockpitRecipe";
-import { parseMarkdownContent } from "@/components/brokers/output/markdown-utils";
+import { parseMarkdownSimple } from "@/components/mardown-display/markdown-classification/processors/custom/simple-markdown-parser";
 import FunMarkdownRenderer from "./FunMarkdown";
 import AnimatedEventComponent from "@/components/brokers/output/AnimatedEventComponent";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,7 +31,7 @@ export default function PinkBlueBrokerPage() {
 
     const { streamingResponses, responseRef, handleSend, handleClear, isResponseActive } = useCockpitSocket(getLatestTasks);
 
-    const { intro, sections, outro } = parseMarkdownContent(streamingResponses[0] || "");
+    const { intro, sections, outro } = parseMarkdownSimple(streamingResponses[0] || "");
 
     return (
         <div className="flex flex-col h-screen">

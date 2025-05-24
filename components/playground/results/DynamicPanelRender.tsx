@@ -6,9 +6,9 @@ import { selectTaskFirstListenerId, selectResponseTextByListenerId } from '@/lib
 import { BasePanelProps } from './types';
 
 // Import existing parsers
-import { enhancedMarkdownParser } from '@/components/mardown-display/enhanced-parser';
-import { separatedMarkdownParser } from '@/components/mardown-display/parser-separated';
-import { parseMarkdownContent } from '@/components/brokers/output/markdown-utils';
+import { enhancedMarkdownParser } from '@/components/mardown-display/markdown-classification/processors/custom/enhanced-parser';
+import { separatedMarkdownParser } from '@/components/mardown-display/markdown-classification/processors/custom/parser-separated';
+import { parseMarkdownSimple } from '@/components/mardown-display/markdown-classification/processors/custom/simple-markdown-parser';
 
 // Parser registry type
 type ParserFunction = (content: string) => any;
@@ -21,7 +21,7 @@ interface ParserRegistry {
 const PARSER_REGISTRY: ParserRegistry = {
     enhanced: enhancedMarkdownParser,
     separated: separatedMarkdownParser,
-    markdownContent: parseMarkdownContent,
+    markdownContent: parseMarkdownSimple,
     // Add more parsers here as needed
 };
 

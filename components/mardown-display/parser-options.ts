@@ -1,6 +1,6 @@
-import { separatedMarkdownParser } from "./parser-separated";
-import { enhancedMarkdownParser } from "./enhanced-parser";
-import { parseMarkdownContent } from "../brokers/output/markdown-utils";
+import { separatedMarkdownParser } from "./markdown-classification/processors/custom/parser-separated";
+import { enhancedMarkdownParser } from "./markdown-classification/processors/custom/enhanced-parser";
+import { parseMarkdownSimple } from "./markdown-classification/processors/custom/simple-markdown-parser";
 
 export type LayoutType =
     | "raw"
@@ -22,20 +22,20 @@ const parseMarkdown = (markdown: string, layoutMode: LayoutType) => {
         case "multiSectionCards":
             return separatedMarkdownParser(markdown);
         case "sectionCards":
-            return parseMarkdownContent(markdown);
+            return parseMarkdownSimple(markdown);
         case "questionnaire":
             return separatedMarkdownParser(markdown);
         case "structured":
             return separatedMarkdownParser(markdown);
         case "parsedAsJson":
-            return parseMarkdownContent(markdown);
+            return parseMarkdownSimple(markdown);
         default:
-            return parseMarkdownContent(markdown);
+            return parseMarkdownSimple(markdown);
     }
 };
 
 export const PARSER_OPTIONS = {
-    parser: parseMarkdownContent,
+    parser: parseMarkdownSimple,
     enhanced: enhancedMarkdownParser,
     separated: separatedMarkdownParser,
 };

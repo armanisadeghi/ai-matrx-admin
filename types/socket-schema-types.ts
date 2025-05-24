@@ -1,31 +1,5 @@
 // File: types/socket-schema-types.ts
 
-export interface ChatConfigs {
-    recipe_id: string;
-    version?: number;
-    user_id?: string;
-    prepare_for_next_call?: boolean;
-    save_new_conversation?: boolean;
-    include_classified_output?: boolean;
-    model_override?: string;
-    tools_override?: any[][];
-    allow_default_values?: boolean;
-    allow_removal_of_unmatched?: boolean;
-}
-
-export interface ChatConfig {
-    recipe_id: string;
-    version?: number;
-    user_id?: string;
-    prepare_for_next_call?: boolean;
-    save_new_conversation?: boolean;
-    include_classified_output?: boolean;
-    model_override?: string;
-    tools_override?: any[][];
-    allow_default_values?: boolean;
-    allow_removal_of_unmatched?: boolean;
-}
-
 export interface MessageObject {
     id?: string;
     conversation_id?: string;
@@ -42,6 +16,19 @@ export interface Overrides {
     other_overrides?: Record<string, any>;
 }
 
+export interface ChatConfigs {
+    recipe_id: string;
+    version?: string;
+    user_id?: string;
+    prepare_for_next_call?: boolean;
+    save_new_conversation?: boolean;
+    include_classified_output?: boolean;
+    model_override?: string;
+    tools_override?: any[][];
+    allow_default_values?: boolean;
+    allow_removal_of_unmatched?: boolean;
+}
+
 export interface BrokerValues {
     name?: string;
     id: string;
@@ -49,15 +36,38 @@ export interface BrokerValues {
     ready?: boolean;
 }
 
-export interface ConvertRecipeToChat {
-    chat_id: string;
+export interface ChatConfig {
+    recipe_id: string;
+    version?: string;
+    user_id?: string;
+    prepare_for_next_call?: boolean;
+    save_new_conversation?: boolean;
+    include_classified_output?: boolean;
+    model_override?: string;
+    tools_override?: any[][];
+    allow_default_values?: boolean;
+    allow_removal_of_unmatched?: boolean;
 }
 
-export interface RunRecipe {
-    recipe_id: string;
-    broker_values?: BrokerValues[];
-    overrides?: Overrides;
-    stream: boolean;
+export interface GetAllLogs {
+    filename?: string;
+}
+
+export interface GetLogFiles {
+}
+
+export interface StopTailLogs {
+}
+
+export interface TailLogs {
+    filename?: string;
+    interval?: number;
+}
+
+export interface ReadLogs {
+    filename?: string;
+    lines?: number;
+    search?: string;
 }
 
 export interface SampleService {
@@ -73,60 +83,7 @@ export interface SampleService {
 }
 
 export interface MicCheck {
-    mic_check_message: string;
-}
-
-export interface PrepareBatchRecipe {
-    chat_configs: ChatConfigs[];
-    broker_values?: BrokerValues[];
-    max_count?: number;
-}
-
-export interface RunBatchRecipe {
-    chat_configs: ChatConfigs[];
-    broker_values?: BrokerValues[];
-    max_count?: number;
-}
-
-export interface RunRecipeToChat {
-    chat_config: ChatConfig;
-    broker_values?: BrokerValues[];
-}
-
-export interface MicCheck {
-    mic_check_message: string;
-}
-
-export interface RunChatRecipe {
-    recipe_id: string;
-    version?: number;
-    broker_values?: BrokerValues[];
-    user_id?: string;
-    prepare_for_next_call?: boolean;
-    save_new_conversation?: boolean;
-    include_classified_output?: boolean;
-    model_override?: string;
-    tools_override?: any[][];
-    allow_default_values?: boolean;
-    allow_removal_of_unmatched?: boolean;
-}
-
-export interface GetNeededRecipeBrokers {
-    recipe_id: string;
-    version?: number;
-}
-
-export interface PrepConversation {
-    conversation_id: string;
-}
-
-export interface AiChat {
-    conversation_id: string;
-    message_object: MessageObject;
-}
-
-export interface MicCheck {
-    mic_check_message: string;
+    mic_check_message?: string;
 }
 
 export interface EditWcInjury {
@@ -179,12 +136,73 @@ export interface CreateWcClaim {
     applicant_name: string;
 }
 
+export interface MicCheck {
+    mic_check_message?: string;
+}
+
+export interface SearchKeywords {
+    keywords: any[][];
+    country_code?: string;
+    total_results_per_keyword?: number;
+    search_type?: string;
+}
+
+export interface SearchAndScrape {
+    keywords: any[][];
+    country_code?: string;
+    total_results_per_keyword?: number;
+    search_type?: string;
+    get_organized_data?: boolean;
+    get_structured_data?: boolean;
+    get_overview?: boolean;
+    get_text_data?: boolean;
+    get_main_image?: boolean;
+    get_links?: boolean;
+    get_content_filter_removal_details?: boolean;
+    include_highlighting_markers?: boolean;
+    include_media?: boolean;
+    include_media_links?: boolean;
+    include_media_description?: boolean;
+    include_anchors?: boolean;
+    anchor_size?: number;
+}
+
+export interface QuickScrapeStream {
+    urls: any[][];
+    get_organized_data?: boolean;
+    get_structured_data?: boolean;
+    get_overview?: boolean;
+    get_text_data?: boolean;
+    get_main_image?: boolean;
+    get_links?: boolean;
+    get_content_filter_removal_details?: boolean;
+    include_highlighting_markers?: boolean;
+    include_media?: boolean;
+    include_media_links?: boolean;
+    include_media_description?: boolean;
+    include_anchors?: boolean;
+    anchor_size?: number;
+}
+
 export interface QuickScrape {
     urls: any[][];
+    get_organized_data?: boolean;
+    get_structured_data?: boolean;
+    get_overview?: boolean;
+    get_text_data?: boolean;
+    get_main_image?: boolean;
+    get_links?: boolean;
+    get_content_filter_removal_details?: boolean;
+    include_highlighting_markers?: boolean;
+    include_media?: boolean;
+    include_media_links?: boolean;
+    include_media_description?: boolean;
+    include_anchors?: boolean;
+    anchor_size?: number;
 }
 
 export interface MicCheck {
-    mic_check_message: string;
+    mic_check_message?: string;
 }
 
 export interface TrackContentGroupingRun {
@@ -351,7 +369,7 @@ export interface GetDomains {
 }
 
 export interface MicCheck {
-    mic_check_message: string;
+    mic_check_message?: string;
 }
 
 export interface GetAllPythonClassDocstrings {
@@ -395,6 +413,10 @@ export interface GetAllCodeBlocks {
     remove_comments?: boolean;
 }
 
+export interface GetStructuredData {
+    raw_markdown: string;
+}
+
 export interface GetCodeBlocksByLanguage {
     raw_markdown: string;
     language: string;
@@ -406,12 +428,12 @@ export interface ClassifyMarkdown {
 }
 
 export interface MicCheck {
-    mic_check_message: string;
+    mic_check_message?: string;
 }
 
 export interface RunChatRecipe {
     recipe_id: string;
-    version?: number;
+    version?: string;
     broker_values?: BrokerValues[];
     user_id?: string;
     prepare_for_next_call?: boolean;
@@ -425,7 +447,25 @@ export interface RunChatRecipe {
 
 export interface GetNeededRecipeBrokers {
     recipe_id: string;
-    version?: number;
+    version?: string;
+}
+
+export interface PrepConversation {
+    conversation_id: string;
+}
+
+export interface AiChat {
+    conversation_id: string;
+    message_object: MessageObject;
+}
+
+export interface MicCheck {
+    mic_check_message?: string;
+}
+
+export interface GetNeededRecipeBrokers {
+    recipe_id: string;
+    version?: string;
 }
 
 export interface GetCompiledRecipe {
@@ -442,13 +482,6 @@ export interface AddRecipe {
     compiled_recipe: string;
 }
 
-export interface RunCompiledRecipe {
-    recipe_id: string;
-    compiled_id: string;
-    compiled_recipe: string;
-    stream: boolean;
-}
-
 export interface RunRecipe {
     recipe_id: string;
     broker_values?: BrokerValues[];
@@ -456,8 +489,36 @@ export interface RunRecipe {
     stream: boolean;
 }
 
-export interface CockpitInstant {
-    cockpit_id: string;
-    broker_values: BrokerValues[];
-    overrides?: Overrides;
+export interface RunCompiledRecipe {
+    recipe_id: string;
+    compiled_id: string;
+    compiled_recipe: string;
+    stream: boolean;
+}
+
+export interface ConvertRecipeToChat {
+    chat_id: string;
+}
+
+export interface ConvertNormalizedDataToUserData {
+    data: Record<string, any>;
+    table_name: string;
+    table_description: string;
+}
+
+export interface PrepareBatchRecipe {
+    chat_configs: ChatConfigs[];
+    broker_values?: BrokerValues[];
+    max_count?: number;
+}
+
+export interface RunBatchRecipe {
+    chat_configs: ChatConfigs[];
+    broker_values?: BrokerValues[];
+    max_count?: number;
+}
+
+export interface RunRecipeToChat {
+    chat_config: ChatConfig;
+    broker_values?: BrokerValues[];
 }
