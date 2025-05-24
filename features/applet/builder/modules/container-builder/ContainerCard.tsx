@@ -10,7 +10,7 @@ import { selectAllContainerIds, selectContainerById } from "@/lib/redux/app-buil
 import { fetchContainerByIdThunk, setActiveContainerWithFetchThunk, recompileContainerThunk } from "@/lib/redux/app-builder/thunks/containerBuilderThunks";
 import { saveFieldThunk } from "@/lib/redux/app-builder/thunks/fieldBuilderThunks";
 import { toast } from "@/components/ui/use-toast";
-import { selectAppletContainers } from "@/lib/redux/app-builder/selectors/appletSelectors";
+import { selectAppletContainers, selectAppletBrokerMappings, selectAllNeededBrokers, selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import { selectContainerComparisonResult, selectDoContainersMatch, selectContainerComparisonDetails } from "@/lib/redux/app-builder/selectors/containerMatchSelectors";
 import ContainerComparisonModal from "./container-comparison/ContainerComparisonModal";
 
@@ -31,6 +31,11 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
     const allContainerIds = useAppSelector(selectAllContainerIds);
 
     const allAppletContainers = useAppSelector((state) => selectAppletContainers(state, appletId));
+    
+    // Get applet, broker mappings, and brokers for labeling
+    const applet = useAppSelector((state) => selectAppletById(state, appletId));
+    const brokerMappings = useAppSelector((state) => selectAppletBrokerMappings(state, appletId));
+    const allBrokers = useAppSelector((state) => selectAllNeededBrokers(state, appletId));
 
     const isCompiled = "placeholder";
     const isExistingContainer = "placeholder";
@@ -139,13 +144,15 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
             const dataTransfer = e.dataTransfer.getData("application/json");
             const data = JSON.parse(dataTransfer);
 
-            if (data.type === "broker-field") {
+            // Handle database field drops (fieldId -> containerId relationship)
+            if (data.type === "database-field") {
                 const fieldId = data.fieldId;
 
                 if (!fieldId) {
                     return;
                 }
 
+                // Find the field from the database and add it to this container
                 const existingField = allFields.find((field) => field.id === fieldId);
 
                 if (existingField) {
@@ -245,8 +252,8 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
         >
             <div className="flex flex-col space-y-2">
                 <div>
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100">{container.label || "Unnamed Container"}</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{container.shortLabel || "No short label"}</p>
+                    <h4 className="font-medium text-gray-900 dark:text-gray-100">Container: {container.label || "Container Without Label"}</h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Short Label: {container.shortLabel || "No Short Label"}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 py-0.5 px-1.5 rounded-full">
@@ -301,43 +308,66 @@ const ContainerCard: React.FC<ContainerCardProps> = ({ containerId, appletId, is
                             const fieldFromState = allFields.find(f => f.id === field.id);
                             const isFieldDirty = fieldFromState?.isDirty;
                             
+                            // Find the broker for this field
+                            const brokerMapping = brokerMappings?.find(mapping => mapping.fieldId === field.id);
+                            const broker = brokerMapping ? allBrokers?.find(b => b.id === brokerMapping.brokerId) : null;
+                            
                             return (
                                 <div
                                     key={field.id}
-                                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-2 flex items-center justify-between"
+                                    className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-3"
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center">
-                                            <p className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate">
-                                                {field.label || `Field ${field.id}`}
-                                            </p>
-                                            {isFieldDirty && (
-                                                <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 py-0.5 px-1.5 rounded-full">
-                                                    Unsaved
+                                    <div className="space-y-3">
+                                        {/* FIELD INFO SECTION */}
+                                        <div className="space-y-2">
+                                            {/* Field name row with X button */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center min-w-0 flex-1">
+                                                    <span className="text-xs font-medium text-gray-800 dark:text-gray-200 leading-none truncate">
+                                                        Field: {field.label || "Field Without Label"}
+                                                    </span>
+                                                    {isFieldDirty && (
+                                                        <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 py-0.5 px-1.5 rounded-full flex-shrink-0">
+                                                            Unsaved
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    onClick={(e) => handleRemoveField(field.id, e)}
+                                                    className="ml-2 h-6 w-6 rounded-full flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/20 text-red-500 dark:text-red-400 flex-shrink-0"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                            
+                                            {/* Info rows using full width */}
+                                            <div className="space-y-2">
+                                                <span className="block text-xs text-gray-600 dark:text-gray-400 leading-none truncate">
+                                                    Applet: {applet?.name || "No Applet Found"}
                                                 </span>
-                                            )}
+                                                <span className="block text-xs text-gray-600 dark:text-gray-400 leading-none truncate">
+                                                    Broker: {broker?.name || "No Broker Found"}
+                                                </span>
+                                                <span className="block text-xs text-gray-600 dark:text-gray-400 leading-none truncate">
+                                                    Component Type: {field.component || "No Component"}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                            Component: {field.component || "Unknown"}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center">
+                                        
+                                        {/* ACTIONS SECTION */}
                                         {isFieldDirty && (
-                                            <button
-                                                onClick={() => handleSaveField(field.id)}
-                                                className="mr-2 h-6 w-6 rounded-full flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/20 text-green-500 dark:text-green-400"
-                                                title="Save field"
-                                            >
-                                                <Save className="h-3 w-3" />
-                                            </button>
+                                            <div className="flex items-center">
+                                                <button
+                                                    onClick={() => handleSaveField(field.id)}
+                                                    className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-green-100 dark:hover:bg-green-900/20 text-green-500 dark:text-green-400"
+                                                    title="Save field"
+                                                >
+                                                    <Save className="h-3 w-3" />
+                                                </button>
+                                                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">Save changes</span>
+                                            </div>
                                         )}
-                                        <button
-                                            onClick={(e) => handleRemoveField(field.id, e)}
-                                            className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/20 text-red-500 dark:text-red-400"
-                                        >
-                                            <X className="h-3 w-3" />
-                                        </button>
                                     </div>
                                 </div>
                             );
