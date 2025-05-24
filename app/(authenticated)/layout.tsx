@@ -13,6 +13,8 @@ import { setGlobalUserIdAndToken } from "@/lib/globalState";
 import SocketInitializer from "@/lib/redux/socket-io/connection/SocketInitializer";
 import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
 import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
+import { defaultUserPreferences } from "@/lib/redux/slices/defaultPreferences";
+import { initializeUserPreferencesState } from "@/lib/redux/slices/userPreferencesSlice";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -69,14 +71,42 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     setGlobalUserIdAndToken(userData.id, accessToken, isAdmin);
     const testDirectories = [];
 
+    // Handle user preferences - create defaults for new users
+    let userPreferences;
     const { data: preferences, error } = await supabase.from("user_preferences").select("preferences").eq("user_id", userData.id).single();
-    if (error) {
+    
+    if (error && error.code === 'PGRST116') {
+        // No preferences found - create default preferences for new user
+        const defaultPreferences = defaultUserPreferences;
+
+        // Create the preferences record in the database
+        const { error: insertError } = await supabase
+            .from("user_preferences")
+            .insert({
+                user_id: userData.id,
+                preferences: defaultPreferences
+            });
+
+        if (insertError) {
+            console.error("Error creating default preferences:", insertError);
+            userPreferences = initializeUserPreferencesState(defaultPreferences); // Use helper function
+        } else {
+            console.log("✅ Created default preferences for new user");
+            userPreferences = initializeUserPreferencesState(defaultPreferences); // Use helper function
+        }
+    } else if (error) {
+        // Some other error occurred
         console.error("Error loading preferences from Supabase:", error);
+        userPreferences = initializeUserPreferencesState(); // Use helper function with defaults
+    } else {
+        // Preferences loaded successfully - use helper function to ensure proper structure
+        userPreferences = initializeUserPreferencesState(preferences?.preferences || {});
     }
+
     const initialReduxState: InitialReduxState = {
         user: userData,
         testRoutes: testDirectories,
-        userPreferences: preferences?.preferences || {},
+        userPreferences: userPreferences,
         globalCache: clientGlobalCache,
     };
 
