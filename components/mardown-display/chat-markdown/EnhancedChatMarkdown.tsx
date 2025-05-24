@@ -103,6 +103,7 @@ const EnhancedChatMarkdown: React.FC<ChatMarkdownDisplayProps> = ({
     const processedContent = preprocessContent(currentContent);
     const blocks = splitContentIntoBlocks(processedContent);
 
+
     const renderBlock = (block: ContentBlock, index: number) => {
         switch (block.type) {
             case "image":

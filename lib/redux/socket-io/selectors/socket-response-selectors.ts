@@ -63,7 +63,7 @@ export const selectTaskResults = (taskId: string) =>
         (state: RootState) => selectTaskListenerIds(state, taskId),
         (state: RootState) => state.socketResponse,
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return { text: "", data: [], info: [], errors: [], ended: false };
+            if (!listenerIds || listenerIds.length === 0) return { text: "", data: [], info: [], errors: [], ended: false };
             if (listenerIds.length === 1) {
                 return responses[listenerIds[0]] || { text: "", data: [], info: [], errors: [], ended: false };
             }
@@ -91,7 +91,7 @@ export const selectIsTaskComplete = (taskId: string) =>
         (task, responses) => {
             if (!task) return false;
             const listenerIds = task.listenerIds;
-            if (listenerIds.length === 0) return false;
+            if (!listenerIds || listenerIds.length === 0) return false;
             return listenerIds.every((id) => responses[id]?.ended || false);
         }
     );
@@ -118,7 +118,7 @@ export const selectPrimaryResponseForTask = (taskId: string) =>
         (state: RootState) => selectTaskListenerIds(state, taskId),
         (state: RootState) => state.socketResponse,
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return null;
+            if (!listenerIds || listenerIds.length === 0) return null;
             return responses[listenerIds[0]] as ResponseState;
         }
     );
@@ -131,7 +131,7 @@ export const selectPrimaryResponseTextByTaskId = (taskId: string) =>
         (state: RootState) => state.socketResponse,
         // Re-implement the core logic and then add the specific field selection
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return "";
+            if (!listenerIds || listenerIds.length === 0) return "";
             const response = responses[listenerIds[0]] as ResponseState;
             return response?.text || "";
         }
@@ -142,7 +142,7 @@ export const selectPrimaryResponseDataByTaskId = (taskId: string) =>
         (state: RootState) => selectTaskListenerIds(state, taskId),
         (state: RootState) => state.socketResponse,
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return [];
+            if (!listenerIds || listenerIds.length === 0) return [];
             const response = responses[listenerIds[0]] as ResponseState;
             return response?.data || [];
         }
@@ -153,7 +153,7 @@ export const selectPrimaryResponseInfoByTaskId = (taskId: string) =>
         (state: RootState) => selectTaskListenerIds(state, taskId),
         (state: RootState) => state.socketResponse,
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return [];
+            if (!listenerIds || listenerIds.length === 0) return [];
             const response = responses[listenerIds[0]] as ResponseState;
             return response?.info || [];
         }
@@ -164,7 +164,7 @@ export const selectPrimaryResponseErrorsByTaskId = (taskId: string) =>
         (state: RootState) => selectTaskListenerIds(state, taskId),
         (state: RootState) => state.socketResponse,
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return [];
+            if (!listenerIds || listenerIds.length === 0) return [];
             const response = responses[listenerIds[0]] as ResponseState;
             return response?.errors || [];
         }
@@ -175,7 +175,7 @@ export const selectPrimaryResponseEndedByTaskId = (taskId: string) =>
         (state: RootState) => selectTaskListenerIds(state, taskId),
         (state: RootState) => state.socketResponse,
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return false;
+            if (!listenerIds || listenerIds.length === 0) return false;
             const response = responses[listenerIds[0]] as ResponseState;
             return response?.ended || false;
         }
@@ -186,7 +186,7 @@ export const selectHasPrimaryResponseErrorsByTaskId = (taskId: string) =>
         (state: RootState) => selectTaskListenerIds(state, taskId),
         (state: RootState) => state.socketResponse,
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return false;
+            if (!listenerIds || listenerIds.length === 0) return false;
             const response = responses[listenerIds[0]] as ResponseState;
             return (response?.errors?.length || 0) > 0;
         }
@@ -200,7 +200,7 @@ export const selectFirstPrimaryResponseDataByTaskId = (taskId: string) =>
         (state: RootState) => state.socketResponse,
         // Implement the logic directly to avoid nested selector calls
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return null;
+            if (!listenerIds || listenerIds.length === 0) return null;
             const response = responses[listenerIds[0]] as ResponseState;
             const data = response?.data || [];
             return data.length > 0 ? data[0] : null;
@@ -214,7 +214,7 @@ export const selectFirstPrimaryResponseInfoByTaskId = (taskId: string) =>
         (state: RootState) => state.socketResponse,
         // Implement the logic directly to avoid nested selector calls
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return null;
+            if (!listenerIds || listenerIds.length === 0) return null;
             const response = responses[listenerIds[0]] as ResponseState;
             const info = response?.info || [];
             return info.length > 0 ? info[0] : null;
@@ -228,7 +228,7 @@ export const selectFirstPrimaryResponseErrorByTaskId = (taskId: string) =>
         (state: RootState) => state.socketResponse,
         // Implement the logic directly to avoid nested selector calls
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return null;
+            if (!listenerIds || listenerIds.length === 0) return null;
             const response = responses[listenerIds[0]] as ResponseState;
             const errors = response?.errors || [];
             return errors.length > 0 ? errors[0] : null;
@@ -241,7 +241,7 @@ export const createTaskResponseSelectors = (taskId: string) => {
         (state: RootState) => selectTaskListenerIds(state, taskId),
         (state: RootState) => state.socketResponse,
         (listenerIds, responses) => {
-            if (listenerIds.length === 0) return null;
+            if (!listenerIds || listenerIds.length === 0) return null;
             return responses[listenerIds[0]] as ResponseState;
         }
     );

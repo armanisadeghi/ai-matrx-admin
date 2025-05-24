@@ -22,6 +22,15 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
     const [isHovering, setIsHovering] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
 
+    // Preprocess content to fix setext heading issues
+    const preprocessContent = (rawContent: string): string => {
+        // Fix setext-style heading patterns by ensuring there's a blank line before ---
+        // This prevents paragraph text from being interpreted as h2 headings
+        return rawContent.replace(/([^\n])\n---/g, '$1\n\n---');
+    };
+
+    const processedContent = preprocessContent(content);
+
     const handleEdit = () => {
         console.log("Edit clicked with content:", content);
         onEditRequest?.(); // <-- Call the passed-down function
@@ -129,7 +138,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
             return null;
         },
         img: ({ node, ...props }) => <img className="max-w-full h-auto rounded-md my-4" {...props} alt={props.alt || "Image"} />,
-        hr: ({ node, ...props }) => <hr className="my-6 border-t border-gray-300" {...props} />,
+        hr: ({ node, ...props }) => <hr className="my-6 border-t border-gray-300 dark:border-gray-600" {...props} />,
         table: () => null,
         thead: () => null,
         tbody: () => null,
@@ -141,7 +150,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
     return (
         <div className="relative my-2 group" onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-                {content}
+                {processedContent}
             </ReactMarkdown>
             {/* Edit button now triggers onEditRequest */}
             {isHovering && !isStreamActive && (
@@ -149,7 +158,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
                     {showCopyButton && <InlineCopyButton markdownContent={content} position="top-right" className="mt-1 mr-1" isMarkdown={true}/>}
                     {/* Only show Edit button if onEditRequest is provided */}
                     {onEditRequest && (
-                        <button onClick={handleEdit} className="p-1 text-gray-500 hover:text-gray-700 rounded-md ml-1" title="Edit content">
+                        <button onClick={handleEdit} className="p-1 pt-6 text-gray-500 hover:text-gray-700 rounded-md ml-1" title="Edit content">
                             <PencilIcon className="w-4 h-4" />
                         </button>
                     )}

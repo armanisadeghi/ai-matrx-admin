@@ -11,6 +11,9 @@ interface ChatConversationViewProps {
 const ChatConversationView: React.FC<ChatConversationViewProps> = ({ existingConversationId }) => {
     const { submitChatMessage, isSubmitting, routeLoadComplete } = useExistingChat({ existingConversationId });
 
+    console.log("routeLoadComplete", routeLoadComplete);
+    console.log("isSubmitting", isSubmitting);
+
     const isDisabled = !routeLoadComplete || isSubmitting;
 
     return (
