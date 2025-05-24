@@ -153,7 +153,7 @@ export function ResultPanel({
             default:
                 return (
                     <div className="flex-1 p-2 overflow-y-auto overflow-x-hidden scrollbar-thin relative">
-                        <MarkdownRenderer content={streamingText} type="message" role="assistant" fontSize={18} />
+                        <MarkdownRenderer content={streamingText} type="message" role="assistant" fontSize={16} />
                         <FloatingAddButton />
                     </div>
                 );

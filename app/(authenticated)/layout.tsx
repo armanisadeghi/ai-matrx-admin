@@ -12,6 +12,7 @@ import { headers } from "next/headers";
 import { setGlobalUserIdAndToken } from "@/lib/globalState";
 import SocketInitializer from "@/lib/redux/socket-io/connection/SocketInitializer";
 import AdminIndicatorWrapper from "@/components/admin/controls/AdminIndicatorWrapper";
+import ResponsiveLayout from "@/components/layout/new-layout/ResponsiveLayout";
 
 const schemaSystem = initializeSchemaSystem();
 const clientGlobalCache = generateClientGlobalCache();
@@ -36,6 +37,7 @@ const adminIds = [
     "6555aa73-c647-4ecf-8a96-b60e315b6b18",
   ];
 
+  const newLayout = false;
 
 export default async function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
@@ -81,11 +83,19 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
     return (
         <Providers initialReduxState={initialReduxState}>
             <SocketInitializer />
-            <LayoutWithSidebar {...layoutProps}>
-                <NavigationLoader />
-                {children}
-                <AdminIndicatorWrapper />
-            </LayoutWithSidebar>
+            {newLayout ? (
+                <ResponsiveLayout {...layoutProps}>
+                    <NavigationLoader />
+                    {children}
+                    <AdminIndicatorWrapper />
+                </ResponsiveLayout>
+            ) : (
+                <LayoutWithSidebar {...layoutProps}>
+                    <NavigationLoader />
+                    {children}
+                    <AdminIndicatorWrapper />
+                </LayoutWithSidebar>
+            )}
         </Providers>
     );
 }

@@ -25,25 +25,25 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
 
     const components = {
         p: ({ node, ...props }) => (
-            <p style={{ fontSize: `${fontSize}px` }} className="mb-4 font-sans tracking-wide leading-relaxed" {...props} />
+            <p style={{ fontSize: `${fontSize}px` }} className="mb-3 font-sans tracking-wide leading-relaxed" {...props} />
         ),
-        ul: ({ node, ...props }) => <ul style={{ fontSize: `${fontSize}px` }} className="list-disc pl-5 mb-4 leading-relaxed" {...props} />,
+        ul: ({ node, ...props }) => <ul style={{ fontSize: `${fontSize}px` }} className="list-disc pl-5 mb-3 leading-relaxed" {...props} />,
         ol: ({ node, ...props }) => (
-            <ol style={{ fontSize: `${fontSize}px` }} className="list-decimal pl-5 mb-4 leading-relaxed" {...props} />
+            <ol style={{ fontSize: `${fontSize}px` }} className="list-decimal pl-5 mb-3 leading-relaxed" {...props} />
         ),
         li: ({ node, children, ordered, index, ...props }: any) => {
             if (ordered && typeof index === "number") {
                 return (
-                    <li className="mb-2" style={{ fontSize: `${fontSize}px` }} {...props}>
+                    <li className="mb-0" style={{ fontSize: `${fontSize}px` }} {...props}>
                         <span className="inline-block w-full">
-                            <span className="inline-block w-4 mr-2 text-right">{index + 1}.</span>
+                            <span className="inline-block w-3 mr-2 text-right">{index + 1}.</span>
                             <span className="inline-block w-[calc(100%-1.5rem)]">{children}</span>
                         </span>
                     </li>
                 );
             }
             return (
-                <li className="mb-2" style={{ fontSize: `${fontSize}px` }} {...props}>
+                <li className="mb-0" style={{ fontSize: `${fontSize}px` }} {...props}>
                     {children}
                 </li>
             );
@@ -60,6 +60,36 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
         ),
         h4: ({ node, ...props }) => (
             <h4 className="text-base font-medium mb-2 font-heading" style={{ fontSize: `${Math.max(fontSize + 2, 16)}px` }} {...props} />
+        ),
+        h5: ({ node, ...props }) => (
+            <h5 className="text-sm font-medium mb-2 font-heading" style={{ fontSize: `${Math.max(fontSize, 14)}px` }} {...props} />
+        ),
+        h6: ({ node, ...props }) => (
+            <h6 className="text-xs font-medium mb-2 font-heading" style={{ fontSize: `${Math.max(fontSize - 2, 12)}px` }} {...props} />
+        ),
+        blockquote: ({ node, ...props }) => (
+            <blockquote 
+                className="border-l-4 border-blue-500 pl-4 py-2 my-4 bg-neutral-50 dark:bg-neutral-800/50 italic" 
+                style={{ fontSize: `${fontSize}px` }}
+                {...props} 
+            />
+        ),
+        strong: ({ node, ...props }) => (
+            <strong className="font-semibold" {...props} />
+        ),
+        em: ({ node, ...props }) => (
+            <em className="italic" {...props} />
+        ),
+        del: ({ node, ...props }) => (
+            <del className="line-through opacity-75" {...props} />
+        ),
+        img: ({ node, alt, src, ...props }) => (
+            <img 
+                className="max-w-full h-auto rounded-lg my-4 border border-neutral-200 dark:border-neutral-700" 
+                alt={alt || ''} 
+                src={src || ''} 
+                {...props} 
+            />
         ),
         code: ({ node, inline, className, children, ...props }) => {
             const match = /language-(\w+)/.exec(className || "");
@@ -96,6 +126,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
             <pre className="my-4" {...props}>
                 {children}
             </pre>
+        ),
+        hr: ({ node, ...props }) => (
+            <hr 
+                className="my-4 border-0 h-px bg-neutral-300 dark:bg-neutral-600" 
+                {...props} 
+            />
         ),
         table: () => {
             if (!tableData) return null;
