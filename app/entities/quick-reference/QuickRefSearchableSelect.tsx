@@ -94,7 +94,7 @@ export const QuickRefSearchableSelect: React.FC<QuickRefSelectProps> = ({
             width="w-full"
             className={className}
             customStyles={{
-                container: "text-sm",
+                container: "text-xs",
                 trigger: `!bg-elevation1 !dark:bg-elevation1 ${customStyles.trigger}`,
                 dropdown: customStyles.dropdown,
                 option: customStyles.option,

@@ -107,14 +107,14 @@ const CandidateProfileBlockPanel = createDynamicPanelWrapper(
 const ParseExtractorOptionsPanel = createDynamicPanelWrapper(
     ({ content }: { content: string }) => {
         // Import the actual parser functions
-        const { parseMarkdownContent } = require("@/components/brokers/output/markdown-utils");
-        const { separatedMarkdownParser } = require("@/components/mardown-display/parser-separated");
+        const { parseMarkdownSimple } = require("@/components/mardown-display/markdown-classification/processors/custom/simple-markdown-parser");
+        const { separatedMarkdownParser } = require("@/components/mardown-display/markdown-classification/processors/custom/parser-separated");
 
         return (
             <ParseExtractorOptions
                 content={content}
                 processors={[
-                    { name: "markdown-content", label: "Markdown Content Parser", fn: parseMarkdownContent },
+                    { name: "markdown-content", label: "Markdown Content Parser", fn: parseMarkdownSimple },
                     { name: "separated-markdown", label: "Separated Markdown Parser", fn: separatedMarkdownParser },
                 ]}
             />
