@@ -44,8 +44,14 @@ export function useExistingChat({ existingConversationId }: ExistingChatProps) {
         } else {
             dispatch(chatActions.setExternalConversationLoading(false));
         }
-    }, [existingConversationId, conversationId]);
+    }, [existingConversationId, conversationId, firstLoadComplete]);
 
+    // Additional effect to ensure external loading is cleared when conversation data loads
+    useEffect(() => {
+        if (firstLoadComplete && conversationId === existingConversationId) {
+            dispatch(chatActions.setExternalConversationLoading(false));
+        }
+    }, [conversationId, existingConversationId, firstLoadComplete, dispatch, chatActions]);
 
     const submitChatMessage = useCallback(async () => {
         try {

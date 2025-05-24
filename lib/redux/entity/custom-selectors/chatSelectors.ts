@@ -390,13 +390,24 @@ export const createChatSelectors = () => {
     );
 
     const initialLoadComplete = createSelector(
-        [hasMinOneConversation, hasMinOneAiModel, activeConversationKey],
-        (hasConversation, hasAiModel, hasConversationKey) => {
-            return Boolean(hasConversation && hasAiModel && hasConversationKey);
+        [hasMinOneConversation, hasMinOneAiModel, activeConversationKey, conversationIsLoading],
+        (hasConversation, hasAiModel, hasConversationKey, isLoading) => {
+            // Standard case: Has conversations, AI models, and active conversation
+            if (hasConversation && hasAiModel && hasConversationKey) {
+                return true;
+            }
+            
+            // New user case: No conversations but loading is complete and AI models are available
+            if (!isLoading && !hasConversation && hasAiModel) {
+                return true;
+            }
+            
+            return false;
         }
     );
 
     const isConversationExternalLoading = createSelector([selectConversationEntity], (entity): boolean => entity?.loading.externalLoading);
+
     const isMessageExternalLoading = createSelector([selectMessageEntity], (entity): boolean => entity?.loading.externalLoading);
 
     const hasMinOneActiveMessage = createSelector([activeChatMessagesToDisplay], (records) => records.length > 0);
@@ -410,7 +421,6 @@ export const createChatSelectors = () => {
     const activeMessageMetadata = createSelector([activeMessage], (message) => message?.metadata);
     const activeMessageStatus = createSelector([activeMessageMetadata], (metadata) => metadata?.status);
     const shouldShowLoader = createSelector([activeMessageStatus], (status) => status == "submitted" || status == "processing" || status == "firstChunkReceived");
-
 
     const activeMessageSettings = createSelector(
         [activeMessageMetadata],
@@ -529,6 +539,7 @@ export const createChatSelectors = () => {
         activeAiModelId,
         hasMinOneMessage,
         hasMinOneAiModel,
+        hasMinOneConversation,
         conversationsByFieldValue,
         messagesByFieldValue,
         aiModelsByFieldValue,

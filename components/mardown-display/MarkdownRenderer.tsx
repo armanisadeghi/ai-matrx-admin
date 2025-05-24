@@ -129,7 +129,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, type, font
         ),
         hr: ({ node, ...props }) => (
             <hr 
-                className="my-4 border-0 h-px bg-neutral-300 dark:bg-neutral-600" 
+                className="my-2 border-0 h-px bg-neutral-300 dark:bg-neutral-600" 
                 {...props} 
             />
         ),
