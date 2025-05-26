@@ -710,11 +710,13 @@ export type RecipeTool = {
 
 export type RegisteredFunction = {
     id: string;
-    name: string;
+    funcName: string;
     modulePath: string;
     className?: string;
     description?: string;
     returnBroker?: string;
+    name: string;
+    tags?: Record<string, unknown>;
 }
 
 export type SchemaTemplates = {

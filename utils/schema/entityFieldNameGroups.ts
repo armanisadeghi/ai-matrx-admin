@@ -319,9 +319,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["recipe", "tool", "params"]
 },
   registeredFunction: {
-  nativeFields: ["id", "name", "modulePath", "className", "description", "returnBroker"],
+  nativeFields: ["id", "funcName", "modulePath", "className", "description", "returnBroker", "name", "tags"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "modulePath", "className", "description", "returnBroker"]
+  nativeFieldsNoPk: ["funcName", "modulePath", "className", "description", "returnBroker", "name", "tags"]
 },
   schemaTemplates: {
   nativeFields: ["id", "templateName", "description", "fields", "version", "createdAt"],

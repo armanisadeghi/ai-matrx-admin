@@ -4,7 +4,7 @@ import {memo} from 'react';
 import {cn} from '@/lib/utils';
 import {Card, CardContent} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
-import {Grid2X2, ChevronRight, Star, Sparkles, BookOpen, Mail, User, StarIcon, FileText, Hash, Brain, MessageCircle, Boxes, Briefcase, VariableIcon} from 'lucide-react';
+import {Grid2X2, ChevronRight, Star, Sparkles, BookOpen, Mail, User, StarIcon, FileText, Hash, Brain, MessageCircle, Boxes, Briefcase, VariableIcon, SquareFunction } from 'lucide-react';
 import {
     Tooltip,
     TooltipContent,
@@ -121,7 +121,7 @@ const ENTITY_ICON_LOOKUP = {
     'task': TbBasketDiscount,
     'project': Briefcase,
     'user': User,
-    'registeredFunction': Function,
+    'registeredFunction': SquareFunction,
     'arg': HashCircle,
     'dataBroker': VariableIcon
 };
