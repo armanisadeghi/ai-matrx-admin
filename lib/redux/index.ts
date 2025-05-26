@@ -79,7 +79,6 @@ export * from './slices/layoutSlice';
 export * from './slices/moduleSliceCreator';
 export * from './notes/notesSlice';
 export * from './slices/testRoutesSlice';
-export * from './slices/userPreferencesSlice';
 export * from './slices/userSlice';
 export * from './ui/uiSelectors';
 export * from './ui/uiSlice';

@@ -21,25 +21,42 @@ interface AppSuggestionsData {
 interface AppSuggestionsDisplayProps {
     data: AppSuggestionsData;
     handleGenerate?: (index: number, imageDescription: string) => void;
+    handleSelect?: (index: number, suggestion: AppSuggestion) => void;
     imageUrls?: Record<number, string>;
     isLoading?: boolean;
 }
 
-const AppSuggestionsDisplay = ({ data, handleGenerate, imageUrls = {}, isLoading = false }: AppSuggestionsDisplayProps) => {
+const AppSuggestionsDisplay = ({ data, handleGenerate, handleSelect, imageUrls = {}, isLoading = false }: AppSuggestionsDisplayProps) => {
     // Handle missing or malformed data gracefully
     const suggestions = Array.isArray(data?.extracted?.suggestions) ? data.extracted.suggestions : [];
     const title = data?.extracted?.title || "App Suggestions";
 
     // Track which suggestion's description is expanded
     const [expandedDescription, setExpandedDescription] = useState<number | null>(null);
+    const [expandedImageDescription, setExpandedImageDescription] = useState<number | null>(null);
     const [selectedSuggestion, setSelectedSuggestion] = useState<number | null>(null);
 
     const toggleDescription = (index: number) => {
         setExpandedDescription(expandedDescription === index ? null : index);
     };
 
+    const toggleImageDescription = (index: number) => {
+        setExpandedImageDescription(expandedImageDescription === index ? null : index);
+    };
+
     const handleSelectSuggestion = (index: number) => {
-        setSelectedSuggestion(selectedSuggestion === index ? null : index);
+        const newSelection = selectedSuggestion === index ? null : index;
+        setSelectedSuggestion(newSelection);
+        
+        // Call the parent callback with selection data
+        if (handleSelect) {
+            if (newSelection !== null) {
+                handleSelect(newSelection, suggestions[newSelection]);
+            } else {
+                // If deselecting, we could pass null or handle differently
+                // For now, let's not call handleSelect when deselecting
+            }
+        }
     };
 
     // Function to trigger image generation
@@ -61,25 +78,23 @@ const AppSuggestionsDisplay = ({ data, handleGenerate, imageUrls = {}, isLoading
             </div>
 
             {/* Suggestions Container */}
-            <div className="p-6 md:p-8 space-y-4">
+            <div className="p-4 md:p-6 space-y-4">
                 {suggestions.length > 0 ? (
                     suggestions.map((suggestion, index) => (
                         <div
                             key={index}
-                            className={`bg-slate-50 dark:bg-slate-800/50  hover:shadow-md transition-all duration-200  ${
+                            className={`bg-slate-50 dark:bg-slate-800/50 hover:shadow-md transition-all duration-200 cursor-pointer ${
                                 selectedSuggestion === index
                                     ? "border-2 border-indigo-300 dark:border-indigo-700 rounded-3xl shadow-3xl"
                                     : "border-2 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm"
                             } overflow-hidden`}
+                            onClick={() => handleSelectSuggestion(index)}
                         >
-                            <div className="p-6 md:p-7">
-                                <div className="flex flex-col md:flex-row gap-6 md:items-start">
+                            <div className="p-4 md:p-5">
+                                <div className="flex flex-col md:flex-row gap-4 md:items-start">
                                     {/* App Details Section */}
                                     <div className="flex-1 space-y-4">
-                                        <div
-                                            className="flex justify-between items-start cursor-pointer"
-                                            onClick={() => handleSelectSuggestion(index)}
-                                        >
+                                        <div className="flex justify-between items-start">
                                             <h2
                                                 className={`text-2xl font-bold ${
                                                     selectedSuggestion === index
@@ -95,6 +110,10 @@ const AppSuggestionsDisplay = ({ data, handleGenerate, imageUrls = {}, isLoading
                                                         ? "bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-100"
                                                         : "bg-slate-100 dark:bg-indigo-600 text-slate-600 dark:text-slate-300"
                                                 }`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleSelectSuggestion(index);
+                                                }}
                                             >
                                                 {selectedSuggestion === index ? "Selected" : "Select"}
                                             </button>
@@ -110,7 +129,10 @@ const AppSuggestionsDisplay = ({ data, handleGenerate, imageUrls = {}, isLoading
 
                                         {suggestion.app_description && suggestion.app_description.length > 180 && (
                                             <button
-                                                onClick={() => toggleDescription(index)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleDescription(index);
+                                                }}
                                                 className="text-indigo-500 dark:text-indigo-400 font-medium text-sm flex items-center gap-1 hover:underline"
                                             >
                                                 {expandedDescription === index ? "Show less" : "Read more"}
@@ -123,15 +145,37 @@ const AppSuggestionsDisplay = ({ data, handleGenerate, imageUrls = {}, isLoading
                                     </div>
 
                                     {/* Image Section */}
-                                    <div className="md:w-1/3 space-y-3">
+                                    <div className="md:w-2/5 space-y-3">
                                         <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
                                             <Image size={16} />
                                             Visual Inspiration
                                         </h3>
 
-                                        <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-4 text-sm text-slate-600 dark:text-slate-300">
+                                        <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-3 text-sm text-slate-600 dark:text-slate-300">
                                             {suggestion.image_description ? (
-                                                <p className="text-xs line-clamp-4 mb-3">{suggestion.image_description}</p>
+                                                <>
+                                                    <p className={`text-xs mb-3 ${
+                                                        expandedImageDescription === index ? "" : "line-clamp-3"
+                                                    }`}>
+                                                        {suggestion.image_description}
+                                                    </p>
+                                                    
+                                                    {suggestion.image_description.length > 120 && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleImageDescription(index);
+                                                            }}
+                                                            className="text-indigo-500 dark:text-indigo-400 font-medium text-xs flex items-center gap-1 hover:underline mb-3"
+                                                        >
+                                                            {expandedImageDescription === index ? "Show less" : "Read more"}
+                                                            <ArrowRight
+                                                                size={12}
+                                                                className={`transition-transform ${expandedImageDescription === index ? "rotate-90" : ""}`}
+                                                            />
+                                                        </button>
+                                                    )}
+                                                </>
                                             ) : (
                                                 <p className="text-xs mb-3">No image description available.</p>
                                             )}
@@ -139,7 +183,10 @@ const AppSuggestionsDisplay = ({ data, handleGenerate, imageUrls = {}, isLoading
                                             {/* Only show generate button if handleGenerate is provided */}
                                             {handleGenerate && suggestion.image_description && (
                                                 <button
-                                                    onClick={() => generateImage(index, suggestion.image_description)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        generateImage(index, suggestion.image_description);
+                                                    }}
                                                     className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors text-sm font-medium"
                                                 >
                                                     <Sparkles size={16} />
@@ -160,6 +207,7 @@ const AppSuggestionsDisplay = ({ data, handleGenerate, imageUrls = {}, isLoading
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="absolute top-2 right-2 p-1.5 bg-white/80 dark:bg-slate-800/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        onClick={(e) => e.stopPropagation()}
                                                     >
                                                         <ExternalLink size={14} className="text-indigo-500" />
                                                     </a>
@@ -245,15 +293,15 @@ export const AppSuggestionsLoading = () => {
       </div>
       
       {/* Suggestions Container with skeleton loading */}
-      <div className="p-6 md:p-8 space-y-8">
+      <div className="p-4 md:p-6 space-y-8">
         {placeholderSuggestions.map((suggestion, index) => (
           <div 
             key={index} 
             className={`bg-slate-50 dark:bg-slate-800/50 border-2 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm overflow-hidden animate-pulse-subtle`}
             style={{ animationDelay: `${index * 200}ms` }}
           >
-            <div className="p-6 md:p-7">
-              <div className="flex flex-col md:flex-row gap-6 md:items-start">
+            <div className="p-4 md:p-5">
+              <div className="flex flex-col md:flex-row gap-4 md:items-start">
                 {/* App Details Section */}
                 <div className="flex-1 space-y-4">
                   <div className="flex justify-between items-start">
@@ -284,20 +332,20 @@ export const AppSuggestionsLoading = () => {
                 </div>
                 
                 {/* Image Section */}
-                <div className="md:w-1/3 space-y-3">
+                <div className="md:w-2/5 space-y-3">
                   <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
                     <Image size={16} />
                     Visual Inspiration
                   </h3>
                   
-                  <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-4 text-sm">
+                  <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-3 text-sm">
                     {/* Loading lines for image description */}
-                    {[...Array(2)].map((_, i) => (
+                    {[...Array(3)].map((_, i) => (
                       <div 
                         key={i} 
                         className="h-3 bg-slate-200 dark:bg-slate-600 rounded mb-2 loading-shine"
                         style={{ 
-                          width: `${85 - (i * 20)}%`, 
+                          width: `${85 - (i * 15)}%`, 
                           animationDelay: `${i * 150}ms` 
                         }}
                       ></div>
@@ -409,7 +457,7 @@ const styles = `
 }
 `;
 
-export default function AppSuggestionsView({ data, handleGenerate, imageUrls = {}, isLoading = false }: AppSuggestionsDisplayProps) {
+export default function AppSuggestionsView({ data, handleGenerate, handleSelect, imageUrls = {}, isLoading = false }: AppSuggestionsDisplayProps) {
     const isMobile = useIsMobile();
     const [hasError, setHasError] = useState(false);
 
@@ -434,7 +482,7 @@ export default function AppSuggestionsView({ data, handleGenerate, imageUrls = {
                 message="There was an error displaying the app suggestions."
             />;
         }
-        return <AppSuggestionsDisplay data={data} handleGenerate={handleGenerate} imageUrls={imageUrls} isLoading={isLoading} />;
+        return <AppSuggestionsDisplay data={data} handleGenerate={handleGenerate} handleSelect={handleSelect} imageUrls={imageUrls} isLoading={isLoading} />;
     } catch (error) {
         console.error("Error rendering AppSuggestionsDisplay:", error);
         setHasError(true);

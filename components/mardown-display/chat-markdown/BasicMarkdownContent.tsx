@@ -20,9 +20,7 @@ interface BasicMarkdownContentProps {
 
 export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ content, isStreamActive, onEditRequest, messageId, showCopyButton = true }) => {
     const [isHovering, setIsHovering] = useState(false);
-    const [copySuccess, setCopySuccess] = useState(false);
 
-    // Preprocess content to fix setext heading issues
     const preprocessContent = (rawContent: string): string => {
         // Fix setext-style heading patterns by ensuring there's a blank line before ---
         // This prevents paragraph text from being interpreted as h2 headings
@@ -33,21 +31,9 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
 
     const handleEdit = () => {
         console.log("Edit clicked with content:", content);
-        onEditRequest?.(); // <-- Call the passed-down function
+        onEditRequest?.();
     };
 
-    const handleCopy = () => {
-        navigator.clipboard
-            .writeText(content)
-            .then(() => {
-                console.log("Copy clicked with content:", content);
-                setCopySuccess(true);
-                setTimeout(() => setCopySuccess(false), 1000);
-            })
-            .catch((err) => {
-                console.error("Failed to copy: ", err);
-            });
-    };
 
     const components = {
         p: ({ node, children, ...props }: any) => {
@@ -55,7 +41,7 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
             // depending on how content is split and structured, but keeping as is for now.
             const isLastParagraph = false; // Simpler placeholder, adjust if needed
             return (
-                <p className={`font-sans tracking-wide leading-relaxed text-md ${isLastParagraph ? "mb-0" : "mb-2"}`} {...props}>
+                <p className={`font-sans tracking-wide leading-relaxed text-sm ${isLastParagraph ? "mb-0" : "mb-2"}`} {...props}>
                     {children}
                 </p>
             );
@@ -109,9 +95,9 @@ export const BasicMarkdownContent: React.FC<BasicMarkdownContentProps> = ({ cont
         //     <a className="text-blue-500 underline font-medium text-md" target="_blank" rel="noopener noreferrer" {...props} />
         // ),
         h1: ({ node, ...props }) => <h1 className="text-xl text-blue-500 font-bold mb-3 font-heading" {...props} />,
-        h2: ({ node, ...props }) => <h2 className="text-xl text-blue-500 font-medium mb-2 font-heading" {...props} />,
-        h3: ({ node, ...props }) => <h3 className="text-lg text-blue-500 font-medium mb-2 font-heading" {...props} />,
-        h4: ({ node, ...props }) => <h4 className="text-md text-blue-500 font-medium mb-1 font-heading" {...props} />,
+        h2: ({ node, ...props }) => <h2 className="text-lg text-blue-500 font-medium mb-2 font-heading" {...props} />,
+        h3: ({ node, ...props }) => <h3 className="text-md text-blue-500 font-medium mb-2 mt-4 font-heading" {...props} />,
+        h4: ({ node, ...props }) => <h4 className="text-md text-blue-500 font-medium mb-1 mt-3 font-heading" {...props} />,
         pre: ({ node, children, ...props }) => (
             <pre className="my-3" {...props}>
                 {children}

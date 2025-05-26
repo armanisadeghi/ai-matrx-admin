@@ -1,4 +1,3 @@
-
 // Using the enums you provided
 export enum LineCategory {
     HEADER = "header",
@@ -30,23 +29,23 @@ export enum SegmentType {
     PLAIN_TEXT = "plain_text",
 }
 
-export enum SectionType {
-    HORIZONTAL_RULE = "horizontal_rule",
-    CODE_BLOCK = "code_block",
-    TABLE = "table",
-    ENTRIES_AND_VALUES = "entries_and_values",
-    HEADER_WITH_BULLETS = "header_with_bullets",
-    HEADER_WITH_NUMBERED_LIST = "header_with_numbered_list",
-    HEADER_WITH_LIST = "header_with_list",
-    HEADER_WITH_TEXT = "header_with_text",
-    HEADER_WITH_TEXT_AND_LISTS = "header_with_text_and_lists",
-    BOLD_TEXT_WITH_SUB_BULLETS = "bold_text_with_sub_bullets",
-    BOLD_TEXT_WITH_MIXED_BULLETS = "bold_text_with_mixed_bullets",
-    PLAIN_TEXT = "plain_text",
-    BARE_HEADER = "bare_header",
-    LIST = "list",
-    TEXT_AND_LIST = "text_and_list",
-}
+// export enum SectionType {
+//     HORIZONTAL_RULE = "horizontal_rule",
+//     CODE_BLOCK = "code_block",
+//     TABLE = "table",
+//     ENTRIES_AND_VALUES = "entries_and_values",
+//     HEADER_WITH_BULLETS = "header_with_bullets",
+//     HEADER_WITH_NUMBERED_LIST = "header_with_numbered_list",
+//     HEADER_WITH_LIST = "header_with_list",
+//     HEADER_WITH_TEXT = "header_with_text",
+//     HEADER_WITH_TEXT_AND_LISTS = "header_with_text_and_lists",
+//     BOLD_TEXT_WITH_SUB_BULLETS = "bold_text_with_sub_bullets",
+//     BOLD_TEXT_WITH_MIXED_BULLETS = "bold_text_with_mixed_bullets",
+//     PLAIN_TEXT = "plain_text",
+//     BARE_HEADER = "bare_header",
+//     LIST = "list",
+//     TEXT_AND_LIST = "text_and_list",
+// }
 
 export interface LineMetadata {
     level: number | null; // Can be null or a number (e.g., 1 for list level)
@@ -135,4 +134,93 @@ export interface MarkdownAnalysisData {
     related_id: string;
     message_id?: string;
     conversation_id?: string;
+}
+
+// NEW SYSTEM
+
+export interface ModelConfig {
+    endpoint: string;
+    model: string;
+    max_tokens?: number;
+    conversation_id?: string;
+    user_id?: string;
+    stream?: boolean;
+    temperature?: number;
+    top_p?: number;
+    presence_penalty?: number;
+    frequency_penalty?: number;
+    stop_sequences?: string[];
+    audio_format?: string | null;
+    model_id?: string;
+    endpoint_id?: string | null;
+    recipe_id?: string | null;
+    recipe_version?: string | null;
+    // Allow for additional config properties
+    [key: string]: any;
+}
+
+// Known section types - extend this union as needed
+export type SectionType =
+    | "intro_text"
+    | "code_block"
+    | "table"
+    | "entries_and_values"
+    | "header_with_or_without_text"
+    | "header_with_list"
+    | "header_with_bullets"
+    | "header_with_numbered_list"
+    | "header_with_text"
+    | "numbered_list_without_header"
+    | "bold_text_with_sub_bullets"
+    | "plain_text"
+    | "outro_text"
+    | "json_block"
+    | "checklist"
+    | "other_section_type" // Fallback for unclassified sections
+    | string; // Allow for future unknown section types
+
+// Individual classified section
+export interface ClassifiedSection {
+    section: SectionType;
+    content: string[];
+    // Optional metadata for sections
+    metadata?: {
+        [key: string]: any;
+    };
+}
+
+// Main metadata structure
+export interface ClassifiedMetadata {
+    endpoint?: string;
+    model_name?: string;
+    config?: ModelConfig;
+    classified_output?: ClassifiedSection[];
+    // Allow for additional metadata fields
+    [key: string]: any;
+}
+
+// Root response interface
+export interface ClassifiedResponse {
+    metadata: ClassifiedMetadata;
+    // Allow for additional top-level properties
+    [key: string]: any;
+}
+
+// Utility types for working with the classified output
+export type ContentBySection<T extends SectionType> = {
+    [K in T]: string[];
+};
+
+// Helper type to extract sections of a specific type
+export type SectionsOfType<T extends SectionType> = ClassifiedSection & {
+    section: T;
+};
+
+// Example usage and type guards
+export function isSection<T extends SectionType>(section: ClassifiedSection, sectionType: T): section is SectionsOfType<T> {
+    return section.section === sectionType;
+}
+
+export function getSectionsByType<T extends SectionType>(classifiedOutput: ClassifiedSection[], sectionType: T): SectionsOfType<T>[] {
+    return classifiedOutput.filter((section): section is SectionsOfType<T> => isSection(section, sectionType));
 }

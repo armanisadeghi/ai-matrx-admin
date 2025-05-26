@@ -24,9 +24,14 @@ import { EnhancedResultsPanel } from "./EnhancedResultsPanel";
 import { CodePanel } from "./CodePanel";
 import { PanelConfig } from "./types";
 import { lazy } from "react";
+import React from "react";
 
 // Import the new dynamic panel system
 import { createDynamicPanelWrapper } from "./DynamicPanelRender";
+
+// Import Redux hooks and selectors
+import { useAppSelector } from "@/lib/redux/hooks";
+import { selectFirstPrimaryResponseDataByTaskId } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
 // Import the actual rendering components
 import EnhancedMarkdownCard from "@/components/mardown-display/EnhancedMarkdownCard";
@@ -36,6 +41,8 @@ import JsonDisplay from "@/components/mardown-display/JsonDisplay";
 import CandidateProfileBlock from "@/components/mardown-display/blocks/candidate-profiles/CandidateProfileBlock";
 import ParseExtractorOptions from "@/components/official/processor-extractor/ParseExtractorOptions";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
+import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
+import SectionViewer from "@/components/mardown-display/chat-markdown/analyzer/SectionViewer";
 
 // Dynamically import EventComponent
 const EventComponent = lazy(() => import("@/components/brokers/output/EventComponent"));
@@ -129,6 +136,93 @@ const MarkdownRendererPanel = createDynamicPanelWrapper(
             <MarkdownRenderer content={content} type="message" role="assistant" fontSize={16} />
         </div>
     )
+    // No parser = raw content
+);
+
+const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
+    ({ content, taskId }: { content: string; taskId?: string }) => {
+        const [isOpen, setIsOpen] = React.useState(true);
+        
+        console.log("taskId", taskId);
+        // Get response data using the selector
+        const responseData = useAppSelector((state) => 
+            taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null
+        );
+
+        console.log("responseData", responseData);
+        
+        // Extract metadata from response data
+        const analysisData = responseData?.response?.metadata || null;
+        
+        if (!isOpen) {
+            return (
+                <div className="w-full h-full flex items-center justify-center">
+                    <button 
+                        onClick={() => setIsOpen(true)}
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                    >
+                        Open Full Screen Editor
+                    </button>
+                </div>
+            );
+        }
+        
+        return (
+            <div className="w-full h-full">
+                <FullScreenMarkdownEditor
+                    isOpen={isOpen}
+                    initialContent={content}
+                    analysisData={analysisData}
+                    showSaveButton={false}
+                    showCancelButton={true}
+                    showCopyButton={true}
+                    tabs={["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer"]}
+                    initialTab="preview"
+                    onCancel={() => setIsOpen(false)}
+                />
+            </div>
+        );
+    }
+    // No parser = raw content
+);
+
+const SectionViewerPanel = createDynamicPanelWrapper(
+    ({ content, taskId }: { content: any; taskId?: string }) => {
+        // Get response data using the selector
+        const responseData = useAppSelector((state) => 
+            taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null
+        );
+        
+        // Extract classified_output from response metadata
+        const classifiedOutput = responseData?.response?.metadata?.classified_output;
+        
+        // Check if we have classified output data
+        if (Array.isArray(classifiedOutput)) {
+            return <SectionViewer data={classifiedOutput} />;
+        }
+        
+        // Fallback: Check if content is already an array of classified sections
+        if (Array.isArray(content)) {
+            return <SectionViewer data={content} />;
+        }
+        
+        // Fallback: If content is an object with classified_output, use that
+        if (content?.classified_output && Array.isArray(content.classified_output)) {
+            return <SectionViewer data={content.classified_output} />;
+        }
+        
+        // Fallback for when no valid data is available
+        return (
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                No classified sections available to display
+                {taskId && !responseData && (
+                    <div className="mt-2 text-sm">
+                        (No response data found for task: {taskId})
+                    </div>
+                )}
+            </div>
+        );
+    }
     // No parser = raw content
 );
 
@@ -269,6 +363,22 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
         icon: Image,
         label: "Image",
         value: "image",
+        defaultProps: {},
+    },
+    fullScreenMarkdownEditor: {
+        id: "fullScreenMarkdownEditor",
+        component: FullScreenMarkdownEditorPanel,
+        icon: FileText,
+        label: "Full Screen Markdown Editor (Advanced multi-tab editor with analysis, metadata, and classified content viewing)",
+        value: "fullScreenMarkdownEditor",
+        defaultProps: {},
+    },
+    sectionViewer: {
+        id: "sectionViewer",
+        component: SectionViewerPanel,
+        icon: AlignCenterVertical,
+        label: "Section Viewer (Displays classified markdown sections with visual formatting and icons)",
+        value: "sectionViewer",
         defaultProps: {},
     },
 };

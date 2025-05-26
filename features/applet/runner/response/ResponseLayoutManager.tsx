@@ -108,7 +108,7 @@ export default function ResponseLayoutManager({
                     </div>
                     {isTaskComplete && (
                         <div className="w-full max-w-4xl mx-auto px-4">
-                            <AppletPostActionButtons appletId={appletId} content={textResponse} data={dataResponse} />
+                            <AppletPostActionButtons appletId={appletId} taskId={taskId} content={textResponse} data={dataResponse} />
                         </div>
                     )}
                 </FullscreenWrapper>

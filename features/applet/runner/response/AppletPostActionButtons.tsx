@@ -7,15 +7,17 @@ import { copyToClipboard } from "@/components/matrx/buttons/markdown-copy-utils"
 import { FcGoogle } from "react-icons/fc";
 import { FaMicrosoft } from "react-icons/fa";
 import { FileText } from "lucide-react";
+import ReviseCommentsModal from "./ReviseCommentsModal";
 
 interface AppletPostActionButtonsProps {
     appletId: string;
+    taskId: string;
     className?: string;
     content?: string;
     data?: any;
 }
 
-export default function AppletPostActionButtons({ appletId, className = "", content = "", data = {} }: AppletPostActionButtonsProps) {
+export default function AppletPostActionButtons({ appletId, taskId, className = "", content = "", data = {} }: AppletPostActionButtonsProps) {
     const router = useRouter();
     const [showReviseModal, setShowReviseModal] = useState(false);
     const [reviseComments, setReviseComments] = useState("");
@@ -27,7 +29,6 @@ export default function AppletPostActionButtons({ appletId, className = "", cont
     
 
     useEffect(() => {
-        console.log("data", data);
         if (data[0].conversation_id) {
             setRoutePath(`/chat/${data[0].conversation_id}`);
         }
@@ -53,11 +54,9 @@ export default function AppletPostActionButtons({ appletId, className = "", cont
         router.push(routePath);
     };
 
-    const handleReviseSubmit = () => {
+    const handleReviseSubmit = (action: string, value?: string) => {
         // TODO: Implement revise functionality
-        console.log("Revise comments:", reviseComments);
-        setShowReviseModal(false);
-        setReviseComments("");
+        console.log("Revise action:", action, "Value:", value);
     };
 
     const handlePlaceholderAction = (action: string) => {
@@ -98,89 +97,98 @@ export default function AppletPostActionButtons({ appletId, className = "", cont
 
     return (
         <>
-            <div className={`flex flex-wrap gap-3 justify-end mt-6 ${className}`}>
-                {/* Share Button */}
-                <button
-                    onClick={() => handlePlaceholderAction("Share")}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600"
-                >
-                    <Share2 size={18} />
-                    Share
-                </button>
-
-                {/* Copy Button with Dropdown */}
-                <div className="relative">
-                    <button
-                        ref={copyButtonRef}
-                        onClick={() => setShowCopyOptions(!showCopyOptions)}
-                        disabled={!content}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <Copy size={18} />
-                        {copied ? "Copied!" : "Copy"}
-                        {!copied && <ChevronDown size={14} />}
-                    </button>
-                    
-                    {/* Copy Options Dropdown */}
-                    {showCopyOptions && content && (
-                        <div 
-                            className={`absolute ${
-                                dropdownPosition === "above" 
-                                    ? "bottom-full mb-1" 
-                                    : "top-full mt-1"
-                            } min-w-48 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-30`}
-                        >
-                            <button
-                                onClick={handleCopyPlainText}
-                                className="block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center first:rounded-t-lg"
-                            >
-                                <FileText className="h-4 w-4 mr-3" />
-                                Plain Text
-                            </button>
-                            <button
-                                onClick={handleCopyGoogleDocs}
-                                className="block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600"
-                            >
-                                <FcGoogle className="h-4 w-4 mr-3" />
-                                Google Docs
-                            </button>
-                            <button
-                                onClick={handleCopyMicrosoftWord}
-                                className="block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600 last:rounded-b-lg"
-                            >
-                                <FaMicrosoft className="h-4 w-4 mr-3 text-blue-500" />
-                                Microsoft Word
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Enhance Button */}
-                <button
-                    onClick={() => handlePlaceholderAction("Enhance")}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600"
-                >
-                    <Sparkles size={18} />
-                    Enhance
-                </button>
-
-                {/* Revise with Comments Button */}
-                <button
-                    onClick={() => setShowReviseModal(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600"
-                >
-                    <Edit3 size={18} />
-                    Revise with Comments
-                </button>
+            {/* Mobile-first responsive layout */}
+            <div className={`flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 sm:justify-end mt-6 ${className}`}>
                 
-                {/* Improve in Chat Button - Primary Action */}
+                {/* Mobile: Primary action first and full width */}
                 <button
                     onClick={handleImproveInChat}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 sm:px-4 py-3 sm:py-2.5 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md text-base sm:text-sm order-1 sm:order-5"
                 >
-                    <MessageSquare size={18} />
+                    <MessageSquare size={20} className="sm:w-[18px] sm:h-[18px]" />
                     Improve in Chat
                 </button>
+
+                {/* Mobile: Secondary actions in a grid */}
+                <div className="grid grid-cols-2 gap-2 sm:contents order-2 sm:order-1">
+                    {/* Share Button */}
+                    <button
+                        onClick={() => handlePlaceholderAction("Share")}
+                        className="flex items-center justify-center gap-2 px-3 sm:px-4 py-3 sm:py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600 text-sm"
+                    >
+                        <Share2 size={18} className="sm:w-[18px] sm:h-[18px]" />
+                        <span className="hidden sm:inline">Share</span>
+                    </button>
+
+                    {/* Copy Button with Dropdown */}
+                    <div className="relative">
+                        <button
+                            ref={copyButtonRef}
+                            onClick={() => setShowCopyOptions(!showCopyOptions)}
+                            disabled={!content}
+                            className="flex items-center justify-center gap-2 w-full px-3 sm:px-4 py-3 sm:py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                            <Copy size={18} className="sm:w-[18px] sm:h-[18px]" />
+                            <span className="hidden sm:inline">{copied ? "Copied!" : "Copy"}</span>
+                            {!copied && <ChevronDown size={14} className="hidden sm:inline" />}
+                        </button>
+                        
+                        {/* Copy Options Dropdown - Mobile optimized */}
+                        {showCopyOptions && content && (
+                            <div 
+                                className={`absolute ${
+                                    dropdownPosition === "above" 
+                                        ? "bottom-full mb-1" 
+                                        : "top-full mt-1"
+                                } w-full sm:min-w-48 sm:w-auto right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-30`}
+                            >
+                                <button
+                                    onClick={handleCopyPlainText}
+                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center first:rounded-t-lg"
+                                >
+                                    <FileText className="h-4 w-4 mr-3" />
+                                    Plain Text
+                                </button>
+                                <button
+                                    onClick={handleCopyGoogleDocs}
+                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600"
+                                >
+                                    <FcGoogle className="h-4 w-4 mr-3" />
+                                    Google Docs
+                                </button>
+                                <button
+                                    onClick={handleCopyMicrosoftWord}
+                                    className="block w-full text-left px-4 py-3 sm:py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center border-t border-slate-100 dark:border-slate-600 last:rounded-b-lg"
+                                >
+                                    <FaMicrosoft className="h-4 w-4 mr-3 text-blue-500" />
+                                    Microsoft Word
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Mobile: Full-width secondary actions */}
+                <div className="flex gap-2 order-3 sm:order-2 sm:contents">
+                    {/* Enhance Button */}
+                    <button
+                        onClick={() => handlePlaceholderAction("Enhance")}
+                        className="flex items-center justify-center gap-2 flex-1 sm:flex-none sm:w-auto px-3 sm:px-4 py-3 sm:py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600 text-sm"
+                    >
+                        <Sparkles size={18} className="sm:w-[18px] sm:h-[18px]" />
+                        <span className="hidden sm:inline">Enhance</span>
+                    </button>
+
+                    {/* Revise with Comments Button */}
+                    <button
+                        onClick={() => setShowReviseModal(true)}
+                        className="flex items-center justify-center gap-2 flex-1 sm:flex-none sm:w-auto px-3 sm:px-4 py-3 sm:py-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-600 text-sm"
+                    >
+                        <Edit3 size={18} className="sm:w-[18px] sm:h-[18px]" />
+                        <span className="hidden sm:inline">Revise</span>
+                        <span className="hidden md:inline">with Comments</span>
+                    </button>
+                </div>
             </div>
 
             {/* Close dropdown when clicking outside */}
@@ -192,43 +200,18 @@ export default function AppletPostActionButtons({ appletId, className = "", cont
             )}
 
             {/* Revise Comments Modal */}
-            {showReviseModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden border border-slate-100 dark:border-slate-700">
-                        <div className="p-6">
-                            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Revise with Comments</h3>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                                Provide specific feedback or suggestions for improvement:
-                            </p>
-                            <textarea
-                                value={reviseComments}
-                                onChange={(e) => setReviseComments(e.target.value)}
-                                placeholder="Enter your comments and suggestions here..."
-                                className="w-full h-32 p-3 border border-slate-300 dark:border-slate-600 rounded-lg resize-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 bg-white dark:bg-slate-800/50 text-slate-800 dark:text-slate-200 placeholder-slate-500 dark:placeholder-slate-400"
-                                autoFocus
-                            />
-                        </div>
-                        <div className="flex justify-end gap-3 px-6 py-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-600">
-                            <button
-                                onClick={() => {
-                                    setShowReviseModal(false);
-                                    setReviseComments("");
-                                }}
-                                className="px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all duration-200"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleReviseSubmit}
-                                disabled={!reviseComments.trim()}
-                                className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 disabled:bg-slate-400 dark:disabled:bg-slate-600 text-white rounded-lg transition-all duration-200 disabled:cursor-not-allowed font-medium shadow-sm hover:shadow"
-                            >
-                                Submit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ReviseCommentsModal
+                appletId={appletId}
+                taskId={taskId}
+                className={className}
+                content={content}
+                data={data}
+                showReviseModal={showReviseModal}
+                setShowReviseModal={setShowReviseModal}
+                reviseComments={reviseComments}
+                setReviseComments={setReviseComments}
+                onSubmit={handleReviseSubmit}
+            />
         </>
     );
 }

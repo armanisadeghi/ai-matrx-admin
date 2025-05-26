@@ -74,7 +74,7 @@ const MessageItem = React.memo(
                 isStreamActive={false}
                 onScrollToBottom={onScrollToBottom}
                 onContentUpdate={handleContentEdit}
-                markdownAnalysisData={message.markdownAnalysisData || null}
+                metadata={message.metadata || null}
                 isOverlay={isOverlay}
                 audioControls={audioControls}
             />

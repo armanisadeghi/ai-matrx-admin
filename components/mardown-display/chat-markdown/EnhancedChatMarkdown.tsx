@@ -23,7 +23,7 @@ interface ChatMarkdownDisplayProps {
     className?: string;
     isStreamActive?: boolean;
     onContentChange?: (newContent: string) => void;
-    analysisData?: MarkdownAnalysisData;
+    analysisData?: any;
     messageId?: string;
     allowFullScreenEditor?: boolean;
 }

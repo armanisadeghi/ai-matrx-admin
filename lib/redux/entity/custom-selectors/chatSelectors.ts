@@ -20,6 +20,7 @@ import {
 } from "@/types/AutomationSchemaTypes";
 import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { InputControlsSettings } from "@/features/chat/components/response/chat-loading/ControlledLoadingIndicator";
+import { ClassifiedMetadata } from "@/components/mardown-display/chat-markdown/analyzer/types";
 
 const trace = "ENTITY SELECTORS";
 
@@ -496,6 +497,14 @@ export const createChatSelectors = () => {
         }
     );
 
+    const selectMessageMetadata = createSelector(
+        [messagesArray, (_state: RootState, messageId: string) => messageId],
+        (messages, messageId): ClassifiedMetadata | undefined => {
+            const message = messages.find((msg) => msg.id === messageId);
+            return message?.metadata;
+        }
+    );
+
     const files = createSelector([activeMessageMetadata], (metadata) => metadata?.files);
 
     const activeMessageFiles = createSelector([activeMessageMetadata], (metadata) => metadata?.files);
@@ -578,6 +587,7 @@ export const createChatSelectors = () => {
         isLastMessageAssistant,
         isStreaming,
         selectMarkdownAnalysisData,
+        selectMessageMetadata,
 
         // New selectors
         activeMessageSettings,

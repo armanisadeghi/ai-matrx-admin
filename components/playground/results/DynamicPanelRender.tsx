@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAppSelector } from '@/lib/redux/hooks';
-import { selectTaskFirstListenerId, selectResponseTextByListenerId } from '@/lib/redux/socket-io/selectors';
+import { selectTaskFirstListenerId, selectResponseTextByListenerId, selectResponseDataByListenerId } from '@/lib/redux/socket-io/selectors';
 import { BasePanelProps } from './types';
 
 // Import existing parsers
@@ -61,6 +61,9 @@ export const DynamicPanelRender: React.FC<DynamicPanelRenderProps> = ({
     // Get content from Redux store
     const firstListenerId = useAppSelector((state) => selectTaskFirstListenerId(state, taskId));
     const streamingText = useAppSelector(selectResponseTextByListenerId(firstListenerId));
+    const responseData = useAppSelector((state) => selectResponseDataByListenerId(firstListenerId)(state));
+
+    console.log("DynamicPanelRender responseData", responseData);
 
     // Process content based on parser selection
     const processedContent = React.useMemo(() => {
@@ -113,6 +116,7 @@ export const DynamicPanelRender: React.FC<DynamicPanelRenderProps> = ({
         <div className="h-full w-full">
             <Component
                 content={processedContent}
+                taskId={taskId}
                 {...componentProps}
                 {...basePanelProps}
             />

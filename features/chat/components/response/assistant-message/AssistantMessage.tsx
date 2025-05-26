@@ -3,7 +3,7 @@ import { ThumbsUp, ThumbsDown, Copy, MoreHorizontal, Volume2, Pause, RefreshCw, 
 import MessageOptionsMenu from "./MessageOptionsMenu";
 import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import { MarkdownAnalysisData } from "@/components/mardown-display/chat-markdown/analyzer/types";
+import { ClassifiedMetadata } from "@/components/mardown-display/chat-markdown/analyzer/types";
 import { localMessage } from "@/features/chat/components/response/MessageItem";
 import { CartesiaControls } from "@/hooks/tts/simple/useCartesiaControls";
 import { parseMarkdownToText } from "@/utils/markdown-processors/parse-markdown-for-speech";
@@ -13,7 +13,7 @@ interface AssistantMessageProps {
     isStreamActive?: boolean;
     onScrollToBottom?: () => void;
     onContentUpdate?: (newContent: string) => void;
-    markdownAnalysisData?: MarkdownAnalysisData;
+    metadata?: ClassifiedMetadata;
     isOverlay?: boolean;
     audioControls?: CartesiaControls;
 }
@@ -23,7 +23,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
     isStreamActive = false, 
     onScrollToBottom, 
     onContentUpdate, 
-    markdownAnalysisData, 
+    metadata, 
     isOverlay = false, 
     audioControls 
 }) => {
@@ -135,7 +135,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                     role="assistant"
                     className="bg-transparent dark:bg-transparent"
                     isStreamActive={isStreamActive}
-                    analysisData={markdownAnalysisData}
+                    analysisData={metadata}
                     messageId={message.id}
                     onContentChange={handleMarkdownContentChange}
                 />
@@ -211,7 +211,7 @@ const AssistantMessage: React.FC<AssistantMessageProps> = ({
                     </div>
                 )}
             </div>
-            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} analysisData={markdownAnalysisData} messageId={message.id} />
+            <FullScreenMarkdownEditor isOpen={isEditorOpen} initialContent={content} onSave={handleSaveEdit} onCancel={handleCancelEdit} analysisData={metadata} messageId={message.id} />
         </div>
     );
 };

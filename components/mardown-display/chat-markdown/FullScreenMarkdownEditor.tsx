@@ -1,14 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import remarkGfm from "remark-gfm";
 import dynamic from "next/dynamic";
 import type { Editor as TuiEditorReactComp } from "@toast-ui/react-editor";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import EditorLoading from "../text-block/editorLoading";
 import MarkdownAnalyzer from "./analyzer/MarkdownAnalyzer";
-import { MarkdownAnalysisData } from "./analyzer/types";
 import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButton";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
+import ProcessorExtractor from "@/components/official/processor-extractor/ProcessorExtractor";
+import SectionViewer from "./analyzer/SectionViewer";
 
 // Import the Toast UI Editor dark theme CSS
 import "@toast-ui/editor/dist/toastui-editor.css";
@@ -27,15 +27,15 @@ interface FullScreenMarkdownEditorProps {
     initialContent: string;
     onSave?: (newContent: string) => void;
     onCancel?: () => void;
-    analysisData?: MarkdownAnalysisData;
+    analysisData?: any;
     messageId?: string;
     title?: string;
     description?: string;
     showCopyButton?: boolean;
     showSaveButton?: boolean;
     showCancelButton?: boolean;
-    tabs?: Array<"write" | "rich" | "preview" | "analysis">;
-    initialTab?: "write" | "rich" | "preview" | "analysis";
+    tabs?: Array<"write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer">;
+    initialTab?: "write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer";
 }
 
 const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
@@ -46,11 +46,11 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     analysisData,
     messageId,
     title = "Edit Content",
-    description = "A dialog for editing content with options to write in markdown, use a rich text editor, preview the content, or analyze it.",
+    description = "A dialog for editing content with options to write in markdown, use a rich text editor, preview the content, analyze it, or view metadata.",
     showCopyButton = true,
     showSaveButton = true,
     showCancelButton = true,
-    tabs = ["write", "rich", "preview", "analysis"],
+    tabs = ["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer"],
     initialTab = "write",
 }) => {
     const [editedContent, setEditedContent] = useState(initialContent);
@@ -275,6 +275,62 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             label: "Analysis",
             content: <MarkdownAnalyzer messageId={messageId} />,
             className: "p-4"
+        });
+    }
+
+    if (tabs.includes("metadata")) {
+        tabDefinitions.push({
+            id: "metadata",
+            label: "Metadata",
+            content: (
+                <ProcessorExtractor 
+                    jsonData={analysisData} 
+                    configKey={messageId ? `metadata-${messageId}` : "metadata"} 
+                />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add config tab if analysisData.config exists
+    if (tabs.includes("config") && analysisData?.config) {
+        tabDefinitions.push({
+            id: "config",
+            label: "Config",
+            content: (
+                <ProcessorExtractor 
+                    jsonData={analysisData.config} 
+                    configKey={messageId ? `config-${messageId}` : "config"} 
+                />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add classified_output tab if analysisData.classified_output exists
+    if (tabs.includes("classified_output") && analysisData?.classified_output) {
+        tabDefinitions.push({
+            id: "classified_output",
+            label: "Classified Output",
+            content: (
+                <ProcessorExtractor 
+                    jsonData={analysisData.classified_output} 
+                    configKey={messageId ? `classified_output-${messageId}` : "classified_output"} 
+                />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add classified_analyzer tab if analysisData.classified_output exists and is an array
+    if (tabs.includes("classified_analyzer") && Array.isArray(analysisData?.classified_output)) {
+        tabDefinitions.push({
+            id: "classified_analyzer",
+            label: "Classified Analyzer",
+            content: (
+                <SectionViewer data={analysisData.classified_output} />
+            ),
+            className: "p-0"
         });
     }
 
