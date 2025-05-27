@@ -9,6 +9,7 @@ import { MarkdownCopyButton } from "@/components/matrx/buttons/MarkdownCopyButto
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import ProcessorExtractor from "@/components/official/processor-extractor/ProcessorExtractor";
 import SectionViewer from "./analyzer/SectionViewer";
+import SectionViewerWithSidebar from "./analyzer/SectionViewerWithSidebar";
 
 // Import the Toast UI Editor dark theme CSS
 import "@toast-ui/editor/dist/toastui-editor.css";
@@ -34,8 +35,8 @@ interface FullScreenMarkdownEditorProps {
     showCopyButton?: boolean;
     showSaveButton?: boolean;
     showCancelButton?: boolean;
-    tabs?: Array<"write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer">;
-    initialTab?: "write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer";
+    tabs?: Array<"write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar">;
+    initialTab?: "write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar";
 }
 
 const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
@@ -50,7 +51,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     showCopyButton = true,
     showSaveButton = true,
     showCancelButton = true,
-    tabs = ["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer"],
+    tabs = ["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer", "classified_analyzer_sidebar"],
     initialTab = "write",
 }) => {
     const [editedContent, setEditedContent] = useState(initialContent);
@@ -329,6 +330,18 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             label: "Classified Analyzer",
             content: (
                 <SectionViewer data={analysisData.classified_output} />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add classified_analyzer_sidebar tab if analysisData.classified_output exists and is an array
+    if (tabs.includes("classified_analyzer_sidebar") && Array.isArray(analysisData?.classified_output)) {
+        tabDefinitions.push({
+            id: "classified_analyzer_sidebar",
+            label: "Classified Analyzer Sidebar",
+            content: (
+                <SectionViewerWithSidebar data={analysisData.classified_output} />
             ),
             className: "p-0"
         });

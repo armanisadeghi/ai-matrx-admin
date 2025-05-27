@@ -69,9 +69,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "appletId", "containerId", "order"]
 },
   arg: {
-  nativeFields: ["id", "name", "required", "default", "dataType", "ready", "registeredFunction"],
+  nativeFields: ["id", "name", "required", "defaultJunk", "dataType", "ready", "registeredFunction", "defaultValue"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "required", "default", "dataType", "ready", "registeredFunction"]
+  nativeFieldsNoPk: ["name", "required", "defaultJunk", "dataType", "ready", "registeredFunction", "defaultValue"]
 },
   audioLabel: {
   nativeFields: ["id", "createdAt", "name", "description"],

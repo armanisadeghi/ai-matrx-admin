@@ -138,10 +138,11 @@ export type Arg = {
     id: string;
     name: string;
     required?: boolean;
-    default?: string;
+    defaultJunk?: string;
     dataType?: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
     ready?: boolean;
     registeredFunction?: string;
+    defaultValue?: Record<string, unknown>;
 }
 
 export type AudioLabel = {

@@ -43,6 +43,7 @@ import ParseExtractorOptions from "@/components/official/processor-extractor/Par
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import SectionViewer from "@/components/mardown-display/chat-markdown/analyzer/SectionViewer";
+import SectionViewerWithSidebar from "@/components/mardown-display/chat-markdown/analyzer/SectionViewerWithSidebar";
 
 // Dynamically import EventComponent
 const EventComponent = lazy(() => import("@/components/brokers/output/EventComponent"));
@@ -176,7 +177,7 @@ const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
                     showSaveButton={false}
                     showCancelButton={true}
                     showCopyButton={true}
-                    tabs={["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer"]}
+                    tabs={["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer", "classified_analyzer_sidebar"]}
                     initialTab="preview"
                     onCancel={() => setIsOpen(false)}
                 />
@@ -209,6 +210,46 @@ const SectionViewerPanel = createDynamicPanelWrapper(
         // Fallback: If content is an object with classified_output, use that
         if (content?.classified_output && Array.isArray(content.classified_output)) {
             return <SectionViewer data={content.classified_output} />;
+        }
+        
+        // Fallback for when no valid data is available
+        return (
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                No classified sections available to display
+                {taskId && !responseData && (
+                    <div className="mt-2 text-sm">
+                        (No response data found for task: {taskId})
+                    </div>
+                )}
+            </div>
+        );
+    }
+    // No parser = raw content
+);
+
+const SectionViewerWithSidebarPanel = createDynamicPanelWrapper(
+    ({ content, taskId }: { content: any; taskId?: string }) => {
+        // Get response data using the selector
+        const responseData = useAppSelector((state) => 
+            taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null
+        );
+        
+        // Extract classified_output from response metadata
+        const classifiedOutput = responseData?.response?.metadata?.classified_output;
+        
+        // Check if we have classified output data
+        if (Array.isArray(classifiedOutput)) {
+            return <SectionViewerWithSidebar data={classifiedOutput} />;
+        }
+        
+        // Fallback: Check if content is already an array of classified sections
+        if (Array.isArray(content)) {
+            return <SectionViewerWithSidebar data={content} />;
+        }
+        
+        // Fallback: If content is an object with classified_output, use that
+        if (content?.classified_output && Array.isArray(content.classified_output)) {
+            return <SectionViewerWithSidebar data={content.classified_output} />;
         }
         
         // Fallback for when no valid data is available
@@ -379,6 +420,14 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
         icon: AlignCenterVertical,
         label: "Section Viewer (Displays classified markdown sections with visual formatting and icons)",
         value: "sectionViewer",
+        defaultProps: {},
+    },
+    sectionViewerWithSidebar: {
+        id: "sectionViewerWithSidebar",
+        component: SectionViewerWithSidebarPanel,
+        icon: LayoutTemplate,
+        label: "Section Viewer with Sidebar (Enhanced section viewer with sidebar navigation and multiple format views)",
+        value: "sectionViewerWithSidebar",
         defaultProps: {},
     },
 };
