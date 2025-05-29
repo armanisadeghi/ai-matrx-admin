@@ -8157,7 +8157,7 @@ export const arg = {
             uniqueFieldId: 'supabase_automation_matrix:arg:required',
 
             dataType: 'boolean' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
             defaultValue: "true" as const,
@@ -8190,7 +8190,7 @@ export const arg = {
     "step": "default",
     "numberType": "default",
     "options": "default",
-    "required": false
+    "required": true
 },
             structure: 'single' as const,
             isNative: true,
@@ -8199,7 +8199,7 @@ export const arg = {
             entityName: 'arg',
             databaseTable: 'arg',
             foreignKeyReference: null,
-            description: '"Required" field for arg. This is an optional field. Your entry must be an boolean data type.',
+            description: '"Required" field for arg. This is a required field. Your entry must be an boolean data type.',
         },
             defaultJunk: {
             fieldNameFormats: {
@@ -8285,7 +8285,7 @@ export const arg = {
             uniqueFieldId: 'supabase_automation_matrix:arg:dataType',
 
             dataType: 'string' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
             defaultValue: "str" as const,
@@ -8347,7 +8347,7 @@ export const arg = {
             "value": "url"
         }
     ],
-    "required": false
+    "required": true
 },
             structure: 'single' as const,
             isNative: true,
@@ -8356,7 +8356,7 @@ export const arg = {
             entityName: 'arg',
             databaseTable: 'arg',
             foreignKeyReference: null,
-            description: '"Data Type" field for arg. This is an optional field. Your entry must be an string data type.',
+            description: '"Data Type" field for arg. This is a required field. Your entry must be an string data type.',
         },
             ready: {
             fieldNameFormats: {
@@ -8378,7 +8378,7 @@ export const arg = {
             uniqueFieldId: 'supabase_automation_matrix:arg:ready',
 
             dataType: 'boolean' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
             defaultValue: "false" as const,
@@ -8411,7 +8411,7 @@ export const arg = {
     "step": "default",
     "numberType": "default",
     "options": "default",
-    "required": false
+    "required": true
 },
             structure: 'single' as const,
             isNative: true,
@@ -8420,7 +8420,7 @@ export const arg = {
             entityName: 'arg',
             databaseTable: 'arg',
             foreignKeyReference: null,
-            description: '"Ready" field for arg. This is an optional field. Your entry must be an boolean data type.',
+            description: '"Ready" field for arg. This is a required field. Your entry must be an boolean data type.',
         },
             registeredFunction: {
             fieldNameFormats: {
@@ -8442,7 +8442,7 @@ export const arg = {
             uniqueFieldId: 'supabase_automation_matrix:arg:registeredFunction',
 
             dataType: 'uuid' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
             defaultValue: "" as const,
@@ -8475,7 +8475,7 @@ export const arg = {
     "step": "default",
     "numberType": "default",
     "options": "default",
-    "required": false
+    "required": true
 },
             structure: 'single' as const,
             isNative: true,
@@ -8484,7 +8484,7 @@ export const arg = {
             entityName: 'arg',
             databaseTable: 'arg',
             foreignKeyReference: {"table": "registered_function", "column": "id", "entity": "registeredFunction", "field": "id"},
-            description: '"Registered Function" field for arg. This is an optional field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.',
+            description: '"Registered Function" field for arg. This is a required field. Your entry must be an uuid data type. This field is a reference to a registeredFunction.',
         },
             defaultValue: {
             fieldNameFormats: {
@@ -8506,10 +8506,10 @@ export const arg = {
             uniqueFieldId: 'supabase_automation_matrix:arg:defaultValue',
 
             dataType: 'object' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
-            defaultValue: "" as const,
+            defaultValue: "{'value': None}" as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: "",
@@ -8539,7 +8539,7 @@ export const arg = {
     "step": "default",
     "numberType": "default",
     "options": "default",
-    "required": false
+    "required": true
 },
             structure: 'single' as const,
             isNative: true,
@@ -8548,7 +8548,7 @@ export const arg = {
             entityName: 'arg',
             databaseTable: 'arg',
             foreignKeyReference: null,
-            description: '"Default Value" field for arg. This is an optional field. Your entry must be an object data type.',
+            description: '"Default Value" field for arg. This is a required field. Your entry must be an object data type.',
         },
             registeredFunctionReference: {
     fieldNameFormats: {
@@ -43207,10 +43207,10 @@ export const registeredFunction = {
             uniqueFieldId: 'supabase_automation_matrix:registeredFunction:returnBroker',
 
             dataType: 'uuid' as const,
-            isRequired: false,
+            isRequired: true,
             maxLength: null,
             isArray: false,
-            defaultValue: "" as const,
+            defaultValue: "7ed8807a-b5cb-4475-b75c-686383f31125" as const,
             isPrimaryKey: false,
             isDisplayField: false,
             defaultGeneratorFunction: "",
@@ -43240,7 +43240,7 @@ export const registeredFunction = {
     "step": "default",
     "numberType": "default",
     "options": "default",
-    "required": false
+    "required": true
 },
             structure: 'single' as const,
             isNative: true,
@@ -43249,7 +43249,7 @@ export const registeredFunction = {
             entityName: 'registeredFunction',
             databaseTable: 'registered_function',
             foreignKeyReference: {"table": "data_broker", "column": "id", "entity": "dataBroker", "field": "id"},
-            description: '"Return Broker" field for registeredFunction. This is an optional field. Your entry must be an uuid data type. This field is a reference to a dataBroker.',
+            description: '"Return Broker" field for registeredFunction. This is a required field. Your entry must be an uuid data type. This field is a reference to a dataBroker.',
         },
             name: {
             fieldNameFormats: {

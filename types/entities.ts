@@ -137,12 +137,12 @@ export type AppletContainers = {
 export type Arg = {
     id: string;
     name: string;
-    required?: boolean;
+    required: boolean;
     defaultJunk?: string;
-    dataType?: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
-    ready?: boolean;
-    registeredFunction?: string;
-    defaultValue?: Record<string, unknown>;
+    dataType: "bool" | "dict" | "float" | "int" | "list" | "str" | "url" | undefined;
+    ready: boolean;
+    registeredFunction: string;
+    defaultValue: Record<string, unknown>;
 }
 
 export type AudioLabel = {
@@ -715,7 +715,7 @@ export type RegisteredFunction = {
     modulePath: string;
     className?: string;
     description?: string;
-    returnBroker?: string;
+    returnBroker: string;
     name: string;
     tags?: Record<string, unknown>;
 }
