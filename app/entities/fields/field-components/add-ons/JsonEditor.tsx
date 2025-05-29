@@ -14,12 +14,44 @@ interface JsonEditorProps extends React.ComponentPropsWithRef<typeof Textarea> {
 // Utility functions for JSON manipulation and validation
 const jsonUtils = {
   /**
+   * Detects if a string is stringified JSON and unwraps it
+   */
+  unwrapStringifiedJson: (value: any): any => {
+    if (typeof value !== "string") return value;
+    
+    try {
+      // Check if it's a stringified JSON by trying to parse it
+      const parsed = JSON.parse(value);
+      
+      // If parsed result is an object or array (not primitive), it was likely stringified JSON
+      if (typeof parsed === "object" && parsed !== null) {
+        return parsed;
+      }
+    } catch (err) {
+      // If parsing fails, it's just a regular string
+    }
+    
+    return value;
+  },
+
+  /**
    * Converts various input types to a formatted string representation
    */
   convertToString: (value: any): string => {
     if (value === null || value === undefined) return "";
-    if (typeof value === "string") return value;
-    return JSON.stringify(value);
+    
+    // First, try to unwrap stringified JSON
+    const unwrapped = jsonUtils.unwrapStringifiedJson(value);
+    
+    if (typeof unwrapped === "string") return unwrapped;
+    
+    // For objects/arrays, convert to pretty JSON
+    try {
+      return JSON.stringify(unwrapped, null, 2);
+    } catch (err) {
+      // Fallback to string conversion
+      return String(unwrapped);
+    }
   },
 
   /**
@@ -35,8 +67,27 @@ const jsonUtils = {
   },
 
   /**
-   * Attempts to safely format JSON string on blur
-   * Returns the original string if any step fails
+   * Attempts to parse JSON string to object
+   * Returns the parsed object if successful, original string if not
+   */
+  safeParse: (text: string): any => {
+    if (!text.trim()) return text;
+    
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      // Try with JSON5 for more forgiving parsing
+      try {
+        return JSON5.parse(text);
+      } catch (err2) {
+        return text; // Return original string if parsing fails
+      }
+    }
+  },
+
+  /**
+   * Attempts to safely format JSON string for display
+   * Returns the formatted string if successful, original string if not
    */
   safeFormat: (text: string): string => {
     if (!text.trim()) return text;
@@ -45,34 +96,19 @@ const jsonUtils = {
       // First try parsing with JSON5 which is more forgiving
       const parsed = JSON5.parse(text);
       
-      // Convert back to standard JSON
-      const formatted = JSON.stringify(parsed);
-      
-      // Verify we didn't lose any data
-      const reparsed = JSON.parse(formatted);
-      if (JSON.stringify(parsed) === JSON.stringify(reparsed)) {
-        return formatted;
+      // Convert back to pretty formatted JSON
+      return JSON.stringify(parsed, null, 2);
+    } catch (err) {
+      // Try converting Python None to null
+      try {
+        const converted = text.replace(/None/g, "null");
+        const parsed = JSON5.parse(converted);
+        return JSON.stringify(parsed, null, 2);
+      } catch (err2) {
+        // If everything fails, return original
+        return text;
       }
-    } catch (err) {}
-    
-    // If anything fails, return original
-    return text;
-  },
-
-  /**
-   * Converts Python None to null if it's safe to do so
-   */
-  safeConvertNone: (text: string): string => {
-    if (!text.includes('None')) return text;
-    
-    try {
-      const converted = text.replace(/None/g, "null");
-      if (jsonUtils.isValidJson(converted)) {
-        return converted;
-      }
-    } catch (err) {}
-    
-    return text;
+    }
   }
 };
 
@@ -82,6 +118,7 @@ const JsonEditor = React.forwardRef<HTMLTextAreaElement, JsonEditorProps>(
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newText = e.target.value;
+      // During typing, always send back the raw string
       onChange?.(newText);
       setIsValid(jsonUtils.isValidJson(newText));
     };
@@ -89,19 +126,28 @@ const JsonEditor = React.forwardRef<HTMLTextAreaElement, JsonEditorProps>(
     const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
       const text = e.target.value;
       
-      // Only attempt formatting if the JSON is invalid
-      if (!jsonUtils.isValidJson(text)) {
-        // Try formatting with our safe utilities
-        let formatted = jsonUtils.safeFormat(text);
-        formatted = jsonUtils.safeConvertNone(formatted);
-        
-        // Only update if we got valid JSON and the content changed
-        if (formatted !== text && jsonUtils.isValidJson(formatted)) {
-          onChange?.(formatted);
-          setIsValid(true);
-        }
+      // Attempt to format the display
+      const formatted = jsonUtils.safeFormat(text);
+      
+      // Update the display if formatting was successful and different
+      if (formatted !== text) {
+        // Update the textarea value directly for display
+        e.target.value = formatted;
       }
       
+      // Determine what to send back via onChange
+      let valueToSend;
+      if (jsonUtils.isValidJson(formatted)) {
+        // Send back parsed object for valid JSON
+        valueToSend = jsonUtils.safeParse(formatted);
+        setIsValid(true);
+      } else {
+        // Send back string for invalid JSON (no errors)
+        valueToSend = text;
+        setIsValid(false);
+      }
+      
+      onChange?.(valueToSend);
       onBlur?.(e);
     };
 
@@ -113,7 +159,7 @@ const JsonEditor = React.forwardRef<HTMLTextAreaElement, JsonEditorProps>(
         onBlur={handleBlur}
         className={cn(
           "font-mono",
-          !isValid && "border-red-500",
+          !isValid && "border-2 border-red-500 dark:border-red-400",
           className
         )}
         spellCheck="false"

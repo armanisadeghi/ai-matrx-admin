@@ -49,7 +49,7 @@ const EntityJsonEditor = React.forwardRef<HTMLTextAreaElement, FieldComponentPro
       hasValue: !isEmpty,
       isFloating: floatingLabel,
       customStates: {
-        "min-h-[80px]": subComponent === undefined,
+        "min-h-[140px]": subComponent === undefined || subComponent === 'default',
         "h-auto": true,
         "resize-vertical": subComponent === undefined,
         "pr-24": subComponent === undefined || subComponent === 'default',
@@ -73,7 +73,7 @@ const EntityJsonEditor = React.forwardRef<HTMLTextAreaElement, FieldComponentPro
           onChange={onChange}
           required={dynamicFieldInfo.isRequired}
           disabled={disabled}
-          rows={3}
+          rows={subComponent === undefined || subComponent === 'default' ? 5 : 3}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className={getTextareaStyles}
