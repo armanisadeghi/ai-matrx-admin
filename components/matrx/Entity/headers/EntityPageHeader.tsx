@@ -2,7 +2,6 @@
 'use server';
 
 import {CardHeader, CardTitle} from "@/components/ui/card";
-import {Database} from "lucide-react";
 import {getEntityIcon} from "@/components/matrx/Entity/utils/getEntityIcon";
 import {EntityKeys} from "@/types/entityTypes";
 import Link from "next/link";

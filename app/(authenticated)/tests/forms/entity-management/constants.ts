@@ -1,57 +1,20 @@
 import {
-    AnimationPreset,
-    animationPresetOptions,
-    ComponentDensity,
-    ComponentSize, componentSizeOptions,
-    densityOptions,
-    formColumnOptions,
-    FormColumnsOptions,
-    formDirectionOptions,
-    FormDirectionOptions,
-    formLayoutOptions,
-    FormLayoutOptions,
-    inlineEntityColumnOptions,
-    InlineEntityColumnsOptions,
-    inlineEntityStyleOptions,
-    InlineEntityComponentStyles,
-    pageLayoutOptions,
-    PageLayoutOptions,
-    textSizeOptions,
-    TextSizeOptions,
-    formVariationOptions,
-    FormVariationOptions,
-    QuickReferenceComponentType,
-    SelectOption,
-    quickReferenceComponentOptions,
     EntitySelectStyle,
     EntitySelectVariant
 } from '@/types/componentConfigTypes';
 
+// Additional settings that aren't part of the unified structure yet
+export interface AdditionalEntityPageSettings {
+    isFullScreen: boolean;
+    entitySelectStyle: EntitySelectStyle;
+    entitySelectVariant: EntitySelectVariant;
+}
 
-export const ENTITY_PAGE_DEFAULTS = {
-    layout: 'split' as PageLayoutOptions,
-    density: 'normal' as ComponentDensity,
-    animation: 'subtle' as AnimationPreset,
-    size: 'md' as ComponentSize,
-    quickReferenceType: 'list' as QuickReferenceComponentType,
+export const ADDITIONAL_SETTINGS_DEFAULTS: AdditionalEntityPageSettings = {
     isFullScreen: false,
-    splitRatio: 20,
-    entitySelectStyle: 'default' as EntitySelectStyle,
-    entitySelectVariant: 'default' as EntitySelectVariant,
-    formOptions: {
-        formLayout: 'grid' as FormLayoutOptions,
-        formColumns: '2' as FormColumnsOptions,
-        formDirection: 'row' as FormDirectionOptions,
-        formEnableSearch: false,
-        formVariation: 'fullWidthSinglePage' as FormVariationOptions,
-        floatingLabel: true,
-        showLabel: true,
-        textSize: 'md' as TextSizeOptions,
-    },
-    inlineEntityOptions: {
-        showInlineEntities: true,
-        inlineEntityStyle: 'accordion' as InlineEntityComponentStyles,
-        inlineEntityColumns: '2' as InlineEntityColumnsOptions,
-        editableInlineEntities: false,
-    },
+    entitySelectStyle: 'default',
+    entitySelectVariant: 'default',
 };
+
+// NOTE: All other defaults are now managed centrally in /app/entities/layout/configs.ts
+// Use getUnifiedLayoutProps() to get properly structured defaults for UnifiedLayoutProps

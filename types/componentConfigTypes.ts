@@ -60,7 +60,7 @@ export const TEXT_SIZES = ["default", "xs", "sm", "md", "lg", "xl", "2xl", "3xl"
 export type TextSizeOptions = (typeof TEXT_SIZES)[number];
 
 // Layout Options
-export const PAGE_LAYOUTS = ["split", "sideBySide", "stacked", "resizable"] as const;
+export const PAGE_LAYOUTS = ["split", "sideBySide", "stacked", "resizable", "newSplit"] as const;
 export type PageLayoutOptions = (typeof PAGE_LAYOUTS)[number];
 
 export const FORM_LAYOUTS = [

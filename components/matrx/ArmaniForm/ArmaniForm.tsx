@@ -31,8 +31,6 @@ import {
 } from "./FormLayouts";
 import EntityRelationshipWrapper from "./EntityRelationshipWrapper";
 import SmartCrudButtons from "../Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
-import {useFieldVisibility} from "@/lib/redux/entity/hooks/useFieldVisibility";
-import {useAppDispatch, useAppStore} from "@/lib/redux/hooks";
 import {
     FormColumnsOptions,
     FormDirectionOptions,
@@ -41,6 +39,7 @@ import {
 } from "@/types/componentConfigTypes";
 import {UnifiedLayoutProps} from "../Entity";
 import {useEntityCrud} from "@/lib/redux/entity/hooks/useEntityCrud";
+import { useFieldVisibility } from "@/app/entities/hooks/form-related/useFieldVisibility";
 
 export interface FormState {
     [key: string]: any;

@@ -5,13 +5,29 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { EntityControlSet } from './entity-control-set';
 import ArmaniLayout from '@/components/matrx/Entity/prewired-components/layouts/ArmaniLayout';
-import { cn } from '@/utils/cn';
-import { ENTITY_PAGE_DEFAULTS } from './constants';
+import { cn } from '@/lib/utils';
 import { Button, Card } from "@/components/ui";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { getUnifiedLayoutProps } from '@/app/entities/layout/configs';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
+import { ADDITIONAL_SETTINGS_DEFAULTS } from './constants';
 
 const EntityPageLayout = () => {
-    const [settings, setSettings] = useState(ENTITY_PAGE_DEFAULTS);
+    // Initialize with central config defaults - always returns complete UnifiedLayoutProps
+    const [unifiedProps, setUnifiedProps] = useState<UnifiedLayoutProps>(() => 
+        getUnifiedLayoutProps({
+            entityKey: 'registeredFunction',
+            formComponent: 'DEFAULT',
+            quickReferenceType: 'list',
+            formLayoutType: 'split',
+            density: 'normal',
+            isExpanded: false,
+        })
+    );
+
+    // Additional settings not yet part of unified structure
+    const [additionalSettings, setAdditionalSettings] = useState(ADDITIONAL_SETTINGS_DEFAULTS);
+
     const [showControls, setShowControls] = useState(true);
 
     return (
@@ -19,7 +35,7 @@ const EntityPageLayout = () => {
             <motion.div
                 className={cn(
                     "relative w-full h-full",
-                    settings.isFullScreen && "fixed inset-0 z-50"
+                    additionalSettings.isFullScreen && "fixed inset-0 z-50"
                 )}
                 layout
             >
@@ -39,8 +55,10 @@ const EntityPageLayout = () => {
                                 {showControls && (
                                     <div className="flex-1">
                                         <EntityControlSet
-                                            settings={settings}
-                                            setSettings={setSettings}
+                                            unifiedProps={unifiedProps}
+                                            setUnifiedProps={setUnifiedProps}
+                                            additionalSettings={additionalSettings}
+                                            setAdditionalSettings={setAdditionalSettings}
                                         />
                                     </div>
                                 )}
@@ -50,25 +68,7 @@ const EntityPageLayout = () => {
 
                     <div className="flex-1 overflow-hidden">
                         <ArmaniLayout
-                            layoutVariant={settings.layout}
-                            density={settings.density}
-                            animationPreset={settings.animation}
-                            size={settings.size}
-                            quickReferenceType={settings.quickReferenceType}
-                            splitRatio={settings.splitRatio}
-                            formOptions={{
-                                size: settings.size,
-                                formLayout: settings.formOptions.formLayout,
-                                formColumns: settings.formOptions.formColumns,
-                                formDirection: settings.formOptions.formDirection,
-                                formEnableSearch: settings.formOptions.formEnableSearch,
-                                formIsSinglePage: !settings.formOptions.formVariation.includes('MultiStep'),
-                                formIsFullPage: settings.formOptions.formVariation.includes('fullWidth'),
-                                floatingLabel: settings.formOptions.floatingLabel,
-                                showLabel: settings.formOptions.showLabel,
-                                textSize: settings.formOptions.textSize,
-                                inlineEntityOptions: settings.inlineEntityOptions,
-                            }}
+                            unifiedLayoutProps={unifiedProps}
                             className="h-full"
                         />
                     </div>

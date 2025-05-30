@@ -8,24 +8,46 @@ import {cn} from '@/lib/utils';
 import {densityConfig, layoutTransitions} from "@/config/ui/entity-layout-config";
 import {EnhancedCard} from './EnhancedCard';
 import {LayoutHeader} from './LayoutHeader';
-import EntityContent from "@/components/matrx/Entity/prewired-components/development/EntityContent";
-import {LayoutProps} from "@/types/componentConfigTypes";
 import EntitySelection from "@/components/matrx/Entity/prewired-components/entity-management/EntitySelection";
 import { useDynamicMeasurements } from '@/hooks/ui/useDynamicMeasurements';
 import MeasurementMonitor from './MeasurementMonitor';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
+import UnifiedQuickReference from '../../quick-reference/UnifiedQuickReference';
+import UnifiedEntityForm from './UnifiedEntityForm';
 
-export const StackedLayout: React.FC<LayoutProps> = ({
-    selectedEntity,
-    handleEntityChange,
-    QuickReferenceComponent,
-    rightColumnRef,
-    selectHeight,
-    density,
-    animationPreset,
-    formOptions,
-    onCreateEntityClick,
-    floatingLabel
+interface StackedLayoutProps {
+    unifiedLayoutProps: UnifiedLayoutProps;
+    className?: string;
+}
+
+export const StackedLayout: React.FC<StackedLayoutProps> = ({
+    unifiedLayoutProps,
+    className,
 }) => {
+    // Extract values from unified props at the top
+    const selectedEntity = unifiedLayoutProps.layoutState.selectedEntity;
+    const density = unifiedLayoutProps.dynamicStyleOptions.density;
+    const animationPreset = unifiedLayoutProps.dynamicStyleOptions.animationPreset;
+    const handleEntityChange = unifiedLayoutProps.handlers.handleEntityChange || (() => {});
+    const onCreateEntityClick = unifiedLayoutProps.handlers.onCreateEntityClick || (() => {
+        console.log("Create new entity clicked");
+    });
+    
+    // Create form options for backward compatibility with EntityContent
+    const formOptions = {
+        size: unifiedLayoutProps.dynamicStyleOptions.size,
+        formLayout: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.formLayout,
+        formColumns: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.formColumns,
+        formDirection: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.formDirection,
+        formEnableSearch: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.formEnableSearch,
+        formIsSinglePage: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.formIsSinglePage,
+        formIsFullPage: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.formIsFullPage,
+        floatingLabel: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.floatingLabel,
+        showLabel: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.showLabel,
+        textSize: unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.textSize,
+        inlineEntityOptions: unifiedLayoutProps.dynamicLayoutOptions.inlineEntityOptions,
+    };
+
     const {
         measurements,
         getRef
@@ -45,7 +67,7 @@ export const StackedLayout: React.FC<LayoutProps> = ({
 
     return (
         <motion.div
-            className="h-full overflow-hidden"
+            className={cn("h-full overflow-hidden", className)}
             variants={layoutTransitions.stacked.container}
             initial="initial"
             animate="animate"
@@ -75,7 +97,7 @@ export const StackedLayout: React.FC<LayoutProps> = ({
                                     selectedEntity={selectedEntity}
                                     onEntityChange={handleEntityChange}
                                     layout="stacked"
-                                    selectHeight={selectHeight}
+                                    selectHeight={0}
                                     density={density}
                                     animationPreset={animationPreset}
                                 />
@@ -92,7 +114,7 @@ export const StackedLayout: React.FC<LayoutProps> = ({
                                     variants={layoutTransitions.stacked.item}
                                     className="flex-shrink-0"
                                 >
-                                    <EnhancedCard cardRef={rightColumnRef}>
+                                    <EnhancedCard>
                                         <LayoutHeader
                                             title="Quick Reference"
                                             tooltip="Quickly select or create records"
@@ -110,7 +132,7 @@ export const StackedLayout: React.FC<LayoutProps> = ({
                                             }
                                         />
                                         <CardContent className="p-4">
-                                            {QuickReferenceComponent}
+                                            <UnifiedQuickReference unifiedLayoutProps={unifiedLayoutProps} />
                                         </CardContent>
                                     </EnhancedCard>
                                 </motion.div>
@@ -119,11 +141,11 @@ export const StackedLayout: React.FC<LayoutProps> = ({
                                     variants={layoutTransitions.stacked.item}
                                 >
                                     <EnhancedCard>
-                                        <EntityContent
-                                            entityKey={selectedEntity}
-                                            density={density}
-                                            animationPreset={animationPreset}
-                                            formOptions={formOptions}
+                                        <UnifiedEntityForm
+                                            selectedEntity={selectedEntity}
+                                            unifiedLayoutProps={unifiedLayoutProps}
+                                            useScrollArea={false}
+                                            className="p-4"
                                         />
                                     </EnhancedCard>
                                 </motion.div>

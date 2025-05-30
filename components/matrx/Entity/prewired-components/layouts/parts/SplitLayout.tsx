@@ -9,29 +9,32 @@ import {TooltipProvider, Tooltip, TooltipTrigger, TooltipContent} from "@/compon
 import {cn} from '@/lib/utils';
 import {densityConfig, containerVariants} from "@/config/ui/entity-layout-config";
 import {EnhancedCard} from './EnhancedCard';
-import EntityContent from "@/components/matrx/Entity/prewired-components/development/EntityContent";
-import {LayoutProps} from "@/types/componentConfigTypes";
 import EntitySelection from "@/components/matrx/Entity/prewired-components/entity-management/EntitySelection";
 import MeasurementMonitor from './MeasurementMonitor';
-import {
-    useDynamicMeasurements
-} from "@/hooks/ui/useDynamicMeasurements";
+import { useDynamicMeasurements } from "@/hooks/ui/useDynamicMeasurements";
+import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
+import UnifiedQuickReference from '../../quick-reference/UnifiedQuickReference';
+import UnifiedEntityForm from './UnifiedEntityForm';
 
+interface SplitLayoutProps {
+    unifiedLayoutProps: UnifiedLayoutProps;
+    className?: string;
+}
 
-export const SplitLayout: React.FC<LayoutProps> = (
-    {
-        selectedEntity,
-        isExpanded,
-        setIsExpanded,
-        handleEntityChange,
-        QuickReferenceComponent,
-        rightColumnRef,
-        selectHeight,
-        density,
-        animationPreset,
-        splitRatio,
-        formOptions
-    }) => {
+export const SplitLayout: React.FC<SplitLayoutProps> = ({
+    unifiedLayoutProps,
+    className,
+}) => {
+    // Extract values from unified props at the top
+    const selectedEntity = unifiedLayoutProps.layoutState.selectedEntity;
+    const isExpanded = unifiedLayoutProps.layoutState.isExpanded;
+    const density = unifiedLayoutProps.dynamicStyleOptions.density;
+    const animationPreset = unifiedLayoutProps.dynamicStyleOptions.animationPreset;
+    const splitRatio = unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.splitRatio || 20;
+    
+    // Extract handlers
+    const handleEntityChange = unifiedLayoutProps.handlers.handleEntityChange || (() => {});
+    const setIsExpanded = unifiedLayoutProps.handlers.setIsExpanded || (() => {});
 
     const {
         measurements,
@@ -64,7 +67,7 @@ export const SplitLayout: React.FC<LayoutProps> = (
     };
 
     return (
-        <motion.div className="relative h-full overflow-hidden">
+        <motion.div className={cn("relative h-full overflow-hidden", className)}>
             <motion.div
                 className={cn(
                     "grid h-full overflow-hidden",
@@ -93,7 +96,7 @@ export const SplitLayout: React.FC<LayoutProps> = (
                                         selectedEntity={selectedEntity}
                                         onEntityChange={handleEntityChange}
                                         layout="sideBySide"
-                                        selectHeight={selectHeight}
+                                        selectHeight={0}
                                         density={density}
                                         animationPreset={animationPreset}
                                     />
@@ -108,7 +111,7 @@ export const SplitLayout: React.FC<LayoutProps> = (
                             </EnhancedCard>
 
                             {selectedEntity && (
-                                <EnhancedCard cardRef={rightColumnRef}>
+                                <EnhancedCard>
                                     <CardHeader>
                                         <CardTitle className={densityConfig[density].fontSize}>
                                             Quick Reference
@@ -121,7 +124,7 @@ export const SplitLayout: React.FC<LayoutProps> = (
                                                     height: `${getAdjustedHeight('quickReference')}px`
                                                 }}
                                             >
-                                                {QuickReferenceComponent}
+                                                <UnifiedQuickReference unifiedLayoutProps={unifiedLayoutProps} />
                                             </ScrollArea>
                                         </div>
                                     </CardContent>
@@ -158,18 +161,12 @@ export const SplitLayout: React.FC<LayoutProps> = (
                                 </div>
                                 <CardContent className="p-0 gap-0">
                                     <div ref={mainContentRef}>
-                                        <ScrollArea
-                                            style={{
-                                                height: `${getAdjustedHeight('mainContent')}px`
-                                            }}
-                                        >
-                                            <EntityContent
-                                                entityKey={selectedEntity}
-                                                density={density}
-                                                animationPreset={animationPreset}
-                                                formOptions={formOptions}
-                                            />
-                                        </ScrollArea>
+                                        <UnifiedEntityForm
+                                            selectedEntity={selectedEntity}
+                                            unifiedLayoutProps={unifiedLayoutProps}
+                                            availableHeight={getAdjustedHeight('mainContent')}
+                                            useScrollArea={true}
+                                        />
                                     </div>
                                 </CardContent>
                             </EnhancedCard>

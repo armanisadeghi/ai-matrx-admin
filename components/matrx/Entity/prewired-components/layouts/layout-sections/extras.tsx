@@ -12,7 +12,7 @@ export const LayoutHeader: React.FC<{
     density: ComponentDensity;
     actions?: React.ReactNode;
 }> = ({title, tooltip, density, actions}) => (
-    <CardHeader className="space-y-1.5">
+    <CardHeader className="space-y-0.5">
         <div className="flex items-center justify-between">
             <CardTitle className={cn(
                 "flex items-center gap-2",

@@ -11,7 +11,7 @@ import { EntityKeys } from "@/types/entityTypes";
 import {
     SmartCrudWrapperProps
 } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
-import {ComponentDensity, QuickReferenceComponentType} from "@/types";
+import {ComponentDensity, QuickReferenceComponentType, PageLayoutOptions} from "@/types/componentConfigTypes";
 import { EntityFormType } from "../forms";
 
 export const SMART_CRUD_PROP_DEFAULTS: Partial<SmartCrudWrapperProps> = {
@@ -112,6 +112,7 @@ export function getUnifiedLayoutProps(options?: {
     entityKey?: EntityKeys;
     formComponent?: EntityFormType;
     quickReferenceType?: QuickReferenceComponentType | string;
+    formLayoutType?: PageLayoutOptions;
     density?: ComponentDensity;
     isExpanded?: boolean;
     handlers?: UnifiedLayoutHandlers;
@@ -120,7 +121,8 @@ export function getUnifiedLayoutProps(options?: {
     const {
         entityKey = 'registeredFunction',
         formComponent = 'DEFAULT',
-        quickReferenceType = 'CARDS',
+        quickReferenceType = 'cards',
+        formLayoutType = 'split',
         density = 'normal',
         isExpanded = false,
         handlers = {}
@@ -141,6 +143,7 @@ export function getUnifiedLayoutProps(options?: {
             componentOptions: {
                 ...DEFAULT_FORM_COMPONENT_OPTIONS,
                 quickReferenceType: quickReferenceType as QuickReferenceComponentType,
+                formLayoutType: formLayoutType as PageLayoutOptions,
             },
             formStyleOptions: DEFAULT_FORM_STYLE_OPTIONS,
             inlineEntityOptions: DEFAULT_INLINE_ENTITY_OPTIONS,
@@ -168,7 +171,6 @@ export function getUpdatedUnifiedLayoutProps(
     const {
         entityKey = existingProps.layoutState.selectedEntity,
         formComponent = existingProps.formComponent,
-        quickReferenceType = existingProps.dynamicLayoutOptions?.componentOptions?.quickReferenceType,
         isExpanded = existingProps.layoutState.isExpanded,
         handlers = existingProps.handlers,
         entitiesToHide = existingProps.entitiesToHide,
@@ -177,13 +179,19 @@ export function getUpdatedUnifiedLayoutProps(
         ...otherOverrides
     } = overrides || {};
 
+    // Handle quickReferenceType from either direct param or nested structure
+    const finalQuickReferenceType = 
+        overrides?.quickReferenceType || 
+        otherOverrides?.dynamicLayoutOptions?.componentOptions?.quickReferenceType ||
+        existingProps.dynamicLayoutOptions?.componentOptions?.quickReferenceType;
+
     // Deep merge for dynamicLayoutOptions
     const mergedDynamicLayoutOptions = {
         ...existingProps.dynamicLayoutOptions,
         componentOptions: {
             ...existingProps.dynamicLayoutOptions?.componentOptions,
             ...otherOverrides?.dynamicLayoutOptions?.componentOptions,
-            quickReferenceType: quickReferenceType as QuickReferenceComponentType,
+            quickReferenceType: finalQuickReferenceType as QuickReferenceComponentType,
         },
         formStyleOptions: {
             ...existingProps.dynamicLayoutOptions?.formStyleOptions,
