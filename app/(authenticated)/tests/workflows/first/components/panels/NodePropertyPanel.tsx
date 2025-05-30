@@ -1,8 +1,9 @@
 "use client";
 import { Node } from "reactflow";
-import { NodeData } from "./WorkflowEditor";
-import { Trash2, X, PlusCircle, Link, Package } from "lucide-react";
-import { useState, useEffect } from "react";
+import { NodeData } from "../WorkflowEditor";
+import { Trash2, X, PlusCircle, Link, Package, Database, Search, Loader } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { useRegisteredFunctionWithFetch } from '@/lib/redux/entity/hooks/functions-and-args';
 
 interface NodePropertyPanelProps {
   selectedNode: Node<NodeData> | null;
@@ -18,6 +19,49 @@ const NodePropertyPanel: React.FC<NodePropertyPanelProps> = ({
   onClose
 }) => {
   const [showBrokerSection, setShowBrokerSection] = useState(false);
+  const [functionSearchTerm, setFunctionSearchTerm] = useState('');
+  const [showFunctionDropdown, setShowFunctionDropdown] = useState(false);
+  
+  // Real database functions for genericFunction nodes
+  const { 
+    registeredFunctionRecords, 
+    registeredFunctionIsLoading,
+    fetchRegisteredFunctionAll 
+  } = useRegisteredFunctionWithFetch();
+
+  // Fetch functions when panel opens for genericFunction nodes
+  useEffect(() => {
+    if (selectedNode?.type === 'genericFunction' && Object.keys(registeredFunctionRecords).length === 0 && !registeredFunctionIsLoading) {
+      fetchRegisteredFunctionAll();
+    }
+  }, [selectedNode, registeredFunctionRecords, registeredFunctionIsLoading, fetchRegisteredFunctionAll]);
+
+  // Filter functions based on search term
+  const filteredFunctions = useMemo(() => {
+    const functions = Object.values(registeredFunctionRecords);
+    if (!functionSearchTerm) return functions.slice(0, 10); // Limit to 10 for performance
+    
+    const search = functionSearchTerm.toLowerCase();
+    return functions.filter(func => 
+      func.name?.toLowerCase().includes(search) ||
+      func.funcName?.toLowerCase().includes(search) ||
+      func.description?.toLowerCase().includes(search)
+    ).slice(0, 10);
+  }, [registeredFunctionRecords, functionSearchTerm]);
+
+  // Handle function selection
+  const handleFunctionSelect = (functionData: any) => {
+    if (selectedNode) {
+      onNodeDataChange(selectedNode.id, 'functionId', functionData.id);
+      onNodeDataChange(selectedNode.id, 'functionName', functionData.name || functionData.funcName);
+      onNodeDataChange(selectedNode.id, 'label', functionData.name || functionData.funcName || 'Function');
+      if (functionData.description) {
+        onNodeDataChange(selectedNode.id, 'description', functionData.description);
+      }
+      setShowFunctionDropdown(false);
+      setFunctionSearchTerm('');
+    }
+  };
   
   // Effect to listen for custom events to open broker section
   useEffect(() => {
@@ -92,6 +136,108 @@ const NodePropertyPanel: React.FC<NodePropertyPanelProps> = ({
       <div className="mb-4 text-sm text-gray-500 dark:text-gray-400">
         Type: <span className="font-medium">{selectedNode.type}</span>
       </div>
+
+      {/* Function Selector for genericFunction nodes */}
+      {selectedNode.type === 'genericFunction' && (
+        <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <Database className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <h4 className="text-sm font-medium text-indigo-900 dark:text-indigo-100">
+              Database Function
+            </h4>
+            {registeredFunctionIsLoading && (
+              <Loader className="h-3 w-3 text-indigo-500 animate-spin" />
+            )}
+          </div>
+          
+          {/* Current Function Display */}
+          {selectedNode.data.functionId ? (
+            <div className="mb-3 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+              <div className="text-xs text-green-600 dark:text-green-400 mb-1">Selected Function:</div>
+              <div className="text-sm font-medium text-green-900 dark:text-green-100">
+                {selectedNode.data.functionName || selectedNode.data.functionId}
+              </div>
+              {selectedNode.data.description && (
+                <div className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  {selectedNode.data.description}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mb-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+              <div className="text-xs text-yellow-700 dark:text-yellow-300">
+                No function selected. Choose from {Object.keys(registeredFunctionRecords).length} available functions.
+              </div>
+            </div>
+          )}
+
+          {/* Function Selection Button */}
+          <button
+            onClick={() => setShowFunctionDropdown(!showFunctionDropdown)}
+            className="w-full px-3 py-2 text-sm bg-indigo-100 dark:bg-indigo-900/30 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded transition-colors flex items-center justify-center gap-2"
+          >
+            <Search className="h-4 w-4" />
+            {selectedNode.data.functionId ? 'Change Function' : 'Select Function'}
+          </button>
+
+          {/* Function Dropdown */}
+          {showFunctionDropdown && (
+            <div className="mt-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 shadow-lg">
+              {/* Search Input */}
+              <div className="p-3 border-b border-gray-200 dark:border-gray-600">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search functions..."
+                    value={functionSearchTerm}
+                    onChange={(e) => setFunctionSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+                  />
+                </div>
+              </div>
+
+              {/* Function List */}
+              <div className="max-h-64 overflow-y-auto">
+                {registeredFunctionIsLoading ? (
+                  <div className="p-4 text-center">
+                    <Loader className="h-5 w-5 text-gray-400 animate-spin mx-auto mb-2" />
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Loading functions...</div>
+                  </div>
+                ) : filteredFunctions.length === 0 ? (
+                  <div className="p-4 text-center">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {functionSearchTerm ? `No functions found matching "${functionSearchTerm}"` : 'No functions available'}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2">
+                    {filteredFunctions.map((func) => (
+                      <button
+                        key={func.id}
+                        onClick={() => handleFunctionSelect(func)}
+                        className="w-full text-left p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                          {func.name || func.funcName}
+                        </div>
+                        {func.description && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                            {func.description}
+                          </div>
+                        )}
+                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                          ID: {func.id}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Property groups */}
       {Object.entries(propertyGroups).map(([groupName, properties]) => {

@@ -23,6 +23,9 @@ import { useTheme } from "@/styles/themes/ThemeProvider";
 // Core workflow nodes (NEW!)
 import { RecipeNode, GenericFunctionNode, UserInputNode } from "./nodes/core";
 
+// Utility nodes (NEW!)
+import { ProcessorNode } from "./nodes/utilities";
+
 // Integration nodes (existing)
 import AgentNode from "./nodes/integrations/AgentNode";
 import ToolNode from "./nodes/integrations/ToolNode";
@@ -91,6 +94,9 @@ export interface NodeData {
   hasError?: boolean;
   taskStatus?: string;
   eventStatus?: string;
+  // Add function properties for database integration
+  functionId?: string;
+  functionName?: string;
   // Add broker mappings for inputs and outputs
   brokerInputs?: {
     [paramName: string]: string; // Maps parameter names to broker IDs
@@ -106,6 +112,9 @@ const nodeTypes = {
     recipe: RecipeNode,
     genericFunction: GenericFunctionNode,
     userInput: UserInputNode,
+    
+    // Utility nodes (NEW! ⚡)
+    processor: ProcessorNode,
     
     // Integration nodes (existing)
     agent: AgentNode,
@@ -421,8 +430,8 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
   }, []);
 
   // TODO: Implement addNewNode with new node types
-  const addNewNode = useCallback((type) => {
-    console.log('Adding new node of type:', type);
+  const addNewNode = useCallback((type: string, nodeData?: any) => {
+    console.log('Adding new node of type:', type, 'with data:', nodeData);
     
     const newNodeId = `node-${Date.now()}`;
     const position = {
@@ -448,7 +457,8 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
             argOverrides: [],
             brokerInputs: {},
             brokerOutputs: {},
-            description: 'AI-powered recipe execution node'
+            description: 'AI-powered recipe execution node',
+            ...nodeData // Allow overriding any default data
           }
         };
         break;
@@ -467,7 +477,8 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
             argOverrides: [],
             brokerInputs: {},
             brokerOutputs: {},
-            description: 'Generic function processor node'
+            description: 'Generic function processor node',
+            ...nodeData // Allow overriding any default data
           }
         };
         break;
@@ -488,7 +499,29 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
             argOverrides: [],
             brokerInputs: {},
             brokerOutputs: {},
-            description: 'Collect user input for the workflow'
+            description: 'Collect user input for the workflow',
+            ...nodeData // Allow overriding any default data
+          }
+        };
+        break;
+        
+      case 'processor':
+        newNode = {
+          id: newNodeId,
+          type: 'processor',
+          position,
+          data: {
+            label: 'Processor',
+            stepName: 'processor',
+            stepType: 'function',
+            processorType: 'transform',
+            status: 'pending',
+            argMapping: {},
+            argOverrides: [],
+            brokerInputs: {},
+            brokerOutputs: {},
+            description: 'Data processing and transformation node',
+            ...nodeData // Allow overriding any default data
           }
         };
         break;
@@ -502,6 +535,7 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
           data: {
             label: `${type} Node`,
             description: `${type} integration node`,
+            ...nodeData // Allow overriding any default data
           }
         };
         break;

@@ -2,11 +2,11 @@
 
 import React, { useMemo, useEffect } from 'react';
 import { Handle, Position } from 'reactflow';
-import { Code, Play, Pause, CheckCircle, AlertCircle, Settings, Database, Search, Loader } from 'lucide-react';
+import { Zap, Play, Pause, CheckCircle, AlertCircle, Settings, ArrowRightLeft, Search, Loader } from 'lucide-react';
 import { useRegisteredFunctionWithFetch, useArgWithFetch } from '@/lib/redux/entity/hooks/functions-and-args';
 import { RegisteredFunctionData, ArgData } from '@/types';
 
-interface FunctionArgument {
+interface ProcessorArgument {
   id: string;
   name: string;
   required: boolean;
@@ -16,24 +16,27 @@ interface FunctionArgument {
   description?: string;
 }
 
-interface GenericFunctionNodeData {
+interface ProcessorNodeData {
   label: string;
   functionId?: string;
   functionName?: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
-  functionArgs?: FunctionArgument[];
+  processorType?: 'extract' | 'transform' | 'convert' | 'filter' | 'validate' | 'format';
+  inputFormat?: string;
+  outputFormat?: string;
+  processorArgs?: ProcessorArgument[];
   brokerInputs?: { [paramName: string]: string };
   brokerOutputs?: { [resultName: string]: string };
   description?: string;
   category?: string;
 }
 
-interface GenericFunctionNodeProps {
-  data: GenericFunctionNodeData;
+interface ProcessorNodeProps {
+  data: ProcessorNodeData;
   selected?: boolean;
 }
 
-const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selected }) => {
+const ProcessorNode: React.FC<ProcessorNodeProps> = ({ data, selected }) => {
   // Real database function data
   const { 
     registeredFunctionRecords, 
@@ -75,7 +78,7 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
   }, [data.functionId, argRecords]);
 
   // Convert real args to display format
-  const displayArgs: FunctionArgument[] = useMemo(() => {
+  const displayArgs: ProcessorArgument[] = useMemo(() => {
     return realFunctionArgs.map(arg => ({
       id: arg.id?.toString() || '',
       name: arg.name || 'unknown',
@@ -91,11 +94,30 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
   const functionName = realFunctionData?.name || data.functionName || data.label;
   const functionDescription = realFunctionData?.description || data.description;
   const functionCategory = data.category; // TODO: Add category field to database schema
-  const functionArgs = displayArgs.length > 0 ? displayArgs : (data.functionArgs || []);
+  const processorArgs = displayArgs.length > 0 ? displayArgs : (data.processorArgs || []);
+
+  const getProcessorTypeColor = (type?: string) => {
+    switch (type) {
+      case 'extract':
+        return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50';
+      case 'transform':
+        return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50';
+      case 'convert':
+        return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/50';
+      case 'filter':
+        return 'text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/50';
+      case 'validate':
+        return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/50';
+      case 'format':
+        return 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/50';
+      default:
+        return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700';
+    }
+  };
 
   const getStatusIcon = () => {
     if (registeredFunctionIsLoading || argIsLoading) {
-      return <Loader className="h-4 w-4 text-blue-500 dark:text-blue-400 animate-spin" />;
+      return <Loader className="h-4 w-4 text-amber-500 dark:text-amber-400 animate-spin" />;
     }
     
     switch (data.status) {
@@ -112,7 +134,7 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
 
   const getStatusColor = () => {
     if (registeredFunctionIsLoading || argIsLoading) {
-      return 'border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20';
+      return 'border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/20';
     }
     
     switch (data.status) {
@@ -127,7 +149,7 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
     }
   };
 
-  const getTypeColor = (dataType: string) => {
+  const getArgTypeColor = (dataType: string) => {
     switch (dataType) {
       case 'str':
         return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/50';
@@ -148,31 +170,31 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
   const isRealFunction = !!realFunctionData;
   const hasValidFunctionId = !!data.functionId;
 
-  const requiredArgs = functionArgs?.filter(arg => arg.required) || [];
-  const optionalArgs = functionArgs?.filter(arg => !arg.required) || [];
-  const readyArgs = functionArgs?.filter(arg => arg.ready) || [];
-  const totalArgs = functionArgs?.length || 0;
+  const requiredArgs = processorArgs?.filter(arg => arg.required) || [];
+  const optionalArgs = processorArgs?.filter(arg => !arg.required) || [];
+  const readyArgs = processorArgs?.filter(arg => arg.ready) || [];
+  const totalArgs = processorArgs?.length || 0;
 
   return (
     <div className={`
-      relative min-w-[220px] rounded-lg border-2 transition-all duration-200
+      relative min-w-[240px] rounded-lg border-2 transition-all duration-200
       ${getStatusColor()}
-      ${selected ? 'ring-2 ring-indigo-500 dark:ring-indigo-400 ring-offset-2 dark:ring-offset-gray-900' : ''}
+      ${selected ? 'ring-2 ring-amber-500 dark:ring-amber-400 ring-offset-2 dark:ring-offset-gray-900' : ''}
       hover:shadow-lg dark:hover:shadow-2xl
     `}>
       {/* Input Handle */}
       <Handle
         type="target"
         position={Position.Left}
-        className="w-3 h-3 bg-indigo-500 dark:bg-indigo-400 border-2 border-white dark:border-gray-900"
+        className="w-3 h-3 bg-amber-500 dark:bg-amber-400 border-2 border-white dark:border-gray-900"
       />
 
       {/* Node Header */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1 rounded-md bg-indigo-100 dark:bg-indigo-900/50">
-              <Code className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <div className="p-1.5 rounded-md bg-amber-100 dark:bg-amber-900/50">
+              <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
@@ -205,7 +227,7 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
             <div className="flex items-center gap-2">
               <Search className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
               <span className="text-xs text-yellow-700 dark:text-yellow-300">
-                No function selected
+                No processor function selected
               </span>
             </div>
           </div>
@@ -216,9 +238,38 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
             <div className="flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
               <span className="text-xs text-red-700 dark:text-red-300">
-                Function not found in database
+                Processor function not found in database
               </span>
             </div>
+          </div>
+        )}
+
+        {/* Processor Type */}
+        {data.processorType && (
+          <div className="mb-3">
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getProcessorTypeColor(data.processorType)}`}>
+              <ArrowRightLeft className="h-3 w-3 mr-1" />
+              {data.processorType.toUpperCase()}
+            </span>
+          </div>
+        )}
+
+        {/* Input/Output Format */}
+        {(data.inputFormat || data.outputFormat) && (
+          <div className="mb-3 flex items-center gap-2 text-xs">
+            {data.inputFormat && (
+              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded">
+                IN: {data.inputFormat}
+              </span>
+            )}
+            {data.inputFormat && data.outputFormat && (
+              <ArrowRightLeft className="h-3 w-3 text-gray-400" />
+            )}
+            {data.outputFormat && (
+              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded">
+                OUT: {data.outputFormat}
+              </span>
+            )}
           </div>
         )}
 
@@ -268,10 +319,10 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
         </div>
 
         {/* Arguments Display */}
-        {functionArgs && functionArgs.length > 0 && (
+        {processorArgs && processorArgs.length > 0 && (
           <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
             <span className="text-xs text-gray-500 dark:text-gray-400 mb-2 block">
-              Arguments:
+              Processor Arguments:
             </span>
             
             {/* Required Arguments */}
@@ -285,7 +336,7 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
                         {arg.name}
                       </span>
                       <div className="flex items-center gap-1">
-                        <span className={`px-1 py-0.5 rounded text-xs ${getTypeColor(arg.data_type)}`}>
+                        <span className={`px-1 py-0.5 rounded text-xs ${getArgTypeColor(arg.data_type)}`}>
                           {arg.data_type}
                         </span>
                         {arg.ready && (
@@ -314,7 +365,7 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
                         {arg.name}
                       </span>
                       <div className="flex items-center gap-1">
-                        <span className={`px-1 py-0.5 rounded text-xs ${getTypeColor(arg.data_type)}`}>
+                        <span className={`px-1 py-0.5 rounded text-xs ${getArgTypeColor(arg.data_type)}`}>
                           {arg.data_type}
                         </span>
                         {arg.ready && (
@@ -360,7 +411,7 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
       <Handle
         type="source"
         position={Position.Right}
-        className="w-3 h-3 bg-indigo-500 dark:bg-indigo-400 border-2 border-white dark:border-gray-900"
+        className="w-3 h-3 bg-amber-500 dark:bg-amber-400 border-2 border-white dark:border-gray-900"
       />
 
       {/* Status Badge */}
@@ -376,16 +427,16 @@ const GenericFunctionNode: React.FC<GenericFunctionNodeProps> = ({ data, selecte
         </div>
       </div>
 
-      {/* Function Icon Badge */}
+      {/* Processor Icon Badge */}
       <div className="absolute -top-1 -left-1">
         <div className={`w-5 h-5 rounded-full flex items-center justify-center
-          ${isRealFunction ? 'bg-green-500 dark:bg-green-400' : 'bg-indigo-500 dark:bg-indigo-400'}
+          ${isRealFunction ? 'bg-green-500 dark:bg-green-400' : 'bg-amber-500 dark:bg-amber-400'}
         `}>
-          <Database className="h-3 w-3 text-white" />
+          <Zap className="h-3 w-3 text-white" />
         </div>
       </div>
     </div>
   );
 };
 
-export default GenericFunctionNode; 
+export default ProcessorNode; 
