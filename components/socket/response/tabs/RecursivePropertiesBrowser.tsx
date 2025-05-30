@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useDebounce } from "@uidotdev/usehooks";
 import { TabsContent, ScrollArea, Label, Input, Textarea, Button } from "@/components/ui";
 import { CopyButton } from "@/components/matrx/buttons/CopyButton";
 
@@ -34,19 +35,22 @@ const RecursivePropertiesBrowser = ({
 }: PropertiesBrowserTabProps) => {
   const [expandedPaths, setExpandedPaths] = useState<Record<string, boolean>>({});
   
+  // Debounce the responses to prevent rapid re-renders
+  const debouncedResponses = useDebounce(responses, 300);
+  
   // Function to convert non-array responses to array format for compatibility
   const getResponsesArray = () => {
-    if (Array.isArray(responses)) {
-      return responses;
-    } else if (responses && typeof responses === 'object') {
+    if (Array.isArray(debouncedResponses)) {
+      return debouncedResponses;
+    } else if (debouncedResponses && typeof debouncedResponses === 'object') {
       // Convert object to array format with entries
-      return Object.entries(responses).map(([key, value]) => ({
+      return Object.entries(debouncedResponses).map(([key, value]) => ({
         key,
         value
       }));
-    } else if (responses) {
+    } else if (debouncedResponses) {
       // Handle primitive value
-      return [responses];
+      return [debouncedResponses];
     }
     return [];
   };
@@ -275,11 +279,11 @@ const RecursivePropertiesBrowser = ({
 
   // Generate labels for the dropdown options based on response type
   const getOptionLabel = (index: number) => {
-    if (Array.isArray(responses)) {
+    if (Array.isArray(debouncedResponses)) {
       return `Response ${index + 1}`;
-    } else if (responses && typeof responses === 'object') {
+    } else if (debouncedResponses && typeof debouncedResponses === 'object') {
       // For objects, use the key as the label
-      const keys = Object.keys(responses);
+      const keys = Object.keys(debouncedResponses);
       if (index < keys.length) {
         return keys[index];
       }

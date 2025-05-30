@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useDebounce } from "@uidotdev/usehooks";
 import { CopyIcon, RefreshCw, BookmarkIcon, FileJson } from "lucide-react";
 import { IoBookmarks } from "react-icons/io5";
 import { Bookmark, PathArray, PathWithTypeInfo } from "../types";
@@ -29,6 +30,10 @@ interface PathManagementProps {
 }
 
 const PathManagement: React.FC<PathManagementProps> = ({ jsonStr, currentPath, originalData, onReset, onDataChange, configKey }) => {
+    // Debounce the rapidly changing props to prevent maximum depth errors
+    const debouncedOriginalData = useDebounce(originalData, 300);
+    const debouncedCurrentPath = useDebounce(currentPath, 300);
+    
     // State for dialogs
     const [saveBookmarkDialogOpen, setSaveBookmarkDialogOpen] = useState(false);
     const [manageBookmarksDialogOpen, setManageBookmarksDialogOpen] = useState(false);
@@ -44,9 +49,9 @@ const PathManagement: React.FC<PathManagementProps> = ({ jsonStr, currentPath, o
     }, []);
 
     useEffect(() => {
-        const pathDetails = getPathAndTypeInfo(originalData, currentPath);
+        const pathDetails = getPathAndTypeInfo(debouncedOriginalData, debouncedCurrentPath);
         setPathDetails(pathDetails);
-    }, [originalData, currentPath]);
+    }, [debouncedOriginalData, debouncedCurrentPath]);
 
     // Function for copying access path to clipboard
     const copyAccessPath = () => {
@@ -68,7 +73,7 @@ const PathManagement: React.FC<PathManagementProps> = ({ jsonStr, currentPath, o
     // Handle saving bookmark with enhanced type information
     const handleSaveBookmark = () => {
         // Generate path using our consistent approach
-        const pathString = generateAccessPath(currentPath);
+        const pathString = generateAccessPath(debouncedCurrentPath);
         // Pass the pathDetails which contains all the type information
         const newBookmark = createPathBookmark(
             pathString, 
@@ -97,10 +102,10 @@ const PathManagement: React.FC<PathManagementProps> = ({ jsonStr, currentPath, o
 
     // Jump to bookmark - now implemented with the data change handler
     const handleJumpToBookmark = (bookmark: Bookmark) => {
-        if (!originalData || !onDataChange) return;
+        if (!debouncedOriginalData || !onDataChange) return;
         try {
             // Get the value at the bookmarked path
-            const value = getValueByBookmark(originalData, bookmark);
+            const value = getValueByBookmark(debouncedOriginalData, bookmark);
 
             if (value !== undefined) {
                 // Build the new path
@@ -215,13 +220,13 @@ const PathManagement: React.FC<PathManagementProps> = ({ jsonStr, currentPath, o
             <SaveBookmarkDialog
                 open={saveBookmarkDialogOpen}
                 onOpenChange={setSaveBookmarkDialogOpen}
-                currentPath={currentPath}
+                currentPath={debouncedCurrentPath}
                 bookmarkName={bookmarkName}
                 setBookmarkName={setBookmarkName}
                 bookmarkDescription={bookmarkDescription}
                 setBookmarkDescription={setBookmarkDescription}
                 onSave={handleSaveBookmark}
-                originalData={originalData}
+                originalData={debouncedOriginalData}
                 configKey={configKey}
             />
             <ManageBookmarksDialog

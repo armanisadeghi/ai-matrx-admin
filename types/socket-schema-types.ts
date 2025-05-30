@@ -1,5 +1,10 @@
 // File: types/socket-schema-types.ts
 
+export interface UserInputs {
+    broker_id: string;
+    value: string;
+}
+
 export interface MessageObject {
     id?: string;
     conversation_id?: string;
@@ -47,6 +52,36 @@ export interface ChatConfig {
     tools_override?: any[][];
     allow_default_values?: boolean;
     allow_removal_of_unmatched?: boolean;
+}
+
+export interface CleanupWorkflow {
+    instance_id: string;
+}
+
+export interface ResumeWorkflow {
+    instance_id: string;
+}
+
+export interface PauseWorkflow {
+    instance_id: string;
+}
+
+export interface PingWorkflow {
+    instance_id: string;
+}
+
+export interface GetWorkflowStatus {
+    instance_id: string;
+}
+
+export interface StartWorkflowById {
+    workflow_id: string;
+    user_inputs?: UserInputs[];
+}
+
+export interface StartWorkflowWithStructure {
+    workflow_definition: Record<string, any>;
+    user_inputs?: UserInputs[];
 }
 
 export interface GetAllLogs {
