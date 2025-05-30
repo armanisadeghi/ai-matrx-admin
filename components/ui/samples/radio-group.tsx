@@ -15,7 +15,7 @@ interface MatrxRadioGroupProps extends React.ComponentPropsWithoutRef<typeof Rad
 }
 
 const MatrxRadioGroup = React.forwardRef<
-    React.ElementRef<typeof RadioGroupPrimitive.Root>,
+    React.ComponentRef<typeof RadioGroupPrimitive.Root>,
     MatrxRadioGroupProps
 >(({ className, gap = 'm', orientation = 'vertical', onValueChange, animationLevel = 'full', ...props }, ref) => {
     const gapClasses = {
@@ -50,7 +50,7 @@ interface MatrxRadioGroupItemProps extends React.ComponentPropsWithoutRef<typeof
 }
 
 const MatrxRadioGroupItem = React.forwardRef<
-    React.ElementRef<typeof RadioGroupPrimitive.Item>,
+    React.ComponentRef<typeof RadioGroupPrimitive.Item>,
     MatrxRadioGroupItemProps
 >(({ className, size = 'm', animationLevel = 'full', label, description, ...props }, ref) => {
     const sizeClasses = {

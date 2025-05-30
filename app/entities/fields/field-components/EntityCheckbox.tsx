@@ -13,7 +13,7 @@ interface EntityCheckboxProps extends EntityComponentBaseProps {
 }
 
 const EntityCheckbox = React.forwardRef<
-    React.ElementRef<typeof RadixCheckbox.Root>,
+    React.ComponentRef<typeof RadixCheckbox.Root>,
     EntityCheckboxProps
 >(({
     entityKey,

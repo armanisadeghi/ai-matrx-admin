@@ -20,7 +20,7 @@ interface BaseMatrxSwitchProps extends React.ComponentPropsWithoutRef<typeof Swi
 
 // Base Switch (unchanged from our previous implementation)
 const Switch = React.forwardRef<
-    React.ElementRef<typeof SwitchPrimitives.Root>,
+    React.ComponentRef<typeof SwitchPrimitives.Root>,
     React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root>
 >(({ className, ...props }, ref) => (
     <SwitchPrimitives.Root
@@ -42,7 +42,7 @@ Switch.displayName = SwitchPrimitives.Root.displayName;
 
 // Labeled Switch
 const MatrxLabeledSwitch = React.forwardRef<
-    React.ElementRef<typeof SwitchPrimitives.Root>,
+    React.ComponentRef<typeof SwitchPrimitives.Root>,
     BaseMatrxSwitchProps
 >(({ label, labelPosition = 'right', size = 'default', className, ...props }, ref) => {
     const sizeClasses = {
@@ -75,7 +75,7 @@ interface MatrxIconSwitchProps extends BaseMatrxSwitchProps {
 }
 
 const MatrxIconSwitch = React.forwardRef<
-    React.ElementRef<typeof SwitchPrimitives.Root>,
+    React.ComponentRef<typeof SwitchPrimitives.Root>,
     MatrxIconSwitchProps
 >(({ onIcon, offIcon, size = 'default', className, ...props }, ref) => {
     const iconSizes = {
@@ -115,7 +115,7 @@ MatrxIconSwitch.displayName = "MatrxIconSwitch";
 
 // Side Icon Switch
 const MatrxSideIconSwitch = React.forwardRef<
-    React.ElementRef<typeof SwitchPrimitives.Root>,
+    React.ComponentRef<typeof SwitchPrimitives.Root>,
     MatrxIconSwitchProps
 >(({ onIcon, offIcon, size = 'default', className, ...props }, ref) => {
     const iconSizes = {
@@ -143,7 +143,7 @@ MatrxSideIconSwitch.displayName = "MatrxSideIconSwitch";
 
 // Icon Toggle
 const MatrxIconToggle = React.forwardRef<
-    React.ElementRef<typeof SwitchPrimitives.Root>,
+    React.ComponentRef<typeof SwitchPrimitives.Root>,
     MatrxIconSwitchProps
 >(({ onIcon, offIcon, size = 'default', className, ...props }, ref) => {
     const iconSizes = {
@@ -188,7 +188,7 @@ interface MatrxSwitchProps extends BaseMatrxSwitchProps {
 }
 
 const MatrxSwitch = React.forwardRef<
-    React.ElementRef<typeof SwitchPrimitives.Root>,
+    React.ComponentRef<typeof SwitchPrimitives.Root>,
     MatrxSwitchProps
 >(({ variant = 'default', icon, label, ...props }, ref) => {
     const commonProps = {

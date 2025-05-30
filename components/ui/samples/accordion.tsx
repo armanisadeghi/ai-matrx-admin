@@ -23,7 +23,7 @@ interface ExtendedAccordionProps extends Omit<React.ComponentPropsWithoutRef<typ
 }
 
 const MatrxAccordion = React.forwardRef<
-    React.ElementRef<typeof AccordionPrimitive.Root>,
+    React.ComponentRef<typeof AccordionPrimitive.Root>,
     ExtendedAccordionProps
 >(({
        animationLevel = 'enhanced',
@@ -114,7 +114,7 @@ const MatrxAccordion = React.forwardRef<
 MatrxAccordion.displayName = 'MatrxAccordion';
 
 const MatrxAccordionItem = React.forwardRef<
-    React.ElementRef<typeof AccordionPrimitive.Item>,
+    React.ComponentRef<typeof AccordionPrimitive.Item>,
     React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> & {
     highlight?: boolean;
 }
@@ -135,7 +135,7 @@ const MatrxAccordionItem = React.forwardRef<
 MatrxAccordionItem.displayName = 'MatrxAccordionItem';
 
 const MatrxAccordionTrigger = React.forwardRef<
-    React.ElementRef<typeof AccordionPrimitive.Trigger>,
+    React.ComponentRef<typeof AccordionPrimitive.Trigger>,
     React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> & {
     icon?: React.ReactNode;
     animationLevel?: AnimationLevel;
@@ -195,7 +195,7 @@ const MatrxAccordionTrigger = React.forwardRef<
 MatrxAccordionTrigger.displayName = 'MatrxAccordionTrigger';
 
 const MatrxAccordionContent = React.forwardRef<
-    React.ElementRef<typeof AccordionPrimitive.Content>,
+    React.ComponentRef<typeof AccordionPrimitive.Content>,
     React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> & {
     animationLevel?: AnimationLevel;
     lazyLoad?: boolean;

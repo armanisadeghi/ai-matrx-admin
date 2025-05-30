@@ -8,7 +8,7 @@ import { useFieldStyles } from "./add-ons/useFieldStyles";
 type EntitySwitchProps = FieldComponentProps<boolean>;
 
 const EntitySwitch = React.forwardRef<
-  React.ElementRef<typeof SwitchPrimitives.Root>,
+  React.ComponentRef<typeof SwitchPrimitives.Root>,
   EntitySwitchProps
 >(
   (

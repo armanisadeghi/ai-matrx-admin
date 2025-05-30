@@ -12,7 +12,7 @@ const MatrxSelectGroup = SelectPrimitive.Group
 const MatrxSelectValue = SelectPrimitive.Value
 
 const MatrxSelectTrigger = React.forwardRef<
-    React.ElementRef<typeof SelectPrimitive.Trigger>,
+    React.ComponentRef<typeof SelectPrimitive.Trigger>,
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
     <SelectPrimitive.Trigger
@@ -32,7 +32,7 @@ const MatrxSelectTrigger = React.forwardRef<
 MatrxSelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
 const MatrxSelectContent = React.forwardRef<
-    React.ElementRef<typeof SelectPrimitive.Content>,
+    React.ComponentRef<typeof SelectPrimitive.Content>,
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => (
     <SelectPrimitive.Portal>
@@ -61,7 +61,7 @@ const MatrxSelectContent = React.forwardRef<
 MatrxSelectContent.displayName = SelectPrimitive.Content.displayName
 
 const MatrxSelectLabel = React.forwardRef<
-    React.ElementRef<typeof SelectPrimitive.Label>,
+    React.ComponentRef<typeof SelectPrimitive.Label>,
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
 >(({ className, ...props }, ref) => (
     <SelectPrimitive.Label
@@ -73,7 +73,7 @@ const MatrxSelectLabel = React.forwardRef<
 MatrxSelectLabel.displayName = SelectPrimitive.Label.displayName
 
 const MatrxSelectItem = React.forwardRef<
-    React.ElementRef<typeof SelectPrimitive.Item>,
+    React.ComponentRef<typeof SelectPrimitive.Item>,
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
 >(({ className, children, ...props }, ref) => (
     <SelectPrimitive.Item
@@ -96,7 +96,7 @@ const MatrxSelectItem = React.forwardRef<
 MatrxSelectItem.displayName = SelectPrimitive.Item.displayName
 
 const MatrxSelectSeparator = React.forwardRef<
-    React.ElementRef<typeof SelectPrimitive.Separator>,
+    React.ComponentRef<typeof SelectPrimitive.Separator>,
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
 >(({ className, ...props }, ref) => (
     <SelectPrimitive.Separator

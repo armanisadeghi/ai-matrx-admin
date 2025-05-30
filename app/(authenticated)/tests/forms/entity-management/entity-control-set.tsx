@@ -6,7 +6,7 @@ import {
     BoxSelect, LayoutGrid, Palette,
     TreeDeciduous, Component, SlidersHorizontal, LayoutList, Blocks,
 } from 'lucide-react';
-import {CompactSelect, CompactSwitch, CompactSlider} from './control-components';
+import {CompactSelect, CompactSwitch, CompactSlider} from '@/components/matrx/compact-controls-with-lables';
 import {
     AnimationPreset,
     ComponentDensity,

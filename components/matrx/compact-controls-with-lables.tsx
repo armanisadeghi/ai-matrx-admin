@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MatrxSwitch, Switch } from "@/components/ui";
+import { MatrxSwitch } from "@/components/ui";
 import { Slider } from "@/components/ui";
 import { Input } from "@/components/ui";
 import { RadioGroup, RadioGroupItem } from "@/components/ui";
@@ -18,10 +18,12 @@ interface BaseControlProps {
     children: React.ReactNode;
     onClick?: () => void;
     interactive?: boolean;
+    className?: string;
+    focusRingColor?: string;
 }
 
 const BaseControl = React.forwardRef<HTMLDivElement, BaseControlProps>(
-    ({ label, icon: Icon, children, onClick, interactive = true }, ref) => {
+    ({ label, icon: Icon, children, onClick, interactive = true, className, focusRingColor = "ring-primary" }, ref) => {
         return (
             <div
                 ref={ref}
@@ -29,7 +31,8 @@ const BaseControl = React.forwardRef<HTMLDivElement, BaseControlProps>(
                 className={cn(
                     "flex flex-col bg-secondary/50 hover:bg-secondary/70 rounded-lg w-[140px] h-12 text-left overflow-hidden select-none",
                     interactive && "cursor-pointer",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    `focus-visible:outline-none focus-visible:ring-2 focus-visible:${focusRingColor}`,
+                    className
                 )}
                 tabIndex={interactive ? 0 : undefined}
             >
@@ -51,9 +54,11 @@ interface CompactSelectProps<T extends string | number> {
     value: T;
     options: SelectOption<T>[];
     onChange: (value: T) => void;
+    className?: string;
+    focusRingColor?: string;
 }
 
-export const CompactSelect = <T extends string | number>({ label, icon, value, options, onChange }: CompactSelectProps<T>) => {
+export const CompactSelect = <T extends string | number>({ label, icon, value, options, onChange, className, focusRingColor }: CompactSelectProps<T>) => {
     const [open, setOpen] = React.useState(false);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -78,7 +83,7 @@ export const CompactSelect = <T extends string | number>({ label, icon, value, o
     };
 
     return (
-        <BaseControl label={label} icon={icon} onClick={handleContainerClick} ref={containerRef}>
+        <BaseControl label={label} icon={icon} onClick={handleContainerClick} ref={containerRef} className={className} focusRingColor={focusRingColor}>
             <Select open={open} onOpenChange={handleOpenChange} value={value.toString()} onValueChange={handleValueChange}>
                 <SelectTrigger
                     className="w-full h-4 min-h-0 text-xs border-0 !bg-transparent hover:!bg-transparent focus:!bg-transparent data-[state=open]:!bg-transparent dark:!bg-transparent px-0 focus:ring-0 focus-visible:ring-0 truncate shadow-none"
@@ -103,12 +108,15 @@ interface CompactSwitchProps {
     icon: React.ComponentType<any>;
     checked: boolean;
     onCheckedChange: (checked: boolean) => void;
+    className?: string;
+    focusRingColor?: string;
+    accentColor?: string;
 }
 
-export const CompactSwitch: React.FC<CompactSwitchProps> = ({ label, icon, checked, onCheckedChange }) => (
-    <BaseControl label={label} icon={icon} onClick={() => onCheckedChange(!checked)}>
+export const CompactSwitch: React.FC<CompactSwitchProps> = ({ label, icon, checked, onCheckedChange, className, focusRingColor, accentColor = "bg-primary" }) => (
+    <BaseControl label={label} icon={icon} onClick={() => onCheckedChange(!checked)} className={className} focusRingColor={focusRingColor}>
         <div className="flex items-center w-full" onClick={(e) => e.stopPropagation()}>
-            <Switch checked={checked} onCheckedChange={onCheckedChange} className="data-[state=checked]:bg-primary h-3 w-6" />
+            <MatrxSwitch checked={checked} onCheckedChange={onCheckedChange} className={`data-[state=checked]:${accentColor} h-3 w-6`} />
         </div>
     </BaseControl>
 );
@@ -121,9 +129,11 @@ interface CompactSliderProps {
     min: number;
     max: number;
     step: number;
+    className?: string;
+    focusRingColor?: string;
 }
 
-export const CompactSlider: React.FC<CompactSliderProps> = ({ label, icon, value, onChange, min, max, step }) => {
+export const CompactSlider: React.FC<CompactSliderProps> = ({ label, icon, value, onChange, min, max, step, className, focusRingColor }) => {
     const [localValue, setLocalValue] = React.useState(value);
 
     React.useEffect(() => {
@@ -131,7 +141,7 @@ export const CompactSlider: React.FC<CompactSliderProps> = ({ label, icon, value
     }, [value]);
 
     return (
-        <BaseControl label={label} icon={icon} interactive={false}>
+        <BaseControl label={label} icon={icon} interactive={false} className={className} focusRingColor={focusRingColor}>
             <div className="flex items-center gap-1 w-full max-w-full overflow-hidden">
                 <Slider
                     value={[localValue]}
@@ -160,10 +170,12 @@ interface CompactNumberProps {
     min?: number;
     max?: number;
     step?: number;
+    className?: string;
+    focusRingColor?: string;
 }
 
-export const CompactNumber: React.FC<CompactNumberProps> = ({ label, icon, value, onChange, min, max, step = 1 }) => (
-    <BaseControl label={label} icon={icon} interactive={false}>
+export const CompactNumber: React.FC<CompactNumberProps> = ({ label, icon, value, onChange, min, max, step = 1, className, focusRingColor }) => (
+    <BaseControl label={label} icon={icon} interactive={false} className={className} focusRingColor={focusRingColor}>
         <Input
             type="number"
             value={value}
@@ -182,13 +194,15 @@ interface CompactTextProps {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
+    className?: string;
+    focusRingColor?: string;
 }
 
-export const CompactText: React.FC<CompactTextProps> = ({ label, icon, value, onChange, placeholder }) => {
+export const CompactText: React.FC<CompactTextProps> = ({ label, icon, value, onChange, placeholder, className, focusRingColor }) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     return (
-        <BaseControl label={label} icon={icon} onClick={() => inputRef.current?.focus()}>
+        <BaseControl label={label} icon={icon} onClick={() => inputRef.current?.focus()} className={className} focusRingColor={focusRingColor}>
             <Input
                 ref={inputRef}
                 type="text"
@@ -208,9 +222,11 @@ interface CompactRadioProps<T extends string> {
     value: T;
     options: SelectOption<T>[];
     onChange: (value: T) => void;
+    className?: string;
+    focusRingColor?: string;
 }
 
-export const CompactRadio = <T extends string>({ label, icon, value, options, onChange }: CompactRadioProps<T>) => {
+export const CompactRadio = <T extends string>({ label, icon, value, options, onChange, className, focusRingColor }: CompactRadioProps<T>) => {
     const handleContainerClick = (optionValue: T) => {
         if (value !== optionValue) {
             onChange(optionValue);
@@ -218,7 +234,7 @@ export const CompactRadio = <T extends string>({ label, icon, value, options, on
     };
 
     return (
-        <BaseControl label={label} icon={icon} interactive={false}>
+        <BaseControl label={label} icon={icon} interactive={false} className={className} focusRingColor={focusRingColor}>
             <RadioGroup value={value} onValueChange={onChange} className="flex gap-2">
                 {options.map((option) => (
                     <div
@@ -243,9 +259,11 @@ interface CompactMultiSelectProps<T extends string> {
     value: T[];
     options: SelectOption<T>[];
     onChange: (value: T[]) => void;
+    className?: string;
+    focusRingColor?: string;
 }
 
-export const CompactMultiSelect = <T extends string>({ label, icon, value, options, onChange }: CompactMultiSelectProps<T>) => {
+export const CompactMultiSelect = <T extends string>({ label, icon, value, options, onChange, className, focusRingColor }: CompactMultiSelectProps<T>) => {
     const [open, setOpen] = React.useState(false);
 
     const handleContainerClick = () => {
@@ -253,7 +271,7 @@ export const CompactMultiSelect = <T extends string>({ label, icon, value, optio
     };
 
     return (
-        <BaseControl label={label} icon={icon} onClick={handleContainerClick}>
+        <BaseControl label={label} icon={icon} onClick={handleContainerClick} className={className} focusRingColor={focusRingColor}>
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <button
@@ -298,13 +316,15 @@ interface CompactTimeProps {
     icon: React.ComponentType<any>;
     value: string;
     onChange: (value: string) => void;
+    className?: string;
+    focusRingColor?: string;
 }
 
-export const CompactTime: React.FC<CompactTimeProps> = ({ label, icon, value, onChange }) => {
+export const CompactTime: React.FC<CompactTimeProps> = ({ label, icon, value, onChange, className, focusRingColor }) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     return (
-        <BaseControl label={label} icon={icon} onClick={() => inputRef.current?.focus()}>
+        <BaseControl label={label} icon={icon} onClick={() => inputRef.current?.focus()} className={className} focusRingColor={focusRingColor}>
             <Input
                 ref={inputRef}
                 type="time"
