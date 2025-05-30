@@ -1,7 +1,7 @@
 import EntityFormCustomMinimal from '@/app/entities/forms/EntityFormCustomMinimal';
 import { useCallback } from 'react';
 import { CockpitPanelProps } from '../types';
-import { RecordTabData, UseRecipeAgentSettingsHook } from '../../../hooks/aiCockpit/useRecipeAgentSettings';
+import { RecordTabData, UseRecipeAgentSettingsHook } from '@/hooks/aiCockpit/useRecipeAgentSettings';
 import { FieldRendererOptions } from '@/app/entities/hooks/form-related/useFieldRenderer';
 import { DEFAULT_CRUD_LAYOUT, DEFAULT_CRUD_OPTIONS, layoutProps } from './constants';
 import PlaygroundResources from './PlaygroundResources';

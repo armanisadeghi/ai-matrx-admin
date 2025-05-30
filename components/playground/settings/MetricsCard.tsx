@@ -4,7 +4,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { BarChart2, Clock, Zap, Cpu } from 'lucide-react';
 import { CockpitControls } from '../types';
-import { UseRecipeAgentSettingsHook } from '../../../hooks/aiCockpit/useRecipeAgentSettings';
+import { UseRecipeAgentSettingsHook } from '@/hooks/aiCockpit/useRecipeAgentSettings';
 
 interface DynamicPromptSettingsProps {
     playgroundControls: CockpitControls;

@@ -522,5 +522,10 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "createdAt", "claimId", "finalRating", "leftSideTotal", "rightSideTotal", "defaultSideTotal", "compensationAmount", "compensationWeeks", "compensationDays"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["createdAt", "claimId", "finalRating", "leftSideTotal", "rightSideTotal", "defaultSideTotal", "compensationAmount", "compensationWeeks", "compensationDays"]
+},
+  workflow: {
+  nativeFields: ["id", "createdAt", "updatedAt", "name", "description", "visualWorkflow", "backendWorkflow", "userId", "version", "isPublic", "authenticatedRead", "isActive", "isDeleted", "publicRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "description", "visualWorkflow", "backendWorkflow", "userId", "version", "isPublic", "authenticatedRead", "isActive", "isDeleted", "publicRead"]
 }
 }

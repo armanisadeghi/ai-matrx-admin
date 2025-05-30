@@ -18,7 +18,7 @@ import ImageDisplay from "@/components/ui/image-display";
 import StarRating from "@/components/ui/star-rating";
 import {FlexFormField, FormState} from "@/types/componentConfigTypes";
 
-type FlexDensity = 'compact' | 'normal' | 'comfortable';
+export type FlexDensity = 'compact' | 'normal' | 'comfortable';
 
 const densityConfig: Record<FlexDensity, {
     wrapper: string;

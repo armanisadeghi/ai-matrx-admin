@@ -1,7 +1,8 @@
 "use client";
 import { CopyPlus, Trash2, Edit, Link, Copy, Package } from "lucide-react";
 import { Node } from "reactflow";
-import { NodeData } from "./WorkflowEditor";
+import { NodeData } from "../WorkflowEditor";
+import { useEffect, useRef } from "react";
 
 interface NodeContextMenuProps {
   node: Node<NodeData>;
@@ -22,8 +23,30 @@ const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
   onEdit,
   onViewBrokers
 }) => {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Add click-outside detection to close the menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && event.target && !menuRef.current.contains(event.target as HTMLElement)) {
+        onClose();
+      }
+    };
+
+    // Add the event listener after a small delay to avoid immediate closing
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
   return (
     <div 
+      ref={menuRef}
       className="absolute z-10 bg-white dark:bg-gray-800 shadow-md rounded-md border border-gray-200 dark:border-gray-700 p-1"
       style={{ 
         left: position.x, 

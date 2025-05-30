@@ -3,9 +3,9 @@ import React, {useState, useRef} from "react";
 import {AnimatePresence, motion} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
 import {Input} from "@/components/ui/input";
-import {FlexDensity, FlexFormField, FormState} from '../../../../types/componentConfigTypes';
+import {FlexFormField, FormState} from '@/types/componentConfigTypes';
 import AnimatedButton from "../AnimatedButton";
-import {FlexField} from "./FlexField";
+import {FlexDensity, FlexField} from "./FlexField";
 import FlexManager from "./FlexManager";
 
 const densityConfig: Record<FlexDensity, {

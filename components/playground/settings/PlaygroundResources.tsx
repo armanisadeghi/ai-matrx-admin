@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ChevronRight, Globe, Files, Github, GraduationCap } from 'lucide-react';
 import { CockpitControls } from '../types';
-import { UseRecipeAgentSettingsHook } from '../../../hooks/aiCockpit/useRecipeAgentSettings';
+import { UseRecipeAgentSettingsHook } from '@/hooks/aiCockpit/useRecipeAgentSettings';
 
 interface DynamicPromptSettingsProps {
     playgroundControls: CockpitControls;

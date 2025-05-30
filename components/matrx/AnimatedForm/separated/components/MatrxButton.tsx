@@ -4,8 +4,8 @@ import React from "react";
 import {motion, HTMLMotionProps} from "framer-motion";
 import {cn} from "@/utils/cn";
 import {Loader2} from "lucide-react";
-import {MatrxButtonProps} from "../../../../../types/componentConfigTypes";
-import {getComponentStyles, useComponentAnimation} from "../../../../../config/ui/FlexConfig";
+import {MatrxButtonProps} from "@/types/componentConfigTypes";
+import {getComponentStyles, useComponentAnimation} from "@/config/ui/FlexConfig";
 
 type CombinedButtonProps = MatrxButtonProps & Omit<HTMLMotionProps<"button">, keyof MatrxButtonProps>;
 

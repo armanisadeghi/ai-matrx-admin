@@ -1,4 +1,4 @@
-import { BrokerMetaData } from '../../../types/editor.types';
+import { BrokerMetaData } from '@/types/editor.types';
 import { MATRX_PATTERN, parseMatrxMetadata } from './patternUtils';
 
 interface LineSegment {

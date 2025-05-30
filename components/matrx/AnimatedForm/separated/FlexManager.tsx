@@ -4,8 +4,8 @@ import {motion, AnimatePresence} from "framer-motion";
 import {cn} from "@/styles/themes/utils";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {FlexFormField, FormState} from '../../../../types/componentConfigTypes';
-import {FlexField} from './FlexField';
+import {FlexFormField, FormState} from '@/types/componentConfigTypes';
+import {FlexDensity, FlexField} from './FlexField';
 
 
 const densityConfig: Record<FlexDensity, {

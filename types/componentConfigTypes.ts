@@ -1,30 +1,11 @@
 // types.ts
 import { Card } from "@/components/ui";
 import React, { MutableRefObject } from "react";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-import {EntityKeys} from "@/types/entityTypes";
-import {EntityStateField, MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-import {FormDensity} from "@/components/matrx/ArmaniForm/ArmaniForm";
+import { MatrxVariant } from "@/components/matrx/ArmaniForm/field-components/types";
+import { EntityKeys } from "@/types/entityTypes";
+import { EntityStateField, MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
+import { FormDensity } from "@/components/matrx/ArmaniForm/ArmaniForm";
 import { UnifiedCrudHandlers } from "@/components/matrx/Entity";
-
-
-interface FlexAnimatedFormProps {
-    fields: FlexFormField[];
-    formState: FormState;
-    onUpdateField: (name: string, value: any) => void;
-    onSubmit: () => void;
-    currentStep?: number;
-    onNextStep?: () => void;
-    onPrevStep?: () => void;
-    isSinglePage?: boolean;
-    className?: string;
-    isFullPage?: boolean;
-    columns?: number | 'auto' | { xs: number, sm: number, md: number, lg: number, xl: number };
-    layout?: 'grid' | 'sections' | 'accordion' | 'tabs' | 'masonry' | 'carousel' | 'timeline';
-    enableSearch?: boolean;
-    direction?: 'row' | 'column' | 'row-reverse' | 'column-reverse';
-}
-
 
 export interface LayoutProps {
     selectedEntity: EntityKeys | null;
@@ -42,10 +23,8 @@ export interface LayoutProps {
     floatingLabel?: boolean;
 }
 
-export const COMPONENT_STATES = ['idle', 'loading', 'success', 'error', 'disabled'] as const;
-export type ComponentState = typeof COMPONENT_STATES[number];
-
-
+export const COMPONENT_STATES = ["idle", "loading", "success", "error", "disabled"] as const;
+export type ComponentState = (typeof COMPONENT_STATES)[number];
 
 export interface ResponsiveColumns {
     xs: number;
@@ -55,82 +34,98 @@ export interface ResponsiveColumns {
     xl: number;
 }
 
-
 export const FORM_VARIATIONS = [
-    'fullWidthSinglePage',
-    'fullWidthMultiStep',
-    'twoColumnSinglePage',
-    'threeColumnSinglePage',
-    'restrictedWidthSinglePage',
-    'singlePageModal',
-    'multiStepModal',
+    "fullWidthSinglePage",
+    "fullWidthMultiStep",
+    "twoColumnSinglePage",
+    "threeColumnSinglePage",
+    "restrictedWidthSinglePage",
+    "singlePageModal",
+    "multiStepModal",
 ] as const;
 
-export type FormVariationOptions = typeof FORM_VARIATIONS[number];
+export type FormVariationOptions = (typeof FORM_VARIATIONS)[number];
 
 // Component Display Options
-export const ANIMATION_PRESETS = ['none', 'subtle', 'smooth', 'energetic', 'playful', 'feedback', 'error'] as const;
-export type AnimationPreset = typeof ANIMATION_PRESETS[number];
+export const ANIMATION_PRESETS = ["none", "subtle", "smooth", "energetic", "playful", "feedback", "error"] as const;
+export type AnimationPreset = (typeof ANIMATION_PRESETS)[number];
 
-export const DENSITIES = ['compact', 'normal', 'comfortable'] as const;
-export type ComponentDensity = typeof DENSITIES[number];
+export const DENSITIES = ["compact", "normal", "comfortable"] as const;
+export type ComponentDensity = (typeof DENSITIES)[number];
 
-export const COMPONENT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl', '2xl','3xl','icon'] as const;
-export type ComponentSize = typeof COMPONENT_SIZES[number];
+export const COMPONENT_SIZES = ["default", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "icon"] as const;
+export type ComponentSize = (typeof COMPONENT_SIZES)[number];
 
-export const TEXT_SIZES = ['default', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', 'hideText'] as const;
-export type TextSizeOptions = typeof TEXT_SIZES[number];
+export const TEXT_SIZES = ["default", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "hideText"] as const;
+export type TextSizeOptions = (typeof TEXT_SIZES)[number];
 
 // Layout Options
-export const PAGE_LAYOUTS = ['split', 'sideBySide', 'stacked', 'resizable'] as const;
-export type PageLayoutOptions = typeof PAGE_LAYOUTS[number];
+export const PAGE_LAYOUTS = ["split", "sideBySide", "stacked", "resizable"] as const;
+export type PageLayoutOptions = (typeof PAGE_LAYOUTS)[number];
 
-export const FORM_LAYOUTS = ['grid', 'sections', 'accordion', 'tabs', 'masonry', 'carousel', 'timeline', 'TrialFieldTabsLayout', 'TrialFloatingLayout', 'TrialListGroupLayout', 'TrialSplitLayout', 'TrialCardListLayout', 'ZigzagLayout','TrialStackedLayout'] as const;
-export type FormLayoutOptions = typeof FORM_LAYOUTS[number];
+export const FORM_LAYOUTS = [
+    "grid",
+    "sections",
+    "accordion",
+    "tabs",
+    "masonry",
+    "carousel",
+    "timeline",
+    "TrialFieldTabsLayout",
+    "TrialFloatingLayout",
+    "TrialListGroupLayout",
+    "TrialSplitLayout",
+    "TrialCardListLayout",
+    "ZigzagLayout",
+    "TrialStackedLayout",
+] as const;
+export type FormLayoutOptions = (typeof FORM_LAYOUTS)[number];
 export type LayoutVariant = FormLayoutOptions;
 
-export const FORM_DIRECTIONS = ['row', 'column', 'row-reverse', 'column-reverse'] as const;
-export type FormDirectionOptions = typeof FORM_DIRECTIONS[number];
+export const FORM_DIRECTIONS = ["row", "column", "row-reverse", "column-reverse"] as const;
+export type FormDirectionOptions = (typeof FORM_DIRECTIONS)[number];
 
-export const FORM_COLUMNS = [1, 2, 3, 4, 5, 6, 'auto'] as const;
-export type FormColumnsOptions = typeof FORM_COLUMNS[number];
+export const FORM_COLUMNS = [1, 2, 3, 4, 5, 6, "auto"] as const;
+export type FormColumnsOptions = (typeof FORM_COLUMNS)[number];
 export type GridColumnOptions = FormColumnsOptions | ResponsiveColumns;
 
-export const ENTITY_SELECT_STYLES = ['default', 'minimal', 'compact', 'card', 'prominent', 'inline', 'floating'] as const;
-export type EntitySelectStyle = typeof ENTITY_SELECT_STYLES[number];
+export const ENTITY_SELECT_STYLES = ["default", "minimal", "compact", "card", "prominent", "inline", "floating"] as const;
+export type EntitySelectStyle = (typeof ENTITY_SELECT_STYLES)[number];
 
-export const ENTITY_SELECT_VARIANTS = ['default', 'grid', 'chips', 'command', 'carousel', 'tree'] as const;
-export type EntitySelectVariant = typeof ENTITY_SELECT_VARIANTS[number];
-
+export const ENTITY_SELECT_VARIANTS = ["default", "grid", "chips", "command", "carousel", "tree"] as const;
+export type EntitySelectVariant = (typeof ENTITY_SELECT_VARIANTS)[number];
 
 // Column Configuration
-export type FormColumnWidthOptions = number | 'auto' | {
-    xs: number;
-    sm: number;
-    md: number;
-    lg: number;
-    xl: number;
-};
+export type FormColumnWidthOptions =
+    | number
+    | "auto"
+    | {
+          xs: number;
+          sm: number;
+          md: number;
+          lg: number;
+          xl: number;
+      };
 
 // Inline Entity Options
-export const INLINE_ENTITY_COMPONENT_STYLES = ['accordion', 'tabs', 'list'] as const;
-export type InlineEntityComponentStyles = typeof INLINE_ENTITY_COMPONENT_STYLES[number];
+export const INLINE_ENTITY_COMPONENT_STYLES = ["accordion", "tabs", "list"] as const;
+export type InlineEntityComponentStyles = (typeof INLINE_ENTITY_COMPONENT_STYLES)[number];
 
-export const INLINE_ENTITY_COLUMNS = [1, 2, 3, 4, 5, 6, 'auto'] as const;
-export type InlineEntityColumnsOptions = typeof INLINE_ENTITY_COLUMNS[number];
+export const INLINE_ENTITY_COLUMNS = [1, 2, 3, 4, 5, 6, "auto"] as const;
+export type InlineEntityColumnsOptions = (typeof INLINE_ENTITY_COLUMNS)[number];
 
 // Component Types
 export const QUICK_REFERENCE_COMPONENT_TYPES = [
-    'cards',
-    'cardsEnhanced',
-    'accordion',
-    'accordionEnhanced',
-    'list',
-    'select',
-    'default',
-    'LIST_WITH_RELATED',
+    "cards",
+    "cardsEnhanced",
+    "accordion",
+    "accordionEnhanced",
+    "list",
+    "select",
+    "default",
+    "LIST_WITH_RELATED",
 ] as const;
-export type QuickReferenceComponentType = typeof QUICK_REFERENCE_COMPONENT_TYPES[number];
+export type QuickReferenceComponentType = (typeof QUICK_REFERENCE_COMPONENT_TYPES)[number];
 
 export type ComponentVariant = MatrxVariant;
 
@@ -146,10 +141,10 @@ export interface SelectOption<T = string | number> {
 
 // Improved utility function with proper key generation
 export const createSelectOptions = <T extends string | number>(values: readonly T[]): SelectOption<T>[] => {
-    return values.map(value => ({
+    return values.map((value) => ({
         label: value.toString(),
         value: value,
-        key: `option-${value}`
+        key: `option-${value}`,
     }));
 };
 
@@ -177,8 +172,6 @@ export const inlineEntityColumnOptions = createMixedSelectOptions(INLINE_ENTITY_
 export const entitySelectStyleOptions = createSelectOptions(ENTITY_SELECT_STYLES);
 export const entitySelectVariantOptions = createSelectOptions(ENTITY_SELECT_VARIANTS);
 
-
-
 export type inlineEntityOptions = {
     showInlineEntities: boolean;
     inlineEntityStyle: InlineEntityComponentStyles;
@@ -189,7 +182,6 @@ export type inlineEntityOptions = {
 export interface EntityFormState {
     [key: string]: any;
 }
-
 
 export interface ArmaniFormProps {
     entityKey: EntityKeys;
@@ -217,7 +209,6 @@ export interface ArmaniFormProps {
     floatingLabel?: boolean;
     className?: string;
 }
-
 
 // Base Props Interface
 export interface BaseMatrxProps {
@@ -251,8 +242,8 @@ export interface BaseMatrxProps {
     valid?: boolean;
 
     // Accessibility Props
-    'aria-label'?: string;
-    'aria-describedby'?: string;
+    "aria-label"?: string;
+    "aria-describedby"?: string;
     tabIndex?: number;
 
     // Event Handlers
@@ -295,13 +286,13 @@ export interface MatrxButtonProps extends BaseMatrxProps {
     iconLeft?: React.ReactNode;
     iconRight?: React.ReactNode;
     children?: React.ReactNode;
-    type?: 'button' | 'submit' | 'reset';
+    type?: "button" | "submit" | "reset";
     onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export interface MatrxButtonGroupProps extends BaseMatrxProps {
     children: React.ReactNode;
-    orientation?: 'horizontal' | 'vertical';
+    orientation?: "horizontal" | "vertical";
     attached?: boolean;
 }
 
@@ -317,7 +308,7 @@ export interface MatrxInputProps extends BaseMatrxProps {
 export interface MatrxInputGroupProps extends BaseMatrxProps {
     children: React.ReactNode;
     label?: string;
-    orientation?: 'horizontal' | 'vertical';
+    orientation?: "horizontal" | "vertical";
     attached?: boolean;
 }
 
@@ -325,7 +316,7 @@ export interface MatrxRadioProps extends BaseMatrxProps {
     field: FormField;
     value: string;
     onChange: (value: string) => void;
-    layout?: 'horizontal' | 'vertical' | 'grid';
+    layout?: "horizontal" | "vertical" | "grid";
     columns?: number;
     showSelectAll?: boolean;
     optionClassName?: string;
@@ -334,7 +325,7 @@ export interface MatrxRadioProps extends BaseMatrxProps {
 export interface MatrxRadioGroupProps extends BaseMatrxProps {
     children: React.ReactNode;
     label?: string;
-    layout?: 'horizontal' | 'vertical' | 'grid';
+    layout?: "horizontal" | "vertical" | "grid";
     columns?: number;
     showSelectAll?: boolean;
 }
@@ -355,7 +346,7 @@ export interface MatrxSelectProps extends BaseMatrxProps {
 export interface MatrxSelectGroupProps extends BaseMatrxProps {
     children: React.ReactNode;
     label?: string;
-    orientation?: 'horizontal' | 'vertical' | 'grid';
+    orientation?: "horizontal" | "vertical" | "grid";
     columns?: number;
 }
 
@@ -364,8 +355,8 @@ export interface MatrxBaseInputProps extends BaseMatrxProps, Omit<React.InputHTM
     endAdornment?: React.ReactNode;
 }
 
-export type TextareaMode = 'plain' | 'outlined' | 'filled' | 'markdown' | 'rich';
-export type TextareaSize = 'compact' | 'default' | 'large' | 'article' | 'custom';
+export type TextareaMode = "plain" | "outlined" | "filled" | "markdown" | "rich";
+export type TextareaSize = "compact" | "default" | "large" | "article" | "custom";
 
 export interface MatrxTextareaProps extends BaseMatrxProps {
     field: FormField;
@@ -387,7 +378,6 @@ export interface MatrxTextareaProps extends BaseMatrxProps {
     placeholder?: string;
 }
 
-
 export interface MatrxJsonItemProps extends BaseMatrxProps {
     keyName: string;
     value: any;
@@ -399,9 +389,9 @@ export interface MatrxJsonItemProps extends BaseMatrxProps {
 }
 
 export interface JsonItemConfig {
-    arrayThreshold: number;  // Maximum array items before collapsing
-    truncateThreshold: number;  // Maximum object entries before truncating
-    indentSize: string;  // Tailwind padding size for indentation
+    arrayThreshold: number; // Maximum array items before collapsing
+    truncateThreshold: number; // Maximum object entries before truncating
+    indentSize: string; // Tailwind padding size for indentation
 }
 
 export interface MatrxJsonViewerProps extends BaseMatrxProps {
@@ -419,7 +409,6 @@ export interface MatrxFullJsonViewerProps extends MatrxJsonViewerProps {
     cardProps?: React.ComponentProps<typeof Card>;
 }
 
-
 // Utility Types
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
 export type MatrxComponentProps<T> = BaseMatrxProps & T;
@@ -430,28 +419,28 @@ export interface FormState {
 }
 
 export type FormFieldType =
-    'text'
-    | 'email'
-    | 'number'
-    | 'select'
-    | 'textarea'
-    | 'checkbox'
-    | 'radio'
-    | 'password'
-    | 'date'
-    | 'time'
-    | 'datetime-local'
-    | 'month'
-    | 'week'
-    | 'tel'
-    | 'url'
-    | 'color'
-    | 'slider'
-    | 'switch'
-    | 'json'
-    | 'file'
-    | 'image'
-    | 'rating';
+    | "text"
+    | "email"
+    | "number"
+    | "select"
+    | "textarea"
+    | "checkbox"
+    | "radio"
+    | "password"
+    | "date"
+    | "time"
+    | "datetime-local"
+    | "month"
+    | "week"
+    | "tel"
+    | "url"
+    | "color"
+    | "slider"
+    | "switch"
+    | "json"
+    | "file"
+    | "image"
+    | "rating";
 
 export interface FlexFormField {
     name: string;
@@ -472,4 +461,19 @@ export interface FlexFormField {
     jsonSchema?: object;
 }
 
-
+interface FlexAnimatedFormProps {
+    fields: FlexFormField[];
+    formState: FormState;
+    onUpdateField: (name: string, value: any) => void;
+    onSubmit: () => void;
+    currentStep?: number;
+    onNextStep?: () => void;
+    onPrevStep?: () => void;
+    isSinglePage?: boolean;
+    className?: string;
+    isFullPage?: boolean;
+    columns?: number | "auto" | { xs: number; sm: number; md: number; lg: number; xl: number };
+    layout?: "grid" | "sections" | "accordion" | "tabs" | "masonry" | "carousel" | "timeline";
+    enableSearch?: boolean;
+    direction?: "row" | "column" | "row-reverse" | "column-reverse";
+}

@@ -1,14 +1,24 @@
 "use client";
 import { useState, useRef, useCallback, useEffect } from 'react';
-import WorkflowEditor, { type NodeData, type WorkflowEditorHandle } from '@/features/workflows/components/WorkflowEditor';
-import WorkflowHeader from '@/features/workflows/components/WorkflowHeader';
+import WorkflowEditor, { type NodeData } from './components/WorkflowEditor';
+import WorkflowHeader from './components/WorkflowHeader';
+
+// Define the type for the editor ref
+interface WorkflowEditorHandle {
+  getWorkflowData: () => {
+    nodes: any[];
+    edges: any[];
+    selectedNode: any;
+  };
+  toggleBrokerView: () => void;
+  showBrokerView: boolean;
+}
 
 function WorkflowPage() {
   console.log('WorkflowPage rendering');
   // Create a ref to access the editor's methods
   const editorRef = useRef<WorkflowEditorHandle>(null);
   const [showBrokers, setShowBrokers] = useState(false);
-  const [useExpandedPropertyPanel, setUseExpandedPropertyPanel] = useState(false);
   // Create a ref to track update status
   const isUpdating = useRef(false);
   
@@ -18,13 +28,7 @@ function WorkflowPage() {
       return editorRef.current.getWorkflowData();
     }
     // Return empty data if the editor ref isn't available yet
-    return { 
-      nodes: [], 
-      edges: [], 
-      selectedNode: null,
-      brokerConnections: new Map(),
-      activeBrokers: []
-    };
+    return { nodes: [], edges: [], selectedNode: null };
   }, []);
 
   // Effect to sync the broker view state
@@ -73,15 +77,6 @@ function WorkflowPage() {
     }
   }, [showBrokers]);
 
-  // Toggle expanded property panel
-  const handleToggleExpandedPropertyPanel = useCallback(() => {
-    console.log('handleToggleExpandedPropertyPanel called, current useExpandedPropertyPanel:', useExpandedPropertyPanel);
-    if (editorRef.current) {
-      editorRef.current.toggleExpandedPropertyPanel();
-      setUseExpandedPropertyPanel(prev => !prev);
-    }
-  }, [useExpandedPropertyPanel]);
-
   // Event handlers for header buttons
   const handleSave = useCallback(() => {
     console.log('Saving workflow:', getWorkflowData());
@@ -105,9 +100,7 @@ function WorkflowPage() {
         title="My Workflow"
         getWorkflowData={getWorkflowData}
         showBrokers={showBrokers}
-        useExpandedPropertyPanel={useExpandedPropertyPanel}
         onToggleBrokers={handleToggleBrokers}
-        onToggleExpandedPropertyPanel={handleToggleExpandedPropertyPanel}
         onSave={handleSave}
         onRun={handleRun}
         onSettings={handleSettings}

@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Save, Play, Settings, ChevronRight, Home, Package } from "lucide-react";
+import { Save, Play, Settings, ChevronRight, Home, Package, Maximize2 } from "lucide-react";
 import WorkflowDebugOverlay from "./WorkflowDebugOverlay";
 
 interface WorkflowHeaderProps {
@@ -14,7 +14,9 @@ interface WorkflowHeaderProps {
   lastUpdated?: string;
   workflowPath?: string[];
   showBrokers?: boolean;
+  useExpandedPropertyPanel?: boolean;
   onToggleBrokers?: () => void;
+  onToggleExpandedPropertyPanel?: () => void;
   onSave?: () => void;
   onRun?: () => void;
   onSettings?: () => void;
@@ -28,7 +30,9 @@ const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
   lastUpdated,
   workflowPath = [],
   showBrokers = false,
+  useExpandedPropertyPanel = false,
   onToggleBrokers,
+  onToggleExpandedPropertyPanel,
   onSave,
   onRun,
   onSettings,
@@ -105,6 +109,23 @@ const WorkflowHeader: React.FC<WorkflowHeaderProps> = ({
               >
                 <Package className="h-4 w-4" />
                 Brokers
+              </Button>
+            )}
+            
+            {onToggleExpandedPropertyPanel && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className={`flex items-center gap-1 ${
+                  useExpandedPropertyPanel 
+                    ? 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700'
+                    : 'text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+                }`}
+                onClick={onToggleExpandedPropertyPanel}
+                title={useExpandedPropertyPanel ? "Switch to Compact Property Panel" : "Switch to Expanded Property Panel"}
+              >
+                <Maximize2 className="h-4 w-4" />
+                {useExpandedPropertyPanel ? "Compact" : "Expand"}
               </Button>
             )}
             

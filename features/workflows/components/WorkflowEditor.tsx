@@ -16,7 +16,7 @@ import ReactFlow, {
   ReactFlowProvider
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { initialNodes, initialEdges } from "../constants";
+import { initialNodes, initialEdges } from "../../../app/(authenticated)/tests/workflows/first/constants";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 
 // Import from new organized structure
@@ -50,6 +50,7 @@ import CustomEdge from "./edges/CustomEdge";
 import NodeMenu from "./menus/NodeMenu";
 import QuickAccessPanel from "./menus/QuickAccessPanel";
 import NodePropertyPanel from "./panels/NodePropertyPanel";
+import ExpandedNodePropertyPanel from "./panels/ExpandedNodePropertyPanel";
 import EdgePropertyPanel from "./panels/EdgePropertyPanel";
 import NodeContextMenu from "./menus/NodeContextMenu";
 
@@ -155,7 +156,9 @@ export interface WorkflowEditorHandle {
     activeBrokers: string[];
   };
   toggleBrokerView: () => void;
+  toggleExpandedPropertyPanel: () => void;
   showBrokerView: boolean;
+  useExpandedPropertyPanel: boolean;
 }
 
 // Define default edge options
@@ -242,6 +245,7 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
     node: Node<NodeData>;
     position: { x: number; y: number };
   } | null>(null);
+  const [useExpandedPropertyPanel, setUseExpandedPropertyPanel] = useState(false);
   const { mode } = useTheme();
   const [mounted, setMounted] = useState(false);
   const reactFlowInstance = useReactFlow();
@@ -349,8 +353,14 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
       console.log('Editor toggleBrokerView called, current state:', showBrokerView);
       setShowBrokerView(prev => !prev);
     },
+    toggleExpandedPropertyPanel: () => {
+      setUseExpandedPropertyPanel(prev => !prev);
+    },
     get showBrokerView() {
       return showBrokerView;
+    },
+    get useExpandedPropertyPanel() {
+      return useExpandedPropertyPanel;
     }
   }));
 
@@ -720,7 +730,7 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
           style={{ backgroundColor: mode === 'dark' ? '#1e293b' : '#f9fafb' }}
         />
 
-        {/* Quick access node creation panel */}
+        {/* Quick access node creation panel - Using our new component */}
         <Panel position="top-right">
           <QuickAccessPanel onAddNode={addNewNode} />
         </Panel>
@@ -758,19 +768,20 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
           />
         )}
 
-        {/* Node properties panel */}
-        {selectedNode && (
+        {/* Node properties panel - Using our new component */}
+        {selectedNode && !useExpandedPropertyPanel && (
           <Panel position="top-left" className="max-w-lg">
             <NodePropertyPanel 
               selectedNode={selectedNode}
               onNodeDataChange={handleNodeDataChange}
               onNodeDelete={handleNodeDelete}
               onClose={() => setSelectedNode(null)}
+              onToggleExpanded={() => setUseExpandedPropertyPanel(true)}
             />
           </Panel>
         )}
         
-        {/* Edge properties panel */}
+        {/* Edge properties panel - Using our new component */}
         {selectedEdge && (
           <Panel position="top-left" className="max-w-lg">
             <EdgePropertyPanel 
@@ -782,6 +793,17 @@ const WorkflowEditor = forwardRef<WorkflowEditorHandle, {}>((props, ref) => {
           </Panel>
         )}
       </ReactFlow>
+      
+      {/* Expanded Node Property Panel - Full Screen Overlay */}
+      {selectedNode && useExpandedPropertyPanel && (
+        <ExpandedNodePropertyPanel 
+          selectedNode={selectedNode}
+          onNodeDataChange={handleNodeDataChange}
+          onNodeDelete={handleNodeDelete}
+          onClose={() => setSelectedNode(null)}
+          onToggleCompact={() => setUseExpandedPropertyPanel(false)}
+        />
+      )}
     </div>
   );
 });

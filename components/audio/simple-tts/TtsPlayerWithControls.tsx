@@ -1,7 +1,7 @@
 "use client";
 import VoiceConfigSelects from "@/components/audio/VoiceConfigSelects";
 import { Button } from "@/components/ui/button";
-import useCartesiaControls from "../../../hooks/tts/simple/useCartesiaControls";
+import useCartesiaControls from "@/hooks/tts/simple/useCartesiaControls";
 import { Play, Pause, RotateCcw, StopCircle } from "lucide-react";
 
 export default function TtsPlayerWithControls() {
@@ -41,7 +41,7 @@ export default function TtsPlayerWithControls() {
                     {/* Play/Resume button */}
                     <Button 
                         disabled={connectionState !== "ready" || playerState === "playing"} 
-                        onClick={playerState === "paused" ? resume : speak}
+                        onClick={() => playerState === "paused" ? resume() : speak()}
                         className="flex items-center gap-1"
                     >
                         <Play size={16} />

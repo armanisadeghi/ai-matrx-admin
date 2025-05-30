@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 import ImageLoader from "./ImageLoader";
-import { useUnsplashGallery } from "../../../../../hooks/images/useUnsplashGallery";
+import { useUnsplashGallery } from "@/hooks/images/useUnsplashGallery";
 import { voiceImages, defaultVoiceImage } from "../data/voiceImages";
 import { useCartesia } from "@/hooks/tts/useCartesia";
 import {
@@ -38,7 +38,7 @@ interface VoiceModalProps {
 }
 
 const VoiceModal: React.FC<VoiceModalProps> = ({ voice, onClose }) => {
-    const { handleAdvancedSearch, photos, loading } = useUnsplashGallery();
+    const { handleSearch, photos, loading } = useUnsplashGallery();
     const { sendMessage, isConnected, error, pausePlayback, resumePlayback, stopPlayback, updateConfigs } = useCartesia();
     const baseTranscript = "Hi. Some people describe my voice as ";
     const [transcript, setTranscript] = useState(baseTranscript);
@@ -61,10 +61,10 @@ const VoiceModal: React.FC<VoiceModalProps> = ({ voice, onClose }) => {
                 setImageUrl(voiceImages[voice.id]);
             } else {
                 console.log("Falling back to Unsplash search");
-                handleAdvancedSearch(`${voice.name} person`, { orientation: "landscape" });
+                handleSearch(`${voice.name} person`, { orientation: "landscape" });
             }
         }
-    }, [voice, handleAdvancedSearch]);
+    }, [voice, handleSearch]);
 
     useEffect(() => {
         if (!voiceImages[voice.id] && photos.length > 0) {

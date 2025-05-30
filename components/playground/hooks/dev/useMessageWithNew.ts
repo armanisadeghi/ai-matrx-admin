@@ -1,11 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { DataBrokerDataRequired, MatrxRecordId, MessageBrokerDataRequired, MessageTemplateDataOptional } from '@/types';
 import { GetOrFetchSelectedRecordsPayload, useAppDispatch, useAppSelector, useEntityTools } from '@/lib/redux';
-import { processJoinedData, RelationshipDefinition } from '@/app/entities/hooks/relationships/utils';
+import { processJoinedData } from '@/app/entities/hooks/relationships/utils';
 import { useActiveJoinedRecords } from '@/app/entities/hooks/relationships/useActiveJoinedRecords';
-import { useJoinedRecordsActiveParent } from '@/app/entities/hooks/relationships/useJoinedRecords';
 import { ProcessedRecipeMessages } from '../../messages/types';
-import { useMessageReordering } from '../../../../hooks/aiCockpit/useMessageReordering';
+import { useMessageReordering } from '@/hooks/aiCockpit/useMessageReordering';
 
 export const messageRelationshipDefinition: RelationshipDefinition = {
     parentEntity: {

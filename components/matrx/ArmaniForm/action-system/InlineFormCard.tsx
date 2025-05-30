@@ -8,7 +8,7 @@ import {
     cardVariants,
     densityConfig,
     spacingConfig,
-} from "../../../../config/ui/entity-layout-config";
+} from "@/config/ui/entity-layout-config";
 
 const InlineFormCard = ({
                             parentField,

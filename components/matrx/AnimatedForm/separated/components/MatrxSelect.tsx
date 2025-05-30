@@ -6,8 +6,8 @@ import {cn} from "@/utils/cn";
 import {Check, ChevronDown, X, Search} from "lucide-react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import {Label} from "@/components/ui/label";
-import {MatrxSelectProps, SelectOption} from "../../../../../types/componentConfigTypes";
-import {getComponentStyles, useComponentAnimation, densityConfig} from "../../../../../config/ui/FlexConfig";
+import {MatrxSelectProps, SelectOption} from "@/types/componentConfigTypes";
+import {getComponentStyles, useComponentAnimation, densityConfig} from "@/config/ui/FlexConfig";
 import MatrxBaseInput from "./MatrxBaseInput";
 
 const MatrxSelect: React.FC<MatrxSelectProps> = (
@@ -41,7 +41,7 @@ const MatrxSelect: React.FC<MatrxSelectProps> = (
     const filteredOptions = searchable
                             ? options.filter(option =>
             option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            option.value.toLowerCase().includes(searchTerm.toLowerCase())
+            String(option.value).toLowerCase().includes(searchTerm.toLowerCase())
         )
                             : options;
 
@@ -140,7 +140,7 @@ const MatrxSelect: React.FC<MatrxSelectProps> = (
                             {filteredOptions.map((option) => (
                                 <SelectPrimitive.Item
                                     key={option.value}
-                                    value={option.value}
+                                    value={String(option.value)}
                                     disabled={option.disabled}
                                     className={cn(
                                         "relative flex items-center gap-2",

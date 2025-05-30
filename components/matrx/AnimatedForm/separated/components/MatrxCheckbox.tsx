@@ -5,8 +5,8 @@
 import React from "react";
 import {motion} from "framer-motion";
 import {cn} from "@/utils/cn";
-import { AnimatedCheckboxProps } from "../../../../../types/componentConfigTypes";
-import {densityConfig, getComponentStyles, useComponentAnimation } from "../../../../../config/ui/FlexConfig";
+import { AnimatedCheckboxProps } from "@/types/componentConfigTypes";
+import {densityConfig, getComponentStyles, useComponentAnimation } from "@/config/ui/FlexConfig";
 import * as RadixCheckbox from "@radix-ui/react-checkbox";
 import {Check} from "lucide-react";
 

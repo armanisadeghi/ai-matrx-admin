@@ -19,7 +19,7 @@ import {
     safeStringify,
     truncateText,
     isScraperLoading,
-} from "../../../../../../../features/scraper/utils/scraper-utils";
+} from "@/features/scraper/utils/scraper-utils";
 
 /**
  * Component for displaying scraper results using utility functions

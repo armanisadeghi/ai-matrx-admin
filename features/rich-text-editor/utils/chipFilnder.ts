@@ -1,5 +1,5 @@
 import { MatrxRecordId } from '@/types';
-import { ChipData } from '../../../types/editor.types';
+import { ChipData } from '@/types/editor.types';
 
 export interface ChipSearchResult extends Omit<ChipData, 'color'> {
     editorId?: string;

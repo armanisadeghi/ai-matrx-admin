@@ -4,8 +4,8 @@ import React from "react";
 import {motion} from "framer-motion";
 import {cn} from "@/utils/cn";
 import {Label} from "@/components/ui/label";
-import {MatrxInputGroupProps} from "../../../../../types/componentConfigTypes";
-import {densityConfig} from "../../../../../config/ui/FlexConfig";
+import {MatrxInputGroupProps} from "@/types/componentConfigTypes";
+import {densityConfig} from "@/config/ui/FlexConfig";
 
 const MatrxInputGroup: React.FC<MatrxInputGroupProps> = (
     {
@@ -63,13 +63,13 @@ const MatrxInputGroup: React.FC<MatrxInputGroupProps> = (
             >
                 {React.Children.map(children, (child) => {
                     if (React.isValidElement(child)) {
-                        return React.cloneElement(child, {
+                        return React.cloneElement(child as any, {
                             size,
                             density,
                             variant,
                             disabled,
                             hideLabel: true,
-                            ...child.props
+                            ...(child.props as object)
                         });
                     }
                     return child;

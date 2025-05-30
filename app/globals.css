@@ -36,12 +36,12 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --secondary-foreground: 275 35% 20%;
         --muted: 240 4.8% 95.9%;
         --muted-foreground: 240 3.8% 46.1%;
-        --accent: 262 83% 58%; /* More vibrant accent */
-        --accent-foreground: 240 5.9% 10%;
+        --accent: 260 30% 92%; /* Subtle purple-tinted light background for hover states */
+        --accent-foreground: 260 50% 25%; /* Dark purple text for contrast */
         --destructive: 0 84% 60%; /* Brighter destructive */
         --destructive-foreground: 0 0% 98%;
         --border: 240 5.9% 90%;
-        --input: 240 5.9% 90%;
+        --input: 240 8% 94%; /* Slightly lighter and more saturated for differentiation */
         --ring: 240 5% 64.9%;
         --radius: 0.5rem;
         --success: 142 76% 36%;
@@ -62,13 +62,13 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
         /* Adjusted hover state colors for more contrast */
         --primary-hover: 240 5.9% 15%;
-        --secondary-hover: 240 4.8% 90%;
-        --accent-hover: 262 83% 48%;
+        --secondary-hover: 275 65% 75%; /* Consistent with secondary purple theme */
+        --accent-hover: 260 35% 88%; /* Slightly darker than accent for hover */
 
         /* Adjusted active state colors */
         --primary-active: 240 5.9% 20%;
-        --secondary-active: 240 4.8% 85%;
-        --accent-active: 262 83% 38%;
+        --secondary-active: 275 65% 70%; /* Consistent with secondary purple theme */
+        --accent-active: 260 40% 85%; /* Darker than hover for active state */
 
         /* Elevation colors with slight tint */
         --elevation-1: 262 20% 98%;
@@ -127,12 +127,12 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --secondary-foreground: 275 75% 90%;
         --muted: 240 3.7% 15.9%;
         --muted-foreground: 0, 0%, 72%;
-        --accent: 240 3.7% 15.9%;
+        --accent: 215 20% 25%; /* Slate-tinted dark background for hover states */
         --accent-foreground: 0 0% 98%;
         --destructive: 0 72% 60%;
         --destructive-foreground: 0 85.7% 97.3%;
         --border: 240, 5%, 26%;
-        --input: 240 3.7% 15.9%;
+        --input: 215 15% 18%; /* Slate-tinted, slightly lighter for differentiation */
         --ring: 240 4.9% 83.9%;
         --radius: 0.5rem;
         --success: 142 69% 58%;
@@ -153,13 +153,13 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
 
         /* Hover state colors */
         --primary-hover: 0 0% 85%;
-        --secondary-hover: 240 3.7% 25%;
-        --accent-hover: 240 3.7% 25%;
+        --secondary-hover: 275 50% 35%; /* Consistent with secondary purple theme */
+        --accent-hover: 215 25% 30%; /* Slate-tinted, lighter than accent for hover */
 
         /* Active state colors */
         --primary-active: 0 0% 75%;
-        --secondary-active: 240 3.7% 35%;
-        --accent-active: 240 3.7% 35%;
+        --secondary-active: 275 45% 25%; /* Consistent with secondary purple theme */
+        --accent-active: 215 30% 20%; /* Slate-tinted, darker than hover for active */
 
         /* Elevation colors */
         --elevation-1: 0 0% 15%;
@@ -183,9 +183,9 @@ html.dark, body.dark { /* Or just .dark if your class is on html/body */
         --sidebar-foreground: 240 4.8% 95.9%;
         --sidebar-primary: 224.3 76.3% 48%;
         --sidebar-primary-foreground: 0 0% 100%;
-        --sidebar-accent: 240 3.7% 15.9%;
+        --sidebar-accent: 215 15% 20%; /* Slate-tinted for consistency */
         --sidebar-accent-foreground: 240 4.8% 95.9%;
-        --sidebar-border: 240 3.7% 15.9%;
+        --sidebar-border: 215 10% 22%; /* Slate-tinted, slightly different from sidebar-accent */
         --sidebar-ring: 217.2 91.2% 59.8%;
     }
 }

@@ -456,6 +456,8 @@ const wcInjuryFieldOverrides: AllFieldOverrides = {};
 
 const wcReportFieldOverrides: AllFieldOverrides = {};
 
+const workflowFieldOverrides: AllFieldOverrides = {};
+
 
 export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     action: actionFieldOverrides,
@@ -560,4 +562,5 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     wcImpairmentDefinition: wcImpairmentDefinitionFieldOverrides,
     wcInjury: wcInjuryFieldOverrides,
     wcReport: wcReportFieldOverrides,
+    workflow: workflowFieldOverrides,
 };

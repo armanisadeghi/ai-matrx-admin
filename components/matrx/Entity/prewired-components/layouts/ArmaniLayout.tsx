@@ -1,27 +1,25 @@
 // EntityLayout.tsx
-import React, {useState, useRef, useEffect} from 'react';
-import {motion, AnimatePresence} from 'framer-motion';
-import {CardContent} from '@/components/ui/card';
-import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {EntityError} from '@/lib/redux/entity/types/stateTypes';
-import {Button} from '@/components/ui/button';
-import {ArrowLeft,} from 'lucide-react';
-import {cn} from '@/lib/utils';
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CardContent } from "@/components/ui/card";
+import { EntityKeys, EntityData } from "@/types/entityTypes";
+import { EntityError } from "@/lib/redux/entity/types/stateTypes";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
     EntityQuickReferenceAccordionEnhanced,
     EntityQuickReferenceCardsEnhanced,
     EntityQuickReferenceList,
-    EntityQuickReferenceSelect
-} from '../quick-reference';
-import {
-    cardVariants, containerVariants,
-    densityConfig, getAnimationVariants, layoutTransitions
-} from "@/config/ui/entity-layout-config";
+    EntityQuickReferenceSelect,
+} from "../quick-reference";
+import { cardVariants, containerVariants, densityConfig, getAnimationVariants, layoutTransitions } from "@/config/ui/entity-layout-config";
 import {
     AnimationPreset,
     animationPresetOptions,
     ComponentDensity,
-    ComponentSize, componentSizeOptions,
+    ComponentSize,
+    componentSizeOptions,
     densityOptions,
     formColumnOptions,
     FormColumnsOptions,
@@ -30,19 +28,19 @@ import {
     formLayoutOptions,
     FormLayoutOptions,
     inlineEntityColumnOptions,
-    InlineEntityColumnsOptions, InlineEntityComponentStyles,
+    InlineEntityColumnsOptions,
+    InlineEntityComponentStyles,
     inlineEntityStyleOptions,
     pageLayoutOptions,
     PageLayoutOptions,
     QuickReferenceComponentType,
     textSizeOptions,
     TextSizeOptions,
-} from '@/types/componentConfigTypes';
+} from "@/types/componentConfigTypes";
 import SplitLayout from "@/components/matrx/Entity/prewired-components/layouts/parts/SplitLayout";
 import SideBySideLayout from "@/components/matrx/Entity/prewired-components/layouts/parts/SideBySideLayout";
 import StackedLayout from "@/components/matrx/Entity/prewired-components/layouts/parts/StackedLayout";
 import EnhancedCard from "@/components/matrx/Entity/prewired-components/layouts/parts/EnhancedCard";
-
 
 export interface ArmaniLayoutProps {
     className?: string;
@@ -72,27 +70,26 @@ export interface ArmaniLayoutProps {
     };
 }
 
-const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
-    {
-        className,
-        density = 'normal',
-        animationPreset = 'smooth',
-        layoutVariant = 'split',
-        splitRatio = 25,
-        quickReferenceType = 'cardsEnhanced',
-        formOptions
-    }) => {
+const ArmaniLayout: React.FC<ArmaniLayoutProps> = ({
+    className,
+    density = "normal",
+    animationPreset = "smooth",
+    layoutVariant = "split",
+    splitRatio = 25,
+    quickReferenceType = "cardsEnhanced",
+    formOptions,
+}) => {
     const [selectedEntity, setSelectedEntity] = useState<EntityKeys | null>(null);
     const [error, setError] = useState<EntityError | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
     const [hasSelection, setHasSelection] = useState(false);
-    const [recordLabel, setRecordLabel] = useState<string>('Select Record');
+    const [recordLabel, setRecordLabel] = useState<string>("Select Record");
     const [selectHeight, setSelectHeight] = useState<number>(0);
     const rightColumnRef = useRef<HTMLDivElement>(null);
     const [floatingLabel, setFloatingLabel] = useState(false);
 
     useEffect(() => {
-        if (layoutVariant !== 'stacked' && rightColumnRef.current) {
+        if (layoutVariant !== "stacked" && rightColumnRef.current) {
             const observer = new ResizeObserver((entries) => {
                 for (const entry of entries) {
                     setSelectHeight(entry.contentRect.height);
@@ -107,7 +104,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
     const handleEntityChange = (value: EntityKeys) => {
         setSelectedEntity(value);
         setHasSelection(false);
-        setRecordLabel('Select Record');
+        setRecordLabel("Select Record");
     };
 
     const handleRecordLoad = (record: EntityData<EntityKeys>) => {
@@ -123,7 +120,7 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
     };
 
     const onCreateEntityClick = () => {
-        console.log('Create new entity clicked');
+        console.log("Create new entity clicked");
     };
 
     // Get QuickReference component based on type
@@ -132,25 +129,32 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
 
         const commonProps = {
             entityKey: selectedEntity,
-            className: 'w-full',
+            className: "w-full",
             density,
             animationPreset,
         };
 
         const components = {
-            cards: <EntityQuickReferenceCardsEnhanced {...commonProps} showCreateNewButton
-                                                      onCreateEntityClick={onCreateEntityClick}/>,
-            cardsEnhanced: <EntityQuickReferenceCardsEnhanced {...commonProps} showCreateNewButton showMultiSelectButton
-                                                              onCreateEntityClick={onCreateEntityClick}/>,
+            cards: <EntityQuickReferenceCardsEnhanced {...commonProps} showCreateNewButton onCreateEntityClick={onCreateEntityClick} />,
+            cardsEnhanced: (
+                <EntityQuickReferenceCardsEnhanced
+                    {...commonProps}
+                    showCreateNewButton
+                    showMultiSelectButton
+                    onCreateEntityClick={onCreateEntityClick}
+                />
+            ),
             accordion: <EntityQuickReferenceAccordionEnhanced {...commonProps} />,
             accordionEnhanced: <EntityQuickReferenceAccordionEnhanced {...commonProps} />,
             list: <EntityQuickReferenceList {...commonProps} />,
-            select: <EntityQuickReferenceSelect
-                {...commonProps}
-                onRecordLoad={handleRecordLoad}
-                onError={handleError}
-                onLabelChange={handleRecordLabelChange}
-            />,
+            select: (
+                <EntityQuickReferenceSelect
+                    {...commonProps}
+                    onRecordLoad={handleRecordLoad}
+                    onError={handleError}
+                    onLabelChange={handleRecordLabelChange}
+                />
+            ),
         };
 
         return components[quickReferenceType];
@@ -169,21 +173,17 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
         formOptions,
         splitRatio,
         onCreateEntityClick,
-        floatingLabel
+        floatingLabel,
     };
 
     const layouts = {
         split: <SplitLayout {...layoutProps} />,
         sideBySide: <SideBySideLayout {...layoutProps} />,
-        stacked: <StackedLayout {...layoutProps} />
+        stacked: <StackedLayout {...layoutProps} />,
     };
 
     return (
-        <div className={cn(
-            'w-full h-full relative overflow-hidden',
-            densityConfig[density].spacing,
-            className
-        )}>
+        <div className={cn("w-full h-full relative overflow-hidden", densityConfig[density].spacing, className)}>
             <AnimatePresence mode="sync">
                 <motion.div
                     className="h-full"
@@ -200,20 +200,15 @@ const ArmaniLayout: React.FC<ArmaniLayoutProps> = (
                 {error && (
                     <motion.div
                         className="fixed bottom-4 right-4 z-50"
-                        initial={{opacity: 0, y: 20}}
-                        animate={{opacity: 1, y: 0}}
-                        exit={{opacity: 0, y: 20}}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
                     >
                         <EnhancedCard className="bg-destructive text-destructive-foreground">
                             <CardContent className="flex items-center gap-2">
                                 <p>{error.message}</p>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => setError(null)}
-                                    className="text-destructive-foreground"
-                                >
-                                    <ArrowLeft className={densityConfig[density].iconSize}/>
+                                <Button variant="ghost" size="icon" onClick={() => setError(null)} className="text-destructive-foreground">
+                                    <ArrowLeft className={densityConfig[density].iconSize} />
                                 </Button>
                             </CardContent>
                         </EnhancedCard>

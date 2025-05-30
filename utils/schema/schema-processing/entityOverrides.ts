@@ -1737,6 +1737,23 @@ const wcReportEntityOverrides: EntityOverrides<'wcReport'> = {
 };
 
 
+
+const workflowEntityOverrides: EntityOverrides<'workflow'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
 export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> = {
     action: actionEntityOverrides,
     admins: adminsEntityOverrides,
@@ -1840,4 +1857,5 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     wcImpairmentDefinition: wcImpairmentDefinitionEntityOverrides,
     wcInjury: wcInjuryEntityOverrides,
     wcReport: wcReportEntityOverrides,
+    workflow: workflowEntityOverrides,
 };

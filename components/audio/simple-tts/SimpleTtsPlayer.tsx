@@ -1,7 +1,7 @@
 "use client";
 import VoiceConfigSelects from "@/components/audio/VoiceConfigSelects";
 import { Button } from "@/components/ui/button";
-import useSimpleCartesia from "../../../hooks/tts/simple/useSimpleCartesia";
+import useSimpleCartesia from "@/hooks/tts/simple/useSimpleCartesia";
 
 export default function SimpleTtsPlayer() {
 

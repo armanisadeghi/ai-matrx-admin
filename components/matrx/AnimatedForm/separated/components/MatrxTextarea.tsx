@@ -9,8 +9,8 @@ import {
     Bold, Italic, List, Link, AlignLeft, AlignCenter,
     AlignRight, Image
 } from "lucide-react";
-import {MatrxTextareaProps} from "../../../../../types/componentConfigTypes";
-import {getComponentStyles, useComponentAnimation, textareaSizeConfig, densityConfig} from "../../../../../config/ui/FlexConfig";
+import {MatrxTextareaProps} from "@/types/componentConfigTypes";
+import {getComponentStyles, useComponentAnimation, textareaSizeConfig, densityConfig} from "@/config/ui/FlexConfig";
 
 const MatrxTextarea: React.FC<MatrxTextareaProps> = (
     {

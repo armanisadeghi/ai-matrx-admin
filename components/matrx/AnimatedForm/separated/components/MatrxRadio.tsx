@@ -5,8 +5,8 @@ import {motion} from "framer-motion";
 import {cn} from "@/utils/cn";
 import * as RadixRadioGroup from "@radix-ui/react-radio-group";
 import {Label} from "@/components/ui/label";
-import {MatrxRadioProps} from "../../../../../types/componentConfigTypes";
-import {getComponentStyles, useComponentAnimation, densityConfig} from "../../../../../config/ui/FlexConfig";
+import {MatrxRadioProps} from "@/types/componentConfigTypes";
+import {getComponentStyles, useComponentAnimation, densityConfig} from "@/config/ui/FlexConfig";
 
 const MatrxRadio: React.FC<MatrxRadioProps> = (
     {

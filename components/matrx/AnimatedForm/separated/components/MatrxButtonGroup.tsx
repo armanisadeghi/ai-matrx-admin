@@ -2,8 +2,8 @@
 'use client';
 import React from "react";
 import {cn} from "@/utils/cn";
-import {MatrxButtonGroupProps} from "../../../../../types/componentConfigTypes";
-import {densityConfig} from "../../../../../config/ui/FlexConfig";
+import {MatrxButtonGroupProps} from "@/types/componentConfigTypes";
+import {densityConfig} from "@/config/ui/FlexConfig";
 
 const MatrxButtonGroup: React.FC<MatrxButtonGroupProps> = (
     {
@@ -45,11 +45,11 @@ const MatrxButtonGroup: React.FC<MatrxButtonGroupProps> = (
         >
             {React.Children.map(children, (child) => {
                 if (React.isValidElement(child)) {
-                    return React.cloneElement(child, {
+                    return React.cloneElement(child as any, {
                         size,
                         variant,
                         density,
-                        ...child.props
+                        ...(child.props as object)
                     });
                 }
                 return child;

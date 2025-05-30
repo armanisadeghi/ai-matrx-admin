@@ -7,7 +7,7 @@ import ThemedSectionCard, {
   ThemeColor, 
   ThemePreset, 
   THEME_PRESETS 
-} from "../../../../../../components/official/themed-section-card/ThemedSectionCard";
+} from "@/components/official/themed-section-card/ThemedSectionCard";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,

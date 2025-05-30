@@ -17,7 +17,7 @@ import {ExpandButton} from './ExpandButton';
 import EntityContent from "@/components/matrx/Entity/prewired-components/development/EntityContent";
 import {LayoutProps} from "@/types/componentConfigTypes";
 import EntitySelection from "@/components/matrx/Entity/prewired-components/entity-management/EntitySelection";
-import {useDynamicMeasurements} from '../../../../../../hooks/ui/useDynamicMeasurements';
+import {useDynamicMeasurements} from '@/hooks/ui/useDynamicMeasurements';
 import MeasurementMonitor from './MeasurementMonitor';
 
 export const SideBySideLayout: React.FC<LayoutProps> = (

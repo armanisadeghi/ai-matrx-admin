@@ -16,7 +16,7 @@ import ReactFlow, {
   ReactFlowProvider
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { initialNodes, initialEdges } from "../constants";
+import { initialNodes, initialEdges } from "../../../app/(authenticated)/tests/workflows/first/constants";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 // Custom node components
 import AgentNode from "./nodes/integrations/AgentNode";

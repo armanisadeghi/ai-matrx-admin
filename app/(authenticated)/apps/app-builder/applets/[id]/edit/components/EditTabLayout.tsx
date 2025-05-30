@@ -9,7 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAppSelector } from "@/lib/redux/hooks";
 import { selectAppletById } from "@/lib/redux/app-builder/selectors/appletSelectors";
 import LiveAppAndAppletPreview from "@/features/applet/builder/previews/LiveAppAndAppletPreview";
-import FullScreenAppletPreview, { useFullScreenPreview } from "../../../../../../../../features/applet/builder/previews/FullScreenAppletPreview";
+import FullScreenAppletPreview, { useFullScreenPreview } from "@/features/applet/builder/previews/FullScreenAppletPreview";
 
 interface TabItem {
     id: string;

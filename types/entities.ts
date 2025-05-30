@@ -1218,3 +1218,20 @@ export type WcReport = {
     compensationWeeks?: number;
     compensationDays?: number;
 }
+
+export type Workflow = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    name?: string;
+    description?: string;
+    visualWorkflow?: Record<string, unknown>;
+    backendWorkflow?: Record<string, unknown>;
+    userId?: string;
+    version?: number;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    isActive?: boolean;
+    isDeleted?: boolean;
+    publicRead?: boolean;
+}

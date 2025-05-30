@@ -2,7 +2,7 @@
 
 import React, {useState, useCallback, useMemo, useEffect} from 'react';
 import {Card} from '@/components/ui/card';
-import {Button} from '@/components/ui/button';
+import {Button} from '@/components/ui/buttonMine';
 import {cn} from '@/lib/utils';
 import {motion, AnimatePresence} from 'framer-motion';
 import {
@@ -16,8 +16,8 @@ import {
     Expand,
     Check
 } from 'lucide-react';
-import {MatrxFullJsonViewerProps, MatrxJsonItemProps, MatrxJsonViewerProps} from '../../../../../types/componentConfigTypes';
-import {densityConfig, getComponentStyles, jsonViewerConfig, useComponentAnimation} from '../../../../../config/ui/FlexConfig';
+import {MatrxFullJsonViewerProps, MatrxJsonItemProps, MatrxJsonViewerProps} from '@/types/componentConfigTypes';
+import {densityConfig, getComponentStyles, jsonViewerConfig, useComponentAnimation} from '@/config/ui/FlexConfig';
 
 const MatrxJsonItem: React.FC<MatrxJsonItemProps> = (
     {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useState, useEffect } from 'react';
-import { ChipData } from '../../../types/editor.types';
-import { useEditorContext } from '../../../providers/rich-text-editor/Provider';
+import { ChipData } from '@/types/editor.types';
+import { useEditorContext } from '@/providers/rich-text-editor/Provider';
 
 export const useEditorManager = () => {
     const context = useEditorContext();

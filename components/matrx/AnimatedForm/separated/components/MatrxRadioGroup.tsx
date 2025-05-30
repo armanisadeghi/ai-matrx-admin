@@ -4,8 +4,8 @@ import React from "react";
 import {motion} from "framer-motion";
 import {cn} from "@/utils/cn";
 import {Label} from "@/components/ui/label";
-import {MatrxRadioGroupProps} from "../../../../../types/componentConfigTypes";
-import {densityConfig} from "../../../../../config/ui/FlexConfig";
+import {MatrxRadioGroupProps} from "@/types/componentConfigTypes";
+import {densityConfig} from "@/config/ui/FlexConfig";
 
 const MatrxRadioGroup: React.FC<MatrxRadioGroupProps> = (
     {
@@ -52,12 +52,12 @@ const MatrxRadioGroup: React.FC<MatrxRadioGroupProps> = (
             >
                 {React.Children.map(children, (child) => {
                     if (React.isValidElement(child)) {
-                        return React.cloneElement(child, {
+                        return React.cloneElement(child as any, {
                             size,
                             density,
                             variant,
                             disabled,
-                            ...child.props
+                            ...(child.props as object)
                         });
                     }
                     return child;

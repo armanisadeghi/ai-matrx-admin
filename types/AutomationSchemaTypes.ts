@@ -186,7 +186,8 @@ export type AutomationTableName =
     | 'wcClaim'
     | 'wcImpairmentDefinition'
     | 'wcInjury'
-    | 'wcReport';
+    | 'wcReport'
+    | 'workflow';
 
 export type AutomationViewName =
     'viewRegisteredFunction'
@@ -1126,3 +1127,12 @@ export type WcReportProcessed = Expand<ProcessedEntityData<"wcReport">>;
 export type WcReportData = Expand<EntityDataMixed<"wcReport">>;
 export type WcReportState = EntityStateType<"wcReport">;
 export type WcReportRecordMap = Record<"wcReportRecordId", WcReportData>;
+
+export type WorkflowType = AutomationEntity<"workflow">;
+export type WorkflowDataRequired = Expand<EntityData<"workflow">>;
+export type WorkflowDataOptional = Expand<EntityDataOptional<"workflow">>;
+export type WorkflowRecordWithKey = Expand<EntityDataWithKey<"workflow">>;
+export type WorkflowProcessed = Expand<ProcessedEntityData<"workflow">>;
+export type WorkflowData = Expand<EntityDataMixed<"workflow">>;
+export type WorkflowState = EntityStateType<"workflow">;
+export type WorkflowRecordMap = Record<"workflowRecordId", WorkflowData>;

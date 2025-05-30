@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import { formatJson } from "@/utils/json-cleaner-utility";
-import { copyToClipboard } from "../../../features/scraper/utils/scraper-utils";
-import { createPathBookmark, saveBookmarks, loadBookmarks, getValueByBookmark, exportBookmarks } from "../../../features/scraper/utils/json-path-navigation-util";
+import { copyToClipboard } from "@/features/scraper/utils/scraper-utils";
+import { createPathBookmark, saveBookmarks, loadBookmarks, getValueByBookmark, exportBookmarks } from "@/features/scraper/utils/json-path-navigation-util";
 import { getDataAtPath, generateAccessPath, generatePathDescription } from "./json-utils";
 import { PathArray, Bookmark } from "./types";
 

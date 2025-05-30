@@ -5,8 +5,8 @@ import {motion} from "framer-motion";
 import {cn} from "@/utils/cn";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {MatrxInputProps} from "../../../../../types/componentConfigTypes";
-import {getComponentStyles, useComponentAnimation, densityConfig} from "../../../../../config/ui/FlexConfig";
+import {MatrxInputProps} from "@/types/componentConfigTypes";
+import {getComponentStyles, useComponentAnimation, densityConfig} from "@/config/ui/FlexConfig";
 
 const MatrxInput: React.FC<MatrxInputProps> = (
     {

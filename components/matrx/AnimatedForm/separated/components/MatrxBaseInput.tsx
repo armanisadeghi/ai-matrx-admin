@@ -3,8 +3,8 @@
 import { Input } from "@/components/ui";
 import {cn} from "@/utils/cn";
 import React from "react";
-import { MatrxBaseInputProps } from "../../../../../types/componentConfigTypes";
-import {densityConfig, getComponentStyles} from "../../../../../config/ui/FlexConfig";
+import { MatrxBaseInputProps } from "@/types/componentConfigTypes";
+import {densityConfig, getComponentStyles} from "@/config/ui/FlexConfig";
 
 const MatrxBaseInput = React.forwardRef<HTMLInputElement, MatrxBaseInputProps>(
     ({

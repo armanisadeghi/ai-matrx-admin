@@ -182,9 +182,8 @@ const QuickAccessPanel: React.FC<QuickAccessPanelProps> = ({ onAddNode }) => {
         <div className="px-4 pb-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-              Processors/Extractors
+              Processors & Extractors
             </h3>
-            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">CRITICAL</span>
           </div>
           <div className="space-y-2">
             <button

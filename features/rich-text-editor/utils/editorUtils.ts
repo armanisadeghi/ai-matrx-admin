@@ -1,4 +1,4 @@
-import { BrokerMetaData, ChipData, ChipRequestOptions, TextStyle } from '../../../types/editor.types';
+import { BrokerMetaData, ChipData, ChipRequestOptions, TextStyle } from '@/types/editor.types';
 import { encodeMatrxMetadata } from './patternUtils';
 
 // Helper to get editor element by ID
