@@ -1,15 +1,15 @@
 'use client';
 
 import React, {useCallback, useMemo} from "react";
-import EntityRelationshipWrapperFinal from "../../../../entities/relationships/EntityRelationshipWrapperFinal";
+import EntityRelationshipWrapperFinal from "@/app/entities/relationships/EntityRelationshipWrapperFinal";
 import SmartCrudButtons
     from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
-import {useFieldVisibility} from "@/lib/redux/entity/hooks/useFieldVisibility";
+import {useFieldVisibility} from "@/app/entities/hooks/form-related/useFieldVisibility";
 import MultiSelect from '@/components/ui/loaders/multi-select';
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";
-
 import {createEntitySelectors, useAppSelector} from "@/lib/redux";
 import EntityBaseFieldFinal from "@/app/entities/fields/EntityBaseFieldFinal";
+import { EntityStateField } from "@/lib/redux/entity/types/stateTypes";
 
 
 export const filterRelFields = (relationshipFields, entitiesToHide) => {
@@ -30,42 +30,62 @@ const ArmaniFormFinal: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
     const activeRecordId = useAppSelector(selectors.selectActiveRecordId);
-    const {nativeFields, relationshipFields} = useAppSelector(selectors.selectFieldGroups);
-    const {filteredRelFields, hiddenRelFields} = filterRelFields(relationshipFields, unifiedLayoutProps.entitiesToHide);
-
-    // console.log('\n==== Entity Name', entityKey);
-    // console.log('Hidden Entities', unifiedLayoutProps.entitiesToHide);
-    // console.log("hiddenRelFields", hiddenRelFields);
-    // console.log("filteredRelFields", filteredRelFields);
 
     const {
-        visibleFieldsInfo,
-        allowedFieldsInfo,
-        selectedFields,
+        visibleFields,
+        visibleNativeFields,
+        visibleRelationshipFields,
+        allowedFields,
         toggleField,
+        selectOptions,
     } = useFieldVisibility(entityKey, unifiedLayoutProps);
 
-    const selectOptions = allowedFieldsInfo.map(field => ({
-        value: field.name,
-        label: field.displayName || field.name
-    }));
+    // Convert field names to EntityStateField objects
+    const visibleFieldsAsObjects = useAppSelector(state => {
+        if (!selectors || !visibleFields.length) return [];
+        
+        return visibleFields.map(fieldName => 
+            selectors.selectFieldMetadata(state, fieldName as string)
+        ).filter(Boolean) as EntityStateField[];
+    });
 
-    const selectedValues = Array.from(selectedFields);
+    const visibleNativeFieldsAsObjects = useAppSelector(state => {
+        if (!selectors || !visibleNativeFields.length) return [];
+        
+        return visibleNativeFields.map(fieldName => 
+            selectors.selectFieldMetadata(state, fieldName as string)
+        ).filter(Boolean) as EntityStateField[];
+    });
+
+    const visibleRelationshipFieldsAsObjects = useAppSelector(state => {
+        if (!selectors || !visibleRelationshipFields.length) return [];
+        
+        return visibleRelationshipFields.map(fieldName => 
+            selectors.selectFieldMetadata(state, fieldName as string)
+        ).filter(Boolean) as EntityStateField[];
+    });
+
+    const {filteredRelFields, hiddenRelFields} = filterRelFields(visibleRelationshipFieldsAsObjects, unifiedLayoutProps.entitiesToHide);
+
+    const selectedValues = visibleFields;
 
     const handleFieldSelection = (values: string[]) => {
+        // Toggle fields that should be added (in values but not in current visible fields)
         values.forEach(fieldName => {
-            if (!selectedFields.has(fieldName)) {
-                toggleField(fieldName);
+            if (!visibleFields.includes(fieldName as any)) {
+                toggleField(fieldName as any);
             }
         });
-        selectedValues.forEach(fieldName => {
-            if (!values.includes(fieldName)) {
+        
+        // Toggle fields that should be removed (in current visible fields but not in values)
+        visibleFields.forEach(fieldName => {
+            if (!values.includes(fieldName as string)) {
                 toggleField(fieldName);
             }
         });
     };
 
-    const renderNativeField = useCallback((field) => (
+    const renderNativeField = useCallback((field: EntityStateField) => (
         <EntityBaseFieldFinal
             key={field.uniqueFieldId || field.name}
             fieldName={field.name}
@@ -75,7 +95,7 @@ const ArmaniFormFinal: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
         />
     ), [entityKey, activeRecordId, unifiedLayoutProps]);
 
-    const renderRelationshipField = useCallback((field) => (
+    const renderRelationshipField = useCallback((field: EntityStateField) => (
         <EntityRelationshipWrapperFinal
             key={field.uniqueFieldId || field.name}
             fieldName={field.name}
@@ -111,9 +131,9 @@ const ArmaniFormFinal: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
             </div>
 
             <div className="space-y-4 mt-4 p-2">
-                {nativeFields.length > 0 && (
+                {visibleNativeFieldsAsObjects.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-                        {nativeFields.map(renderNativeField)}
+                        {visibleNativeFieldsAsObjects.map(renderNativeField)}
                     </div>
                 )}
 

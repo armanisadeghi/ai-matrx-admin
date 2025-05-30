@@ -2,7 +2,7 @@
 
 import React, {useState, useCallback, useMemo, useEffect} from 'react';
 import {Card} from '@/components/ui/card';
-import {Button} from '@/components/ui/buttonMine';
+import {Button} from '@/components/ui/ButtonMine';
 import {cn} from '@/lib/utils';
 import {motion, AnimatePresence} from 'framer-motion';
 import {

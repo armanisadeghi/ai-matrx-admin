@@ -5,11 +5,13 @@ import EntityFormStandard from './EntityFormStandard';
 import EntityMultiSelectForms from './dev/EntityMultiSelectForms';
 import ArmaniFormFinal from './dev/ArmaniFormFinal';
 import EntityFormRecordSelections from './EntityFormRecordSelections';
+import ArmaniFormSmart from '@/components/matrx/ArmaniForm/smart-form/ArmaniFormSmart';
 
 export const ENTITY_FORM_COMPONENTS = {
     DEFAULT: EntityFormStandard,
     STANDARD: EntityFormStandard,
     ARMANI: ArmaniFormFinal,
+    ARMANI_SMART: ArmaniFormSmart,
     MINIMAL: EntityFormMinimal,
     RECORD_SELECT: EntityFormRecordSelections,
     RECORD_MULTI_SELECT: EntityMultiSelectForms,

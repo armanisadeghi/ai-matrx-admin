@@ -6,6 +6,8 @@ import { EntityKeys } from "@/types/entityTypes";
 import { EntityStateField, MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 import { FormDensity } from "@/components/matrx/ArmaniForm/ArmaniForm";
 import { UnifiedCrudHandlers } from "@/components/matrx/Entity";
+import { ENTITY_FORM_COMPONENTS } from "@/app/entities/forms";
+import type { EntityFormType } from "@/app/entities/forms";
 
 export interface LayoutProps {
     selectedEntity: EntityKeys | null;
@@ -165,6 +167,7 @@ export const inlineEntityStyleOptions = createStringSelectOptions(INLINE_ENTITY_
 export const componentStateOptions = createStringSelectOptions(COMPONENT_STATES);
 export const quickReferenceComponentOptions = createStringSelectOptions(QUICK_REFERENCE_COMPONENT_TYPES);
 export const formVariationOptions = createStringSelectOptions(FORM_VARIATIONS);
+export const entityFormTypeOptions = createStringSelectOptions(Object.keys(ENTITY_FORM_COMPONENTS) as EntityFormType[]);
 
 // Mixed number|string options
 export const formColumnOptions = createMixedSelectOptions(FORM_COLUMNS);
@@ -477,3 +480,6 @@ interface FlexAnimatedFormProps {
     enableSearch?: boolean;
     direction?: "row" | "column" | "row-reverse" | "column-reverse";
 }
+
+// Re-export for consistency with other types
+export type { EntityFormType };

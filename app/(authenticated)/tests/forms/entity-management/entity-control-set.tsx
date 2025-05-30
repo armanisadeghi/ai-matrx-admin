@@ -23,6 +23,7 @@ import {
     QuickReferenceComponentType,
     EntitySelectStyle,
     EntitySelectVariant,
+    EntityFormType,
     pageLayoutOptions,
     densityOptions,
     animationPresetOptions,
@@ -37,10 +38,11 @@ import {
     quickReferenceComponentOptions,
     entitySelectStyleOptions,
     entitySelectVariantOptions,
+    entityFormTypeOptions,
 } from '@/types/componentConfigTypes';
 import { MatrxVariant } from '@/components/matrx/ArmaniForm/field-components/types';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
-import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
+import { getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
 
 // Component variant options
 const componentVariantOptions = [
@@ -162,6 +164,18 @@ export const EntityControlSet: React.FC<EntityControlSetProps> = ({
                     }
                 />
                 
+                <CompactSelect
+                    label="Form Component"
+                    icon={Component}
+                    value={unifiedProps.formComponent}
+                    options={entityFormTypeOptions}
+                    onChange={(value: EntityFormType) =>
+                        updateUnifiedProps({
+                            formComponent: value
+                        })
+                    }
+                />
+
                 {/* Split Ratio - only for layouts that support it */}
                 {supportsSplitRatio && (
                     <CompactSlider

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {cn} from '@/lib/utils';
 import {Card, CardContent} from '@/components/ui/card';
-import {Button} from '@/components/ui/buttonMine';
+import {Button} from '@/components/ui/ButtonMine';
 import {Plus, CheckSquare, Grid2X2} from 'lucide-react';
 import {EntityKeys} from '@/types/entityTypes';
 import {useQuickReference} from '@/lib/redux/entity/hooks/useQuickReference';

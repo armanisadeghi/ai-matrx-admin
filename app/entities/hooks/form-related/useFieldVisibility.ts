@@ -34,13 +34,15 @@ export function useFieldVisibility<TEntity extends EntityKeys>(entityKey: TEntit
         const searchQuery = searchTerm.toLowerCase().trim();
 
         if (enableSearch && searchQuery) {
-            return allowedFields.filter((field: EntityAnyFieldKey<TEntity>) =>
-                String(field).toLowerCase().includes(searchQuery)
-            ) as EntityAnyFieldKey<TEntity>[];
+            return allowedFields.filter((field: EntityAnyFieldKey<TEntity>) => {
+                const fieldName = String(field).toLowerCase();
+                const displayName = (fieldDisplayNames.get(field) || String(field)).toLowerCase();
+                return fieldName.includes(searchQuery) || displayName.includes(searchQuery);
+            }) as EntityAnyFieldKey<TEntity>[];
         }
 
         return Array.from(selectedFields);
-    }, [enableSearch, searchTerm, allowedFields, selectedFields]);
+    }, [enableSearch, searchTerm, allowedFields, selectedFields, fieldDisplayNames]);
 
     // Derive native and relationship visible fields
     const visibleNativeFields = useMemo(

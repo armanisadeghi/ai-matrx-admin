@@ -71,8 +71,12 @@ export const SmartEntityContent: React.FC<UnifiedLayoutProps> = (unifiedLayoutPr
         },
 
         handleCreate: (tempRecordId: MatrxRecordId, options?: { showToast?: boolean }) => {
-            entity.createRecord(
+            const createPayload = { 
                 tempRecordId,
+                entityNameAnyFormat: entityKey
+            };
+            entity.createRecord(
+                [createPayload],
                 (result) => {
                     if (result.success && options?.showToast) {
                         toasts.handleCreateSuccess({showToast: true});
@@ -121,7 +125,7 @@ export const SmartEntityContent: React.FC<UnifiedLayoutProps> = (unifiedLayoutPr
 
     return (
         <div className={className}>
-            {unifiedLayoutProps.defaultFormComponent === 'ArmaniFormSmart' ? (
+            {unifiedLayoutProps.formComponent === 'ARMANI_SMART' ? (
                 <ArmaniFormSmart {...completeUnifiedProps} />
             ) : (
                  (entity.activeRecord || !entity.primaryKeyMetadata) && (
