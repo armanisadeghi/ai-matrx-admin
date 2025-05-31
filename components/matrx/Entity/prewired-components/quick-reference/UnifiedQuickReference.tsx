@@ -6,7 +6,9 @@ import {
     EntityQuickReferenceCardsEnhanced,
     EntityQuickReferenceList,
     EntityQuickReferenceSelect,
+    EntityQuickReferenceListWithRelated,
 } from "./index";
+import DynamicQuickReference from '@/app/entities/quick-reference/dynamic-quick-ref/DynamicQuickReference';
 
 interface UnifiedQuickReferenceProps {
     unifiedLayoutProps: UnifiedLayoutProps;
@@ -68,8 +70,9 @@ export const UnifiedQuickReference: React.FC<UnifiedQuickReferenceProps> = ({
                     onLabelChange={handleRecordLabelChange}
                 />
             ),
+            dynamic: <DynamicQuickReference {...commonProps} />,
             default: <EntityQuickReferenceList {...commonProps} />,
-            LIST_WITH_RELATED: <EntityQuickReferenceList {...commonProps} />,
+            LIST_WITH_RELATED: <EntityQuickReferenceListWithRelated {...commonProps} />,
         };
 
         return quickRefComponentOptions[quickReferenceType] || quickRefComponentOptions.list;

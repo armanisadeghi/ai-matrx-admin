@@ -125,6 +125,7 @@ export const QUICK_REFERENCE_COMPONENT_TYPES = [
     "list",
     "select",
     "default",
+    "dynamic",
     "LIST_WITH_RELATED",
 ] as const;
 export type QuickReferenceComponentType = (typeof QUICK_REFERENCE_COMPONENT_TYPES)[number];

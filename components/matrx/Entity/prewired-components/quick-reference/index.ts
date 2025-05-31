@@ -14,6 +14,7 @@ export {default as EntityQuickReferenceCards} from './EntityQuickReferenceCards'
 export {default as EntityQuickReferenceCardsEnhanced} from './EntityQuickReferenceCardsEnhanced';
 export {default as EntityQuickReferenceList} from './EntityQuickReferenceList';
 export {default as EntityQuickReferenceSelect} from './EntityQuickReferenceSelect';
+export {default as EntityQuickReferenceListWithRelated} from './EntityQuickReferenceListWithRelated';
 
 
 
