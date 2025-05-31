@@ -17,6 +17,7 @@ export type CrudButtonOptions = {
     allowCreate?: boolean;
     allowEdit?: boolean;
     allowDelete?: boolean;
+    allowCancel?: boolean;
     allowRefresh?: boolean;
     allowAdvanced?: boolean;
     showConfirmation?: boolean;

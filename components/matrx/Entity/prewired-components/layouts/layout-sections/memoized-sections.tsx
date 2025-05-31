@@ -91,7 +91,7 @@ const ExpandButton = React.memo((
                 </Button>
             </TooltipTrigger>
             <TooltipContent>
-                <p>{isExpanded ? 'Show sidebar' : 'Hide sidebar'}</p>
+                <p>{isExpanded ? 'Show sidebar' : 'Hide sidebar 1'}</p>
             </TooltipContent>
         </Tooltip>
     </TooltipProvider>

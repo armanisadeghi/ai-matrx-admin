@@ -8,15 +8,6 @@
         "id": "BQiFLYs05XeKbjCJ"
     },
     {
-        "type": "Directory",
-        "name": "d:\\app_dev\\ai-matrx-admin\\app\\(authenticated)",
-        "parent_id": null,
-        "fsPath": "d:\\app_dev\\ai-matrx-admin\\app\\(authenticated)",
-        "workspaceRoot": null,
-        "workspacePath": null,
-        "id": "LGsFhKEMI4Y579bW"
-    },
-    {
         "type": "Group",
         "name": "All Entity Stuff",
         "parent_id": null,
@@ -77,5 +68,14 @@
         "workspaceRoot": null,
         "workspacePath": null,
         "id": "QXkovtbpUEDAwYSI"
+    },
+    {
+        "type": "File",
+        "name": "d:\\app_dev\\ai-matrx-admin\\app\\entities\\forms\\EntityFormStandard.tsx",
+        "parent_id": null,
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\app\\entities\\forms\\EntityFormStandard.tsx",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "BeqmuxhsAISr3V9L"
     }
 ]

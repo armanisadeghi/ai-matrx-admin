@@ -96,7 +96,7 @@ const ENTITY_CONFIGS = {
     
     workflow: {
         entityKey: "workflow" as EntityKeys,
-        formComponent: "RECORD_SELECT" as EntityFormType,
+        formComponent: "STANDARD" as EntityFormType,
         quickReferenceType: "select" as QuickReferenceComponentType,
         formLayoutType: "stacked" as PageLayoutOptions,
         density: "normal" as ComponentDensity,

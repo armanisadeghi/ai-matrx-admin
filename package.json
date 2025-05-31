@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "set NODE_OPTIONS=--dns-result-order=ipv4first && next dev",
         "build": "ts-node scripts/generate-manifest.ts && bash scripts/fix-encoding.sh && next build",
+        "build:local": "set NODE_OPTIONS=--max-old-space-size=8192 && ts-node scripts/generate-manifest.ts && bash scripts/fix-encoding.sh && next build",
         "start": "next start",
         "lint": "next lint",
         "test": "ts-node -P tsconfig.json tests/setup.ts",

@@ -32,6 +32,56 @@ type MultiSelectDropdownProps = {
 const DROPDOWN_MIN_WIDTH = 200; // Minimum width for the dropdown
 const DROPDOWN_PADDING = 8; // Padding from viewport edges
 
+// Create a singleton portal container
+let portalContainer: HTMLElement | null = null;
+
+const getPortalContainer = (triggerElement?: HTMLElement) => {
+    // If we have a trigger element, try to find if it's inside a portal/modal/sheet
+    if (triggerElement) {
+        // Look for common portal containers (Radix portals, custom modals, etc.)
+        const portalSelectors = [
+            '[data-radix-portal]', // Radix portals
+            '[data-portal]', // Custom portals
+            '.modal-portal', // Common modal class
+            '.sheet-portal', // Common sheet class
+            '[role="dialog"]', // ARIA dialog role
+            '[aria-modal="true"]', // ARIA modal
+            '.fixed.z-50', // Common modal/sheet pattern (Radix dialogs)
+            '.fixed.z-40', // Alternative z-index
+            '.fixed.z-30', // Another alternative
+        ];
+        
+        let currentElement: HTMLElement | null = triggerElement;
+        while (currentElement && currentElement !== document.body) {
+            // Check if current element or any ancestor matches portal selectors
+            for (const selector of portalSelectors) {
+                const portalElement = currentElement.closest(selector) as HTMLElement;
+                if (portalElement) {
+                    // Found a portal container, create a container inside it if needed
+                    let dropdownContainer = portalElement.querySelector('#multi-select-dropdown-portal') as HTMLElement;
+                    if (!dropdownContainer) {
+                        dropdownContainer = document.createElement('div');
+                        dropdownContainer.id = 'multi-select-dropdown-portal';
+                        dropdownContainer.style.position = 'relative';
+                        dropdownContainer.style.zIndex = '1';
+                        portalElement.appendChild(dropdownContainer);
+                    }
+                    return dropdownContainer;
+                }
+            }
+            currentElement = currentElement.parentElement;
+        }
+    }
+    
+    // Fallback to document body with singleton container
+    if (!portalContainer) {
+        portalContainer = document.createElement('div');
+        portalContainer.id = 'multi-select-dropdown-portal';
+        document.body.appendChild(portalContainer);
+    }
+    return portalContainer;
+};
+
 const MultiSelectDropdown = React.forwardRef<HTMLDivElement, MultiSelectDropdownProps>(
     ({
         isOpen,
@@ -48,25 +98,8 @@ const MultiSelectDropdown = React.forwardRef<HTMLDivElement, MultiSelectDropdown
         triggerRef,
         preferredPlacement = 'bottom'
     }, ref) => {
-        const [portalContainer, setPortalContainer] = React.useState<HTMLElement | null>(null);
         const dropdownRef = React.useRef<HTMLDivElement>(null);
         const [position, setPosition] = React.useState<DropdownPosition | null>(null);
-
-        // Create portal container
-        React.useEffect(() => {
-            if (!portalContainer) {
-                const container = document.createElement('div');
-                container.id = 'multi-select-dropdown-portal';
-                document.body.appendChild(container);
-                setPortalContainer(container);
-            }
-
-            return () => {
-                if (portalContainer) {
-                    document.body.removeChild(portalContainer);
-                }
-            };
-        }, [portalContainer]);
 
         const calculatePosition = React.useCallback(() => {
             if (!triggerRef.current || !dropdownRef.current) return;
@@ -111,10 +144,15 @@ const MultiSelectDropdown = React.forwardRef<HTMLDivElement, MultiSelectDropdown
         }, [triggerRef, preferredPlacement]);
 
         React.useEffect(() => {
-            if (!isOpen) return;
+            if (!isOpen) {
+                setPosition(null);
+                return;
+            }
 
-            // Initial position calculation
-            calculatePosition();
+            // Initial position calculation with a small delay to ensure DOM is ready
+            const timeoutId = setTimeout(() => {
+                calculatePosition();
+            }, 0);
 
             // Handle scroll and resize
             const handleUpdate = () => {
@@ -131,26 +169,32 @@ const MultiSelectDropdown = React.forwardRef<HTMLDivElement, MultiSelectDropdown
             }
 
             return () => {
+                clearTimeout(timeoutId);
                 window.removeEventListener('scroll', handleUpdate, true);
                 window.removeEventListener('resize', handleUpdate);
                 observer.disconnect();
             };
         }, [isOpen, calculatePosition]);
 
-        if (!isOpen || !portalContainer || !position) return null;
+        if (!isOpen || typeof window === 'undefined') return null;
 
         const content = (
             <div
                 ref={dropdownRef}
+                data-multi-select-dropdown="true"
                 className={cn(
-                    "fixed rounded-md border bg-popover shadow-md",
-                    "max-h-[300px] overflow-auto"
+                    "fixed rounded-md border bg-popover text-popover-foreground shadow-md",
+                    "max-h-[300px] overflow-auto",
+                    // Ensure visibility with very high z-index to appear above all modals/sheets
+                    "z-[99999]"
                 )}
                 style={{
-                    top: position.top,
-                    left: position.left,
+                    top: position?.top || 0,
+                    left: position?.left || 0,
                     minWidth: DROPDOWN_MIN_WIDTH,
-                    zIndex: 9999,
+                    // Add a slight opacity transition for better UX
+                    opacity: position ? 1 : 0,
+                    visibility: position ? 'visible' : 'hidden',
                 }}
             >
                 {creatable && (
@@ -180,10 +224,10 @@ const MultiSelectDropdown = React.forwardRef<HTMLDivElement, MultiSelectDropdown
                                 <div
                                     className={cn(
                                         'flex h-4 w-4 items-center justify-center border rounded',
-                                        isSelected && 'bg-primary border-primary'
+                                        isSelected && 'bg-primary border-primary text-primary-foreground'
                                     )}
                                 >
-                                    {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+                                    {isSelected && <Check className="h-3 w-3" />}
                                 </div>
                                 <span>{option.label}</span>
                             </div>
@@ -202,7 +246,7 @@ const MultiSelectDropdown = React.forwardRef<HTMLDivElement, MultiSelectDropdown
             </div>
         );
 
-        return createPortal(content, portalContainer);
+        return createPortal(content, getPortalContainer(triggerRef.current));
     }
 );
 

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { ChevronDown, Loader2, X, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/ButtonMine';
 import { ComponentSize } from '@/types/componentConfigTypes';
 import { ButtonVariant } from '@/components/matrx/ArmaniForm/field-components/types';
 import MultiSelectDropdown from './MultiSelectDropdown';
@@ -29,6 +29,7 @@ type MultiSelectProps = {
     creatable?: boolean;
     onCreateOption?: (inputValue: string) => string | null;
     createOptionPlaceholder?: string;
+    iconPadding?: string;
 };
 
 const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
@@ -53,6 +54,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
         creatable = false,
         onCreateOption,
         createOptionPlaceholder = 'Type to create...',
+        iconPadding,
         ...props
     }, ref) => {
         const [isOpen, setIsOpen] = React.useState(false);
@@ -60,6 +62,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
         const [inputValue, setInputValue] = React.useState('');
         const [filteredOptions, setFilteredOptions] = React.useState(options);
         const buttonRef = React.useRef<HTMLButtonElement>(null);
+        const dropdownRef = React.useRef<HTMLDivElement>(null);
 
         // Sync with external value
         React.useEffect(() => {
@@ -68,17 +71,39 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
             }
         }, [value]);
 
-        // Handle click outside - modified for portal
+        // Handle click outside - updated for better portal detection
         React.useEffect(() => {
             if (!isOpen) return;
 
             const handleClickOutside = (event: MouseEvent | TouchEvent) => {
                 const target = event.target as Node;
-                const portalElement = document.getElementById('multi-select-dropdown-portal');
                 
-                // Check if click is inside button or dropdown
-                if (buttonRef.current?.contains(target) || portalElement?.contains(target)) {
+                // Check if click is inside button
+                if (buttonRef.current?.contains(target)) {
                     return;
+                }
+                
+                // Check if click is inside the actual dropdown element
+                if (dropdownRef.current?.contains(target)) {
+                    return;
+                }
+                
+                // More comprehensive check for clicks within any dropdown-related elements
+                // This handles cases where the dropdown is rendered in different portal contexts
+                let currentElement = target as Element;
+                while (currentElement && currentElement !== document.documentElement) {
+                    // Check if we're inside any dropdown-related container
+                    if (
+                        currentElement.id === 'multi-select-dropdown-portal' ||
+                        currentElement.closest('#multi-select-dropdown-portal') ||
+                        currentElement.closest('[data-multi-select-dropdown]') ||
+                        // Check for the actual dropdown content
+                        (currentElement as HTMLElement).classList?.contains('fixed') &&
+                        (currentElement as HTMLElement).style?.zIndex === '99999'
+                    ) {
+                        return;
+                    }
+                    currentElement = currentElement.parentElement as Element;
                 }
                 
                 setIsOpen(false);
@@ -90,13 +115,14 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                 }
             };
 
-            document.addEventListener('mousedown', handleClickOutside);
-            document.addEventListener('touchstart', handleClickOutside);
+            // Use capture phase to catch events before they bubble
+            document.addEventListener('mousedown', handleClickOutside, true);
+            document.addEventListener('touchstart', handleClickOutside, true);
             document.addEventListener('keydown', handleEscape);
 
             return () => {
-                document.removeEventListener('mousedown', handleClickOutside);
-                document.removeEventListener('touchstart', handleClickOutside);
+                document.removeEventListener('mousedown', handleClickOutside, true);
+                document.removeEventListener('touchstart', handleClickOutside, true);
                 document.removeEventListener('keydown', handleEscape);
             };
         }, [isOpen]);
@@ -165,7 +191,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                         size={displayMode === 'icon' ? 'icon' : size}
                         className={cn(
                             displayMode === 'icon'
-                                ? 'relative p-2 flex items-center justify-center'
+                                ? `relative flex items-center justify-center ${iconPadding || 'p-1'} ${iconPadding ? 'h-auto w-auto' : ''}`
                                 : 'w-full justify-between',
                             error && 'border-destructive',
                             triggerClassName
@@ -212,6 +238,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
                         onInputChange={setInputValue}
                         onKeyDown={handleKeyDown}
                         triggerRef={buttonRef}
+                        ref={dropdownRef}
                     />
                 </div>
 

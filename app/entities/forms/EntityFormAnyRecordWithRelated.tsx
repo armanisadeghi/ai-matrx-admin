@@ -6,8 +6,7 @@ import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 import { getFormStyle } from './formUtils';
 import FieldSelectionControls from './form-helpers/FieldSelectionControls';
 import { EntityKeys, MatrxRecordId } from '@/types/entityTypes';
-import { useFieldVisibility } from '../hooks/form-related/useFieldVisibility';
-import { useFieldRenderer } from '../hooks/form-related/useFieldRenderer';
+import { useRenderedFields } from '../hooks/form-related/useRenderedFields';
 import { ComponentDensity } from '@/types';
 
 interface EntityFormMinimalAnyRecordProps {
@@ -21,11 +20,15 @@ const LOCAL_OVERRIDES = {
 
 const EntityFormAnyRecordWithRelated = <TEntity extends EntityKeys>({ recordId, unifiedLayoutProps }: EntityFormMinimalAnyRecordProps) => {
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity as TEntity | null;
-    const showRelatedFields = true;
     const density = useMemo(() => unifiedLayoutProps.dynamicStyleOptions?.density || 'normal', [unifiedLayoutProps.dynamicStyleOptions]);
-    const fieldVisibility = useFieldVisibility(entityKey, unifiedLayoutProps, showRelatedFields);
-    const { visibleNativeFields, visibleRelationshipFields } = fieldVisibility;
-    const { getNativeFieldComponent, getRelationshipFieldComponent } = useFieldRenderer<TEntity>(entityKey, recordId, unifiedLayoutProps);
+    
+    const {
+        nativeFields,
+        relationshipFields,
+        visibleFieldsInfo
+    } = useRenderedFields(unifiedLayoutProps, {
+        showRelatedFields: true,
+    });
 
     return (
         <div
@@ -45,18 +48,18 @@ const EntityFormAnyRecordWithRelated = <TEntity extends EntityKeys>({ recordId, 
                     }}
                 />
                 <FieldSelectionControls
-                    fieldVisibility={fieldVisibility}
+                    fieldVisibility={visibleFieldsInfo}
                     showControls={false}
                 />
             </div>
 
             <div className={getFormStyle('fieldsWrapper', density)}>
-                {visibleNativeFields.length > 0 && (
-                    <div className={getFormStyle('nativeFields', density)}>{visibleNativeFields.map(getNativeFieldComponent)}</div>
+                {nativeFields.length > 0 && (
+                    <div className={getFormStyle('nativeFields', density)}>{nativeFields}</div>
                 )}
 
-                {visibleRelationshipFields.length > 0 && (
-                    <div className={getFormStyle('relationshipFields', density)}>{visibleRelationshipFields.map(getRelationshipFieldComponent)}</div>
+                {relationshipFields.length > 0 && (
+                    <div className={getFormStyle('relationshipFields', density)}>{relationshipFields}</div>
                 )}
             </div>
         </div>

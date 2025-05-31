@@ -1,71 +1,76 @@
-import {EntityRecordHeader} from "@/components/matrx/Entity/headers/EntityPageHeader";
+import { EntityRecordHeader } from "@/components/matrx/Entity/headers/EntityPageHeader";
 import {
     DynamicLayoutOptions,
     DynamicStyleOptions,
     FormComponentOptions,
     FormFieldFiltering,
-    FormStyleOptions, InlineEntityOptions,
-    ResizableThreePaneLayoutProps, SelectComponentProps, UnifiedCrudHandlers, UnifiedLayoutHandlers, UnifiedLayoutProps
+    FormStyleOptions,
+    InlineEntityOptions,
+    ResizableThreePaneLayoutProps,
+    SelectComponentProps,
+    UnifiedCrudHandlers,
+    UnifiedLayoutHandlers,
+    UnifiedLayoutProps,
 } from "@/components/matrx/Entity/prewired-components/layouts/types";
 import { EntityKeys } from "@/types/entityTypes";
-import {
-    SmartCrudWrapperProps
-} from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
-import {ComponentDensity, QuickReferenceComponentType, PageLayoutOptions} from "@/types/componentConfigTypes";
+import { SmartCrudWrapperProps } from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudWrapper";
+import { ComponentDensity, QuickReferenceComponentType, PageLayoutOptions } from "@/types/componentConfigTypes";
 import { EntityFormType } from "../forms";
 
 export const SMART_CRUD_PROP_DEFAULTS: Partial<SmartCrudWrapperProps> = {
     options: {
         allowCreate: true,
         allowEdit: true,
+        allowCancel: true,
         allowDelete: true,
-        showConfirmation: true
+        allowRefresh: true,
+        allowAdvanced: true,
+        showConfirmation: true,
+        forceEnable: false,
     },
     layout: {
-        buttonLayout: 'row',
-        buttonSize: 'icon',
-        buttonSpacing: 'normal'
-    }
-}
-
-
-export const DEFAULT_FORM_COMPONENT_OPTIONS: FormComponentOptions = {
-    quickReferenceType: 'cards', // cards, cardsEnhanced, accordion, accordionEnhanced, list, select, default, LIST_WITH_RELATED
-    formLayoutType: 'split', //formLayoutType?: "split" | "sideBySide" | "stacked" | "resizable"
-    entitySelectionComponent: EntityRecordHeader,
-    allowEntitySelection: true,
-    quickReferenceCrudWrapperProps: SMART_CRUD_PROP_DEFAULTS
+        buttonLayout: "row",
+        buttonSize: "icon",
+        buttonSpacing: "normal",
+    },
 };
 
+export const DEFAULT_FORM_COMPONENT_OPTIONS: FormComponentOptions = {
+    quickReferenceType: "cards", // cards, cardsEnhanced, accordion, accordionEnhanced, list, select, default, LIST_WITH_RELATED
+    formLayoutType: "split", //formLayoutType?: "split" | "sideBySide" | "stacked" | "resizable"
+    entitySelectionComponent: EntityRecordHeader,
+    allowEntitySelection: true,
+    quickReferenceCrudWrapperProps: SMART_CRUD_PROP_DEFAULTS,
+};
 
 // Form Style Default Options
 export const DEFAULT_FORM_STYLE_OPTIONS: FormStyleOptions = {
     splitRatio: 20,
-    formLayout: 'grid',
+    formLayout: "grid",
     formColumns: 2,
-    formDirection: 'row',
+    formDirection: "row",
     formEnableSearch: true,
     formIsSinglePage: true,
     formIsFullPage: true,
     floatingLabel: true,
     showLabel: true,
-    textSize: 'sm'
+    textSize: "sm",
 };
 
 // Inline Entity Default Options
 export const DEFAULT_INLINE_ENTITY_OPTIONS: InlineEntityOptions = {
     showInlineEntities: true,
-    inlineEntityStyle: 'accordion',
+    inlineEntityStyle: "accordion",
     inlineEntityColumns: 2,
-    editableInlineEntities: false
+    editableInlineEntities: false,
 };
 
 // Dynamic Style Default Options
 export const DEFAULT_DYNAMIC_STYLE_OPTIONS: DynamicStyleOptions = {
-    size: 'md',
-    density: 'normal',
-    animationPreset: 'subtle',
-    variant: 'default'
+    size: "md",
+    density: "normal",
+    animationPreset: "subtle",
+    variant: "default",
 };
 
 export const DEFAULT_RESIZABLE_LAYOUT_OPTIONS: ResizableThreePaneLayoutProps = {
@@ -75,28 +80,24 @@ export const DEFAULT_RESIZABLE_LAYOUT_OPTIONS: ResizableThreePaneLayoutProps = {
     minSectionHeight: 10,
     leftColumnCollapsible: false,
     quickRefCollapsible: true,
-    forceCustomSizes: false
+    forceCustomSizes: false,
 };
-
 
 // selectComponentOptions?: SelectComponentProps
 
 export const DEFAULT_SELECT_COMPONENT_OPTIONS: SelectComponentProps = {
-    selectContentPosition: 'sideBySide',
-}
-
-
+    selectContentPosition: "sideBySide",
+};
 
 export const entitySelectionProps: EntityRecordHeaderProps = {
-    entityName: 'registeredFunction',
-    entityPrettyName: 'Registered Function',
-    backUrl: '/tests',
-    backLabel: 'Back to Tests',
-    primaryKeyField: 'id',
-    primaryKeyValue: '1',
-    fieldPrettyName: 'Test Field'
-}
-
+    entityName: "registeredFunction",
+    entityPrettyName: "Registered Function",
+    backUrl: "/tests",
+    backLabel: "Back to Tests",
+    primaryKeyField: "id",
+    primaryKeyValue: "1",
+    fieldPrettyName: "Test Field",
+};
 
 interface EntityRecordHeaderProps {
     entityName: EntityKeys;
@@ -108,7 +109,6 @@ interface EntityRecordHeaderProps {
     fieldPrettyName?: string;
 }
 
-
 export function getUnifiedLayoutProps(options?: {
     entityKey?: EntityKeys;
     formComponent?: EntityFormType;
@@ -119,16 +119,15 @@ export function getUnifiedLayoutProps(options?: {
     isFullScreen?: boolean;
     handlers?: UnifiedLayoutHandlers;
 }): UnifiedLayoutProps {
-
     const {
-        entityKey = 'registeredFunction',
-        formComponent = 'DEFAULT',
-        quickReferenceType = 'cards',
-        formLayoutType = 'split',
-        density = 'normal',
+        entityKey = "registeredFunction",
+        formComponent = "DEFAULT",
+        quickReferenceType = "cards",
+        formLayoutType = "split",
+        density = "normal",
         isExpanded = false,
         isFullScreen = false,
-        handlers = {}
+        handlers = {},
     } = options || {};
 
     return {
@@ -136,12 +135,12 @@ export function getUnifiedLayoutProps(options?: {
             selectedEntity: entityKey,
             isExpanded: isExpanded,
             selectHeight: 0,
-            isFullScreen: isFullScreen
+            isFullScreen: isFullScreen,
         },
         handlers: handlers,
         dynamicStyleOptions: {
             ...DEFAULT_DYNAMIC_STYLE_OPTIONS,
-            density: density
+            density: density,
         },
         dynamicLayoutOptions: {
             componentOptions: {
@@ -186,8 +185,8 @@ export function getUpdatedUnifiedLayoutProps(
     } = overrides || {};
 
     // Handle quickReferenceType from either direct param or nested structure
-    const finalQuickReferenceType = 
-        overrides?.quickReferenceType || 
+    const finalQuickReferenceType =
+        overrides?.quickReferenceType ||
         otherOverrides?.dynamicLayoutOptions?.componentOptions?.quickReferenceType ||
         existingProps.dynamicLayoutOptions?.componentOptions?.quickReferenceType;
 
@@ -206,7 +205,7 @@ export function getUpdatedUnifiedLayoutProps(
                 ...existingProps.dynamicLayoutOptions?.formStyleOptions?.fieldFiltering,
                 ...otherOverrides?.dynamicLayoutOptions?.formStyleOptions?.fieldFiltering,
                 ...fieldFiltering, // Use fieldFiltering directly here
-            }
+            },
         },
         inlineEntityOptions: {
             ...existingProps.dynamicLayoutOptions?.inlineEntityOptions,
@@ -243,20 +242,19 @@ export function getUpdatedUnifiedLayoutProps(
     };
 }
 
-
 export const getSimplifiedLayoutProps = ({
     entityKey,
     handlers,
     defaultShownFields,
     isExpanded = true,
-    quickReferenceType = 'LIST',
-    density = 'compact',
-    size = 'sm',
-    excludeFields = ['id'],
-    formComponent = 'MINIMAL' as EntityFormType,
+    quickReferenceType = "LIST",
+    density = "compact",
+    size = "sm",
+    excludeFields = ["id"],
+    formComponent = "MINIMAL" as EntityFormType,
 }) => {
     if (!entityKey || !handlers || !defaultShownFields) {
-        throw new Error('Required parameters missing: entityKey, handlers, and defaultShownFields are required');
+        throw new Error("Required parameters missing: entityKey, handlers, and defaultShownFields are required");
     }
 
     const initialLayoutProps = getUnifiedLayoutProps({
@@ -285,4 +283,3 @@ export const getSimplifiedLayoutProps = ({
 
     return layoutProps;
 };
-

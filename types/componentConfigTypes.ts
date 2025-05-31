@@ -48,6 +48,7 @@ export const ENTITY_FORM_COMPONENT_VARIATIONS = [
     "DEFAULT",
     "STANDARD",
     "ARMANI",
+    "ARMANI_LAYOUT",
     "ARMANI_SMART",
     "MINIMAL",
     "RECORD_SELECT",

@@ -168,7 +168,7 @@ export const SplitLayout: React.FC<SplitLayoutProps> = ({
                     <AnimatePresence mode="sync">
                         {selectedEntity && (
                             <EnhancedCard className="h-full">
-                                <div className="absolute top-4 right-4 z-20 flex gap-2">
+                                <div className="absolute top-4 right-16 z-20 flex gap-2">
                                     <TooltipProvider>
                                         <Tooltip>
                                             <TooltipTrigger asChild>

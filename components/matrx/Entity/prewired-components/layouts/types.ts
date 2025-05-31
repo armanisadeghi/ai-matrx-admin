@@ -94,17 +94,6 @@ export interface ResizableThreePaneLayoutProps {
     leftColumnCollapsible?: boolean;
     quickRefCollapsible?: boolean; // Quick reference is collapsible by default
     forceCustomSizes?: boolean; // If true, enables all legacy size controls
-    legacyOptions?: {
-        leftColumnMaxWidth?: number;
-        rightColumnWidth?: number;
-        rightColumnMinWidth?: number;
-        rightColumnMaxWidth?: number;
-        rightColumnCollapsible?: boolean;
-        topLeftMaxHeight?: number;
-        bottomLeftHeight?: number;
-        bottomLeftMinHeight?: number;
-        bottomLeftMaxHeight?: number;
-    };
 }
 
 export interface SelectComponentProps {

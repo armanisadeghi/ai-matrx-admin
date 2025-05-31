@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Settings, X } from 'lucide-react';
 import SmartButtonBase from './SmartButtonBase';
 import { SmartButtonProps } from '../types';

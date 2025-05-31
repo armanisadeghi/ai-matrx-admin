@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/styles/themes/utils";
 import { EntityButton, EntitySearchInput } from "./field-components";
@@ -25,9 +25,7 @@ import SmartCrudButtons from "../Entity/prewired-components/layouts/smart-layout
 import { FormColumnsOptions, FormDirectionOptions, GridColumnOptions, FormLayoutOptions } from "@/types/componentConfigTypes";
 import { UnifiedLayoutProps } from "../Entity";
 import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
-import { useFieldVisibility } from "@/app/entities/hooks/form-related/useFieldVisibility";
-import { useFieldRenderer } from "@/app/entities/hooks/form-related/useFieldRenderer";
-import { useFieldConfiguration } from "@/app/entities/hooks/form-related/useFieldConfiguration";
+import { useRenderedFields } from "@/app/entities/hooks/form-related/useRenderedFields";
 
 export interface FormState {
     [key: string]: any;
@@ -38,45 +36,66 @@ export type FormDensity = "normal" | "compact" | "comfortable";
 const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
     const { activeRecordCrud, getEffectiveRecord } = useEntityCrud(entityKey);
-    const recordData = activeRecordCrud.recordData;
 
+    // Use the new utility to get all rendered fields
     const {
-        visibleFields,
-        visibleNativeFields,
-        visibleRelationshipFields,
-        searchTerm,
-        setSearchTerm,
-        carouselActiveIndex,
-        setCarouselActiveIndex,
-        toggleField,
-        selectAllFields,
-        clearAllFields,
-        isSearchEnabled,
-        selectOptions,
-    } = useFieldVisibility(entityKey, unifiedLayoutProps);
+        nativeFields,
+        relationshipFields,
+        allFields: allRenderedFields,
+        visibleFieldsInfo: {
+            visibleNativeFields,
+            visibleRelationshipFields,
+            visibleFields,
+            searchTerm,
+            setSearchTerm,
+            carouselActiveIndex,
+            setCarouselActiveIndex,
+            toggleField,
+            selectAllFields,
+            clearAllFields,
+            isSearchEnabled,
+            selectOptions,
+        }
+    } = useRenderedFields(unifiedLayoutProps);
 
-    // Get field configuration for search placeholders
-    const { allowedFields, fieldDisplayNames } = useFieldConfiguration(entityKey, unifiedLayoutProps);
+    // Memoize configuration extraction to ensure reactivity to prop changes
+    const formConfiguration = useMemo(() => {
+        const dynamicLayoutOptions = unifiedLayoutProps.dynamicLayoutOptions;
+        const formStyleOptions = dynamicLayoutOptions.formStyleOptions || {};
+        const dynamicStyleOptions = unifiedLayoutProps.dynamicStyleOptions;
+        
+        return {
+            isSinglePage: formStyleOptions.formIsSinglePage || false,
+            isFullPage: formStyleOptions.formIsFullPage || false,
+            columns: formStyleOptions.formColumns || (1 as FormColumnsOptions),
+            layout: formStyleOptions.formLayout || ("grid" as FormLayoutOptions),
+            direction: formStyleOptions.formDirection || ("row" as FormDirectionOptions),
+            enableSearch: formStyleOptions.formEnableSearch || false,
+            density: dynamicStyleOptions.density || "normal",
+            animationPreset: dynamicStyleOptions.animationPreset || "smooth",
+            variant: dynamicStyleOptions.variant || "default",
+            size: dynamicStyleOptions.size || "default",
+        };
+    }, [
+        unifiedLayoutProps.dynamicLayoutOptions,
+        unifiedLayoutProps.dynamicStyleOptions
+    ]);
 
-    const { getNativeFieldComponent, getRelationshipFieldComponent } = useFieldRenderer(
-        entityKey, 
-        activeRecordCrud.recordId, 
-        unifiedLayoutProps
-    );
+    // Extract values from memoized configuration
+    const {
+        isSinglePage,
+        isFullPage,
+        columns,
+        layout,
+        direction,
+        enableSearch,
+        density,
+        animationPreset,
+        variant,
+        size
+    } = formConfiguration;
 
-    const dynamicLayoutOptions = unifiedLayoutProps.dynamicLayoutOptions;
-    const formStyleOptions = dynamicLayoutOptions.formStyleOptions || {};
-    const isSinglePage = formStyleOptions.formIsSinglePage || false;
-    const isFullPage = formStyleOptions.formIsFullPage || false;
-    const columns = formStyleOptions.formColumns || (1 as FormColumnsOptions);
-    const layout = formStyleOptions.formLayout || ("grid" as FormLayoutOptions);
-    const direction = formStyleOptions.formDirection || ("row" as FormDirectionOptions);
-    const enableSearch = formStyleOptions.formEnableSearch || false;
-    const dynamicStyleOptions = unifiedLayoutProps.dynamicStyleOptions;
-    const density = dynamicStyleOptions.density || "normal";
-    const animationPreset = dynamicStyleOptions.animationPreset || "smooth";
-    const variant = dynamicStyleOptions.variant || "default";
-    const size = dynamicStyleOptions.size || "default";
+    // Extract other props that don't need memoization
     const unifiedCrudHandlers = unifiedLayoutProps.unifiedCrudHandlers;
     const className = unifiedLayoutProps.className;
     const containerSpacing = densityConfig[density].spacing;
@@ -86,45 +105,49 @@ const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const onPrevStep = unifiedLayoutProps.unifiedStepHandlers?.onPrevStep;
     const formRef = React.useRef<HTMLDivElement>(null);
 
-    // Combine native and relationship fields for layouts that need all fields
-    const allRenderedFields = useMemo(() => [
-        ...visibleNativeFields.map(getNativeFieldComponent),
-        ...visibleRelationshipFields.map(getRelationshipFieldComponent)
-    ], [visibleNativeFields, visibleRelationshipFields, getNativeFieldComponent, getRelationshipFieldComponent]);
+    // Memoize getGridColumns to avoid recreation on every render
+    const getGridColumns = useMemo(() => 
+        (columns: GridColumnOptions, fieldCount: number) => {
+            console.log("columns", columns);
+            if (typeof columns === "object" && "xs" in columns) {
+                return `grid-cols-${columns.xs} sm:grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} xl:grid-cols-${columns.xl}`;
+            }
 
-    const getGridColumns = (columns: GridColumnOptions, fieldCount: number) => {
-        if (typeof columns === "object" && "xs" in columns) {
-            return `grid-cols-${columns.xs} sm:grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} xl:grid-cols-${columns.xl}`;
-        }
+            let colValue: number;
 
-        let colValue = columns;
+            if (columns === "auto") {
+                if (fieldCount < 7) colValue = 1;
+                else if (fieldCount <= 9) colValue = 2;
+                else if (fieldCount <= 11) colValue = 3;
+                else if (fieldCount <= 13) colValue = 4;
+                else if (fieldCount <= 15) colValue = 5;
+                else colValue = 6;
+            } else {
+                // Convert to number to handle both string and number inputs
+                colValue = typeof columns === "string" ? parseInt(columns, 10) : columns;
+            }
 
-        if (colValue === "auto") {
-            if (fieldCount < 7) colValue = 1;
-            else if (fieldCount <= 9) colValue = 2;
-            else if (fieldCount <= 11) colValue = 3;
-            else if (fieldCount <= 13) colValue = 4;
-            else if (fieldCount <= 15) colValue = 5;
-            else colValue = 6;
-        }
+            console.log("colValue after conversion:", colValue);
 
-        switch (colValue) {
-            case 1:
-                return "grid-cols-1";
-            case 2:
-                return "grid-cols-1 sm:grid-cols-2";
-            case 3:
-                return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
-            case 4:
-                return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
-            case 5:
-                return "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
-            case 6:
-                return "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6";
-            default:
-                return "grid-cols-1";
-        }
-    };
+            switch (colValue) {
+                case 1:
+                    return "grid-cols-1";
+                case 2:
+                    return "grid-cols-1 sm:grid-cols-2";
+                case 3:
+                    return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+                case 4:
+                    return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+                case 5:
+                    return "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
+                case 6:
+                    return "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6";
+                default:
+                    return "grid-cols-1";
+            }
+        }, 
+        [] // No dependencies needed since this is a pure function
+    );
 
     const getFlexDirection = () => {
         switch (direction) {
@@ -141,7 +164,8 @@ const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
         }
     };
 
-    const renderLayout = () => {
+    // Memoize renderLayout to ensure it re-executes when configuration changes
+    const renderedLayout = useMemo(() => {
         const commonProps = {
             filteredFields: allRenderedFields,
             renderField: null, // No longer needed - fields are already rendered
@@ -192,7 +216,18 @@ const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
             default:
                 return <GridLayout {...commonProps} />;
         }
-    };
+    }, [
+        allRenderedFields,
+        density,
+        densityStyles,
+        containerSpacing,
+        columns,
+        layout,
+        direction,
+        animationPreset,
+        carouselActiveIndex,
+        setCarouselActiveIndex
+    ]);
 
     return (
         <motion.div
@@ -215,22 +250,6 @@ const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
                 }}
                 className={cn("h-full", densityStyles.container)}
             >
-                {enableSearch && (
-                    <div className={cn("mb-4", densityStyles.gap)}>
-                        <EntitySearchInput
-                            entityKey={entityKey}
-                            fieldDisplayNames={fieldDisplayNames}
-                            allowedFields={allowedFields}
-                            searchTerm={searchTerm}
-                            onSearchChange={setSearchTerm}
-                            density={density}
-                            animationPreset={animationPreset}
-                            size={size}
-                            variant={variant}
-                            className={densityStyles.inputSize}
-                        />
-                    </div>
-                )}
 
                 <div className={cn(isFullPage ? "h-[calc(100%-4rem)] overflow-y-auto" : "", densityStyles.section)}>
                     <SmartCrudButtons
@@ -248,7 +267,7 @@ const ArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
                     />
 
                     {isSinglePage ? (
-                        renderLayout()
+                        renderedLayout
                     ) : (
                         <>
                             {allRenderedFields.length > 0 && currentStep < allRenderedFields.length && (
