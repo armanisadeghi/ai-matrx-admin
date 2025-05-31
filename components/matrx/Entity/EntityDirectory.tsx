@@ -8,9 +8,23 @@ import { ArrowRight, Database } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import {getEntityIcon} from "@/components/matrx/Entity/utils/getEntityIcon";
 
+interface EntityDirectoryProps {
+    route?: string;
+    showPretty?: boolean;
+}
 
-const EntityDirectory = () => {
+const EntityDirectory = ({ route = "/entity-crud", showPretty = true }: EntityDirectoryProps = {}) => {
     const entityOptions = useAppSelector(selectFormattedEntityOptions);
+
+    const buildHref = (value: string, label: string) => {
+        const baseUrl = `${route}/${value}`;
+        
+        if (showPretty) {
+            return `${baseUrl}?entityPrettyName=${encodeURIComponent(label)}`;
+        }
+        
+        return baseUrl;
+    };
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -19,7 +33,7 @@ const EntityDirectory = () => {
                 return (
                     <Link
                         key={value}
-                        href={`/entity-crud/${value}?entityPrettyName=${encodeURIComponent(label)}`}
+                        href={buildHref(value, label)}
                         className="transition-transform hover:-translate-y-1"
                     >
                         <Card className="h-full hover:shadow-lg transition-shadow">

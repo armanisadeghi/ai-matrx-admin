@@ -17,9 +17,9 @@ import { cn } from '@/lib/utils';
 
 interface EntityQuickReferenceSelectProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
-    onRecordLoad: (record: EntityData<TEntity>) => void;
+    onRecordLoad?: (record: EntityData<TEntity>) => void;
     onError?: (error: EntityError) => void;
-    onLabelChange: (label: string) => void;
+    onLabelChange?: (label: string) => void;
     density?: ComponentDensity;
     animationPreset?: AnimationPreset;
 }
@@ -92,8 +92,7 @@ function EntityQuickReferenceSelect<TEntity extends EntityKeys>(
             },
             subtle: {
                 trigger: {
-                    whileHover: { scale: 1.01 },
-                    whileTap: { scale: 0.99 },
+                    whileTap: { opacity: 0.8 },
                 },
                 content: {
                     initial: { opacity: 0, y: -5 },
@@ -106,8 +105,7 @@ function EntityQuickReferenceSelect<TEntity extends EntityKeys>(
             },
             smooth: {
                 trigger: {
-                    whileHover: { scale: 1.02 },
-                    whileTap: { scale: 0.98 },
+                    whileTap: { opacity: 0.9 },
                 },
                 content: {
                     initial: { opacity: 0, y: -10 },
@@ -158,8 +156,8 @@ function EntityQuickReferenceSelect<TEntity extends EntityKeys>(
 
             if (selectedRecord) {
                 handleRecordSelect(recordKey);
-                onRecordLoad(selectedRecord);
-                onLabelChange(selectedRecord.displayValue);
+                onRecordLoad?.(selectedRecord);
+                onLabelChange?.(selectedRecord.displayValue);
             } else if (onError) {
                 onError({
                     message: `Record with key ${recordKey} not found.`,

@@ -83,6 +83,7 @@ export interface UnifiedLayoutState {
     rightColumnRef?: React.RefObject<HTMLDivElement>;
     quickRefRef?: React.RefObject<HTMLDivElement>;
     selectHeight?: number;
+    isFullScreen?: boolean;
 }
 
 export interface ResizableThreePaneLayoutProps {
@@ -112,6 +113,7 @@ export interface SelectComponentProps {
 
 export interface FormComponentOptions {
     entitySelectionComponent?: any;
+    allowEntitySelection?: boolean;
     quickReferenceType?: QuickReferenceComponentType;
     quickReferenceCrudWrapperProps?: SmartCrudWrapperProps | Partial<SmartCrudWrapperProps>;
     formLayoutType?: PageLayoutOptions;

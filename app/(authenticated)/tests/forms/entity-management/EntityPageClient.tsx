@@ -32,6 +32,7 @@ const EntityPageLayout = () => {
     const [showControls, setShowControls] = useState(true);
     const [activeControlSet, setActiveControlSet] = useState<'stacked' | 'horizontal'>('stacked');
 
+
     return (
         <div className="h-full w-full bg-background">
             <motion.div

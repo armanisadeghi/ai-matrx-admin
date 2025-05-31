@@ -1,5 +1,5 @@
 // SideBySideLayout.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {Card, CardContent} from '@/components/ui/card';
 import {ScrollArea} from "@/components/ui/scroll-area";
@@ -18,6 +18,7 @@ import EntitySelection from "@/components/matrx/Entity/prewired-components/entit
 import {useDynamicMeasurements} from '@/hooks/ui/useDynamicMeasurements';
 import MeasurementMonitor from './MeasurementMonitor';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
+import { EntityKeys } from '@/types/entityTypes';
 import UnifiedQuickReference from '../../quick-reference/UnifiedQuickReference';
 import UnifiedEntityForm from './UnifiedEntityForm';
 
@@ -30,15 +31,24 @@ export const SideBySideLayout: React.FC<SideBySideLayoutProps> = ({
     unifiedLayoutProps,
     className,
 }) => {
+    // Local state management
+    const [isExpanded, setIsExpanded] = useState(unifiedLayoutProps.layoutState.isExpanded || false);
+    const [updateKey, setUpdateKey] = useState(0);
+
     // Extract values from unified props at the top
     const selectedEntity = unifiedLayoutProps.layoutState.selectedEntity;
-    const isExpanded = unifiedLayoutProps.layoutState.isExpanded;
     const density = unifiedLayoutProps.dynamicStyleOptions.density;
     const animationPreset = unifiedLayoutProps.dynamicStyleOptions.animationPreset;
     
-    // Extract handlers
-    const handleEntityChange = unifiedLayoutProps.handlers.handleEntityChange || (() => {});
-    const setIsExpanded = unifiedLayoutProps.handlers.setIsExpanded || (() => {});
+    // Create handlers
+    const handleEntityChange = (value: EntityKeys) => {
+        unifiedLayoutProps.layoutState.selectedEntity = value;
+        setUpdateKey(prev => prev + 1);
+        // Call parent handler if provided
+        if (unifiedLayoutProps.handlers?.handleEntityChange) {
+            unifiedLayoutProps.handlers.handleEntityChange(value);
+        }
+    };
 
     const {
         measurements,
@@ -63,6 +73,21 @@ export const SideBySideLayout: React.FC<SideBySideLayoutProps> = ({
         pauseMeasurements(800);
         setIsExpanded(!isExpanded);
     };
+
+    // Create modified props to pass to child components
+    const modifiedProps: UnifiedLayoutProps = {
+        ...unifiedLayoutProps,
+        handlers: {
+            ...unifiedLayoutProps.handlers,
+            handleEntityChange,
+            setIsExpanded,
+        },
+        layoutState: {
+            ...unifiedLayoutProps.layoutState,
+            isExpanded,
+        }
+    };
+    const showEntitySelection = unifiedLayoutProps.dynamicLayoutOptions.componentOptions.allowEntitySelection || true;
 
     const getAdjustedHeight = (key: string) => {
         const height = measurements[key]?.availableHeight || 0;
@@ -92,9 +117,10 @@ export const SideBySideLayout: React.FC<SideBySideLayoutProps> = ({
                         animate="animate"
                         exit="exit"
                     >
-                        <EnhancedCard className="flex-shrink-0">
-                            <LayoutHeader
-                                title="Entity Selection"
+                        {showEntitySelection && (
+                            <EnhancedCard className="flex-shrink-0">
+                                <LayoutHeader
+                                    title="Entity Selection"
                                 tooltip="Select an entity to begin working"
                                 density={density}
                             />
@@ -106,9 +132,10 @@ export const SideBySideLayout: React.FC<SideBySideLayoutProps> = ({
                                     selectHeight={0}
                                     density={density}
                                     animationPreset={animationPreset}
-                                />
-                            </CardContent>
-                        </EnhancedCard>
+                                    />
+                                </CardContent>
+                            </EnhancedCard>
+                        )}
 
                         {/*<MeasurementMonitor measurements={measurements}/>*/}
 
@@ -128,7 +155,7 @@ export const SideBySideLayout: React.FC<SideBySideLayoutProps> = ({
                                                 }}
                                                 className="px-4"
                                             >
-                                                <UnifiedQuickReference unifiedLayoutProps={unifiedLayoutProps} />
+                                                <UnifiedQuickReference unifiedLayoutProps={modifiedProps} />
                                             </ScrollArea>
                                         </div>
                                     </CardContent>
@@ -157,7 +184,7 @@ export const SideBySideLayout: React.FC<SideBySideLayoutProps> = ({
                             <div ref={mainContentRef}>
                                 <UnifiedEntityForm
                                     selectedEntity={selectedEntity}
-                                    unifiedLayoutProps={unifiedLayoutProps}
+                                    unifiedLayoutProps={modifiedProps}
                                     availableHeight={getAdjustedHeight('mainContent')}
                                     useScrollArea={true}
                                 />

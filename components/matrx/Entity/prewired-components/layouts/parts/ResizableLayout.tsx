@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CardContent } from '@/components/ui/card';
 import { HelpCircle } from 'lucide-react';
@@ -20,6 +20,7 @@ import { ExpandButton } from './ExpandButton';
 import EntitySelection from "@/components/matrx/Entity/prewired-components/entity-management/EntitySelection";
 import { useDynamicMeasurements } from '@/hooks/ui/useDynamicMeasurements';
 import { UnifiedLayoutProps } from '@/components/matrx/Entity/prewired-components/layouts/types';
+import { EntityKeys } from '@/types/entityTypes';
 import UnifiedQuickReference from '../../quick-reference/UnifiedQuickReference';
 import UnifiedEntityForm from './UnifiedEntityForm';
 
@@ -32,16 +33,25 @@ export const ResizableLayout: React.FC<ResizableLayoutProps> = ({
     unifiedLayoutProps,
     className,
 }) => {
+    // Local state management
+    const [isExpanded, setIsExpanded] = useState(unifiedLayoutProps.layoutState.isExpanded || false);
+    const [updateKey, setUpdateKey] = useState(0);
+
     // Extract values from unified props at the top
     const selectedEntity = unifiedLayoutProps.layoutState.selectedEntity;
-    const isExpanded = unifiedLayoutProps.layoutState.isExpanded;
     const density = unifiedLayoutProps.dynamicStyleOptions.density;
     const animationPreset = unifiedLayoutProps.dynamicStyleOptions.animationPreset;
     const splitRatio = unifiedLayoutProps.dynamicLayoutOptions.formStyleOptions?.splitRatio || 30;
     
-    // Extract handlers
-    const handleEntityChange = unifiedLayoutProps.handlers.handleEntityChange || (() => {});
-    const setIsExpanded = unifiedLayoutProps.handlers.setIsExpanded || (() => {});
+    // Create handlers
+    const handleEntityChange = (value: EntityKeys) => {
+        unifiedLayoutProps.layoutState.selectedEntity = value;
+        setUpdateKey(prev => prev + 1);
+        // Call parent handler if provided
+        if (unifiedLayoutProps.handlers?.handleEntityChange) {
+            unifiedLayoutProps.handlers.handleEntityChange(value);
+        }
+    };
 
     const {
         measurements,
@@ -66,6 +76,21 @@ export const ResizableLayout: React.FC<ResizableLayoutProps> = ({
         setIsExpanded(!isExpanded);
     };
 
+    // Create modified props to pass to child components
+    const modifiedProps: UnifiedLayoutProps = {
+        ...unifiedLayoutProps,
+        handlers: {
+            ...unifiedLayoutProps.handlers,
+            handleEntityChange,
+            setIsExpanded,
+        },
+        layoutState: {
+            ...unifiedLayoutProps.layoutState,
+            isExpanded,
+        }
+    };
+    const showEntitySelection = unifiedLayoutProps.dynamicLayoutOptions.componentOptions.allowEntitySelection || true;
+
     const getAdjustedHeight = (key: string) => {
         const height = measurements[key]?.availableHeight || 0;
         const padding = key === 'quickReference' ? 16 : 24;
@@ -82,7 +107,8 @@ export const ResizableLayout: React.FC<ResizableLayoutProps> = ({
                 animate="animate"
                 exit="exit"
             >
-                <AnimatePresence mode="sync">
+                {showEntitySelection && (
+                    <AnimatePresence mode="sync">
                     {selectedEntity ? (
                         <EnhancedCard className="h-full relative">
                             <div className="absolute top-4 right-4 z-20 flex gap-2">
@@ -95,7 +121,7 @@ export const ResizableLayout: React.FC<ResizableLayoutProps> = ({
                             <div ref={mainContentRef}>
                                 <UnifiedEntityForm
                                     selectedEntity={selectedEntity}
-                                    unifiedLayoutProps={unifiedLayoutProps}
+                                    unifiedLayoutProps={modifiedProps}
                                     availableHeight={getAdjustedHeight('mainContent')}
                                     useScrollArea={true}
                                 />
@@ -122,7 +148,8 @@ export const ResizableLayout: React.FC<ResizableLayoutProps> = ({
                             </EnhancedCard>
                         </motion.div>
                     )}
-                </AnimatePresence>
+                    </AnimatePresence>
+                )}
             </motion.div>
         );
     }
@@ -178,7 +205,7 @@ export const ResizableLayout: React.FC<ResizableLayoutProps> = ({
                                     <CardContent className="p-0 h-full">
                                         <div ref={quickRefRef}>
                                             <UnifiedQuickReference
-                                                unifiedLayoutProps={unifiedLayoutProps}
+                                                unifiedLayoutProps={modifiedProps}
                                                 className="p-4"
                                             />
                                         </div>
@@ -210,7 +237,7 @@ export const ResizableLayout: React.FC<ResizableLayoutProps> = ({
                                     <div ref={mainContentRef}>
                                         <UnifiedEntityForm
                                             selectedEntity={selectedEntity}
-                                            unifiedLayoutProps={unifiedLayoutProps}
+                                            unifiedLayoutProps={modifiedProps}
                                             availableHeight={getAdjustedHeight('mainContent')}
                                             useScrollArea={true}
                                         />

@@ -33,6 +33,7 @@ export const DEFAULT_FORM_COMPONENT_OPTIONS: FormComponentOptions = {
     quickReferenceType: 'cards', // cards, cardsEnhanced, accordion, accordionEnhanced, list, select, default, LIST_WITH_RELATED
     formLayoutType: 'split', //formLayoutType?: "split" | "sideBySide" | "stacked" | "resizable"
     entitySelectionComponent: EntityRecordHeader,
+    allowEntitySelection: true,
     quickReferenceCrudWrapperProps: SMART_CRUD_PROP_DEFAULTS
 };
 
@@ -48,7 +49,7 @@ export const DEFAULT_FORM_STYLE_OPTIONS: FormStyleOptions = {
     formIsFullPage: true,
     floatingLabel: true,
     showLabel: true,
-    textSize: 'md'
+    textSize: 'sm'
 };
 
 // Inline Entity Default Options
@@ -115,6 +116,7 @@ export function getUnifiedLayoutProps(options?: {
     formLayoutType?: PageLayoutOptions;
     density?: ComponentDensity;
     isExpanded?: boolean;
+    isFullScreen?: boolean;
     handlers?: UnifiedLayoutHandlers;
 }): UnifiedLayoutProps {
 
@@ -125,6 +127,7 @@ export function getUnifiedLayoutProps(options?: {
         formLayoutType = 'split',
         density = 'normal',
         isExpanded = false,
+        isFullScreen = false,
         handlers = {}
     } = options || {};
 
@@ -132,7 +135,8 @@ export function getUnifiedLayoutProps(options?: {
         layoutState: {
             selectedEntity: entityKey,
             isExpanded: isExpanded,
-            selectHeight: 0
+            selectHeight: 0,
+            isFullScreen: isFullScreen
         },
         handlers: handlers,
         dynamicStyleOptions: {
@@ -165,6 +169,7 @@ export function getUpdatedUnifiedLayoutProps(
         entitiesToHide?: EntityKeys[];
         fieldFiltering?: FormFieldFiltering;
         density?: ComponentDensity;
+        isFullScreen?: boolean;
         [key: string]: any;
     }
 ): UnifiedLayoutProps {
@@ -176,6 +181,7 @@ export function getUpdatedUnifiedLayoutProps(
         entitiesToHide = existingProps.entitiesToHide,
         fieldFiltering = existingProps.dynamicLayoutOptions?.formStyleOptions?.fieldFiltering,
         density = existingProps.dynamicStyleOptions?.density,
+        isFullScreen = existingProps.layoutState.isFullScreen,
         ...otherOverrides
     } = overrides || {};
 
@@ -214,6 +220,7 @@ export function getUpdatedUnifiedLayoutProps(
             ...existingProps.layoutState,
             selectedEntity: entityKey,
             isExpanded: isExpanded,
+            isFullScreen: isFullScreen,
         },
         handlers: handlers,
         dynamicStyleOptions: {
@@ -279,10 +286,3 @@ export const getSimplifiedLayoutProps = ({
     return layoutProps;
 };
 
-// Usage example:
-// const layoutProps = getSimplifiedLayoutProps({
-//     entityKey: 'dataBroker',
-//     handlers: {},
-//     defaultShownFields: ['name', 'defaultValue', 'dataType', 'defaultComponent']
-//     // Optional props will use defaults if not provided
-// });
