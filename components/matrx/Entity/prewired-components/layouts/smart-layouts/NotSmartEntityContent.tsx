@@ -1,67 +1,23 @@
 'use client';
 
-import React, {useState, useCallback, useMemo} from 'react';
-import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
-import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {FormLoadingTwoColumn} from "@/components/matrx/LoadingComponents";
+import React from 'react';
+import { EntityKeys } from '@/types/entityTypes';
+import { FormLoadingTwoColumn } from "@/components/matrx/LoadingComponents";
+import { UnifiedLayoutProps } from '@/components/matrx/Entity';
+import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
+import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
+import { useEntityCrud } from '@/lib/redux/entity/hooks/useEntityCrud';
+import { useEntity } from '@/lib/redux/entity/hooks/useEntity';
+import SmartCrudButtons from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons';
 import {
-    AnimationPreset,
     ComponentDensity,
     ComponentSize,
     FormColumnsOptions,
     FormDirectionOptions,
     FormLayoutOptions,
-    InlineEntityColumnsOptions,
-    InlineEntityComponentStyles,
-    PageLayoutOptions,
-    QuickReferenceComponentType,
-    TextSizeOptions
+    AnimationPreset
 } from '@/types/componentConfigTypes';
-import ArmaniForm from "@/components/matrx/ArmaniForm/ArmaniForm";
-import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-import {MatrxVariant} from "@/components/matrx/ArmaniForm/field-components/types";
-
-export interface FormComponentOptions {
-    entitySelectionComponent?: any;
-    quickReferenceType?: QuickReferenceComponentType;
-    formLayoutType?: PageLayoutOptions;
-}
-
-export interface FormStyleOptions {
-    splitRatio?: number;
-    formLayout?: FormLayoutOptions;
-    formColumns?: FormColumnsOptions;
-    formDirection?: FormDirectionOptions;
-    formEnableSearch?: boolean;
-    formIsSinglePage?: boolean;
-    formIsFullPage?: boolean;
-    floatingLabel?: boolean;
-    showLabel?: boolean;
-    textSize?: TextSizeOptions;
-}
-
-export interface InlineEntityOptions {
-    showInlineEntities: boolean;
-    inlineEntityStyle: InlineEntityComponentStyles;
-    inlineEntityColumns: InlineEntityColumnsOptions;
-    editableInlineEntities: boolean;
-}
-
-export interface DynamicStyleOptions {
-    size?: ComponentSize;
-    density?: ComponentDensity;
-    animationPreset?: AnimationPreset;
-    variant?: MatrxVariant;
-
-}
-
-export interface FormOptions {
-    componentOptions?: FormComponentOptions;
-    styleOptions?: FormStyleOptions;
-    inlineEntityOptions?: InlineEntityOptions;
-    dynamicStyleOptions?: DynamicStyleOptions;
-}
-
+import { MatrxVariant } from "@/components/matrx/ArmaniForm/field-components/types";
 
 export interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
@@ -77,129 +33,55 @@ export interface EntityContentProps<TEntity extends EntityKeys> {
         formIsSinglePage?: boolean;
         formIsFullPage?: boolean;
         floatingLabel?: boolean;
+        variant?: MatrxVariant;
     };
 }
 
-// Memoized form configuration
-const createFormConfig = (formOptions?: EntityContentProps<any>['formOptions']) => ({
-    layout: formOptions?.formLayout ?? 'grid',
-    direction: formOptions?.formDirection ?? 'row',
-    enableSearch: formOptions?.formEnableSearch ?? false,
-    columns: formOptions?.formColumns ?? 2,
-    isSinglePage: formOptions?.formIsSinglePage ?? true,
-    isFullPage: formOptions?.formIsFullPage ?? true,
-    floatingLabel: formOptions?.floatingLabel ?? true,
-});
-
-function NotSmartEntityContent<TEntity extends EntityKeys>(
-    {
-        entityKey,
-        className,
-        density,
-        animationPreset,
-        formOptions
-    }: EntityContentProps<TEntity>) {
+function NotSmartEntityContent<TEntity extends EntityKeys>({
+    entityKey,
+    className,
+    density = 'normal',
+    animationPreset = 'smooth',
+    formOptions
+}: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
-    const [formData, setFormData] = useState<EntityData<EntityKeys>>({});
+    const { activeRecordCrud } = useEntityCrud(entityKey);
 
-    const getMatrxRecordId = useCallback(() => {
-        if (!entity.activeRecord || !entity.primaryKeyMetadata) return null;
-
-        return entity.matrxRecordIdByPrimaryKey(
-            entity.primaryKeyMetadata.fields.reduce(
-                (acc, field) => ({
-                    ...acc,
-                    [field]: entity.activeRecord[field],
-                }),
-                {} as Record<string, MatrxRecordId>
-            )
-        );
-    }, [entity.primaryKeyMetadata, entity]);
-
-    // Memoize field update handler
-    const handleFieldUpdate = useCallback((fieldName: string, value: any) => {
-        setFormData(prev => ({
-            ...prev,
-            [fieldName]: value
-        }));
-    }, []);
-
-    // Memoize CRUD handlers
-    const handleUpdate = useCallback((data: EntityData<EntityKeys>) => {
-        const matrxRecordId = getMatrxRecordId();
-        if (!matrxRecordId) return;
-
-        entity.updateRecord(
-            matrxRecordId,
-            data,
-            { showToast: true }
-        );
-    }, [entity, getMatrxRecordId]);
-
-    const handleCreate = useCallback((data: EntityData<EntityKeys>) => {
-        entity.createRecord(
-            data,
-            { showToast: true }
-        );
-    }, [entity]);
-
-    const handleDelete = useCallback(() => {
-        const matrxRecordId = getMatrxRecordId();
-        if (!matrxRecordId) return;
-
-        entity.deleteRecord(
-            matrxRecordId,
-            { showToast: true }
-        );
-    }, [entity, getMatrxRecordId]);
-
-    // Sync form data with active record
-    React.useEffect(() => {
-        if (entity.activeRecord) {
-            setFormData(entity.activeRecord);
-        }
-    }, [entity.activeRecord]);
-
-    // Memoize form configuration
-    const formConfig = useMemo(() =>
-            createFormConfig(formOptions),
-        [formOptions]
-    );
-
-    const formProps = useMemo(() => ({
+    // Create unified layout props using the config utilities
+    const baseUnifiedProps = getUnifiedLayoutProps({
         entityKey,
-        dynamicFieldInfo: entity.fieldInfo,
-        formData,
-
-        onUpdateField: handleFieldUpdate,
-        onSubmitUpdate: handleUpdate,
-        onSubmitCreate: handleCreate,
-        onSubmitDelete: handleDelete,
-        ...formConfig,
-        ...(formOptions?.size && {size: formOptions.size}),
-        ...(animationPreset && {animationPreset}),
-        ...(density && { density }),
-    }), [
-        entityKey,
-        entity.fieldInfo,
-        formData,
-        handleFieldUpdate,
-        handleUpdate,
-        handleCreate,
-        handleDelete,
-        formConfig,
-        formOptions?.size,
-        animationPreset,
         density,
-    ]);
+        formComponent: 'DEFAULT'
+    });
+
+    // Apply form options as overrides
+    const unifiedLayoutProps: UnifiedLayoutProps = getUpdatedUnifiedLayoutProps(baseUnifiedProps, {
+        dynamicStyleOptions: {
+            density,
+            animationPreset,
+            size: formOptions?.size || 'default',
+            variant: formOptions?.variant || 'default'
+        },
+        dynamicLayoutOptions: {
+            formStyleOptions: {
+                formLayout: formOptions?.formLayout || 'grid',
+                formColumns: formOptions?.formColumns || 2,
+                formDirection: formOptions?.formDirection || 'row',
+                formEnableSearch: formOptions?.formEnableSearch ?? true,
+                formIsSinglePage: formOptions?.formIsSinglePage ?? true,
+                formIsFullPage: formOptions?.formIsFullPage ?? true,
+                floatingLabel: formOptions?.floatingLabel ?? true
+            }
+        }
+    });
 
     if (!entity.entityMetadata) {
-        return <FormLoadingTwoColumn/>;
+        return <FormLoadingTwoColumn />;
     }
 
     if (entity.loadingState.error) {
         return (
-            <div className="p-4 text-red-500">
+            <div className="p-4 text-red-500 dark:text-red-400">
                 Error: {entity.loadingState.error.message}
             </div>
         );
@@ -209,8 +91,23 @@ function NotSmartEntityContent<TEntity extends EntityKeys>(
 
     return (
         <div className={formClassName}>
-            {(entity.activeRecord || !entity.primaryKeyMetadata) && (
-                <ArmaniForm {...formProps} />
+            <div className="mb-4">
+                <SmartCrudButtons
+                    entityKey={entityKey}
+                    options={{
+                        allowCreate: true,
+                        allowEdit: true,
+                        allowDelete: true,
+                    }}
+                    layout={{
+                        buttonLayout: 'row',
+                        buttonSize: 'sm',
+                    }}
+                />
+            </div>
+            
+            {(activeRecordCrud.recordData || !entity.primaryKeyMetadata) && (
+                <ArmaniForm {...unifiedLayoutProps} className={className} />
             )}
         </div>
     );

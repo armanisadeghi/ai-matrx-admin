@@ -33,13 +33,6 @@ export const pages: ModulePage[] = [
     },
 
     {
-        title: 'Form Custom Fields Test With AI Settings',
-        path: 'form-custom-fields',
-        relative: true,
-        description: ''
-    },
-
-    {
         title: 'Last Ever Entity Form Test!',
         path: 'entity-final-test',
         relative: true,

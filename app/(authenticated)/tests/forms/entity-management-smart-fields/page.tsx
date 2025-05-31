@@ -21,26 +21,27 @@ export const metadata: Metadata = {
 export default async function EntityManagementPage() {
     const defaultEntityKey = 'registeredFunction';
 
-    const customComponentOptions = {
-        ...DEFAULT_FORM_COMPONENT_OPTIONS,
-        quickReferenceType: 'CARDS' as QuickReferenceComponentType,
-    };
-
     const layoutProps: UnifiedLayoutProps = {
         layoutState: {
             selectedEntity: defaultEntityKey,
-            isExpanded: false,
+            isExpanded: true,
             selectHeight: 0
         },
         handlers: {},
-        dynamicStyleOptions: DEFAULT_DYNAMIC_STYLE_OPTIONS,
+        dynamicStyleOptions: {
+            ...DEFAULT_DYNAMIC_STYLE_OPTIONS,
+        },
         dynamicLayoutOptions: {
-            componentOptions: customComponentOptions,
+            componentOptions: {
+                ...DEFAULT_FORM_COMPONENT_OPTIONS,
+                quickReferenceType: "CARDS" as QuickReferenceComponentType,
+            },
             formStyleOptions: DEFAULT_FORM_STYLE_OPTIONS,
             inlineEntityOptions: DEFAULT_INLINE_ENTITY_OPTIONS,
         },
         resizableLayoutOptions: DEFAULT_RESIZABLE_LAYOUT_OPTIONS,
-        selectComponentOptions: DEFAULT_SELECT_COMPONENT_OPTIONS
+        selectComponentOptions: DEFAULT_SELECT_COMPONENT_OPTIONS,
+        formComponent: "DEFAULT",
     };
 
     return (

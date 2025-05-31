@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Check, ChevronDown, Loader2, X, Plus, LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/ButtonMine';
 import { ComponentSize } from '@/types/componentConfigTypes';
 import { ButtonVariant } from '@/components/matrx/ArmaniForm/field-components/types';
 import { Input } from '@/components/ui/input';

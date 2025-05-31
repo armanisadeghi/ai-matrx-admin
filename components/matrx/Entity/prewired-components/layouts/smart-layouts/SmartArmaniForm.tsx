@@ -10,12 +10,11 @@ import {
     cardVariants,
     containerVariants,
     densityConfig,
+    spacingConfig,
     getAnimationVariants,
 } from "@/config/ui/entity-layout-config";
 import {UnifiedLayoutProps} from "@/components/matrx/Entity";
 import {EntitySearchInput, EntityButton} from "@/components/matrx/ArmaniForm/field-components";
-import EntityBaseField from "@/components/matrx/ArmaniForm/EntityBaseField";
-import EntityRelationshipWrapper from "@/components/matrx/ArmaniForm/EntityRelationshipWrapper";
 import {
     AccordionLayout,
     CarouselLayout,
@@ -32,20 +31,51 @@ import {
     TrialStackedLayout,
     ZigzagLayout
 } from "@/components/matrx/ArmaniForm/FormLayouts";
-import {EntityStateField} from "@/lib/redux/entity/types/stateTypes";
 import {GridColumnOptions} from "@/types/componentConfigTypes";
-import {EntityData} from "@/types/entityTypes";
+import {EntityData, MatrxRecordId} from "@/types/entityTypes";
 import { ShadowWrapper } from "@/components/ShadowWrapper";
+import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
+import { useFieldVisibility } from "@/app/entities/hooks/form-related/useFieldVisibility";
+import { useFieldRenderer } from "@/app/entities/hooks/form-related/useFieldRenderer";
+import { useFieldConfiguration } from "@/app/entities/hooks/form-related/useFieldConfiguration";
 
-export const SmartArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
+interface SmartArmaniFormProps extends UnifiedLayoutProps {
+    recordId?: MatrxRecordId;
+}
+
+export const SmartArmaniForm: React.FC<SmartArmaniFormProps> = (props) => {
+    const { recordId: propRecordId, ...unifiedLayoutProps } = props;
     const selectedEntity = unifiedLayoutProps.layoutState.selectedEntity;
     const formRef = useRef<HTMLDivElement>(null);
     const entityPrettyName = useAppSelector((state: RootState) => selectEntityPrettyName(state, selectedEntity));
 
+    const { activeRecordCrud, getEffectiveRecordOrDefaults } = useEntityCrud(selectedEntity);
+    
+    // Use provided recordId or fall back to active record
+    const effectiveRecordId = propRecordId || activeRecordCrud.recordId;
+
+    const {
+        visibleFields,
+        visibleNativeFields,
+        visibleRelationshipFields,
+        searchTerm,
+        setSearchTerm,
+        carouselActiveIndex,
+        setCarouselActiveIndex,
+        isSearchEnabled,
+    } = useFieldVisibility(selectedEntity, unifiedLayoutProps);
+
+    // Get field configuration for search placeholders
+    const { allowedFields, fieldDisplayNames } = useFieldConfiguration(selectedEntity, unifiedLayoutProps);
+
+    const { getNativeFieldComponent, getRelationshipFieldComponent } = useFieldRenderer(
+        selectedEntity, 
+        effectiveRecordId, 
+        unifiedLayoutProps
+    );
+
     // Local state
     const [currentStep, setCurrentStep] = useState(0);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [carouselActiveIndex, setCarouselActiveIndex] = useState(0);
     const [formData, setFormData] = useState<EntityData<typeof selectedEntity>>({});
 
     const {
@@ -76,63 +106,22 @@ export const SmartArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps
         }));
     };
 
+    // Combine native and relationship fields for layouts
+    const allRenderedFields = React.useMemo(() => [
+        ...visibleNativeFields.map(getNativeFieldComponent),
+        ...visibleRelationshipFields.map(getRelationshipFieldComponent)
+    ], [visibleNativeFields, visibleRelationshipFields, getNativeFieldComponent, getRelationshipFieldComponent]);
+
     const onNextStep = () => {
-        setCurrentStep(prev => Math.min(prev + 1, dynamicFieldInfo.length - 1));
+        setCurrentStep(prev => Math.min(prev + 1, allRenderedFields.length - 1));
     };
 
     const onPrevStep = () => {
         setCurrentStep(prev => Math.max(prev - 1, 0));
     };
 
-    const filterFields = (fields: EntityStateField[]) => {
-        if (!fields) return [];
-
-        let filteredFields = fields;
-
-        // Apply field filtering if configured
-        if (fieldFiltering) {
-            if (fieldFiltering.includeFields) {
-                filteredFields = fields.filter(field =>
-                    fieldFiltering.includeFields?.includes(field.name)
-                );
-            } else if (fieldFiltering.excludeFields) {
-                filteredFields = fields.filter(field =>
-                    !fieldFiltering.excludeFields?.includes(field.name)
-                );
-            }
-        }
-
-        // Apply search filtering if enabled and there's a search term
-        if (enableSearch && searchTerm) {
-            filteredFields = filteredFields.filter(field =>
-                field.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                field.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        return filteredFields;
-    };
-
-    const renderField = (fieldInfo: EntityStateField) => {
-        const commonProps = {
-            entityKey: selectedEntity,
-            dynamicFieldInfo: fieldInfo,
-            value: formData[fieldInfo.name] || '',
-            onChange: handleFieldUpdate,
-            density,
-            animationPreset,
-            size,
-            variant,
-            floatingLabel,
-        };
-
-        return fieldInfo.isNative ?
-               <EntityBaseField {...commonProps} /> :
-               <EntityRelationshipWrapper {...commonProps} formData={formData}/>;
-    };
-
     // Existing getGridColumns implementation
-    const getGridColumns = (columns: GridColumnOptions, dynamicFieldInfo: any[]) => {
+    const getGridColumns = (columns: GridColumnOptions, fieldCount: number) => {
         if (typeof columns === 'object' && 'xs' in columns) {
             return `grid-cols-${columns.xs} sm:grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} xl:grid-cols-${columns.xl}`;
         }
@@ -140,8 +129,6 @@ export const SmartArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps
         let colValue = columns;
 
         if (colValue === 'auto') {
-            const fieldCount = dynamicFieldInfo.length;
-
             if (fieldCount < 7) colValue = 1;
             else if (fieldCount <= 9) colValue = 2;
             else if (fieldCount <= 11) colValue = 3;
@@ -184,15 +171,13 @@ export const SmartArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps
     };
 
     const renderLayout = () => {
-        const filteredFields = filterFields(dynamicFieldInfo);
-
         const commonProps = {
-            filteredFields,
-            renderField,
+            filteredFields: allRenderedFields,
+            renderField: null, // No longer needed - fields are already rendered
             density,
-            densityStyles: densityConfig[density].spacing,
+            densityStyles: spacingConfig[density],
             containerSpacing: densityConfig[density].spacing,
-            getGridColumns: () => getGridColumns(columns, filteredFields),
+            getGridColumns: () => getGridColumns(columns, allRenderedFields.length),
             getFlexDirection,
             animationPreset,
             containerVariants,
@@ -222,7 +207,7 @@ export const SmartArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps
         return <SelectedLayout {...commonProps} />;
     };
 
-    if (!selectedEntity || !dynamicFieldInfo) return null;
+    if (!selectedEntity) return null;
 
     return (
         <motion.div
@@ -244,85 +229,94 @@ export const SmartArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps
                         e.preventDefault();
                         unifiedLayoutProps.unifiedCrudHandlers?.handleUpdate?.(formData);
                     }}
-                    className={cn("h-full", densityConfig[density].spacing.container)}
+                    className={cn("h-full", spacingConfig[density].container)}
                 >
                     {enableSearch && (
                         <EntitySearchInput
-                            dynamicFieldInfo={dynamicFieldInfo}
+                            entityKey={selectedEntity}
+                            fieldDisplayNames={fieldDisplayNames}
+                            allowedFields={allowedFields}
+                            searchTerm={searchTerm}
                             onSearchChange={setSearchTerm}
                             density={density}
                             animationPreset={animationPreset}
                             size={size}
                             variant={variant}
-                            className={densityConfig[density].spacing.inputSize}
+                            className={spacingConfig[density].inputSize}
                         />
                     )}
 
                     <div className={cn(
                         isFullPage ? "h-[calc(100%-4rem)] overflow-y-auto" : "",
-                        densityConfig[density].spacing.section
+                        spacingConfig[density].section
                     )}>
                         {isSinglePage ? renderLayout() : (
                             <>
-                                <motion.h2
-                                    className={cn(
-                                        "font-bold mb-4 text-foreground",
-                                        isFullPage ? "text-3xl" : "text-2xl",
-                                        densityConfig[density].fontSize
-                                    )}
-                                    variants={cardVariants[animationPreset]}
-                                >
-                                    {dynamicFieldInfo[currentStep].componentProps.displayName}
-                                </motion.h2>
+                                {allRenderedFields.length > 0 && currentStep < allRenderedFields.length && (
+                                    <>
+                                        <motion.h2
+                                            className={cn(
+                                                "font-bold mb-4 text-foreground",
+                                                isFullPage ? "text-3xl" : "text-2xl",
+                                                densityConfig[density].fontSize
+                                            )}
+                                            variants={cardVariants[animationPreset]}
+                                        >
+                                            Field {currentStep + 1}
+                                        </motion.h2>
 
-                                <AnimatePresence mode="sync">
-                                    <motion.div
-                                        key={currentStep}
-                                        variants={getAnimationVariants(animationPreset)}
-                                        initial="initial"
-                                        animate="animate"
-                                        exit="exit"
-                                    >
-                                        {renderField(dynamicFieldInfo[currentStep])}
-                                    </motion.div>
-                                </AnimatePresence>
+                                        <AnimatePresence mode="sync">
+                                            <motion.div
+                                                key={currentStep}
+                                                variants={getAnimationVariants(animationPreset)}
+                                                initial="initial"
+                                                animate="animate"
+                                                exit="exit"
+                                            >
+                                                {allRenderedFields[currentStep]}
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    </>
+                                )}
                             </>
                         )}
                     </div>
 
                     <motion.div
-                        className={cn("flex justify-between", densityConfig[density].spacing.gap)}
+                        className={cn("flex justify-between", spacingConfig[density].gap)}
                         variants={cardVariants[animationPreset]}
                     >
-                        {!isSinglePage && (
+                        {!isSinglePage && allRenderedFields.length > 0 && (
                             <EntityButton
                                 onClick={onPrevStep}
                                 disabled={currentStep === 0}
                                 className={cn(
                                     "space-y-6 bg-secondary text-secondary-foreground",
-                                    densityConfig[density].spacing.buttonSize
+                                    spacingConfig[density].buttonSize
                                 )}
                             >
                                 Previous
                             </EntityButton>
                         )}
-                        {isSinglePage || currentStep === dynamicFieldInfo.length - 1 ? (
+                        {isSinglePage || (allRenderedFields.length > 0 && currentStep === allRenderedFields.length - 1) ? (
                             <EntityButton type="submit" className="bg-primary text-primary-foreground">
                                 Submit
                             </EntityButton>
                         ) : (
-                             <EntityButton
-                                 onClick={onNextStep}
-                                 className="bg-primary text-primary-foreground"
-                             >
-                                 Next
-                             </EntityButton>
+                             allRenderedFields.length > 0 && (
+                                <EntityButton
+                                    onClick={onNextStep}
+                                    className="bg-primary text-primary-foreground"
+                                >
+                                    Next
+                                </EntityButton>
+                             )
                          )}
                     </motion.div>
                 </form>
             </ShadowWrapper>
 
-            {!isSinglePage && (
+            {!isSinglePage && allRenderedFields.length > 0 && (
                 <motion.div
                     className={cn(
                         "mt-4 text-muted-foreground",
@@ -330,7 +324,7 @@ export const SmartArmaniForm: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps
                     )}
                     variants={cardVariants[animationPreset]}
                 >
-                    Step {currentStep + 1} of {dynamicFieldInfo.length}
+                    Step {currentStep + 1} of {allRenderedFields.length}
                 </motion.div>
             )}
         </motion.div>

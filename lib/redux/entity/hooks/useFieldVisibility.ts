@@ -22,7 +22,7 @@ export interface FieldState<TEntity extends EntityKeys = EntityKeys> {
     showRelatedFields?: boolean;
 }
 
-export function useFieldVisibility<TEntity extends EntityKeys>(entityKey: TEntity, unifiedLayoutProps: UnifiedLayoutProps, showRelatedFields = true) {
+export function useFieldVisibilityDEPRECIATEDDONOTUSE<TEntity extends EntityKeys>(entityKey: TEntity, unifiedLayoutProps: UnifiedLayoutProps, showRelatedFields = true) {
     const store = useAppStore();
     const selectors = useMemo(() => createEntitySelectors(entityKey), [entityKey]);
 
@@ -151,4 +151,4 @@ export function useFieldVisibility<TEntity extends EntityKeys>(entityKey: TEntit
     };
 }
 
-export type UseFieldVisibilityReturn = ReturnType<typeof useFieldVisibility>;
+export type UseFieldVisibilityReturn = ReturnType<typeof useFieldVisibilityDEPRECIATEDDONOTUSE>;

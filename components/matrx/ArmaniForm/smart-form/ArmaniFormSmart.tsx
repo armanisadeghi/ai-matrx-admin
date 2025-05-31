@@ -3,29 +3,49 @@
 import React from "react";
 import { EntitySearchInput } from "../field-components";
 import { spacingConfig } from "@/config/ui/entity-layout-config";
-import EntityBaseField, { EntityBaseFieldProps } from "../EntityBaseField";
-import { EntityStateField } from "@/lib/redux/entity/types/stateTypes";
-import EntityRelationshipWrapper from "../EntityRelationshipWrapper";
 import SmartCrudButtons from "../../Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
 import { UnifiedLayoutProps } from "../../Entity";
 import { useEntityCrud } from "@/lib/redux/entity/hooks/useEntityCrud";
-import { useFieldVisibility } from "@/lib/redux/entity/hooks/useFieldVisibility";
+import { useFieldVisibility } from "@/app/entities/hooks/form-related/useFieldVisibility";
+import { useFieldRenderer } from "@/app/entities/hooks/form-related/useFieldRenderer";
+import { useFieldConfiguration } from "@/app/entities/hooks/form-related/useFieldConfiguration";
+import { MatrxRecordId } from "@/types/entityTypes";
 import MultiSelect from '@/components/ui/loaders/multi-select';
 
-const ArmaniFormSmart: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
+interface ArmaniFormSmartProps extends UnifiedLayoutProps {
+    recordId?: MatrxRecordId;
+}
+
+const ArmaniFormSmart: React.FC<ArmaniFormSmartProps> = (props) => {
+    const { recordId: propRecordId, ...unifiedLayoutProps } = props;
     const entityKey = unifiedLayoutProps.layoutState.selectedEntity || null;
     const { activeRecordCrud, getEffectiveRecordOrDefaults } = useEntityCrud(entityKey);
+    
+    // Use provided recordId or fall back to active record
+    const effectiveRecordId = propRecordId || activeRecordCrud.recordId;
+    
     const {
-        visibleFieldsInfo,
-        allowedFieldsInfo,
-        selectedFields,
+        visibleFields,
+        visibleNativeFields,
+        visibleRelationshipFields,
+        searchTerm,
         setSearchTerm,
         toggleField,
+        selectOptions,
         isSearchEnabled
     } = useFieldVisibility(entityKey, unifiedLayoutProps);
 
-    const currentRecordData = activeRecordCrud.recordId ?
-                              getEffectiveRecordOrDefaults(activeRecordCrud.recordId) :
+    // Get field configuration for search placeholders
+    const { allowedFields, fieldDisplayNames } = useFieldConfiguration(entityKey, unifiedLayoutProps);
+
+    const { getNativeFieldComponent, getRelationshipFieldComponent } = useFieldRenderer(
+        entityKey, 
+        effectiveRecordId, 
+        unifiedLayoutProps
+    );
+
+    const currentRecordData = effectiveRecordId ?
+                              getEffectiveRecordOrDefaults(effectiveRecordId) :
         {};
 
     const dynamicLayoutOptions = unifiedLayoutProps.dynamicLayoutOptions;
@@ -41,60 +61,25 @@ const ArmaniFormSmart: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
     const onUpdateField = unifiedCrudHandlers?.handleFieldUpdate;
     const densityStyles = spacingConfig[density];
 
-    const selectOptions = allowedFieldsInfo.map(field => ({
-        value: field.name,
-        label: field.displayName || field.name
-    }));
-
-    const selectedValues = Array.from(selectedFields);
+    const selectedValues = Array.from(visibleFields);
 
     const handleFieldSelection = (values: string[]) => {
+        // Clear all fields first, then toggle selected ones
         values.forEach(fieldName => {
-            if (!selectedFields.has(fieldName)) {
-                toggleField(fieldName);
+            if (!visibleFields.includes(fieldName as any)) {
+                toggleField(fieldName as any);
             }
         });
         selectedValues.forEach(fieldName => {
             if (!values.includes(fieldName)) {
-                toggleField(fieldName);
+                toggleField(fieldName as any);
             }
         });
     };
 
-    const renderField = (dynamicFieldInfo: EntityStateField) => {
-        const commonProps: EntityBaseFieldProps = {
-            entityKey,
-            dynamicFieldInfo,
-            value: currentRecordData[dynamicFieldInfo.name] || '',
-            onChange: (value: any) => onUpdateField(dynamicFieldInfo.name, value),
-            density,
-            animationPreset,
-            size,
-            variant,
-            floatingLabel,
-        };
-
-        if (dynamicFieldInfo.isNative) {
-            return <EntityBaseField {...commonProps} />;
-        } else {
-            return (
-                <EntityRelationshipWrapper
-                    {...commonProps}
-                    currentRecordData={currentRecordData}
-                />
-            );
-        }
-    };
-
-    // Separate base fields and relationship fields
-    const { baseFields, relationshipFields } = visibleFieldsInfo.reduce((acc, field) => {
-        if (field.isNative) {
-            acc.baseFields.push(field);
-        } else {
-            acc.relationshipFields.push(field);
-        }
-        return acc;
-    }, { baseFields: [] as EntityStateField[], relationshipFields: [] as EntityStateField[] });
+    // Get pre-rendered field components
+    const baseFieldComponents = visibleNativeFields.map(getNativeFieldComponent);
+    const relationshipFieldComponents = visibleRelationshipFields.map(getRelationshipFieldComponent);
 
     return (
         <div className="w-full">
@@ -121,7 +106,10 @@ const ArmaniFormSmart: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
                 {isSearchEnabled && (
                     <div className="flex-grow">
                         <EntitySearchInput
-                            dynamicFieldInfo={allowedFieldsInfo}
+                            entityKey={entityKey}
+                            fieldDisplayNames={fieldDisplayNames}
+                            allowedFields={allowedFields}
+                            searchTerm={searchTerm}
                             onSearchChange={setSearchTerm}
                             density={density}
                             animationPreset={animationPreset}
@@ -134,21 +122,21 @@ const ArmaniFormSmart: React.FC<UnifiedLayoutProps> = (unifiedLayoutProps) => {
             </div>
 
             <div className="space-y-4 mt-4">
-                {baseFields.length > 0 && (
+                {baseFieldComponents.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-2">
-                        {baseFields.map((fieldInfo, index) => (
-                            <div key={`${fieldInfo.uniqueFieldId}-${index}`}>
-                                {renderField(fieldInfo)}
+                        {baseFieldComponents.map((fieldComponent, index) => (
+                            <div key={`base-field-${index}`}>
+                                {fieldComponent}
                             </div>
                         ))}
                     </div>
                 )}
 
-                {relationshipFields.length > 0 && (
+                {relationshipFieldComponents.length > 0 && (
                     <div className="space-y-2">
-                        {relationshipFields.map((fieldInfo, index) => (
-                            <div key={`${fieldInfo.uniqueFieldId}-${index}`} className="w-full">
-                                {renderField(fieldInfo)}
+                        {relationshipFieldComponents.map((fieldComponent, index) => (
+                            <div key={`relationship-field-${index}`} className="w-full">
+                                {fieldComponent}
                             </div>
                         ))}
                     </div>
