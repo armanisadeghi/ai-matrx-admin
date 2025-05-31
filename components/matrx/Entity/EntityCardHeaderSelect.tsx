@@ -30,7 +30,7 @@ const PreWiredCardHeader: React.FC<PreWiredCardHeaderProps> = ({ onEntityChange 
     // Better to switch to the updated version of this component.
 
     return (
-        <CardHeader className="border-2 border-slate-500 flex flex-row items-center justify-between h-24">
+        <CardHeader className="border-2 border-slate-500 flex flex-row items-center justify-between h-18">
             <div className="flex flex-col">
                 <CardTitle>
                     {selectedEntity
@@ -45,7 +45,7 @@ const PreWiredCardHeader: React.FC<PreWiredCardHeaderProps> = ({ onEntityChange 
                 value={selectedEntity || undefined}
                 onValueChange={(value) => handleEntityChange(value as EntityKeys)}
             >
-                <SelectTrigger className="w-[400px] h-12 bg-card text-card-foreground border-matrxBorder">
+                <SelectTrigger className="w-[400px] h-10 bg-card text-card-foreground border-matrxBorder">
                     <SelectValue placeholder="Select Entity..." />
                 </SelectTrigger>
                 <SelectContent>

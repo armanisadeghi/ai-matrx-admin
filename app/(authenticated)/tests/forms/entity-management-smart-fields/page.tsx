@@ -45,7 +45,7 @@ export default async function EntityManagementPage() {
     };
 
     return (
-        <div className="flex-1 p-0 gap-0">
+        <div className="flex-1 p-0 gap-0 bg-background">
             <EntitySmartLayout
                 {...layoutProps}
                 className="h-full"

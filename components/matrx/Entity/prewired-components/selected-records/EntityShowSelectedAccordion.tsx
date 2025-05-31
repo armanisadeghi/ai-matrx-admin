@@ -22,7 +22,7 @@ function EntityShowSelectedAccordion({ entityKey }: EntityAccordionProps) {
                     </AccordionTrigger>
                     <AccordionContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {fieldInfo.map(field => {
+                            {(Array.isArray(fieldInfo) ? fieldInfo : Object.values(fieldInfo)).map(field => {
                                 if (field.isPrimaryKey) return null;
                                 return (
                                     <div

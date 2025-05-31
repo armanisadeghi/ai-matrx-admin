@@ -129,7 +129,10 @@ export function EntityTestView<TEntity extends EntityKeys>(
         };
 
         if (mode === 'create' && tempRecordId) {
-            createRecord(tempRecordId, callback);
+            createRecord([{
+                entityNameAnyFormat: entityKey,
+                tempRecordId,
+            }], callback);
         } else if (mode === 'edit' && activeRecord) {
             const recordId = getRecordIdByRecord(activeRecord);
             if (!recordId) return;
@@ -262,7 +265,7 @@ export function EntityTestView<TEntity extends EntityKeys>(
                             <X className="h-4 w-4 mr-1"/>
                             Cancel
                         </Button>
-                        <Button onClick={handleSave}>
+                        <Button onClick={() => handleSave()}>
                             <Save className="h-4 w-4 mr-1"/>
                             {mode === 'create' ? 'Create' : 'Save'}
                         </Button>

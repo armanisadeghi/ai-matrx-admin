@@ -166,8 +166,8 @@ function EntityQuickReferenceCards<TEntity extends EntityKeys>(
                     showConfirmation: true,
                 }}
                 layout={{
-                    buttonLayout: 'column',
-                    buttonSize: 'sm',
+                    buttonLayout: 'row',
+                    buttonSize: 'icon',
                     buttonSpacing: 'compact',
                 }}
 

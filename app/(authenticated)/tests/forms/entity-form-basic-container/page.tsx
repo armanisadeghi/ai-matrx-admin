@@ -1,41 +1,15 @@
 'use client';
 
-import React, {useState, useCallback, useMemo} from 'react';
-import {Card, CardContent} from '@/components/ui/card';
-import {FlexAnimatedForm} from '@/components/matrx/AnimatedForm';
-import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
-import {EntityData, EntityKeys} from '@/types/entityTypes';
-import {
-    FlexEntityFormProps,
-    EntityFlexFormField,
-    FormFieldType
-} from '@/components/matrx/Entity/types/entityForm';
-import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
+import React, { useState, useCallback, useMemo } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { useEntity } from '@/lib/redux/entity/hooks/useEntity';
+import { EntityKeys } from '@/types/entityTypes';
+import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeaderBasic';
-import { EntityFormState } from '@/types/componentConfigTypes';
-import {MatrxRecordId} from "@/lib/redux/entity/types/stateTypes";
-
-// Memoized field transformation function
-const createTransformedFields = (entityFields: any[]): EntityFlexFormField[] => {
-    if (!entityFields) return [];
-    return entityFields.map(field => ({
-        name: field.name,
-        label: field.displayName || field.name,
-        type: 'text' as FormFieldType,
-        required: false,
-        disabled: false
-    }));
-};
-
-// Memoized form configuration
-const DEFAULT_FORM_CONFIG = {
-    layout: 'grid' as const,
-    direction: 'row' as const,
-    enableSearch: false,
-    columns: 2,
-    isSinglePage: true,
-    isFullPage: true
-};
+import ArmaniForm from '@/components/matrx/ArmaniForm/ArmaniForm';
+import SmartCrudButtons from '@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons';
+import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 
 const EntityFormContainer = React.memo((
     {
@@ -46,41 +20,44 @@ const EntityFormContainer = React.memo((
         primaryKeyValues: Record<string, any> | null;
     }) => {
     const entity = useEntity(entityKey);
-    const [formData, setFormData] = useState<EntityFormState>({});
 
     const matrxRecordId = useMemo(() => {
         return primaryKeyValues ? entity.matrxRecordIdByPrimaryKey(primaryKeyValues) : null;
     }, [primaryKeyValues, entity]);
 
-    // Memoized field update handler
-    const handleFieldUpdate = useCallback((fieldName: string, value: any) => {
-        setFormData(prev => ({
-            ...prev,
-            [fieldName]: value
-        }));
-    }, []);
+    // Create unified layout props for the form
+    const baseUnifiedProps = getUnifiedLayoutProps({
+        entityKey,
+        density: 'normal',
+        formComponent: 'DEFAULT'
+    });
 
-    // Memoized CRUD handlers
-    const handleUpdate = useCallback((matrxRecordId: MatrxRecordId) => {
-        if (!matrxRecordId) return;
-        entity.updateRecord(matrxRecordId);
-    }, [entity]);
+    const unifiedLayoutProps: UnifiedLayoutProps = getUpdatedUnifiedLayoutProps(baseUnifiedProps, {
+        dynamicStyleOptions: {
+            density: 'normal',
+            animationPreset: 'subtle',
+            size: 'default',
+            variant: 'default'
+        },
+        dynamicLayoutOptions: {
+            formStyleOptions: {
+                formLayout: 'grid',
+                formColumns: 2,
+                formDirection: 'row',
+                formEnableSearch: false,
+                formIsSinglePage: true,
+                formIsFullPage: true,
+                floatingLabel: true
+            }
+        }
+    });
 
-    const handleCreate = useCallback((tempRecordId: MatrxRecordId) => {
-        entity.createRecord(tempRecordId);
-    }, [entity]);
-
-    const handleDelete = useCallback(() => {
-        if (!matrxRecordId) return;
-        entity.deleteRecord(matrxRecordId);
-    }, [entity, matrxRecordId]);
-
-    // Effects
+    // Effects for record loading and selection
     React.useEffect(() => {
         if (primaryKeyValues) {
             entity.fetchOne(matrxRecordId);
         }
-    }, [primaryKeyValues, entity]);
+    }, [primaryKeyValues, entity, matrxRecordId]);
 
     React.useEffect(() => {
         if (matrxRecordId && !entity.loadingState.loading) {
@@ -88,44 +65,35 @@ const EntityFormContainer = React.memo((
         }
     }, [matrxRecordId, entity]);
 
-    React.useEffect(() => {
-        if (entity.activeRecord) {
-            setFormData(entity.activeRecord as EntityFormState);
-        }
-    }, [entity.activeRecord]);
-
-    // Memoize transformed fields
-    const formFields = useMemo(() =>
-            createTransformedFields(entity.fieldInfo),
-        [entity.fieldInfo]
-    );
-
-    // Memoize form props
-    const formProps: FlexEntityFormProps = useMemo(() => ({
-        fields: formFields,
-        formState: formData,
-        onUpdateField: handleFieldUpdate,
-        onSubmitUpdate: handleUpdate,
-        onSubmitCreate: handleCreate,
-        onSubmitDelete: handleDelete,
-        ...DEFAULT_FORM_CONFIG
-    }), [
-        formFields,
-        formData,
-        handleFieldUpdate,
-        handleUpdate,
-        handleCreate,
-        handleDelete
-    ]);
-
     if (!entity.entityMetadata) {
-        return <MatrxTableLoading/>;
+        return <MatrxTableLoading />;
+    }
+
+    if (entity.loadingState.error) {
+        return (
+            <div className="p-4 text-red-500 dark:text-red-400">
+                Error: {entity.loadingState.error.message}
+            </div>
+        );
     }
 
     return (
-        <div className="p-4">
+        <div className="space-y-4 p-4">
+            <SmartCrudButtons
+                entityKey={entityKey}
+                options={{
+                    allowCreate: true,
+                    allowEdit: true,
+                    allowDelete: true,
+                }}
+                layout={{
+                    buttonLayout: 'row',
+                    buttonSize: 'sm',
+                }}
+            />
+            
             {(entity.activeRecord || !primaryKeyValues) && (
-                <FlexAnimatedForm {...formProps} />
+                <ArmaniForm {...unifiedLayoutProps} />
             )}
         </div>
     );

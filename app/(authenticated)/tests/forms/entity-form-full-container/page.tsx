@@ -1,118 +1,61 @@
 'use client';
 
-import React, {useState, useCallback, useMemo} from 'react';
-import {Card, CardContent} from '@/components/ui/card';
-import {useEntity} from '@/lib/redux/entity/hooks/useEntity';
-import {EntityKeys, EntityData} from '@/types/entityTypes';
-import {
-    FormFieldType
-} from '@/components/matrx/Entity/types/entityForm';
-import {MatrxTableLoading} from "@/components/matrx/LoadingComponents";
+import React, { useState, useCallback, useMemo } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { useEntity } from '@/lib/redux/entity/hooks/useEntity';
+import { EntityKeys, EntityData } from '@/types/entityTypes';
+import { MatrxTableLoading } from "@/components/matrx/LoadingComponents";
 import PreWiredEntityRecordHeader from '@/components/matrx/Entity/records/PreWiredEntityRecordHeader';
-import {EntityError, EntityStateField, MatrxRecordId} from '@/lib/redux/entity/types/stateTypes';
-import {mapFieldDataTypeToFormFieldType} from "@/components/matrx/Entity/addOns/mapDataTypeToFormFieldType";
+import { EntityError } from '@/lib/redux/entity/types/stateTypes';
 import ArmaniForm from '@/components/matrx/ArmaniForm/ArmaniForm';
-import {ArmaniFormProps, EntityFormState} from "@/types/componentConfigTypes";
-import {useDynamicMeasurements} from "@/hooks/ui/useDynamicMeasurements";
-import {cn} from "@/lib/utils";
-import {ScrollArea} from '@/components/ui';
-import SmartCrudButtons
-    from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
-
-// Memoized Configurations
-const DEFAULT_FORM_CONFIG = {
-    layout: 'grid' as const,
-    direction: 'row' as const,
-    enableSearch: false,
-    columns: 2,
-    isSinglePage: true,
-    isFullPage: true
-};
+import { useDynamicMeasurements } from "@/hooks/ui/useDynamicMeasurements";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from '@/components/ui';
+import SmartCrudButtons from "@/components/matrx/Entity/prewired-components/layouts/smart-layouts/smart-actions/SmartCrudButtons";
+import { getUnifiedLayoutProps, getUpdatedUnifiedLayoutProps } from '@/app/entities/layout/configs';
+import { UnifiedLayoutProps } from '@/components/matrx/Entity';
 
 interface EntityContentProps<TEntity extends EntityKeys> {
     entityKey: TEntity;
 }
 
-function EntityContent<TEntity extends EntityKeys>({entityKey}: EntityContentProps<TEntity>) {
+function EntityContent<TEntity extends EntityKeys>({ entityKey }: EntityContentProps<TEntity>) {
     const entity = useEntity(entityKey);
-    const [formData, setFormData] = useState<EntityData<EntityKeys>>({});
 
-    const getMatrxRecordId = useCallback(() => {
-        if (!entity.activeRecord || !entity.primaryKeyMetadata) return null;
+    // Create unified layout props for the form
+    const baseUnifiedProps = getUnifiedLayoutProps({
+        entityKey,
+        density: 'normal',
+        formComponent: 'DEFAULT'
+    });
 
-        return entity.matrxRecordIdByPrimaryKey(
-            entity.primaryKeyMetadata.fields.reduce(
-                (acc, field) => ({
-                    ...acc,
-                    [field]: entity.activeRecord[field],
-                }),
-                {} as Record<string, MatrxRecordId>
-            )
-        );
-    }, [entity.primaryKeyMetadata, entity]);
-
-    // Memoize field update handler
-    const handleFieldUpdate = useCallback((fieldName: string, value: any) => {
-        setFormData(prev => ({
-            ...prev,
-            [fieldName]: value
-        }));
-    }, []);
-
-    // Sync form data with active record
-    React.useEffect(() => {
-        if (entity.activeRecord) {
-            setFormData(entity.activeRecord);
+    const unifiedLayoutProps: UnifiedLayoutProps = getUpdatedUnifiedLayoutProps(baseUnifiedProps, {
+        dynamicStyleOptions: {
+            density: 'normal',
+            animationPreset: 'subtle',
+            size: 'default',
+            variant: 'default'
+        },
+        dynamicLayoutOptions: {
+            formStyleOptions: {
+                formLayout: 'grid',
+                formColumns: 2,
+                formDirection: 'row',
+                formEnableSearch: false,
+                formIsSinglePage: true,
+                formIsFullPage: true,
+                floatingLabel: true
+            }
         }
-    }, [entity.activeRecord]);
-
-
-    // Memoize CRUD handlers
-    const handleSubmit = useCallback(() => {
-        const matrxRecordId = getMatrxRecordId() as unknown as MatrxRecordId;
-        if (!matrxRecordId) return;
-
-        entity.updateRecord(matrxRecordId, formData, {
-            showToast: true,
-            callback: () => console.log('Form submitted:', formData)
-        });
-    }, [entity, formData, getMatrxRecordId]);
-
-    // Sync form data with active record
-    React.useEffect(() => {
-        if (entity.activeRecord) {
-            setFormData(entity.activeRecord as EntityFormState);
-        }
-    }, [entity.activeRecord]);
-
-
-    const formProps: ArmaniFormProps = useMemo(() => ({
-        entityKey: entityKey,
-        dynamicFieldInfo: entity.fieldInfo,
-        formData: formData,
-        onUpdateField: handleFieldUpdate,
-        onSubmit: handleSubmit,
-        layout: 'grid' as const,
-        direction: 'row' as const,
-        enableSearch: false,
-        columns: 2,
-        isSinglePage: true,
-        isFullPage: true,
-        density: 'normal' as const,
-        animationPreset: 'subtle' as const,
-        size: 'default' as const,
-        variant: 'default' as const,
-        floatingLabel: true,
-        className: ''
-    }), [formData, handleFieldUpdate, handleSubmit, entityKey, entity.fieldInfo]);
+    });
 
     if (!entity.entityMetadata) {
-        return <MatrxTableLoading/>;
+        return <MatrxTableLoading />;
     }
 
     if (entity.loadingState.error) {
         return (
-            <div className="p-4 text-red-500">
+            <div className="p-4 text-red-500 dark:text-red-400">
                 Error: {entity.loadingState.error.message}
             </div>
         );
@@ -136,18 +79,20 @@ function EntityContent<TEntity extends EntityKeys>({entityKey}: EntityContentPro
     };
 
     return (
-        <div
-            className={cn("h-full overflow-hidden")}
-            ref={containerRef}
-        >
-            <ScrollArea
-                className="h-full"
-                style={{height: `${getAdjustedHeight()}px`}}
+        <div className="space-y-4">
+            <div
+                className={cn("h-full overflow-hidden")}
+                ref={containerRef}
             >
-                {entity.activeRecord && (
-                    <ArmaniForm{...formProps} />
-                )}
-            </ScrollArea>
+                <ScrollArea
+                    className="h-full"
+                    style={{ height: `${getAdjustedHeight()}px` }}
+                >
+                    {entity.activeRecord && (
+                        <ArmaniForm {...unifiedLayoutProps} />
+                    )}
+                </ScrollArea>
+            </div>
         </div>
     );
 }
@@ -205,7 +150,7 @@ const DynamicEntityForm: React.FC = () => {
             <PreWiredEntityRecordHeader {...headerProps} />
             <CardContent>
                 {state.error && (
-                    <div className="text-red-500 mb-4">
+                    <div className="text-red-500 dark:text-red-400 mb-4">
                         Error: {state.error.message}
                     </div>
                 )}
@@ -214,10 +159,10 @@ const DynamicEntityForm: React.FC = () => {
                         entityKey={state.selectedEntity}
                     />
                 ) : (
-                     <div className="text-center py-8 text-muted-foreground">
-                         Select an entity to view its data
-                     </div>
-                 )}
+                    <div className="text-center py-8 text-muted-foreground">
+                        Select an entity to view its data
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

@@ -44,6 +44,10 @@ export const QuickReferenceWrapper: React.FC<QuickReferenceWrapperProps> = (
         quickReferenceType.toUpperCase() as keyof typeof ENTITY_QUICK_REFERENCE
         ] || ENTITY_QUICK_REFERENCE.LIST;
 
+
+    console.log("quickReferenceType", quickReferenceType);
+
+    
     return (
         <Component
             key={selectedEntity}

@@ -67,7 +67,7 @@ function EntityShowSelectedAccordion({ entityKey, columnsClassName }: EntityAcco
                             "bg-background grid gap-2 p-2",
                             columnsClassName || "grid-cols-1 md:grid-cols-2"
                         )}>
-                            {fieldInfo.map(field => {
+                            {(Array.isArray(fieldInfo) ? fieldInfo : Object.values(fieldInfo)).map(field => {
                                 if (field.isPrimaryKey) return null;
                                 const fieldId = `${recordId}-${field.name}`;
                                 const isExpanded = expandedFields[fieldId];

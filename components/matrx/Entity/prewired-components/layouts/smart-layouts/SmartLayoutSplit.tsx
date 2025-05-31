@@ -94,7 +94,7 @@ export const SmartLayoutSplit: React.FC<UnifiedLayoutProps> = (unifiedLayoutProp
                                 <EnhancedCard className="h-full" cardRef={rightColumnRef}>
                                     <CardHeader>
                                         <CardTitle className={fontSize}>
-                                            {`${entityPrettyName} List`}
+                                            {`${entityPrettyName} Records`}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-0">

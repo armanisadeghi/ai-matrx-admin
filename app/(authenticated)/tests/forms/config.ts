@@ -57,10 +57,10 @@ export const pages: ModulePage[] = [
 
 
     {
-        title: 'Entity New Form (Unkown)',
+        title: 'Form With State & Reformat Options Shown',
         path: 'new-entity-form',
         relative: true,
-        description: 'Errors due to apparently rendering without an entity being selected. Not sure how old this is or how new.'
+        description: 'This form shows the quick references, a form in the center, as well as the full redux state. It also allows for local control of the layout!\n\n Get Admin component for some entities and users.'
     },
 
 
