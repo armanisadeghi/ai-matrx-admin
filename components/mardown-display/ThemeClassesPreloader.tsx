@@ -1,5 +1,5 @@
 import { THEMES } from './themes';
-import { APPLET_THEMES } from '@/components/brokers/main-layouts/applet-themes';
+import { APPLET_THEMES } from '@/components/applet/reusable-sections/applet-themes';
 /**
  * A hidden component that ensures all theme classes are included in the Tailwind build
  */

@@ -16,5 +16,64 @@
         "**/.idea": true,
         "**/node_modules": true,
         "**/temp": true
-    }
+    },
+    "favorites.resources": [
+        {
+            "filePath": "constants\\appSidebarLinks.tsx",
+            "group": "Default"
+        },
+        {
+            "filePath": "types\\customAppTypes.ts",
+            "group": "Default"
+        },
+        {
+            "filePath": "features\\applet\\styles\\styles.ts",
+            "group": "Default"
+        },
+        {
+            "filePath": "components\\playground",
+            "group": "Default"
+        },
+        {
+            "filePath": "constants",
+            "group": "Default"
+        },
+        {
+            "filePath": "features\\chat",
+            "group": "Default"
+        },
+        {
+            "filePath": "lib\\redux",
+            "group": "Default"
+        },
+        {
+            "filePath": "providers",
+            "group": "Default"
+        },
+        {
+            "filePath": "components",
+            "group": "Default"
+        },
+        {
+            "filePath": "components\\ui",
+            "group": "Default"
+        },
+        {
+            "filePath": "components\\matrx",
+            "group": "Default"
+        },
+        {
+            "filePath": "app\\(authenticated)\\tests",
+            "group": "Default"
+        },
+        {
+            "filePath": "app\\(authenticated)\\demo",
+            "group": "Default"
+        }
+    ],
+    "favorites.groups": [
+        "Default",
+        "Applets"
+    ],
+    "favorites.currentGroup": "Default"
 }

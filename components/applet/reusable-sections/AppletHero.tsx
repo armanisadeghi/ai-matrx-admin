@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { AppletTheme } from '@/components/brokers/main-layouts/applet-themes';
+import { AppletTheme } from '@/components/applet/reusable-sections/applet-themes';
 
 interface HeroSectionProps {
     title?: string;

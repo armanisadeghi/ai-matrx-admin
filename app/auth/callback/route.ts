@@ -11,15 +11,9 @@ export async function GET(request: Request) {
     // For email verification, there might not be a redirectTo param
     const redirectToParam = searchParams.get('redirectTo')
     const redirectTo = redirectToParam ? decodeURIComponent(redirectToParam) : '/dashboard'
-    
-    console.log("Auth callback - URL:", request.url);
-    console.log("Auth callback - Has code:", !!code);
-    console.log("Auth callback - redirectTo:", redirectTo);
-    console.log("Auth callback - Search params:", Object.fromEntries(searchParams));
 
     if (code) {
         const supabase = await createClient()
-        console.log("Auth callback - Exchanging code for session");
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         
         if (error) {

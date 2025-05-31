@@ -20,10 +20,6 @@
     "name": "backup"
   },
   {
-    "path": "/tests/broker-value-test",
-    "name": "broker-value-test"
-  },
-  {
     "path": "/tests/chat-tests",
     "name": "chat-tests"
   },
@@ -74,6 +70,14 @@
   {
     "path": "/tests/links",
     "name": "links"
+  },
+  {
+    "path": "/tests/maps",
+    "name": "maps"
+  },
+  {
+    "path": "/tests/markdown-tests",
+    "name": "markdown-tests"
   },
   {
     "path": "/tests/math",
@@ -132,8 +136,8 @@
     "name": "selector-test"
   },
   {
-    "path": "/tests/slack-apis",
-    "name": "slack-apis"
+    "path": "/tests/slack",
+    "name": "slack"
   },
   {
     "path": "/tests/socket-tests",
@@ -158,6 +162,10 @@
   {
     "path": "/tests/use-hooks-tests",
     "name": "use-hooks-tests"
+  },
+  {
+    "path": "/tests/utility-function-tests",
+    "name": "utility-function-tests"
   },
   {
     "path": "/tests/windows",

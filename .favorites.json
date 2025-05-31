@@ -1,0 +1,81 @@
+[
+    {
+        "type": "Group",
+        "name": "Main Files",
+        "parent_id": null,
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "BQiFLYs05XeKbjCJ"
+    },
+    {
+        "type": "Directory",
+        "name": "d:\\app_dev\\ai-matrx-admin\\app\\(authenticated)",
+        "parent_id": null,
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\app\\(authenticated)",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "LGsFhKEMI4Y579bW"
+    },
+    {
+        "type": "Group",
+        "name": "All Entity Stuff",
+        "parent_id": null,
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "zU2ECxnF5pJVftMu"
+    },
+    {
+        "type": "Directory",
+        "name": "d:\\app_dev\\ai-matrx-admin\\app\\entities",
+        "parent_id": "zU2ECxnF5pJVftMu",
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\app\\entities",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "UntzewvoHT1fmRAs"
+    },
+    {
+        "type": "Directory",
+        "name": "d:\\app_dev\\ai-matrx-admin\\app\\(authenticated)\\tests\\forms",
+        "parent_id": "zU2ECxnF5pJVftMu",
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\app\\(authenticated)\\tests\\forms",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "nFuRJp3CstWU4ESe"
+    },
+    {
+        "type": "Directory",
+        "name": "d:\\app_dev\\ai-matrx-admin\\components\\matrx\\Entity",
+        "parent_id": "zU2ECxnF5pJVftMu",
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\components\\matrx\\Entity",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "WFdUZmOA6iprbsxa"
+    },
+    {
+        "type": "Directory",
+        "name": "d:\\app_dev\\ai-matrx-admin\\components\\matrx\\EntityTable",
+        "parent_id": "zU2ECxnF5pJVftMu",
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\components\\matrx\\EntityTable",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "NK0eSMt3OVRTapC6"
+    },
+    {
+        "type": "Directory",
+        "name": "d:\\app_dev\\ai-matrx-admin\\components\\matrx\\ArmaniForm",
+        "parent_id": "zU2ECxnF5pJVftMu",
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\components\\matrx\\ArmaniForm",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "FCGzTac7LeIjWHrb"
+    },
+    {
+        "type": "File",
+        "name": "d:\\app_dev\\ai-matrx-admin\\constants\\appSidebarLinks.tsx",
+        "parent_id": null,
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\constants\\appSidebarLinks.tsx",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "QXkovtbpUEDAwYSI"
+    }
+]
