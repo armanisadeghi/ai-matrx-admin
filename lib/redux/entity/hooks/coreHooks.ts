@@ -1,4 +1,6 @@
 // lib/redux/entity/hooks/coreHooks.ts
+'use client';
+
 import { AllEntityFieldKeys, EntityKeys, MatrxRecordId } from '@/types/entityTypes';
 import { createEntitySelectors, createRecordKey, getEntitySlice, parseRecordKey, RootState, useAppDispatch, useAppSelector, useAppStore } from '@/lib/redux';
 import { useCallback, useMemo } from 'react';

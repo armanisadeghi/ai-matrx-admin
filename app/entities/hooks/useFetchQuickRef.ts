@@ -1,4 +1,6 @@
 // app\entities\hooks\useFetchQuickRef.ts
+'use client';
+
 
 import * as React from 'react';
 import { getRecordIdByRecord, useEntityTools } from '@/lib/redux';

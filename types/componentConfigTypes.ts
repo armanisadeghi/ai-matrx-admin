@@ -1,13 +1,11 @@
 // types.ts
 import { Card } from "@/components/ui";
-import React, { MutableRefObject } from "react";
+import React from "react";
 import { MatrxVariant } from "@/components/matrx/ArmaniForm/field-components/types";
 import { EntityKeys } from "@/types/entityTypes";
 import { EntityStateField, MatrxRecordId } from "@/lib/redux/entity/types/stateTypes";
 import { FormDensity } from "@/components/matrx/ArmaniForm/ArmaniForm";
 import { UnifiedCrudHandlers } from "@/components/matrx/Entity";
-import { ENTITY_FORM_COMPONENTS } from "@/app/entities/forms";
-import type { EntityFormType } from "@/app/entities/forms";
 
 export interface LayoutProps {
     selectedEntity: EntityKeys | null;
@@ -15,7 +13,7 @@ export interface LayoutProps {
     setIsExpanded?: (expanded: boolean) => void;
     handleEntityChange: (value: EntityKeys) => void;
     QuickReferenceComponent: React.ReactNode;
-    rightColumnRef: MutableRefObject<HTMLDivElement | null>;
+    rightColumnRef: React.RefObject<HTMLDivElement>;
     selectHeight: number;
     density: ComponentDensity;
     animationPreset: AnimationPreset;
@@ -45,6 +43,21 @@ export const FORM_VARIATIONS = [
     "singlePageModal",
     "multiStepModal",
 ] as const;
+
+export const ENTITY_FORM_COMPONENT_VARIATIONS = [
+    "DEFAULT",
+    "STANDARD",
+    "ARMANI",
+    "ARMANI_SMART",
+    "MINIMAL",
+    "RECORD_SELECT",
+    "RECORD_MULTI_SELECT",
+] as const;
+
+export type EntityFormType = (typeof ENTITY_FORM_COMPONENT_VARIATIONS)[number];
+
+
+
 
 export type FormVariationOptions = (typeof FORM_VARIATIONS)[number];
 
@@ -168,7 +181,7 @@ export const inlineEntityStyleOptions = createStringSelectOptions(INLINE_ENTITY_
 export const componentStateOptions = createStringSelectOptions(COMPONENT_STATES);
 export const quickReferenceComponentOptions = createStringSelectOptions(QUICK_REFERENCE_COMPONENT_TYPES);
 export const formVariationOptions = createStringSelectOptions(FORM_VARIATIONS);
-export const entityFormTypeOptions = createStringSelectOptions(Object.keys(ENTITY_FORM_COMPONENTS) as EntityFormType[]);
+export const entityFormTypeOptions = createStringSelectOptions(ENTITY_FORM_COMPONENT_VARIATIONS);
 
 // Mixed number|string options
 export const formColumnOptions = createMixedSelectOptions(FORM_COLUMNS);
@@ -481,6 +494,3 @@ interface FlexAnimatedFormProps {
     enableSearch?: boolean;
     direction?: "row" | "column" | "row-reverse" | "column-reverse";
 }
-
-// Re-export for consistency with other types
-export type { EntityFormType };

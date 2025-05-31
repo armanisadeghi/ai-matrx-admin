@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { FetchMode, getRecordIdByRecord, useEntityTools } from '@/lib/redux';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';

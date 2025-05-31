@@ -50,6 +50,7 @@ export interface UseQuickReferenceReturn<TEntity extends EntityKeys> {
 
     updateRecord: (
         matrxRecordId: MatrxRecordId,
+        data: Record<string, any>,
         callbacks?: Callback,
     ) => void;
 
@@ -134,12 +135,12 @@ export function useQuickReference<TEntity extends EntityKeys>(
     }, [dispatch, actions]);
 
 
-    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {
+    const updateRecord = React.useCallback((matrxRecordId: MatrxRecordId, data: Record<string, any>, callback?: Callback) => {
         const wrappedCallback = (result: { success: boolean; error?: any }) => {
             callback?.(result);
         };
         const callbackId = callbackManager.register(wrappedCallback);
-        dispatch(actions.updateRecord({matrxRecordId, callbackId,}));
+        dispatch(actions.updateRecord({matrxRecordId, data, callbackId}));
     }, [actions, dispatch]);
 
     const deleteRecord = React.useCallback((matrxRecordId: MatrxRecordId, callback?: Callback) => {

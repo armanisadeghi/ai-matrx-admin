@@ -48,11 +48,11 @@ function DynamicQuickReference<TEntity extends EntityKeys>(
 
     return (
         <div className={cn('flex flex-col w-full min-w-0 p-1 overflow-hidden max-w-full', className)}>
-            <div className="p-2 flex items-center justify-center w-full overflow-hidden">
+            <div className="p-1.5 flex items-center justify-center w-full overflow-hidden">
                 <SmartCrudWrapper {...fullSmartCrudProps} />
             </div>
             {selectionMode !== 'none' && (
-                <div className="p-2 flex items-center justify-center w-full overflow-hidden">
+                <div className="p-1.5 flex items-center justify-center w-full overflow-hidden">
                     <Button
                         onClick={toggleSelectionMode}
                         size="sm"

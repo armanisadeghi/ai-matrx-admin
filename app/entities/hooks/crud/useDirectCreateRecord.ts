@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback } from 'react';
 import { createRecordKey, useAppDispatch, useAppSelector, useEntityData, useEntityToasts, useEntityTools } from '@/lib/redux';
 import { EntityDataWithKey, EntityKeys, MatrxRecordId } from '@/types';

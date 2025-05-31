@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import {cn} from '@/lib/utils';
 import {Card, CardContent} from '@/components/ui/card';
@@ -53,11 +55,11 @@ function EntityQuickReferenceCardsEnhanced<TEntity extends EntityKeys>(
         const configs = {
             compact: {
                 padding: 'p-1',
-                containerPadding: 'px-1 py-1.5',
+                containerPadding: 'px-1 py-1',
                 gap: 'gap-1',
                 cardPadding: 'p-2',
                 fontSize: 'text-xs',
-                headerSize: 'text-sm',
+                headerSize: 'text-xs',
                 iconSize: 'h-3 w-3',
                 buttonSize: 'h-7 px-2 text-xs',
                 maxHeight: 'max-h-[50vh]',
@@ -66,11 +68,11 @@ function EntityQuickReferenceCardsEnhanced<TEntity extends EntityKeys>(
             },
             normal: {
                 padding: 'p-2 sm:p-4',
-                containerPadding: 'px-2 sm:px-4 py-2',
+                containerPadding: 'px-2 sm:px-3 py-1.5',
                 gap: 'gap-2 sm:gap-3',
                 cardPadding: 'p-2 sm:p-3',
                 fontSize: 'text-sm',
-                headerSize: 'text-lg',
+                headerSize: 'text-sm',
                 iconSize: 'h-4 w-4',
                 buttonSize: 'h-8 px-3',
                 maxHeight: 'max-h-[60vh]',
@@ -79,11 +81,11 @@ function EntityQuickReferenceCardsEnhanced<TEntity extends EntityKeys>(
             },
             comfortable: {
                 padding: 'p-3 sm:p-6',
-                containerPadding: 'px-3 sm:px-6 py-3',
+                containerPadding: 'px-3 sm:px-4 py-2',
                 gap: 'gap-3 sm:gap-4',
                 cardPadding: 'p-3 sm:p-4',
                 fontSize: 'text-base',
-                headerSize: 'text-xl',
+                headerSize: 'text-base',
                 iconSize: 'h-5 w-5',
                 buttonSize: 'h-9 px-4',
                 maxHeight: 'max-h-[70vh]',

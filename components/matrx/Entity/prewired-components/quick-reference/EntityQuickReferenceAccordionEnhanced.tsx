@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -164,7 +166,7 @@ export function EntityQuickReferenceAccordionEnhanced<TEntity extends EntityKeys
             className={cn('w-full min-w-0', className)}
         >
             <AccordionItem value="items" className="border rounded-lg">
-                <AccordionTrigger className={cn("px-4 hover:no-underline", densityConfig.padding)}>
+                <AccordionTrigger className={cn("px-2 py-1.5 hover:no-underline", density === 'compact' ? 'px-1.5 py-1' : density === 'comfortable' ? 'px-3 py-2' : 'px-2 py-1.5')}>
                     <span className={cn("font-medium truncate", densityConfig.fontSize)}>
                         {displayLabel}
                     </span>
