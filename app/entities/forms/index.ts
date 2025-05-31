@@ -1,9 +1,9 @@
 // app/entities/forms/index.ts
 
-import EntityFormMinimal from './dev/EntityFormMinimal';
+import EntityFormMinimal from './EntityFormMinimal';
 import EntityFormStandard from './EntityFormStandard';
-import EntityMultiSelectForms from './dev/EntityMultiSelectForms';
-import ArmaniFormFinal from './dev/ArmaniFormFinal';
+import EntityMultiSelectForms from './EntityMultiSelectForms';
+import ArmaniFormFinal from './ArmaniFormFinal';
 import EntityFormRecordSelections from './EntityFormRecordSelections';
 import ArmaniFormSmart from '@/components/matrx/ArmaniForm/smart-form/ArmaniFormSmart';
 

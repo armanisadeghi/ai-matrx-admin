@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui";
 import {cn} from "@/lib/utils";
 import {ChevronRight} from 'lucide-react';
-import ArmaniFormFinal from "@/app/entities/forms/dev/ArmaniFormFinal";
+import ArmaniFormFinal from "@/app/entities/forms/ArmaniFormFinal";
 import {getUpdatedUnifiedLayoutProps} from "@/app/entities/layout/configs";
 
 import {EntityKeys} from "@/types";
