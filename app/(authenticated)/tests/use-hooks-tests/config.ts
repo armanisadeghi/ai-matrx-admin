@@ -10,6 +10,30 @@ export const pages: ModulePage[] = [
         description: 'Throttle computationally expensive operations with useThrottle and debounce Delays the execution of function or state update'
     },
     {
+        title: 'Child Relationship',
+        path: 'use-throttle-debounce/child-relationship',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
+    {
+        title: 'Processed Child Relationship',
+        path: 'use-throttle-debounce/processed-child-relationship',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
+    {
+        title: 'Relationships',
+        path: 'use-throttle-debounce/relationships',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
+    {
+        title: 'Use Double',
+        path: 'use-throttle-debounce/use-double',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
+    {
         title: 'Use Debounce Test',
         path: 'use-debounce',
         relative: true,
@@ -19,7 +43,7 @@ export const pages: ModulePage[] = [
         title: 'Use LocalStorage Test',
         path: 'use-localstorage',
         relative: true,
-        description: 'Store, retrieve, and synchronize data from the browser’s localStorage API with useLocalStorage'
+        description: 'Store, retrieve, and synchronize data from the browser\'s localStorage API with useLocalStorage'
     },
     {
         title: 'Use WindowSize Test',
@@ -61,7 +85,7 @@ export const pages: ModulePage[] = [
         title: 'Use SessionStorage Test',
         path: 'use-sessionstorage',
         relative: true,
-        description: 'Store, retrieve, and synchronize data from the browser’s session storage with useSessionStorage'
+        description: 'Store, retrieve, and synchronize data from the browser\'s session storage with useSessionStorage'
     },
     {
         title: 'Use PreferredLanguage Test',
@@ -91,7 +115,7 @@ export const pages: ModulePage[] = [
         title: 'Board Game Spinner Test',
         path: 'board-game-spinner',
         relative: true,
-        description: 'There’s no better way to learn useHooks than by building it yourself.'
+        description: "There's no better way to learn useHooks than by building it yourself."
     },
     {
         title: 'Use Script Test',
@@ -183,7 +207,6 @@ export const pages: ModulePage[] = [
         relative: true,
         description: 'Synchronize and update state based on the Map data structure with useMap'
     },
-
     {
         title: 'Use Set Test',
         path: 'use-set',
@@ -200,7 +223,7 @@ export const pages: ModulePage[] = [
         title: 'Use Battery Test',
         path: 'use-battery',
         relative: true,
-        description: 'Track the battery status of a user’s device with useBattery'
+        description: 'Track the battery status of a user\'s device with useBattery'
     },
     {
         title: 'Use Idle Test',
@@ -284,7 +307,7 @@ export const pages: ModulePage[] = [
         title: 'Use Measure Test',
         path: 'use-measure',
         relative: true,
-        description: 'Effortlessly measure and track your component’s dimensions with useMeasure'
+        description: "Effortlessly measure and track your component's dimensions with useMeasure"
     },
     {
         title: 'Use ClickAway Test',

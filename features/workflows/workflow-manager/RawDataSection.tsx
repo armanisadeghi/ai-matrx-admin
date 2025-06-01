@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { WorkflowData } from "../../types";
+import { WorkflowData } from "../../../types/customWorkflowTypes";
 
 interface RawDataSectionProps {
     workflow: WorkflowData;

@@ -30,6 +30,12 @@ export const pages: ModulePage[] = [
         description:
             "This is the hard-coded version that is still good for seeing some color options as well as a few features that are not in the main version.",
     },
+    {
+        title: "Color Tester",
+        path: "color-tester",
+        relative: true,
+        description: "ADDED DURING REVIEW",
+    },
 
 ];
 

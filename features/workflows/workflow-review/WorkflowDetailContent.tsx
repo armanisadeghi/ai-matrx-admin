@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState, createContext } from "react";
-import { useWorkflowWithFetch } from "../useWorkflowData";
-import { WorkflowData, BackendWorkflowData, WorkflowStep } from "../types";
-import { WorkflowStepsSection } from "./components/WorkflowStepsSection";
-import { UserInputsSection } from "./components/UserInputsSection";
-import { WorkflowRelaysSection } from "./components/WorkflowRelaysSection";
-import { RawDataSection } from "./components/RawDataSection";
+import { useWorkflowWithFetch } from "@/features/workflows/hooks/useWorkflowData";
+import { WorkflowData, BackendWorkflowData, WorkflowStep } from "@/types/customWorkflowTypes";
+import { WorkflowStepsSection } from "./WorkflowStepsSection";
+import { UserInputsSection } from "./UserInputsSection";
+import { WorkflowRelaysSection } from "./WorkflowRelaysSection";
+import { RawDataSection } from "./RawDataSection";
 
 // Context for broker highlighting across all components
 export const BrokerHighlightContext = createContext<{

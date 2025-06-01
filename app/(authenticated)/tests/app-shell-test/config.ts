@@ -69,6 +69,24 @@ export const pages: ModulePage[] = [
         relative: true,
         description: ''
     },
+    {
+        title: 'Single Option Layout Choices',
+        path: 'single-option/layout-choices',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
+    {
+        title: 'Sample Nested',
+        path: 'single-option/sample-nested',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
+    {
+        title: 'Sample Nested Again',
+        path: 'single-option/sample-nested/sample-nested-again',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
 ];
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');

@@ -63,11 +63,23 @@ export const pages: ModulePage[] = [
         relative: true,
         description: ''
     },
+    // {
+    //     title: 'Grok Chat',
+    //     path: '/grok-dup',
+    //     relative: true,
+    //     description: 'An implementation of the starting Grok Chat page UI'
+    // },
     {
-        title: 'Grok Chat',
-        path: '/grok-dup',
+        title: 'Chat Assistant',
+        path: 'chat-assistant',
         relative: true,
-        description: 'An implementation of the starting Grok Chat page UI'
+        description: 'ADDED DURING REVIEW'
+    },
+    {
+        title: 'Conversation Search UI',
+        path: 'conversation-search-ui',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
     },
 ];
 

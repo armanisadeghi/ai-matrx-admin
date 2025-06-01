@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
-import { WorkflowRelays, SimpleRelay } from "../../types";
-import { BrokerHighlightContext } from "../WorkflowDetailContent";
+import { WorkflowRelays, SimpleRelay } from "../../../types/customWorkflowTypes";
+import { BrokerHighlightContext } from "./WorkflowDetailContent";
 
 // Clickable broker component that handles highlighting
 function ClickableBroker({ brokerId, className = "" }: { brokerId: string; className?: string }) {

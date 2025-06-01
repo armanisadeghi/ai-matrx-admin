@@ -69,6 +69,18 @@ export const pages: ModulePage[] = [
         relative: true,
         description: ''
     },
+    {
+        title: 'Entity JSON Builder',
+        path: 'entity-json-builder',
+        relative: true,
+        description: ''
+    },
+    {
+        title: 'Metadata Test',
+        path: 'metadata-test',
+        relative: true,
+        description: ''
+    },
 ];
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');

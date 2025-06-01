@@ -2,24 +2,42 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useWorkflowWithFetch } from "./useWorkflowData";
-import { WorkflowData } from "./types";
+import { useWorkflowWithFetch } from "@/features/workflows/hooks/useWorkflowData";
+import { useWorkflowManager } from "@/features/workflows/hooks/useWorkflowManager";
+import { WorkflowData } from "@/types/customWorkflowTypes";
 
 export default function WorkflowManagerPage() {
+    // Legacy hook for backward compatibility
     const {
         workflowRecords,
         workflowIsLoading,
         workflowIsError,
     } = useWorkflowWithFetch();
 
+    // NEW: Enhanced workflow manager
+    const {
+        allWorkflows: enhancedWorkflows,
+        isLoading: enhancedIsLoading,
+        hasError: enhancedHasError,
+        workflowManagementActions,
+    } = useWorkflowManager();
+
+    // Use enhanced workflows if available, fallback to legacy
+    const workflows = enhancedWorkflows && enhancedWorkflows.length > 0 
+        ? enhancedWorkflows 
+        : Object.values(workflowRecords);
+    
+    const isLoading = enhancedIsLoading || workflowIsLoading;
+    const isError = enhancedHasError || workflowIsError;
+
     // Filter out deleted workflows and convert to array
     const activeWorkflows = useMemo(() => {
-        return Object.values(workflowRecords).filter((workflow: WorkflowData) => 
+        return workflows.filter((workflow: WorkflowData) => 
             !workflow.isDeleted
         );
-    }, [workflowRecords]);
+    }, [workflows]);
 
-    if (workflowIsError) {
+    if (isError) {
         return (
             <div className="p-6">
                 <div className="text-center py-8">
@@ -32,7 +50,7 @@ export default function WorkflowManagerPage() {
         );
     }
 
-    if (!workflowIsLoading && activeWorkflows.length === 0) {
+    if (!isLoading && activeWorkflows.length === 0) {
         return (
             <div className="p-6">
                 <div className="text-center py-12">
@@ -47,14 +65,24 @@ export default function WorkflowManagerPage() {
 
     return (
         <div className="p-4">
-            <div className="mb-4">
+            <div className="mb-4 flex items-center justify-between">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                     Workflows ({activeWorkflows.length})
                 </h1>
+                {/* Enhanced workflow indicator */}
+                {enhancedWorkflows && enhancedWorkflows.length > 0 && (
+                    <div className="text-sm text-blue-600 dark:text-blue-400">
+                        Enhanced workflow management active
+                    </div>
+                )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {activeWorkflows.map((workflow) => (
-                    <WorkflowCard key={workflow.id} workflow={workflow} />
+                    <WorkflowCard 
+                        key={workflow.id} 
+                        workflow={workflow} 
+                        onSetActive={workflowManagementActions?.setActiveWorkflow}
+                    />
                 ))}
             </div>
         </div>
@@ -63,9 +91,10 @@ export default function WorkflowManagerPage() {
 
 interface WorkflowCardProps {
     workflow: WorkflowData;
+    onSetActive?: (workflowId: string) => void;
 }
 
-function WorkflowCard({ workflow }: WorkflowCardProps) {
+function WorkflowCard({ workflow, onSetActive }: WorkflowCardProps) {
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
     // Extract metrics from backend workflow
@@ -85,10 +114,18 @@ function WorkflowCard({ workflow }: WorkflowCardProps) {
             return acc;
         }, {});
 
+        // Count function types
+        const functionTypeCounts = steps.reduce((acc: Record<string, number>, step: any) => {
+            const type = step.function_type || 'unknown';
+            acc[type] = (acc[type] || 0) + 1;
+            return acc;
+        }, {});
+
         return {
             totalSteps: steps.length,
             userInputs: userInputs.length,
             statusCounts,
+            functionTypeCounts,
             hasRelays: !!(backendData.workflow_relays?.simple_relays?.length || 
                           backendData.workflow_relays?.relay_chains?.length ||
                           backendData.workflow_relays?.bidirectional_relays?.length)
@@ -107,9 +144,19 @@ function WorkflowCard({ workflow }: WorkflowCardProps) {
         setIsDescriptionExpanded(!isDescriptionExpanded);
     };
 
+    const handleCardClick = (e: React.MouseEvent) => {
+        // Set as active workflow when clicked (if enhanced mode is available)
+        if (onSetActive) {
+            onSetActive(workflow.id);
+        }
+    };
+
     return (
-        <Link href={`/workflow-manager/${workflow.id}`}>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 p-6 h-full cursor-pointer group">
+        <Link href={`/tests/workflows/workflow-manager/${workflow.id}`}>
+            <div 
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 p-6 h-full cursor-pointer group"
+                onClick={handleCardClick}
+            >
                 <div className="flex flex-col h-full">
                     {/* Header with status indicator */}
                     <div className="flex items-center justify-between mb-3">
@@ -132,12 +179,22 @@ function WorkflowCard({ workflow }: WorkflowCardProps) {
                         {workflow.name || 'Untitled Workflow'}
                     </h3>
 
-                    {/* Workflow metrics */}
+                    {/* Enhanced workflow metrics */}
                     {workflowMetrics && (
                         <div className="flex flex-wrap gap-2 mb-3">
                             <div className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs text-gray-700 dark:text-gray-300">
                                 {workflowMetrics.totalSteps} steps
                             </div>
+                            {workflowMetrics.functionTypeCounts.registered_function > 0 && (
+                                <div className="px-2 py-1 bg-blue-100 dark:bg-blue-900 rounded text-xs text-blue-700 dark:text-blue-300">
+                                    {workflowMetrics.functionTypeCounts.registered_function} functions
+                                </div>
+                            )}
+                            {workflowMetrics.functionTypeCounts.workflow_recipe_executor > 0 && (
+                                <div className="px-2 py-1 bg-indigo-100 dark:bg-indigo-900 rounded text-xs text-indigo-700 dark:text-indigo-300">
+                                    {workflowMetrics.functionTypeCounts.workflow_recipe_executor} recipes
+                                </div>
+                            )}
                             {workflowMetrics.userInputs > 0 && (
                                 <div className="px-2 py-1 bg-purple-100 dark:bg-purple-900 rounded text-xs text-purple-700 dark:text-purple-300">
                                     {workflowMetrics.userInputs} inputs

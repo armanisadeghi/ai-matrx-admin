@@ -64,10 +64,16 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
-        title: 'Not Implemented',
+        title: 'QR Label Generator',
         path: 'qr-label-generator',
         relative: true,
         description: ''
+    },
+    {
+        title: 'PDF Generator',
+        path: 'pdf-generator',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
     },
 ];
 

@@ -37,8 +37,13 @@ export const pages: ModulePage[] = [
         path: 'entity-final-test',
         relative: true,
         description: ''
+    },    
+    {
+        title: 'Entity Provider Test',
+        path: 'entity-final-test/entity-provider-test',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
     },
-
 
     {
         title: 'Entity Management Smart Fields',
@@ -47,6 +52,14 @@ export const pages: ModulePage[] = [
         description: 'Uses the new smart fields system\n\n' +
             'STATUS: Working',
     },
+    
+    {
+        title: 'Entity Smart Armani Fields',
+        path: 'entity-smart-armani-fields',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
+    
     {
         title: 'Dynamic Entity Management Page',
         path: 'entity-management',
@@ -107,6 +120,12 @@ export const pages: ModulePage[] = [
         path: 'components-with-buttons/armani-action-test/presentation-tests',
         relative: true,
         description: ''
+    },
+    {
+        title: 'Action Button Demo Version 5',
+        path: 'components-with-buttons/action-button-five',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
     },
     {
         title: 'Action Button Demo Version 4',

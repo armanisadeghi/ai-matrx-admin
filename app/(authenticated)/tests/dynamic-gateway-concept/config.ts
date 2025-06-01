@@ -73,5 +73,5 @@ export const pages: ModulePage[] = [
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');
 
-export const MODULE_HOME = '/tests/some-module';
-export const MODULE_NAME = 'Module Name';
+export const MODULE_HOME = '/tests/dynamic-gateway-concept';
+export const MODULE_NAME = 'Dynamic Gateway Concept';

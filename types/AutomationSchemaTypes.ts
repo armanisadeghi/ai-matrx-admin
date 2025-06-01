@@ -204,10 +204,37 @@ export type AutomationEntityName = AutomationTableName | AutomationViewName;
 
 export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
-export type ExpandRecursively<T> = T extends object ? (T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never) : T;export type ExpandExcept<T, KeysToExclude extends string[] = []> = T extends object
+export type ExpandRecursively<T> = T extends object ? (T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never) : T;
+
+export type ExpandExcept<T, KeysToExclude extends string[] = []> = T extends object
     ? {
    [K in keyof T]: K extends KeysToExclude[number] ? T[K] : ExpandExcept<T[K], KeysToExclude>;
 } : T;
+
+
+// === NEW VERSION === ADDED MANUALLY ===
+
+export type NewExpandExcept<
+    T, 
+    KeysToExclude extends string[] = [],
+    FieldsToKeepUnexpanded extends string[] = []
+> = T extends object
+    ? {
+        [K in keyof T]: K extends KeysToExclude[number] 
+            ? T[K] 
+            : K extends FieldsToKeepUnexpanded[number]
+                ? T[K]
+                : NewExpandExcept<T[K], KeysToExclude, FieldsToKeepUnexpanded>;
+    } : T;
+
+// Usage
+export type NewEntityStateType<TEntity extends EntityKeys> = NewExpandExcept<
+    EntityState<TEntity>, 
+    ["entityFields", "relationships", "unsavedRecords", "primaryKeyMetadata", "primaryKeyValues", "metadata"],
+    ["createdAt", "updatedAt"]
+>;
+
+// ======================================================================================================================
 
 export type EntityStateType<TEntity extends EntityKeys> = ExpandExcept<EntityState<TEntity>, ["entityFields", "relationships", "unsavedRecords", "primaryKeyMetadata", "primaryKeyValues", "metadata"]>;
 
@@ -1144,5 +1171,5 @@ export type WorkflowDataOptional = Expand<EntityDataOptional<"workflow">>;
 export type WorkflowRecordWithKey = Expand<EntityDataWithKey<"workflow">>;
 export type WorkflowProcessed = Expand<ProcessedEntityData<"workflow">>;
 export type WorkflowData = Expand<EntityDataMixed<"workflow">>;
-export type WorkflowState = EntityStateType<"workflow">;
+export type WorkflowState = NewEntityStateType<"workflow">;
 export type WorkflowRecordMap = Record<"workflowRecordId", WorkflowData>;

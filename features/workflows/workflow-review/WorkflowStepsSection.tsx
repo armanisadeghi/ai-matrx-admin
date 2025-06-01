@@ -1,6 +1,6 @@
-import { WorkflowStep } from "../../types";
+import { WorkflowStep } from "../../../types/customWorkflowTypes";
 import { useState, useContext, useEffect } from "react";
-import { BrokerHighlightContext } from "../WorkflowDetailContent";
+import { BrokerHighlightContext } from "./WorkflowDetailContent";
 import { RecipeRunnerNodeDisplay } from "./nodes/RecipeRunner";
 import { ExtractorNodeDisplay } from "./nodes/Extractor";
 import { IterativeRecipePreparerNodeDisplay } from "./nodes/IterativeRecipePrepare";

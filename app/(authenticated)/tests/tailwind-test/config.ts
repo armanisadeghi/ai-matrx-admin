@@ -46,6 +46,12 @@ export const pages: ModulePage[] = [
         description: ''
     },
     {
+        title: 'Test Card Colors',
+        path: 'test-card-colors',
+        relative: true,
+        description: 'ADDED DURING REVIEW'
+    },
+    {
         title: 'Textured Example',
         path: 'textured-example',
         relative: true,

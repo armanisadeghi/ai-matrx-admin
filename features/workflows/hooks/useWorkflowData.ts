@@ -1,8 +1,12 @@
 import { MatrxRecordId } from "@/types/entityTypes";
-import { WorkflowData } from "./types";
+import { WorkflowData } from "../../../types/customWorkflowTypes";
 import { useEntityWithFetch } from "@/lib/redux/entity/hooks/useAllData";
 import { QuickReferenceRecord } from "@/lib/redux/entity/types/stateTypes";
 import { EntitySelectors, EntityActions, FetchMode } from "@/lib/redux";
+import { useMemo } from "react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { createWorkflowSelectors } from "@/lib/redux/entity/custom-selectors/workflowSelectors";
+import { getWorkflowActionsWithThunks } from "@/lib/redux/entity/custom-actions/custom-workflow-actions";
 
 export type UseWorkflowWithFetchReturn = {
     workflowSelectors: EntitySelectors<"workflow">;
@@ -29,9 +33,13 @@ export type UseWorkflowWithFetchReturn = {
     fetchWorkflowOneWithFkIfk: (recordId: MatrxRecordId) => void;
     fetchWorkflowAll: () => void;
     fetchWorkflowPaginated: (page: number, pageSize: number) => void;
+    customWorkflowSelectors: ReturnType<typeof createWorkflowSelectors>;
+    customWorkflowActions: ReturnType<typeof getWorkflowActionsWithThunks>;
 };
 
 export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
+    const dispatch = useAppDispatch();
+    
     const {
         selectors: workflowSelectors,
         actions: workflowActions,
@@ -59,6 +67,10 @@ export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
         fetchPaginated: fetchWorkflowPaginated,
     } = useEntityWithFetch("workflow");
 
+    // Create custom workflow selectors and actions
+    const customWorkflowSelectors = useMemo(() => createWorkflowSelectors(), []);
+    const customWorkflowActions = useMemo(() => getWorkflowActionsWithThunks(), []);
+
     return {
         workflowSelectors,
         workflowActions,
@@ -84,5 +96,7 @@ export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
         fetchWorkflowOneWithFkIfk,
         fetchWorkflowAll,
         fetchWorkflowPaginated,
+        customWorkflowSelectors,
+        customWorkflowActions,
     };
 };

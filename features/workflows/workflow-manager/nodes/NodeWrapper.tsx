@@ -1,6 +1,6 @@
 import { useContext, ReactNode, useState } from "react";
 import { LucideIcon, Edit3, Save, X } from "lucide-react";
-import { BrokerHighlightContext } from "../../WorkflowDetailContent";
+import { BrokerHighlightContext } from "../WorkflowDetailContent";
 import { BrokerDisplay, BrokerHighlightBadge, stepContainsBroker, WorkflowStepCardProps } from "../WorkflowStepsSection";
 import { StatusDisplay } from "./StatusDisplay";
 

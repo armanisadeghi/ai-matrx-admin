@@ -1,4 +1,4 @@
-// lib/redux/entity/selectors.ts
+// lib/redux/entity/custom-selectors/chatSelectors.ts
 "use client";
 
 import { createSelector } from "@reduxjs/toolkit";

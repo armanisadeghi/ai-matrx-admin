@@ -16,23 +16,29 @@ export const pages: ModulePage[] = [
         description: 'This has now been replaced by the Task Field Demo.'
     },
     {
-        title: 'Very Simple Chat Socket Test',
-        path: 'chat-socket-test',
+        title: 'Socket Final Test',
+        path: 'socket-final-test',
         relative: true,
-        description: ''
+        description: 'ADDED DURING REVIEW'
     },
-    {
-        title: 'Better Structured Dynamic Task Builder',
-        path: 'test-five',
-        relative: true,
-        description: 'This one is designed to allow us to dynamically build any socket task and test it, without frontend changes.'
-    },
-    {
-        title: 'Modular Socket IO Recipe Tester',
-        path: 'modular-recipe-socket',
-        relative: true,
-        description: ''
-    },
+    // {
+    //     title: 'Very Simple Chat Socket Test',
+    //     path: 'chat-socket-test',
+    //     relative: true,
+    //     description: ''
+    // },
+    // {
+    //     title: 'Better Structured Dynamic Task Builder',
+    //     path: 'test-five',
+    //     relative: true,
+    //     description: 'This one is designed to allow us to dynamically build any socket task and test it, without frontend changes.'
+    // },
+    // {
+    //     title: 'Modular Socket IO Recipe Tester',
+    //     path: 'modular-recipe-socket',
+    //     relative: true,
+    //     description: ''
+    // },
 ];
 
 export const filteredPages = pages.filter(page => page.path !== 'link-here');

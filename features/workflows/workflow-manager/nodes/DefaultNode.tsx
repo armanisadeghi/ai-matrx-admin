@@ -3,8 +3,8 @@ import { useState, useContext } from "react";
 import { Puzzle } from "lucide-react";
 import { ClickableBroker, WorkflowStepCardProps, stepContainsBroker } from "../WorkflowStepsSection";
 import { NodeWrapper } from "./NodeWrapper";
-import { BrokerHighlightContext } from "../../WorkflowDetailContent";
-import { FUNCTION_TYPES } from "../../../types";
+import { BrokerHighlightContext } from "../WorkflowDetailContent";
+import { FUNCTION_TYPES } from "../../../../types/customWorkflowTypes";
 
 // Default card for unregistered function types
 export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate }: WorkflowStepCardProps) {
