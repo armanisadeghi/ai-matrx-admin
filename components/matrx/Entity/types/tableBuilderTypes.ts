@@ -1,5 +1,5 @@
 // types/table/columnTypes.ts
-import { ButtonProps } from "@/components/ui/button";
+import { ButtonProps } from "@/components/ui/ButtonMine";
 import { EntityData, EntityKeys } from "@/types/entityTypes";
 import { ComponentType } from "react";
 

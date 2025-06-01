@@ -24,7 +24,7 @@ interface UseFetchRelatedReturn {
     setHoveredItem: (itemId: string | null) => void;
     truncateText: (text: string, maxLength?: number) => string;
     matrxRecordId: MatrxRecordId | null;
-    individualFieldInfo: EntityStateField[] | null;
+    individualFieldInfo: Record<string, EntityStateField> | null;
     entityPrettyName: AllEntityNameVariations;
     hasRecords: boolean;
     recordCount: number; // New field

@@ -16,6 +16,9 @@ import {
     AiModelEndpointData,
     AiEndpointData,
     AiModelData,
+    RegisteredFunctionData,
+    ArgData,
+    WorkflowData,
 } from "@/types";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { RootState } from "@/lib/redux/store";
@@ -38,6 +41,7 @@ import { getEntityMetadata } from "../utils/direct-schema";
 import { parseRecordKey } from "../utils/stateHelpUtils";
 import { createRecordKey } from "../utils/stateHelpUtils";
 import { useEntityFetch } from "./useEntityFetch";
+
 interface EntityState<TEntity extends EntityKeys> {
     entityMetadata: EntityMetadata;
     records: EntityRecordMap<EntityKeys>;
@@ -1300,3 +1304,258 @@ export const useAiAgentWithFetch = (): UseAiAgentWithFetchReturn => {
     };
 };
 
+type UseWorkflowWithFetchReturn = {
+    workflowSelectors: EntitySelectors<"workflow">;
+    workflowActions: EntityActions<"workflow">;
+    workflowRecords: Record<MatrxRecordId, WorkflowData>;
+    workflowUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowData>>;
+    workflowSelectedRecordIds: MatrxRecordId[];
+    workflowIsLoading: boolean;
+    workflowIsError: boolean;
+    workflowQuickRefRecords: QuickReferenceRecord[];
+    addWorkflowMatrxId: (recordId: MatrxRecordId) => void;
+    addWorkflowMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeWorkflowMatrxId: (recordId: MatrxRecordId) => void;
+    removeWorkflowMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addWorkflowPkValue: (pkValue: string) => void;
+    addWorkflowPkValues: (pkValues: Record<string, unknown>) => void;
+    removeWorkflowPkValue: (pkValue: string) => void;
+    removeWorkflowPkValues: (pkValues: Record<string, unknown>) => void;
+    isWorkflowMissingRecords: boolean;
+    setWorkflowShouldFetch: (shouldFetch: boolean) => void;
+    setWorkflowFetchMode: (fetchMode: FetchMode) => void;
+    fetchWorkflowQuickRefs: () => void;
+    fetchWorkflowOne: (recordId: MatrxRecordId) => void;
+    fetchWorkflowOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchWorkflowAll: () => void;
+    fetchWorkflowPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useWorkflowWithFetch = (): UseWorkflowWithFetchReturn => {
+    const {
+        selectors: workflowSelectors,
+        actions: workflowActions,
+        allRecords: workflowRecords,
+        unsavedRecords: workflowUnsavedRecords,
+        selectedRecordIds: workflowSelectedRecordIds,
+        isLoading: workflowIsLoading,
+        isError: workflowIsError,
+        quickRefRecords: workflowQuickRefRecords,
+        addMatrxId: addWorkflowMatrxId,
+        addMatrxIds: addWorkflowMatrxIds,
+        removeMatrxId: removeWorkflowMatrxId,
+        removeMatrxIds: removeWorkflowMatrxIds,
+        addPkValue: addWorkflowPkValue,
+        addPkValues: addWorkflowPkValues,
+        removePkValue: removeWorkflowPkValue,
+        removePkValues: removeWorkflowPkValues,
+        isMissingRecords: isWorkflowMissingRecords,
+        setShouldFetch: setWorkflowShouldFetch,
+        setFetchMode: setWorkflowFetchMode,
+        fetchQuickRefs: fetchWorkflowQuickRefs,
+        fetchOne: fetchWorkflowOne,
+        fetchOneWithFkIfk: fetchWorkflowOneWithFkIfk,
+        fetchAll: fetchWorkflowAll,
+        fetchPaginated: fetchWorkflowPaginated,
+
+    } = useEntityWithFetch("workflow");
+
+    return {
+        workflowSelectors,
+        workflowActions,
+        workflowRecords,
+        workflowUnsavedRecords,
+        workflowSelectedRecordIds,
+        workflowIsLoading,
+        workflowIsError,
+        workflowQuickRefRecords,
+        addWorkflowMatrxId,
+        addWorkflowMatrxIds,
+        removeWorkflowMatrxId,
+        removeWorkflowMatrxIds,
+        addWorkflowPkValue,
+        addWorkflowPkValues,
+        removeWorkflowPkValue,
+        removeWorkflowPkValues,
+        isWorkflowMissingRecords,
+        setWorkflowShouldFetch,
+        setWorkflowFetchMode,
+        fetchWorkflowQuickRefs,
+        fetchWorkflowOne,
+        fetchWorkflowOneWithFkIfk,
+        fetchWorkflowAll,
+        fetchWorkflowPaginated,
+    };
+};
+
+
+
+type UseRegisteredFunctionWithFetchReturn = {
+    registeredFunctionSelectors: EntitySelectors<"registeredFunction">;
+    registeredFunctionActions: EntityActions<"registeredFunction">;
+    registeredFunctionRecords: Record<MatrxRecordId, RegisteredFunctionData>;       
+    registeredFunctionUnsavedRecords: Record<MatrxRecordId, Partial<RegisteredFunctionData>>;
+    registeredFunctionSelectedRecordIds: MatrxRecordId[];
+    registeredFunctionIsLoading: boolean;
+    registeredFunctionIsError: boolean;
+    registeredFunctionQuickRefRecords: QuickReferenceRecord[];
+    addRegisteredFunctionMatrxId: (recordId: MatrxRecordId) => void;
+    addRegisteredFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeRegisteredFunctionMatrxId: (recordId: MatrxRecordId) => void;
+    removeRegisteredFunctionMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addRegisteredFunctionPkValue: (pkValue: string) => void;
+    addRegisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;     
+    removeRegisteredFunctionPkValue: (pkValue: string) => void;
+    removeRegisteredFunctionPkValues: (pkValues: Record<string, unknown>) => void;  
+    isRegisteredFunctionMissingRecords: boolean;
+    setRegisteredFunctionShouldFetch: (shouldFetch: boolean) => void;
+    setRegisteredFunctionFetchMode: (fetchMode: FetchMode) => void;
+    fetchRegisteredFunctionQuickRefs: () => void;
+    fetchRegisteredFunctionOne: (recordId: MatrxRecordId) => void;
+    fetchRegisteredFunctionOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchRegisteredFunctionAll: () => void;
+    fetchRegisteredFunctionPaginated: (page: number, pageSize: number) => void;     
+};
+
+export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetchReturn => {
+    const {
+        selectors: registeredFunctionSelectors,
+        actions: registeredFunctionActions,
+        allRecords: registeredFunctionRecords,
+        unsavedRecords: registeredFunctionUnsavedRecords,
+        selectedRecordIds: registeredFunctionSelectedRecordIds,
+        isLoading: registeredFunctionIsLoading,
+        isError: registeredFunctionIsError,
+        quickRefRecords: registeredFunctionQuickRefRecords,
+        addMatrxId: addRegisteredFunctionMatrxId,
+        addMatrxIds: addRegisteredFunctionMatrxIds,
+        removeMatrxId: removeRegisteredFunctionMatrxId,
+        removeMatrxIds: removeRegisteredFunctionMatrxIds,
+        addPkValue: addRegisteredFunctionPkValue,
+        addPkValues: addRegisteredFunctionPkValues,
+        removePkValue: removeRegisteredFunctionPkValue,
+        removePkValues: removeRegisteredFunctionPkValues,
+        isMissingRecords: isRegisteredFunctionMissingRecords,
+        setShouldFetch: setRegisteredFunctionShouldFetch,
+        setFetchMode: setRegisteredFunctionFetchMode,
+        fetchQuickRefs: fetchRegisteredFunctionQuickRefs,
+        fetchOne: fetchRegisteredFunctionOne,
+        fetchOneWithFkIfk: fetchRegisteredFunctionOneWithFkIfk,
+        fetchAll: fetchRegisteredFunctionAll,
+        fetchPaginated: fetchRegisteredFunctionPaginated,
+
+    } = useEntityWithFetch("registeredFunction");
+
+    return {
+        registeredFunctionSelectors,
+        registeredFunctionActions,
+        registeredFunctionRecords,
+        registeredFunctionUnsavedRecords,
+        registeredFunctionSelectedRecordIds,
+        registeredFunctionIsLoading,
+        registeredFunctionIsError,
+        registeredFunctionQuickRefRecords,
+        addRegisteredFunctionMatrxId,
+        addRegisteredFunctionMatrxIds,
+        removeRegisteredFunctionMatrxId,
+        removeRegisteredFunctionMatrxIds,
+        addRegisteredFunctionPkValue,
+        addRegisteredFunctionPkValues,
+        removeRegisteredFunctionPkValue,
+        removeRegisteredFunctionPkValues,
+        isRegisteredFunctionMissingRecords,
+        setRegisteredFunctionShouldFetch,
+        setRegisteredFunctionFetchMode,
+        fetchRegisteredFunctionQuickRefs,
+        fetchRegisteredFunctionOne,
+        fetchRegisteredFunctionOneWithFkIfk,
+        fetchRegisteredFunctionAll,
+        fetchRegisteredFunctionPaginated,
+    };
+};
+
+
+
+type UseArgWithFetchReturn = {
+    argSelectors: EntitySelectors<"arg">;
+    argActions: EntityActions<"arg">;
+    argRecords: Record<MatrxRecordId, ArgData>;
+    argUnsavedRecords: Record<MatrxRecordId, Partial<ArgData>>;
+    argSelectedRecordIds: MatrxRecordId[];
+    argIsLoading: boolean;
+    argIsError: boolean;
+    argQuickRefRecords: QuickReferenceRecord[];
+    addArgMatrxId: (recordId: MatrxRecordId) => void;
+    addArgMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeArgMatrxId: (recordId: MatrxRecordId) => void;
+    removeArgMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addArgPkValue: (pkValue: string) => void;
+    addArgPkValues: (pkValues: Record<string, unknown>) => void;
+    removeArgPkValue: (pkValue: string) => void;
+    removeArgPkValues: (pkValues: Record<string, unknown>) => void;
+    isArgMissingRecords: boolean;
+    setArgShouldFetch: (shouldFetch: boolean) => void;
+    setArgFetchMode: (fetchMode: FetchMode) => void;
+    fetchArgQuickRefs: () => void;
+    fetchArgOne: (recordId: MatrxRecordId) => void;
+    fetchArgOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchArgAll: () => void;
+    fetchArgPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useArgWithFetch = (): UseArgWithFetchReturn => {
+    const {
+        selectors: argSelectors,
+        actions: argActions,
+        allRecords: argRecords,
+        unsavedRecords: argUnsavedRecords,
+        selectedRecordIds: argSelectedRecordIds,
+        isLoading: argIsLoading,
+        isError: argIsError,
+        quickRefRecords: argQuickRefRecords,
+        addMatrxId: addArgMatrxId,
+        addMatrxIds: addArgMatrxIds,
+        removeMatrxId: removeArgMatrxId,
+        removeMatrxIds: removeArgMatrxIds,
+        addPkValue: addArgPkValue,
+        addPkValues: addArgPkValues,
+        removePkValue: removeArgPkValue,
+        removePkValues: removeArgPkValues,
+        isMissingRecords: isArgMissingRecords,
+        setShouldFetch: setArgShouldFetch,
+        setFetchMode: setArgFetchMode,
+        fetchQuickRefs: fetchArgQuickRefs,
+        fetchOne: fetchArgOne,
+        fetchOneWithFkIfk: fetchArgOneWithFkIfk,
+        fetchAll: fetchArgAll,
+        fetchPaginated: fetchArgPaginated,
+
+    } = useEntityWithFetch("arg");
+
+    return {
+        argSelectors,
+        argActions,
+        argRecords,
+        argUnsavedRecords,
+        argSelectedRecordIds,
+        argIsLoading,
+        argIsError,
+        argQuickRefRecords,
+        addArgMatrxId,
+        addArgMatrxIds,
+        removeArgMatrxId,
+        removeArgMatrxIds,
+        addArgPkValue,
+        addArgPkValues,
+        removeArgPkValue,
+        removeArgPkValues,
+        isArgMissingRecords,
+        setArgShouldFetch,
+        setArgFetchMode,
+        fetchArgQuickRefs,
+        fetchArgOne,
+        fetchArgOneWithFkIfk,
+        fetchArgAll,
+        fetchArgPaginated,
+    };
+};

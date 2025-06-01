@@ -21,6 +21,7 @@ import { EntityFormType } from '@/app/entities/forms';
 
 export interface UnifiedLayoutHandlers {
     setIsExpanded?: (value: boolean) => void;
+    setIsFullScreen?: (value: boolean) => void;
     handleEntityChange?: (value: EntityKeys) => void;
     onCreateEntityClick?: () => void;
     handleRecordLoad?: (record: EntityData<EntityKeys>) => void;

@@ -63,6 +63,21 @@ import {
     ConversationData,
     WcInjuryData,
     WcReportData,
+    AiTrainingDataData,
+    AppletContainersData,
+    ComponentGroupsData,
+    CustomAppConfigsData,
+    CustomAppletConfigsData,
+    FieldComponentsData,
+    FullSpectrumPositionsData,
+    HtmlExtractionsData,
+    OrganizationInvitationsData,
+    OrganizationMembersData,
+    OrganizationsData,
+    PermissionsData,
+    SchemaTemplatesData,
+    ScrapeBaseConfigData,
+    
 } from "@/types";
 import { MatrxRecordId, QuickReferenceRecord } from "../types/stateTypes";
 import { EntitySelectors } from "../selectors";
@@ -3678,6 +3693,92 @@ export const useFullSpectrumPositionsWithFetch = (): UseFullSpectrumPositionsWit
         fetchFullSpectrumPositionsOneWithFkIfk,
         fetchFullSpectrumPositionsAll,
         fetchFullSpectrumPositionsPaginated,
+    };
+};
+
+
+
+type UseHtmlExtractionsWithFetchReturn = {
+    htmlExtractionsSelectors: EntitySelectors<"htmlExtractions">;
+    htmlExtractionsActions: EntityActions<"htmlExtractions">;
+    htmlExtractionsRecords: Record<MatrxRecordId, HtmlExtractionsData>;
+    htmlExtractionsUnsavedRecords: Record<MatrxRecordId, Partial<HtmlExtractionsData>>;
+    htmlExtractionsSelectedRecordIds: MatrxRecordId[];
+    htmlExtractionsIsLoading: boolean;
+    htmlExtractionsIsError: boolean;
+    htmlExtractionsQuickRefRecords: QuickReferenceRecord[];
+    addHtmlExtractionsMatrxId: (recordId: MatrxRecordId) => void;
+    addHtmlExtractionsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    removeHtmlExtractionsMatrxId: (recordId: MatrxRecordId) => void;
+    removeHtmlExtractionsMatrxIds: (recordIds: MatrxRecordId[]) => void;
+    addHtmlExtractionsPkValue: (pkValue: string) => void;
+    addHtmlExtractionsPkValues: (pkValues: Record<string, unknown>) => void;
+    removeHtmlExtractionsPkValue: (pkValue: string) => void;
+    removeHtmlExtractionsPkValues: (pkValues: Record<string, unknown>) => void;
+    isHtmlExtractionsMissingRecords: boolean;
+    setHtmlExtractionsShouldFetch: (shouldFetch: boolean) => void;
+    setHtmlExtractionsFetchMode: (fetchMode: FetchMode) => void;
+    fetchHtmlExtractionsQuickRefs: () => void;
+    fetchHtmlExtractionsOne: (recordId: MatrxRecordId) => void;
+    fetchHtmlExtractionsOneWithFkIfk: (recordId: MatrxRecordId) => void;
+    fetchHtmlExtractionsAll: () => void;
+    fetchHtmlExtractionsPaginated: (page: number, pageSize: number) => void;
+};
+
+export const useHtmlExtractionsWithFetch = (): UseHtmlExtractionsWithFetchReturn => {
+    const {
+        selectors: htmlExtractionsSelectors,
+        actions: htmlExtractionsActions,
+        allRecords: htmlExtractionsRecords,
+        unsavedRecords: htmlExtractionsUnsavedRecords,
+        selectedRecordIds: htmlExtractionsSelectedRecordIds,
+        isLoading: htmlExtractionsIsLoading,
+        isError: htmlExtractionsIsError,
+        quickRefRecords: htmlExtractionsQuickRefRecords,
+        addMatrxId: addHtmlExtractionsMatrxId,
+        addMatrxIds: addHtmlExtractionsMatrxIds,
+        removeMatrxId: removeHtmlExtractionsMatrxId,
+        removeMatrxIds: removeHtmlExtractionsMatrxIds,
+        addPkValue: addHtmlExtractionsPkValue,
+        addPkValues: addHtmlExtractionsPkValues,
+        removePkValue: removeHtmlExtractionsPkValue,
+        removePkValues: removeHtmlExtractionsPkValues,
+        isMissingRecords: isHtmlExtractionsMissingRecords,
+        setShouldFetch: setHtmlExtractionsShouldFetch,
+        setFetchMode: setHtmlExtractionsFetchMode,
+        fetchQuickRefs: fetchHtmlExtractionsQuickRefs,
+        fetchOne: fetchHtmlExtractionsOne,
+        fetchOneWithFkIfk: fetchHtmlExtractionsOneWithFkIfk,
+        fetchAll: fetchHtmlExtractionsAll,
+        fetchPaginated: fetchHtmlExtractionsPaginated,
+
+    } = useEntityWithFetch("htmlExtractions");
+
+    return {
+        htmlExtractionsSelectors,
+        htmlExtractionsActions,
+        htmlExtractionsRecords,
+        htmlExtractionsUnsavedRecords,
+        htmlExtractionsSelectedRecordIds,
+        htmlExtractionsIsLoading,
+        htmlExtractionsIsError,
+        htmlExtractionsQuickRefRecords,
+        addHtmlExtractionsMatrxId,
+        addHtmlExtractionsMatrxIds,
+        removeHtmlExtractionsMatrxId,
+        removeHtmlExtractionsMatrxIds,
+        addHtmlExtractionsPkValue,
+        addHtmlExtractionsPkValues,
+        removeHtmlExtractionsPkValue,
+        removeHtmlExtractionsPkValues,
+        isHtmlExtractionsMissingRecords,
+        setHtmlExtractionsShouldFetch,
+        setHtmlExtractionsFetchMode,
+        fetchHtmlExtractionsQuickRefs,
+        fetchHtmlExtractionsOne,
+        fetchHtmlExtractionsOneWithFkIfk,
+        fetchHtmlExtractionsAll,
+        fetchHtmlExtractionsPaginated,
     };
 };
 

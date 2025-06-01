@@ -77,5 +77,14 @@
         "workspaceRoot": null,
         "workspacePath": null,
         "id": "BeqmuxhsAISr3V9L"
+    },
+    {
+        "type": "Directory",
+        "name": "d:\\app_dev\\ai-matrx-admin\\lib\\redux",
+        "parent_id": null,
+        "fsPath": "d:\\app_dev\\ai-matrx-admin\\lib\\redux",
+        "workspaceRoot": null,
+        "workspacePath": null,
+        "id": "8lt69yZnIqcM5AQV"
     }
 ]

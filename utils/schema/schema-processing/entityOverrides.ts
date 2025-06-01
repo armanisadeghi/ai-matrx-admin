@@ -718,6 +718,23 @@ const fullSpectrumPositionsEntityOverrides: EntityOverrides<'fullSpectrumPositio
 
 
 
+const htmlExtractionsEntityOverrides: EntityOverrides<'htmlExtractions'> = {
+    schemaType: null,
+    entityName: null,
+    uniqueTableId: null,
+    uniqueEntityId: null,
+    primaryKey: null,
+    primaryKeyMetadata: null,
+    displayFieldMetadata: null,
+    defaultFetchStrategy: null,
+    componentProps: null,
+    entityNameFormats: null,
+    relationships: null,
+    entityFields: null
+};
+
+
+
 const messageEntityOverrides: EntityOverrides<'message'> = {
     schemaType: null,
     entityName: null,
@@ -1797,6 +1814,7 @@ export const ENTITY_OVERRIDES: Record<EntityKeys, EntityOverrides<EntityKeys>> =
     flashcardSetRelations: flashcardSetRelationsEntityOverrides,
     flashcardSets: flashcardSetsEntityOverrides,
     fullSpectrumPositions: fullSpectrumPositionsEntityOverrides,
+    htmlExtractions: htmlExtractionsEntityOverrides,
     message: messageEntityOverrides,
     messageBroker: messageBrokerEntityOverrides,
     messageTemplate: messageTemplateEntityOverrides,

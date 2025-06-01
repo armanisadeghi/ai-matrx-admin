@@ -127,6 +127,7 @@ export type AutomationTableName =
     | 'flashcardSetRelations'
     | 'flashcardSets'
     | 'fullSpectrumPositions'
+    | 'htmlExtractions'
     | 'message'
     | 'messageBroker'
     | 'messageTemplate'
@@ -587,6 +588,15 @@ export type FullSpectrumPositionsProcessed = Expand<ProcessedEntityData<"fullSpe
 export type FullSpectrumPositionsData = Expand<EntityDataMixed<"fullSpectrumPositions">>;
 export type FullSpectrumPositionsState = EntityStateType<"fullSpectrumPositions">;
 export type FullSpectrumPositionsRecordMap = Record<"fullSpectrumPositionsRecordId", FullSpectrumPositionsData>;
+
+export type HtmlExtractionsType = AutomationEntity<"htmlExtractions">;
+export type HtmlExtractionsDataRequired = Expand<EntityData<"htmlExtractions">>;
+export type HtmlExtractionsDataOptional = Expand<EntityDataOptional<"htmlExtractions">>;
+export type HtmlExtractionsRecordWithKey = Expand<EntityDataWithKey<"htmlExtractions">>;
+export type HtmlExtractionsProcessed = Expand<ProcessedEntityData<"htmlExtractions">>;
+export type HtmlExtractionsData = Expand<EntityDataMixed<"htmlExtractions">>;
+export type HtmlExtractionsState = EntityStateType<"htmlExtractions">;
+export type HtmlExtractionsRecordMap = Record<"htmlExtractionsRecordId", HtmlExtractionsData>;
 
 export type MessageType = AutomationEntity<"message">;
 export type MessageDataRequired = Expand<EntityData<"message">>;

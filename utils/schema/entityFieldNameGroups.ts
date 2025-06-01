@@ -223,6 +223,11 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["createdAt", "updatedAt", "title", "description", "alternateTitles", "qualifications", "sizzleQuestions", "redFlags", "additionalDetails"]
 },
+  htmlExtractions: {
+  nativeFields: ["id", "url", "title", "htmlContent", "metaDescription", "metaKeywords", "contentLength", "extractedAt", "userAgent", "createdAt", "userId"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["url", "title", "htmlContent", "metaDescription", "metaKeywords", "contentLength", "extractedAt", "userAgent", "createdAt", "userId"]
+},
   message: {
   nativeFields: ["id", "conversationId", "role", "content", "type", "displayOrder", "systemOrder", "createdAt", "metadata", "userId", "isPublic"],
   primaryKeyFields: ["id"],

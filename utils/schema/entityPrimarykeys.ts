@@ -168,6 +168,10 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  htmlExtractions: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   message: {
     frontendFields: ['id'],
     databaseColumns: ['id'],

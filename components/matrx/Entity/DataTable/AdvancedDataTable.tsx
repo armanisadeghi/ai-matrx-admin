@@ -14,7 +14,7 @@ import {
 } from "@tanstack/react-table";
 
 import { ChevronsUpDown, Settings2, SlidersHorizontal, Group, ChevronFirst, ChevronLast } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ButtonMine";
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,

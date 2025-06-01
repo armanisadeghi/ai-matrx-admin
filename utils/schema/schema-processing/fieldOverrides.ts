@@ -299,6 +299,8 @@ const flashcardSetsFieldOverrides: AllFieldOverrides = {};
 
 const fullSpectrumPositionsFieldOverrides: AllFieldOverrides = {};
 
+const htmlExtractionsFieldOverrides: AllFieldOverrides = {};
+
 const messageFieldOverrides: AllFieldOverrides = {};
 
 const messageBrokerFieldOverrides: AllFieldOverrides = {};
@@ -502,6 +504,7 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     flashcardSetRelations: flashcardSetRelationsFieldOverrides,
     flashcardSets: flashcardSetsFieldOverrides,
     fullSpectrumPositions: fullSpectrumPositionsFieldOverrides,
+    htmlExtractions: htmlExtractionsFieldOverrides,
     message: messageFieldOverrides,
     messageBroker: messageBrokerFieldOverrides,
     messageTemplate: messageTemplateFieldOverrides,

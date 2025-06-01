@@ -537,6 +537,20 @@ export type FullSpectrumPositions = {
     additionalDetails?: string;
 }
 
+export type HtmlExtractions = {
+    id: number;
+    url: string;
+    title?: string;
+    htmlContent: string;
+    metaDescription?: string;
+    metaKeywords?: string;
+    contentLength?: number;
+    extractedAt?: Date;
+    userAgent?: string;
+    createdAt?: Date;
+    userId?: string;
+}
+
 export type Message = {
     id: string;
     conversationId: string;
