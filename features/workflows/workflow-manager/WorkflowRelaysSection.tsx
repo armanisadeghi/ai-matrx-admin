@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
-import { WorkflowRelays, SimpleRelay } from "../../../types/customWorkflowTypes";
-import { BrokerHighlightContext } from "./WorkflowDetailContent";
+import { WorkflowRelays, SimpleRelay } from "@/types/customWorkflowTypes";
+import { BrokerHighlightContext } from "@/features/workflows/workflow-manager/brokers/BrokerHighlightContext";
+import { Link, ChevronDown, ArrowLeftRight, Cable, Target, ArrowRight } from "lucide-react";
 
 // Clickable broker component that handles highlighting
 function ClickableBroker({ brokerId, className = "" }: { brokerId: string; className?: string }) {
@@ -38,34 +39,46 @@ export function WorkflowRelaysSection({ workflowRelays }: WorkflowRelaysSectionP
     };
 
     return (
-        <div className="border-2 border-emerald-200 dark:border-emerald-700 rounded-lg bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 hover:shadow-md transition-all duration-200">
+        <div className="border border-emerald-200 dark:border-emerald-700 rounded-xl bg-gradient-to-br from-white via-emerald-50 to-teal-50 dark:from-slate-900 dark:via-emerald-900/20 dark:to-teal-950/20 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
             {/* Clickable Header */}
             <div 
-                className="p-4 cursor-pointer select-none"
+                className="p-6 cursor-pointer select-none hover:bg-gradient-to-br hover:from-emerald-50/50 hover:to-teal-50/50 dark:hover:from-emerald-800/30 dark:hover:to-teal-950/30 transition-all duration-200"
                 onClick={toggleExpanded}
             >
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-emerald-500 dark:bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                            🔗
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 text-white rounded-xl flex items-center justify-center shadow-sm">
+                                <Link className="w-6 h-6" />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-teal-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center">
+                                <Cable className="w-2 h-2 text-white" />
+                            </div>
                         </div>
                         <div>
-                            <h3 className="text-xl font-bold text-emerald-900 dark:text-emerald-100">
+                            <h3 className="text-xl font-bold text-emerald-900 dark:text-emerald-100 mb-1">
                                 Workflow Relays
                             </h3>
-                            <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
-                                {totalRelays} {totalRelays === 1 ? 'relay' : 'relays'} configured
-                            </p>
+                            <div className="flex items-center gap-3 text-sm text-emerald-700 dark:text-emerald-300">
+                                <div className="flex items-center gap-1">
+                                    <Target className="w-4 h-4" />
+                                    <span>{totalRelays} {totalRelays === 1 ? 'relay' : 'relays'}</span>
+                                </div>
+                                {totalRelays > 0 && (
+                                    <>
+                                        <div className="w-1 h-1 bg-emerald-400 rounded-full"></div>
+                                        <span>configured</span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
+                    <div className="flex items-center gap-3">
+                        <div className="px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-700">
                             {totalRelays}
                         </div>
-                        <div className={`transition-transform duration-200 text-emerald-600 dark:text-emerald-400 ${isExpanded ? 'rotate-180' : ''}`}>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                        <div className={`transition-transform duration-300 text-emerald-500 dark:text-emerald-400 ${isExpanded ? 'rotate-180' : ''}`}>
+                            <ChevronDown className="w-5 h-5" />
                         </div>
                     </div>
                 </div>
@@ -73,63 +86,72 @@ export function WorkflowRelaysSection({ workflowRelays }: WorkflowRelaysSectionP
 
             {/* Expandable Content */}
             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                isExpanded ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+                isExpanded ? 'opacity-100' : 'max-h-0 opacity-0'
             }`}>
-                <div className="px-4 pb-4">
-                    <div className="space-y-4">
-                        {/* Simple Relays - Always show */}
+                <div className="px-6 pb-6">
+                    <div className="space-y-6">
+                        {/* Simple Relays */}
                         <div>
-                            <h4 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200 mb-3">
-                                Simple Relays ({simpleRelays.length})
-                            </h4>
+                            <div className="flex items-center gap-2 mb-4">
+                                <ArrowRight className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                <h4 className="text-lg font-semibold text-emerald-800 dark:text-emerald-200">
+                                    Simple Relays ({simpleRelays.length})
+                                </h4>
+                            </div>
                             {simpleRelays.length > 0 ? (
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {simpleRelays.map((relay, index) => (
                                         <SimpleRelayCard key={index} relay={relay} index={index} />
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-600">
-                                    <div className="text-lg mb-1">🔗</div>
-                                    <p className="text-xs">No simple relays configured</p>
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl border border-emerald-200/50 dark:border-emerald-600/50">
+                                    <ArrowRight className="w-8 h-8 mx-auto mb-3 text-emerald-300 dark:text-emerald-600" />
+                                    <p className="text-sm font-medium">No simple relays configured</p>
                                 </div>
                             )}
                         </div>
 
-                        {/* Bidirectional Relays - Always show */}
+                        {/* Bidirectional Relays */}
                         <div>
-                            <h4 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200 mb-3">
-                                Bidirectional Relays ({bidirectionalRelays.length})
-                            </h4>
+                            <div className="flex items-center gap-2 mb-4">
+                                <ArrowLeftRight className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                <h4 className="text-lg font-semibold text-emerald-800 dark:text-emerald-200">
+                                    Bidirectional Relays ({bidirectionalRelays.length})
+                                </h4>
+                            </div>
                             {bidirectionalRelays.length > 0 ? (
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {bidirectionalRelays.map((relay, index) => (
                                         <BidirectionalRelayCard key={index} relay={relay} index={index} />
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-600">
-                                    <div className="text-lg mb-1">↔️</div>
-                                    <p className="text-xs">No bidirectional relays configured</p>
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl border border-emerald-200/50 dark:border-emerald-600/50">
+                                    <ArrowLeftRight className="w-8 h-8 mx-auto mb-3 text-emerald-300 dark:text-emerald-600" />
+                                    <p className="text-sm font-medium">No bidirectional relays configured</p>
                                 </div>
                             )}
                         </div>
 
-                        {/* Relay Chains - Always show */}
+                        {/* Relay Chains */}
                         <div>
-                            <h4 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200 mb-3">
-                                Relay Chains ({relayChains.length})
-                            </h4>
+                            <div className="flex items-center gap-2 mb-4">
+                                <Cable className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                <h4 className="text-lg font-semibold text-emerald-800 dark:text-emerald-200">
+                                    Relay Chains ({relayChains.length})
+                                </h4>
+                            </div>
                             {relayChains.length > 0 ? (
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {relayChains.map((chain, index) => (
                                         <RelayChainCard key={index} chain={chain} index={index} />
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-600">
-                                    <div className="text-lg mb-1">⛓️</div>
-                                    <p className="text-xs">No relay chains configured</p>
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl border border-emerald-200/50 dark:border-emerald-600/50">
+                                    <Cable className="w-8 h-8 mx-auto mb-3 text-emerald-300 dark:text-emerald-600" />
+                                    <p className="text-sm font-medium">No relay chains configured</p>
                                 </div>
                             )}
                         </div>
@@ -152,33 +174,42 @@ function SimpleRelayCard({ relay, index }: SimpleRelayCardProps) {
     const isHighlighted = isSourceHighlighted || isAnyTargetHighlighted;
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-lg p-3 border border-orange-200 dark:border-orange-700 transition-all duration-200 ${
-            isHighlighted ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-600' : ''
+        <div className={`bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-orange-200/50 dark:border-orange-700/50 shadow-sm transition-all duration-200 ${
+            isHighlighted ? 'bg-yellow-100/90 dark:bg-yellow-900/40 border-yellow-300 dark:border-yellow-600' : ''
         }`}>
-            <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full flex items-center justify-center text-xs font-medium">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-500 dark:from-orange-500 dark:to-orange-600 text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-sm">
                     {index + 1}
                 </div>
-                <span className="text-sm font-medium text-orange-800 dark:text-orange-300">
-                    Simple Relay
-                </span>
+                <div className="flex items-center gap-2">
+                    <ArrowRight className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    <span className="text-base font-semibold text-orange-800 dark:text-orange-300">
+                        Simple Relay
+                    </span>
+                </div>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
                 <div>
-                    <span className="text-sm font-semibold text-orange-700 dark:text-orange-400">Source:</span>
-                    <div className="text-sm font-mono text-orange-900 dark:text-orange-100 mt-1 bg-orange-50 dark:bg-orange-900/30 rounded p-2 border border-orange-200 dark:border-orange-600">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                        <span className="text-sm font-semibold text-orange-700 dark:text-orange-400">Source</span>
+                    </div>
+                    <div className="text-sm font-mono bg-orange-50/80 dark:bg-orange-900/30 backdrop-blur-sm rounded-lg p-3 border border-orange-200/50 dark:border-orange-600/50">
                         <ClickableBroker brokerId={relay.source} />
                     </div>
                 </div>
                 
                 <div>
-                    <span className="text-sm font-semibold text-orange-700 dark:text-orange-400">
-                        Targets ({relay.targets.length}):
-                    </span>
-                    <div className="mt-2 space-y-2">
+                    <div className="flex items-center gap-2 mb-2">
+                        <ArrowRight className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                        <span className="text-sm font-semibold text-orange-700 dark:text-orange-400">
+                            Targets ({relay.targets.length})
+                        </span>
+                    </div>
+                    <div className="space-y-2">
                         {relay.targets.map((target, idx) => (
-                            <div key={idx} className="text-sm font-mono text-orange-900 dark:text-orange-100 bg-orange-50 dark:bg-orange-900/30 rounded p-2 border border-orange-200 dark:border-orange-600">
+                            <div key={idx} className="text-sm font-mono bg-orange-50/80 dark:bg-orange-900/30 backdrop-blur-sm rounded-lg p-3 border border-orange-200/50 dark:border-orange-600/50">
                                 <ClickableBroker brokerId={target} />
                             </div>
                         ))}
@@ -204,38 +235,51 @@ function BidirectionalRelayCard({ relay, index }: BidirectionalRelayCardProps) {
     const isHighlighted = isBrokerAHighlighted || isBrokerBHighlighted;
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-700 transition-all duration-200 ${
-            isHighlighted ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-600' : ''
+        <div className={`bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-blue-200/50 dark:border-blue-700/50 shadow-sm transition-all duration-200 ${
+            isHighlighted ? 'bg-yellow-100/90 dark:bg-yellow-900/40 border-yellow-300 dark:border-yellow-600' : ''
         }`}>
-            <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full flex items-center justify-center text-xs font-medium">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-500 dark:from-blue-500 dark:to-blue-600 text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-sm">
                     {index + 1}
                 </div>
-                <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
-                    Bidirectional Relay
-                </span>
+                <div className="flex items-center gap-2">
+                    <ArrowLeftRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <span className="text-base font-semibold text-blue-800 dark:text-blue-300">
+                        Bidirectional Relay
+                    </span>
+                </div>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
                 <div>
-                    <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">Broker A:</span>
-                    <div className="text-sm font-mono text-blue-900 dark:text-blue-100 mt-1 bg-blue-50 dark:bg-blue-900/30 rounded p-2 border border-blue-200 dark:border-blue-600">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">Broker A</span>
+                    </div>
+                    <div className="text-sm font-mono bg-blue-50/80 dark:bg-blue-900/30 backdrop-blur-sm rounded-lg p-3 border border-blue-200/50 dark:border-blue-600/50">
                         <ClickableBroker brokerId={relay.broker_a} />
                     </div>
                 </div>
                 
                 <div>
-                    <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">Broker B:</span>
-                    <div className="text-sm font-mono text-blue-900 dark:text-blue-100 mt-1 bg-blue-50 dark:bg-blue-900/30 rounded p-2 border border-blue-200 dark:border-blue-600">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">Broker B</span>
+                    </div>
+                    <div className="text-sm font-mono bg-blue-50/80 dark:bg-blue-900/30 backdrop-blur-sm rounded-lg p-3 border border-blue-200/50 dark:border-blue-600/50">
                         <ClickableBroker brokerId={relay.broker_b} />
                     </div>
                 </div>
             </div>
             
             {/* Visual Flow */}
-            <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
-                <div className="text-sm text-blue-600 dark:text-blue-400 font-mono text-center">
-                    <ClickableBroker brokerId={relay.broker_a} /> ↔ <ClickableBroker brokerId={relay.broker_b} />
+            <div className="mt-4 pt-4 border-t border-blue-200/50 dark:border-blue-700/50">
+                <div className="text-sm text-blue-600 dark:text-blue-400 font-mono text-center bg-blue-50/50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200/30 dark:border-blue-600/30">
+                    <div className="flex items-center justify-center gap-3">
+                        <ClickableBroker brokerId={relay.broker_a} />
+                        <ArrowLeftRight className="w-4 h-4" />
+                        <ClickableBroker brokerId={relay.broker_b} />
+                    </div>
                 </div>
             </div>
         </div>
@@ -253,27 +297,37 @@ function RelayChainCard({ chain, index }: RelayChainCardProps) {
     const isHighlighted = chainBrokers.some(broker => highlightedBroker === broker);
 
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-lg p-3 border border-purple-200 dark:border-purple-700 transition-all duration-200 ${
-            isHighlighted ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-600' : ''
+        <div className={`bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-200/50 dark:border-purple-700/50 shadow-sm transition-all duration-200 ${
+            isHighlighted ? 'bg-yellow-100/90 dark:bg-yellow-900/40 border-yellow-300 dark:border-yellow-600' : ''
         }`}>
-            <div className="flex items-center gap-2 mb-3">
-                <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded-full flex items-center justify-center text-xs font-medium">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-500 dark:from-purple-500 dark:to-purple-600 text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-sm">
                     {index + 1}
                 </div>
-                <span className="text-sm font-medium text-purple-800 dark:text-purple-300">
-                    Relay Chain ({chain.length} steps)
-                </span>
+                <div className="flex items-center gap-2">
+                    <Cable className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span className="text-base font-semibold text-purple-800 dark:text-purple-300">
+                        Relay Chain ({chain.length} steps)
+                    </span>
+                </div>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-3">
                 {chain.map((step, idx) => (
-                    <div key={idx} className="text-sm font-mono text-purple-900 dark:text-purple-100 bg-purple-50 dark:bg-purple-900/30 rounded p-2 border border-purple-200 dark:border-purple-600">
-                        <span className="text-xs text-purple-600 dark:text-purple-400">Step {idx + 1}: </span>
-                        {typeof step === 'string' ? (
-                            <ClickableBroker brokerId={step} />
-                        ) : (
-                            <span>{JSON.stringify(step)}</span>
-                        )}
+                    <div key={idx} className="bg-purple-50/80 dark:bg-purple-900/30 backdrop-blur-sm rounded-lg p-3 border border-purple-200/50 dark:border-purple-600/50">
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-5 h-5 bg-purple-200 dark:bg-purple-700 text-purple-800 dark:text-purple-200 rounded-full flex items-center justify-center text-xs font-bold">
+                                {idx + 1}
+                            </div>
+                            <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Step {idx + 1}</span>
+                        </div>
+                        <div className="text-sm font-mono text-purple-900 dark:text-purple-100 ml-7">
+                            {typeof step === 'string' ? (
+                                <ClickableBroker brokerId={step} />
+                            ) : (
+                                <span>{JSON.stringify(step)}</span>
+                            )}
+                        </div>
                     </div>
                 ))}
             </div>

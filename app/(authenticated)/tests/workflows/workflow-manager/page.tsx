@@ -2,40 +2,32 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useWorkflowWithFetch } from "@/features/workflows/hooks/useWorkflowData";
+import { useAppSelector } from "@/lib/redux/hooks";
+import { createWorkflowSelectors } from "@/lib/redux/entity/custom-selectors/workflowSelectors";
 import { useWorkflowManager } from "@/features/workflows/hooks/useWorkflowManager";
 import { WorkflowData } from "@/types/customWorkflowTypes";
 
 export default function WorkflowManagerPage() {
-    // Legacy hook for backward compatibility
-    const {
-        workflowRecords,
-        workflowIsLoading,
-        workflowIsError,
-    } = useWorkflowWithFetch();
-
-    // NEW: Enhanced workflow manager
-    const {
-        allWorkflows: enhancedWorkflows,
-        isLoading: enhancedIsLoading,
-        hasError: enhancedHasError,
-        workflowManagementActions,
-    } = useWorkflowManager();
-
-    // Use enhanced workflows if available, fallback to legacy
-    const workflows = enhancedWorkflows && enhancedWorkflows.length > 0 
-        ? enhancedWorkflows 
-        : Object.values(workflowRecords);
+    // Use only selectors - no data fetching hooks
+    const workflowSelectors = createWorkflowSelectors();
+    const allWorkflows = useAppSelector(workflowSelectors.workflowsArray);
+    const workflowEntityState = useAppSelector(workflowSelectors.selectWorkflowEntity);
     
-    const isLoading = enhancedIsLoading || workflowIsLoading;
-    const isError = enhancedHasError || workflowIsError;
+    // Use workflow manager only for actions, not data fetching
+    const { workflowManagementActions } = useWorkflowManager();
 
-    // Filter out deleted workflows and convert to array
+    // Get loading and error state from Redux
+    const isLoading = workflowEntityState?.fetchState?.isLoading || false;
+    const isError = workflowEntityState?.fetchState?.isError || false;
+
+    // Filter out deleted workflows
     const activeWorkflows = useMemo(() => {
-        return workflows.filter((workflow: WorkflowData) => 
+        return allWorkflows.filter((workflow: WorkflowData) => 
             !workflow.isDeleted
         );
-    }, [workflows]);
+    }, [allWorkflows]);
+
+    console.log('WorkflowManagerPage render - workflows count:', activeWorkflows.length, 'isLoading:', isLoading);
 
     if (isError) {
         return (
@@ -69,12 +61,9 @@ export default function WorkflowManagerPage() {
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                     Workflows ({activeWorkflows.length})
                 </h1>
-                {/* Enhanced workflow indicator */}
-                {enhancedWorkflows && enhancedWorkflows.length > 0 && (
-                    <div className="text-sm text-blue-600 dark:text-blue-400">
-                        Enhanced workflow management active
-                    </div>
-                )}
+                <div className="text-sm text-blue-600 dark:text-blue-400">
+                    Enhanced workflow management
+                </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                 {activeWorkflows.map((workflow) => (

@@ -8,6 +8,7 @@ import SocketAccordionResponse from "@/components/socket/response/SocketAccordio
 import AccordionWrapper from "@/components/matrx/matrx-collapsible/AccordionWrapper";
 import { useAppSelector } from "@/lib/redux";
 import { selectTaskById } from "@/lib/redux/socket-io";
+import TaskDebugDisplay from "@/components/socket-io/form-builder/TaskDebugDisplay";
 
 const AdminFormDemo = ({ debugMode }: { debugMode: boolean }) => {
     const [taskId, setTaskId] = useState<string>("");
@@ -38,6 +39,19 @@ const AdminFormDemo = ({ debugMode }: { debugMode: boolean }) => {
                 </div>
                 <div className="w-full overflow-y-auto px-2 h-full space-y-2 scrollbar-none" style={{ maxHeight: `${height}px` }}>
                     <SocketAccordionResponse taskId={taskId} />
+                    
+                    {/* Debug Panel - Only show when debug mode is enabled */}
+                    {debugMode && taskId && (
+                        <AccordionWrapper
+                            title="Real-time Task Debug Info"
+                            value="debug-info"
+                            defaultOpen={false}
+                        >
+                            <div className="pt-4">
+                                <TaskDebugDisplay taskId={taskId} />
+                            </div>
+                        </AccordionWrapper>
+                    )}
                 </div>
             </div>
         </div>

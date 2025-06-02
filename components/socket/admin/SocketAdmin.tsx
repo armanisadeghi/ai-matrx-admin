@@ -11,6 +11,7 @@ import SocketStreamMonitor from "../streaming/SocketStreamMonitor";
 import { ResponsiveSocketHeader } from "@/components/socket-io/headers/ResponsiveSocketHeader";
 import { useAppSelector } from "@/lib/redux";
 import { selectAllTasks, selectTaskById } from "@/lib/redux/socket-io";
+import TaskDebugDisplay from "@/components/socket-io/form-builder/TaskDebugDisplay";
 
 interface SocketAdminProps {
     className?: string;
@@ -19,6 +20,7 @@ interface SocketAdminProps {
 export const SocketAdmin = ({ className }: SocketAdminProps) => {
     const [testMode, setTestMode] = useState(false);
     const [taskId, setTaskId] = useState<string>("");
+    const [debugMode, setDebugMode] = useState(true); // Enable debug mode by default
 
     const tasks = useAppSelector(selectAllTasks);
     const taskState = useAppSelector((state) => selectTaskById(state, taskId));
@@ -32,6 +34,8 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
         setTaskId(taskId);
     };
 
+    console.log("Socket Admin Debug Mode:", debugMode);
+
     return (
         <div className={cn("w-full h-full flex flex-col bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded-2xl", className)}>
             {/* Sticky header outside of card content */}
@@ -39,7 +43,7 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                 <ResponsiveSocketHeader 
                     onTestModeChange={handleTestModeChange} 
                     onTaskCreate={handleTaskCreate} 
-                    debugMode={true} 
+                    debugMode={debugMode} 
                 />
             </div>
             
@@ -93,6 +97,21 @@ export const SocketAdmin = ({ className }: SocketAdminProps) => {
                 <div className="px-2 mb-4">
                     <SocketAccordionResponse taskId={taskId} />
                 </div>
+                
+                {/* Debug Panel - Only show when debug mode is enabled */}
+                {debugMode && taskId && (
+                    <div className="px-2 mb-4">
+                        <AccordionWrapper
+                            title="Real-time Task Debug Info"
+                            value="debug-info"
+                            defaultOpen={false}
+                        >
+                            <div className="pt-4">
+                                <TaskDebugDisplay taskId={taskId} />
+                            </div>
+                        </AccordionWrapper>
+                    </div>
+                )}
             </div>
         </div>
     );

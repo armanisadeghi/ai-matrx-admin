@@ -17,6 +17,87 @@ export interface Schema {
     [key: string]: SchemaField;
 }
 
+// Import the flexible JSON utility at the top after the interfaces
+import { flexibleJsonParse } from "@/lib/utils/json-utils";
+
+export const STEP_DEFINITION: Schema = {
+    function_type: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "select",
+        COMPONENT_PROPS: {"options": [{"value": "registered_function", "label": "Registered Function"}, {"value": "workflow_recipe_executor", "label": "Recipe Executor"}]},
+        DESCRIPTION: "The type of function to execute - determines which system to use.",
+        ICON_NAME: "Settings",
+        TEST_VALUE: "workflow_recipe_executor",
+    },
+    function_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "The ID of the function to execute.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "recipe_runner",
+    },
+    step_name: {
+        REQUIRED: false,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Name for this step (auto-generated if not provided).",
+        ICON_NAME: "Tag",
+        TEST_VALUE: "test_step",
+    },
+    status: {
+        REQUIRED: false,
+        DEFAULT: "pending",
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "select",
+        COMPONENT_PROPS: {"options": [{"value": "pending", "label": "Pending"}, {"value": "ready", "label": "Ready"}, {"value": "initialized", "label": "Initialized"}]},
+        DESCRIPTION: "Initial status for the step.",
+        ICON_NAME: "Clock",
+        TEST_VALUE: "pending",
+    },
+    override_data: {
+        REQUIRED: false,
+        DEFAULT: {},
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "JsonEditor",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Override data for arguments, return brokers, etc.",
+        ICON_NAME: "Settings",
+    },
+    additional_dependencies: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "ArrayStringInput",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Additional broker dependencies for this step.",
+        ICON_NAME: "Link",
+    },
+};
 
 export const USER_INPUT_DEFINITION: Schema = {
     broker_id: {
@@ -352,6 +433,80 @@ export const CHAT_CONFIG_DEFINITION: Schema = {
     },
 };
 
+export const GET_PENDING_FUNCTIONS: Schema = {
+    instance_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the workflow instance ID to get pending functions for.",
+        ICON_NAME: "Hash",
+        TEST_VALUE: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    },
+};
+
+export const ACTIVATE_PENDING_FUNCTION: Schema = {
+    instance_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the workflow instance ID.",
+        ICON_NAME: "Hash",
+        TEST_VALUE: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    },
+    function_instance_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the function instance ID to manage.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "func-12345678",
+    },
+};
+
+export const SET_FUNCTION_PENDING: Schema = {
+    instance_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the workflow instance ID.",
+        ICON_NAME: "Hash",
+        TEST_VALUE: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    },
+    function_instance_id: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "input",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Enter the function instance ID to manage.",
+        ICON_NAME: "Key",
+        TEST_VALUE: "func-12345678",
+    },
+};
+
 export const CLEANUP_WORKFLOW: Schema = {
     instance_id: {
         REQUIRED: true,
@@ -432,6 +587,60 @@ export const GET_WORKFLOW_STATUS: Schema = {
     },
 };
 
+export const EXECUTE_STEP_QUICK: Schema = {
+    step_definition: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: STEP_DEFINITION,
+        COMPONENT: "relatedObject",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "The step definition to execute quickly.",
+        ICON_NAME: "Zap",
+    },
+    user_inputs: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: USER_INPUT_DEFINITION,
+        COMPONENT: "relatedArrayObject",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "User input values for broker-mapped arguments (optional).",
+        ICON_NAME: "User",
+    },
+};
+
+export const EXECUTE_SINGLE_STEP: Schema = {
+    step_definition: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "object",
+        CONVERSION: null,
+        REFERENCE: STEP_DEFINITION,
+        COMPONENT: "relatedObject",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "The step definition to execute as a single step.",
+        ICON_NAME: "Play",
+    },
+    user_inputs: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: USER_INPUT_DEFINITION,
+        COMPONENT: "relatedArrayObject",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "User input values for broker-mapped arguments (optional).",
+        ICON_NAME: "User",
+    },
+};
+
 export const START_WORKFLOW_BY_ID: Schema = {
     workflow_id: {
         REQUIRED: true,
@@ -444,7 +653,7 @@ export const START_WORKFLOW_BY_ID: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter the ID of the workflow to start.",
         ICON_NAME: "Key",
-        TEST_VALUE: "unkown-workflow-uuid",
+        TEST_VALUE: "unknown-workflow-uuid",
     },
     user_inputs: {
         REQUIRED: false,
@@ -3471,11 +3680,16 @@ export const SERVICE_TASKS = {
     workflow_service: {
         start_workflow_with_structure: START_WORKFLOW_WITH_STRUCTURE,
         start_workflow_by_id: START_WORKFLOW_BY_ID,
+        execute_single_step: EXECUTE_SINGLE_STEP,
+        execute_step_quick: EXECUTE_STEP_QUICK,
         get_workflow_status: GET_WORKFLOW_STATUS,
         ping_workflow: PING_WORKFLOW,
         pause_workflow: PAUSE_WORKFLOW,
         resume_workflow: RESUME_WORKFLOW,
         cleanup_workflow: CLEANUP_WORKFLOW,
+        set_function_pending: SET_FUNCTION_PENDING,
+        activate_pending_function: ACTIVATE_PENDING_FUNCTION,
+        get_pending_functions: GET_PENDING_FUNCTIONS,
     },
 } as const;
 
@@ -3609,8 +3823,10 @@ export const getFieldDefinition = (taskName: string, fieldPath: string, traverse
         return undefined;
     }
 
-    // Split the field path into parts (e.g., "broker_values.name" -> ["broker_values", "name"])
-    const pathParts = fieldPath.split(".");
+    // Handle array notation in paths (e.g., "user_inputs[0].broker_id")
+    // First, extract the base field name and any nested parts
+    const normalizedPath = fieldPath.replace(/\[\d+\]/g, ''); // Remove array indices like [0]
+    const pathParts = normalizedPath.split(".").filter(part => part !== ''); // Split and filter empty parts
 
     // If not traversing nested fields, return the root field directly
     if (!traverseNested || pathParts.length === 1) {
@@ -3779,67 +3995,70 @@ export const isValidField = (taskName: string, fieldPath: string, value: any, tr
       return { isValid: false, errorMessage: `Field definition not found for ${fieldPath}` };
     }
 
-    const isEmpty = value === null || value === undefined;
+    const isEmpty = value === null || value === undefined || value === "";
 
     if (!fieldDefinition.REQUIRED && isEmpty) {
-      console.log(`Field is not required and empty, returning true`);
       return { isValid: true, errorMessage: "" };
     }
 
     if (fieldDefinition.REQUIRED && isEmpty) {
-      console.log(`Field is required but empty, returning false`);
       return { isValid: false, errorMessage: `${fieldPath} is required` };
     }
 
     const expectedType = fieldDefinition.DATA_TYPE;
-    console.log(`Expected data type: ${expectedType}`);
     if (!isEmpty) {
-      console.log(`Validating data type for value:`, value);
       switch (expectedType) {
         case "string":
           if (typeof value !== "string") {
-            console.log(`Type mismatch: expected string, got ${typeof value}`);
-            return { isValid: false, errorMessage: `Expected a string for ${fieldPath}, got ${typeof value}` };
+            // Allow conversion from other types to string for components that need it
           }
           break;
         case "number":
         case "integer": // Add integer type
-          if (typeof value !== "number" || (expectedType === "integer" && !Number.isInteger(value))) {
-            console.log(`Type mismatch: expected ${expectedType}, got ${typeof value}`);
+          const numValue = typeof value === "string" ? parseFloat(value) : value;
+          if (typeof numValue !== "number" || isNaN(numValue) || (expectedType === "integer" && !Number.isInteger(numValue))) {
             return { isValid: false, errorMessage: `Expected an ${expectedType} for ${fieldPath}, got ${typeof value}` };
           }
           break;
         case "boolean":
           if (typeof value !== "boolean") {
-            console.log(`Type mismatch: expected boolean, got ${typeof value}`);
+            // Allow string representations of booleans
+            if (typeof value === "string" && (value === "true" || value === "false")) {
+              break;
+            }
             return { isValid: false, errorMessage: `Expected a boolean for ${fieldPath}, got ${typeof value}` };
           }
           break;
         case "array":
           if (!Array.isArray(value)) {
-            console.log(`Type mismatch: expected array, got ${typeof value}`);
             return { isValid: false, errorMessage: `Expected an array for ${fieldPath}, got ${typeof value}` };
           }
           break;
         case "object":
-          if (typeof value !== "object" || value === null || Array.isArray(value)) {
-            console.log(`Type mismatch: expected object, got ${typeof value}`);
-            return { isValid: false, errorMessage: `Expected an object for ${fieldPath}, got ${typeof value}` };
+          // Handle both actual objects and valid JSON strings using flexible parsing
+          let objectValue = value;
+          if (typeof value === "string") {
+            const result = flexibleJsonParse(value);
+            if (result.success) {
+              objectValue = result.data;
+            } else {
+              return { isValid: false, errorMessage: `Expected a valid JSON object for ${fieldPath}, got invalid JSON string: ${result.error}` };
+            }
+          }
+          
+          if (typeof objectValue !== "object" || objectValue === null || Array.isArray(objectValue)) {
+            return { isValid: false, errorMessage: `Expected an object for ${fieldPath}, got ${typeof objectValue}` };
           }
           break;
         default:
-          console.log(`Unknown data type: ${expectedType}`);
           return { isValid: false, errorMessage: `Unknown data type ${expectedType} for ${fieldPath}` };
       }
-      console.log(`Data type validation passed`);
     }
 
     if (!isEmpty && fieldDefinition.VALIDATION) {
-      console.log(`Running validation function: ${fieldDefinition.VALIDATION}`);
       const validationFn = validationFunctions[fieldDefinition.VALIDATION];
       if (typeof validationFn === "function") {
         const validationResult = validationFn(value);
-        console.log(`Validation function result: ${validationResult}`);
         if (!validationResult) {
           return { isValid: false, errorMessage: `Validation failed for ${fieldPath}: ${getValidationErrorMessage(fieldDefinition.VALIDATION, value)}` };
         }

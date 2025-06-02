@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { WorkflowData } from "../../../types/customWorkflowTypes";
+import { WorkflowData } from "@/types/customWorkflowTypes";
+import { Database, ChevronDown, Copy, BarChart3, FileText, HardDrive } from "lucide-react";
 
 interface RawDataSectionProps {
     workflow: WorkflowData;
@@ -19,34 +20,45 @@ export function RawDataSection({ workflow }: RawDataSectionProps) {
     const sizeInKB = (charCount / 1024).toFixed(1);
 
     return (
-        <div className="border-2 border-slate-200 dark:border-slate-700 rounded-lg bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900/20 dark:to-gray-900/20 hover:shadow-md transition-all duration-200">
+        <div className="border border-slate-200 dark:border-slate-700 rounded-xl bg-gradient-to-br from-white via-slate-50 to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950/20 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
             {/* Clickable Header */}
             <div 
-                className="p-4 cursor-pointer select-none"
+                className="p-6 cursor-pointer select-none hover:bg-gradient-to-br hover:from-slate-50/50 hover:to-blue-50/50 dark:hover:from-slate-800/50 dark:hover:to-blue-950/30 transition-all duration-200"
                 onClick={toggleExpanded}
             >
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-500 dark:bg-slate-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                            💾
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-xl flex items-center justify-center shadow-sm">
+                                <Database className="w-6 h-6" />
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center">
+                                <HardDrive className="w-2 h-2 text-white" />
+                            </div>
                         </div>
                         <div>
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                                Raw Data
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+                                Raw Workflow Data
                             </h3>
-                            <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">
-                                {lineCount} lines • {sizeInKB} KB
-                            </p>
+                            <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                                <div className="flex items-center gap-1">
+                                    <FileText className="w-4 h-4" />
+                                    <span>{lineCount} lines</span>
+                                </div>
+                                <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
+                                <div className="flex items-center gap-1">
+                                    <BarChart3 className="w-4 h-4" />
+                                    <span>{sizeInKB} KB</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="px-3 py-1 rounded-full text-sm font-medium bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+                    <div className="flex items-center gap-3">
+                        <div className="px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
                             JSON
                         </div>
-                        <div className={`transition-transform duration-200 text-slate-600 dark:text-slate-400 ${isExpanded ? 'rotate-180' : ''}`}>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                        <div className={`transition-transform duration-300 text-slate-500 dark:text-slate-400 ${isExpanded ? 'rotate-180' : ''}`}>
+                            <ChevronDown className="w-5 h-5" />
                         </div>
                     </div>
                 </div>
@@ -54,45 +66,49 @@ export function RawDataSection({ workflow }: RawDataSectionProps) {
 
             {/* Expandable Content */}
             <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                isExpanded ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+                isExpanded ? 'opacity-100' : 'max-h-0 opacity-0'
             }`}>
-                <div className="px-4 pb-4">
+                <div className="px-6 pb-6">
                     {/* Data Stats */}
-                    <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
-                            <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{lineCount}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">Lines</div>
+                    <div className="mb-6 grid grid-cols-3 gap-4">
+                        <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl p-4 border border-slate-200/50 dark:border-slate-600/50 text-center hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{lineCount}</div>
+                            <div className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Lines</div>
                         </div>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
-                            <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{charCount.toLocaleString()}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">Characters</div>
+                        <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl p-4 border border-slate-200/50 dark:border-slate-600/50 text-center hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{charCount.toLocaleString()}</div>
+                            <div className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Characters</div>
                         </div>
-                        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-slate-200 dark:border-slate-600">
-                            <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{sizeInKB}</div>
-                            <div className="text-xs text-slate-600 dark:text-slate-400">KB</div>
+                        <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl p-4 border border-slate-200/50 dark:border-slate-600/50 text-center hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{sizeInKB}</div>
+                            <div className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">KB</div>
                         </div>
                     </div>
 
                     {/* JSON Content */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-slate-200 dark:border-slate-600 overflow-hidden">
-                        <div className="p-3 border-b border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700">
+                    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-600/50 overflow-hidden shadow-sm">
+                        <div className="p-4 border-b border-slate-200/50 dark:border-slate-600/50 bg-slate-50/50 dark:bg-slate-700/50">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                                    Complete Workflow Data
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <Database className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                        Complete Workflow Data
+                                    </span>
+                                </div>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         navigator.clipboard.writeText(jsonString);
                                     }}
-                                    className="px-2 py-1 text-xs bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors"
+                                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition-all duration-200 hover:scale-105"
                                 >
-                                    📋 Copy
+                                    <Copy className="w-3 h-3" />
+                                    Copy
                                 </button>
                             </div>
                         </div>
-                        <div className="max-h-96 overflow-auto">
-                            <pre className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 p-4 whitespace-pre-wrap break-words font-mono leading-relaxed">
+                        <div className="h-[72rem] min-h-96 max-h-[80vh] resize-y overflow-y-auto border-t border-slate-200 dark:border-slate-600">
+                            <pre className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50/30 dark:bg-slate-700/30 p-6 whitespace-pre-wrap break-words font-mono leading-relaxed block">
                                 {jsonString}
                             </pre>
                         </div>

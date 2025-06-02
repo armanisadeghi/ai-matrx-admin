@@ -1,10 +1,11 @@
 // DefaultWorkflowStepCard.tsx
 import { useState, useContext } from "react";
-import { Puzzle } from "lucide-react";
-import { ClickableBroker, WorkflowStepCardProps, stepContainsBroker } from "../WorkflowStepsSection";
+import { Puzzle, Type, Hash, Settings, ArrowRight, ArrowLeft } from "lucide-react";
+import { ClickableBroker } from "../brokers/ClickableBroker";
+import { WorkflowStepCardProps, stepContainsBroker } from "../WorkflowStepsSection";
 import { NodeWrapper } from "./NodeWrapper";
-import { BrokerHighlightContext } from "../WorkflowDetailContent";
-import { FUNCTION_TYPES } from "../../../../types/customWorkflowTypes";
+import { FUNCTION_TYPES } from "@/types/customWorkflowTypes";
+import { BrokerHighlightContext } from "../brokers/BrokerHighlightContext";
 
 // Default card for unregistered function types
 export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate }: WorkflowStepCardProps) {
@@ -131,6 +132,9 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
         }
     };
 
+    const argMappingEntries = Object.entries(editValues.argMappings);
+    const validReturnBrokers = editValues.returnBrokerIds.filter(id => id && id !== 'None');
+
     return (
         <NodeWrapper
             step={step}
@@ -147,148 +151,151 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
             {({ isEditing }) => (
                 <div className="space-y-4">
                     {/* Function Type */}
-                    <div className="py-2 border-b border-blue-200 dark:border-blue-700/50">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Function Type:</span>
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Type className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Function Type</span>
                         </div>
                         {isEditing ? (
                             <select
                                 value={editValues.functionType}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, functionType: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                             >
                                 <option value="registered_function">Registered Function</option>
                                 <option value="workflow_recipe_executor">Workflow Recipe Executor</option>
                             </select>
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg">
                                 {editValues.functionType}
                             </div>
                         )}
                     </div>
 
                     {/* Function ID */}
-                    <div className="py-2 border-b border-blue-200 dark:border-blue-700/50">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Function ID:</span>
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Hash className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Function ID</span>
                         </div>
                         {isEditing ? (
                             <input
                                 type="text"
                                 value={editValues.functionId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, functionId: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                 placeholder="Function ID"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border break-all">
+                            <div className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg break-all">
                                 {editValues.functionId}
                             </div>
                         )}
                     </div>
 
                     {/* Step Name */}
-                    <div className="py-2 border-b border-blue-200 dark:border-blue-700/50">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">Step Name:</span>
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Settings className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Step Name</span>
                         </div>
                         {isEditing ? (
                             <input
                                 type="text"
                                 value={editValues.stepName}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, stepName: e.target.value }))}
-                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                 placeholder="Step Name"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                            <div className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg break-all">
                                 {editValues.stepName}
                             </div>
                         )}
                     </div>
 
-                    {/* Argument Mapping */}
-                    <div className="py-2 border-b border-blue-200 dark:border-blue-700/50">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">
-                                Argument Mapping ({Object.keys(editValues.argMappings).length})
-                            </span>
-                            {isEditing && (
-                                <button
-                                    onClick={addArgMapping}
-                                    className="px-2 py-1 text-xs bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
-                                >
-                                    Add Mapping
-                                </button>
-                            )}
-                        </div>
-                        <div className="space-y-2">
-                            {Object.entries(editValues.argMappings).map(([argName, brokerId]) => (
-                                <div key={argName} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-600">
-                                    {isEditing ? (
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
+                    {/* Argument Mappings */}
+                    {argMappingEntries.length > 0 && (
+                        <div>
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                    <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                    <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                        Argument Mappings ({argMappingEntries.length})
+                                    </span>
+                                </div>
+                                {isEditing && (
+                                    <button
+                                        onClick={addArgMapping}
+                                        className="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md transition-colors"
+                                    >
+                                        Add Mapping
+                                    </button>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                {argMappingEntries.map(([paramName, brokerId], idx) => (
+                                    <div key={idx} className="bg-blue-50/50 dark:bg-blue-950/20 rounded-lg p-3">
+                                        {isEditing ? (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="text"
+                                                        value={paramName}
+                                                        onChange={(e) => {
+                                                            const newParamName = e.target.value;
+                                                            const currentBrokerId = editValues.argMappings[paramName];
+                                                            removeArgMapping(paramName);
+                                                            handleArgMappingChange(newParamName, currentBrokerId);
+                                                        }}
+                                                        className="flex-1 text-xs font-medium bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                        placeholder="Parameter name"
+                                                    />
+                                                    <button
+                                                        onClick={() => removeArgMapping(paramName)}
+                                                        className="text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-2 py-1 rounded transition-colors"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
                                                 <input
                                                     type="text"
-                                                    value={argName}
-                                                    onChange={(e) => {
-                                                        const newArgName = e.target.value;
-                                                        const currentBrokerId = editValues.argMappings[argName];
-                                                        removeArgMapping(argName);
-                                                        handleArgMappingChange(newArgName, String(currentBrokerId));
-                                                    }}
-                                                    className="flex-1 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                    placeholder="Argument name"
-                                                />
-                                                <button
-                                                    onClick={() => removeArgMapping(argName)}
-                                                    className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
-                                                >
-                                                    Remove
-                                                </button>
-                                            </div>
-                                            <input
-                                                type="text"
-                                                value={String(brokerId || '')}
-                                                onChange={(e) => handleArgMappingChange(argName, e.target.value)}
-                                                className="w-full text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                                placeholder="Broker ID"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center justify-between">
-                                            <span className="font-mono text-sm font-medium text-blue-900 dark:text-blue-100">
-                                                {argName}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-blue-600 dark:text-blue-400">🔗</span>
-                                                <ClickableBroker
-                                                    brokerId={String(brokerId || 'Unknown')}
-                                                    className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded border border-blue-200 dark:border-blue-600"
+                                                    value={String(brokerId)}
+                                                    onChange={(e) => handleArgMappingChange(paramName, e.target.value)}
+                                                    className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                    placeholder="Broker ID"
                                                 />
                                             </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                            {Object.keys(editValues.argMappings).length === 0 && (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
-                                    No argument mappings configured
-                                </div>
-                            )}
+                                        ) : (
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                                                    {paramName}
+                                                </span>
+                                                <ClickableBroker 
+                                                    brokerId={String(brokerId)} 
+                                                    className="text-sm font-mono bg-white dark:bg-slate-800 text-blue-900 dark:text-blue-100 border border-blue-200 dark:border-blue-700 px-2 py-1 rounded" 
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Return Brokers */}
-                    <div className="py-2">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">
-                                Return Broker{editValues.returnBrokerIds.length > 1 ? 's' : ''} ({editValues.returnBrokerIds.filter(id => id && id !== 'None').length}):
-                            </span>
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <ArrowLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                    Return Broker{validReturnBrokers.length !== 1 ? 's' : ''} ({validReturnBrokers.length})
+                                </span>
+                            </div>
                             {isEditing && (
                                 <button
                                     onClick={addReturnBroker}
-                                    className="px-2 py-1 text-xs bg-blue-500 dark:bg-blue-600 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
+                                    className="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md transition-colors"
                                 >
                                     Add Broker
                                 </button>
@@ -296,61 +303,47 @@ export function DefaultNodeDisplay({ step, index, isExpanded, onToggle, onUpdate
                         </div>
                         <div className="space-y-2">
                             {editValues.returnBrokerIds.map((brokerId, idx) => (
-                                <div key={idx} className="flex items-center gap-2">
-                                    <span className="text-xs text-blue-600 dark:text-blue-400">🔗</span>
+                                <div key={idx} className="bg-blue-50/50 dark:bg-blue-950/20 rounded-lg p-3">
                                     {isEditing ? (
-                                        <>
+                                        <div className="flex items-center gap-2">
                                             <input
                                                 type="text"
                                                 value={brokerId}
                                                 onChange={(e) => handleReturnBrokerChange(idx, e.target.value)}
-                                                className="flex-1 text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-300 dark:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="flex-1 text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                                 placeholder="Return Broker ID"
                                             />
                                             {editValues.returnBrokerIds.length > 1 && (
                                                 <button
                                                     onClick={() => removeReturnBroker(idx)}
-                                                    className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                                                    className="text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-2 py-1 rounded transition-colors"
                                                 >
                                                     Remove
                                                 </button>
                                             )}
-                                        </>
+                                        </div>
                                     ) : (
-                                        <div className="flex-1">
+                                        <div>
                                             {brokerId && brokerId !== 'None' ? (
                                                 <ClickableBroker
                                                     brokerId={brokerId}
-                                                    className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-blue-200 dark:border-blue-600 break-all"
+                                                    className="text-sm font-mono bg-white dark:bg-slate-800 text-blue-900 dark:text-blue-100 border border-blue-200 dark:border-blue-700 px-2 py-1 rounded break-all"
                                                 />
                                             ) : (
-                                                <div className="text-sm font-mono text-blue-900 dark:text-blue-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
-                                                    None
+                                                <div className="text-sm font-mono text-blue-700 dark:text-blue-300 italic">
+                                                    Not configured
                                                 </div>
                                             )}
                                         </div>
                                     )}
                                 </div>
                             ))}
-                            {editValues.returnBrokerIds.every(id => !id || id === 'None') && (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+                            {!isEditing && validReturnBrokers.length === 0 && (
+                                <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
                                     No return brokers configured
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    {/* Warning for unregistered */}
-                    <div className="mt-4 p-3 bg-amber-100 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
-                        <div className="flex items-center gap-2">
-                            <span className="text-amber-600 dark:text-amber-400">⚠️</span>
-                            <span className="text-sm text-amber-800 dark:text-amber-200 font-medium">
-                                Unregistered Function Type
-                            </span>
-                        </div>
-                        <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                            This function type may not be properly handled by the workflow engine.
-                        </p>
                     </div>
                 </div>
             )}

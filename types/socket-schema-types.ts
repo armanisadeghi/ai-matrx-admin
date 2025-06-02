@@ -1,8 +1,17 @@
 // File: types/socket-schema-types.ts
 
+export interface StepDefinition {
+    function_type: string;
+    function_id: string;
+    step_name?: string;
+    status?: string;
+    override_data?: Record<string, any>;
+    additional_dependencies?: any[][];
+}
+
 export interface UserInputs {
-    broker_id: string;
-    value: string;
+    broker_id?: string;
+    value?: string;
 }
 
 export interface MessageObject {
@@ -54,6 +63,20 @@ export interface ChatConfig {
     allow_removal_of_unmatched?: boolean;
 }
 
+export interface GetPendingFunctions {
+    instance_id: string;
+}
+
+export interface ActivatePendingFunction {
+    instance_id: string;
+    function_instance_id: string;
+}
+
+export interface SetFunctionPending {
+    instance_id: string;
+    function_instance_id: string;
+}
+
 export interface CleanupWorkflow {
     instance_id: string;
 }
@@ -72,6 +95,16 @@ export interface PingWorkflow {
 
 export interface GetWorkflowStatus {
     instance_id: string;
+}
+
+export interface ExecuteStepQuick {
+    step_definition: StepDefinition;
+    user_inputs?: UserInputs[];
+}
+
+export interface ExecuteSingleStep {
+    step_definition: StepDefinition;
+    user_inputs?: UserInputs[];
 }
 
 export interface StartWorkflowById {

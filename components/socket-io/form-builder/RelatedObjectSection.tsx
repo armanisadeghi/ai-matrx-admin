@@ -37,7 +37,7 @@ const RelatedObjectSection: React.FC<RelatedObjectSectionProps> = ({
     return (
         <div className="w-full mb-4">
             <div className="grid grid-cols-12 gap-4 mb-2">
-                <div className="col-span-1 text-slate-700 dark:text-slate-300 font-medium">{formatLabel(fieldName)}</div>
+                <div className="col-span-1 text-slate-700 dark:text-slate-300 text-xs font-medium">{formatLabel(fieldName)}</div>
                 <div className="col-span-11">
                     <div className="border-l border-slate-200 dark:border-slate-700 pl-4">
                         {Object.entries(fieldDefinition.REFERENCE).map(([nestedKey, nestedField]) => (

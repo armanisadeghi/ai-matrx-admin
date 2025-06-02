@@ -56,23 +56,36 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     return (
         <div className="w-full bg-slate-100 dark:bg-slate-800 p-4 pb-2 rounded">
             <div className="w-full space-y-4">
-                {schemaFields.map(([fieldName, fieldDefinition], index) => (
-                    <FormField
-                        key={`${taskId}-${fieldName}-${index}`}
-                        taskId={taskId}
-                        fieldName={fieldName}
-                        fieldDefinition={fieldDefinition}
-                        path=""
-                        value={formData[fieldName] ?? fieldDefinition.DEFAULT}
-                        errors={errors}
-                        notices={notices}
-                        formData={formData}
-                        onChange={handleChange}
-                        onDeleteArrayItem={handleDeleteArrayItem}
-                        fieldOverrides={fieldOverrides}
-                        testMode={testMode}
-                    />
-                ))}
+                {schemaFields.map(([fieldName, fieldDefinition], index) => {
+                    // Get the current value, fallback to default, ensuring no undefined values
+                    let fieldValue = formData[fieldName];
+                    if (fieldValue === undefined || fieldValue === null) {
+                        fieldValue = fieldDefinition.DEFAULT;
+                        
+                        // For arrays, ensure we have a proper default
+                        if (fieldDefinition.DATA_TYPE === "array" && !Array.isArray(fieldValue)) {
+                            fieldValue = fieldDefinition.REFERENCE ? [{}] : [""];
+                        }
+                    }
+                    
+                    return (
+                        <FormField
+                            key={`${taskId}-${fieldName}-${index}`}
+                            taskId={taskId}
+                            fieldName={fieldName}
+                            fieldDefinition={fieldDefinition}
+                            path=""
+                            value={fieldValue}
+                            errors={errors}
+                            notices={notices}
+                            formData={formData}
+                            onChange={handleChange}
+                            onDeleteArrayItem={handleDeleteArrayItem}
+                            fieldOverrides={fieldOverrides}
+                            testMode={testMode}
+                        />
+                    );
+                })}
             </div>
             <ActionButtons taskId={taskId} minimalSpace={minimalSpace} onSubmit={onSubmit} />
             <TaskDataDebug taskId={taskId} show={showDebug} />

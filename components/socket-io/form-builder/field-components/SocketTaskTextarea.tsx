@@ -56,7 +56,7 @@ const SocketTaskTextarea: React.FC<SocketTaskTextareaProps> = ({
 
     const labelContent = (
         <div className="flex items-start gap-1">
-            <span className="text-slate-700 dark:text-slate-300">{formatLabel(fieldName)}</span>
+            <span className="text-slate-700 dark:text-slate-300 text-xs">{formatLabel(fieldName)}</span>
             {fieldDefinition.REQUIRED && <span className="text-red-500 text-sm leading-none">*</span>}
         </div>
     );

@@ -39,26 +39,23 @@ const ArrayFieldSection: React.FC<ArrayFieldSectionProps> = ({
     return (
         <div className="w-full">
             <div className="grid grid-cols-12 gap-2 mb-2">
-                <div className="col-span-1 text-slate-700 dark:text-slate-300 font-medium">{formatLabel(fieldName)}</div>
-                <div className="col-span-11">
+                <div className="col-span-2 text-slate-700 dark:text-slate-300 text-xs font-medium">{formatLabel(fieldName)}</div>
+                <div className="col-span-10">
                     <div className="border-l border-slate-200 dark:border-slate-700 pl-4">
                         {value.map((item: any, index: number) => {
-                            // Construct the indexed path for this array item, e.g., broker_values[0]
+                            // Construct the indexed path for this array item using the passed path (which includes fieldName)
                             const indexedPath = `${path}[${index}]`;
 
                             return (
                                 <div key={indexedPath} className="relative">
                                     {Object.entries(fieldDefinition.REFERENCE).map(([nestedKey, nestedField]) => {
-                                        // Construct the full path for the nested field, e.g., broker_values[0].name
-                                        const nestedPath = `${indexedPath}.${nestedKey}`;
-
                                         return (
                                             <FormField
-                                                key={nestedPath}
+                                                key={`${indexedPath}.${nestedKey}`}
                                                 taskId={taskId}
                                                 fieldName={nestedKey}
                                                 fieldDefinition={nestedField as SchemaField}
-                                                path={indexedPath} // Pass the indexed path (e.g., broker_values[0])
+                                                path={indexedPath} // Pass the indexed path (e.g., user_inputs[0])
                                                 value={item?.[nestedKey] ?? (nestedField as SchemaField).DEFAULT}
                                                 errors={errors}
                                                 notices={notices}
@@ -77,7 +74,7 @@ const ArrayFieldSection: React.FC<ArrayFieldSectionProps> = ({
                                         className="absolute right-0 top-0 mt-2 mr-2"
                                         onClick={() => {
                                             if (onDeleteArrayItem) {
-                                                onDeleteArrayItem(path, index); // Pass the base path and index
+                                                onDeleteArrayItem(path, index); // Pass the full path
                                             }
                                         }}
                                     >
@@ -97,6 +94,7 @@ const ArrayFieldSection: React.FC<ArrayFieldSectionProps> = ({
                                     });
                                 }
                                 const newArray = [...value, defaultItem];
+                                
                                 onChange(path, newArray); // Update the array with the new item
                             }}
                             variant="outline"

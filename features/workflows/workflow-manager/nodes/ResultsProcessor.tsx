@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { BarChart3 } from "lucide-react";
-import { BrokerDisplay, ClickableBroker, WorkflowStepCardProps } from "../WorkflowStepsSection";
+import { BarChart3, ArrowRight, Settings, ArrowLeft } from "lucide-react";
+import { ClickableBroker } from "../brokers/ClickableBroker";
+import { WorkflowStepCardProps } from "../WorkflowStepsSection";
 import { NodeWrapper } from "./NodeWrapper";
 
 // Specialized card for results processor function type
@@ -119,6 +120,8 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
         }
     };
 
+    const validReturnBrokers = editValues.returnBrokerIds.filter(id => id && id !== 'None');
+
     return (
         <NodeWrapper
             step={step}
@@ -133,30 +136,30 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
             showReturnBroker={false}
         >
             {({ isEditing }) => (
-                <div className="space-y-3">
+                <div className="space-y-4">
                     {/* Input Broker */}
-                    <div className="py-2 border-b border-amber-200 dark:border-amber-700/50">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">Input Broker:</span>
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <ArrowRight className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                            <span className="text-sm font-medium text-amber-900 dark:text-amber-100">Input Broker</span>
                         </div>
                         {isEditing ? (
                             <input
                                 type="text"
                                 value={editValues.inputBrokerId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, inputBrokerId: e.target.value }))}
-                                className="w-full text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                                 placeholder="Input Broker ID"
                             />
                         ) : (
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs text-amber-600 dark:text-amber-400">🔗</span>
+                            <div>
                                 {editValues.inputBrokerId !== 'None' ? (
                                     <ClickableBroker
                                         brokerId={editValues.inputBrokerId}
-                                        className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-200 dark:border-amber-600 break-all"
+                                        className="text-sm font-mono bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100 px-3 py-2 rounded-lg break-all block"
                                     />
                                 ) : (
-                                    <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
+                                    <div className="text-sm font-mono bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100 px-3 py-2 rounded-lg">
                                         None
                                     </div>
                                 )}
@@ -165,19 +168,20 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
                     </div>
 
                     {/* Config */}
-                    <div className="py-2 border-b border-amber-200 dark:border-amber-700/50">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">Config:</span>
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <Settings className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                            <span className="text-sm font-medium text-amber-900 dark:text-amber-100">Configuration</span>
                         </div>
                         {isEditing ? (
                             <textarea
                                 value={editValues.config}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, config: e.target.value }))}
-                                className="w-full text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[100px]"
+                                className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors min-h-[100px] resize-y"
                                 placeholder="Configuration (JSON or text)"
                             />
                         ) : (
-                            <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 rounded p-3 border border-amber-200 dark:border-amber-600 max-h-32 overflow-y-auto">
+                            <div className="text-sm font-mono bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100 rounded-lg p-3 max-h-32 overflow-y-auto">
                                 {editValues.config ? (
                                     <pre className="whitespace-pre-wrap break-words">
                                         {typeof editValues.config === 'string' 
@@ -186,22 +190,25 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
                                         }
                                     </pre>
                                 ) : (
-                                    <span className="text-gray-500 dark:text-gray-400">No configuration</span>
+                                    <span className="text-amber-600 dark:text-amber-400 italic">No configuration</span>
                                 )}
                             </div>
                         )}
                     </div>
 
                     {/* Return Brokers */}
-                    <div className="py-2">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                                Return Broker{editValues.returnBrokerIds.length > 1 ? 's' : ''} ({editValues.returnBrokerIds.filter(id => id && id !== 'None').length}):
-                            </span>
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <ArrowLeft className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                                <span className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                                    Return Broker{validReturnBrokers.length !== 1 ? 's' : ''} ({validReturnBrokers.length})
+                                </span>
+                            </div>
                             {isEditing && (
                                 <button
                                     onClick={addReturnBroker}
-                                    className="px-2 py-1 text-xs bg-amber-500 dark:bg-amber-600 text-white rounded hover:bg-amber-600 dark:hover:bg-amber-700"
+                                    className="text-xs bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/50 dark:hover:bg-amber-900/70 text-amber-700 dark:text-amber-300 px-2 py-1 rounded-md transition-colors"
                                 >
                                     Add Broker
                                 </button>
@@ -209,44 +216,43 @@ export function ResultsProcessorNodeDisplay({ step, index, isExpanded, onToggle,
                         </div>
                         <div className="space-y-2">
                             {editValues.returnBrokerIds.map((brokerId, idx) => (
-                                <div key={idx} className="flex items-center gap-2">
-                                    <span className="text-xs text-amber-600 dark:text-amber-400">🔗</span>
+                                <div key={idx} className="bg-amber-50/50 dark:bg-amber-950/20 rounded-lg p-3">
                                     {isEditing ? (
-                                        <>
+                                        <div className="flex items-center gap-2">
                                             <input
                                                 type="text"
                                                 value={brokerId}
                                                 onChange={(e) => handleReturnBrokerChange(idx, e.target.value)}
-                                                className="flex-1 text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-300 dark:border-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                                className="flex-1 text-sm font-mono bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 rounded px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-colors"
                                                 placeholder="Return Broker ID"
                                             />
                                             {editValues.returnBrokerIds.length > 1 && (
                                                 <button
                                                     onClick={() => removeReturnBroker(idx)}
-                                                    className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                                                    className="text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-2 py-1 rounded transition-colors"
                                                 >
                                                     Remove
                                                 </button>
                                             )}
-                                        </>
+                                        </div>
                                     ) : (
-                                        <div className="flex-1">
+                                        <div>
                                             {brokerId && brokerId !== 'None' ? (
                                                 <ClickableBroker
                                                     brokerId={brokerId}
-                                                    className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border border-amber-200 dark:border-amber-600 break-all"
+                                                    className="text-sm font-mono bg-white dark:bg-slate-800 text-amber-900 dark:text-amber-100 border border-amber-200 dark:border-amber-700 px-2 py-1 rounded break-all"
                                                 />
                                             ) : (
-                                                <div className="text-sm font-mono text-amber-900 dark:text-amber-100 bg-white dark:bg-gray-800 px-3 py-2 rounded border">
-                                                    None
+                                                <div className="text-sm font-mono text-amber-700 dark:text-amber-300 italic">
+                                                    Not configured
                                                 </div>
                                             )}
                                         </div>
                                     )}
                                 </div>
                             ))}
-                            {editValues.returnBrokerIds.every(id => !id || id === 'None') && (
-                                <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+                            {!isEditing && validReturnBrokers.length === 0 && (
+                                <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
                                     No return brokers configured
                                 </div>
                             )}

@@ -34,14 +34,30 @@ export const useWorkflowManager = (workflowId?: string) => {
     const registeredFunctionsArray = useAppSelector(workflowSelectors.registeredFunctionsArray);
     const argsArray = useAppSelector(workflowSelectors.argsArray);
 
-    // Initialize workflow data on mount
+    // Check if data has already been initialized (prevent duplicate initialization)
+    const workflowEntityState = useAppSelector(workflowSelectors.selectWorkflowEntity);
+    const registeredFunctionEntityState = useAppSelector(workflowSelectors.selectRegisteredFunctionEntity);
+    const argEntityState = useAppSelector(workflowSelectors.selectArgEntity);
+    
+    const hasWorkflowData = allWorkflows.length > 0;
+    const hasRegisteredFunctionData = registeredFunctionsArray.length > 0;
+    const hasArgData = argsArray.length > 0;
+    const isAlreadyInitialized = hasWorkflowData || hasRegisteredFunctionData || hasArgData;
+
+    // Only initialize if not already done (prevent conflicts with layout initialization)
     useEffect(() => {
-        dispatch(workflowActions.initialize());
-    }, [dispatch]);
+        if (!isAlreadyInitialized) {
+            console.log('useWorkflowManager: Data not initialized, initializing...');
+            dispatch(workflowActions.initialize());
+        } else {
+            console.log('useWorkflowManager: Data already initialized, skipping...');
+        }
+    }, [dispatch, isAlreadyInitialized]);
 
     // Set active workflow when workflowId changes
     useEffect(() => {
         if (workflowId && workflowId !== activeWorkflowKey?.split(':')[1]) {
+            console.log('useWorkflowManager: Setting active workflow:', workflowId);
             dispatch(workflowActions.setActiveWorkflow(workflowId));
         }
     }, [workflowId, activeWorkflowKey, dispatch]);
@@ -166,10 +182,6 @@ export const useWorkflowManager = (workflowId?: string) => {
     }, [workflowSelectors]);
 
     // Loading and error states
-    const workflowEntityState = useAppSelector(workflowSelectors.selectWorkflowEntity);
-    const registeredFunctionEntityState = useAppSelector(workflowSelectors.selectRegisteredFunctionEntity);
-    const argEntityState = useAppSelector(workflowSelectors.selectArgEntity);
-
     const isLoading = workflowEntityState?.fetchState?.isLoading || 
                      registeredFunctionEntityState?.fetchState?.isLoading || 
                      argEntityState?.fetchState?.isLoading;

@@ -58,6 +58,7 @@ interface SocketTaskSelectProps {
     initialValue: any;
     propOverrides?: FieldOverrides;
     showPlaceholder?: boolean;
+    value?: any;
 }
 
 const SocketTaskSelect: React.FC<SocketTaskSelectProps> = ({
@@ -68,19 +69,25 @@ const SocketTaskSelect: React.FC<SocketTaskSelectProps> = ({
     initialValue,
     showPlaceholder = true,
     propOverrides = {},
+    value: providedValue,
 }) => {
     const dispatch = useAppDispatch();
     const [hasError, setHasError] = useState(false);
     const [notice, setNotice] = useState("");
 
     // Get the current value from Redux store
-    const currentValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
+    const reduxValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
     const testMode = useAppSelector(selectConnectionTestMode);
     const taskName = useAppSelector((state) => selectTaskNameById(state, taskId));
 
+    // Use provided value (for nested array fields) or Redux value (for top-level fields)
+    const currentValue = providedValue !== undefined ? providedValue : reduxValue;
+
     // Initialize the value in Redux on component mount
     useEffect(() => {
-        dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: initialValue }));
+        if (providedValue === undefined && (reduxValue === undefined || reduxValue === null)) {
+            dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: initialValue }));
+        }
     }, []);
 
     // Handle test mode

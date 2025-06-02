@@ -60,13 +60,42 @@ const FormField: React.FC<FormFieldProps> = ({
     const hasError = errors[fullPath];
 
     if (fieldDefinition.DATA_TYPE === "array") {
-        if (!Array.isArray(value) || value.length === 0) {
-            value =
-                fieldDefinition.DEFAULT && Array.isArray(fieldDefinition.DEFAULT) && fieldDefinition.DEFAULT.length > 0
-                    ? fieldDefinition.DEFAULT
-                    : fieldDefinition.REFERENCE
-                    ? [{}]
-                    : [];
+        // Ensure value is properly initialized as an array
+        let arrayValue = value;
+        
+        // Handle case where value might be nested arrays or improperly structured
+        if (!Array.isArray(arrayValue)) {
+            arrayValue = [];
+        } else {
+            // Flatten any accidentally nested arrays (but only one level to avoid data loss)
+            arrayValue = arrayValue.map(item => {
+                if (Array.isArray(item) && item.length === 1 && typeof item[0] === 'string') {
+                    return item[0]; // Flatten single-item string arrays
+                }
+                return item;
+            });
+        }
+        
+        // Apply defaults if array is empty - THIS IS CRITICAL FOR TYPING TO WORK
+        if (arrayValue.length === 0) {
+            if (fieldDefinition.DEFAULT && Array.isArray(fieldDefinition.DEFAULT) && fieldDefinition.DEFAULT.length > 0) {
+                arrayValue = [...fieldDefinition.DEFAULT];
+            } else if (fieldDefinition.REFERENCE) {
+                // Create a proper default object with all fields from the reference
+                const defaultObject = {};
+                Object.entries(fieldDefinition.REFERENCE).forEach(([key, fieldDef]) => {
+                    const typedFieldDef = fieldDef as SchemaField;
+                    defaultObject[key] = typedFieldDef.DEFAULT;
+                });
+                arrayValue = [defaultObject]; // Start with one properly initialized object
+                
+                // Also update the parent's state immediately so user can type
+                if (onChange) {
+                    onChange(fullPath, arrayValue);
+                }
+            } else {
+                arrayValue = [""]; // For simple arrays, start with one empty string
+            }
         }
 
         if (!fieldDefinition.REFERENCE) {
@@ -75,7 +104,7 @@ const FormField: React.FC<FormFieldProps> = ({
                     taskId={taskId}
                     fieldName={fieldName}
                     fieldDefinition={fieldDefinition}
-                    path={fullPath}
+                    path={path}
                     hasError={hasError}
                     testMode={testMode}
                 />
@@ -88,7 +117,7 @@ const FormField: React.FC<FormFieldProps> = ({
                 fieldName={fieldName}
                 fieldDefinition={fieldDefinition}
                 path={fullPath}
-                value={value}
+                value={arrayValue}
                 errors={errors}
                 notices={notices}
                 formData={formData}

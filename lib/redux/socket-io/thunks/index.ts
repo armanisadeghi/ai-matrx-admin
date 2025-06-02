@@ -2,4 +2,5 @@
 
 export * from './taskFieldThunks';
 export * from './submitTaskThunk';
-export * from './createTaskThunk'; 
+export * from './createTaskThunk';
+export * from './createTaskFromPreset'; 

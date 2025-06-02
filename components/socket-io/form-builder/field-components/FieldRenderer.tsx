@@ -26,6 +26,7 @@ interface FieldComponentProps {
     fullPath: string;
     initialValue: any;
     showPlaceholder: boolean;
+    value?: any; // Add value prop for nested array fields
 }
 
 // Component map to easily match component type to React component
@@ -65,7 +66,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     
     const labelContent = (
         <div className="flex items-start gap-1">
-            <span className="text-slate-700 dark:text-slate-300">{formatLabel(fieldName)}</span>
+            <span className="text-slate-700 dark:text-slate-300 text-xs">{formatLabel(fieldName)}</span>
             {fieldDefinition.REQUIRED && <span className="text-red-500 text-sm leading-none">*</span>}
         </div>
     );
@@ -78,8 +79,8 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
 
     return (
         <div className="grid grid-cols-12 gap-4 mb-4">
-            <Label className="col-span-1 text-sm font-medium">{labelContent}</Label>
-            <div className="col-span-11">
+            <Label className="col-span-2 text-sm font-medium">{labelContent}</Label>
+            <div className="col-span-10">
                 <FieldComponent
                     taskId={taskId}
                     fieldName={fieldName}
@@ -87,6 +88,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
                     fullPath={fullPath}
                     initialValue={value}
                     showPlaceholder={showPlaceholder}
+                    value={value}
                 />
             </div>
         </div>

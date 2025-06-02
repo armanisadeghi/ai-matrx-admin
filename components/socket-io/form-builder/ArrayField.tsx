@@ -59,36 +59,47 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
         }
         
         newArray[index] = newValue;
+        
+        // Remove empty trailing items except keep at least one empty item
+        const trimmedArray = newArray.filter((item, idx) => 
+            item !== "" || idx === newArray.length - 1 || idx <= index
+        );
+        
+        // Ensure we always have at least one item
+        const finalArray = trimmedArray.length > 0 ? trimmedArray : [""];
+        
         dispatch(updateTaskFieldByPath({ 
             taskId, 
             fieldPath: fullPath, 
-            value: newArray 
+            value: finalArray 
         }));
     };
 
     const handleRemoveItem = (index: number) => {
         if (arrayValues.length <= 1) {
+            // Always keep at least one empty item
             dispatch(updateTaskFieldByPath({ 
                 taskId, 
                 fieldPath: fullPath, 
                 value: [""] 
             }));
         } else {
-            dispatch(arrayOperation({
-                taskId,
-                fieldPath: fullPath,
-                operation: "remove",
-                index
+            // Use array operation for proper removal
+            const newArray = arrayValues.filter((_, idx) => idx !== index);
+            dispatch(updateTaskFieldByPath({ 
+                taskId, 
+                fieldPath: fullPath, 
+                value: newArray.length > 0 ? newArray : [""]
             }));
         }
     };
 
     const handleAddItem = () => {
-        dispatch(arrayOperation({
-            taskId,
-            fieldPath: fullPath,
-            operation: "add",
-            value: ""
+        const newArray = [...arrayValues, ""];
+        dispatch(updateTaskFieldByPath({ 
+            taskId, 
+            fieldPath: fullPath, 
+            value: newArray
         }));
     };
 
@@ -136,7 +147,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
         <div className="grid grid-cols-12 gap-4 mb-4 w-full">
             <Label className="col-span-1 text-sm font-medium">
                 <div className="flex items-start gap-1">
-                    <span className="text-slate-700 dark:text-slate-300">{formatLabel(fieldName)}</span>
+                    <span className="text-slate-700 dark:text-slate-300 text-xs">{formatLabel(fieldName)}</span>
                     {fieldDefinition.REQUIRED && <span className="text-red-500 text-sm leading-none">*</span>}
                 </div>
             </Label>

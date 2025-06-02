@@ -1,8 +1,20 @@
 import { useContext, ReactNode, useState } from "react";
-import { LucideIcon, Edit3, Save, X } from "lucide-react";
-import { BrokerHighlightContext } from "../WorkflowDetailContent";
-import { BrokerDisplay, BrokerHighlightBadge, stepContainsBroker, WorkflowStepCardProps } from "../WorkflowStepsSection";
-import { StatusDisplay } from "./StatusDisplay";
+import { LucideIcon, Edit3, Save, X, ChevronDown, TestTube } from "lucide-react";
+import { BrokerHighlightBadge, stepContainsBroker, WorkflowStepCardProps } from "../WorkflowStepsSection";
+import { StatusDisplay } from "../parts/StatusDisplay";
+import { BrokerHighlightContext } from "../brokers/BrokerHighlightContext";
+import { BrokerDisplay } from "../brokers/BrokerDisplay";
+import StepTestOverlay from "@/features/workflows/workflow-manager/parts/StepTestOverlay";
+
+// Utility function to convert snake_case to Title Case
+function formatStepName(stepName: string): string {
+    if (!stepName) return '';
+    
+    return stepName
+        .split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+}
 
 interface ColorTheme {
     gradientFrom: string;
@@ -23,14 +35,14 @@ interface ColorTheme {
 
 const colorThemes: Record<string, ColorTheme> = {
     blue: {
-        gradientFrom: "from-blue-50",
+        gradientFrom: "from-white via-blue-50",
         gradientTo: "to-indigo-50",
-        darkGradientFrom: "dark:from-blue-900/20",
-        darkGradientTo: "dark:to-indigo-900/20",
-        borderColor: "border-blue-200",
-        darkBorderColor: "dark:border-blue-700",
-        stepNumberBg: "bg-blue-500",
-        darkStepNumberBg: "dark:bg-blue-600",
+        darkGradientFrom: "dark:from-slate-800 dark:via-blue-900/20",
+        darkGradientTo: "dark:to-indigo-950/20",
+        borderColor: "border-blue-200/50",
+        darkBorderColor: "dark:border-blue-700/50",
+        stepNumberBg: "bg-gradient-to-br from-blue-500 to-blue-600",
+        darkStepNumberBg: "dark:from-blue-600 dark:to-blue-700",
         titleColor: "text-blue-900",
         darkTitleColor: "dark:text-blue-100",
         stepNameColor: "text-blue-700",
@@ -39,14 +51,14 @@ const colorThemes: Record<string, ColorTheme> = {
         darkExpandIconColor: "dark:text-blue-400"
     },
     green: {
-        gradientFrom: "from-green-50",
+        gradientFrom: "from-white via-green-50",
         gradientTo: "to-emerald-50",
-        darkGradientFrom: "dark:from-green-900/20",
-        darkGradientTo: "dark:to-emerald-900/20",
-        borderColor: "border-green-200",
-        darkBorderColor: "dark:border-green-700",
-        stepNumberBg: "bg-green-500",
-        darkStepNumberBg: "dark:bg-green-600",
+        darkGradientFrom: "dark:from-slate-800 dark:via-green-900/20",
+        darkGradientTo: "dark:to-emerald-950/20",
+        borderColor: "border-green-200/50",
+        darkBorderColor: "dark:border-green-700/50",
+        stepNumberBg: "bg-gradient-to-br from-green-500 to-green-600",
+        darkStepNumberBg: "dark:from-green-600 dark:to-green-700",
         titleColor: "text-green-900",
         darkTitleColor: "dark:text-green-100",
         stepNameColor: "text-green-700",
@@ -55,14 +67,14 @@ const colorThemes: Record<string, ColorTheme> = {
         darkExpandIconColor: "dark:text-green-400"
     },
     orange: {
-        gradientFrom: "from-orange-50",
+        gradientFrom: "from-white via-orange-50",
         gradientTo: "to-red-50",
-        darkGradientFrom: "dark:from-orange-900/20",
-        darkGradientTo: "dark:to-red-900/20",
-        borderColor: "border-orange-200",
-        darkBorderColor: "dark:border-orange-700",
-        stepNumberBg: "bg-orange-500",
-        darkStepNumberBg: "dark:bg-orange-600",
+        darkGradientFrom: "dark:from-slate-800 dark:via-orange-900/20",
+        darkGradientTo: "dark:to-red-950/20",
+        borderColor: "border-orange-200/50",
+        darkBorderColor: "dark:border-orange-700/50",
+        stepNumberBg: "bg-gradient-to-br from-orange-500 to-orange-600",
+        darkStepNumberBg: "dark:from-orange-600 dark:to-orange-700",
         titleColor: "text-orange-900",
         darkTitleColor: "dark:text-orange-100",
         stepNameColor: "text-orange-700",
@@ -71,14 +83,14 @@ const colorThemes: Record<string, ColorTheme> = {
         darkExpandIconColor: "dark:text-orange-400"
     },
     teal: {
-        gradientFrom: "from-teal-50",
+        gradientFrom: "from-white via-teal-50",
         gradientTo: "to-cyan-50",
-        darkGradientFrom: "dark:from-teal-900/20",
-        darkGradientTo: "dark:to-cyan-900/20",
-        borderColor: "border-teal-200",
-        darkBorderColor: "dark:border-teal-700",
-        stepNumberBg: "bg-teal-500",
-        darkStepNumberBg: "dark:bg-teal-600",
+        darkGradientFrom: "dark:from-slate-800 dark:via-teal-900/20",
+        darkGradientTo: "dark:to-cyan-950/20",
+        borderColor: "border-teal-200/50",
+        darkBorderColor: "dark:border-teal-700/50",
+        stepNumberBg: "bg-gradient-to-br from-teal-500 to-teal-600",
+        darkStepNumberBg: "dark:from-teal-600 dark:to-teal-700",
         titleColor: "text-teal-900",
         darkTitleColor: "dark:text-teal-100",
         stepNameColor: "text-teal-700",
@@ -87,14 +99,14 @@ const colorThemes: Record<string, ColorTheme> = {
         darkExpandIconColor: "dark:text-teal-400"
     },
     amber: {
-        gradientFrom: "from-amber-50",
+        gradientFrom: "from-white via-amber-50",
         gradientTo: "to-yellow-50",
-        darkGradientFrom: "dark:from-amber-900/20",
-        darkGradientTo: "dark:to-yellow-900/20",
-        borderColor: "border-amber-200",
-        darkBorderColor: "dark:border-amber-700",
-        stepNumberBg: "bg-amber-500",
-        darkStepNumberBg: "dark:bg-amber-600",
+        darkGradientFrom: "dark:from-slate-800 dark:via-amber-900/20",
+        darkGradientTo: "dark:to-yellow-950/20",
+        borderColor: "border-amber-200/50",
+        darkBorderColor: "dark:border-amber-700/50",
+        stepNumberBg: "bg-gradient-to-br from-amber-500 to-amber-600",
+        darkStepNumberBg: "dark:from-amber-600 dark:to-amber-700",
         titleColor: "text-amber-900",
         darkTitleColor: "dark:text-amber-100",
         stepNameColor: "text-amber-700",
@@ -103,14 +115,14 @@ const colorThemes: Record<string, ColorTheme> = {
         darkExpandIconColor: "dark:text-amber-400"
     },
     purple: {
-        gradientFrom: "from-purple-50",
+        gradientFrom: "from-white via-purple-50",
         gradientTo: "to-violet-50",
-        darkGradientFrom: "dark:from-purple-900/20",
-        darkGradientTo: "dark:to-violet-900/20",
-        borderColor: "border-purple-200",
-        darkBorderColor: "dark:border-purple-700",
-        stepNumberBg: "bg-purple-500",
-        darkStepNumberBg: "dark:bg-purple-600",
+        darkGradientFrom: "dark:from-slate-800 dark:via-purple-900/20",
+        darkGradientTo: "dark:to-violet-950/20",
+        borderColor: "border-purple-200/50",
+        darkBorderColor: "dark:border-purple-700/50",
+        stepNumberBg: "bg-gradient-to-br from-purple-500 to-purple-600",
+        darkStepNumberBg: "dark:from-purple-600 dark:to-purple-700",
         titleColor: "text-purple-900",
         darkTitleColor: "dark:text-purple-100",
         stepNameColor: "text-purple-700",
@@ -151,6 +163,7 @@ export function NodeWrapper({
     const containsHighlightedBroker = highlightedBroker && stepContainsBroker(step, highlightedBroker);
     const theme = colorThemes[colorTheme];
     const [isEditing, setIsEditing] = useState(false);
+    const [isTestOverlayOpen, setIsTestOverlayOpen] = useState(false);
 
     const handleEdit = () => {
         setIsEditing(true);
@@ -167,103 +180,140 @@ export function NodeWrapper({
         onCancel?.();
     };
 
+    const handleTestStep = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsTestOverlayOpen(true);
+    };
+
+    const formattedStepName = step.step_name ? formatStepName(step.step_name) : null;
+
     return (
-        <div className={`border-2 rounded-lg bg-gradient-to-br ${theme.gradientFrom} ${theme.gradientTo} ${theme.darkGradientFrom} ${theme.darkGradientTo} hover:shadow-md transition-all duration-200 ${
-            containsHighlightedBroker 
-                ? 'border-yellow-400 dark:border-yellow-500 shadow-lg shadow-yellow-200 dark:shadow-yellow-900/50' 
-                : `${theme.borderColor} ${theme.darkBorderColor}`
-        } ${isEditing ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''}`}>
-            {/* Clickable Header */}
-            <div 
-                className="p-4 cursor-pointer select-none"
-                onClick={isEditing ? undefined : onToggle}
-            >
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 ${theme.stepNumberBg} ${theme.darkStepNumberBg} text-white rounded-full flex items-center justify-center text-sm font-bold`}>
-                            {index + 1}
+        <>
+            <div className={`border backdrop-blur-sm rounded-xl bg-gradient-to-br ${theme.gradientFrom} ${theme.gradientTo} ${theme.darkGradientFrom} ${theme.darkGradientTo} hover:shadow-lg transition-all duration-300 shadow-sm ${
+                containsHighlightedBroker 
+                    ? 'border-yellow-400/80 dark:border-yellow-500/80 shadow-yellow-300/60 dark:shadow-yellow-600/40 shadow-lg ring-2 ring-yellow-400/30 dark:ring-yellow-500/30' 
+                    : `${theme.borderColor} ${theme.darkBorderColor}`
+            } ${isEditing ? 'ring-2 ring-blue-500/50 dark:ring-blue-400/50 shadow-blue-200/50 dark:shadow-blue-900/30' : ''} ${
+                isExpanded ? 'shadow-md' : ''
+            }`}>
+                {/* Compact Header */}
+                <div 
+                    className={`px-4 py-3 cursor-pointer select-none transition-all duration-200 ${
+                        !isEditing ? 'hover:bg-white/30 dark:hover:bg-slate-700/30' : ''
+                    } ${isExpanded ? 'border-b border-white/50 dark:border-slate-600/50' : ''}`}
+                    onClick={isEditing ? undefined : onToggle}
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className={`w-9 h-9 ${theme.stepNumberBg} ${theme.darkStepNumberBg} text-white rounded-lg flex items-center justify-center text-sm font-bold shadow-sm flex-shrink-0`}>
+                                {index + 1}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className={`flex items-center gap-2 ${theme.titleColor} ${theme.darkTitleColor}`}>
+                                    <Icon className="w-4 h-4 flex-shrink-0" />
+                                    <h3 className="text-lg font-semibold truncate">
+                                        {title}
+                                    </h3>
+                                </div>
+                                {formattedStepName && (
+                                    <p className={`text-sm ${theme.stepNameColor} ${theme.darkStepNameColor} font-medium truncate mt-0.5`}>
+                                        {formattedStepName}
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        <div>
-                            <h3 className={`text-xl font-bold ${theme.titleColor} ${theme.darkTitleColor} flex items-center gap-2`}>
-                                <Icon className="w-5 h-5" />
-                                {title}
-                            </h3>
-                            {step.step_name && (
-                                <p className={`text-sm ${theme.stepNameColor} ${theme.darkStepNameColor} font-medium`}>
-                                    {step.step_name}
-                                </p>
+                        
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            
+                            {/* Test Button */}
+                            <button
+                                type="button"
+                                onClick={handleTestStep}
+                                className={`p-2 rounded-lg hover:bg-gradient-to-r hover:from-purple-100 hover:to-blue-100 dark:hover:from-purple-900/50 dark:hover:to-blue-900/50 transition-all duration-200 hover:scale-110 text-purple-600 dark:text-purple-400 hover:shadow-md`}
+                                title="Test this step via Socket.IO"
+                            >
+                                <TestTube className="w-4 h-4" />
+                            </button>
+                            {containsHighlightedBroker && <BrokerHighlightBadge />}
+                            <StatusDisplay status={step.status} />
+                            {/* Edit Controls */}
+                            {allowEdit && !isEditing && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleEdit();
+                                    }}
+                                    className={`p-2 rounded-lg hover:bg-white/60 dark:hover:bg-slate-700/60 transition-all duration-200 hover:scale-110 ${theme.expandIconColor} ${theme.darkExpandIconColor}`}
+                                    title="Edit node"
+                                >
+                                    <Edit3 className="w-4 h-4" />
+                                </button>
+                            )}
+                            
+                            {isEditing && (
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleSave();
+                                        }}
+                                        className="p-2 rounded-lg hover:bg-green-100/80 dark:hover:bg-green-900/50 transition-all duration-200 hover:scale-110 text-green-600 dark:text-green-400 shadow-sm"
+                                        title="Save changes"
+                                    >
+                                        <Save className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleCancel();
+                                        }}
+                                        className="p-2 rounded-lg hover:bg-red-100/80 dark:hover:bg-red-900/50 transition-all duration-200 hover:scale-110 text-red-600 dark:text-red-400 shadow-sm"
+                                        title="Cancel editing"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {!isEditing && (
+                                <div className={`transition-all duration-300 ${theme.expandIconColor} ${theme.darkExpandIconColor} ${isExpanded ? 'rotate-180' : ''} hover:scale-110`}>
+                                    <ChevronDown className="w-5 h-5" />
+                                </div>
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        {containsHighlightedBroker && <BrokerHighlightBadge />}
-                        <StatusDisplay status={step.status} />
+                </div>
+
+                {/* Expandable Content */}
+                <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    (isExpanded || isEditing) ? 'opacity-100' : 'max-h-0 opacity-0'
+                }`}>
+                    <div className="px-4 pb-4">
+                        {typeof children === 'function' ? children({ isEditing }) : children}
                         
-                        {/* Edit Controls */}
-                        {allowEdit && !isEditing && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEdit();
-                                }}
-                                className={`p-2 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors ${theme.expandIconColor} ${theme.darkExpandIconColor}`}
-                                title="Edit node"
-                            >
-                                <Edit3 className="w-4 h-4" />
-                            </button>
-                        )}
-                        
-                        {isEditing && (
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleSave();
-                                    }}
-                                    className="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors text-green-600 dark:text-green-400"
-                                    title="Save changes"
-                                >
-                                    <Save className="w-4 h-4" />
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleCancel();
-                                    }}
-                                    className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors text-red-600 dark:text-red-400"
-                                    title="Cancel editing"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                        )}
-                        
-                        {!isEditing && (
-                            <div className={`transition-transform duration-200 ${theme.expandIconColor} ${theme.darkExpandIconColor} ${isExpanded ? 'rotate-180' : ''}`}>
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
+                        {/* Return Broker */}
+                        {showReturnBroker && (
+                            <div className="mt-4 pt-3 border-t border-white/50 dark:border-slate-600/50">
+                                <BrokerDisplay label="Return Broker" brokerId={step.override_data?.return_broker_override || 'None'} />
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            {/* Expandable Content */}
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                (isExpanded || isEditing) ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-            }`}>
-                <div className="px-4 pb-4">
-                    {typeof children === 'function' ? children({ isEditing }) : children}
-                    
-                    {/* Return Broker */}
-                    {showReturnBroker && (
-                        <div className="mt-3">
-                            <BrokerDisplay label="Return Broker" brokerId={step.override_data?.return_broker_override || 'None'} />
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+            {/* Step Test Overlay */}
+            <StepTestOverlay 
+                step={step}
+                isOpen={isTestOverlayOpen}
+                onClose={() => setIsTestOverlayOpen(false)}
+            />
+        </>
     );
 } 

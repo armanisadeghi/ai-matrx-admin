@@ -1,4 +1,4 @@
-import { WorkflowStep } from "../../../types/customWorkflowTypes";
+import { WorkflowStep } from "@/types/customWorkflowTypes";
 import { useState, useContext, useEffect } from "react";
 import { BrokerHighlightContext } from "./WorkflowDetailContent";
 import { RecipeRunnerNodeDisplay } from "./nodes/RecipeRunner";

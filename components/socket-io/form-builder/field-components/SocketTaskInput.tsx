@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectFieldValue, selectConnectionTestMode, selectTaskNameById } from "@/lib/redux/socket-io";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 import { isValidField } from "@/constants/socket-schema";
+import { flexibleJsonParse } from "@/lib/utils/json-utils";
 
 interface SocketTaskInputProps {
     taskId: string;
@@ -20,6 +21,7 @@ interface SocketTaskInputProps {
     initialValue: any;
     propOverrides?: FieldOverrides;
     showPlaceholder?: boolean;
+    value?: any;
 }
 
 const SocketTaskInput: React.FC<SocketTaskInputProps> = ({
@@ -30,18 +32,25 @@ const SocketTaskInput: React.FC<SocketTaskInputProps> = ({
     initialValue,
     showPlaceholder = true,
     propOverrides = {},
+    value: providedValue,
   }) => {
     const dispatch = useAppDispatch();
     const [hasError, setHasError] = useState(false);
     const [notice, setNotice] = useState("");
   
-    useEffect(() => {
-      dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: initialValue }));
-    }, []);
-  
     const testMode = useAppSelector(selectConnectionTestMode);
-    const currentValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
+    const reduxValue = useAppSelector((state) => selectFieldValue(taskId, fullPath)(state));
     const taskName = useAppSelector((state) => selectTaskNameById(state, taskId));
+  
+    // Use provided value (for nested array fields) or Redux value (for top-level fields)
+    const currentValue = providedValue !== undefined ? providedValue : reduxValue;
+  
+    // Only initialize if current value is undefined/null and no value is provided
+    useEffect(() => {
+      if (providedValue === undefined && (reduxValue === undefined || reduxValue === null)) {
+        dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: initialValue }));
+      }
+    }, []);
   
     React.useEffect(() => {
       if (testMode && fieldDefinition.TEST_VALUE !== undefined) {
@@ -70,7 +79,59 @@ const SocketTaskInput: React.FC<SocketTaskInputProps> = ({
     }
   
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: e.target.value }));
+      let processedValue: any = e.target.value;
+      
+      // Convert value based on expected data type
+      const dataType = fieldDefinition.DATA_TYPE?.toLowerCase();
+      
+      try {
+        switch (dataType) {
+          case "number":
+            const numValue = parseFloat(processedValue);
+            processedValue = isNaN(numValue) ? processedValue : numValue;
+            break;
+          case "integer":
+            const intValue = parseInt(processedValue, 10);
+            processedValue = isNaN(intValue) ? processedValue : intValue;
+            break;
+          case "boolean":
+            if (processedValue === "true") processedValue = true;
+            else if (processedValue === "false") processedValue = false;
+            break;
+          case "object":
+            // For object fields, use flexible JSON parsing
+            if (processedValue.trim()) {
+              const result = flexibleJsonParse(processedValue);
+              if (result.success) {
+                processedValue = result.data;
+              }
+              // If parsing fails, keep as string for validation to catch
+            }
+            break;
+          case "array":
+            // For array fields, use flexible JSON parsing
+            if (processedValue.trim()) {
+              const result = flexibleJsonParse(processedValue);
+              if (result.success && Array.isArray(result.data)) {
+                processedValue = result.data;
+              } else {
+                // Try to parse as a simple comma-separated list
+                try {
+                  processedValue = processedValue.split(',').map(item => item.trim());
+                } catch (e) {
+                  // Keep as string if conversion fails
+                }
+              }
+            }
+            break;
+          // case "string" and default: keep as string
+        }
+      } catch (e) {
+        // If any conversion fails, keep original value
+        processedValue = e.target.value;
+      }
+      
+      dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value: processedValue }));
     };
   
     const validateField = useCallback(
@@ -80,7 +141,44 @@ const SocketTaskInput: React.FC<SocketTaskInputProps> = ({
     
   
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      const value = e.target.value;
+      let value = e.target.value;
+      
+      // Apply final conversion on blur for better UX
+      const dataType = fieldDefinition.DATA_TYPE?.toLowerCase();
+      try {
+        switch (dataType) {
+          case "number":
+            const numValue = parseFloat(value);
+            if (!isNaN(numValue)) value = numValue.toString();
+            break;
+          case "integer":
+            const intValue = parseInt(value, 10);
+            if (!isNaN(intValue)) value = intValue.toString();
+            break;
+          case "object":
+            // For object fields, try flexible JSON parsing one more time
+            if (value.trim()) {
+              const result = flexibleJsonParse(value);
+              if (result.success) {
+                value = JSON.stringify(result.data, null, 2);
+              }
+            }
+            break;
+          case "array":
+            // For array fields, try flexible JSON parsing one more time
+            if (value.trim()) {
+              const result = flexibleJsonParse(value);
+              if (result.success && Array.isArray(result.data)) {
+                value = JSON.stringify(result.data, null, 2);
+              }
+            }
+            break;
+        }
+      } catch (e) {
+        // Keep original value if conversion fails
+      }
+      
+      // Only validate on blur, not on every keystroke
       if (value === "") {
         setHasError(false);
         setNotice("");
@@ -89,15 +187,30 @@ const SocketTaskInput: React.FC<SocketTaskInputProps> = ({
         setHasError(!isValid);
         setNotice(isValid ? "" : errorMessage);
       }
+      
+      // Update Redux state on blur
       dispatch(updateTaskFieldByPath({ taskId, fieldPath: fullPath, value }));
     };
   
     const dataType = fieldDefinition.DATA_TYPE;
+    
+    // Determine input type based on data type
+    const getInputType = () => {
+      switch (dataType?.toLowerCase()) {
+        case "number":
+        case "integer":
+          return "number";
+        case "boolean":
+          return "text"; // We'll handle boolean conversion manually
+        default:
+          return "text";
+      }
+    };
 
     return (
       <div className="flex flex-col gap-2">
         <FancyInput
-          type="text"
+          type={getInputType()}
           prefix={<Icon className="w-4 h-4" />}
           value={currentValue || ""}
           onChange={handleChange}
