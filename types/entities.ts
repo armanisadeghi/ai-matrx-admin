@@ -1249,3 +1249,22 @@ export type Workflow = {
     isDeleted?: boolean;
     publicRead?: boolean;
 }
+
+export type WorkflowNode = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    userId?: string;
+    functionId?: string;
+    functionType?: string;
+    stepName?: string;
+    executionRequired?: boolean;
+    additionalDependencies?: Record<string, unknown>;
+    argMapping?: Record<string, unknown>;
+    returnBrokerOverrides?: Record<string, unknown>;
+    argOverrides?: Record<string, unknown>;
+    workflowId?: string;
+    isPublic?: boolean;
+    authenticatedRead?: boolean;
+    publicRead?: boolean;
+}

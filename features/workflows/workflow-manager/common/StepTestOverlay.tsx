@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useAppDispatch } from "@/lib/redux";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
-import { Play, Zap, AlertCircle, CheckCircle, X } from "lucide-react";
+import { Play, Zap, AlertCircle, CheckCircle } from "lucide-react";
 import { WorkflowStep } from "@/types/customWorkflowTypes";
 
 interface StepTestOverlayProps {
@@ -46,7 +46,7 @@ const StepTestOverlay: React.FC<StepTestOverlayProps> = ({ step, isOpen, onClose
                 inputs.push({
                     argName,
                     brokerId,
-                    value: '' // Default empty value
+                    value: ''
                 });
             }
         });
@@ -80,9 +80,6 @@ const StepTestOverlay: React.FC<StepTestOverlayProps> = ({ step, isOpen, onClose
                 user_inputs: userInputs
             };
 
-            console.log("🚀 Executing step with data:", stepDataForSocket);
-
-            // Use our revolutionary preset system!
             const createdTaskId = await dispatch(createTaskFromPresetQuick({
                 presetName: "workflow_step_to_execute_single_step",
                 sourceData: stepDataForSocket
@@ -155,14 +152,6 @@ const StepTestOverlay: React.FC<StepTestOverlayProps> = ({ step, isOpen, onClose
                                 </p>
                             </div>
                         </div>
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={onClose}
-                            className="hover:bg-white/60 dark:hover:bg-slate-600/60"
-                        >
-                            <X className="w-4 h-4" />
-                        </Button>
                     </div>
                 </DialogHeader>
 

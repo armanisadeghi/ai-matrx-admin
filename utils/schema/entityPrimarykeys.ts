@@ -416,4 +416,8 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  workflowNode: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
 };

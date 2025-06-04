@@ -1,28 +1,29 @@
 import { useState } from "react";
-import { RotateCcw, Hash, Tag, Cpu, Wrench, Calculator, ArrowRight, ArrowLeft } from "lucide-react";
+import { RotateCcw, Hash, Tag, Cpu, Wrench, Calculator, ArrowRight, ArrowLeft, RefreshCw } from "lucide-react";
 import { ClickableBroker } from "../brokers/ClickableBroker";
 import { WorkflowStepCardProps } from "../WorkflowStepsSection";
 import { NodeWrapper } from "./NodeWrapper";
+import { WorkflowStep, ArgOverride } from "@/types/customWorkflowTypes";
 
 // Specialized card for iterative recipe preparer function type
 export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, onToggle, onUpdate }: WorkflowStepCardProps) {
-    // Extract data from overrides
-    const recipeId = step.override_data?.arg_overrides?.find(override => override.name === 'recipe_id')?.value || 'None';
-    const version = step.override_data?.arg_overrides?.find(override => override.name === 'version')?.value || 'Latest';
-    const modelOverride = step.override_data?.arg_overrides?.find(override => override.name === 'model_override')?.value || 'None';
-    const toolsOverride = step.override_data?.arg_overrides?.find(override => override.name === 'tools_override')?.value || 'None';
-    const maxCount = step.override_data?.arg_overrides?.find(override => override.name === 'max_count')?.value || 'Unlimited';
-    
-    // Extract arg_mapping data
-    const argMapping = step.override_data?.arg_mapping || {};
-    
+    // Extract data from overrides (safely)
+    const overrideData = step.override_data;
+    const recipeId = overrideData?.arg_overrides?.find(override => override.name === 'recipe_id')?.value || 'None';
+    const version = overrideData?.arg_overrides?.find(override => override.name === 'version')?.value || 'Latest';
+    const modelOverride = overrideData?.arg_overrides?.find(override => override.name === 'model_override')?.value || 'None';
+    const toolsOverride = overrideData?.arg_overrides?.find(override => override.name === 'tools_override')?.value || 'None';
+    const maxCount = overrideData?.arg_overrides?.find(override => override.name === 'max_count')?.value || 0;
+    const argMapping = overrideData?.arg_mapping || {};
+
     // Handle both string and array return brokers
-    const originalReturnBroker = step.override_data?.return_broker_override;
+    const originalReturnBroker = overrideData?.return_broker_override;
     const returnBrokerArray = Array.isArray(originalReturnBroker) 
         ? originalReturnBroker 
         : originalReturnBroker ? [originalReturnBroker] : [];
-    
-    // Edit state
+
+    // State for editing
+    const [isEditing, setIsEditing] = useState(false);
     const [editValues, setEditValues] = useState({
         recipeId: recipeId,
         version: version,
@@ -30,7 +31,7 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
         toolsOverride: Array.isArray(toolsOverride) ? toolsOverride.join(', ') : toolsOverride,
         maxCount: maxCount,
         argMappings: { ...argMapping },
-        returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['']
+        returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['None']
     });
 
     // Format tools override
@@ -46,26 +47,22 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
             return;
         }
 
-        // Create updated step with new values
-        const updatedStep = { ...step };
-        
-        // Ensure override_data exists
-        if (!updatedStep.override_data) {
-            updatedStep.override_data = {};
-        }
+        // ✅ SAFE: Create a completely new step structure instead of mutating original
+        const currentArgOverrides = step.override_data?.arg_overrides || [];
+        const updatedArgOverrides: ArgOverride[] = [...currentArgOverrides];
 
-        // Update arg_overrides
-        if (!updatedStep.override_data.arg_overrides) {
-            updatedStep.override_data.arg_overrides = [];
-        }
-
-        // Helper function to update or add arg override
+        // Helper function to safely update or add arg override
         const updateArgOverride = (name: string, value: any) => {
-            const existingIndex = updatedStep.override_data!.arg_overrides!.findIndex(override => override.name === name);
+            const existingIndex = updatedArgOverrides.findIndex(override => override.name === name);
             if (existingIndex >= 0) {
-                updatedStep.override_data!.arg_overrides![existingIndex].value = value;
+                // ✅ SAFE: Replace the entire override object instead of mutating
+                updatedArgOverrides[existingIndex] = {
+                    ...updatedArgOverrides[existingIndex],
+                    value,
+                    ready: true
+                };
             } else {
-                updatedStep.override_data!.arg_overrides!.push({
+                updatedArgOverrides.push({
                     name,
                     value,
                     ready: true,
@@ -74,7 +71,7 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
             }
         };
 
-        // Update values
+        // Update values safely
         updateArgOverride('recipe_id', editValues.recipeId);
         updateArgOverride('version', editValues.version);
         updateArgOverride('model_override', editValues.modelOverride);
@@ -86,26 +83,46 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
             : editValues.toolsOverride === 'None' ? 'None' : editValues.toolsOverride;
         updateArgOverride('tools_override', toolsValue);
 
-        // Update arg mappings
-        updatedStep.override_data.arg_mapping = { ...editValues.argMappings };
-
-        // Update return broker - preserve original format (string vs array)
+        // Create completely new step structure
         const validReturnBrokers = editValues.returnBrokerIds.filter(id => id && id.trim() !== '' && id !== 'None');
         
-        if (validReturnBrokers.length > 0) {
-            // If original was array or we have multiple values, save as array
-            if (Array.isArray(originalReturnBroker) || validReturnBrokers.length > 1) {
-                updatedStep.override_data.return_broker_override = validReturnBrokers;
-            } else {
-                // If original was string and we have one value, save as string
-                updatedStep.override_data.return_broker_override = validReturnBrokers[0];
+        const updatedStep: WorkflowStep = {
+            function_type: "workflow_recipe_executor",
+            function_id: step.function_id,
+            step_name: step.step_name,
+            status: step.status || "pending",
+            execution_required: step.execution_required ?? true,
+            override_data: {
+                arg_overrides: updatedArgOverrides,
+                arg_mapping: { ...editValues.argMappings },
+                return_broker_override: (() => {
+                    if (validReturnBrokers.length > 0) {
+                        // If original was array or we have multiple values, save as array
+                        if (Array.isArray(originalReturnBroker) || validReturnBrokers.length > 1) {
+                            return validReturnBrokers;
+                        } else {
+                            // If original was string and we have one value, save as string
+                            return validReturnBrokers[0];
+                        }
+                    }
+                    return undefined;
+                })()
+            },
+            additional_dependencies: step.additional_dependencies || [],
+            broker_relays: step.broker_relays || {
+                simple_relays: [],
+                bidirectional_relays: [],
+                relay_chains: []
             }
-        } else {
-            delete updatedStep.override_data.return_broker_override;
-        }
+        };
 
+        console.log('🔄 IterativeRecipePreparerNodeDisplay.handleSave - created updated step:', updatedStep);
         onUpdate(index, updatedStep);
-        console.log('Saving iterative recipe preparer changes:', editValues);
+        setIsEditing(false);
+    };
+
+    const handleEdit = () => {
+        setIsEditing(true);
     };
 
     const handleCancel = () => {
@@ -117,8 +134,9 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
             toolsOverride: Array.isArray(toolsOverride) ? toolsOverride.join(', ') : toolsOverride,
             maxCount: maxCount,
             argMappings: { ...argMapping },
-            returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['']
+            returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['None']
         });
+        setIsEditing(false);
     };
 
     const handleReturnBrokerChange = (index: number, value: string) => {
@@ -180,10 +198,12 @@ export function IterativeRecipePreparerNodeDisplay({ step, index, isExpanded, on
             isExpanded={isExpanded}
             onToggle={onToggle}
             title="Prepare Iterative Recipe"
-            icon={RotateCcw}
+            icon={RefreshCw}
             colorTheme="purple"
+            onEdit={handleEdit}
             onSave={handleSave}
             onCancel={handleCancel}
+            isEditing={isEditing}
             showReturnBroker={false}
         >
             {({ isEditing }) => (

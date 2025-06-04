@@ -10,7 +10,7 @@ import { selectFieldValue, selectConnectionTestMode, selectTaskNameById } from "
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 import { isValidField } from "@/constants/socket-schema";
 import { Label } from "@/components/ui/label";
-import { flexibleJsonParse, formatJson, safeJsonStringify } from "@/lib/utils/json-utils";
+import { flexibleJsonParse, formatJson, safeJsonStringify } from "@/utils/json-utils";
 
 interface SocketTaskJsonEditorProps {
     taskId: string;

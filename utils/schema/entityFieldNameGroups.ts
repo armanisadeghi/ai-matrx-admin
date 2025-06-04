@@ -532,5 +532,10 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFields: ["id", "createdAt", "updatedAt", "name", "description", "visualWorkflow", "backendWorkflow", "userId", "version", "isPublic", "authenticatedRead", "isActive", "isDeleted", "publicRead"],
   primaryKeyFields: ["id"],
   nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "description", "visualWorkflow", "backendWorkflow", "userId", "version", "isPublic", "authenticatedRead", "isActive", "isDeleted", "publicRead"]
+},
+  workflowNode: {
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "functionId", "functionType", "stepName", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "workflowId", "isPublic", "authenticatedRead", "publicRead"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "functionId", "functionType", "stepName", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "workflowId", "isPublic", "authenticatedRead", "publicRead"]
 }
 }

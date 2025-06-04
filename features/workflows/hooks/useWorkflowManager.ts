@@ -132,6 +132,10 @@ export const useWorkflowManager = (workflowId?: string) => {
             dispatch(workflowActions.updateWorkflowFieldSmart({ keyOrId, field, value }));
         }, [dispatch]),
 
+        updateWorkflow: useCallback((params: { data: any; matrxRecordId?: string }) => {
+            dispatch(workflowActions.updateWorkflow(params));
+        }, [dispatch]),
+
         deleteActiveWorkflow: useCallback(() => {
             dispatch(workflowActions.deleteActiveWorkflow());
         }, [dispatch]),

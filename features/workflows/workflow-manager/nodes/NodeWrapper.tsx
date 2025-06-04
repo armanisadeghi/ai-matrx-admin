@@ -1,10 +1,10 @@
 import { useContext, ReactNode, useState } from "react";
 import { LucideIcon, Edit3, Save, X, ChevronDown, TestTube } from "lucide-react";
 import { BrokerHighlightBadge, stepContainsBroker, WorkflowStepCardProps } from "../WorkflowStepsSection";
-import { StatusDisplay } from "../parts/StatusDisplay";
+import { StatusDisplay } from "../common/StatusDisplay";
 import { BrokerHighlightContext } from "../brokers/BrokerHighlightContext";
 import { BrokerDisplay } from "../brokers/BrokerDisplay";
-import StepTestOverlay from "@/features/workflows/workflow-manager/parts/StepTestOverlay";
+import StepTestOverlay from "@/features/workflows/workflow-manager/common/StepTestOverlay";
 
 // Utility function to convert snake_case to Title Case
 function formatStepName(stepName: string): string {
@@ -142,6 +142,7 @@ interface NodeWrapperProps extends Pick<WorkflowStepCardProps, 'step' | 'index' 
     onSave?: () => void;
     onCancel?: () => void;
     allowEdit?: boolean;
+    isEditing?: boolean; // External edit state - if provided, overrides internal state management
 }
 
 export function NodeWrapper({ 
@@ -157,26 +158,39 @@ export function NodeWrapper({
     onEdit,
     onSave,
     onCancel,
-    allowEdit = true
+    allowEdit = true,
+    isEditing: externalIsEditing
 }: NodeWrapperProps) {
     const { highlightedBroker } = useContext(BrokerHighlightContext);
     const containsHighlightedBroker = highlightedBroker && stepContainsBroker(step, highlightedBroker);
     const theme = colorThemes[colorTheme];
-    const [isEditing, setIsEditing] = useState(false);
+    const [internalIsEditing, setInternalIsEditing] = useState(false);
     const [isTestOverlayOpen, setIsTestOverlayOpen] = useState(false);
 
+    // Use external edit state if provided, otherwise use internal state
+    const isEditing = externalIsEditing !== undefined ? externalIsEditing : internalIsEditing;
+
     const handleEdit = () => {
-        setIsEditing(true);
+        // If external control is used, don't update internal state
+        if (externalIsEditing === undefined) {
+            setInternalIsEditing(true);
+        }
         onEdit?.();
     };
 
     const handleSave = () => {
-        setIsEditing(false);
+        // If external control is used, don't update internal state
+        if (externalIsEditing === undefined) {
+            setInternalIsEditing(false);
+        }
         onSave?.();
     };
 
     const handleCancel = () => {
-        setIsEditing(false);
+        // If external control is used, don't update internal state
+        if (externalIsEditing === undefined) {
+            setInternalIsEditing(false);
+        }
         onCancel?.();
     };
 

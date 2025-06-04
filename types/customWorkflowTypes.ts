@@ -78,19 +78,10 @@ export type UserInput = {
     value: any;
 };
 
-export type WorkflowMetadata = {
-    id: string;
-    name: string;
-    description?: string;
-    version?: string;
-    created_date?: string;
-};
-
 export type BackendWorkflowData = {
     steps: WorkflowStep[];
     workflow_relays?: WorkflowRelays;
     user_inputs?: UserInput[];
-    workflow_metadata?: WorkflowMetadata;
 };
 
 export const FUNCTION_TYPES = {

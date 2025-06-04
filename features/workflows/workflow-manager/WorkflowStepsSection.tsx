@@ -19,7 +19,7 @@ import { IterativeRecipeRunnerNodeDisplay } from "./nodes/IterativeRecipeRunner"
 import { ResultsProcessorNodeDisplay } from "./nodes/ResultsProcessor";
 import { UnifiedRegisteredNodeDisplay } from "./nodes/registered-function-node/UnifiedRegisteredNode";
 import { DefaultNodeDisplay } from "./nodes/DefaultNode";
-import WorkflowStepCreatorOverlay from "./nodes/registered-function-node/WorkflowStepCreatorOverlay";
+import WorkflowStepCreatorOverlay from "./nodes/registered-function-node/creator-overlay/WorkflowStepCreatorOverlay";
 
 export interface WorkflowStepsSectionProps {
     steps: WorkflowStep[];
@@ -73,8 +73,17 @@ export function WorkflowStepsSection({ steps, onUpdate }: WorkflowStepsSectionPr
     const [isCreateOverlayOpen, setIsCreateOverlayOpen] = useState(false);
 
     const handleStepUpdate = (index: number, updatedStep: WorkflowStep) => {
+        console.log("🔄 WorkflowStepsSection.handleStepUpdate called:", {
+            stepIndex: index,
+            updatedStep,
+            totalSteps: steps.length,
+            hasOnUpdate: !!onUpdate
+        });
+        
         const newSteps = [...steps];
         newSteps[index] = updatedStep;
+        
+        console.log("🔄 WorkflowStepsSection.handleStepUpdate - calling parent onUpdate with new steps:", newSteps);
         onUpdate(newSteps);
     };
 

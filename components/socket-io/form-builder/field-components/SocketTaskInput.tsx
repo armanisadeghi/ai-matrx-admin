@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/redux";
 import { selectFieldValue, selectConnectionTestMode, selectTaskNameById } from "@/lib/redux/socket-io";
 import { FieldOverrides } from "@/components/socket/form-builder/FormField";
 import { isValidField } from "@/constants/socket-schema";
-import { flexibleJsonParse } from "@/lib/utils/json-utils";
+import { flexibleJsonParse } from "@/utils/json-utils";
 
 interface SocketTaskInputProps {
     taskId: string;

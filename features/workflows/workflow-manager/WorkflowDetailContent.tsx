@@ -5,11 +5,11 @@ import { useWorkflowWithFetch } from "@/features/workflows/hooks/useWorkflowData
 import { useWorkflowManager } from "@/features/workflows/hooks/useWorkflowManager";
 import { WorkflowData, BackendWorkflowData, WorkflowStep } from "@/types/customWorkflowTypes";
 import { WorkflowStepsSection } from "./WorkflowStepsSection";
-import { UserInputsSection } from "./UserInputsSection";
-import { WorkflowRelaysSection } from "./WorkflowRelaysSection";
-import { RawDataSection } from "./RawDataSection";
+import { UserInputsSection } from "./common/UserInputsSection";
+import { WorkflowRelaysSection } from "./common/WorkflowRelaysSection";
+import { RawDataSection } from "./common/RawDataSection";
 import { BrokerHighlightContext } from "./brokers/BrokerHighlightContext";
-import { SocketExecuteButton } from "@/components/socket-io/universal/SocketExecuteButton";
+import { SocketExecuteButton } from "@/components/socket-io/presets/SocketExecuteButton";
 import { 
     Workflow, 
     Play, 
@@ -88,7 +88,14 @@ export function WorkflowDetailContent({ workflowId }: WorkflowDetailContentProps
 
     // Enhanced step update handler using our new actions
     const handleUpdatedSteps = (steps: WorkflowStep[]) => {
-        console.log('Updated steps:', steps);
+        console.log('🔄 WorkflowDetailContent.handleUpdatedSteps called:', {
+            stepCount: steps.length,
+            workflowId,
+            hasEnhancedWorkflow: !!enhancedActiveWorkflow,
+            hasMetadataActions: !!metadataActions.updateBackendWorkflow,
+            hasWorkflowManagementActions: !!workflowManagementActions?.updateWorkflow,
+            currentBackendData: backendData
+        });
         
         // Use enhanced workflow management if available
         if (enhancedActiveWorkflow && metadataActions.updateBackendWorkflow) {
@@ -97,14 +104,36 @@ export function WorkflowDetailContent({ workflowId }: WorkflowDetailContentProps
                 steps,
             };
             
+            console.log('🔄 WorkflowDetailContent.handleUpdatedSteps - updating local state with:', updatedBackendData);
+            
             // Update local state first
             metadataActions.updateBackendWorkflow(updatedBackendData);
             
-            // Then save to backend using the workflow management actions
-            if (workflowManagementActions?.updateWorkflowField && workflowId) {
-                workflowManagementActions.updateWorkflowField('backendWorkflow', updatedBackendData, workflowId);
+            // Then save to backend using the workflow management actions - USE updateWorkflow not updateWorkflowField
+            if (workflowManagementActions?.updateWorkflow && workflowId) {
+                // Create the proper data structure for the update
+                const updateData = {
+                    backendWorkflow: updatedBackendData
+                };
+                
+                console.log('🚀 WorkflowDetailContent.handleUpdatedSteps - saving to database with:', updateData);
+                
+                workflowManagementActions.updateWorkflow({
+                    data: updateData,
+                    matrxRecordId: `id:${workflowId}` as any
+                });
                 console.log('✅ Auto-saving workflow changes to database...', { workflowId, steps: steps.length });
+            } else {
+                console.warn('❌ WorkflowDetailContent.handleUpdatedSteps - cannot save to database:', {
+                    hasUpdateWorkflow: !!workflowManagementActions?.updateWorkflow,
+                    workflowId
+                });
             }
+        } else {
+            console.warn('❌ WorkflowDetailContent.handleUpdatedSteps - missing required dependencies:', {
+                hasEnhancedWorkflow: !!enhancedActiveWorkflow,
+                hasMetadataActions: !!metadataActions.updateBackendWorkflow
+            });
         }
         
         // Log validation results if available
@@ -132,9 +161,17 @@ export function WorkflowDetailContent({ workflowId }: WorkflowDetailContentProps
             // Update local state first
             metadataActions.updateBackendWorkflow(updatedBackendData);
             
-            // Then save to backend using the workflow management actions
-            if (workflowManagementActions?.updateWorkflowField && workflowId) {
-                workflowManagementActions.updateWorkflowField('backendWorkflow', updatedBackendData, workflowId);
+            // Then save to backend using the workflow management actions - USE updateWorkflow not updateWorkflowField
+            if (workflowManagementActions?.updateWorkflow && workflowId) {
+                // Create the proper data structure for the update
+                const updateData = {
+                    backendWorkflow: updatedBackendData
+                };
+                
+                workflowManagementActions.updateWorkflow({
+                    data: updateData,
+                    matrxRecordId: `id:${workflowId}` as any
+                });
                 console.log('✅ Auto-saving user input changes to database...', { workflowId, userInputs: userInputs.length });
             }
         }
@@ -143,9 +180,17 @@ export function WorkflowDetailContent({ workflowId }: WorkflowDetailContentProps
     // Manual save function (backup - auto-save should handle most cases)
     const handleManualSave = () => {
         if (enhancedActiveWorkflow && backendData && workflowId) {
-            // Use the workflow management action to save to backend
-            if (workflowManagementActions?.updateWorkflowField) {
-                workflowManagementActions.updateWorkflowField('backendWorkflow', backendData, workflowId);
+            // Use the workflow management action to save to backend - USE updateWorkflow not updateWorkflowField
+            if (workflowManagementActions?.updateWorkflow) {
+                // Create the proper data structure for the update
+                const updateData = {
+                    backendWorkflow: backendData
+                };
+                
+                workflowManagementActions.updateWorkflow({
+                    data: updateData,
+                    matrxRecordId: `id:${workflowId}` as any
+                });
                 console.log('💾 Manual save triggered', { workflowId });
             } else {
                 // Fallback to local state update only
@@ -328,7 +373,7 @@ export function WorkflowDetailContent({ workflowId }: WorkflowDetailContentProps
                                         <SocketExecuteButton
                                             presetName="workflow_backend_data_to_start_workflow"
                                             sourceData={backendData}
-                                            buttonText="🚀 Execute Workflow"
+                                            buttonText="Execute Workflow"
                                             overlayTitle="Execute Entire Workflow"
                                             overlayDescription="This will execute all steps in the workflow sequentially"
                                             variant="default"

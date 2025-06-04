@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { createWorkflowSelectors } from "@/lib/redux/entity/custom-selectors/workflowSelectors";
 import { getWorkflowActionsWithThunks } from "@/lib/redux/entity/custom-actions/custom-workflow-actions";
@@ -8,10 +9,13 @@ import { WorkflowStep } from "@/types/customWorkflowTypes";
 import { X, ChevronLeft, ChevronRight, Check, FunctionSquare, Settings, Code2, Eye } from "lucide-react";
 
 // Import refined components
-import FunctionSelectorOverlay from "./FunctionSelectorOverlay";
-import FunctionDetailsDisplay from "./FunctionDetailsDisplay";
-import InputConfigurationTable from "./InputConfigurationTable";
-import InputMappingControls from "./InputMappingControls";
+import FunctionSelectorOverlay from "../FunctionSelectorOverlay";
+import FunctionDetailsDisplay from "../FunctionDetailsDisplay";
+import InputConfigurationTable from "../InputConfigurationTable";
+import InputMappingControls from "../InputMappingControls";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 
 interface WorkflowStepCreatorOverlayProps {
     isOpen: boolean;
@@ -32,11 +36,7 @@ export default function WorkflowStepCreatorOverlay({
     initialStepData,
     mode,
 }: WorkflowStepCreatorOverlayProps) {
-    const dispatch = useAppDispatch();
     const workflowSelectors = createWorkflowSelectors();
-    const workflowActions = getWorkflowActionsWithThunks();
-
-    // Stepper state
     const [currentStep, setCurrentStep] = useState<StepperStep>(1);
 
     // Local state for step creation
@@ -225,18 +225,31 @@ export default function WorkflowStepCreatorOverlay({
     // Save and close
     const handleSaveStep = useCallback(() => {
         const step = createStepObject();
-        if (!step) return;
+        console.log("🔄 WorkflowStepCreatorOverlay.handleSaveStep called:", {
+            mode,
+            hasStep: !!step,
+            hasOnStepCreated: !!onStepCreated,
+            step
+        });
+        
+        if (!step) {
+            console.warn("❌ WorkflowStepCreatorOverlay.handleSaveStep - no step created");
+            return;
+        }
 
         // Notify parent if callback provided
         if (onStepCreated) {
+            console.log("🚀 WorkflowStepCreatorOverlay.handleSaveStep - calling onStepCreated callback");
             onStepCreated(step);
+        } else {
+            console.warn("❌ WorkflowStepCreatorOverlay.handleSaveStep - no onStepCreated callback");
         }
 
         console.log("Created step:", step);
         
         // Close overlay after creation
         onClose();
-    }, [createStepObject, onStepCreated, onClose]);
+    }, [createStepObject, onStepCreated, onClose, mode]);
 
     // Update arg override
     const handleUpdateArgOverride = useCallback((argName: string, field: "value" | "ready", newValue: any) => {
@@ -342,12 +355,12 @@ export default function WorkflowStepCreatorOverlay({
                                     <label className="text-sm font-medium text-blue-800 dark:text-blue-200">
                                         Step Name
                                     </label>
-                                    <input
+                                    <Input
                                         type="text"
                                         value={stepName}
                                         onChange={(e) => setStepName(e.target.value)}
                                         placeholder="Enter descriptive step name..."
-                                        className="w-full px-4 py-2.5 bg-white/80 dark:bg-slate-800/80 border border-blue-200 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 transition-all duration-200"
+                                        className="w-full"
                                     />
                                 </div>
                                 
@@ -355,19 +368,14 @@ export default function WorkflowStepCreatorOverlay({
                                     <label className="text-sm font-medium text-blue-800 dark:text-blue-200">
                                         Execution Required
                                     </label>
-                                    <div className="flex items-center h-10">
-                                        <label className="relative inline-flex items-center cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={executionRequired}
-                                                onChange={(e) => setExecutionRequired(e.target.checked)}
-                                                className="sr-only peer"
-                                            />
-                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                            <span className="ml-3 text-sm text-blue-700 dark:text-blue-300">
-                                                {executionRequired ? "Required" : "Optional"}
-                                            </span>
-                                        </label>
+                                    <div className="flex items-center gap-3 h-10">
+                                        <Switch
+                                            checked={executionRequired}
+                                            onCheckedChange={setExecutionRequired}
+                                        />
+                                        <span className="text-sm text-blue-700 dark:text-blue-300">
+                                            {executionRequired ? "Required" : "Optional"}
+                                        </span>
                                     </div>
                                 </div>
                                 
@@ -375,12 +383,12 @@ export default function WorkflowStepCreatorOverlay({
                                     <label className="text-sm font-medium text-blue-800 dark:text-blue-200">
                                         Return Broker Override
                                     </label>
-                                    <input
+                                    <Input
                                         type="text"
                                         value={returnBroker}
                                         onChange={(e) => setReturnBroker(e.target.value)}
                                         placeholder="Override return broker..."
-                                        className="w-full px-4 py-2.5 bg-white/80 dark:bg-slate-800/80 border border-blue-200 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 dark:text-slate-100 transition-all duration-200"
+                                        className="w-full"
                                     />
                                 </div>
                             </div>
@@ -477,7 +485,10 @@ export default function WorkflowStepCreatorOverlay({
 
     if (!isOpen) return null;
 
-    return (
+    // Only render on client side
+    if (typeof document === 'undefined') return null;
+
+    return createPortal(
         <div className="fixed inset-0 z-50 overflow-y-auto">
             {/* Modern Backdrop */}
             <div 
@@ -504,24 +515,20 @@ export default function WorkflowStepCreatorOverlay({
                                 <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                                     {mode === 'edit' ? 'Edit Workflow Step' : 'Create Workflow Step'}
                                 </h2>
-                                <p className="text-slate-600 dark:text-slate-400 mt-2">
-                                    {mode === 'edit' 
-                                        ? 'Modify the configuration of this workflow step'
-                                        : 'Configure a registered function as a workflow step'
-                                    }
-                                </p>
                             </div>
-                            <button
+                            <Button
                                 type="button"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     onClose();
                                 }}
-                                className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-xl"
                             >
-                                <X className="w-6 h-6 text-slate-500 dark:text-slate-400" />
-                            </button>
+                                <X className="w-6 h-6" />
+                            </Button>
                         </div>
 
                         {/* Modern Stepper */}
@@ -666,7 +673,7 @@ export default function WorkflowStepCreatorOverlay({
                             
                             <div className="flex items-center gap-4">
                                 {/* Previous Button */}
-                                <button
+                                <Button
                                     type="button"
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -674,14 +681,15 @@ export default function WorkflowStepCreatorOverlay({
                                         handlePrevious();
                                     }}
                                     disabled={currentStep === 1}
-                                    className="px-6 py-3 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-medium"
+                                    variant="outline"
+                                    className="flex items-center gap-2"
                                 >
                                     <ChevronLeft className="w-4 h-4" />
                                     Previous
-                                </button>
+                                </Button>
 
                                 {/* Save Button */}
-                                <button
+                                <Button
                                     type="button"
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -689,16 +697,16 @@ export default function WorkflowStepCreatorOverlay({
                                         handleSaveStep();
                                     }}
                                     disabled={!canSave()}
-                                    className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl"
                                 >
                                     {mode === 'edit' 
                                         ? (currentStep === 3 ? "Update Step" : "Save Changes")
                                         : (currentStep === 3 ? "Create Step" : "Save Step")
                                     }
-                                </button>
+                                </Button>
 
                                 {/* Next Button */}
-                                <button
+                                <Button
                                     type="button"
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -706,16 +714,17 @@ export default function WorkflowStepCreatorOverlay({
                                         handleNext();
                                     }}
                                     disabled={!canGoNext() || currentStep === 3}
-                                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg hover:shadow-xl flex items-center gap-2"
                                 >
                                     Next
                                     <ChevronRight className="w-4 h-4" />
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 } 

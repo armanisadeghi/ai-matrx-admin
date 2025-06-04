@@ -18,7 +18,7 @@ export interface Schema {
 }
 
 // Import the flexible JSON utility at the top after the interfaces
-import { flexibleJsonParse } from "@/lib/utils/json-utils";
+import { flexibleJsonParse } from "@/utils/json-utils";
 
 export const STEP_DEFINITION: Schema = {
     function_type: {

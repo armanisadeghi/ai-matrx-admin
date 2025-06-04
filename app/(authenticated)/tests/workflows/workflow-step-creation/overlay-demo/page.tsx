@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { WorkflowStep } from "@/types/customWorkflowTypes";
-import WorkflowStepCreatorOverlay from "@/features/workflows/workflow-manager/nodes/registered-function-node/WorkflowStepCreatorOverlay";
+import WorkflowStepCreatorOverlay from "@/features/workflows/workflow-manager/nodes/registered-function-node/creator-overlay/WorkflowStepCreatorOverlay";
 
 export default function OverlayDemoPage() {
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);

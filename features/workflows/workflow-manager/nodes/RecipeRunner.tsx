@@ -1,40 +1,204 @@
 import { useState } from "react";
-import { ChefHat, Hash, Tag, Cpu, Wrench, ArrowRight } from "lucide-react";
+import { ChefHat, Hash, Tag, Cpu, Wrench, ArrowRight, ToggleLeft, ToggleRight } from "lucide-react";
 import { ClickableBroker } from "../brokers/ClickableBroker";
 import { WorkflowStepCardProps } from "../WorkflowStepsSection";
 import { NodeWrapper } from "./NodeWrapper";
+import { WorkflowStep, ArgOverride } from "@/types/customWorkflowTypes";
+
+/**
+ * RecipeRunner utilities - all business logic lives here
+ */
+const RecipeRunnerUtils = {
+    /**
+     * Validate and extract display data from a RecipeRunner step
+     */
+    extractDisplayData(step: WorkflowStep) {
+        if (step.function_id !== "recipe_runner") {
+            throw new Error(`Expected function_id 'recipe_runner', got '${step.function_id}'`);
+        }
+
+        const overrideData = step.override_data;
+        const argOverrides = overrideData?.arg_overrides || [];
+        
+        // Find required and optional arg overrides
+        const recipeIdOverride = argOverrides.find(override => override.name === 'recipe_id');
+        const versionOverride = argOverrides.find(override => override.name === 'version');
+        const modelOverride = argOverrides.find(override => override.name === 'model_override');
+        const toolsOverride = argOverrides.find(override => override.name === 'tools_override');
+
+        // Extract values with defaults
+        const recipeId = recipeIdOverride?.value || '';
+        const version = versionOverride?.value || 'latest';
+        const modelOverrideValue = modelOverride?.value || '';
+        const toolsOverrideValue = toolsOverride?.value || [];
+
+        // Handle return broker override
+        const returnBrokerOverride = overrideData?.return_broker_override;
+        const returnBrokers = Array.isArray(returnBrokerOverride) 
+            ? returnBrokerOverride 
+            : returnBrokerOverride ? [returnBrokerOverride] : [];
+
+        // Additional dependencies are the input mappings
+        const additionalDependencies = step.additional_dependencies || [];
+
+        return {
+            recipeId,
+            version,
+            isLatestVersion: version === 'latest',
+            modelOverride: modelOverrideValue,
+            toolsOverride: toolsOverrideValue,
+            returnBrokers,
+            additionalDependencies
+        };
+    },
+
+    /**
+     * Create a properly structured RecipeRunner step for saving
+     */
+    createStep(
+        baseStep: WorkflowStep, 
+        recipeId: string, 
+        version: string | number,
+        modelOverride: string,
+        toolsOverride: string[],
+        returnBrokers: string[],
+        additionalDependencies: string[]
+    ): WorkflowStep {
+        // Validation
+        if (!recipeId || recipeId.trim() === '') {
+            throw new Error('Recipe ID is required for RecipeRunner');
+        }
+
+        if (!returnBrokers || returnBrokers.length === 0 || returnBrokers.every(id => !id || id.trim() === '')) {
+            throw new Error('At least one return broker is required for RecipeRunner');
+        }
+
+        // Clean return brokers
+        const validReturnBrokers = returnBrokers.filter(id => id && id.trim() !== '');
+        
+        // Clean additional dependencies
+        const validAdditionalDeps = additionalDependencies.filter(id => id && id.trim() !== '');
+
+        // Build arg overrides
+        const argOverrides: ArgOverride[] = [
+            {
+                name: 'recipe_id',
+                value: recipeId.trim(),
+                ready: true,
+                default_value: recipeId.trim()
+            },
+            {
+                name: 'version',
+                value: version,
+                ready: true,
+                default_value: version
+            }
+        ];
+
+        // Add optional overrides if provided
+        if (modelOverride && modelOverride.trim() !== '') {
+            argOverrides.push({
+                name: 'model_override',
+                value: modelOverride.trim(),
+                ready: true,
+                default_value: modelOverride.trim()
+            });
+        }
+
+        if (toolsOverride && toolsOverride.length > 0) {
+            const validTools = toolsOverride.filter(tool => tool && tool.trim() !== '');
+            if (validTools.length > 0) {
+                argOverrides.push({
+                    name: 'tools_override',
+                    value: validTools,
+                    ready: true,
+                    default_value: validTools
+                });
+            }
+        }
+
+        const stepData: WorkflowStep = {
+            function_type: "workflow_recipe_executor",
+            function_id: "recipe_runner",
+            step_name: baseStep.step_name,
+            status: baseStep.status || "pending",
+            execution_required: baseStep.execution_required ?? true,
+            override_data: {
+                arg_overrides: argOverrides,
+                return_broker_override: validReturnBrokers.length === 1 
+                    ? validReturnBrokers[0] 
+                    : validReturnBrokers
+            },
+            additional_dependencies: validAdditionalDeps,
+            broker_relays: baseStep.broker_relays || {
+                simple_relays: [],
+                bidirectional_relays: [],
+                relay_chains: []
+            }
+        };
+
+        return stepData;
+    },
+
+    /**
+     * Format tools override for display
+     */
+    formatToolsOverride(tools: any): string {
+        if (!tools || tools === 'None') return 'None';
+        if (Array.isArray(tools)) return tools.join(', ');
+        return String(tools);
+    },
+
+    /**
+     * Parse tools override from string input
+     */
+    parseToolsOverride(toolsString: string): string[] {
+        if (!toolsString || toolsString.trim() === '' || toolsString === 'None') {
+            return [];
+        }
+        return toolsString.split(',').map(s => s.trim()).filter(s => s);
+    },
+
+    /**
+     * Validate save requirements
+     */
+    canSave(recipeId: string, returnBrokers: string[]): { canSave: boolean; errors: string[] } {
+        const errors: string[] = [];
+
+        if (!recipeId || recipeId.trim() === '') {
+            errors.push('Recipe ID is required');
+        }
+
+        const validReturnBrokers = returnBrokers.filter(id => id && id.trim() !== '');
+        if (validReturnBrokers.length === 0) {
+            errors.push('At least one return broker is required');
+        }
+
+        return {
+            canSave: errors.length === 0,
+            errors
+        };
+    }
+};
 
 // Specialized card for recipe_runner function type
 export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onUpdate }: WorkflowStepCardProps) {
-    // Extract data from overrides
-    const overrideData = step.override_data;
-    const recipeId = overrideData?.arg_overrides?.find(override => override.name === 'recipe_id')?.value || 'None';
-    const version = overrideData?.arg_overrides?.find(override => override.name === 'version')?.value || 'Latest';
-    const modelOverride = overrideData?.arg_overrides?.find(override => override.name === 'model_override')?.value || 'None';
-    const toolsOverride = overrideData?.arg_overrides?.find(override => override.name === 'tools_override')?.value || 'None';
-    const returnBrokerId = Array.isArray(overrideData?.return_broker_override) 
-        ? overrideData?.return_broker_override[0] || 'None'
-        : overrideData?.return_broker_override || 'None';
+    // Extract display data using utility
+    const displayData = RecipeRunnerUtils.extractDisplayData(step);
+
+    // State for editing
+    const [isEditing, setIsEditing] = useState(false);
     
     // Edit state
     const [editValues, setEditValues] = useState({
-        recipeId: recipeId,
-        version: version,
-        modelOverride: modelOverride,
-        toolsOverride: Array.isArray(toolsOverride) ? toolsOverride.join(', ') : toolsOverride,
-        returnBrokerId: returnBrokerId,
-        argMappings: overrideData?.arg_mapping ? { ...overrideData.arg_mapping } : {}
+        recipeId: displayData.recipeId,
+        version: displayData.version,
+        isLatestVersion: displayData.isLatestVersion,
+        modelOverride: displayData.modelOverride,
+        toolsOverride: RecipeRunnerUtils.formatToolsOverride(displayData.toolsOverride),
+        returnBrokers: [...displayData.returnBrokers],
+        additionalDependencies: [...displayData.additionalDependencies]
     });
-
-    // Format tools override
-    const formatToolsOverride = (tools: any) => {
-        if (tools === 'None' || !tools) return 'None';
-        if (Array.isArray(tools)) return tools.join(', ');
-        return String(tools);
-    };
-
-    // Get arg mapping entries
-    const argMappingEntries = Object.entries(editValues.argMappings);
 
     const handleSave = () => {
         if (!onUpdate) {
@@ -42,91 +206,108 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
             return;
         }
 
-        // Create updated step with new values
-        const updatedStep = { ...step };
-        
-        // Update arg_overrides
-        if (!overrideData?.arg_overrides) {
-            overrideData.arg_overrides = [];
+        // Parse tools override
+        const parsedTools = RecipeRunnerUtils.parseToolsOverride(editValues.toolsOverride);
+
+        // Validate before saving
+        const validation = RecipeRunnerUtils.canSave(editValues.recipeId, editValues.returnBrokers);
+        if (!validation.canSave) {
+            alert(`Cannot save: ${validation.errors.join(', ')}`);
+            return;
         }
 
-        // Helper function to update or add arg override
-        const updateArgOverride = (name: string, value: any) => {
-            const existingIndex = overrideData.arg_overrides!.findIndex(override => override.name === name);
-            if (existingIndex >= 0) {
-                overrideData.arg_overrides![existingIndex].value = value;
-            } else {
-                overrideData.arg_overrides!.push({
-                    name,
-                    value,
-                    ready: true,
-                    default_value: value
-                });
-            }
-        };
+        try {
+            const updatedStep = RecipeRunnerUtils.createStep(
+                step,
+                editValues.recipeId,
+                editValues.isLatestVersion ? 'latest' : editValues.version,
+                editValues.modelOverride,
+                parsedTools,
+                editValues.returnBrokers,
+                editValues.additionalDependencies
+            );
 
-        // Update values
-        updateArgOverride('recipe_id', editValues.recipeId);
-        updateArgOverride('version', editValues.version);
-        updateArgOverride('model_override', editValues.modelOverride);
-        
-        // Handle tools override (convert back to array if needed)
-        const toolsValue = editValues.toolsOverride.includes(',') 
-            ? editValues.toolsOverride.split(',').map(s => s.trim()).filter(s => s)
-            : editValues.toolsOverride === 'None' ? 'None' : editValues.toolsOverride;
-        updateArgOverride('tools_override', toolsValue);
-
-        // Update arg mappings
-        overrideData.arg_mapping = { ...editValues.argMappings };
-
-        // Update return broker
-        if (editValues.returnBrokerId !== 'None') {
-            overrideData.return_broker_override = editValues.returnBrokerId;
-        } else {
-            delete overrideData.return_broker_override;
+            console.log('🔄 RecipeRunnerNodeDisplay.handleSave - created updated step:', updatedStep);
+            onUpdate(index, updatedStep);
+            setIsEditing(false);
+        } catch (error) {
+            alert(`Error saving step: ${error.message}`);
         }
+    };
 
-        onUpdate(index, updatedStep);
-        console.log('Saving recipe runner changes:', editValues);
+    const handleEdit = () => {
+        setIsEditing(true);
     };
 
     const handleCancel = () => {
         // Reset edit values to original
         setEditValues({
-            recipeId: recipeId,
-            version: version,
-            modelOverride: modelOverride,
-            toolsOverride: Array.isArray(toolsOverride) ? toolsOverride.join(', ') : toolsOverride,
-            returnBrokerId: returnBrokerId,
-            argMappings: overrideData?.arg_mapping ? { ...overrideData.arg_mapping } : {}
+            recipeId: displayData.recipeId,
+            version: displayData.version,
+            isLatestVersion: displayData.isLatestVersion,
+            modelOverride: displayData.modelOverride,
+            toolsOverride: RecipeRunnerUtils.formatToolsOverride(displayData.toolsOverride),
+            returnBrokers: [...displayData.returnBrokers],
+            additionalDependencies: [...displayData.additionalDependencies]
         });
+        setIsEditing(false);
     };
 
-    const handleArgMappingChange = (paramName: string, brokerId: string) => {
+    // Return broker management
+    const addReturnBroker = () => {
         setEditValues(prev => ({
             ...prev,
-            argMappings: {
-                ...prev.argMappings,
-                [paramName]: brokerId
-            }
+            returnBrokers: [...prev.returnBrokers, '']
         }));
     };
 
-    const addArgMapping = () => {
-        const newParamName = `param_${Object.keys(editValues.argMappings).length + 1}`;
-        handleArgMappingChange(newParamName, '');
+    const updateReturnBroker = (index: number, value: string) => {
+        setEditValues(prev => ({
+            ...prev,
+            returnBrokers: prev.returnBrokers.map((broker, i) => i === index ? value : broker)
+        }));
     };
 
-    const removeArgMapping = (paramName: string) => {
-        setEditValues(prev => {
-            const newMappings = { ...prev.argMappings };
-            delete newMappings[paramName];
-            return {
-                ...prev,
-                argMappings: newMappings
-            };
-        });
+    const removeReturnBroker = (index: number) => {
+        setEditValues(prev => ({
+            ...prev,
+            returnBrokers: prev.returnBrokers.filter((_, i) => i !== index)
+        }));
     };
+
+    // Additional dependencies management
+    const addAdditionalDependency = () => {
+        setEditValues(prev => ({
+            ...prev,
+            additionalDependencies: [...prev.additionalDependencies, '']
+        }));
+    };
+
+    const updateAdditionalDependency = (index: number, value: string) => {
+        setEditValues(prev => ({
+            ...prev,
+            additionalDependencies: prev.additionalDependencies.map((dep, i) => i === index ? value : dep)
+        }));
+    };
+
+    const removeAdditionalDependency = (index: number) => {
+        setEditValues(prev => ({
+            ...prev,
+            additionalDependencies: prev.additionalDependencies.filter((_, i) => i !== index)
+        }));
+    };
+
+    // Version handling
+    const handleVersionToggle = (useLatest: boolean) => {
+        setEditValues(prev => ({
+            ...prev,
+            isLatestVersion: useLatest,
+            version: useLatest ? 'latest' : '1'
+        }));
+    };
+
+    // Calculate validation for UI feedback
+    const validation = RecipeRunnerUtils.canSave(editValues.recipeId, editValues.returnBrokers);
 
     return (
         <NodeWrapper
@@ -137,29 +318,37 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
             title="Run Recipe"
             icon={ChefHat}
             colorTheme="blue"
+            onEdit={handleEdit}
             onSave={handleSave}
             onCancel={handleCancel}
-            showReturnBroker={false} // We'll handle it manually with editing capability
+            isEditing={isEditing}
+            showReturnBroker={false}
         >
             {({ isEditing }) => (
                 <div className="space-y-4">
-                    {/* Recipe ID */}
+                    {/* Recipe ID - Required */}
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <Hash className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Recipe ID</span>
+                            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                Recipe ID
+                                <span className="text-red-500 ml-1">*</span>
+                            </span>
                         </div>
                         {isEditing ? (
                             <input
                                 type="text"
                                 value={editValues.recipeId}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, recipeId: e.target.value }))}
-                                className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                placeholder="Recipe ID"
+                                className={`w-full text-sm font-mono bg-white dark:bg-slate-800 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                                    !editValues.recipeId.trim() ? 'border-red-300 dark:border-red-700' : 'border-blue-200 dark:border-blue-700'
+                                }`}
+                                placeholder="Recipe ID (required)"
+                                required
                             />
                         ) : (
                             <div className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg break-all">
-                                {editValues.recipeId}
+                                {editValues.recipeId || 'Not set'}
                             </div>
                         )}
                     </div>
@@ -171,13 +360,34 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                             <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Version</span>
                         </div>
                         {isEditing ? (
-                            <input
-                                type="text"
-                                value={editValues.version}
-                                onChange={(e) => setEditValues(prev => ({ ...prev, version: e.target.value }))}
-                                className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                placeholder="Version"
-                            />
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleVersionToggle(!editValues.isLatestVersion)}
+                                        className="flex items-center gap-2"
+                                    >
+                                        {editValues.isLatestVersion ? (
+                                            <ToggleRight className="w-5 h-5 text-green-500" />
+                                        ) : (
+                                            <ToggleLeft className="w-5 h-5 text-slate-400" />
+                                        )}
+                                        <span className="text-sm text-blue-900 dark:text-blue-100">
+                                            Use Latest Version
+                                        </span>
+                                    </button>
+                                </div>
+                                {!editValues.isLatestVersion && (
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={editValues.version === 'latest' ? '1' : editValues.version}
+                                        onChange={(e) => setEditValues(prev => ({ ...prev, version: e.target.value }))}
+                                        className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                        placeholder="Version number"
+                                    />
+                                )}
+                            </div>
                         ) : (
                             <div className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg">
                                 {editValues.version}
@@ -185,81 +395,70 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                         )}
                     </div>
 
-                    {/* Input Broker Mappings */}
-                    {argMappingEntries.length > 0 && (
-                        <div>
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                    <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                    <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                                        Input Mappings ({argMappingEntries.length})
-                                    </span>
-                                </div>
-                                {isEditing && (
-                                    <button
-                                        onClick={addArgMapping}
-                                        className="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md transition-colors"
-                                    >
-                                        Add Mapping
-                                    </button>
-                                )}
+                    {/* Input Dependencies (Additional Dependencies) */}
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                    Input Dependencies ({editValues.additionalDependencies.filter(dep => dep && dep.trim() !== '').length})
+                                </span>
                             </div>
+                            {isEditing && (
+                                <button
+                                    onClick={addAdditionalDependency}
+                                    className="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md transition-colors"
+                                >
+                                    Add Dependency
+                                </button>
+                            )}
+                        </div>
+                        
+                        {editValues.additionalDependencies.length > 0 ? (
                             <div className="space-y-2">
-                                {argMappingEntries.map(([paramName, brokerId], idx) => (
+                                {editValues.additionalDependencies.map((dep, idx) => (
                                     <div key={idx} className="bg-blue-50/50 dark:bg-blue-950/20 rounded-lg p-3">
                                         {isEditing ? (
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="text"
-                                                        value={paramName}
-                                                        onChange={(e) => {
-                                                            const newParamName = e.target.value;
-                                                            const currentBrokerId = editValues.argMappings[paramName];
-                                                            removeArgMapping(paramName);
-                                                            handleArgMappingChange(newParamName, currentBrokerId);
-                                                        }}
-                                                        className="flex-1 text-xs font-medium bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                                                        placeholder="Parameter name"
-                                                    />
-                                                    <button
-                                                        onClick={() => removeArgMapping(paramName)}
-                                                        className="text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-2 py-1 rounded transition-colors"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
+                                            <div className="flex items-center gap-2">
                                                 <input
                                                     type="text"
-                                                    value={String(brokerId)}
-                                                    onChange={(e) => handleArgMappingChange(paramName, e.target.value)}
-                                                    className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                                                    value={dep}
+                                                    onChange={(e) => updateAdditionalDependency(idx, e.target.value)}
+                                                    className="flex-1 text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                                                     placeholder="Broker ID"
                                                 />
+                                                <button
+                                                    onClick={() => removeAdditionalDependency(idx)}
+                                                    className="text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-2 py-1 rounded transition-colors"
+                                                >
+                                                    Remove
+                                                </button>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                                                    {paramName}
-                                                </span>
-                                                <ClickableBroker 
-                                                    brokerId={String(brokerId)} 
-                                                    className="text-sm font-mono bg-white dark:bg-slate-800 text-blue-900 dark:text-blue-100 border border-blue-200 dark:border-blue-700 px-2 py-1 rounded" 
-                                                />
+                                            <div>
+                                                {dep && dep.trim() !== '' ? (
+                                                    <ClickableBroker
+                                                        brokerId={dep}
+                                                        className="text-sm font-mono bg-white dark:bg-slate-800 text-blue-900 dark:text-blue-100 border border-blue-200 dark:border-blue-700 px-2 py-1 rounded break-all"
+                                                    />
+                                                ) : (
+                                                    <div className="text-sm font-mono text-blue-700 dark:text-blue-300 italic">
+                                                        Not configured
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
                                 ))}
-                                {isEditing && argMappingEntries.length === 0 && (
-                                    <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
-                                        No input broker mappings configured
-                                    </div>
-                                )}
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
+                                No input dependencies configured
+                            </div>
+                        )}
+                    </div>
 
-                    {/* Model Override */}
+                    {/* Model Override - Optional */}
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -271,16 +470,16 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                 value={editValues.modelOverride}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, modelOverride: e.target.value }))}
                                 className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                placeholder="Model Override"
+                                placeholder="Model Override UUID (optional)"
                             />
                         ) : (
                             <div className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg">
-                                {editValues.modelOverride}
+                                {editValues.modelOverride || 'None'}
                             </div>
                         )}
                     </div>
 
-                    {/* Tools Override */}
+                    {/* Tools Override - Optional */}
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <Wrench className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -292,44 +491,93 @@ export function RecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onU
                                 value={editValues.toolsOverride}
                                 onChange={(e) => setEditValues(prev => ({ ...prev, toolsOverride: e.target.value }))}
                                 className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                placeholder="Tools Override (comma-separated)"
+                                placeholder="Tool names (comma-separated, optional)"
                             />
                         ) : (
                             <div className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg">
-                                {formatToolsOverride(editValues.toolsOverride)}
+                                {editValues.toolsOverride || 'None'}
                             </div>
                         )}
                     </div>
 
-                    {/* Return Broker */}
+                    {/* Return Brokers - Required */}
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400 rotate-180" />
-                            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Return Broker</span>
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <ArrowRight className="w-4 h-4 text-blue-600 dark:text-blue-400 rotate-180" />
+                                <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                                    Return Brokers ({editValues.returnBrokers.filter(broker => broker && broker.trim() !== '').length})
+                                    <span className="text-red-500 ml-1">*</span>
+                                </span>
+                            </div>
+                            {isEditing && (
+                                <button
+                                    onClick={addReturnBroker}
+                                    className="text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/50 dark:hover:bg-blue-900/70 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-md transition-colors"
+                                >
+                                    Add Broker
+                                </button>
+                            )}
                         </div>
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                value={editValues.returnBrokerId}
-                                onChange={(e) => setEditValues(prev => ({ ...prev, returnBrokerId: e.target.value }))}
-                                className="w-full text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                                placeholder="Return Broker ID"
-                            />
-                        ) : (
-                            <div>
-                                {editValues.returnBrokerId !== 'None' ? (
-                                    <ClickableBroker
-                                        brokerId={editValues.returnBrokerId}
-                                        className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg break-all block"
-                                    />
-                                ) : (
-                                    <div className="text-sm font-mono bg-blue-50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-100 px-3 py-2 rounded-lg">
-                                        None
+                        
+                        {editValues.returnBrokers.length > 0 ? (
+                            <div className="space-y-2">
+                                {editValues.returnBrokers.map((broker, idx) => (
+                                    <div key={idx} className="bg-blue-50/50 dark:bg-blue-950/20 rounded-lg p-3">
+                                        {isEditing ? (
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={broker}
+                                                    onChange={(e) => updateReturnBroker(idx, e.target.value)}
+                                                    className="flex-1 text-sm font-mono bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                                                    placeholder="Return Broker ID"
+                                                />
+                                                <button
+                                                    onClick={() => removeReturnBroker(idx)}
+                                                    className="text-xs bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-2 py-1 rounded transition-colors"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                {broker && broker.trim() !== '' ? (
+                                                    <ClickableBroker
+                                                        brokerId={broker}
+                                                        className="text-sm font-mono bg-white dark:bg-slate-800 text-blue-900 dark:text-blue-100 border border-blue-200 dark:border-blue-700 px-2 py-1 rounded break-all"
+                                                    />
+                                                ) : (
+                                                    <div className="text-sm font-mono text-blue-700 dark:text-blue-300 italic">
+                                                        Not configured
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">
+                                No return brokers configured
+                                {isEditing && <span className="block text-red-500 text-xs mt-1">At least one is required</span>}
                             </div>
                         )}
                     </div>
+
+                    {/* Validation Errors */}
+                    {isEditing && !validation.canSave && (
+                        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-700 rounded-lg p-3">
+                            <div className="text-sm text-red-800 dark:text-red-200 font-medium mb-1">
+                                Cannot save step:
+                            </div>
+                            <ul className="text-sm text-red-700 dark:text-red-300 list-disc list-inside">
+                                {validation.errors.map((error, idx) => (
+                                    <li key={idx}>{error}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             )}
         </NodeWrapper>

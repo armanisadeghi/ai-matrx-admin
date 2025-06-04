@@ -1,5 +1,5 @@
 import { SchemaField, SOCKET_TASKS } from "./socket-schema";
-import { flexibleJsonParse } from "@/lib/utils/json-utils";
+import { flexibleJsonParse } from "@/utils/json-utils";
 
 /* Socket Task Preset Creation Guide
 

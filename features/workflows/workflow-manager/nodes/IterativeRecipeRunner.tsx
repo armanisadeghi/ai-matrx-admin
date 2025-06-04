@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { IterationCcw, ArrowRight, ArrowLeft } from "lucide-react";
+import { Repeat, ArrowRight, ArrowLeft } from "lucide-react";
 import { ClickableBroker } from "../brokers/ClickableBroker";
 import { WorkflowStepCardProps } from "../WorkflowStepsSection";
 import { NodeWrapper } from "./NodeWrapper";
+import { WorkflowStep } from "@/types/customWorkflowTypes";
 
 // Specialized card for iterative recipe runner function type
 export function IterativeRecipeRunnerNodeDisplay({ step, index, isExpanded, onToggle, onUpdate }: WorkflowStepCardProps) {
@@ -15,10 +16,11 @@ export function IterativeRecipeRunnerNodeDisplay({ step, index, isExpanded, onTo
         ? originalReturnBroker 
         : originalReturnBroker ? [originalReturnBroker] : [];
 
-    // Edit state
+    // State for editing
+    const [isEditing, setIsEditing] = useState(false);
     const [editValues, setEditValues] = useState({
         inputBrokerId: inputBrokerId,
-        returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['']
+        returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['None']
     });
 
     const handleSave = () => {
@@ -27,46 +29,58 @@ export function IterativeRecipeRunnerNodeDisplay({ step, index, isExpanded, onTo
             return;
         }
 
-        // Create updated step with new values
-        const updatedStep = { ...step };
-        
-        // Ensure override_data exists
-        if (!updatedStep.override_data) {
-            updatedStep.override_data = {};
-        }
-
-        // Update arg_mapping
-        if (!updatedStep.override_data.arg_mapping) {
-            updatedStep.override_data.arg_mapping = {};
-        }
-
-        updatedStep.override_data.arg_mapping.batch_configs_broker_id = editValues.inputBrokerId !== 'None' ? editValues.inputBrokerId : undefined;
-
-        // Update return broker - preserve original format (string vs array)
+        // ✅ SAFE: Create completely new step structure instead of mutating original
         const validReturnBrokers = editValues.returnBrokerIds.filter(id => id && id.trim() !== '' && id !== 'None');
         
-        if (validReturnBrokers.length > 0) {
-            // If original was array or we have multiple values, save as array
-            if (Array.isArray(originalReturnBroker) || validReturnBrokers.length > 1) {
-                updatedStep.override_data.return_broker_override = validReturnBrokers;
-            } else {
-                // If original was string and we have one value, save as string
-                updatedStep.override_data.return_broker_override = validReturnBrokers[0];
+        const updatedStep: WorkflowStep = {
+            function_type: "workflow_recipe_executor",
+            function_id: step.function_id,
+            step_name: step.step_name,
+            status: step.status || "pending",
+            execution_required: step.execution_required ?? true,
+            override_data: {
+                arg_overrides: step.override_data?.arg_overrides || [],
+                arg_mapping: {
+                    ...step.override_data?.arg_mapping,
+                    batch_configs_broker_id: editValues.inputBrokerId !== 'None' ? editValues.inputBrokerId : undefined
+                },
+                return_broker_override: (() => {
+                    if (validReturnBrokers.length > 0) {
+                        // If original was array or we have multiple values, save as array
+                        if (Array.isArray(originalReturnBroker) || validReturnBrokers.length > 1) {
+                            return validReturnBrokers;
+                        } else {
+                            // If original was string and we have one value, save as string
+                            return validReturnBrokers[0];
+                        }
+                    }
+                    return undefined;
+                })()
+            },
+            additional_dependencies: step.additional_dependencies || [],
+            broker_relays: step.broker_relays || {
+                simple_relays: [],
+                bidirectional_relays: [],
+                relay_chains: []
             }
-        } else {
-            delete updatedStep.override_data.return_broker_override;
-        }
+        };
 
+        console.log('🔄 IterativeRecipeRunnerNodeDisplay.handleSave - created updated step:', updatedStep);
         onUpdate(index, updatedStep);
-        console.log('Saving iterative recipe runner changes:', editValues);
+        setIsEditing(false);
+    };
+
+    const handleEdit = () => {
+        setIsEditing(true);
     };
 
     const handleCancel = () => {
         // Reset edit values to original
         setEditValues({
             inputBrokerId: inputBrokerId,
-            returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['']
+            returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['None']
         });
+        setIsEditing(false);
     };
 
     const handleReturnBrokerChange = (index: number, value: string) => {
@@ -101,10 +115,12 @@ export function IterativeRecipeRunnerNodeDisplay({ step, index, isExpanded, onTo
             isExpanded={isExpanded}
             onToggle={onToggle}
             title="Run Iterative Recipe"
-            icon={IterationCcw}
+            icon={Repeat}
             colorTheme="orange"
+            onEdit={handleEdit}
             onSave={handleSave}
             onCancel={handleCancel}
+            isEditing={isEditing}
             showReturnBroker={false}
         >
             {({ isEditing }) => (

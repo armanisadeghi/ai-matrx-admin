@@ -3,23 +3,22 @@ import { Target, ArrowRight, Settings, ArrowLeft } from "lucide-react";
 import { ClickableBroker } from "../brokers/ClickableBroker";
 import { WorkflowStepCardProps } from "../WorkflowStepsSection";
 import { NodeWrapper } from "./NodeWrapper";
+import { WorkflowStep } from "@/types/customWorkflowTypes";
 
 // Specialized card for extractor function type
 export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpdate }: WorkflowStepCardProps) {
     const inputBrokerId = step.override_data?.arg_mapping?.input_broker_id || 'None';
     const configBrokerId = step.override_data?.arg_mapping?.config_broker_id || 'None';
-    
-    // Handle both string and array return brokers
     const originalReturnBroker = step.override_data?.return_broker_override;
-    const returnBrokerArray = Array.isArray(originalReturnBroker) 
-        ? originalReturnBroker 
-        : originalReturnBroker ? [originalReturnBroker] : [];
 
-    // Edit state
+    // State for editing
+    const [isEditing, setIsEditing] = useState(false);
     const [editValues, setEditValues] = useState({
         inputBrokerId: inputBrokerId,
         configBrokerId: configBrokerId,
-        returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['']
+        returnBrokerIds: Array.isArray(originalReturnBroker) 
+            ? originalReturnBroker 
+            : originalReturnBroker ? [originalReturnBroker] : ['None']
     });
 
     const handleSave = () => {
@@ -28,39 +27,50 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
             return;
         }
 
-        // Create updated step with new values
-        const updatedStep = { ...step };
-        
-        // Ensure override_data exists
-        if (!updatedStep.override_data) {
-            updatedStep.override_data = {};
-        }
-
-        // Update arg_mapping
-        if (!updatedStep.override_data.arg_mapping) {
-            updatedStep.override_data.arg_mapping = {};
-        }
-
-        updatedStep.override_data.arg_mapping.input_broker_id = editValues.inputBrokerId !== 'None' ? editValues.inputBrokerId : undefined;
-        updatedStep.override_data.arg_mapping.config_broker_id = editValues.configBrokerId !== 'None' ? editValues.configBrokerId : undefined;
-
-        // Update return broker - preserve original format (string vs array)
-        const validReturnBrokers = editValues.returnBrokerIds.filter(id => id && id.trim() !== '' && id !== 'None');
-        
-        if (validReturnBrokers.length > 0) {
-            // If original was array or we have multiple values, save as array
-            if (Array.isArray(originalReturnBroker) || validReturnBrokers.length > 1) {
-                updatedStep.override_data.return_broker_override = validReturnBrokers;
-            } else {
-                // If original was string and we have one value, save as string
-                updatedStep.override_data.return_broker_override = validReturnBrokers[0];
+        // ✅ SAFE: Create completely new step structure instead of mutating original
+        const updatedStep: WorkflowStep = {
+            function_type: "workflow_recipe_executor",
+            function_id: step.function_id,
+            step_name: step.step_name,
+            status: step.status || "pending",
+            execution_required: step.execution_required ?? true,
+            override_data: {
+                arg_overrides: step.override_data?.arg_overrides || [],
+                arg_mapping: {
+                    ...step.override_data?.arg_mapping,
+                    input_broker_id: editValues.inputBrokerId !== 'None' ? editValues.inputBrokerId : undefined,
+                    config_broker_id: editValues.configBrokerId !== 'None' ? editValues.configBrokerId : undefined
+                },
+                return_broker_override: (() => {
+                    const validReturnBrokers = editValues.returnBrokerIds.filter(id => id && id.trim() !== '' && id !== 'None');
+                    
+                    if (validReturnBrokers.length > 0) {
+                        // If original was array or we have multiple values, save as array
+                        if (Array.isArray(originalReturnBroker) || validReturnBrokers.length > 1) {
+                            return validReturnBrokers;
+                        } else {
+                            // If original was string and we have one value, save as string
+                            return validReturnBrokers[0];
+                        }
+                    }
+                    return undefined;
+                })()
+            },
+            additional_dependencies: step.additional_dependencies || [],
+            broker_relays: step.broker_relays || {
+                simple_relays: [],
+                bidirectional_relays: [],
+                relay_chains: []
             }
-        } else {
-            delete updatedStep.override_data.return_broker_override;
-        }
+        };
 
+        console.log('🔄 ExtractorNodeDisplay.handleSave - created updated step:', updatedStep);
         onUpdate(index, updatedStep);
-        console.log('Saving extractor changes:', editValues);
+        setIsEditing(false);
+    };
+
+    const handleEdit = () => {
+        setIsEditing(true);
     };
 
     const handleCancel = () => {
@@ -68,15 +78,11 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
         setEditValues({
             inputBrokerId: inputBrokerId,
             configBrokerId: configBrokerId,
-            returnBrokerIds: returnBrokerArray.length > 0 ? [...returnBrokerArray] : ['']
+            returnBrokerIds: Array.isArray(originalReturnBroker) 
+                ? originalReturnBroker 
+                : originalReturnBroker ? [originalReturnBroker] : ['None']
         });
-    };
-
-    const handleReturnBrokerChange = (index: number, value: string) => {
-        setEditValues(prev => ({
-            ...prev,
-            returnBrokerIds: prev.returnBrokerIds.map((id, i) => i === index ? value : id)
-        }));
+        setIsEditing(false);
     };
 
     const addReturnBroker = () => {
@@ -86,13 +92,18 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
         }));
     };
 
+    const updateReturnBroker = (index: number, value: string) => {
+        setEditValues(prev => ({
+            ...prev,
+            returnBrokerIds: prev.returnBrokerIds.map((id, i) => i === index ? value : id)
+        }));
+    };
+
     const removeReturnBroker = (index: number) => {
-        if (editValues.returnBrokerIds.length > 1) {
-            setEditValues(prev => ({
-                ...prev,
-                returnBrokerIds: prev.returnBrokerIds.filter((_, i) => i !== index)
-            }));
-        }
+        setEditValues(prev => ({
+            ...prev,
+            returnBrokerIds: prev.returnBrokerIds.filter((_, i) => i !== index)
+        }));
     };
 
     const validReturnBrokers = editValues.returnBrokerIds.filter(id => id && id !== 'None');
@@ -106,8 +117,10 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
             title="Extract Data"
             icon={Target}
             colorTheme="green"
+            onEdit={handleEdit}
             onSave={handleSave}
             onCancel={handleCancel}
+            isEditing={isEditing}
             showReturnBroker={false}
         >
             {({ isEditing }) => (
@@ -198,7 +211,7 @@ export function ExtractorNodeDisplay({ step, index, isExpanded, onToggle, onUpda
                                             <input
                                                 type="text"
                                                 value={brokerId}
-                                                onChange={(e) => handleReturnBrokerChange(idx, e.target.value)}
+                                                onChange={(e) => updateReturnBroker(idx, e.target.value)}
                                                 className="flex-1 text-sm font-mono bg-white dark:bg-slate-800 border border-green-200 dark:border-green-700 rounded px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                                                 placeholder="Return Broker ID"
                                             />

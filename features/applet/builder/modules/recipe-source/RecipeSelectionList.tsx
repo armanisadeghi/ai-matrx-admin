@@ -12,11 +12,11 @@ import {
     getCompiledRecipeByVersion,
     checkCompiledRecipeVersionExists,
     getCompiledRecipeByVersionWithNeededBrokers,
-    AppletSourceConfig,
     getUserRecipes,
 } from "@/lib/redux/app-builder/service/customAppletService";
 import { useAppDispatch } from "@/lib/redux";
 import { setTempAppletSourceConfig } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
+import { AppletSourceConfig } from "@/types/customAppTypes";
 
 interface RecipeSelectionListProps {
     initialSelectedRecipe?: string | null;
