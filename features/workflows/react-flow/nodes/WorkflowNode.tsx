@@ -27,6 +27,7 @@ import {
   TestTube
 } from "lucide-react";
 import { BaseNode, ArgumentOverride } from '@/features/workflows/types';
+import { isNodeConnected } from '@/features/workflows/utils/node-utils';
 
 interface WorkflowNodeProps {
   data: BaseNode;
@@ -85,6 +86,10 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
   // Default status if not provided
   const status = data.status || 'pending';
   
+  // Check if node is guaranteed to fail (has required args that aren't ready or mapped)
+  const nodeConnected = isNodeConnected(data);
+  const willFail = !nodeConnected;
+  
   const IconComponent = getFunctionIcon(functionData?.name || '');
     
   useEffect(() => {
@@ -142,12 +147,22 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
           ? 'ring-2 ring-primary shadow-lg' 
           : 'hover:shadow-md'
         }
-        ${data.execution_required ? 'bg-destructive/5 border-destructive/20' : ''}
+        ${willFail 
+          ? 'border-red-500 dark:border-red-400 ring-2 ring-red-200 dark:ring-red-800 bg-red-50 dark:bg-red-950/50' 
+          : data.execution_required 
+          ? 'bg-destructive/5 border-destructive/20' 
+          : ''
+        }
       `}>
         <CardContent className="p-3">
           <div className="space-y-2">
             {/* Step name takes full top row - made smaller */}
-            <div className="w-full">
+            <div className="w-full flex items-center justify-center gap-1">
+              {willFail && (
+                <span className="text-red-500 dark:text-red-400 text-[10px]" title="Missing required inputs - will fail">
+                  ⚠️
+                </span>
+              )}
               <h3 className="font-medium text-[11px] text-foreground truncate text-center">
                 {data.step_name || 'Unnamed Step'}
               </h3>
@@ -193,7 +208,7 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
             </div>
             
             {/* Execute button */}
-            <div className="w-full">
+            <div className="w-full flex justify-start">
               <SocketExecuteButton
                 presetName="workflow_step_to_execute_single_step"
                 sourceData={{
@@ -203,7 +218,7 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
                 buttonText="Test Step"
                 size="sm"
                 variant="outline"
-                className="w-full h-6 text-[10px]"
+                className="h-6 px-1 text-[10px] [&>svg]:w-2 [&>svg]:h-2 [&>svg]:mr-0"
                 overlayTitle={`Test Step: ${data.step_name || 'Unnamed Step'}`}
                 overlayDescription="Execute this workflow step individually for testing"
               />

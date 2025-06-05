@@ -1,13 +1,14 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { Edge, Node } from "reactflow";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Database } from "lucide-react";
 import { SocketExecuteButton } from "@/components/socket-io/presets/SocketExecuteButton";
 import DebugOverlay from "@/features/workflows/react-flow/core/DebugOverlay";
-import { getRegisteredFunctionSelectOptions } from "@/features/workflows/utils.ts/node-utils";
+import { BrokerOverlay } from "@/features/workflows/react-flow/common/BrokerOverlay";
+import { getRegisteredFunctionSelectOptions } from "@/features/workflows/utils/node-utils";
 
 interface WorkflowToolbarProps {
   selectedFunction: string;
@@ -34,6 +35,7 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
   mode,
   workflowName,
 }) => {
+  const [isBrokerOverlayOpen, setIsBrokerOverlayOpen] = useState(false);
   const functionOptions = getRegisteredFunctionSelectOptions();
   
   const hasWorkflowNodes = nodes.some(node => 
@@ -41,6 +43,9 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
     (!node.data.type || (node.data.type !== 'userInput' && node.data.type !== 'brokerRelay')) && 
     node.data.function_id
   );
+
+  // Get workflow data for broker overlay
+  const workflowData = prepareWorkflowData();
 
   const handleFunctionSelect = (functionId: string) => {
     if (!functionId) {
@@ -103,6 +108,17 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
             />
           )}
 
+          <Button
+            onClick={() => setIsBrokerOverlayOpen(true)}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            title="View all broker IDs in this workflow"
+          >
+            <Database className="w-4 h-4" />
+            Brokers
+          </Button>
+
           <DebugOverlay nodes={nodes} edges={edges} />
           
           <div className="text-sm text-muted-foreground">
@@ -110,6 +126,13 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Broker Overlay */}
+      <BrokerOverlay
+        workflowData={workflowData}
+        isOpen={isBrokerOverlayOpen}
+        onClose={() => setIsBrokerOverlayOpen(false)}
+      />
     </div>
   );
 };

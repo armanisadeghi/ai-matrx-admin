@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BaseNode, TabComponentProps } from '@/features/workflows/types';
-import { validateNodeUpdate } from '@/features/workflows/utils.ts/node-utils';
+import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

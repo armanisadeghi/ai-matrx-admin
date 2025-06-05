@@ -12,7 +12,7 @@ import {
   transformNodeToDb,
   transformEdgeToDb 
 } from "@/features/workflows/service/workflowTransformers";
-import { analyzeBrokerConnections } from "@/features/workflows/utils.ts/brokerEdgeAnalyzer";
+import { analyzeBrokerConnections } from "@/features/workflows/utils/brokerEdgeAnalyzer";
 
 interface WorkflowDataForReactFlow {
   nodes: Node[];

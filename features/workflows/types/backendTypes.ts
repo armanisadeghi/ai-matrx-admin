@@ -9,6 +9,7 @@ export interface ArgumentOverride {
     name: string; // Official argument name for this specific Registered Function.
     default_value?: any; // Overrides the default value which is pre-defined in the Registered Function.
     ready: boolean; // Indicates if the argument is ready (Should always default to false, until overriden by the user)
+    required: boolean; // Indicates if the argument is required (Should always default to false, until overriden by the user)
 }
 
 // Represents a mapping of arguments to broker IDs

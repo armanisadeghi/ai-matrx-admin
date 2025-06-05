@@ -2,6 +2,23 @@ import { Edge } from 'reactflow';
 import { CompleteWorkflowData } from '@/features/workflows/service/workflowService';
 
 /**
+ * Converts snake_case strings to Title Case
+ * e.g., "user_input_data" -> "User Input Data"
+ * @param snakeCase - The snake_case string to convert
+ * @returns The Title Case string
+ */
+function toTitleCase(snakeCase: string): string {
+  if (!snakeCase || typeof snakeCase !== 'string') {
+    return snakeCase || '';
+  }
+  
+  return snakeCase
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/**
  * Simple connection representing one step in the broker chain
  */
 interface BrokerConnection {
@@ -359,13 +376,13 @@ function createVirtualEdge(connection: BrokerConnection, index: number): Edge {
   let label = '';
   switch (connection.connectionType) {
     case 'to_argument':
-      label = connection.metadata?.targetArgName || 'argument';
+      label = connection.metadata?.targetArgName ? toTitleCase(connection.metadata.targetArgName) : 'Argument';
       break;
     case 'to_relay':
-      label = connection.metadata?.relayLabel || 'relay';
+      label = connection.metadata?.relayLabel || 'Relay';
       break;
     case 'to_dependency':
-      label = 'dependency';
+      label = 'Dependency';
       break;
   }
   
@@ -375,14 +392,14 @@ function createVirtualEdge(connection: BrokerConnection, index: number): Edge {
     target: connection.targetNodeId,
     sourceHandle: 'output', // Default output handle for source node
     targetHandle: 'input',  // Default input handle for target node
-    type: 'smoothstep',
+    type: 'custom', // Use our custom edge type
     animated: connection.connectionType === 'to_dependency',
     style: edgeStyles[connection.connectionType],
-    label: label,
     data: {
       connectionType: connection.connectionType,
       sourceBrokerId: connection.sourceBrokerId,
-      metadata: connection.metadata
+      metadata: connection.metadata,
+      label: label // Move label to data for custom rendering
     }
   };
 } 

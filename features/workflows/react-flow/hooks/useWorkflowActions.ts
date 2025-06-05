@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { Node, Edge } from "reactflow";
 import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";
-import { getNormalizedRegisteredFunctionNode } from "@/features/workflows/utils.ts/node-utils";
+import { getNormalizedRegisteredFunctionNode } from "@/features/workflows/utils/node-utils";
 import { extractExecutionNodes, extractUserInputs, extractRelays } from "@/features/workflows/service/workflowTransformers";
 import { 
   saveWorkflowNode, 

@@ -8,7 +8,7 @@ import { Copy, RefreshCw } from "lucide-react";
 import { BaseNode, TabComponentProps } from '@/features/workflows/types';
 import { flexibleJsonParse, formatJson, JsonConversionResult } from '@/utils/json-utils';
 import { toast } from 'sonner';
-import { validateNodeUpdate } from '@/features/workflows/utils.ts/node-utils';
+import { validateNodeUpdate } from '@/features/workflows/utils/node-utils';
 
 const NodeObjectTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
   const [jsonString, setJsonString] = useState('');
