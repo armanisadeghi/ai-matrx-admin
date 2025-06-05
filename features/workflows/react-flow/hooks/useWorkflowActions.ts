@@ -5,7 +5,17 @@ import { UserInputData } from "@/features/workflows/react-flow/nodes/UserInputNo
 import { BrokerRelayData } from "@/features/workflows/react-flow/nodes/BrokerRelayNode";
 import { getNormalizedRegisteredFunctionNode } from "@/features/workflows/utils.ts/node-utils";
 import { extractExecutionNodes, extractUserInputs, extractRelays } from "@/features/workflows/service/workflowTransformers";
-import { saveWorkflowNode, saveWorkflowUserInput, saveWorkflowRelay } from "@/features/workflows/service/workflowService";
+import { 
+  saveWorkflowNode, 
+  saveWorkflowUserInput, 
+  saveWorkflowRelay,
+  deleteWorkflowNode,
+  deleteWorkflowUserInput,
+  deleteWorkflowRelay,
+  removeNodeFromWorkflow,
+  removeUserInputFromWorkflow,
+  removeRelayFromWorkflow
+} from "@/features/workflows/service/workflowService";
 
 interface UseWorkflowActionsProps {
   nodes: Node[];
@@ -14,6 +24,8 @@ interface UseWorkflowActionsProps {
   setEditingNode: React.Dispatch<React.SetStateAction<BaseNode | UserInputData | BrokerRelayData | null>>;
   workflowId?: string;
   userId: string;
+  setDeleteDialogNode?: React.Dispatch<React.SetStateAction<Node | null>>;
+  onWorkflowReload?: () => Promise<void>;
 }
 
 export const useWorkflowActions = ({
@@ -23,6 +35,8 @@ export const useWorkflowActions = ({
   setEditingNode,
   workflowId,
   userId,
+  setDeleteDialogNode,
+  onWorkflowReload,
 }: UseWorkflowActionsProps) => {
   
   const handleAddNode = useCallback(async (id: string, type?: string) => {
@@ -140,9 +154,16 @@ export const useWorkflowActions = ({
   }, [setNodes, workflowId, userId]);
 
   const handleDeleteNode = useCallback((nodeId: string) => {
-    setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-    setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
-  }, [setNodes, setEdges]);
+    const nodeToDelete = nodes.find(node => node.id === nodeId);
+    if (nodeToDelete && setDeleteDialogNode) {
+      setDeleteDialogNode(nodeToDelete);
+    } else {
+      // Fallback to immediate deletion if no dialog handler provided
+      console.warn('No deletion dialog handler provided, performing immediate UI-only deletion');
+      setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+      setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+    }
+  }, [nodes, setNodes, setEdges, setDeleteDialogNode]);
 
   const handleNodeSave = useCallback(async (updatedNode: BaseNode | UserInputData | BrokerRelayData) => {
     // ✅ Update local state first
@@ -217,11 +238,19 @@ export const useWorkflowActions = ({
           
           await saveWorkflowNode(workflowId, userId, dbData);
         }
+        
+        console.log('✅ Node saved successfully');
+        
+        // ✅ Trigger workflow reload to regenerate virtual edges
+        if (onWorkflowReload) {
+          console.log('🔄 Reloading workflow to regenerate virtual edges...');
+          await onWorkflowReload();
+        }
       } catch (error) {
         console.error('Failed to save node to database:', error);
       }
     }
-  }, [setNodes, workflowId, userId, nodes]);
+  }, [setNodes, workflowId, userId, nodes, onWorkflowReload]);
 
   const prepareWorkflowData = useCallback(() => {
     const workflowNodes = extractExecutionNodes(nodes);
@@ -234,6 +263,52 @@ export const useWorkflowActions = ({
       relays: relays
     };
   }, [nodes]);
+
+  const handleRemoveFromWorkflow = useCallback(async (nodeId: string) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    try {
+      // Remove from database workflow reference
+      const data = node.data;
+      if (data.type === 'userInput') {
+        await removeUserInputFromWorkflow(nodeId);
+      } else if (data.type === 'brokerRelay') {
+        await removeRelayFromWorkflow(nodeId);
+      } else {
+        await removeNodeFromWorkflow(nodeId);
+      }
+
+      // Remove from UI
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+    } catch (error) {
+      console.error('❌ Failed to remove node from workflow:', error);
+    }
+  }, [nodes, setNodes, setEdges]);
+
+  const handlePermanentDelete = useCallback(async (nodeId: string) => {
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    try {
+      // Delete permanently from database
+      const data = node.data;
+      if (data.type === 'userInput') {
+        await deleteWorkflowUserInput(nodeId);
+      } else if (data.type === 'brokerRelay') {
+        await deleteWorkflowRelay(nodeId);
+      } else {
+        await deleteWorkflowNode(nodeId);
+      }
+
+      // Remove from UI
+      setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+      setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+    } catch (error) {
+      console.error('❌ Failed to delete node permanently:', error);
+    }
+  }, [nodes, setNodes, setEdges]);
 
   const exposeWorkflowMethods = useCallback(() => {
     window.workflowSystemRef = {
@@ -255,6 +330,8 @@ export const useWorkflowActions = ({
     handleAddNode,
     handleDeleteNode,
     handleNodeSave,
+    handleRemoveFromWorkflow,
+    handlePermanentDelete,
     prepareWorkflowData,
     exposeWorkflowMethods,
   };

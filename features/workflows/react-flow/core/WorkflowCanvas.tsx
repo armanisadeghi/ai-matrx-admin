@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -8,11 +8,17 @@ import ReactFlow, {
   Node,
   Edge,
   NodeTypes,
+  EdgeTypes,
   Connection,
   BackgroundVariant,
+  ConnectionLineType,
+  MarkerType,
 } from "reactflow";
 import QuickAccessPanel from "@/features/workflows/react-flow/core/QuickAccessPanel";
 import { useTheme } from "@/styles/themes/ThemeProvider";
+
+// Define edge types outside component to avoid memoization warning
+const edgeTypes: EdgeTypes = {};
 
 interface WorkflowCanvasProps {
   nodes: Node[];
@@ -39,6 +45,22 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
 }) => {
   const { mode: themeMode } = useTheme();
 
+  // Debug: Log edges and nodes to console
+
+
+  // Default edge options - memoized to avoid recreating
+  const defaultEdgeOptions = useMemo(() => ({
+    animated: false,
+    type: 'smoothstep',
+    style: { 
+      strokeWidth: 2,
+      stroke: '#b1b1b7'
+    },
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+    },
+  }), []);
+  
   return (
     <div className="flex-1 bg-background">
       <ReactFlow
@@ -49,11 +71,15 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={defaultEdgeOptions}
+        connectionLineType={ConnectionLineType.SmoothStep}
         fitView
         className="bg-background"
         nodesDraggable={mode === 'edit'}
         nodesConnectable={mode === 'edit'}
         elementsSelectable={mode === 'edit'}
+        edgesFocusable={mode === 'edit'}
       >
         <Controls
           className={themeMode === "dark" ? "react-flow-controls-dark" : ""}

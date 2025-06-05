@@ -12,6 +12,7 @@ interface FullscreenSocketAccordionProps {
   onOpen?: () => void;
   onClose?: () => void;
   isOpen?: boolean; // External control of open state
+  showTrigger?: boolean; // Explicit control over trigger button visibility
 }
 
 const FullscreenSocketAccordion = ({ 
@@ -21,6 +22,7 @@ const FullscreenSocketAccordion = ({
   onOpen,
   onClose,
   isOpen: externalIsOpen,
+  showTrigger,
 }: FullscreenSocketAccordionProps) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -66,8 +68,11 @@ const FullscreenSocketAccordion = ({
     };
   }, [isOpen]);
 
+  // Determine if we should show the trigger button
+  const shouldShowTrigger = showTrigger !== undefined ? showTrigger : !!triggerLabel;
+  
   // If we're only being used as a controlled component without a trigger button
-  if (externalIsOpen !== undefined && !triggerLabel) {
+  if (externalIsOpen !== undefined && !shouldShowTrigger) {
     return isOpen ? (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
         <div 
@@ -95,7 +100,7 @@ const FullscreenSocketAccordion = ({
 
   return (
     <>
-      {triggerLabel && (
+      {shouldShowTrigger && (
         <Button 
           variant="outline" 
           size="sm" 

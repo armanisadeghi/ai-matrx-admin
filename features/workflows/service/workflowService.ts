@@ -227,7 +227,19 @@ export async function saveWorkflowNode(workflowId: string, userId: string, nodeD
 }
 
 /**
- * Delete workflow node
+ * Remove node from workflow (clears workflow_id but keeps node in database)
+ */
+export async function removeNodeFromWorkflow(nodeId: string): Promise<void> {
+  const { error } = await supabase
+    .from('workflow_node')
+    .update({ workflow_id: null })
+    .eq('id', nodeId);
+
+  if (error) throw new Error(`Failed to remove node from workflow: ${error.message}`);
+}
+
+/**
+ * Delete workflow node permanently
  */
 export async function deleteWorkflowNode(nodeId: string): Promise<void> {
   const { error } = await supabase
@@ -273,7 +285,19 @@ export async function saveWorkflowUserInput(workflowId: string, userId: string, 
 }
 
 /**
- * Delete workflow user input
+ * Remove user input from workflow (clears workflow_id but keeps input in database)
+ */
+export async function removeUserInputFromWorkflow(inputId: string): Promise<void> {
+  const { error } = await supabase
+    .from('workflow_user_input')
+    .update({ workflow_id: null })
+    .eq('id', inputId);
+
+  if (error) throw new Error(`Failed to remove user input from workflow: ${error.message}`);
+}
+
+/**
+ * Delete workflow user input permanently
  */
 export async function deleteWorkflowUserInput(inputId: string): Promise<void> {
   const { error } = await supabase
@@ -319,7 +343,19 @@ export async function saveWorkflowRelay(workflowId: string, userId: string, rela
 }
 
 /**
- * Delete workflow relay
+ * Remove relay from workflow (clears workflow_id but keeps relay in database)
+ */
+export async function removeRelayFromWorkflow(relayId: string): Promise<void> {
+  const { error } = await supabase
+    .from('workflow_relay')
+    .update({ workflow_id: null })
+    .eq('id', relayId);
+
+  if (error) throw new Error(`Failed to remove relay from workflow: ${error.message}`);
+}
+
+/**
+ * Delete workflow relay permanently
  */
 export async function deleteWorkflowRelay(relayId: string): Promise<void> {
   const { error } = await supabase

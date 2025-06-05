@@ -12,6 +12,7 @@ import {
   transformNodeToDb,
   transformEdgeToDb 
 } from "@/features/workflows/service/workflowTransformers";
+import { analyzeBrokerConnections } from "@/features/workflows/utils.ts/brokerEdgeAnalyzer";
 
 interface WorkflowDataForReactFlow {
   nodes: Node[];
@@ -24,11 +25,18 @@ export const useWorkflowData = () => {
   const loadWorkflow = useCallback(async (workflowId: string): Promise<WorkflowDataForReactFlow | null> => {
     try {
       const completeData = await fetchWorkflowById(workflowId);
+      
+      // ✅ OPTIMAL LOCATION: Analyze broker connections before transformation
+      const virtualEdges = analyzeBrokerConnections(completeData);
+      
       const { nodes, edges, viewport } = transformDbToReactFlow(completeData);
+      
+      // Combine database edges with computed broker-based edges
+      const allEdges = [...edges, ...virtualEdges];
       
       return {
         nodes,
-        edges,
+        edges: allEdges,
         viewport,
         metadata: completeData.workflow
       };

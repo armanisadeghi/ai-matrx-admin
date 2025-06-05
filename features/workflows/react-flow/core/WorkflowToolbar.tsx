@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Node } from "reactflow";
+import { Edge, Node } from "reactflow";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -14,6 +14,7 @@ interface WorkflowToolbarProps {
   onFunctionSelect: (functionId: string) => void;
   onAddNode: (id: string, type?: string) => void;
   nodes: Node[];
+  edges: Edge[];
   onSave?: () => void;
   onExecute: () => void;
   prepareWorkflowData: () => any;
@@ -26,6 +27,7 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
   onFunctionSelect,
   onAddNode,
   nodes,
+  edges,
   onSave,
   onExecute,
   prepareWorkflowData,
@@ -101,7 +103,7 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
             />
           )}
 
-          <DebugOverlay nodes={nodes} edges={[]} />
+          <DebugOverlay nodes={nodes} edges={edges} />
           
           <div className="text-sm text-muted-foreground">
             {nodes.length} node{nodes.length !== 1 ? "s" : ""}

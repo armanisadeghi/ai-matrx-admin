@@ -1,12 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Handle, Position } from 'reactflow';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { getRegisteredFunctions } from '@/features/workflows/constants';
 import { SocketExecuteButton } from "@/components/socket-io/presets/SocketExecuteButton";
+import FullscreenSocketAccordion from "@/components/socket/response/FullscreenSocketAccordion";
+import { useAppDispatch } from "@/lib/redux";
+import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { 
   Play, 
   Database, 
@@ -19,7 +23,8 @@ import {
   Zap,
   Globe,
   Trash2,
-  Edit
+  Edit,
+  TestTube
 } from "lucide-react";
 import { BaseNode, ArgumentOverride } from '@/features/workflows/types';
 
@@ -63,6 +68,7 @@ const getStatusBadgeVariant = (status: string) => {
 };
 
 const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onEdit, userInputs }) => {
+  const dispatch = useAppDispatch();
   const functionData = getRegisteredFunctions().find(f => f.id === data.function_id);
   const hasRequiredInputs = functionData?.args.some(arg => {
     const override = data.arg_overrides?.find((o: ArgumentOverride) => o.name === arg.name);
@@ -70,6 +76,11 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
   });
   const { mode } = useTheme();
   const [mounted, setMounted] = useState(false);
+  
+  // State for programmatic execution
+  const [isTestOverlayOpen, setIsTestOverlayOpen] = useState(false);
+  const [testTaskId, setTestTaskId] = useState<string | null>(null);
+  const [isExecuting, setIsExecuting] = useState(false);
   
   // Default status if not provided
   const status = data.status || 'pending';
@@ -92,113 +103,185 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
     };
   }, [mode]);
 
+  // Programmatic execution function (replicates SocketExecuteButton logic)
+  const executeStepProgrammatically = async () => {
+    setIsExecuting(true);
+    setTestTaskId(null);
+
+    try {
+      const sourceData = {
+        ...data,
+        user_inputs: userInputs || []
+      };
+
+      const createdTaskId = await dispatch(createTaskFromPresetQuick({
+        presetName: "workflow_step_to_execute_single_step",
+        sourceData: sourceData
+      })).unwrap();
+      
+      setTestTaskId(createdTaskId);
+      setIsTestOverlayOpen(true);
+      
+    } catch (err) {
+      // Could add error handling here if needed
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
+  const handleTestOverlayClose = () => {
+    setIsTestOverlayOpen(false);
+    setTestTaskId(null);
+  };
+
   const nodeContent = (
-    <Card className={`
-      min-w-44 max-w-52 transition-all duration-200 cursor-pointer
-      ${selected 
-        ? 'ring-2 ring-primary shadow-lg' 
-        : 'hover:shadow-md'
-      }
-      ${data.execution_required ? 'bg-destructive/5 border-destructive/20' : ''}
-    `}>
-      <CardContent className="p-3">
-        <div className="space-y-2">
-          {/* Step name takes full top row - made smaller */}
-          <div className="w-full">
-            <h3 className="font-medium text-[11px] text-foreground truncate text-center">
-              {data.step_name || 'Unnamed Step'}
-            </h3>
-          </div>
-          
-          {/* Icon and function name in second row */}
-          <div className="flex items-center gap-2">
-            <IconComponent className="h-4 w-4 text-primary flex-shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] text-muted-foreground truncate">
-                {functionData?.name || 'Unknown Function'}
-              </p>
+    <div className="relative">
+      <Card className={`
+        min-w-44 max-w-52 transition-all duration-200 cursor-pointer
+        ${selected 
+          ? 'ring-2 ring-primary shadow-lg' 
+          : 'hover:shadow-md'
+        }
+        ${data.execution_required ? 'bg-destructive/5 border-destructive/20' : ''}
+      `}>
+        <CardContent className="p-3">
+          <div className="space-y-2">
+            {/* Step name takes full top row - made smaller */}
+            <div className="w-full">
+              <h3 className="font-medium text-[11px] text-foreground truncate text-center">
+                {data.step_name || 'Unnamed Step'}
+              </h3>
+            </div>
+            
+            {/* Icon and function name in second row */}
+            <div className="flex items-center gap-2">
+              <IconComponent className="h-4 w-4 text-primary flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] text-muted-foreground truncate">
+                  {functionData?.name || 'Unknown Function'}
+                </p>
+              </div>
+            </div>
+            
+            {/* Status and other badges */}
+            <div className="flex items-center gap-1 flex-wrap">
+              {/* Status badge */}
+              <Badge variant={getStatusBadgeVariant(status)} className="text-[9px] px-1 py-0 h-4">
+                {status.replace(/_/g, ' ')}
+              </Badge>
+              
+              {data.execution_required && (
+                <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4">
+                  Required
+                </Badge>
+              )}
+              {hasRequiredInputs && (
+                <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                  Input
+                </Badge>
+              )}
+              {data.arg_mapping?.length > 0 && (
+                <Badge variant="default" className="text-[9px] px-1 py-0 h-4 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                  Connected
+                </Badge>
+              )}
+              {data.additional_dependencies?.length > 0 && (
+                <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">
+                  Deps
+                </Badge>
+              )}
+            </div>
+            
+            {/* Execute button */}
+            <div className="w-full">
+              <SocketExecuteButton
+                presetName="workflow_step_to_execute_single_step"
+                sourceData={{
+                  ...data,
+                  user_inputs: userInputs || []
+                }}
+                buttonText="Test Step"
+                size="sm"
+                variant="outline"
+                className="w-full h-6 text-[10px]"
+                overlayTitle={`Test Step: ${data.step_name || 'Unnamed Step'}`}
+                overlayDescription="Execute this workflow step individually for testing"
+              />
             </div>
           </div>
-          
-          {/* Status and other badges */}
-          <div className="flex items-center gap-1 flex-wrap">
-            {/* Status badge */}
-            <Badge variant={getStatusBadgeVariant(status)} className="text-[9px] px-1 py-0 h-4">
-              {status.replace(/_/g, ' ')}
-            </Badge>
-            
-            {data.execution_required && (
-              <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4">
-                Required
-              </Badge>
-            )}
-            {hasRequiredInputs && (
-              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                Input
-              </Badge>
-            )}
-            {data.arg_mapping?.length > 0 && (
-              <Badge variant="default" className="text-[9px] px-1 py-0 h-4 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                Connected
-              </Badge>
-            )}
-            {data.additional_dependencies?.length > 0 && (
-              <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">
-                Deps
-              </Badge>
-            )}
-          </div>
-          
-          {/* Execute button */}
-          <div className="w-full">
-            <SocketExecuteButton
-              presetName="workflow_step_to_execute_single_step"
-              sourceData={{
-                ...data,
-                user_inputs: userInputs || []
-              }}
-              buttonText="Test Step"
-              size="sm"
-              variant="outline"
-              className="w-full h-6 text-[10px]"
-              overlayTitle={`Test Step: ${data.step_name || 'Unnamed Step'}`}
-              overlayDescription="Execute this workflow step individually for testing"
-            />
-          </div>
-        </div>
-        
-        {/* Connection points */}
-        <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-primary rounded-full border-2 border-background shadow-sm"></div>
-        <div className="absolute -right-2 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-green-500 rounded-full border-2 border-background shadow-sm"></div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      
+      {/* ReactFlow Handles for connections */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="input"
+        style={{
+          width: 12,
+          height: 12,
+          backgroundColor: '#3b82f6',
+          border: '2px solid white',
+          left: -6
+        }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="output"
+        style={{
+          width: 12,
+          height: 12,
+          backgroundColor: '#22c55e',
+          border: '2px solid white',
+          right: -6
+        }}
+      />
+    </div>
   );
 
   // Only wrap in ContextMenu if we have delete/edit handlers
   if (onDelete || onEdit) {
     return (
-      <ContextMenu>
-        <ContextMenuTrigger asChild>
-          {nodeContent}
-        </ContextMenuTrigger>
-        <ContextMenuContent>
-          {onEdit && (
-            <ContextMenuItem onClick={() => onEdit(data)}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Node
-            </ContextMenuItem>
-          )}
-          {onDelete && (
+      <>
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+            {nodeContent}
+          </ContextMenuTrigger>
+          <ContextMenuContent>
             <ContextMenuItem 
-              onClick={() => onDelete(data.id)}
-              className="text-destructive focus:text-destructive"
+              onClick={executeStepProgrammatically}
+              disabled={isExecuting}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Node
+              <TestTube className="h-4 w-4 mr-2" />
+              {isExecuting ? "Testing..." : "Test Step (Fullscreen)"}
             </ContextMenuItem>
-          )}
-        </ContextMenuContent>
-      </ContextMenu>
+            {onEdit && (
+              <ContextMenuItem onClick={() => onEdit(data)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Node
+              </ContextMenuItem>
+            )}
+            {onDelete && (
+              <ContextMenuItem 
+                onClick={() => onDelete(data.id)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Node
+              </ContextMenuItem>
+            )}
+          </ContextMenuContent>
+        </ContextMenu>
+
+        {/* Fullscreen Test Overlay */}
+        <FullscreenSocketAccordion
+          isOpen={isTestOverlayOpen}
+          onClose={handleTestOverlayClose}
+          taskId={testTaskId}
+          showTrigger={false}
+        />
+      </>
     );
   }
 

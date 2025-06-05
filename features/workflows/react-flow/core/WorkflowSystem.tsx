@@ -19,6 +19,7 @@ import "reactflow/dist/style.css";
 import { WorkflowToolbar } from "@/features/workflows/react-flow/core/WorkflowToolbar";
 import { WorkflowCanvas } from "@/features/workflows/react-flow/core/WorkflowCanvas";
 import { NodeEditorManager } from "@/features/workflows/react-flow/core/NodeEditorManager";
+import { NodeDeleteDialog } from "@/features/workflows/react-flow/components/NodeDeleteDialog";
 import { useWorkflowData } from "@/features/workflows/react-flow/hooks/useWorkflowData";
 import { useWorkflowActions } from "@/features/workflows/react-flow/hooks/useWorkflowActions";
 import { BaseNode } from "@/features/workflows/types/backendTypes";
@@ -46,6 +47,8 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
   const [editingNode, setEditingNode] = useState<BaseNode | UserInputData | BrokerRelayData | null>(null);
   const [selectedFunction, setSelectedFunction] = useState<string>("");
   const [workflowMetadata, setWorkflowMetadata] = useState<any>(null);
+  const [deleteDialogNode, setDeleteDialogNode] = useState<Node | null>(null);
+  const [isDeletionProcessing, setIsDeletionProcessing] = useState(false);
   const user = useAppSelector(selectUser);
   // Load workflow data if workflowId is provided
   const { loadWorkflow, saveWorkflow } = useWorkflowData();
@@ -62,10 +65,24 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
     }
   }, [workflowId, loadWorkflow, setNodes, setEdges]);
 
+  // Create workflow reload function
+  const handleWorkflowReload = useCallback(async () => {
+    if (workflowId) {
+      const workflowData = await loadWorkflow(workflowId);
+      if (workflowData) {
+        setNodes(workflowData.nodes || []);
+        setEdges(workflowData.edges || []);
+        setWorkflowMetadata(workflowData.metadata);
+      }
+    }
+  }, [workflowId, loadWorkflow, setNodes, setEdges]);
+
   const {
     handleAddNode,
     handleDeleteNode,
     handleNodeSave,
+    handleRemoveFromWorkflow,
+    handlePermanentDelete,
     prepareWorkflowData,
     exposeWorkflowMethods,
   } = useWorkflowActions({
@@ -75,6 +92,8 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
     setEditingNode,
     workflowId,
     userId: user.id,
+    setDeleteDialogNode,
+    onWorkflowReload: handleWorkflowReload,
   });
 
   // Expose methods for node components
@@ -120,6 +139,26 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
     onExecute?.(workflowData);
   }, [prepareWorkflowData, onExecute]);
 
+  const handleRemoveFromWorkflowWithDialog = useCallback(async (nodeId: string) => {
+    setIsDeletionProcessing(true);
+    try {
+      await handleRemoveFromWorkflow(nodeId);
+      setDeleteDialogNode(null);
+    } finally {
+      setIsDeletionProcessing(false);
+    }
+  }, [handleRemoveFromWorkflow]);
+
+  const handlePermanentDeleteWithDialog = useCallback(async (nodeId: string) => {
+    setIsDeletionProcessing(true);
+    try {
+      await handlePermanentDelete(nodeId);
+      setDeleteDialogNode(null);
+    } finally {
+      setIsDeletionProcessing(false);
+    }
+  }, [handlePermanentDelete]);
+
   return (
     <div className="h-screen w-full flex flex-col bg-background">
       <WorkflowToolbar
@@ -127,6 +166,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
         onFunctionSelect={setSelectedFunction}
         onAddNode={handleAddNode}
         nodes={nodes}
+        edges={edges}
         onSave={mode === 'edit' ? handleSaveWorkflow : undefined}
         onExecute={handleExecuteWorkflow}
         prepareWorkflowData={prepareWorkflowData}
@@ -151,6 +191,15 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
         onSave={handleNodeSave}
         onClose={() => setEditingNode(null)}
         mode={mode}
+      />
+
+      <NodeDeleteDialog
+        node={deleteDialogNode}
+        isOpen={!!deleteDialogNode}
+        onClose={() => setDeleteDialogNode(null)}
+        onRemoveFromWorkflow={handleRemoveFromWorkflowWithDialog}
+        onPermanentDelete={handlePermanentDeleteWithDialog}
+        isProcessing={isDeletionProcessing}
       />
     </div>
   );
