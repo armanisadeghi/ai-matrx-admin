@@ -460,7 +460,13 @@ const wcReportFieldOverrides: AllFieldOverrides = {};
 
 const workflowFieldOverrides: AllFieldOverrides = {};
 
+const workflowEdgeFieldOverrides: AllFieldOverrides = {};
+
 const workflowNodeFieldOverrides: AllFieldOverrides = {};
+
+const workflowRelayFieldOverrides: AllFieldOverrides = {};
+
+const workflowUserInputFieldOverrides: AllFieldOverrides = {};
 
 
 export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
@@ -568,5 +574,8 @@ export const ENTITY_FIELD_OVERRIDES: AllEntityFieldOverrides = {
     wcInjury: wcInjuryFieldOverrides,
     wcReport: wcReportFieldOverrides,
     workflow: workflowFieldOverrides,
+    workflowEdge: workflowEdgeFieldOverrides,
     workflowNode: workflowNodeFieldOverrides,
+    workflowRelay: workflowRelayFieldOverrides,
+    workflowUserInput: workflowUserInputFieldOverrides,
 };

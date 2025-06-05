@@ -1237,17 +1237,34 @@ export type Workflow = {
     id: string;
     createdAt: Date;
     updatedAt?: Date;
-    name?: string;
+    name: string;
     description?: string;
-    visualWorkflow?: Record<string, unknown>;
-    backendWorkflow?: Record<string, unknown>;
     userId?: string;
     version?: number;
+    viewportX?: number;
+    viewportY?: number;
+    viewportZoom?: number;
     isPublic?: boolean;
     authenticatedRead?: boolean;
+    publicRead?: boolean;
     isActive?: boolean;
     isDeleted?: boolean;
-    publicRead?: boolean;
+    autoExecute?: boolean;
+    category?: string;
+    tags?: Record<string, unknown>;
+}
+
+export type WorkflowEdge = {
+    id: string;
+    createdAt: Date;
+    workflowId: string;
+    sourceNodeId: string;
+    targetNodeId: string;
+    sourceHandle?: string;
+    targetHandle?: string;
+    edgeType?: string;
+    animated?: boolean;
+    style?: Record<string, unknown>;
 }
 
 export type WorkflowNode = {
@@ -1255,16 +1272,51 @@ export type WorkflowNode = {
     createdAt: Date;
     updatedAt?: Date;
     userId?: string;
+    workflowId?: string;
     functionId?: string;
     functionType?: string;
     stepName?: string;
+    positionX: number;
+    positionY: number;
+    width?: number;
+    height?: number;
+    nodeType?: string;
     executionRequired?: boolean;
     additionalDependencies?: Record<string, unknown>;
     argMapping?: Record<string, unknown>;
     returnBrokerOverrides?: Record<string, unknown>;
     argOverrides?: Record<string, unknown>;
-    workflowId?: string;
+    status?: string;
     isPublic?: boolean;
     authenticatedRead?: boolean;
     publicRead?: boolean;
+}
+
+export type WorkflowRelay = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    workflowId: string;
+    userId?: string;
+    sourceBrokerId: string;
+    label?: string;
+    positionX: number;
+    positionY: number;
+    targetBrokerIds?: Record<string, unknown>;
+}
+
+export type WorkflowUserInput = {
+    id: string;
+    createdAt: Date;
+    updatedAt?: Date;
+    workflowId: string;
+    userId?: string;
+    fieldComponentId?: string;
+    brokerId: string;
+    label?: string;
+    dataType?: string;
+    defaultValue?: string;
+    positionX?: number;
+    positionY?: number;
+    isRequired?: boolean;
 }

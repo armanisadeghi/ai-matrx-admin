@@ -4,7 +4,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { useMotionTemplate, useMotionValue, motion } from 'framer-motion';
 import { MatrxVariant } from './types';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, Trash2 } from 'lucide-react';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     variant?: MatrxVariant;
@@ -251,4 +251,41 @@ interface FancyInputProps extends Omit<InputProps, 'prefix'> {
   FancyInput.displayName = 'FancyInput';
   
 
-export { Input, BasicInput, InputWithPrefix, CopyInput, FancyInput };
+
+  interface DeleteInputProps extends InputProps {
+    onDelete?: () => void;
+    wrapperClassName?: string;
+  }
+  
+  const DeleteInput = React.forwardRef<HTMLInputElement, DeleteInputProps>(
+    ({ onDelete, className, wrapperClassName, ...props }, ref) => {
+      const handleDelete = () => {
+        if (onDelete) {
+          onDelete();
+        }
+      };
+  
+      return (
+        <div className={cn('relative w-full', wrapperClassName)}>
+          <Input
+            ref={ref}
+            className={cn('pr-8 w-full', className)} // pr-8 for right padding, w-full for full width
+            {...props}
+          />
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-md transition-colors hover:text-destructive"
+            aria-label="Delete field"
+          >
+            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive transition-colors" />
+          </button>
+        </div>
+      );
+    }
+  );
+  
+  DeleteInput.displayName = 'DeleteInput';
+
+
+export { Input, BasicInput, InputWithPrefix, CopyInput, FancyInput, DeleteInput };

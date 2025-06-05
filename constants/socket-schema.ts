@@ -1,4 +1,6 @@
 // File Location: constants/socket-schema.ts
+import { flexibleJsonParse } from "@/utils/json-utils";
+
 export interface SchemaField {
     REQUIRED: boolean;
     DEFAULT: any;
@@ -17,23 +19,8 @@ export interface Schema {
     [key: string]: SchemaField;
 }
 
-// Import the flexible JSON utility at the top after the interfaces
-import { flexibleJsonParse } from "@/utils/json-utils";
 
-export const STEP_DEFINITION: Schema = {
-    function_type: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "string",
-        CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "select",
-        COMPONENT_PROPS: {"options": [{"value": "registered_function", "label": "Registered Function"}, {"value": "workflow_recipe_executor", "label": "Recipe Executor"}]},
-        DESCRIPTION: "The type of function to execute - determines which system to use.",
-        ICON_NAME: "Settings",
-        TEST_VALUE: "workflow_recipe_executor",
-    },
+export const NODE_DEFINITION: Schema = {
     function_id: {
         REQUIRED: true,
         DEFAULT: null,
@@ -45,7 +32,20 @@ export const STEP_DEFINITION: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "The ID of the function to execute.",
         ICON_NAME: "Key",
-        TEST_VALUE: "recipe_runner",
+        TEST_VALUE: "2ac5576b-d1ab-45b1-ab48-4e196629fdd8",
+    },
+    function_type: {
+        REQUIRED: true,
+        DEFAULT: null,
+        VALIDATION: null,
+        DATA_TYPE: "string",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "select",
+        COMPONENT_PROPS: {"options": [{"value": "registered_function", "label": "Registered Function"}, {"value": "workflow_recipe_executor", "label": "Recipe Executor"}]},
+        DESCRIPTION: "The type of function to execute - determines which system to use.",
+        ICON_NAME: "Settings",
+        TEST_VALUE: "registered_function",
     },
     step_name: {
         REQUIRED: false,
@@ -56,9 +56,9 @@ export const STEP_DEFINITION: Schema = {
         REFERENCE: null,
         COMPONENT: "input",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "Name for this step (auto-generated if not provided).",
+        DESCRIPTION: "A human-readable name for this step.",
         ICON_NAME: "Tag",
-        TEST_VALUE: "test_step",
+        TEST_VALUE: "Get app ideas from occupation",
     },
     status: {
         REQUIRED: false,
@@ -68,22 +68,23 @@ export const STEP_DEFINITION: Schema = {
         CONVERSION: null,
         REFERENCE: null,
         COMPONENT: "select",
-        COMPONENT_PROPS: {"options": [{"value": "pending", "label": "Pending"}, {"value": "ready", "label": "Ready"}, {"value": "initialized", "label": "Initialized"}]},
-        DESCRIPTION: "Initial status for the step.",
+        COMPONENT_PROPS: {"options": [{"value": "pending", "label": "Pending"}, {"value": "initialized", "label": "Initialized"}, {"value": "ready_to_execute", "label": "Ready to Execute"}, {"value": "executing", "label": "Executing"}, {"value": "execution_complete", "label": "Execution Complete"}, {"value": "execution_failed", "label": "Execution Failed"}]},
+        DESCRIPTION: "The initial status for the step. It should typically be 'pending' for normal execution flow.",
         ICON_NAME: "Clock",
         TEST_VALUE: "pending",
     },
-    override_data: {
+    execution_required: {
         REQUIRED: false,
-        DEFAULT: {},
+        DEFAULT: true,
         VALIDATION: null,
-        DATA_TYPE: "object",
+        DATA_TYPE: "boolean",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "JsonEditor",
+        COMPONENT: "checkbox",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "Override data for arguments, return brokers, etc.",
-        ICON_NAME: "Settings",
+        DESCRIPTION: "Whether this step requires execution. If set to False, it will still execute when it is ready, but the workflow will not fail if it does not complete.",
+        ICON_NAME: "Play",
+        TEST_VALUE: true,
     },
     additional_dependencies: {
         REQUIRED: false,
@@ -92,10 +93,50 @@ export const STEP_DEFINITION: Schema = {
         DATA_TYPE: "array",
         CONVERSION: null,
         REFERENCE: null,
-        COMPONENT: "ArrayStringInput",
+        COMPONENT: "JsonEditor",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "Additional broker dependencies for this step.",
+        DESCRIPTION: "Additional broker IDs that must be True before this step can execute. If a target broker ID is provided, that broker will also get the value for this source broker ID. If no target is provided, then the system will just wait for this source broker ID to be ready.",
         ICON_NAME: "Link",
+        TEST_VALUE: [{"source": "8fa5f0ba-5145-48a9-ace5-f5115b6b4b5c"}],
+    },
+    arg_mapping: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "JsonEditor",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Mapping of function arguments to broker IDs. Mapped arguments will get the value of the source brokers, as soon as the they are ready.",
+        ICON_NAME: "ArrowRight",
+        TEST_VALUE: [{"arg_name": "first_number", "broker_id": "64ba09cd-b5dd-4a58-a55e-cf0b1c1f5d3a"}, {"arg_name": "second_number", "broker_id": "e87ef871-1b3d-4272-8068-a66fead0c75f"}],
+    },
+    return_broker_overrides: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "JsonEditor",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Include additional broker IDs where the returns of this function will be published.",
+        ICON_NAME: "ArrowLeft",
+        TEST_VALUE: [],
+    },
+    arg_overrides: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "JsonEditor",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "Override the initial values for the arguments of this function. If all values for the function are defined in overrides, and all 'required' arguments are set to 'ready', then this function will instantly execute when the workflow starts.",
+        ICON_NAME: "Edit",
+        TEST_VALUE: [{"name": "recipe_id", "default_value": "f652c807-c4c2-4f64-86f6-d7233e057bb8", "ready": true}, {"name": "latest_version", "default_value": true, "ready": true}],
     },
 };
 
@@ -587,41 +628,14 @@ export const GET_WORKFLOW_STATUS: Schema = {
     },
 };
 
-export const EXECUTE_STEP_QUICK: Schema = {
-    step_definition: {
-        REQUIRED: true,
-        DEFAULT: null,
-        VALIDATION: null,
-        DATA_TYPE: "object",
-        CONVERSION: null,
-        REFERENCE: STEP_DEFINITION,
-        COMPONENT: "relatedObject",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "The step definition to execute quickly.",
-        ICON_NAME: "Zap",
-    },
-    user_inputs: {
-        REQUIRED: false,
-        DEFAULT: [],
-        VALIDATION: null,
-        DATA_TYPE: "array",
-        CONVERSION: null,
-        REFERENCE: USER_INPUT_DEFINITION,
-        COMPONENT: "relatedArrayObject",
-        COMPONENT_PROPS: {},
-        DESCRIPTION: "User input values for broker-mapped arguments (optional).",
-        ICON_NAME: "User",
-    },
-};
-
 export const EXECUTE_SINGLE_STEP: Schema = {
-    step_definition: {
+    single_node: {
         REQUIRED: true,
         DEFAULT: null,
         VALIDATION: null,
         DATA_TYPE: "object",
         CONVERSION: null,
-        REFERENCE: STEP_DEFINITION,
+        REFERENCE: NODE_DEFINITION,
         COMPONENT: "relatedObject",
         COMPONENT_PROPS: {},
         DESCRIPTION: "The step definition to execute as a single step.",
@@ -670,17 +684,17 @@ export const START_WORKFLOW_BY_ID: Schema = {
 };
 
 export const START_WORKFLOW_WITH_STRUCTURE: Schema = {
-    workflow_definition: {
+    nodes: {
         REQUIRED: true,
-        DEFAULT: null,
+        DEFAULT: [],
         VALIDATION: null,
-        DATA_TYPE: "object",
+        DATA_TYPE: "array",
         CONVERSION: null,
-        REFERENCE: null,
-        COMPONENT: "JsonEditor",
+        REFERENCE: NODE_DEFINITION,
+        COMPONENT: "relatedArrayObject",
         COMPONENT_PROPS: {},
-        DESCRIPTION: "Enter the complete workflow definition as a JSON object.",
-        ICON_NAME: "Workflow",
+        DESCRIPTION: "The steps to execute in the workflow.",
+        ICON_NAME: "Play",
     },
     user_inputs: {
         REQUIRED: false,
@@ -693,6 +707,19 @@ export const START_WORKFLOW_WITH_STRUCTURE: Schema = {
         COMPONENT_PROPS: {},
         DESCRIPTION: "Enter user input values for the workflow (optional - can also be included in workflow definition).",
         ICON_NAME: "User",
+    },
+    relays: {
+        REQUIRED: false,
+        DEFAULT: [],
+        VALIDATION: null,
+        DATA_TYPE: "array",
+        CONVERSION: null,
+        REFERENCE: null,
+        COMPONENT: "JsonEditor",
+        COMPONENT_PROPS: {},
+        DESCRIPTION: "This is used to generate a relay between a single source broker and  a list of target brokers, which will all get this value.",
+        ICON_NAME: "ArrowRightLeft",
+        TEST_VALUE: [{"source": "2ca25554-0db3-47e6-81c1-80b3d792b1c6", "targets": ["bed0f380-3f1a-4833-9f8e-492da264f12d"]}],
     },
 };
 
@@ -3681,7 +3708,6 @@ export const SERVICE_TASKS = {
         start_workflow_with_structure: START_WORKFLOW_WITH_STRUCTURE,
         start_workflow_by_id: START_WORKFLOW_BY_ID,
         execute_single_step: EXECUTE_SINGLE_STEP,
-        execute_step_quick: EXECUTE_STEP_QUICK,
         get_workflow_status: GET_WORKFLOW_STATUS,
         ping_workflow: PING_WORKFLOW,
         pause_workflow: PAUSE_WORKFLOW,
@@ -3825,8 +3851,8 @@ export const getFieldDefinition = (taskName: string, fieldPath: string, traverse
 
     // Handle array notation in paths (e.g., "user_inputs[0].broker_id")
     // First, extract the base field name and any nested parts
-    const normalizedPath = fieldPath.replace(/\[\d+\]/g, ''); // Remove array indices like [0]
-    const pathParts = normalizedPath.split(".").filter(part => part !== ''); // Split and filter empty parts
+    const normalizedPath = fieldPath.replace(/\[\d+\]/g, ""); // Remove array indices like [0]
+    const pathParts = normalizedPath.split(".").filter((part) => part !== ""); // Split and filter empty parts
 
     // If not traversing nested fields, return the root field directly
     if (!traverseNested || pathParts.length === 1) {
@@ -3894,51 +3920,50 @@ export interface FieldDefinitionInfo {
     dataType: string;
     defaultValue: any;
     reference?: Schema;
-  }
+}
 
-  export const getFieldDefinitions = (taskName: string): FieldDefinitionInfo[] => {
+export const getFieldDefinitions = (taskName: string): FieldDefinitionInfo[] => {
     const taskSchema = getTaskSchema(taskName);
     if (!taskSchema) {
-      return [];
+        return [];
     }
 
     const fieldDefinitions: FieldDefinitionInfo[] = [];
 
     const traverseSchema = (schema: Schema, prefix: string = "") => {
-      Object.entries(schema).forEach(([fieldName, fieldDefinition]) => {
-        const currentPath = prefix ? `${prefix}.${fieldName}` : fieldName;
+        Object.entries(schema).forEach(([fieldName, fieldDefinition]) => {
+            const currentPath = prefix ? `${prefix}.${fieldName}` : fieldName;
 
-        // Add field definition info
-        fieldDefinitions.push({
-          path: currentPath,
-          dataType: fieldDefinition.DATA_TYPE,
-          defaultValue: fieldDefinition.DEFAULT,
-          reference: fieldDefinition.REFERENCE,
+            // Add field definition info
+            fieldDefinitions.push({
+                path: currentPath,
+                dataType: fieldDefinition.DATA_TYPE,
+                defaultValue: fieldDefinition.DEFAULT,
+                reference: fieldDefinition.REFERENCE,
+            });
+
+            // Handle nested objects via REFERENCE
+            if (fieldDefinition.REFERENCE && typeof fieldDefinition.REFERENCE === "object") {
+                if (fieldDefinition.DATA_TYPE === "array") {
+                    const arrayItemPath = `${currentPath}[index]`;
+                    traverseSchema(fieldDefinition.REFERENCE as Schema, arrayItemPath);
+                } else {
+                    traverseSchema(fieldDefinition.REFERENCE as Schema, currentPath);
+                }
+            }
         });
-
-        // Handle nested objects via REFERENCE
-        if (fieldDefinition.REFERENCE && typeof fieldDefinition.REFERENCE === "object") {
-          if (fieldDefinition.DATA_TYPE === "array") {
-            const arrayItemPath = `${currentPath}[index]`;
-            traverseSchema(fieldDefinition.REFERENCE as Schema, arrayItemPath);
-          } else {
-            traverseSchema(fieldDefinition.REFERENCE as Schema, currentPath);
-          }
-        }
-      });
     };
 
     traverseSchema(taskSchema);
     return fieldDefinitions;
-  };
-
+};
 
 // Define the eUUID function that was missing
 const eUUID = (value: any): boolean => {
     // UUID regex pattern
     const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return typeof value === 'string' && uuidPattern.test(value);
-  };
+    return typeof value === "string" && uuidPattern.test(value);
+};
 
 export const validateTextLength = (value: any): boolean => {
     if (typeof value !== "string") {
@@ -3989,99 +4014,110 @@ const validationFunctions: Record<string, (value: any) => boolean> = {
     validateToolNames,
 };
 
-export const isValidField = (taskName: string, fieldPath: string, value: any, traverseNested: boolean = true): { isValid: boolean; errorMessage: string } => {
+export const isValidField = (
+    taskName: string,
+    fieldPath: string,
+    value: any,
+    traverseNested: boolean = true
+): { isValid: boolean; errorMessage: string } => {
     const fieldDefinition = getFieldDefinition(taskName, fieldPath, traverseNested);
     if (!fieldDefinition) {
-      return { isValid: false, errorMessage: `Field definition not found for ${fieldPath}` };
+        return { isValid: false, errorMessage: `Field definition not found for ${fieldPath}` };
     }
 
     const isEmpty = value === null || value === undefined || value === "";
 
     if (!fieldDefinition.REQUIRED && isEmpty) {
-      return { isValid: true, errorMessage: "" };
+        return { isValid: true, errorMessage: "" };
     }
 
     if (fieldDefinition.REQUIRED && isEmpty) {
-      return { isValid: false, errorMessage: `${fieldPath} is required` };
+        return { isValid: false, errorMessage: `${fieldPath} is required` };
     }
 
     const expectedType = fieldDefinition.DATA_TYPE;
     if (!isEmpty) {
-      switch (expectedType) {
-        case "string":
-          if (typeof value !== "string") {
-            // Allow conversion from other types to string for components that need it
-          }
-          break;
-        case "number":
-        case "integer": // Add integer type
-          const numValue = typeof value === "string" ? parseFloat(value) : value;
-          if (typeof numValue !== "number" || isNaN(numValue) || (expectedType === "integer" && !Number.isInteger(numValue))) {
-            return { isValid: false, errorMessage: `Expected an ${expectedType} for ${fieldPath}, got ${typeof value}` };
-          }
-          break;
-        case "boolean":
-          if (typeof value !== "boolean") {
-            // Allow string representations of booleans
-            if (typeof value === "string" && (value === "true" || value === "false")) {
-              break;
-            }
-            return { isValid: false, errorMessage: `Expected a boolean for ${fieldPath}, got ${typeof value}` };
-          }
-          break;
-        case "array":
-          if (!Array.isArray(value)) {
-            return { isValid: false, errorMessage: `Expected an array for ${fieldPath}, got ${typeof value}` };
-          }
-          break;
-        case "object":
-          // Handle both actual objects and valid JSON strings using flexible parsing
-          let objectValue = value;
-          if (typeof value === "string") {
-            const result = flexibleJsonParse(value);
-            if (result.success) {
-              objectValue = result.data;
-            } else {
-              return { isValid: false, errorMessage: `Expected a valid JSON object for ${fieldPath}, got invalid JSON string: ${result.error}` };
-            }
-          }
-          
-          if (typeof objectValue !== "object" || objectValue === null || Array.isArray(objectValue)) {
-            return { isValid: false, errorMessage: `Expected an object for ${fieldPath}, got ${typeof objectValue}` };
-          }
-          break;
-        default:
-          return { isValid: false, errorMessage: `Unknown data type ${expectedType} for ${fieldPath}` };
-      }
+        switch (expectedType) {
+            case "string":
+                if (typeof value !== "string") {
+                    // Allow conversion from other types to string for components that need it
+                }
+                break;
+            case "number":
+            case "integer": // Add integer type
+                const numValue = typeof value === "string" ? parseFloat(value) : value;
+                if (typeof numValue !== "number" || isNaN(numValue) || (expectedType === "integer" && !Number.isInteger(numValue))) {
+                    return { isValid: false, errorMessage: `Expected an ${expectedType} for ${fieldPath}, got ${typeof value}` };
+                }
+                break;
+            case "boolean":
+                if (typeof value !== "boolean") {
+                    // Allow string representations of booleans
+                    if (typeof value === "string" && (value === "true" || value === "false")) {
+                        break;
+                    }
+                    return { isValid: false, errorMessage: `Expected a boolean for ${fieldPath}, got ${typeof value}` };
+                }
+                break;
+            case "array":
+                if (!Array.isArray(value)) {
+                    return { isValid: false, errorMessage: `Expected an array for ${fieldPath}, got ${typeof value}` };
+                }
+                break;
+            case "object":
+                // Handle both actual objects and valid JSON strings using flexible parsing
+                let objectValue = value;
+                if (typeof value === "string") {
+                    const result = flexibleJsonParse(value);
+                    if (result.success) {
+                        objectValue = result.data;
+                    } else {
+                        return {
+                            isValid: false,
+                            errorMessage: `Expected a valid JSON object for ${fieldPath}, got invalid JSON string: ${result.error}`,
+                        };
+                    }
+                }
+
+                if (typeof objectValue !== "object" || objectValue === null || Array.isArray(objectValue)) {
+                    return { isValid: false, errorMessage: `Expected an object for ${fieldPath}, got ${typeof objectValue}` };
+                }
+                break;
+            default:
+                return { isValid: false, errorMessage: `Unknown data type ${expectedType} for ${fieldPath}` };
+        }
     }
 
     if (!isEmpty && fieldDefinition.VALIDATION) {
-      const validationFn = validationFunctions[fieldDefinition.VALIDATION];
-      if (typeof validationFn === "function") {
-        const validationResult = validationFn(value);
-        if (!validationResult) {
-          return { isValid: false, errorMessage: `Validation failed for ${fieldPath}: ${getValidationErrorMessage(fieldDefinition.VALIDATION, value)}` };
+        const validationFn = validationFunctions[fieldDefinition.VALIDATION];
+        if (typeof validationFn === "function") {
+            const validationResult = validationFn(value);
+            if (!validationResult) {
+                return {
+                    isValid: false,
+                    errorMessage: `Validation failed for ${fieldPath}: ${getValidationErrorMessage(fieldDefinition.VALIDATION, value)}`,
+                };
+            }
+            return { isValid: true, errorMessage: "" };
         }
-        return { isValid: true, errorMessage: "" };
-      }
-      return { isValid: false, errorMessage: `Validation function ${fieldDefinition.VALIDATION} not found for ${fieldPath}` };
+        return { isValid: false, errorMessage: `Validation function ${fieldDefinition.VALIDATION} not found for ${fieldPath}` };
     }
 
     return { isValid: true, errorMessage: "" };
-  };
+};
 
-  // Helper to provide specific error messages for validation failures
-  const getValidationErrorMessage = (validationName: string, value: any): string => {
+// Helper to provide specific error messages for validation failures
+const getValidationErrorMessage = (validationName: string, value: any): string => {
     switch (validationName) {
-      case "eUUID":
-        return `Expected a valid UUID, got "${value}"`;
-      case "validateTextLength":
-        return `Expected a string longer than 5 characters, got "${value}"`;
-      case "validateMarkdown":
-        return `Expected valid Markdown content, got "${value}"`;
-      case "validateToolNames":
-        return `Expected an array of valid tool names, got ${JSON.stringify(value)}`;
-      default:
-        return `Invalid value "${value}"`;
+        case "eUUID":
+            return `Expected a valid UUID, got "${value}"`;
+        case "validateTextLength":
+            return `Expected a string longer than 5 characters, got "${value}"`;
+        case "validateMarkdown":
+            return `Expected valid Markdown content, got "${value}"`;
+        case "validateToolNames":
+            return `Expected an array of valid tool names, got ${JSON.stringify(value)}`;
+        default:
+            return `Invalid value "${value}"`;
     }
-  };
+};

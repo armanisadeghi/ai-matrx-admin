@@ -1,17 +1,32 @@
 // File: types/socket-schema-types.ts
 
-export interface StepDefinition {
-    function_type: string;
+export interface SingleNode {
     function_id: string;
+    function_type: string;
     step_name?: string;
     status?: string;
-    override_data?: Record<string, any>;
+    execution_required?: boolean;
     additional_dependencies?: any[][];
+    arg_mapping?: any[][];
+    return_broker_overrides?: any[][];
+    arg_overrides?: any[][];
 }
 
 export interface UserInputs {
     broker_id?: string;
     value?: string;
+}
+
+export interface Nodes {
+    function_id: string;
+    function_type: string;
+    step_name?: string;
+    status?: string;
+    execution_required?: boolean;
+    additional_dependencies?: any[][];
+    arg_mapping?: any[][];
+    return_broker_overrides?: any[][];
+    arg_overrides?: any[][];
 }
 
 export interface MessageObject {
@@ -97,13 +112,8 @@ export interface GetWorkflowStatus {
     instance_id: string;
 }
 
-export interface ExecuteStepQuick {
-    step_definition: StepDefinition;
-    user_inputs?: UserInputs[];
-}
-
 export interface ExecuteSingleStep {
-    step_definition: StepDefinition;
+    single_node: SingleNode;
     user_inputs?: UserInputs[];
 }
 
@@ -113,8 +123,9 @@ export interface StartWorkflowById {
 }
 
 export interface StartWorkflowWithStructure {
-    workflow_definition: Record<string, any>;
+    nodes: Nodes[];
     user_inputs?: UserInputs[];
+    relays?: any[][];
 }
 
 export interface GetAllLogs {

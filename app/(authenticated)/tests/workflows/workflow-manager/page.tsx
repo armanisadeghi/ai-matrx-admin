@@ -3,9 +3,9 @@
 import { useMemo } from "react";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { createWorkflowSelectors } from "@/lib/redux/entity/custom-selectors/workflowSelectors";
-import { useWorkflowManager } from "@/features/workflows/hooks/useWorkflowManager";
+import { useWorkflowManager } from "@/features/old-deprecated-workflow-system-do-not-use/workflows/hooks/useWorkflowManager";
 import { WorkflowData } from "@/types/customWorkflowTypes";
-import { WorkflowCard } from "@/features/workflows/workflow-manager/common/WorkflowCard";
+import { WorkflowCard } from "@/features/old-deprecated-workflow-system-do-not-use/workflows/workflow-manager/common/WorkflowCard";
 
 export default function WorkflowManagerPage() {
     // Use only selectors - no data fetching hooks

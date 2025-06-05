@@ -47,6 +47,7 @@ const FULL_SCREEN_PATHS = [
     "/apps",
     "/tests/markdown-tests",
     "/tests/workflows",
+    "/workflows",
 ]
 
 

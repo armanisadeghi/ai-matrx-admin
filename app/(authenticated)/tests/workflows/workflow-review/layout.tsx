@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { useWorkflowWithFetch } from "@/features/workflows/hooks/useWorkflowData";
+import { useWorkflowWithFetch } from "@/features/old-deprecated-workflow-system-do-not-use/workflows/hooks/useWorkflowData";
 
 interface WorkflowManagerLayoutProps {
     children: React.ReactNode;

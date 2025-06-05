@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppDispatch } from "@/lib/redux";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
-import { Play, Zap, X, CheckCircle, AlertCircle } from "lucide-react";
+import { Play, Zap, CheckCircle, AlertCircle } from "lucide-react";
 import { ButtonProps } from "@/components/ui/button";
 
 interface SocketExecuteButtonProps extends Omit<ButtonProps, 'onClick'> {
@@ -182,14 +182,6 @@ export const SocketExecuteButton: React.FC<SocketExecuteButtonProps> = ({
                                         </p>
                                     </div>
                                 </div>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={handleOverlayClose}
-                                    className="hover:bg-white/60 dark:hover:bg-slate-600/60"
-                                >
-                                    <X className="w-4 h-4" />
-                                </Button>
                             </div>
                         </DialogHeader>
 

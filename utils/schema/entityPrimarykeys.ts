@@ -416,7 +416,19 @@ export const primaryKeys = {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },
+  workflowEdge: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
   workflowNode: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  workflowRelay: {
+    frontendFields: ['id'],
+    databaseColumns: ['id'],
+  },
+  workflowUserInput: {
     frontendFields: ['id'],
     databaseColumns: ['id'],
   },

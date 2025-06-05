@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useCallback, useEffect } from 'react';
-import WorkflowEditor, { type NodeData, type WorkflowEditorHandle } from '@/features/workflows/components/WorkflowEditor';
-import WorkflowHeader from '@/features/workflows/components/WorkflowHeader';
+import WorkflowEditor, { type NodeData, type WorkflowEditorHandle } from '@/features/old-deprecated-workflow-system-do-not-use/workflows/components/WorkflowEditor';
+import WorkflowHeader from '@/features/old-deprecated-workflow-system-do-not-use/workflows/components/WorkflowHeader';
 
 function WorkflowPage() {
   console.log('WorkflowPage rendering');

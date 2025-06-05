@@ -189,7 +189,10 @@ export type AutomationTableName =
     | 'wcInjury'
     | 'wcReport'
     | 'workflow'
-    | 'workflowNode';
+    | 'workflowEdge'
+    | 'workflowNode'
+    | 'workflowRelay'
+    | 'workflowUserInput';
 
 export type AutomationViewName =
     'viewRegisteredFunction'
@@ -1148,6 +1151,15 @@ export type WorkflowData = Expand<EntityDataMixed<"workflow">>;
 export type WorkflowState = EntityStateType<"workflow">;
 export type WorkflowRecordMap = Record<"workflowRecordId", WorkflowData>;
 
+export type WorkflowEdgeType = AutomationEntity<"workflowEdge">;
+export type WorkflowEdgeDataRequired = Expand<EntityData<"workflowEdge">>;
+export type WorkflowEdgeDataOptional = Expand<EntityDataOptional<"workflowEdge">>;
+export type WorkflowEdgeRecordWithKey = Expand<EntityDataWithKey<"workflowEdge">>;
+export type WorkflowEdgeProcessed = Expand<ProcessedEntityData<"workflowEdge">>;
+export type WorkflowEdgeData = Expand<EntityDataMixed<"workflowEdge">>;
+export type WorkflowEdgeState = EntityStateType<"workflowEdge">;
+export type WorkflowEdgeRecordMap = Record<"workflowEdgeRecordId", WorkflowEdgeData>;
+
 export type WorkflowNodeType = AutomationEntity<"workflowNode">;
 export type WorkflowNodeDataRequired = Expand<EntityData<"workflowNode">>;
 export type WorkflowNodeDataOptional = Expand<EntityDataOptional<"workflowNode">>;
@@ -1156,3 +1168,21 @@ export type WorkflowNodeProcessed = Expand<ProcessedEntityData<"workflowNode">>;
 export type WorkflowNodeData = Expand<EntityDataMixed<"workflowNode">>;
 export type WorkflowNodeState = EntityStateType<"workflowNode">;
 export type WorkflowNodeRecordMap = Record<"workflowNodeRecordId", WorkflowNodeData>;
+
+export type WorkflowRelayType = AutomationEntity<"workflowRelay">;
+export type WorkflowRelayDataRequired = Expand<EntityData<"workflowRelay">>;
+export type WorkflowRelayDataOptional = Expand<EntityDataOptional<"workflowRelay">>;
+export type WorkflowRelayRecordWithKey = Expand<EntityDataWithKey<"workflowRelay">>;
+export type WorkflowRelayProcessed = Expand<ProcessedEntityData<"workflowRelay">>;
+export type WorkflowRelayData = Expand<EntityDataMixed<"workflowRelay">>;
+export type WorkflowRelayState = EntityStateType<"workflowRelay">;
+export type WorkflowRelayRecordMap = Record<"workflowRelayRecordId", WorkflowRelayData>;
+
+export type WorkflowUserInputType = AutomationEntity<"workflowUserInput">;
+export type WorkflowUserInputDataRequired = Expand<EntityData<"workflowUserInput">>;
+export type WorkflowUserInputDataOptional = Expand<EntityDataOptional<"workflowUserInput">>;
+export type WorkflowUserInputRecordWithKey = Expand<EntityDataWithKey<"workflowUserInput">>;
+export type WorkflowUserInputProcessed = Expand<ProcessedEntityData<"workflowUserInput">>;
+export type WorkflowUserInputData = Expand<EntityDataMixed<"workflowUserInput">>;
+export type WorkflowUserInputState = EntityStateType<"workflowUserInput">;
+export type WorkflowUserInputRecordMap = Record<"workflowUserInputRecordId", WorkflowUserInputData>;

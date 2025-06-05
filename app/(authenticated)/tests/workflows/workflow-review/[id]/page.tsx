@@ -1,4 +1,4 @@
-import { WorkflowDetailContent } from "@/features/workflows/workflow-review/WorkflowDetailContent";
+import { WorkflowDetailContent } from "@/features/old-deprecated-workflow-system-do-not-use/workflows/workflow-review/WorkflowDetailContent";
 
 interface WorkflowDetailPageProps {
     params: Promise<{ id: string }>;

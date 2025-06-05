@@ -529,13 +529,28 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "claimId", "finalRating", "leftSideTotal", "rightSideTotal", "defaultSideTotal", "compensationAmount", "compensationWeeks", "compensationDays"]
 },
   workflow: {
-  nativeFields: ["id", "createdAt", "updatedAt", "name", "description", "visualWorkflow", "backendWorkflow", "userId", "version", "isPublic", "authenticatedRead", "isActive", "isDeleted", "publicRead"],
+  nativeFields: ["id", "createdAt", "updatedAt", "name", "description", "userId", "version", "viewportX", "viewportY", "viewportZoom", "isPublic", "authenticatedRead", "publicRead", "isActive", "isDeleted", "autoExecute", "category", "tags"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "description", "visualWorkflow", "backendWorkflow", "userId", "version", "isPublic", "authenticatedRead", "isActive", "isDeleted", "publicRead"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "name", "description", "userId", "version", "viewportX", "viewportY", "viewportZoom", "isPublic", "authenticatedRead", "publicRead", "isActive", "isDeleted", "autoExecute", "category", "tags"]
+},
+  workflowEdge: {
+  nativeFields: ["id", "createdAt", "workflowId", "sourceNodeId", "targetNodeId", "sourceHandle", "targetHandle", "edgeType", "animated", "style"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "workflowId", "sourceNodeId", "targetNodeId", "sourceHandle", "targetHandle", "edgeType", "animated", "style"]
 },
   workflowNode: {
-  nativeFields: ["id", "createdAt", "updatedAt", "userId", "functionId", "functionType", "stepName", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "workflowId", "isPublic", "authenticatedRead", "publicRead"],
+  nativeFields: ["id", "createdAt", "updatedAt", "userId", "workflowId", "functionId", "functionType", "stepName", "positionX", "positionY", "width", "height", "nodeType", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "status", "isPublic", "authenticatedRead", "publicRead"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "functionId", "functionType", "stepName", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "workflowId", "isPublic", "authenticatedRead", "publicRead"]
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "userId", "workflowId", "functionId", "functionType", "stepName", "positionX", "positionY", "width", "height", "nodeType", "executionRequired", "additionalDependencies", "argMapping", "returnBrokerOverrides", "argOverrides", "status", "isPublic", "authenticatedRead", "publicRead"]
+},
+  workflowRelay: {
+  nativeFields: ["id", "createdAt", "updatedAt", "workflowId", "userId", "sourceBrokerId", "label", "positionX", "positionY", "targetBrokerIds"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "workflowId", "userId", "sourceBrokerId", "label", "positionX", "positionY", "targetBrokerIds"]
+},
+  workflowUserInput: {
+  nativeFields: ["id", "createdAt", "updatedAt", "workflowId", "userId", "fieldComponentId", "brokerId", "label", "dataType", "defaultValue", "positionX", "positionY", "isRequired"],
+  primaryKeyFields: ["id"],
+  nativeFieldsNoPk: ["createdAt", "updatedAt", "workflowId", "userId", "fieldComponentId", "brokerId", "label", "dataType", "defaultValue", "positionX", "positionY", "isRequired"]
 }
 }
