@@ -4,8 +4,21 @@ import { NodeProps, Handle, Position, useUpdateNodeInternals } from "reactflow";
 import WorkflowNode from "@/features/workflows/react-flow/nodes/WorkflowNode";
 import UserInputNode from "@/features/workflows/react-flow/nodes/UserInputNode";
 import BrokerRelayNode from "@/features/workflows/react-flow/nodes/BrokerRelayNode";
+import NodeFloatingIcon from "@/features/workflows/react-flow/nodes/NodeFloatingIcon";
 
-export const WorkflowNodeWrapper: React.FC<NodeProps> = ({ data, selected, id }) => {
+// TypeScript declaration for window object
+declare global {
+  interface Window {
+      workflowSystemRef?: {
+          deleteNode: (nodeId: string) => void;
+          editNode: (nodeData: any) => void;
+          getUserInputs: () => { broker_id: string; value: string }[];
+      };
+  }
+}
+
+
+export const NodeWrapper: React.FC<NodeProps> = ({ data, selected, id }) => {
   const updateNodeInternals = useUpdateNodeInternals();
   
   const handleDelete = (nodeId: string) => {
@@ -28,6 +41,7 @@ export const WorkflowNodeWrapper: React.FC<NodeProps> = ({ data, selected, id })
     return (
       <div className="relative">
         <UserInputNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} />
+        <NodeFloatingIcon nodeData={data} selected={selected} />
         {/* Output handle for user inputs */}
         <Handle
           type="source"
@@ -50,6 +64,7 @@ export const WorkflowNodeWrapper: React.FC<NodeProps> = ({ data, selected, id })
     return (
       <div className="relative">
         <BrokerRelayNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} />
+        <NodeFloatingIcon nodeData={data} selected={selected} />
         {/* Input and output handles for relays */}
         <Handle
           type="target"
@@ -85,6 +100,7 @@ export const WorkflowNodeWrapper: React.FC<NodeProps> = ({ data, selected, id })
   return (
     <div className="relative">
       <WorkflowNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} userInputs={userInputs} />
+      <NodeFloatingIcon nodeData={data} selected={selected} />
       {/* Input and output handles for workflow nodes */}
                <Handle
            type="target"

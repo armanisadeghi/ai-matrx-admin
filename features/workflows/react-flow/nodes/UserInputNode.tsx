@@ -7,15 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { User, Edit, Trash2, Copy } from "lucide-react";
-
-export interface UserInputData {
-  id: string;
-  type: 'userInput';
-  broker_id: string;
-  value: any;
-  label?: string;
-  data_type?: 'int' | 'float' | 'str' | 'bool' | 'list' | 'tuple' | 'dict' | 'set';
-}
+import { UserInputData } from '@/features/workflows/types';
 
 interface UserInputNodeProps {
   data: UserInputData;

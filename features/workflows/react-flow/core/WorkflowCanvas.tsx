@@ -15,10 +15,13 @@ import ReactFlow, {
   MarkerType,
 } from "reactflow";
 import QuickAccessPanel from "@/features/workflows/react-flow/core/QuickAccessPanel";
+import CustomEdge from "@/features/workflows/edges/CustomEdge";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 
 // Define edge types outside component to avoid memoization warning
-const edgeTypes: EdgeTypes = {};
+const edgeTypes: EdgeTypes = {
+  custom: CustomEdge,
+};
 
 interface WorkflowCanvasProps {
   nodes: Node[];
@@ -51,13 +54,10 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
   // Default edge options - memoized to avoid recreating
   const defaultEdgeOptions = useMemo(() => ({
     animated: false,
-    type: 'smoothstep',
-    style: { 
-      strokeWidth: 2,
-      stroke: '#b1b1b7'
-    },
+    type: 'custom',
     markerEnd: {
       type: MarkerType.ArrowClosed,
+      color: 'hsl(var(--primary))',
     },
   }), []);
   
@@ -75,21 +75,27 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
         defaultEdgeOptions={defaultEdgeOptions}
         connectionLineType={ConnectionLineType.SmoothStep}
         fitView
-        className="bg-background"
+        fitViewOptions={{
+          padding: 0.2,
+          includeHiddenNodes: false,
+          minZoom: 0.1,
+          maxZoom: 1.5
+        }}
+        minZoom={0.1}
+        maxZoom={2}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
         nodesDraggable={mode === 'edit'}
         nodesConnectable={mode === 'edit'}
         elementsSelectable={mode === 'edit'}
         edgesFocusable={mode === 'edit'}
       >
         <Controls
-          className={themeMode === "dark" ? "react-flow-controls-dark" : ""}
           position="bottom-left"
           showInteractive={false}
           style={{ bottom: 10, left: 10 }}
         />
         
         <MiniMap
-          className={themeMode === "dark" ? "react-flow-minimap-dark" : ""}
           nodeColor={(node) => {
             if (node.data?.type === 'userInput') return "#10b981";
             if (node.data?.type === 'brokerRelay') return "#3b82f6";
@@ -115,6 +121,30 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
             <QuickAccessPanel onAddNode={onAddNode} />
           </Panel>
         )}
+        
+        <svg style={{ position: 'absolute', top: 0, left: 0, width: 0, height: 0 }}>
+          <defs>
+            <marker
+              id="edge-circle"
+              viewBox="-5 -5 10 10"
+              refX="0"
+              refY="0"
+              markerUnits="strokeWidth"
+              markerWidth="10"
+              markerHeight="10"
+              orient="auto"
+            >
+              <circle 
+                stroke="hsl(var(--primary))" 
+                strokeOpacity="0.75" 
+                r="2" 
+                cx="0" 
+                cy="0" 
+                fill="hsl(var(--primary))"
+              />
+            </marker>
+          </defs>
+        </svg>
       </ReactFlow>
     </div>
   );

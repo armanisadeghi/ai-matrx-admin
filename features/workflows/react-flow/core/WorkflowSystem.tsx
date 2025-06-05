@@ -19,13 +19,11 @@ import "reactflow/dist/style.css";
 import { WorkflowToolbar } from "@/features/workflows/react-flow/core/WorkflowToolbar";
 import { WorkflowCanvas } from "@/features/workflows/react-flow/core/WorkflowCanvas";
 import { NodeEditorManager } from "@/features/workflows/react-flow/core/NodeEditorManager";
-import { NodeDeleteDialog } from "@/features/workflows/react-flow/components/NodeDeleteDialog";
+import { NodeDeleteDialog } from "@/features/workflows/components/NodeDeleteDialog";
 import { useWorkflowData } from "@/features/workflows/react-flow/hooks/useWorkflowData";
 import { useWorkflowActions } from "@/features/workflows/react-flow/hooks/useWorkflowActions";
-import { BaseNode } from "@/features/workflows/types/backendTypes";
-import { UserInputData } from "@/features/workflows/react-flow/nodes/UserInputNode";
-import { BrokerRelayData } from "@/features/workflows/react-flow/nodes/BrokerRelayNode";
-import { WorkflowNodeWrapper } from "@/features/workflows/react-flow/nodes/WorkflowNodeWrapper";
+import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";
+import { NodeWrapper } from "@/features/workflows/react-flow/nodes/NodeWrapper";
 import { useAppSelector } from "@/lib/redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
 
@@ -106,7 +104,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({
-      workflowNode: WorkflowNodeWrapper,
+      workflowNode: NodeWrapper,
     }),
     []
   );

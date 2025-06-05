@@ -209,6 +209,10 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                     <div className="text-xs text-green-600 dark:text-green-400 font-medium">
                                         ✅ Required argument satisfied
                                     </div>
+                                ) : effective.value && effective.value !== "" && !effective.ready && mappings.length === 0 ? (
+                                    <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                                        🛑 Arguments must be marked as 'ready' to be used in the workflow
+                                    </div>
                                 ) : (
                                     <div className="text-xs text-red-600 dark:text-red-400 font-medium">
                                         ⚠️ Required argument needs either a value OR broker mapping

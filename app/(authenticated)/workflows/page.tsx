@@ -17,7 +17,11 @@ export default function WorkflowsPage() {
         </div>
         
         <Link href="/workflows/new">
-          <Button size="lg" className="gap-2">
+          <Button 
+            size="lg" 
+            variant="outline"
+            className="gap-2 border-blue-200 dark:border-blue-800 hover:border-primary/20 dark:hover:border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+          >
             <Plus className="w-4 h-4" />
             New Workflow
           </Button>

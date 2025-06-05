@@ -6,14 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { ArrowRightLeft, Edit, Trash2, Copy, Plus } from "lucide-react";
-
-export interface BrokerRelayData {
-  id: string;
-  type: 'brokerRelay';
-  source: string;
-  targets: string[];
-  label?: string;
-}
+import { BrokerRelayData } from '@/features/workflows/types';
 
 interface BrokerRelayNodeProps {
   data: BrokerRelayData;

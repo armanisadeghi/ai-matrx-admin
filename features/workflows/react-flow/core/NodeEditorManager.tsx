@@ -1,11 +1,9 @@
 "use client";
 import React from "react";
-import NodeEditor from "@/features/workflows/react-flow/node-editor/NodeEditor";
-import UserInputEditor from "@/features/workflows/react-flow/nodes/UserInputEditor";
-import BrokerRelayEditor from "@/features/workflows/react-flow/nodes/BrokerRelayEditor";
-import { BaseNode } from "@/features/workflows/types/backendTypes";
-import { UserInputData } from "@/features/workflows/react-flow/nodes/UserInputNode";
-import { BrokerRelayData } from "@/features/workflows/react-flow/nodes/BrokerRelayNode";
+import WorkflowNodeEditor from "@/features/workflows/react-flow/node-editor/workflow-node-editor/WorkflowNodeEditor";
+import UserInputEditor from "@/features/workflows/react-flow/node-editor/user-input-node-editor/UserInputEditor";
+import BrokerRelayEditor from "@/features/workflows/react-flow/node-editor/broker-relay-node-editor/BrokerRelayEditor";
+import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";
 
 interface NodeEditorManagerProps {
   editingNode: BaseNode | UserInputData | BrokerRelayData | null;
@@ -49,7 +47,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
   }
 
   return (
-    <NodeEditor 
+    <WorkflowNodeEditor 
       node={editingNode as BaseNode} 
       onSave={onSave} 
       onClose={onClose} 

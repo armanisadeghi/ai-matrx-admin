@@ -48,7 +48,7 @@ const DEFAULT_TABS: TabConfig[] = [
   { id: 'object', label: 'Admin', component: NodeObjectTab },
 ];
 
-const NodeEditor: React.FC<NodeEditorProps> = ({ 
+const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({ 
   node, 
   onSave, 
   onClose,
@@ -178,4 +178,4 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
   );
 };
 
-export default NodeEditor; 
+export default WorkflowNodeEditor; 

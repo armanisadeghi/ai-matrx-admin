@@ -24,18 +24,20 @@ export default function NewWorkflowPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     
     if (!currentUser?.id) {
       console.error('No user found');
+      setLoading(false);
       return;
     }
 
     if (!formData.name.trim()) {
+      setLoading(false);
       return;
     }
 
     try {
-      setLoading(true);
       const newWorkflow = await createWorkflow(currentUser.id, {
         name: formData.name.trim(),
         description: formData.description.trim() || null
@@ -56,7 +58,11 @@ export default function NewWorkflowPage() {
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link href="/workflows">
-          <Button variant="outline" size="sm">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="border-blue-200 dark:border-blue-800 hover:border-primary/20 dark:hover:border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+          >
             <ArrowLeft className="w-4 h-4" />
           </Button>
         </Link>
@@ -111,7 +117,7 @@ export default function NewWorkflowPage() {
               <Button
                 type="submit"
                 disabled={!formData.name.trim() || loading}
-                className="flex-1"
+                className="flex-1 bg-primary text-primary-foreground hover:bg-primary/70 border border-primary hover:border-primary/90 transition-all duration-200"
               >
                 {loading ? (
                   <>
@@ -124,7 +130,12 @@ export default function NewWorkflowPage() {
               </Button>
               
               <Link href="/workflows">
-                <Button type="button" variant="outline" disabled={loading}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  disabled={loading}
+                  className="border-blue-200 dark:border-blue-800 hover:border-primary/20 dark:hover:border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+                >
                   Cancel
                 </Button>
               </Link>

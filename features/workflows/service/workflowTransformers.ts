@@ -1,7 +1,5 @@
 import { Node, Edge } from 'reactflow';
-import { BaseNode } from '../types/backendTypes';
-import { UserInputData } from '../react-flow/nodes/UserInputNode';
-import { BrokerRelayData } from '../react-flow/nodes/BrokerRelayNode';
+import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";
 import { getNormalizedRegisteredFunctionNode, validateNodeUpdate } from '../utils.ts/node-utils';
 import { 
   CompleteWorkflowData, 
