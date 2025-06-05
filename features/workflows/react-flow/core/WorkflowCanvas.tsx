@@ -15,7 +15,7 @@ import ReactFlow, {
   MarkerType,
 } from "reactflow";
 import QuickAccessPanel from "@/features/workflows/react-flow/core/QuickAccessPanel";
-import CustomEdge from "@/features/workflows/edges/CustomEdge";
+import CustomEdge from "@/features/workflows/react-flow/edges/CustomEdge";
 import { useTheme } from "@/styles/themes/ThemeProvider";
 
 // Define edge types outside component to avoid memoization warning

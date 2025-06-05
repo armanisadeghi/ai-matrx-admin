@@ -19,7 +19,7 @@ import "reactflow/dist/style.css";
 import { WorkflowToolbar } from "@/features/workflows/react-flow/core/WorkflowToolbar";
 import { WorkflowCanvas } from "@/features/workflows/react-flow/core/WorkflowCanvas";
 import { NodeEditorManager } from "@/features/workflows/react-flow/core/NodeEditorManager";
-import { NodeDeleteDialog } from "@/features/workflows/components/NodeDeleteDialog";
+import { NodeDeleteDialog } from "@/features/workflows/react-flow/common/NodeDeleteDialog";
 import { useWorkflowData } from "@/features/workflows/react-flow/hooks/useWorkflowData";
 import { useWorkflowActions } from "@/features/workflows/react-flow/hooks/useWorkflowActions";
 import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";

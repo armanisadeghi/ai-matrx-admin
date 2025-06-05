@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { WorkflowNodeData } from "@/features/workflows/types";
-import { getWorkflowNodeIcon } from "@/features/workflows/common/workflowIcons";
+import { getWorkflowNodeIcon } from "@/features/workflows/react-flow/common/workflowIcons";
 
 interface NodeFloatingIconProps {
   nodeData: WorkflowNodeData;
