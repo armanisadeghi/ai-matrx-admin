@@ -200,6 +200,8 @@ export async function saveWorkflowViewport(workflowId: string, viewport: { x: nu
 export async function saveWorkflowNode(workflowId: string, userId: string, nodeData: Partial<WorkflowNodeData>): Promise<WorkflowNodeData> {
   const isUpdate = !!nodeData.id;
   
+  console.log("saveWorkflowNode saving nodeData", JSON.stringify(nodeData, null, 2));
+
   if (isUpdate) {
     const { data: node, error } = await supabase
       .from('workflow_node')

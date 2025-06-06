@@ -1,0 +1,122 @@
+'use client';
+
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BaseNode, TabComponentProps } from '@/features/workflows/types';
+import ErrorDisplay from './components/ErrorDisplay';
+
+// Import all default tabs
+import OverviewTab from './tabs/OverviewTab';
+import ArgumentsTab from './tabs/ArgumentsTab';
+import MappingsTab from './tabs/MappingsTab';
+import DependenciesTab from './tabs/DependenciesTab';
+import BrokersTab from './tabs/BrokersTab';
+import AdminTab from './tabs/AdminTab';
+
+// Define the structure for tab configuration with proper typing
+export interface TabConfig {
+  id: string;
+  label: string;
+  component: React.ComponentType<TabComponentProps>;
+}
+
+// Define the structure for custom tabs
+export interface CustomTabConfig extends TabConfig {
+  replaces?: string; // ID of default tab to replace
+}
+
+interface DefaultNodeEditorProps {
+  node: BaseNode;
+  onNodeUpdate: (node: BaseNode) => void;
+  customTabs?: CustomTabConfig[]; // Custom tabs to add or replace defaults
+  additionalTabs?: TabConfig[]; // Additional tabs to append
+  hiddenTabs?: string[]; // Tab IDs to hide
+  validationErrors?: string[];
+}
+
+// Default tab configurations - now properly typed
+const DEFAULT_TABS: TabConfig[] = [
+  { id: 'basic', label: 'Overview', component: OverviewTab },
+  { id: 'arguments', label: 'Arguments', component: ArgumentsTab },
+  { id: 'mappings', label: 'Mappings', component: MappingsTab },
+  { id: 'dependencies', label: 'Dependencies', component: DependenciesTab },
+  { id: 'brokers', label: 'Brokers', component: BrokersTab },
+  { id: 'object', label: 'Admin', component: AdminTab },
+];
+
+/**
+ * DefaultNodeEditor - Replicates the exact functionality of WorkflowNodeEditor
+ * but allows for complete customization of individual tabs
+ * Now with proper TypeScript typing to ensure all tab components receive correct props
+ */
+const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({ 
+  node,
+  onNodeUpdate,
+  customTabs = [],
+  additionalTabs = [],
+  hiddenTabs = [],
+  validationErrors = []
+}) => {
+
+  // Build the final tabs configuration
+  const buildTabsConfig = (): TabConfig[] => {
+    let tabs = [...DEFAULT_TABS];
+    
+    // Filter out hidden tabs
+    tabs = tabs.filter(tab => !hiddenTabs.includes(tab.id));
+    
+    // Replace default tabs with custom tabs if specified
+    customTabs.forEach(customTab => {
+      if (customTab.replaces) {
+        const replaceIndex = tabs.findIndex(tab => tab.id === customTab.replaces);
+        if (replaceIndex !== -1) {
+          tabs[replaceIndex] = customTab;
+        }
+      } else {
+        // Add as additional tab if not replacing
+        tabs.push(customTab);
+      }
+    });
+    
+    // Add additional tabs
+    tabs = [...tabs, ...additionalTabs];
+    
+    return tabs;
+  };
+
+  const finalTabs = buildTabsConfig();
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Global validation errors display */}
+      {validationErrors.length > 0 && (
+        <ErrorDisplay errors={validationErrors} className="mx-4 mt-4" />
+      )}
+      
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <Tabs defaultValue={finalTabs[0]?.id} className="w-full h-full flex flex-col">
+          <TabsList className="grid w-full flex-shrink-0" style={{ gridTemplateColumns: `repeat(${finalTabs.length}, minmax(0, 1fr))` }}>
+            {finalTabs.map(tab => (
+              <TabsTrigger key={tab.id} value={tab.id}>
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            {finalTabs.map(tab => {
+              const TabComponent = tab.component;
+              return (
+                <TabsContent key={tab.id} value={tab.id}>
+                  <TabComponent node={node} onNodeUpdate={onNodeUpdate} />
+                </TabsContent>
+              );
+            })}
+          </div>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default DefaultNodeEditor; 

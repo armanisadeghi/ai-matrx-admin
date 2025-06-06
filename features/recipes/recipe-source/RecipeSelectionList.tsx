@@ -7,24 +7,84 @@ import VersionSelector from "./RecipeVersionSelection";
 import RecipeVersionSelectionCard from "./RecipeVersionSelectionCard";
 import EmptyStateCard from "@/components/official/cards/EmptyStateCard";
 import { BookOpenText } from "lucide-react";
-import { RecipeInfo } from "@/features/recipes/types";
 import {
     getCompiledRecipeByVersion,
     checkCompiledRecipeVersionExists,
     getCompiledRecipeByVersionWithNeededBrokers,
     getUserRecipes,
 } from "@/lib/redux/app-builder/service/customAppletService";
-import { useAppDispatch } from "@/lib/redux";
-import { setTempAppletSourceConfig } from "@/lib/redux/app-builder/slices/appletBuilderSlice";
-import { AppletSourceConfig } from "@/types/customAppTypes";
+
+export type RecipeInfo = {
+    id: string;
+    name: string;
+    description?: string;
+    version: number;
+    status: string;
+    post_result_options?: Record<string, unknown>;
+    tags?: {
+        tags: string[];
+    }
+};
+
+
+export interface NeededBroker {
+    id: string;
+    name: string;
+    required: boolean;
+    dataType: string;
+    defaultValue: string;
+  }
+  
+  
+export interface RecipeSourceConfig {
+    id: string;
+    compiledId: string;
+    version: number;
+    neededBrokers: NeededBroker[];
+  }
+  
+  export interface RecipeConfig {
+    sourceType?: "recipe";
+    config?: RecipeSourceConfig
+  }
+  
+
+
+
+interface RecipeDefaultArgOverrides {
+    recipe_id?: string;
+    version?: number;
+    latest_version?: boolean;
+}
+
+interface RecipeDefaultDependencies {
+    source_broker_id: string;
+    target_broker_id?: undefined;
+}
+
+
+export interface RecipeNodeDefaults {
+    recipe_name?: string;
+    needed_brokers?: NeededBroker[];
+    arg_overrides?: RecipeDefaultArgOverrides;
+    default_dependencies?: RecipeDefaultDependencies[];
+}
+
+export interface InitialConfig {
+    recipeId?: string;
+    version?: number;
+    latestVersion?: boolean;
+}
+
 
 interface RecipeSelectionListProps {
     initialSelectedRecipe?: string | null;
     onRecipeSelected?: (recipeId: string) => void;
     setCompiledRecipeId?: (id: string | null) => void;
     setNewApplet?: React.Dispatch<React.SetStateAction<any>>;
-    initialSourceConfig: AppletSourceConfig | null;
-    setRecipeSourceConfig?: (sourceConfig: AppletSourceConfig | null) => void;
+    initialConfig: InitialConfig | null;
+    setRecipeSourceConfig?: (sourceConfig: RecipeConfig | null) => void;
+    setRecipeNodeDefaults?: (nodeDefaults: RecipeNodeDefaults | null) => void;
     onConfirm?: () => void;
     onCancel?: () => void;
     renderFooter?: (confirmHandler: () => Promise<void>, isConfirmDisabled: boolean) => React.ReactNode;
@@ -36,30 +96,31 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
     onRecipeSelected,
     setCompiledRecipeId,
     setNewApplet,
-    initialSourceConfig,
+    initialConfig,
     setRecipeSourceConfig,
+    setRecipeNodeDefaults,
     onConfirm,
     onCancel,
     renderFooter,
     versionDisplay = "list",
 }) => {
     const { toast } = useToast();
-    const dispatch = useAppDispatch();
-    
+
     // State
-    const [versionSelection, setVersionSelection] = useState<"latest" | "specific">(initialSourceConfig?.config?.version ? "specific" : "latest");
-    const [specificVersion, setSpecificVersion] = useState<number>(initialSourceConfig?.config?.version || 1);
+    const [versionSelection, setVersionSelection] = useState<"latest" | "specific">(
+        initialConfig?.version ? "specific" : "latest"
+    );
+
+    const [specificVersion, setSpecificVersion] = useState<number>(initialConfig?.version || 1);
     const [isVersionValid, setIsVersionValid] = useState<boolean>(true);
     const [isCheckingVersion, setIsCheckingVersion] = useState<boolean>(false);
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [userRecipes, setUserRecipes] = useState<RecipeInfo[]>([]);
-    const [sourceConfig, setSourceConfig] = useState<AppletSourceConfig | null>(initialSourceConfig);
+    const [sourceConfig, setSourceConfig] = useState<RecipeConfig | null>(null);
     const [selectedRecipe, setSelectedRecipe] = useState<string | null>(
-        initialSourceConfig?.sourceType === "recipe" && initialSourceConfig.config 
-            ? initialSourceConfig.config.id
-            : initialSelectedRecipe || null
+        initialConfig?.recipeId || initialSelectedRecipe || null
     );
 
     // Fetch recipes on component mount
@@ -83,20 +144,19 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
         fetchRecipes();
     }, [toast]);
 
-    // Initialize from source config if available
+    // Initialize from initial config if available
     useEffect(() => {
-        if (initialSourceConfig?.sourceType === "recipe" && initialSourceConfig.config) {
-            const config = initialSourceConfig.config;
-            setSelectedRecipe(config.id);
-            setSpecificVersion(config.version);
-            setVersionSelection(config.version ? "specific" : "latest");
-            setIsVersionValid(true);
-            
-            if (setCompiledRecipeId) {
-                setCompiledRecipeId(config.compiledId);
+        if (initialConfig?.recipeId) {
+            setSelectedRecipe(initialConfig.recipeId);
+            if (initialConfig.version) {
+                setSpecificVersion(initialConfig.version);
+                setVersionSelection("specific");
+            } else {
+                setVersionSelection("latest");
             }
+            setIsVersionValid(true);
         }
-    }, [initialSourceConfig]);
+    }, [initialConfig]);
 
     // Process recipes and extract tags
     const extendedRecipes = userRecipes.map((recipe) => ({
@@ -133,18 +193,68 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
     // Source config handling
     const handleGetSourceConfig = async (recipeId: string, version?: number) => {
         try {
-            const compiledRecipeWithBrokerMapping = await getCompiledRecipeByVersionWithNeededBrokers(recipeId, version);
+            const compiledRecipeWithBrokerMapping = (await getCompiledRecipeByVersionWithNeededBrokers(recipeId, version)) as RecipeConfig;
             setSourceConfig(compiledRecipeWithBrokerMapping);
             if (setRecipeSourceConfig) {
                 setRecipeSourceConfig(compiledRecipeWithBrokerMapping);
             }
-            dispatch(setTempAppletSourceConfig(compiledRecipeWithBrokerMapping));
             return compiledRecipeWithBrokerMapping;
         } catch (error) {
             console.error("Error getting source config:", error);
             toast({
                 title: "Error",
                 description: "Failed to get recipe configuration",
+                variant: "destructive",
+            });
+            return null;
+        }
+    };
+
+    // Recipe node defaults handling
+    const handleSetRecipeNodeDefaults = async (recipeId: string, version?: number) => {
+        try {
+            // Get the source config first to get needed brokers
+            const sourceConfigResult = await handleGetSourceConfig(recipeId, version);
+            if (!sourceConfigResult || !sourceConfigResult.config) {
+                return null;
+            }
+
+            // Get recipe name from userRecipes
+            const selectedRecipeInfo = userRecipes.find(recipe => recipe.id === recipeId);
+            const recipeName = selectedRecipeInfo?.name;
+
+            // Create arg overrides
+            const argOverrides: RecipeDefaultArgOverrides = {
+                recipe_id: recipeId,
+                version: version,
+                latest_version: !version // if no version specified, it's latest
+            };
+
+            // Create default dependencies from needed brokers
+            const defaultDependencies: RecipeDefaultDependencies[] = sourceConfigResult.config.neededBrokers.map(broker => ({
+                source_broker_id: broker.id,
+                target_broker_id: undefined
+            }));
+
+            // Create the recipe node defaults
+            const recipeNodeDefaults: RecipeNodeDefaults = {
+                recipe_name: recipeName,
+                needed_brokers: sourceConfigResult.config.neededBrokers,
+                arg_overrides: argOverrides,
+                default_dependencies: defaultDependencies
+            };
+
+            // Set the recipe node defaults if the setter is provided
+            if (setRecipeNodeDefaults) {
+                setRecipeNodeDefaults(recipeNodeDefaults);
+            }
+
+            return recipeNodeDefaults;
+        } catch (error) {
+            console.error("Error setting recipe node defaults:", error);
+            toast({
+                title: "Error",
+                description: "Failed to set recipe node defaults",
                 variant: "destructive",
             });
             return null;
@@ -158,6 +268,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
             onRecipeSelected(recipe.id);
         }
         await handleGetSourceConfig(recipe.id);
+        await handleSetRecipeNodeDefaults(recipe.id);
         setSpecificVersion(recipe.version);
         setVersionSelection("latest");
         setIsVersionValid(true);
@@ -192,6 +303,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
             const id = await getCompiledRecipeByVersion(selectedRecipe);
             setCompiledRecipeId(id);
             await handleGetSourceConfig(selectedRecipe);
+            await handleSetRecipeNodeDefaults(selectedRecipe);
         } catch (error) {
             console.error("Error fetching latest compiled recipe:", error);
             toast({
@@ -221,6 +333,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
             if (exists) {
                 const id = await getCompiledRecipeByVersion(selectedRecipe, specificVersion);
                 setCompiledRecipeId(id);
+                await handleSetRecipeNodeDefaults(selectedRecipe, specificVersion);
             } else {
                 setCompiledRecipeId(null);
             }
@@ -251,11 +364,13 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
         if (!selectedRecipe) return;
         try {
             let recipeId: string | null = null;
-            let sourceConfigResult: AppletSourceConfig | null = null;
-            
+            let sourceConfigResult: RecipeConfig | null = null;
+            let nodeDefaultsResult: RecipeNodeDefaults | null = null;
+
             if (versionSelection === "latest") {
                 recipeId = await getCompiledRecipeByVersion(selectedRecipe);
                 sourceConfigResult = await handleGetSourceConfig(selectedRecipe);
+                nodeDefaultsResult = await handleSetRecipeNodeDefaults(selectedRecipe);
             } else {
                 if (!isVersionValid) {
                     toast({
@@ -267,24 +382,29 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                 }
                 recipeId = await getCompiledRecipeByVersion(selectedRecipe, specificVersion);
                 sourceConfigResult = await handleGetSourceConfig(selectedRecipe, specificVersion);
+                nodeDefaultsResult = await handleSetRecipeNodeDefaults(selectedRecipe, specificVersion);
             }
-            
+
             if (recipeId) {
                 if (setCompiledRecipeId) {
                     setCompiledRecipeId(recipeId);
                 }
-                
+
                 if (setNewApplet) {
                     setNewApplet((prev) => ({
                         ...prev,
                         compiledRecipeId: recipeId,
                     }));
                 }
-                
+
                 if (setRecipeSourceConfig && sourceConfigResult) {
                     setRecipeSourceConfig(sourceConfigResult);
                 }
-                
+
+                if (setRecipeNodeDefaults && nodeDefaultsResult) {
+                    setRecipeNodeDefaults(nodeDefaultsResult);
+                }
+
                 const recipeName = userRecipes.find((recipe) => recipe.id === selectedRecipe)?.name;
                 toast({
                     title: "Recipe Selected",
@@ -292,7 +412,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                         versionSelection === "latest" ? "(latest version)" : `(version ${specificVersion})`
                     } has been selected.`,
                 });
-                
+
                 if (onConfirm) {
                     onConfirm();
                 }
@@ -325,7 +445,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                 onSearchChange={(e) => setSearchTerm(e.target.value)}
                 onClearFilters={clearFilters}
             />
-            
+
             {/* Recipe List and Version Selection in columns */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Recipe List */}
@@ -335,7 +455,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                     isLoading={isLoading}
                     onRecipeSelect={handleRecipeSelect}
                 />
-                
+
                 {/* Version Selector Component */}
                 {versionDisplay === "card" ? (
                     selectedRecipe ? (
@@ -373,7 +493,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                     />
                 )}
             </div>
-            
+
             {/* Footer */}
             {renderFooter ? (
                 renderFooter(confirmRecipeSelection, !selectedRecipe || (versionSelection === "specific" && !isVersionValid))

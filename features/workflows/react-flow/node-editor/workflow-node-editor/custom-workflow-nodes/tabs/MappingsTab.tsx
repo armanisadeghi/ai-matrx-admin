@@ -1,23 +1,28 @@
 'use client';
 
 import React from 'react';
-import { TabComponentProps } from '@/features/workflows/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
+import { BaseNode } from '@/features/workflows/types';
 import {
-    getFunctionDataForMappings,
+    getFunctionData,
     addArgumentMapping,
     updateArgumentMapping,
     removeArgumentMapping,
-    hasArgumentMappings,
-} from "./utils/mapping-utils";
+} from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils";
 
-const MappingsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
-    const functionData = getFunctionDataForMappings(node.function_id);
+interface MappingsTabProps {
+    node: BaseNode;
+    onNodeUpdate: (updatedNode: BaseNode) => void;
+}
+
+const MappingsTab: React.FC<MappingsTabProps> = ({ node, onNodeUpdate }) => {
+    const functionData = getFunctionData(node.function_id);
+    const allMappings = node.arg_mapping || [];
 
     return (
         <div className="mt-4 space-y-6">
@@ -32,9 +37,9 @@ const MappingsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {hasArgumentMappings(node) ? (
+                    {allMappings.length > 0 ? (
                         <div className="space-y-3">
-                            {node.arg_mapping.map((mapping: any, index: number) => (
+                            {allMappings.map((mapping, index) => (
                                 <Card key={index} className="border-border">
                                     <CardContent className="p-4">
                                         <div className="flex items-center gap-4">
@@ -87,4 +92,4 @@ const MappingsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
     );
 };
 
-export default MappingsTab;
+export default MappingsTab; 

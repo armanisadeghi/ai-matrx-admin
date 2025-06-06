@@ -34,7 +34,7 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { CustomAppletConfig, AppletContainer } from '@/types/customAppTypes';
 import { ICON_OPTIONS, COLOR_VARIANTS } from '@/features/applet/styles/StyledComponents';
-import { RecipeInfo } from '@/lib/redux/app-builder/service/customAppletService';
+import { RecipeInfo } from "@/features/recipes/types";
 
 interface CreateAppletTabProps {
   newApplet: Partial<CustomAppletConfig>;

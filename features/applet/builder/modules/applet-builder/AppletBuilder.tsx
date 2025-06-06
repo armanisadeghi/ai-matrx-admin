@@ -17,10 +17,10 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { RecipeInfo } from "@/features/recipes/types";
 
 import { 
   isAppletSlugAvailable, 
-  RecipeInfo, 
   getUserRecipes, 
   getAllCustomAppletConfigs,
   getCustomAppletConfigById,

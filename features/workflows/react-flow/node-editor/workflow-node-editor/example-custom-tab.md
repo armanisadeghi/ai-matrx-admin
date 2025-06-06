@@ -1,11 +1,11 @@
-# NodeEditor Custom Tabs Examples
+# WorkflowNodeEditor Custom Tabs Examples
 
 The refactored NodeEditor now supports custom tabs that can replace default tabs or add additional functionality. Here are examples of how to use this feature:
 
 ## Basic Usage (Default Tabs Only)
 
 ```tsx
-<NodeEditor
+<WorkflowNodeEditor
   node={selectedNode}
   onSave={handleSave}
   onClose={handleClose}
@@ -36,7 +36,7 @@ const CustomBasicsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) =>
 };
 
 // Usage
-<NodeEditor
+<WorkflowNodeEditor
   node={selectedNode}
   onSave={handleSave}
   onClose={handleClose}
@@ -96,7 +96,7 @@ const PerformanceTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => 
 };
 
 // Usage
-<NodeEditor
+<WorkflowNodeEditor
   node={selectedNode}
   onSave={handleSave}
   onClose={handleClose}
@@ -119,7 +119,7 @@ const PerformanceTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => 
 ## Example 3: Combined Usage
 
 ```tsx
-<NodeEditor
+<WorkflowNodeEditor
   node={selectedNode}
   onSave={handleSave}
   onClose={handleClose}

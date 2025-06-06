@@ -3,6 +3,7 @@ import { AppletContainer, AppletSourceConfig, BrokerMapping, CustomAppletConfig 
 import { AppletLayoutOption } from "@/types";
 import { supabase } from "@/utils/supabase/client";
 import { RuntimeCompiledRecipe } from "../../app-runner/types";
+import { RecipeInfo } from "@/features/recipes/types";
 
 export type CustomAppletConfigDB = {
     id: string;
@@ -301,20 +302,6 @@ export const getCustomAppletConfigsByCompiledRecipe = async (compiledRecipeId: s
     return (data || []).map(dbToAppletConfig);
 };
 
-/**
- * Type for recipe information
- */
-export type RecipeInfo = {
-    id: string;
-    name: string;
-    description?: string;
-    version: number;
-    status: string;
-    post_result_options?: Record<string, unknown>;
-    tags?: {
-        tags: string[];
-    }
-};
 
 /**
  * Fetches all recipes for the current user

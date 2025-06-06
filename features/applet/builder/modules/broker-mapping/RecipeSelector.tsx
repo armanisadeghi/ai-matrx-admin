@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TextIconButton } from "@/components/official/TextIconButton";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { RecipeInfo } from "@/lib/redux/app-builder/service/customAppletService";
+import { RecipeInfo } from "@/features/recipes/types";
 import { RecipeSelectDialog } from "@/features/applet/builder/modules/recipe-source/RecipeSelectDialog";
 import { AppletSourceConfig } from "@/types/customAppTypes";
 

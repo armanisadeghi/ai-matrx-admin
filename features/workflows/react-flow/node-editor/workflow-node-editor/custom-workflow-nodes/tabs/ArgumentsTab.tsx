@@ -1,36 +1,45 @@
 "use client";
 
 import React from "react";
-import { TabComponentProps } from "@/features/workflows/types";
+import { getRegisteredFunctions } from "@/features/workflows/constants";
 import { Button } from "@/components/ui/button";
 import { Input, DeleteInput } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
-import {
-    getEffectiveArgValue,
+import { Plus, Trash2, ArrowRight } from "lucide-react";
+import { BaseNode } from '@/features/workflows/types';
+import { 
     updateArgOverride,
     handleArgValueChange,
+    getEffectiveArgValue,
     addBrokerMapping,
     updateBrokerMapping,
     removeBrokerMapping,
-    getFunctionData,
-    separateArguments,
-    getBrokerMappingsForArg,
-    hasFunctionArguments,
-} from "./utils/arg-utils";
+    getBrokerMappingsForArg
+} from '@/features/workflows/react-flow/node-editor/workflow-node-editor/utils';
 
-const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
-    const functionData = getFunctionData(node.function_id);
+interface ArgumentsTabProps {
+    node: BaseNode;
+    onNodeUpdate: (updatedNode: BaseNode) => void;
+    argsToHide?: string[]; // Optional array of argument names to hide from display
+}
 
-    if (!hasFunctionArguments(functionData)) {
+const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ node, onNodeUpdate, argsToHide = [] }) => {
+    const functionData = getRegisteredFunctions().find((f) => f.id === node.function_id);
+
+    if (!functionData || functionData.args.length === 0) {
         return <div className="p-4 text-center text-muted-foreground">No arguments defined for this function.</div>;
     }
 
-    const { requiredArgs, optionalArgs } = separateArguments(functionData);
+    // Filter out hidden arguments but keep the original functionality
+    const visibleArgs = functionData.args.filter((arg) => !argsToHide.includes(arg.name));
+
+    // Separate required and optional arguments from visible args only
+    const requiredArgs = visibleArgs.filter((arg) => arg.required);
+    const optionalArgs = visibleArgs.filter((arg) => !arg.required);
 
     const renderArgument = (arg: any) => {
         const effective = getEffectiveArgValue(arg, node.arg_overrides);
@@ -107,12 +116,12 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                 {mappings.length > 0 ? (
                                     <div className="space-y-2">
                                         {mappings.map((mapping, mappingIndex) => {
-                                            const globalIndex =
-                                                node.arg_mapping?.findIndex(
-                                                    (m: any) =>
-                                                        m.source_broker_id === mapping.source_broker_id &&
-                                                        m.target_arg_name === mapping.target_arg_name
-                                                ) || 0;
+                                            // Find the global index for this mapping
+                                            const allMappings = node.arg_mapping || [];
+                                            const globalIndex = allMappings.findIndex(
+                                                (m) => m.source_broker_id === mapping.source_broker_id && 
+                                                       m.target_arg_name === mapping.target_arg_name
+                                            );
 
                                             return (
                                                 <DeleteInput
@@ -180,7 +189,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                     <div className="flex items-center gap-2">
                         <h3 className="text-sm font-medium">Optional Arguments</h3>
                         <Badge variant="secondary" className="text-xs">
-                            Can be left empty
+                            Configure as needed
                         </Badge>
                     </div>
                     <div className="space-y-3">{optionalArgs.map(renderArgument)}</div>
@@ -190,4 +199,4 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
     );
 };
 
-export default ArgumentsTab;
+export default ArgumentsTab; 

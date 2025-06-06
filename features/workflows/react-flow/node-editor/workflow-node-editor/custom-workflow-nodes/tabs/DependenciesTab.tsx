@@ -1,20 +1,26 @@
 'use client';
 
 import React from 'react';
-import { TabComponentProps } from '@/features/workflows/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
+import { BaseNode } from '@/features/workflows/types';
 import {
     addWorkflowDependency,
     updateWorkflowDependency,
     removeWorkflowDependency,
-    hasWorkflowDependencies,
-} from "./utils/dependency-utils";
+} from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils";
 
-const Dependencies: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
+interface DependenciesTabProps {
+    node: BaseNode;
+    onNodeUpdate: (updatedNode: BaseNode) => void;
+}
+
+const DependenciesTab: React.FC<DependenciesTabProps> = ({ node, onNodeUpdate }) => {
+    const dependencies = node.additional_dependencies || [];
+
     return (
         <div className="mt-4 space-y-6">
             <Card>
@@ -28,9 +34,9 @@ const Dependencies: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {hasWorkflowDependencies(node) ? (
+                    {dependencies.length > 0 ? (
                         <div className="space-y-3">
-                            {node.additional_dependencies.map((dependency: any, index: number) => (
+                            {dependencies.map((dependency, index) => (
                                 <Card key={index} className="border-border">
                                     <CardContent className="p-4">
                                         <div className="flex items-center gap-4">
@@ -74,4 +80,4 @@ const Dependencies: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
     );
 };
 
-export default Dependencies;
+export default DependenciesTab; 
