@@ -5,9 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppDispatch } from "@/lib/redux";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
-import { SocketAccordionResponse } from "@/components/socket/response/SocketAccordionResponse";
 import { Play, Zap, CheckCircle, AlertCircle } from "lucide-react";
 import { ButtonProps } from "@/components/ui/button";
+import { SocketPanelResponse } from "@/components/socket/response/SocketPanelResponse";
 
 interface SocketExecuteButtonProps extends Omit<ButtonProps, 'onClick'> {
     // Core required props
@@ -161,7 +161,7 @@ export const SocketExecuteButton: React.FC<SocketExecuteButtonProps> = ({
             {/* The Overlay (if needed) */}
             {needsOverlay && (
                 <Dialog open={isOverlayOpen} onOpenChange={handleOverlayClose}>
-                    <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-hidden p-0 flex flex-col">
+                    <DialogContent className="w-[95vw] max-w-none h-[95vh] overflow-hidden p-0 flex flex-col">
                         <DialogHeader className="p-6 pb-4 border-b bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800 dark:to-slate-700 flex-shrink-0">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -260,7 +260,7 @@ export const SocketExecuteButton: React.FC<SocketExecuteButtonProps> = ({
                                                 <>
                                                     {taskId ? (
                                                         <div className="overflow-y-auto max-h-full">
-                                                            <SocketAccordionResponse taskId={taskId} />
+                                                            <SocketPanelResponse taskId={taskId} />
                                                         </div>
                                                     ) : (
                                                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">

@@ -115,7 +115,16 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
   );
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+    // Don't open edit on right-click, in view mode, or if clicking on interactive elements
     if (event.button === 2 || mode === 'view') return;
+    
+    // Check if click target is an interactive element (button, input, etc.)
+    const target = event.target as HTMLElement;
+    const isInteractiveElement = target.closest('button, input, textarea, select, [role="button"], [tabindex]');
+    
+    // Don't open edit if clicking on interactive elements
+    if (isInteractiveElement) return;
+    
     setEditingNode(node.data as BaseNode | UserInputData | BrokerRelayData);
   }, [mode]);
 

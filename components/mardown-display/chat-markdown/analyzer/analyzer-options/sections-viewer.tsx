@@ -12,91 +12,6 @@ export interface ContentSection {
   children: ContentItem[];
 }
 
-// Safety validation functions
-const isValidContentItem = (item: any): item is ContentItem => {
-  return (
-    item &&
-    typeof item === 'object' &&
-    typeof item.type === 'string' &&
-    typeof item.content === 'string'
-  );
-};
-
-const isValidContentSection = (section: any): section is ContentSection => {
-  return (
-    section &&
-    typeof section === 'object' &&
-    typeof section.type === 'string' &&
-    Array.isArray(section.children) &&
-    section.children.every((child: any) => isValidContentItem(child))
-  );
-};
-
-const isValidData = (data: any): data is ContentSection[] => {
-  return (
-    Array.isArray(data) &&
-    data.every((section: any) => isValidContentSection(section))
-  );
-};
-
-// JSON Fallback Component
-const JsonFallback = ({ data, onCopy }: { data: any; onCopy: () => void }) => {
-  const [copied, setCopied] = useState(false);
-  
-  const handleCopy = async () => {
-    try {
-      const jsonString = JSON.stringify(data, null, 2);
-      await navigator.clipboard.writeText(jsonString);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-      onCopy();
-    } catch (err) {
-      console.error('Failed to copy JSON:', err);
-    }
-  };
-
-  return (
-    <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-900">
-      <div className="h-full max-w-7xl mx-auto">
-        <div className="h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
-          {/* Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileText size={16} className="text-gray-500 dark:text-gray-400" />
-                <h3 className="font-semibold text-gray-800 dark:text-gray-200">
-                  Raw Data (JSON)
-                </h3>
-                <span className="text-sm text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/20 px-2 py-1 rounded-md">
-                  Unexpected Format
-                </span>
-              </div>
-              <button
-                onClick={handleCopy}
-                className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors group"
-                title="Copy JSON data"
-              >
-                {copied ? (
-                  <Check size={16} className="text-green-500" />
-                ) : (
-                  <Copy size={16} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
-                )}
-              </button>
-            </div>
-          </div>
-          
-          {/* JSON Content */}
-          <div className="p-6 overflow-auto" style={{ height: 'calc(100% - 80px)' }}>
-            <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-              {JSON.stringify(data, null, 2)}
-            </pre>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const getSectionIcon = (sectionType: string) => {
   const iconProps = { size: 16, className: "text-gray-500 dark:text-gray-400" };
   
@@ -224,27 +139,16 @@ const extractSummaryFromSection = (section: ContentSection): string => {
   return 'Content Section';
 };
 
-const SectionViewerWithSidebar = ({ data }: { data: any }) => {
+const SectionsViewer = ({ data }: { data: ContentSection[] }) => {
   const [selectedSectionIndex, setSelectedSectionIndex] = useState<number>(0);
   const [copiedData, setCopiedData] = useState<boolean>(false);
   
-  // Safety check: if data is not in expected format, show JSON fallback
-  if (!isValidData(data)) {
-    return <JsonFallback data={data} onCopy={() => setCopiedData(true)} />;
-  }
-  
-  // Safe access with fallback
-  const safeData = data as ContentSection[];
-  const selectedSection = safeData[selectedSectionIndex] || safeData[0];
+  const selectedSection = data[selectedSectionIndex];
   
   const copyToClipboard = async () => {
     try {
-      if (!selectedSection || !selectedSection.children) {
-        return;
-      }
-      
       const textContent = selectedSection.children
-        .filter(item => item && item.content && item.content.trim())
+        .filter(item => item.content && item.content.trim())
         .map(item => item.content.replace(/<[^>]*>/g, ''))
         .join('\n');
       
@@ -256,7 +160,7 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
     }
   };
   
-  if (!safeData || safeData.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className="w-full h-full p-4 bg-inherit flex items-center justify-center">
         <p className="text-gray-500 dark:text-gray-400">No content to display</p>
@@ -271,14 +175,14 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
         <div className="w-80 flex-shrink-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <h2 className="font-semibold text-gray-800 dark:text-gray-200">Content Sections</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{safeData.length} section{safeData.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{data.length} section{data.length !== 1 ? 's' : ''}</p>
           </div>
           
           <div className="overflow-y-auto" style={{ height: 'calc(100% - 80px)' }}>
-            {safeData.map((section, index) => {
+            {data.map((section, index) => {
               const summary = extractSummaryFromSection(section);
-              const contentCount = (section.children || []).filter(child => 
-                child && child.content && child.content.trim() && child.type !== 'line_break'
+              const contentCount = section.children.filter(child => 
+                child.content && child.content.trim() && child.type !== 'line_break'
               ).length;
               
               return (
@@ -292,10 +196,10 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    {getSectionIcon(section.type || 'unknown')}
+                    {getSectionIcon(section.type)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mb-1 break-words">
-                        {getSectionLabel(section.type || 'Unknown Section')}
+                        {getSectionLabel(section.type)}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {summary}
@@ -317,9 +221,9 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {getSectionIcon(selectedSection?.type || 'unknown')}
+                <FileText size={20} className="text-gray-500 dark:text-gray-400" />
                 <h3 className="font-semibold text-gray-800 dark:text-gray-200">
-                  {getSectionLabel(selectedSection?.type || 'Unknown Section')}
+                  Section {selectedSectionIndex + 1}
                 </h3>
               </div>
               <button
@@ -339,12 +243,9 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
           {/* Content */}
           <div className="p-6 overflow-y-auto" style={{ height: 'calc(100% - 80px)' }}>
             <div className="max-w-4xl">
-              {selectedSection && selectedSection.children ? 
-                selectedSection.children.map((item, index) => 
-                  renderContentItem(item, index)
-                ) : 
-                <p className="text-gray-500 dark:text-gray-400">No content available</p>
-              }
+              {selectedSection.children.map((item, index) => 
+                renderContentItem(item, index)
+              )}
             </div>
           </div>
         </div>
@@ -353,4 +254,5 @@ const SectionViewerWithSidebar = ({ data }: { data: any }) => {
   );
 };
 
-export default SectionViewerWithSidebar;
+
+export default SectionsViewer;

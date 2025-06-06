@@ -8,7 +8,7 @@ import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } 
 import { useTheme } from "@/styles/themes/ThemeProvider";
 import { getRegisteredFunctions } from '@/features/workflows/constants';
 import { SocketExecuteButton } from "@/components/socket-io/presets/SocketExecuteButton";
-import FullscreenSocketAccordion from "@/components/socket/response/FullscreenSocketAccordion";
+import { SocketPanelResponse } from "@/components/socket/response/SocketPanelResponse";
 import { useAppDispatch } from "@/lib/redux";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
 import { 
@@ -142,7 +142,7 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
   const nodeContent = (
     <div className="relative">
       <Card className={`
-        min-w-44 max-w-52 transition-all duration-200 cursor-pointer
+        min-w-44 max-w-52 transition-all duration-200
         ${selected 
           ? 'ring-2 ring-primary shadow-lg' 
           : 'hover:shadow-md'
@@ -163,7 +163,7 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
                   ⚠️
                 </span>
               )}
-              <h3 className="font-medium text-[11px] text-foreground truncate text-center">
+              <h3 className="font-medium text-[11px] text-foreground truncate text-center max-w-full">
                 {data.step_name || 'Unnamed Step'}
               </h3>
             </div>
@@ -195,20 +195,10 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
                   Input
                 </Badge>
               )}
-              {data.arg_mapping?.length > 0 && (
-                <Badge variant="default" className="text-[9px] px-1 py-0 h-4 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  Connected
-                </Badge>
-              )}
-              {data.additional_dependencies?.length > 0 && (
-                <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">
-                  Deps
-                </Badge>
-              )}
             </div>
             
-            {/* Execute button */}
-            <div className="w-full flex justify-start">
+            {/* Execute and Edit buttons */}
+            <div className="w-full flex justify-between items-center">
               <SocketExecuteButton
                 presetName="workflow_step_to_execute_single_step"
                 sourceData={{
@@ -221,7 +211,20 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
                 className="h-6 px-1 text-[10px] [&>svg]:w-2 [&>svg]:h-2 [&>svg]:mr-0"
                 overlayTitle={`Test Step: ${data.step_name || 'Unnamed Step'}`}
                 overlayDescription="Execute this workflow step individually for testing"
+                ResponseComponent={SocketPanelResponse}
               />
+              {onEdit && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(data);
+                  }}
+                  className="w-6 h-6 flex items-center justify-center rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                  title="Edit node"
+                >
+                  <Edit className="h-3 w-3" />
+                </button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -290,12 +293,26 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
         </ContextMenu>
 
         {/* Fullscreen Test Overlay */}
-        <FullscreenSocketAccordion
-          isOpen={isTestOverlayOpen}
-          onClose={handleTestOverlayClose}
-          taskId={testTaskId}
-          showTrigger={false}
-        />
+        {/* {isTestOverlayOpen && testTaskId && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+            <div className="fixed inset-4 bg-background rounded-lg shadow-2xl border overflow-hidden">
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-between p-4 border-b bg-muted/50">
+                  <h2 className="text-lg font-semibold">Test Step: {data.step_name || 'Unnamed Step'}</h2>
+                  <button
+                    onClick={handleTestOverlayClose}
+                    className="w-8 h-8 rounded-full bg-background hover:bg-muted flex items-center justify-center border"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <SocketPanelResponse taskId={testTaskId} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )} */}
       </>
     );
   }

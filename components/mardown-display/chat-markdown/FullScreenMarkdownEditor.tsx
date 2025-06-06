@@ -10,6 +10,9 @@ import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScre
 import ProcessorExtractor from "@/components/official/processor-extractor/ProcessorExtractor";
 import SectionViewer from "./analyzer/SectionViewer";
 import SectionViewerWithSidebar from "./analyzer/SectionViewerWithSidebar";
+import SectionsViewer from "./analyzer/analyzer-options/sections-viewer";
+import LinesViewer from "./analyzer/analyzer-options/lines-viewer";
+import SectionViewerV2 from "./analyzer/analyzer-options/section-viewer-V2";
 
 // Import the Toast UI Editor dark theme CSS
 import "@toast-ui/editor/dist/toastui-editor.css";
@@ -35,8 +38,8 @@ interface FullScreenMarkdownEditorProps {
     showCopyButton?: boolean;
     showSaveButton?: boolean;
     showCancelButton?: boolean;
-    tabs?: Array<"write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar">;
-    initialTab?: "write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar";
+    tabs?: Array<"write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar" | "section_viewer_v2" | "lines_viewer" | "sections_viewer" | "headers_viewer" | "section_texts_viewer">;
+    initialTab?: "write" | "rich" | "preview" | "analysis" | "metadata" | "config" | "classified_output" | "classified_analyzer" | "classified_analyzer_sidebar" | "section_viewer_v2" | "lines_viewer" | "sections_viewer" | "headers_viewer" | "section_texts_viewer";
 }
 
 const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
@@ -51,7 +54,7 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
     showCopyButton = true,
     showSaveButton = true,
     showCancelButton = true,
-    tabs = ["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer", "classified_analyzer_sidebar"],
+    tabs = ["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer", "classified_analyzer_sidebar", "section_viewer_v2", "lines_viewer", "sections_viewer", "headers_viewer", "section_texts_viewer"],
     initialTab = "write",
 }) => {
     const [editedContent, setEditedContent] = useState(initialContent);
@@ -342,6 +345,66 @@ const FullScreenMarkdownEditor: React.FC<FullScreenMarkdownEditorProps> = ({
             label: "Classified Analyzer Sidebar",
             content: (
                 <SectionViewerWithSidebar data={analysisData.classified_output} />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add section_viewer_v2 tab if analysisData.classified_output exists (uses same data as classified_analyzer)
+    if (tabs.includes("section_viewer_v2") && Array.isArray(analysisData?.classified_output)) {
+        tabDefinitions.push({
+            id: "section_viewer_v2",
+            label: "Section Viewer V2",
+            content: (
+                <SectionViewerV2 data={analysisData.classified_output} />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add lines_viewer tab if analysisData.lines exists
+    if (tabs.includes("lines_viewer") && Array.isArray(analysisData?.lines)) {
+        tabDefinitions.push({
+            id: "lines_viewer",
+            label: "Lines Viewer",
+            content: (
+                <LinesViewer data={analysisData.lines} />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add sections_viewer tab if analysisData.sections exists
+    if (tabs.includes("sections_viewer") && Array.isArray(analysisData?.sections)) {
+        tabDefinitions.push({
+            id: "sections_viewer",
+            label: "Sections Viewer",
+            content: (
+                <SectionViewerWithSidebar data={analysisData.sections} />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add headers_viewer tab if analysisData.sections_by_header exists
+    if (tabs.includes("headers_viewer") && Array.isArray(analysisData?.sections_by_header)) {
+        tabDefinitions.push({
+            id: "headers_viewer",
+            label: "Headers Viewer",
+            content: (
+                <SectionViewerWithSidebar data={analysisData.sections_by_header} />
+            ),
+            className: "p-0"
+        });
+    }
+
+    // Conditionally add section_texts_viewer tab if analysisData.section_texts exists
+    if (tabs.includes("section_texts_viewer") && Array.isArray(analysisData?.section_texts)) {
+        tabDefinitions.push({
+            id: "section_texts_viewer",
+            label: "Section Texts Viewer",
+            content: (
+                <SectionsViewer data={analysisData.section_texts} />
             ),
             className: "p-0"
         });

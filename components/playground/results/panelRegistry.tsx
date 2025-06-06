@@ -44,6 +44,9 @@ import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
 import SectionViewer from "@/components/mardown-display/chat-markdown/analyzer/SectionViewer";
 import SectionViewerWithSidebar from "@/components/mardown-display/chat-markdown/analyzer/SectionViewerWithSidebar";
+import SectionsViewer from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/sections-viewer";
+import LinesViewer from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/lines-viewer";
+import SectionViewerV2 from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/section-viewer-V2";
 
 // Dynamically import EventComponent
 const EventComponent = lazy(() => import("@/components/brokers/output/EventComponent"));
@@ -81,7 +84,9 @@ const JsonDisplayStructuredPanel = createDynamicPanelWrapper(
             content={content}
             parseFunction={(content: string) => {
                 // Import and use the parser directly since we need the original parseFunction interface
-                    const { separatedMarkdownParser } = require("@/components/mardown-display/markdown-classification/processors/custom/parser-separated");
+                const {
+                    separatedMarkdownParser,
+                } = require("@/components/mardown-display/markdown-classification/processors/custom/parser-separated");
                 return separatedMarkdownParser(content);
             }}
         />
@@ -95,7 +100,9 @@ const JsonDisplayParsedPanel = createDynamicPanelWrapper(
             content={content}
             parseFunction={(content: string) => {
                 // Import and use the parser directly
-                const { parseMarkdownSimple } = require("@/components/mardown-display/markdown-classification/processors/custom/simple-markdown-parser");
+                const {
+                    parseMarkdownSimple,
+                } = require("@/components/mardown-display/markdown-classification/processors/custom/simple-markdown-parser");
                 return parseMarkdownSimple(content);
             }}
         />
@@ -115,8 +122,12 @@ const CandidateProfileBlockPanel = createDynamicPanelWrapper(
 const ParseExtractorOptionsPanel = createDynamicPanelWrapper(
     ({ content }: { content: string }) => {
         // Import the actual parser functions
-        const { parseMarkdownSimple } = require("@/components/mardown-display/markdown-classification/processors/custom/simple-markdown-parser");
-        const { separatedMarkdownParser } = require("@/components/mardown-display/markdown-classification/processors/custom/parser-separated");
+        const {
+            parseMarkdownSimple,
+        } = require("@/components/mardown-display/markdown-classification/processors/custom/simple-markdown-parser");
+        const {
+            separatedMarkdownParser,
+        } = require("@/components/mardown-display/markdown-classification/processors/custom/parser-separated");
 
         return (
             <ParseExtractorOptions
@@ -143,22 +154,20 @@ const MarkdownRendererPanel = createDynamicPanelWrapper(
 const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
     ({ content, taskId }: { content: string; taskId?: string }) => {
         const [isOpen, setIsOpen] = React.useState(true);
-        
+
         console.log("taskId", taskId);
         // Get response data using the selector
-        const responseData = useAppSelector((state) => 
-            taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null
-        );
+        const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
 
         console.log("responseData", responseData);
-        
+
         // Extract metadata from response data
         const analysisData = responseData?.response?.metadata || null;
-        
+
         if (!isOpen) {
             return (
                 <div className="w-full h-full flex items-center justify-center">
-                    <button 
+                    <button
                         onClick={() => setIsOpen(true)}
                         className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
                     >
@@ -167,7 +176,7 @@ const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
                 </div>
             );
         }
-        
+
         return (
             <div className="w-full h-full">
                 <FullScreenMarkdownEditor
@@ -177,7 +186,22 @@ const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
                     showSaveButton={false}
                     showCancelButton={true}
                     showCopyButton={true}
-                    tabs={["write", "rich", "preview", "analysis", "metadata", "config", "classified_output", "classified_analyzer", "classified_analyzer_sidebar"]}
+                    tabs={[
+                        "write",
+                        "rich",
+                        "preview",
+                        "analysis",
+                        "metadata",
+                        "config",
+                        "classified_output",
+                        "classified_analyzer",
+                        "classified_analyzer_sidebar",
+                        "section_viewer_v2",
+                        "lines_viewer",
+                        "sections_viewer",
+                        "headers_viewer",
+                        "section_texts_viewer",
+                    ]}
                     initialTab="preview"
                     onCancel={() => setIsOpen(false)}
                 />
@@ -190,77 +214,201 @@ const FullScreenMarkdownEditorPanel = createDynamicPanelWrapper(
 const SectionViewerPanel = createDynamicPanelWrapper(
     ({ content, taskId }: { content: any; taskId?: string }) => {
         // Get response data using the selector
-        const responseData = useAppSelector((state) => 
-            taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null
-        );
-        
+        const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+
         // Extract classified_output from response metadata
         const classifiedOutput = responseData?.response?.metadata?.classified_output;
-        
+
         // Check if we have classified output data
         if (Array.isArray(classifiedOutput)) {
             return <SectionViewer data={classifiedOutput} />;
         }
-        
+
         // Fallback: Check if content is already an array of classified sections
         if (Array.isArray(content)) {
             return <SectionViewer data={content} />;
         }
-        
+
         // Fallback: If content is an object with classified_output, use that
         if (content?.classified_output && Array.isArray(content.classified_output)) {
             return <SectionViewer data={content.classified_output} />;
         }
-        
+
         // Fallback for when no valid data is available
         return (
             <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 No classified sections available to display
-                {taskId && !responseData && (
-                    <div className="mt-2 text-sm">
-                        (No response data found for task: {taskId})
-                    </div>
-                )}
+                {taskId && !responseData && <div className="mt-2 text-sm">(No response data found for task: {taskId})</div>}
             </div>
         );
     }
     // No parser = raw content
 );
 
-const SectionViewerWithSidebarPanel = createDynamicPanelWrapper(
+const SectionViewerV2Panel = createDynamicPanelWrapper(
     ({ content, taskId }: { content: any; taskId?: string }) => {
         // Get response data using the selector
-        const responseData = useAppSelector((state) => 
-            taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null
-        );
-        
+        const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+
         // Extract classified_output from response metadata
         const classifiedOutput = responseData?.response?.metadata?.classified_output;
-        
+
         // Check if we have classified output data
         if (Array.isArray(classifiedOutput)) {
-            return <SectionViewerWithSidebar data={classifiedOutput} />;
+            return <SectionViewerV2 data={classifiedOutput} />;
         }
-        
+
         // Fallback: Check if content is already an array of classified sections
         if (Array.isArray(content)) {
-            return <SectionViewerWithSidebar data={content} />;
+            return <SectionViewerV2 data={content} />;
         }
-        
+
         // Fallback: If content is an object with classified_output, use that
         if (content?.classified_output && Array.isArray(content.classified_output)) {
-            return <SectionViewerWithSidebar data={content.classified_output} />;
+            return <SectionViewerV2 data={content.classified_output} />;
         }
-        
+
         // Fallback for when no valid data is available
         return (
             <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                 No classified sections available to display
-                {taskId && !responseData && (
-                    <div className="mt-2 text-sm">
-                        (No response data found for task: {taskId})
-                    </div>
-                )}
+                {taskId && !responseData && <div className="mt-2 text-sm">(No response data found for task: {taskId})</div>}
+            </div>
+        );
+    }
+    // No parser = raw content
+);
+
+const LinesViewerWithSidebarPanel = createDynamicPanelWrapper(
+    ({ content, taskId }: { content: any; taskId?: string }) => {
+        // Get response data using the selector
+        const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+
+        // Extract classified_output from response metadata
+        const linesOutput = responseData?.response?.metadata?.lines;
+
+        // Check if we have classified output data
+        if (Array.isArray(linesOutput)) {
+            return <LinesViewer data={linesOutput} />;
+        }
+
+        // Fallback: Check if content is already an array of classified sections
+        if (Array.isArray(content)) {
+            return <LinesViewer data={content} />;
+        }
+
+        // Fallback: If content is an object with classified_output, use that
+        if (content?.lines && Array.isArray(content.lines)) {
+            return <LinesViewer data={content.lines} />;
+        }
+
+        // Fallback for when no valid data is available
+        return (
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                No lines available to display
+                {taskId && !responseData && <div className="mt-2 text-sm">(No response data found for task: {taskId})</div>}
+            </div>
+        );
+    }
+    // No parser = raw content
+);
+
+const SectionsViewerWithSidebarPanel = createDynamicPanelWrapper(
+    ({ content, taskId }: { content: any; taskId?: string }) => {
+        // Get response data using the selector
+        const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+
+        // Extract classified_output from response metadata
+        const sectionsOutput = responseData?.response?.metadata?.sections;
+
+        // Check if we have classified output data
+        if (Array.isArray(sectionsOutput)) {
+            return <SectionViewerWithSidebar data={sectionsOutput} />;
+        }
+
+        // Fallback: Check if content is already an array of classified sections
+        if (Array.isArray(content)) {
+            return <SectionViewerWithSidebar data={content} />;
+        }
+
+        // Fallback: If content is an object with classified_output, use that
+        if (content?.sections && Array.isArray(content.sections)) {
+            return <SectionViewerWithSidebar data={content.sections} />;
+        }
+
+        // Fallback for when no valid data is available
+        return (
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                No sections available to display
+                {taskId && !responseData && <div className="mt-2 text-sm">(No response data found for task: {taskId})</div>}
+            </div>
+        );
+    }
+    // No parser = raw content
+);
+
+const HeadersViewerWithSidebarPanel = createDynamicPanelWrapper(
+    ({ content, taskId }: { content: any; taskId?: string }) => {
+        // Get response data using the selector
+        const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+
+        // Extract classified_output from response metadata
+        const sectionsByHeader = responseData?.response?.metadata?.sections_by_header;
+
+        // Check if we have classified output data
+        if (Array.isArray(sectionsByHeader)) {
+            return <SectionViewerWithSidebar data={sectionsByHeader} />;
+        }
+
+        // Fallback: Check if content is already an array of classified sections
+        if (Array.isArray(content)) {
+            return <SectionViewerWithSidebar data={content} />;
+        }
+
+        // Fallback: If content is an object with classified_output, use that
+        if (content?.sections_by_header && Array.isArray(content.sections_by_header)) {
+            return <SectionViewerWithSidebar data={content.sections_by_header} />;
+        }
+
+        // Fallback for when no valid data is available
+        return (
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                No sections by header available to display
+                {taskId && !responseData && <div className="mt-2 text-sm">(No response data found for task: {taskId})</div>}
+            </div>
+        );
+    }
+    // No parser = raw content
+);
+
+const SectionTextsViewerWithSidebarPanel = createDynamicPanelWrapper(
+    ({ content, taskId }: { content: any; taskId?: string }) => {
+        // Get response data using the selector
+        const responseData = useAppSelector((state) => (taskId ? selectFirstPrimaryResponseDataByTaskId(taskId)(state) : null));
+
+        // Extract classified_output from response metadata
+        const sectionTextsOutput = responseData?.response?.metadata?.section_texts;
+
+        // Check if we have classified output data
+        if (Array.isArray(sectionTextsOutput)) {
+            return <SectionsViewer data={sectionTextsOutput} />;
+        }
+
+        // Fallback: Check if content is already an array of classified sections
+        if (Array.isArray(content)) {
+            return <SectionsViewer data={content} />;
+        }
+
+        // Fallback: If content is an object with classified_output, use that
+        if (content?.section_texts && Array.isArray(content.section_texts)) {
+            return <SectionsViewer data={content.section_texts} />;
+        }
+
+        // Fallback for when no valid data is available
+        return (
+            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                No section texts available to display
+                {taskId && !responseData && <div className="mt-2 text-sm">(No response data found for task: {taskId})</div>}
             </div>
         );
     }
@@ -424,10 +572,44 @@ export const PANEL_REGISTRY: Record<string, PanelConfig> = {
     },
     sectionViewerWithSidebar: {
         id: "sectionViewerWithSidebar",
-        component: SectionViewerWithSidebarPanel,
+        component: SectionViewerV2Panel,
         icon: LayoutTemplate,
-        label: "Section Viewer with Sidebar (Enhanced section viewer with sidebar navigation and multiple format views)",
+        label: "Section Viewer V2",
         value: "sectionViewerWithSidebar",
+        defaultProps: {},
+    },
+    linesViewerWithSidebar: {
+        id: "linesViewerWithSidebar",
+        component: LinesViewerWithSidebarPanel,
+        icon: LayoutTemplate,
+        label: "Lines Viewer",
+        value: "linesViewerWithSidebar",
+        defaultProps: {},
+    },
+    sectionsViewerWithSidebar: {
+        id: "sectionsViewerWithSidebar",
+        component: SectionsViewerWithSidebarPanel,
+        icon: LayoutTemplate,
+        label: "Big Sections Headers Together",
+        value: "sectionsViewerWithSidebar",
+        defaultProps: {},
+    },
+
+    headersViewerWithSidebar: {
+        id: "headersViewerWithSidebar",
+        component: HeadersViewerWithSidebarPanel,
+        icon: LayoutTemplate,
+        label: "Sections by Header",
+        value: "headersViewerWithSidebar",
+        defaultProps: {},
+    },
+
+    sectionTextsviewerWithSidebar: {
+        id: "sectionTextsViewerWithSidebar",
+        component: SectionTextsViewerWithSidebarPanel,
+        icon: LayoutTemplate,
+        label: "Section Texts",
+        value: "sectionTextsViewerWithSidebar",
         defaultProps: {},
     },
 };
