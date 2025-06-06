@@ -3,6 +3,7 @@ import { Node, Edge } from "reactflow";
 import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";
 import { getNormalizedRegisteredFunctionNode } from "@/features/workflows/utils/node-utils";
 import { extractExecutionNodes, extractUserInputs, extractRelays } from "@/features/workflows/service/workflowTransformers";
+import { getIntelligentNodePosition } from "@/features/workflows/utils/nodePositioning";
 import { 
   saveWorkflowNode, 
   saveWorkflowUserInput, 
@@ -24,6 +25,7 @@ interface UseWorkflowActionsProps {
   userId: string;
   setDeleteDialogNode?: React.Dispatch<React.SetStateAction<Node | null>>;
   onWorkflowReload?: () => Promise<void>;
+  getViewport?: () => { x: number; y: number; zoom: number };
 }
 
 export const useWorkflowActions = ({
@@ -35,6 +37,7 @@ export const useWorkflowActions = ({
   userId,
   setDeleteDialogNode,
   onWorkflowReload,
+  getViewport,
 }: UseWorkflowActionsProps) => {
   
   const handleAddNode = useCallback(async (id: string, type?: string) => {
@@ -47,9 +50,18 @@ export const useWorkflowActions = ({
       if (type === "registeredFunction") {
         // ✅ Create normalized function node and save to database immediately
         const baseNode = getNormalizedRegisteredFunctionNode(id);
-        const position = {
-          x: Math.random() * 300 + 100,
-          y: Math.random() * 300 + 100,
+        const viewport = getViewport?.();
+        const position = getIntelligentNodePosition(nodes, viewport);
+
+        // ✅ Create the React Flow node structure first
+        const nodeStructure: Node = {
+          id: 'placeholder', // Will be replaced with real UUID from database
+          type: "workflowNode",
+          position,
+          data: {
+            ...baseNode,
+            id: 'placeholder' // Will be replaced with real UUID from database
+          },
         };
 
         // ✅ Save to database first, get real UUID back
@@ -57,8 +69,7 @@ export const useWorkflowActions = ({
           function_id: baseNode.function_id,
           function_type: baseNode.function_type,
           step_name: baseNode.step_name,
-          position_x: position.x,
-          position_y: position.y,
+          ui_node_data: nodeStructure, // Save the node structure
           node_type: 'workflowNode',
           execution_required: baseNode.execution_required,
           additional_dependencies: baseNode.additional_dependencies,
@@ -69,7 +80,7 @@ export const useWorkflowActions = ({
         });
 
         // ✅ Add to React Flow with real database ID
-        const newNode: Node = {
+        const finalNode: Node = {
           id: savedNode.id, // ✅ Real UUID from database
           type: "workflowNode",
           position,
@@ -78,13 +89,26 @@ export const useWorkflowActions = ({
             id: savedNode.id // ✅ Ensure data has real ID too
           },
         };
-        setNodes((nds) => nds.concat(newNode));
+        setNodes((nds) => nds.concat(finalNode));
 
       } else if (type === "userInput") {
         // ✅ Create user input in database immediately
-        const position = {
-          x: Math.random() * 300 + 100,
-          y: Math.random() * 300 + 100,
+        const viewport = getViewport?.();
+        const position = getIntelligentNodePosition(nodes, viewport);
+
+        // ✅ Create the React Flow node structure first
+        const inputNodeStructure: Node = {
+          id: 'placeholder',
+          type: "workflowNode",
+          position,
+          data: {
+            id: 'placeholder',
+            type: 'userInput',
+            broker_id: '',
+            value: '',
+            label: 'User Input',
+            data_type: 'str' as const
+          },
         };
 
         const savedInput = await saveWorkflowUserInput(workflowId, userId, {
@@ -92,8 +116,7 @@ export const useWorkflowActions = ({
           label: 'User Input',
           data_type: 'str' as const, // ✅ Valid Python type - explicit const assertion
           default_value: '',
-          position_x: position.x,
-          position_y: position.y,
+          ui_node_data: inputNodeStructure, // Save the node structure
           is_required: false,
           field_component_id: null
         });
@@ -117,17 +140,28 @@ export const useWorkflowActions = ({
 
       } else if (type === "brokerRelay") {
         // ✅ Create broker relay in database immediately
-        const position = {
-          x: Math.random() * 300 + 100,
-          y: Math.random() * 300 + 100,
+        const viewport = getViewport?.();
+        const position = getIntelligentNodePosition(nodes, viewport);
+
+        // ✅ Create the React Flow node structure first
+        const relayNodeStructure: Node = {
+          id: 'placeholder',
+          type: "workflowNode",
+          position,
+          data: {
+            id: 'placeholder',
+            type: 'brokerRelay',
+            source: '',
+            targets: [],
+            label: 'Broker Relay'
+          },
         };
 
         const savedRelay = await saveWorkflowRelay(workflowId, userId, {
           source_broker_id: '', // ✅ Empty - user must set manually
           target_broker_ids: [],
           label: 'Broker Relay',
-          position_x: position.x,
-          position_y: position.y
+          ui_node_data: relayNodeStructure // Save the node structure
         });
 
         const newBrokerRelayData: BrokerRelayData = {
@@ -184,8 +218,7 @@ export const useWorkflowActions = ({
             label: userInputData.label,
             data_type: userInputData.data_type,
             default_value: userInputData.value,
-            position_x: node?.position.x || 0,
-            position_y: node?.position.y || 0,
+            ui_node_data: node, // Save the complete React Flow node
             is_required: false,
             field_component_id: null
             // ✅ NEVER pass created_at, updated_at - database handles these
@@ -204,8 +237,7 @@ export const useWorkflowActions = ({
             source_broker_id: relayData.source,
             target_broker_ids: relayData.targets,
             label: relayData.label,
-            position_x: node?.position.x || 0,
-            position_y: node?.position.y || 0
+            ui_node_data: node // Save the complete React Flow node
             // ✅ NEVER pass created_at, updated_at - database handles these
           };
           
@@ -222,8 +254,7 @@ export const useWorkflowActions = ({
             function_id: baseNode.function_id,
             function_type: baseNode.function_type,
             step_name: baseNode.step_name,
-            position_x: node?.position.x || 0,
-            position_y: node?.position.y || 0,
+            ui_node_data: node, // Save the complete React Flow node
             node_type: 'workflowNode',
             execution_required: baseNode.execution_required,
             additional_dependencies: baseNode.additional_dependencies,

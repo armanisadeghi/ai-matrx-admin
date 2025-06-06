@@ -1,3 +1,5 @@
+import { Node, Edge, Viewport } from "reactflow";
+
 // Represents a dependency between two broker ids.
 export interface WorkflowDependency {
     source_broker_id: string; // Required field for the the broker id
@@ -30,5 +32,95 @@ export interface BaseNode {
     arg_overrides?: ArgumentOverride[]; // JSONB, nullable, Overides the default settings for a registered function's arguments. (default_value and ready state.)
     workflow_id?: string; // UUID, nullable (Foreign Key to the Workflow.)
     status?: string; // The status of the node. Can be: pending, initialized, ready_to_execute, executing, execution_complete, execution_failed.
+    ui_node_data?: Node;
 }
 
+// ===== TYPES =====
+
+export interface CoreWorkflowData {
+    id: string;
+    created_at?: string;
+    updated_at?: string;
+    user_id?: string;
+    name: string;
+    description: string | null;
+    auto_execute: boolean;
+    tags: string[] | null;
+    category: string | null;
+    metadata?: Record<string, any>;
+    viewport: Viewport;
+  }
+  
+  export interface WorkflowNodeData {
+    id: string;
+    created_at?: string;
+    updated_at?: string;
+    workflow_id?: string;
+    user_id?: string;
+    function_id: string | null;
+    function_type: string | null;
+    step_name: string | null;
+    node_type: string;
+    execution_required: boolean;
+    additional_dependencies: WorkflowDependency[];
+    arg_mapping: ArgumentMapping[];
+    return_broker_overrides: string[];
+    arg_overrides: ArgumentOverride[];
+    status: string;
+    metadata?: Record<string, any>;
+    ui_node_data?: Node;
+  }
+  
+  export interface WorkflowUserInputData {
+    id: string;
+    created_at?: string;
+    updated_at?: string;
+    workflow_id?: string;
+    user_id?: string;
+    broker_id: string;
+    label: string | null;
+    data_type: 'int' | 'float' | 'str' | 'bool' | 'list' | 'tuple' | 'dict' | 'set';
+    default_value: string | null;
+    is_required: boolean;
+    field_component_id: string | null;
+    metadata?: Record<string, any>;
+    ui_node_data?: Node;
+  }
+  
+  export interface WorkflowRelayData {
+    id: string;
+    created_at?: string;
+    updated_at?: string;
+    workflow_id?: string;
+    user_id?: string;
+    source_broker_id: string;
+    target_broker_ids: string[];
+    label: string | null;
+    metadata?: Record<string, any>;
+    ui_node_data?: Node;
+  }
+  
+  export interface WorkflowEdgeData {
+    id: string;
+    created_at?: string;
+    updated_at?: string;
+    workflow_id?: string;
+    source_node_id: string;
+    target_node_id: string;
+    source_handle: string | null;
+    target_handle: string | null;
+    edge_type: string;
+    animated: boolean;
+    style: Record<string, any> | null;
+    metadata?: Record<string, any>;
+  }
+  
+  export interface CompleteWorkflowData {
+    workflow: CoreWorkflowData;
+    nodes: WorkflowNodeData[];
+    userInputs: WorkflowUserInputData[];
+    relays: WorkflowRelayData[];
+    edges: WorkflowEdgeData[];
+  }
+  
+  

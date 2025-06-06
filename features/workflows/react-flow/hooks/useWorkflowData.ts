@@ -1,11 +1,9 @@
 import { useCallback } from "react";
-import { Node, Edge } from "reactflow";
+import { Node, Edge, Viewport } from "reactflow";
 import { 
   fetchWorkflowById, 
   saveCompleteWorkflow,
   createWorkflow as createWorkflowService,
-  WorkflowData,
-  CompleteWorkflowData 
 } from "@/features/workflows/service/workflowService";
 import { 
   transformDbToReactFlow,
@@ -13,12 +11,22 @@ import {
   transformEdgeToDb 
 } from "@/features/workflows/service/workflowTransformers";
 import { analyzeBrokerConnections } from "@/features/workflows/utils/brokerEdgeAnalyzer";
+import {
+  CoreWorkflowData,
+  CompleteWorkflowData,
+  WorkflowNodeData,
+  WorkflowUserInputData,
+  WorkflowRelayData,
+  WorkflowEdgeData,
+} from "@/features/workflows/types";
+
+
 
 interface WorkflowDataForReactFlow {
   nodes: Node[];
   edges: Edge[];
-  viewport: { x: number; y: number; zoom: number };
-  metadata: WorkflowData;
+  viewport: Viewport;
+  coreWorkflowData: CoreWorkflowData;
 }
 
 export const useWorkflowData = () => {
@@ -26,10 +34,9 @@ export const useWorkflowData = () => {
     try {
       const completeData = await fetchWorkflowById(workflowId);
       
-      // ✅ OPTIMAL LOCATION: Analyze broker connections before transformation
       const virtualEdges = analyzeBrokerConnections(completeData);
       
-      const { nodes, edges, viewport } = transformDbToReactFlow(completeData);
+      const { nodes, edges, coreWorkflowData } = transformDbToReactFlow(completeData);
       
       // Combine database edges with computed broker-based edges
       const allEdges = [...edges, ...virtualEdges];
@@ -37,8 +44,8 @@ export const useWorkflowData = () => {
       return {
         nodes,
         edges: allEdges,
-        viewport,
-        metadata: completeData.workflow
+        viewport: coreWorkflowData.viewport,
+        coreWorkflowData: coreWorkflowData
       };
     } catch (error) {
       console.error('Error loading workflow:', error);
@@ -52,7 +59,7 @@ export const useWorkflowData = () => {
     workflowData: {
       nodes: Node[];
       edges: Edge[];
-      metadata?: Partial<WorkflowData>;
+      coreWorkflowData?: Partial<CoreWorkflowData>;
     }
   ) => {
     try {
@@ -84,7 +91,7 @@ export const useWorkflowData = () => {
 
       // Save everything
       await saveCompleteWorkflow(workflowId, userId, {
-        workflow: workflowData.metadata,
+        workflow: workflowData.coreWorkflowData,
         nodes: workflowNodes,
         userInputs: userInputs,
         relays: relays,

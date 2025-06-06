@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Workflow, Calendar, Tag } from "lucide-react";
-import { WorkflowData } from '../service/workflowService';
+import { CoreWorkflowData } from '../service/workflowService';
 
 interface WorkflowCardProps {
-  workflow: WorkflowData;
+  workflow: CoreWorkflowData;
 }
 
 export function WorkflowCard({ workflow }: WorkflowCardProps) {

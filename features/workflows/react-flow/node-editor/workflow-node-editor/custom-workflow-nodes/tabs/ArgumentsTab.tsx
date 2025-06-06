@@ -7,9 +7,9 @@ import { Input, DeleteInput } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, ArrowRight } from "lucide-react";
+import { Plus } from "lucide-react";
 import { BaseNode } from '@/features/workflows/types';
 import { 
     updateArgOverride,

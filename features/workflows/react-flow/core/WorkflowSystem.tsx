@@ -26,6 +26,15 @@ import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/t
 import { NodeWrapper } from "@/features/workflows/react-flow/nodes/NodeWrapper";
 import { useAppSelector } from "@/lib/redux";
 import { selectUser } from "@/lib/redux/selectors/userSelectors";
+import {
+  CoreWorkflowData,
+  CompleteWorkflowData,
+  WorkflowNodeData,
+  WorkflowUserInputData,
+  WorkflowRelayData,
+  WorkflowEdgeData,
+} from "@/features/workflows/types";
+
 
 interface WorkflowSystemProps {
   workflowId?: string;
@@ -44,24 +53,31 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [editingNode, setEditingNode] = useState<BaseNode | UserInputData | BrokerRelayData | null>(null);
   const [selectedFunction, setSelectedFunction] = useState<string>("");
-  const [workflowMetadata, setWorkflowMetadata] = useState<any>(null);
+  const [coreWorkflowData, setCoreWorkflowData] = useState<CoreWorkflowData | null>(null);
   const [deleteDialogNode, setDeleteDialogNode] = useState<Node | null>(null);
   const [isDeletionProcessing, setIsDeletionProcessing] = useState(false);
   const user = useAppSelector(selectUser);
   // Load workflow data if workflowId is provided
   const { loadWorkflow, saveWorkflow } = useWorkflowData();
   
+  const { setViewport, getViewport } = useReactFlow();
+
   useEffect(() => {
     if (workflowId) {
       loadWorkflow(workflowId).then((workflowData) => {
         if (workflowData) {
           setNodes(workflowData.nodes || []);
           setEdges(workflowData.edges || []);
-          setWorkflowMetadata(workflowData.metadata);
+          setCoreWorkflowData(workflowData.coreWorkflowData);
+          
+          // Restore viewport if available
+          if (workflowData.viewport) {
+            setViewport(workflowData.viewport);
+          }
         }
       });
     }
-  }, [workflowId, loadWorkflow, setNodes, setEdges]);
+  }, [workflowId, loadWorkflow, setNodes, setEdges, setViewport]);
 
   // Create workflow reload function
   const handleWorkflowReload = useCallback(async () => {
@@ -70,10 +86,15 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
       if (workflowData) {
         setNodes(workflowData.nodes || []);
         setEdges(workflowData.edges || []);
-        setWorkflowMetadata(workflowData.metadata);
+        setCoreWorkflowData(workflowData.coreWorkflowData);
+        
+        // Restore viewport if available
+        if (workflowData.viewport) {
+          setViewport(workflowData.viewport);
+        }
       }
     }
-  }, [workflowId, loadWorkflow, setNodes, setEdges]);
+  }, [workflowId, loadWorkflow, setNodes, setEdges, setViewport]);
 
   const {
     handleAddNode,
@@ -92,6 +113,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
     userId: user.id,
     setDeleteDialogNode,
     onWorkflowReload: handleWorkflowReload,
+    getViewport,
   });
 
   // Expose methods for node components
@@ -129,9 +151,15 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
   }, [mode]);
 
   const handleSaveWorkflow = useCallback(() => {
+    const currentViewport = getViewport();
+    
     const workflowData = {
       nodes,
-      edges
+      edges,
+      coreWorkflowData: {
+        ...coreWorkflowData,
+        viewport: currentViewport
+      }
     };
     
     if (workflowId) {
@@ -139,7 +167,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
     }
     
     onSave?.(workflowData);
-  }, [nodes, edges, workflowId, user.id, saveWorkflow, onSave]);
+  }, [nodes, edges, workflowId, user.id, saveWorkflow, onSave, coreWorkflowData, getViewport]);
 
   const handleExecuteWorkflow = useCallback(() => {
     const workflowData = prepareWorkflowData();
@@ -178,7 +206,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
         onExecute={handleExecuteWorkflow}
         prepareWorkflowData={prepareWorkflowData}
         mode={mode}
-        workflowName={workflowMetadata?.name}
+        workflowName={coreWorkflowData?.name}
       />
 
       <WorkflowCanvas

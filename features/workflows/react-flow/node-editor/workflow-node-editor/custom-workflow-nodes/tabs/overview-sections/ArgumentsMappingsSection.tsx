@@ -15,17 +15,21 @@ import {
 interface ArgumentsMappingsSectionProps {
     node: BaseNode;
     onNodeUpdate: (updatedNode: BaseNode) => void;
+    argsToHide?: string[]; // Optional array of argument names to hide from display
 }
 
 /**
  * ArgumentsMappingsSection - Displays the arguments and mappings table
  */
-const ArgumentsMappingsSection: React.FC<ArgumentsMappingsSectionProps> = ({ node, onNodeUpdate }) => {
+const ArgumentsMappingsSection: React.FC<ArgumentsMappingsSectionProps> = ({ node, onNodeUpdate, argsToHide = [] }) => {
     const functionData = getFunctionData(node.function_id);
     const argumentsWithData = getArgumentsWithData(node, functionData);
 
-    // Don't render if no arguments
-    if (argumentsWithData.length === 0) {
+    // Filter out hidden arguments
+    const visibleArgumentsWithData = argumentsWithData.filter((arg) => !argsToHide.includes(arg.name));
+
+    // Don't render if no visible arguments
+    if (visibleArgumentsWithData.length === 0) {
         return null;
     }
 
@@ -45,7 +49,7 @@ const ArgumentsMappingsSection: React.FC<ArgumentsMappingsSectionProps> = ({ nod
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {argumentsWithData.map((arg, index) => {
+                        {visibleArgumentsWithData.map((arg, index) => {
                             const effectiveValue = getEffectiveArgValue(arg, node.arg_overrides);
                             const mappings = getBrokerMappingsForArg(node, arg.name);
                             const override = node.arg_overrides?.find(o => o.name === arg.name);

@@ -394,4 +394,4 @@ export function SocketPanelResponse({ taskId }: SocketPanelResponseProps) {
     );
 }
 
-export default SocketPanelResponse; 
+export default SocketPanelResponse;

@@ -17,6 +17,7 @@ export interface OverviewTabProps {
   onNodeUpdate: (updatedNode: BaseNode) => void;
   hiddenSections?: OverviewSectionId[];
   customSections?: Partial<Record<OverviewSectionId, React.ComponentType<{ node: BaseNode; onNodeUpdate: (updatedNode: BaseNode) => void }>>>;
+  argsToHide?: string[]; // Optional array of argument names to hide from display
 }
 
 /**
@@ -31,13 +32,19 @@ const OverviewTab: React.FC<OverviewTabProps> = ({
   node,
   onNodeUpdate,
   hiddenSections = [],
-  customSections = {}
+  customSections = {},
+  argsToHide = []
 }) => {
+  // Create a wrapper for ArgumentsMappingsSection to pass argsToHide
+  const ArgumentsMappingsSectionWithHiddenArgs = ({ node, onNodeUpdate }: { node: BaseNode; onNodeUpdate: (updatedNode: BaseNode) => void }) => (
+    <ArgumentsMappingsSection node={node} onNodeUpdate={onNodeUpdate} argsToHide={argsToHide} />
+  );
+
   // Define default sections
   const defaultSections: Record<OverviewSectionId, React.ComponentType<{ node: BaseNode; onNodeUpdate: (updatedNode: BaseNode) => void }>> = {
     'basic-info': BasicInfoSection,
     'function-info': FunctionInfoSection,
-    'arguments-mappings': ArgumentsMappingsSection,
+    'arguments-mappings': ArgumentsMappingsSectionWithHiddenArgs,
     'dependencies': DependenciesSection
   };
 

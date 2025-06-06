@@ -1,13 +1,15 @@
 import { Node, Edge } from 'reactflow';
 import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";
 import { getNormalizedRegisteredFunctionNode, validateNodeUpdate } from '@/features/workflows/utils/node-utils';
-import { 
-  CompleteWorkflowData, 
-  WorkflowNodeData, 
-  WorkflowUserInputData, 
-  WorkflowRelayData, 
-  WorkflowEdgeData 
-} from './workflowService';
+import { getIntelligentNodePosition } from '@/features/workflows/utils/nodePositioning';
+import {
+  CoreWorkflowData,
+  CompleteWorkflowData,
+  WorkflowNodeData,
+  WorkflowUserInputData,
+  WorkflowRelayData,
+  WorkflowEdgeData,
+} from "@/features/workflows/types";
 
 // ===== DATABASE TO REACT FLOW =====
 
@@ -17,17 +19,32 @@ import {
 export function transformDbToReactFlow(dbData: CompleteWorkflowData): {
   nodes: Node[];
   edges: Edge[];
-  viewport: { x: number; y: number; zoom: number };
+  userInputs: WorkflowUserInputData[];
+  relays: WorkflowRelayData[];
+  coreWorkflowData: CoreWorkflowData;
 } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
+  const userInputs: WorkflowUserInputData[] = [];
+  const relays: WorkflowRelayData[] = [];
+  
+  // Keep track of nodes as we create them for intelligent positioning
+  const processedNodes: Node[] = [];
 
   // Transform workflow nodes
   dbData.nodes.forEach(dbNode => {
-    nodes.push({
+    // Use ui_node_data if available, otherwise create node with intelligent position
+    const nodeFromDb = dbNode.ui_node_data || {
       id: dbNode.id,
       type: 'workflowNode',
-      position: { x: dbNode.position_x, y: dbNode.position_y },
+      position: getIntelligentNodePosition(processedNodes, dbData.workflow.viewport),
+      data: {}
+    };
+
+    const newNode = {
+      ...nodeFromDb,
+      id: dbNode.id, // Ensure ID matches database
+      type: 'workflowNode',
       data: {
         id: dbNode.id,
         function_id: dbNode.function_id,
@@ -41,17 +58,28 @@ export function transformDbToReactFlow(dbData: CompleteWorkflowData): {
         workflow_id: undefined, // This is set at the workflow level, not node level in UI
         status: dbNode.status
       } as BaseNode
-    });
+    };
+    
+    nodes.push(newNode);
+    processedNodes.push(newNode);
   });
 
   // Transform user inputs
   // Note: We use default_value as the initial session value. Current session values 
   // are not persisted - only when explicitly saved does the session value become the new default_value
   dbData.userInputs.forEach(dbInput => {
-    nodes.push({
+    // Use ui_node_data if available, otherwise create node with intelligent position
+    const nodeFromDb = dbInput.ui_node_data || {
       id: dbInput.id,
       type: 'workflowNode',
-      position: { x: dbInput.position_x, y: dbInput.position_y },
+      position: getIntelligentNodePosition(processedNodes, dbData.workflow.viewport),
+      data: {}
+    };
+
+    const newNode = {
+      ...nodeFromDb,
+      id: dbInput.id, // Ensure ID matches database
+      type: 'workflowNode',
       data: {
         id: dbInput.id,
         type: 'userInput',
@@ -60,15 +88,26 @@ export function transformDbToReactFlow(dbData: CompleteWorkflowData): {
         label: dbInput.label,
         data_type: dbInput.data_type
       } as UserInputData
-    });
+    };
+    
+    nodes.push(newNode);
+    processedNodes.push(newNode);
   });
 
   // Transform relays
   dbData.relays.forEach(dbRelay => {
-    nodes.push({
+    // Use ui_node_data if available, otherwise create node with intelligent position
+    const nodeFromDb = dbRelay.ui_node_data || {
       id: dbRelay.id,
-      type: 'workflowNode', 
-      position: { x: dbRelay.position_x, y: dbRelay.position_y },
+      type: 'workflowNode',
+      position: getIntelligentNodePosition(processedNodes, dbData.workflow.viewport),
+      data: {}
+    };
+
+    const newNode = {
+      ...nodeFromDb,
+      id: dbRelay.id, // Ensure ID matches database
+      type: 'workflowNode',
       data: {
         id: dbRelay.id,
         type: 'brokerRelay',
@@ -76,7 +115,10 @@ export function transformDbToReactFlow(dbData: CompleteWorkflowData): {
         targets: dbRelay.target_broker_ids,
         label: dbRelay.label
       } as BrokerRelayData
-    });
+    };
+    
+    nodes.push(newNode);
+    processedNodes.push(newNode);
   });
 
   // Transform edges
@@ -96,11 +138,9 @@ export function transformDbToReactFlow(dbData: CompleteWorkflowData): {
   return {
     nodes,
     edges,
-    viewport: {
-      x: dbData.workflow.viewport_x,
-      y: dbData.workflow.viewport_y,
-      zoom: dbData.workflow.viewport_zoom
-    }
+    userInputs,
+    relays,
+    coreWorkflowData: dbData.workflow,
   };
 }
 
@@ -120,8 +160,7 @@ export function transformNodeToDb(node: Node, workflowId: string):
     // ✅ Try to create a normalized node if we have a function_id, otherwise fallback
     const fallbackNode = {
       id: node.id,
-      position_x: node.position.x,
-      position_y: node.position.y,
+      ui_node_data: node, // Store the complete React Flow node object
       function_id: null,
       function_type: 'registered_function',
       step_name: null,
@@ -142,8 +181,7 @@ export function transformNodeToDb(node: Node, workflowId: string):
   
   const baseTransform = {
     id: node.data.id || node.id, // Fallback to node.id if data.id is missing
-    position_x: node.position.x,
-    position_y: node.position.y
+    ui_node_data: node // Store the complete React Flow node object
   };
 
   if (node.data.type === 'userInput') {

@@ -56,17 +56,20 @@ export function BrokerOverlay({ workflowData, isOpen, onClose }: BrokerOverlayPr
             <div className="space-y-6">
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-700 rounded-lg p-4 text-center">
+                <div className="bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-700 rounded-lg px-4 pt-4 pb-2 text-center">
                   <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{brokerCollection.stats.withProducers}</div>
-                  <div className="text-sm text-blue-600 dark:text-blue-400">With Producers</div>
+                  <div className="text-sm text-blue-600 dark:text-blue-400">Producers</div>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">Publish data to this broker</p>
                 </div>
-                <div className="bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-700 rounded-lg p-4 text-center">
+                <div className="bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-700 rounded-lg px-4 pt-4 pb-2 text-center">
                   <div className="text-2xl font-bold text-green-700 dark:text-green-300">{brokerCollection.stats.withConsumers}</div>
-                  <div className="text-sm text-green-600 dark:text-green-400">With Consumers</div>
+                  <div className="text-sm text-green-600 dark:text-green-400">Consumers</div>
+                  <p className="text-xs text-green-600 dark:text-green-400">Get data from this broker</p>
                 </div>
-                <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-700 rounded-lg p-4 text-center">
+                <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-700 rounded-lg px-4 pt-4 pb-2 text-center">
                   <div className="text-2xl font-bold text-red-700 dark:text-red-300">{brokerCollection.stats.orphaned}</div>
                   <div className="text-sm text-red-600 dark:text-red-400">Orphaned</div>
+                  <p className="text-xs text-red-600 dark:text-red-400">No Known Producers</p>
                 </div>
               </div>
 
@@ -122,7 +125,7 @@ function BrokerCard({ broker }: { broker: BrokerInfo }) {
         <div>
           <h4 className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <ArrowRight className="w-4 h-4 text-blue-500" />
-            Producers (Publish TO this broker)
+            Producers
           </h4>
                      {broker.producers.length === 0 ? (
              <div className={`text-xs italic ${
@@ -151,7 +154,7 @@ function BrokerCard({ broker }: { broker: BrokerInfo }) {
         <div>
           <h4 className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <ArrowLeft className="w-4 h-4 text-green-500" />
-            Consumers (Subscribe FROM this broker)
+            Consumers
           </h4>
           {broker.consumers.length === 0 ? (
             <div className="text-xs text-gray-500 dark:text-gray-400 italic">No consumers</div>

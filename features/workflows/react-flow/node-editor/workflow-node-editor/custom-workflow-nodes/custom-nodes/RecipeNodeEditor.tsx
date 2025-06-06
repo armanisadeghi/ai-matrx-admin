@@ -16,6 +16,9 @@ interface RecipeNodeEditorProps {
   open: boolean;
 }
 
+const MANAGED_ARGUMENTS = ['recipe_id', 'version', 'latest_version'];
+
+
 /**
  * RecipeNodeEditor - Custom node editor specifically for recipe nodes
  * Uses the modular OverviewTab system with custom sections
@@ -31,6 +34,7 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ node, onSave, onClo
         'basic-info': RecipeBasicInfoSection,
         'function-info': RecipeSelectionSection
       }}
+      argsToHide={MANAGED_ARGUMENTS}
     />
   );
 
@@ -39,7 +43,7 @@ const RecipeNodeEditor: React.FC<RecipeNodeEditorProps> = ({ node, onSave, onClo
     <ArgumentsTab 
       node={node}
       onNodeUpdate={onNodeUpdate}
-      argsToHide={['recipe_id', 'version', 'latest_version']}
+      argsToHide={MANAGED_ARGUMENTS}
     />
   );
 

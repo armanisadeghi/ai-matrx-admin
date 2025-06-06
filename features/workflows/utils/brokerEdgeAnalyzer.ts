@@ -1,5 +1,13 @@
 import { Edge } from 'reactflow';
-import { CompleteWorkflowData } from '@/features/workflows/service/workflowService';
+import { v4 as uuidv4 } from 'uuid';
+import {
+  CoreWorkflowData,
+  CompleteWorkflowData,
+  WorkflowNodeData,
+  WorkflowUserInputData,
+  WorkflowRelayData,
+  WorkflowEdgeData,
+} from "@/features/workflows/types";
 
 /**
  * Converts snake_case strings to Title Case
@@ -352,7 +360,7 @@ function traceDependencyTarget(brokerId: string, sourceNodeId: string, completeD
  * Creates a ReactFlow Edge from a broker connection
  */
 function createVirtualEdge(connection: BrokerConnection, index: number): Edge {
-  const edgeId = `virtual_${connection.connectionType}_${index}`;
+  const edgeId = uuidv4(); // Use proper UUID instead of string-based ID
   
   // Style edges differently based on connection type
   const edgeStyles = {
@@ -366,12 +374,12 @@ function createVirtualEdge(connection: BrokerConnection, index: number): Edge {
       strokeWidth: 2 
     },
     to_dependency: { 
-      stroke: '#ef4444', 
+      stroke: '#8b5cf6',  // Purple - suggests connection/relationship
       strokeWidth: 1,
       strokeDasharray: '2,2'
     }
   };
-  
+    
   // Create appropriate label based on connection type
   let label = '';
   switch (connection.connectionType) {

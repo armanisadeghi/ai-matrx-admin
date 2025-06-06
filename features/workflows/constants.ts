@@ -339,7 +339,7 @@ const registeredFunctions = [
     },
 ];
 
-const DEFAULT_EXCLUDE_ARG_NAMES = ["recipe_brokers"];
+const DEFAULT_EXCLUDE_ARG_NAMES = ["recipe_brokers", "session_manager"];
 
 
 export function getRegisteredFunctions() {

@@ -1,3 +1,5 @@
+import { Viewport } from "reactflow";
+
 // Updated types for workflow data
 type ArgOverride = {
   name: string;
@@ -52,19 +54,24 @@ type UserInput = {
   value: any;
 };
 
-type WorkflowMetadata = {
+type CoreWorkflowData = {
   id: string;
   name: string;
   description?: string;
   version?: string;
   created_date?: string;
+  auto_execute?: boolean;
+  tags?: string[];
+  category?: string;
+  metadata?: Record<string, any>;
+  viewport?: Viewport;
 };
 
-type WorkflowData = {
+type CompleteWorkflowData = {
   steps: WorkflowStep[];
   workflow_relays?: WorkflowRelays;
   user_inputs?: UserInput[];
-  workflow_metadata?: WorkflowMetadata;
+  core_workflow_data?: CoreWorkflowData;
 };
 
 // Standalone user inputs type for when used separately

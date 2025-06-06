@@ -21,3 +21,4 @@ export interface UserInputData {
     label?: string;
     data_type?: "int" | "float" | "str" | "bool" | "list" | "tuple" | "dict" | "set";
 }
+

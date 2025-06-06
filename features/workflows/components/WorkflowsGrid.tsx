@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Workflow, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { fetchUserWorkflows, WorkflowData } from '../service/workflowService';
+import { fetchUserWorkflows, CoreWorkflowData } from '../service/workflowService';
 import { WorkflowCard } from './WorkflowCard';
 import { selectUser, selectActiveUserName } from "@/lib/redux/selectors/userSelectors";
 import { useAppSelector } from '@/lib/redux';
 
 export function WorkflowsGrid() {
-  const [workflows, setWorkflows] = useState<WorkflowData[]>([]);
+  const [workflows, setWorkflows] = useState<CoreWorkflowData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const user = useAppSelector(selectUser);
