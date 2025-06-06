@@ -8932,8 +8932,8 @@ export const useWcReportWithFetch = (): UseWcReportWithFetchReturn => {
 type UseWorkflowWithFetchReturn = {
     workflowSelectors: EntitySelectors<"workflow">;
     workflowActions: EntityActions<"workflow">;
-    workflowRecords: Record<MatrxRecordId, CompleteWorkflowData>;
-    workflowUnsavedRecords: Record<MatrxRecordId, Partial<CompleteWorkflowData>>;
+    workflowRecords: Record<MatrxRecordId, WorkflowData>;
+    workflowUnsavedRecords: Record<MatrxRecordId, Partial<WorkflowData>>;
     workflowSelectedRecordIds: MatrxRecordId[];
     workflowIsLoading: boolean;
     workflowIsError: boolean;

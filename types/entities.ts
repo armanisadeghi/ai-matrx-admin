@@ -1241,9 +1241,6 @@ export type Workflow = {
     description?: string;
     userId?: string;
     version?: number;
-    viewportX?: number;
-    viewportY?: number;
-    viewportZoom?: number;
     isPublic?: boolean;
     authenticatedRead?: boolean;
     publicRead?: boolean;
@@ -1252,6 +1249,8 @@ export type Workflow = {
     autoExecute?: boolean;
     category?: string;
     tags?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+    viewport?: Record<string, unknown>;
 }
 
 export type WorkflowEdge = {
@@ -1265,6 +1264,7 @@ export type WorkflowEdge = {
     edgeType?: string;
     animated?: boolean;
     style?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
 }
 
 export type WorkflowNode = {
@@ -1276,10 +1276,6 @@ export type WorkflowNode = {
     functionId?: string;
     functionType?: string;
     stepName?: string;
-    positionX: number;
-    positionY: number;
-    width?: number;
-    height?: number;
     nodeType?: string;
     executionRequired?: boolean;
     additionalDependencies?: Record<string, unknown>;
@@ -1290,6 +1286,8 @@ export type WorkflowNode = {
     isPublic?: boolean;
     authenticatedRead?: boolean;
     publicRead?: boolean;
+    metadata?: Record<string, unknown>;
+    uiNodeData?: Record<string, unknown>;
 }
 
 export type WorkflowRelay = {
@@ -1300,9 +1298,9 @@ export type WorkflowRelay = {
     userId?: string;
     sourceBrokerId: string;
     label?: string;
-    positionX: number;
-    positionY: number;
     targetBrokerIds?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
+    uiNodeData?: Record<string, unknown>;
 }
 
 export type WorkflowUserInput = {
@@ -1316,7 +1314,7 @@ export type WorkflowUserInput = {
     label?: string;
     dataType?: string;
     defaultValue?: string;
-    positionX?: number;
-    positionY?: number;
     isRequired?: boolean;
+    metadata?: Record<string, unknown>;
+    uiNodeData?: Record<string, unknown>;
 }
