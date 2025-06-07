@@ -18,8 +18,8 @@ import MatrxBrokerBlock from "../blocks/brokers/MatrxBrokerBlock";
 
 interface ChatMarkdownDisplayProps {
     content: string;
-    type: "flashcard" | "message";
-    role?: "user" | "assistant";
+    type: "flashcard" | "message" | "text" | "image" | "audio" | "video" | "file" | string;
+    role?: "user" | "assistant" | "system" | "tool" | string;
     className?: string;
     isStreamActive?: boolean;
     onContentChange?: (newContent: string) => void;

@@ -17,7 +17,7 @@ import SectionViewerV2 from "./analyzer/analyzer-options/section-viewer-V2";
 // Import the Toast UI Editor dark theme CSS
 import "@toast-ui/editor/dist/toastui-editor.css";
 import "@toast-ui/editor/dist/theme/toastui-editor-dark.css";
-import EnhancedChatMarkdown from "./EnhancedChatMarkdown";
+import EnhancedChatMarkdown from "@/components/mardown-display/chat-markdown/EnhancedChatMarkdown";
 
 const TuiEditor = dynamic(() => import("@toast-ui/react-editor").then((mod) => mod.Editor), {
     ssr: false,

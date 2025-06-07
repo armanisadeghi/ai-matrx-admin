@@ -23,9 +23,8 @@ export type RecipeInfo = {
     post_result_options?: Record<string, unknown>;
     tags?: {
         tags: string[];
-    }
+    };
 };
-
 
 export interface NeededBroker {
     id: string;
@@ -33,23 +32,19 @@ export interface NeededBroker {
     required: boolean;
     dataType: string;
     defaultValue: string;
-  }
-  
-  
+}
+
 export interface RecipeSourceConfig {
     id: string;
     compiledId: string;
     version: number;
     neededBrokers: NeededBroker[];
-  }
-  
-  export interface RecipeConfig {
+}
+
+export interface RecipeConfig {
     sourceType?: "recipe";
-    config?: RecipeSourceConfig
-  }
-  
-
-
+    config?: RecipeSourceConfig;
+}
 
 interface RecipeDefaultArgOverrides {
     recipe_id?: string;
@@ -61,7 +56,6 @@ interface RecipeDefaultDependencies {
     source_broker_id: string;
     target_broker_id?: undefined;
 }
-
 
 export interface RecipeNodeDefaults {
     recipe_name?: string;
@@ -75,7 +69,6 @@ export interface InitialConfig {
     version?: number;
     latestVersion?: boolean;
 }
-
 
 interface RecipeSelectionListProps {
     initialSelectedRecipe?: string | null;
@@ -107,9 +100,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
     const { toast } = useToast();
 
     // State
-    const [versionSelection, setVersionSelection] = useState<"latest" | "specific">(
-        initialConfig?.version ? "specific" : "latest"
-    );
+    const [versionSelection, setVersionSelection] = useState<"latest" | "specific">(initialConfig?.version ? "specific" : "latest");
 
     const [specificVersion, setSpecificVersion] = useState<number>(initialConfig?.version || 1);
     const [isVersionValid, setIsVersionValid] = useState<boolean>(true);
@@ -119,9 +110,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [userRecipes, setUserRecipes] = useState<RecipeInfo[]>([]);
     const [sourceConfig, setSourceConfig] = useState<RecipeConfig | null>(null);
-    const [selectedRecipe, setSelectedRecipe] = useState<string | null>(
-        initialConfig?.recipeId || initialSelectedRecipe || null
-    );
+    const [selectedRecipe, setSelectedRecipe] = useState<string | null>(initialConfig?.recipeId || initialSelectedRecipe || null);
 
     // Fetch recipes on component mount
     useEffect(() => {
@@ -220,20 +209,20 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
             }
 
             // Get recipe name from userRecipes
-            const selectedRecipeInfo = userRecipes.find(recipe => recipe.id === recipeId);
+            const selectedRecipeInfo = userRecipes.find((recipe) => recipe.id === recipeId);
             const recipeName = selectedRecipeInfo?.name;
 
             // Create arg overrides
             const argOverrides: RecipeDefaultArgOverrides = {
                 recipe_id: recipeId,
                 version: version,
-                latest_version: !version // if no version specified, it's latest
+                latest_version: !version, // if no version specified, it's latest
             };
 
             // Create default dependencies from needed brokers
-            const defaultDependencies: RecipeDefaultDependencies[] = sourceConfigResult.config.neededBrokers.map(broker => ({
+            const defaultDependencies: RecipeDefaultDependencies[] = sourceConfigResult.config.neededBrokers.map((broker) => ({
                 source_broker_id: broker.id,
-                target_broker_id: undefined
+                target_broker_id: undefined,
             }));
 
             // Create the recipe node defaults
@@ -241,7 +230,7 @@ export const RecipeSelectionList: React.FC<RecipeSelectionListProps> = ({
                 recipe_name: recipeName,
                 needed_brokers: sourceConfigResult.config.neededBrokers,
                 arg_overrides: argOverrides,
-                default_dependencies: defaultDependencies
+                default_dependencies: defaultDependencies,
             };
 
             // Set the recipe node defaults if the setter is provided

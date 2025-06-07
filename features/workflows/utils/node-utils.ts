@@ -1,9 +1,8 @@
 import { BaseNode, ArgumentOverride, ArgumentMapping } from "@/features/workflows/types";
-import { getRegisteredFunctions } from "@/features/workflows/constants";
+import { DEFAULT_EXCLUDE_ARG_NAMES, getRegisteredFunctions } from "@/features/workflows/constants";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
 
-const DEFAULT_EXCLUDE_ARG_NAMES = ["recipe_brokers"];
 
 export function getNormalizedRegisteredFunctionNode(function_id: string): BaseNode {
     const function_data = getRegisteredFunctions().find((f) => f.id === function_id);

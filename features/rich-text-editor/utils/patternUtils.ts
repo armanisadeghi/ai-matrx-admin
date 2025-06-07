@@ -10,7 +10,7 @@ export const MATRX_DEFAULT_COMPONENT_PATTERN = /<COMPONENT>(.*?)<COMPONENT_END>/
 export const MATRX_DATA_TYPE_PATTERN = /<DATA_TYPE>(.*?)<DATA_TYPE>/gs;
 
 // Types
-export type MatrxStatus = 'new' | 'active' | 'disconnected' | 'deleted' | string;
+export type MatrxStatus = "new" | "active" | "disconnected" | "deleted" | string;
 
 export interface MatrxMetadata {
     matrxRecordId?: string;
@@ -31,11 +31,11 @@ export interface Message {
 
 // Display modes enum
 export enum DisplayMode {
-    ENCODED = 'encoded',
-    SIMPLE_ID = 'simple_id',
-    RECORD_KEY = 'record_key',
-    NAME = 'name',
-    DEFAULT_VALUE = 'default_value',
+    ENCODED = "encoded",
+    SIMPLE_ID = "simple_id",
+    RECORD_KEY = "record_key",
+    NAME = "name",
+    DEFAULT_VALUE = "default_value",
 }
 
 // Core parsing function
@@ -44,14 +44,14 @@ export const parseMatrxMetadata = (content: string): MatrxMetadata => {
 
     // Reset lastIndex for all patterns
     const patterns = [
-        { pattern: DEFAULT_VALUE_PATTERN, key: 'defaultValue' },
-        { pattern: MATRX_RECORD_ID_PATTERN, key: 'matrxRecordId' },
-        { pattern: MATRX_ID_PATTERN, key: 'id' },
-        { pattern: MATRX_NAME_PATTERN, key: 'name' },
-        { pattern: MATRX_STATUS_PATTERN, key: 'status' },
-        { pattern: MATRX_COLOR_PATTERN, key: 'color' },
-        { pattern: MATRX_DEFAULT_COMPONENT_PATTERN, key: 'defaultComponent' },
-        { pattern: MATRX_DATA_TYPE_PATTERN, key: 'dataType' },
+        { pattern: DEFAULT_VALUE_PATTERN, key: "defaultValue" },
+        { pattern: MATRX_RECORD_ID_PATTERN, key: "matrxRecordId" },
+        { pattern: MATRX_ID_PATTERN, key: "id" },
+        { pattern: MATRX_NAME_PATTERN, key: "name" },
+        { pattern: MATRX_STATUS_PATTERN, key: "status" },
+        { pattern: MATRX_COLOR_PATTERN, key: "color" },
+        { pattern: MATRX_DEFAULT_COMPONENT_PATTERN, key: "defaultComponent" },
+        { pattern: MATRX_DATA_TYPE_PATTERN, key: "dataType" },
     ];
 
     patterns.forEach(({ pattern, key }) => {
@@ -94,7 +94,7 @@ export const encodeMatrxMetadata = (metadata: MatrxMetadata): string => {
         parts.push(`<DATA_TYPE>${metadata.dataType}<DATA_TYPE_END>`);
     }
 
-    return `<<<MATRX_START>>>${parts.join('')}<<<MATRX_END>>>`;
+    return `<<<MATRX_START>>>${parts.join("")}<<<MATRX_END>>>`;
 };
 
 // Utility functions
@@ -157,14 +157,14 @@ export const getAllMetadata = (text?: string): MatrxMetadata[] => {
 
     const rawMetadata = getMetadataFromText(text);
     const defaultMetadataKeys: MatrxMetadata = {
-        matrxRecordId: '',
-        id: '',
-        name: '',
-        defaultValue: '',
-        color: '',
-        status: '',
-        defaultComponent: '',
-        dataType: '',
+        matrxRecordId: "",
+        id: "",
+        name: "",
+        defaultValue: "",
+        color: "",
+        status: "",
+        defaultComponent: "",
+        dataType: "",
     };
 
     return rawMetadata.map((metadata) => ({
@@ -180,7 +180,6 @@ export const getAllMatrxRecordIds = (text: string | null | undefined): string[] 
         .filter((id): id is string => Boolean(id));
 };
 
-
 export const getAllSimpleIds = (text: string | null | undefined): string[] => {
     if (!text) return [];
     return getAllMetadata(text)
@@ -188,10 +187,18 @@ export const getAllSimpleIds = (text: string | null | undefined): string[] => {
         .filter((id): id is string => Boolean(id));
 };
 
+export const getAllSimpleIdsFromMessages = (messages: Message[]): string[] => {
+    if (!messages) return [];
+    return messages
+        .map((message) => message.content || "")
+        .flatMap((content) => getAllSimpleIds(content))
+        .filter((id, index, self) => id && self.indexOf(id) === index);
+};
+
 export const getAllMatrxRecordIdsFromMessages = (messages: Message[]): string[] => {
     if (!messages) return [];
     return messages
-        .map((message) => message.content || '')
+        .map((message) => message.content || "")
         .flatMap((content) => getAllMatrxRecordIds(content))
         .filter((id, index, self) => id && self.indexOf(id) === index);
 };
@@ -202,7 +209,7 @@ export const getNewMatrxRecordIdsFromMessages = (messages: Message[], currentIds
 };
 
 export const getMetadataFromAllMessages = (messages: Message[]): MatrxMetadata[] => {
-    return messages.map((message) => message.content || '').flatMap(getAllMetadata);
+    return messages.map((message) => message.content || "").flatMap(getAllMetadata);
 };
 
 export const getUniqueMetadataFromAllMessages = (messages: Message[]): MatrxMetadata[] => {
@@ -218,7 +225,7 @@ export const getUniqueBrokerRecordIds = (messages: Message[]) => {
 };
 
 export const encodeMatrxMetadataArray = (metadataArray: MatrxMetadata[]): string => {
-    return metadataArray.map(encodeMatrxMetadata).join(' ');
+    return metadataArray.map(encodeMatrxMetadata).join(" ");
 };
 
 export const insertMatrxPatterns = (text: string, patterns: MatrxMetadata[]): string => {
@@ -229,4 +236,94 @@ export const insertMatrxPatterns = (text: string, patterns: MatrxMetadata[]): st
         result = result.replace(placeholder, encodeMatrxMetadata(pattern));
     });
     return result;
+};
+
+export interface EnrichedBroker {
+    id: string;
+    name?: string;
+    required?: boolean;
+    dataType?: string;
+    fieldComponentId?: string;
+}
+
+interface NeededBroker {
+    id: string;
+    name: string;
+    required: boolean;
+    dataType: string;
+    defaultValue: string;
+    fieldComponentId?: string;
+}
+
+export const getEnrichedBrokersFromMessages = (messages: Message[], neededBrokers: NeededBroker[]): EnrichedBroker[] => {
+    if (!messages) return [];
+
+    const idsFromMessages = getAllSimpleIdsFromMessages(messages);
+
+    const neededBrokersMap = new Map(neededBrokers?.map((broker) => [broker.id, broker]) || []);
+
+    return idsFromMessages.map((id) => {
+        const neededBroker = neededBrokersMap.get(id);
+
+        return {
+            id,
+            name: neededBroker?.name,
+            required: neededBroker?.required,
+            dataType: neededBroker?.dataType,
+            fieldComponentId: neededBroker?.fieldComponentId,
+        };
+    });
+};
+
+export const replaceMatrxPatternsWithBrokerNames = (
+    messages: Message[], 
+    neededBrokers: NeededBroker[]
+): Message[] => {
+    if (!messages) return [];
+    
+    // Create a map for quick lookup of needed brokers by ID
+    const neededBrokersMap = new Map(
+        neededBrokers?.map(broker => [broker.id, broker]) || []
+    );
+    
+    return messages.map(message => ({
+        ...message,
+        content: message.content ? replaceMatrxPatternsInText(message.content, neededBrokersMap) : message.content
+    }));
+};
+
+// Helper function to replace patterns in a single text string
+const replaceMatrxPatternsInText = (text: string, neededBrokersMap: Map<string, NeededBroker>): string => {
+    if (!text) return text;
+    
+    MATRX_PATTERN.lastIndex = 0;
+    return text.replace(MATRX_PATTERN, (fullMatch, content) => {
+        const metadata = parseMatrxMetadata(content);
+        
+        if (metadata.id) {
+            const neededBroker = neededBrokersMap.get(metadata.id);
+            if (neededBroker?.name) {
+                return `[[${neededBroker.name} Broker|${metadata.id}]]`;
+            }
+            // If no name found, use the ID
+            return `[[${metadata.id} Broker|${metadata.id}]]`;
+        }
+        
+        // If no ID found, return original match
+        return fullMatch;
+    });
+};
+
+// If you want just the text replacement without modifying message objects:
+export const replaceMatrxPatternsInTextOnly = (
+    text: string, 
+    neededBrokers: NeededBroker[]
+): string => {
+    if (!text) return text;
+    
+    const neededBrokersMap = new Map(
+        neededBrokers?.map(broker => [broker.id, broker]) || []
+    );
+    
+    return replaceMatrxPatternsInText(text, neededBrokersMap);
 };

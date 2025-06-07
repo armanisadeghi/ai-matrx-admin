@@ -23,6 +23,7 @@ export interface TabConfig {
 // Define the structure for custom tabs
 export interface CustomTabConfig extends TabConfig {
   replaces?: string; // ID of default tab to replace
+  order?: number; // Optional order for positioning (lower numbers appear first)
 }
 
 interface DefaultNodeEditorProps {
@@ -65,21 +66,62 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
     // Filter out hidden tabs
     tabs = tabs.filter(tab => !hiddenTabs.includes(tab.id));
     
-    // Replace default tabs with custom tabs if specified
+    // Handle custom tabs that replace existing tabs
+    const replacementTabs: CustomTabConfig[] = [];
+    const newTabs: CustomTabConfig[] = [];
+    
     customTabs.forEach(customTab => {
       if (customTab.replaces) {
-        const replaceIndex = tabs.findIndex(tab => tab.id === customTab.replaces);
-        if (replaceIndex !== -1) {
-          tabs[replaceIndex] = customTab;
-        }
+        replacementTabs.push(customTab);
       } else {
-        // Add as additional tab if not replacing
-        tabs.push(customTab);
+        newTabs.push(customTab);
       }
     });
     
-    // Add additional tabs
-    tabs = [...tabs, ...additionalTabs];
+    // Replace default tabs with custom tabs if specified
+    replacementTabs.forEach(customTab => {
+      const replaceIndex = tabs.findIndex(tab => tab.id === customTab.replaces);
+      if (replaceIndex !== -1) {
+        tabs[replaceIndex] = customTab;
+      }
+    });
+    
+    // Add new tabs and additional tabs
+    const allNewTabs = [...newTabs, ...additionalTabs];
+    
+    // If any tabs have order specified, use it for positioning
+    const hasOrdering = customTabs.some(tab => tab.order !== undefined);
+    
+    if (hasOrdering) {
+      // Add new tabs to the array first
+      tabs = [...tabs, ...allNewTabs];
+      
+      // Create a map of default positions for tabs that don't have explicit ordering
+      const defaultOrders: { [key: string]: number } = {
+        'basic': 10,
+        'arguments': 20,
+        'mappings': 30,
+        'dependencies': 40,
+        'brokers': 50,
+        'object': 60
+      };
+      
+      // Sort all tabs by order, using default orders for tabs without explicit order
+      tabs.sort((a, b) => {
+        const orderA = 'order' in a && (a as CustomTabConfig).order !== undefined 
+          ? (a as CustomTabConfig).order! 
+          : (defaultOrders[a.id] || 100);
+          
+        const orderB = 'order' in b && (b as CustomTabConfig).order !== undefined 
+          ? (b as CustomTabConfig).order! 
+          : (defaultOrders[b.id] || 100);
+        
+        return orderA - orderB;
+      });
+    } else {
+      // No ordering specified, use legacy behavior
+      tabs = [...tabs, ...allNewTabs];
+    }
     
     return tabs;
   };

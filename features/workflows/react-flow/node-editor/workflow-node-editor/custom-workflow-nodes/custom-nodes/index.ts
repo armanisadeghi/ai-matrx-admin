@@ -1,1 +1,1 @@
-export { default as RecipeNodeEditor } from './RecipeNodeEditor'; 
+export { default as RecipeNodeEditor } from './recipes/RecipeNodeEditor'; 

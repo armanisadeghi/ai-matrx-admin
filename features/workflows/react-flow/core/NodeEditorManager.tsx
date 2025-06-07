@@ -5,7 +5,7 @@ import UserInputEditor from "@/features/workflows/react-flow/node-editor/user-in
 import BrokerRelayEditor from "@/features/workflows/react-flow/node-editor/broker-relay-node-editor/BrokerRelayEditor";
 import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";
 import { CustomNodeEditor, DefaultNodeEditor } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes";
-import RecipeNodeEditor from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/RecipeNodeEditor";
+import RecipeNodeEditor from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/recipes/RecipeNodeEditor";
 
 interface NodeEditorManagerProps {
   editingNode: BaseNode | UserInputData | BrokerRelayData | null;
