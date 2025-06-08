@@ -5,7 +5,7 @@ import { Edge, Node } from "reactflow";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Database, History } from "lucide-react";
-import { SocketExecuteButton } from "@/components/socket-io/presets/SocketExecuteButton";
+import { SocketExecuteButton } from "@/components/socket-io/presets/preset-manager/triggers/SocketExecuteButton";
 import DebugOverlay from "@/features/workflows/react-flow/core/DebugOverlay";
 import { BrokerOverlay } from "@/features/workflows/react-flow/common/BrokerOverlay";
 import { getRegisteredFunctionSelectOptions } from "@/features/workflows/utils/node-utils";
