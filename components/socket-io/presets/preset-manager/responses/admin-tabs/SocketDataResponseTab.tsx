@@ -14,6 +14,8 @@ interface SocketDataResponseTabProps {
   onTaskIdChange: (taskId: string | null) => void;
   isExecuting?: boolean;
   error?: string | null;
+  selectedDataType?: any;
+  selectedIndex?: number;
 }
 
 /**
@@ -24,6 +26,8 @@ export const SocketDataResponseTab: React.FC<SocketDataResponseTabProps> = ({
   onTaskIdChange,
   isExecuting = false,
   error,
+  selectedDataType,
+  selectedIndex
 }) => {
   const task = useAppSelector((state) => 
     taskId ? selectTaskById(state, taskId) : null
@@ -32,6 +36,7 @@ export const SocketDataResponseTab: React.FC<SocketDataResponseTabProps> = ({
     taskId ? selectPrimaryResponseDataByTaskId(taskId)(state) : []
   );
 
+  
   if (!taskId) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">

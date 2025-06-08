@@ -12,6 +12,8 @@ interface SocketErrorResponseTabProps {
   taskId: string | null;
   isExecuting?: boolean;
   error?: string | null;
+  selectedDataType?: any;
+  selectedIndex?: number;
 }
 
 /**
@@ -21,6 +23,8 @@ export const SocketErrorResponseTab: React.FC<SocketErrorResponseTabProps> = ({
   taskId,
   isExecuting = false,
   error,
+  selectedDataType,
+  selectedIndex
 }) => {
   const task = useAppSelector((state) => 
     taskId ? selectTaskById(state, taskId) : null

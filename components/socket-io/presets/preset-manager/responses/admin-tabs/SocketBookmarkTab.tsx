@@ -47,12 +47,22 @@ interface SocketBookmarkTabProps {
     config: BookmarkTabConfig;
     isExecuting?: boolean;
     error?: string | null;
+    selectedDataType?: any;
+    selectedIndex?: number;
 }
 
 /**
  * A dynamic tab component that uses bookmark paths to extract and display specific data
  */
-export const SocketBookmarkTab: React.FC<SocketBookmarkTabProps> = ({ taskId, onTaskIdChange, config, isExecuting = false, error }) => {
+export const SocketBookmarkTab: React.FC<SocketBookmarkTabProps> = ({
+    taskId,
+    onTaskIdChange,
+    config,
+    isExecuting = false,
+    error,
+    selectedDataType,
+    selectedIndex,
+}) => {
     const task = useAppSelector((state) => (taskId ? selectTaskById(state, taskId) : null));
     const responseData = useAppSelector((state) => (taskId ? selectPrimaryResponseDataByTaskId(taskId)(state) : []));
 

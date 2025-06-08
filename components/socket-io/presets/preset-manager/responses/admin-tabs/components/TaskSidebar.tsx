@@ -2,7 +2,12 @@
 
 import React from "react";
 import { useAppSelector } from "@/lib/redux";
-import { selectAllTasksArray, selectRunningTasksCount, selectCompletedTasksCount, selectErrorTasksCount } from "@/lib/redux/socket-io/selectors/socket-task-selectors";
+import {
+    selectAllTasksArray,
+    selectRunningTasksCount,
+    selectCompletedTasksCount,
+    selectErrorTasksCount,
+} from "@/lib/redux/socket-io/selectors/socket-task-selectors";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle, XCircle, Clock, Play } from "lucide-react";
@@ -27,24 +32,30 @@ interface TaskSidebarProps {
     onTaskSelect: (taskId: string) => void;
 }
 
-export const TaskSidebar: React.FC<TaskSidebarProps> = ({
-    selectedTaskId,
-    onTaskSelect
-}) => {
+export const TaskSidebar: React.FC<TaskSidebarProps> = ({ selectedTaskId, onTaskSelect }) => {
     const taskEntries = useAppSelector(selectAllTasksArray);
     const runningCount = useAppSelector(selectRunningTasksCount);
     const completedCount = useAppSelector(selectCompletedTasksCount);
     const errorCount = useAppSelector(selectErrorTasksCount);
 
+    const getPrettyTaskName = (taskName: string): string => {
+        const nameMap: Record<string, string> = {
+            start_workflow_with_structure: "Run Workflow",
+            execute_single_step: "Test Step",
+        };
+
+        return nameMap[taskName] || taskName || "Unnamed Task";
+    };
+
     const getTaskIcon = (status: string) => {
         switch (status) {
-            case 'completed':
+            case "completed":
                 return <CheckCircle className="w-3 h-3 text-green-500" />;
-            case 'error':
-            case 'failed':
+            case "error":
+            case "failed":
                 return <XCircle className="w-3 h-3 text-red-500" />;
-            case 'running':
-            case 'executing':
+            case "running":
+            case "executing":
                 return <Play className="w-3 h-3 text-blue-500" />;
             default:
                 return <Clock className="w-3 h-3 text-gray-500" />;
@@ -53,43 +64,53 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({
 
     const getTaskStatusColor = (status: string) => {
         switch (status) {
-            case 'completed':
-                return 'border-l-green-500 bg-green-50 dark:bg-green-950/20';
-            case 'error':
-            case 'failed':
-                return 'border-l-red-500 bg-red-50 dark:bg-red-950/20';
-            case 'running':
-            case 'executing':
-                return 'border-l-blue-500 bg-blue-50 dark:bg-blue-950/20';
+            case "completed":
+                return "border-l-green-500 bg-green-50 dark:bg-green-950/20";
+            case "error":
+            case "failed":
+                return "border-l-red-500 bg-red-50 dark:bg-red-950/20";
+            case "running":
+            case "executing":
+                return "border-l-blue-500 bg-blue-50 dark:bg-blue-950/20";
             default:
-                return 'border-l-gray-300 bg-gray-50 dark:bg-gray-950/20';
+                return "border-l-gray-300 bg-gray-50 dark:bg-gray-950/20";
         }
     };
 
     return (
-        <div className="w-80 border-r bg-muted/30 flex flex-col h-full">
+        <div className="w-full border-r bg-muted/30 flex flex-col h-full">
             {/* Summary Stats */}
-            <div className="p-4 border-b bg-card">
-                <h3 className="font-semibold mb-3 text-sm">Task Overview</h3>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-[10px]">
-                            Total: {taskEntries.length}
+            <div className="p-2 border-b bg-card">
+                <h3 className="font-medium mb-2 text-sm">Tasks</h3>
+                <div className="space-y-1 text-xs">
+                    <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Total</span>
+                        <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                            {taskEntries.length}
                         </Badge>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Badge variant="default" className="text-[10px] bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            Running: {runningCount}
+                    <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Running</span>
+                        <Badge
+                            variant="default"
+                            className="text-[10px] px-1 py-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                        >
+                            {runningCount}
                         </Badge>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Badge variant="default" className="text-[10px] bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                            Complete: {completedCount}
+                    <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Complete</span>
+                        <Badge
+                            variant="default"
+                            className="text-[10px] px-1 py-0 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        >
+                            {completedCount}
                         </Badge>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Badge variant="destructive" className="text-[10px]">
-                            Errors: {errorCount}
+                    <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Errors</span>
+                        <Badge variant="destructive" className="text-[10px] px-1 py-0">
+                            {errorCount}
                         </Badge>
                     </div>
                 </div>
@@ -97,10 +118,10 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({
 
             {/* Task List */}
             <ScrollArea className="flex-1">
-                <div className="p-2">
+                <div className="p-1">
                     {taskEntries.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground">
-                            <p className="text-sm">No tasks available</p>
+                        <div className="text-center py-4 text-muted-foreground">
+                            <p className="text-sm">No tasks</p>
                         </div>
                     ) : (
                         <div className="space-y-1">
@@ -109,23 +130,37 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({
                                     key={task.taskId}
                                     onClick={() => onTaskSelect(task.taskId)}
                                     className={`
-                                        p-3 rounded-md border-l-2 cursor-pointer transition-all
-                                        ${selectedTaskId === task.taskId 
-                                            ? 'bg-primary/10 border-l-primary ring-1 ring-primary/20' 
-                                            : `${getTaskStatusColor(task.status)} hover:bg-muted/60`
+                                        p-2 rounded-md border-l-2 cursor-pointer transition-all duration-200
+                                        ${
+                                            selectedTaskId === task.taskId
+                                                ? "bg-primary text-primary-foreground border-l-primary-foreground ring-2 ring-primary/50 shadow-md"
+                                                : `${getTaskStatusColor(
+                                                      task.status
+                                                  )} hover:bg-muted/80 dark:hover:bg-muted/60 hover:shadow-sm hover:scale-[1.01] hover:border-l-4`
                                         }
                                     `}
                                 >
-                                    <div className="flex items-start gap-2">
-                                        {getTaskIcon(task.status)}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="font-medium text-sm truncate">
-                                                {task.taskName || "Unnamed Task"}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground truncate">
-                                                {task.taskId}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground mt-1">
+                                    <div className="space-y-1">
+                                        {/* Task Name - Full Width */}
+                                        <div className="font-medium text-xs truncate leading-tight">{getPrettyTaskName(task.taskName)}</div>
+
+                                        {/* Task ID */}
+                                        <div
+                                            className={`text-[10px] truncate ${
+                                                selectedTaskId === task.taskId ? "text-primary-foreground/80" : "text-muted-foreground"
+                                            }`}
+                                        >
+                                            {task.taskId}
+                                        </div>
+
+                                        {/* Icon + Status Row */}
+                                        <div className="flex items-center gap-1.5">
+                                            {getTaskIcon(task.status)}
+                                            <div
+                                                className={`text-[10px] capitalize ${
+                                                    selectedTaskId === task.taskId ? "text-primary-foreground/90" : "text-muted-foreground"
+                                                }`}
+                                            >
                                                 {task.status}
                                             </div>
                                         </div>
@@ -138,4 +173,5 @@ export const TaskSidebar: React.FC<TaskSidebarProps> = ({
             </ScrollArea>
         </div>
     );
-}; 
+};
+

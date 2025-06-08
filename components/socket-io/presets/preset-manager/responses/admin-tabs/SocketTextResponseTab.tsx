@@ -14,6 +14,8 @@ interface SocketTextResponseTabProps {
   onTaskIdChange: (taskId: string | null) => void;
   isExecuting?: boolean;
   error?: string | null;
+  selectedDataType?: any;
+  selectedIndex?: number;
 }
 
 /**
@@ -24,6 +26,8 @@ export const SocketTextResponseTab: React.FC<SocketTextResponseTabProps> = ({
   onTaskIdChange,
   isExecuting = false,
   error,
+  selectedDataType,
+  selectedIndex
 }) => {
   const task = useAppSelector((state) => 
     taskId ? selectTaskById(state, taskId) : null

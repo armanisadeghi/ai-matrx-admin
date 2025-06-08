@@ -36,6 +36,13 @@ export interface FullScreenOverlayProps {
     sidePanel?: ReactNode;
     sidePanelRatio?: number; // value between 0-1, defaults to 0.5 (50/50 split)
     sidePanelClassName?: string;
+    // New optional props for left side panel
+    leftSidePanel?: ReactNode;
+    leftSidePanelRatio?: number; // value between 0-1, defaults to 0.15 (15% width)
+    leftSidePanelClassName?: string;
+    // New optional prop for shared header above all tabs content
+    sharedHeader?: ReactNode;
+    sharedHeaderClassName?: string;
 }
 
 const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
@@ -60,6 +67,11 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
     sidePanel,
     sidePanelRatio = 0.5,
     sidePanelClassName,
+    leftSidePanel,
+    leftSidePanelRatio = 0.1,
+    leftSidePanelClassName,
+    sharedHeader,
+    sharedHeaderClassName,
 }) => {
     const [activeTab, setActiveTab] = React.useState<string>(initialTab || (tabs.length > 0 ? tabs[0].id : ""));
 
@@ -85,8 +97,9 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
     };
 
     // Calculate the width percentages based on ratio
-    const contentWidth = sidePanel ? (1 - sidePanelRatio) * 100 : 100;
-    const sidePanelWidth = sidePanel ? sidePanelRatio * 100 : 0;
+    const rightSidePanelWidth = sidePanel ? sidePanelRatio * 100 : 0;
+    const leftSidePanelWidth = leftSidePanel ? leftSidePanelRatio * 100 : 0;
+    const contentWidth = 100 - rightSidePanelWidth - leftSidePanelWidth;
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -127,7 +140,22 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                     </Tabs>
                 </DialogHeader>
                 
+                {sharedHeader && (
+                    <div className={cn("border-b px-4 py-2 flex-shrink-0", sharedHeaderClassName)}>
+                        {sharedHeader}
+                    </div>
+                )}
+                
                 <div className="flex flex-1 overflow-hidden">
+                    {leftSidePanel && (
+                        <div 
+                            className={cn("border-r overflow-auto", leftSidePanelClassName)}
+                            style={{ width: `${leftSidePanelWidth}%` }}
+                        >
+                            {leftSidePanel}
+                        </div>
+                    )}
+                    
                     <div 
                         className="flex flex-col overflow-hidden" 
                         style={{ width: `${contentWidth}%` }}
@@ -144,7 +172,7 @@ const FullScreenOverlay: React.FC<FullScreenOverlayProps> = ({
                     {sidePanel && (
                         <div 
                             className={cn("border-l overflow-auto", sidePanelClassName)}
-                            style={{ width: `${sidePanelWidth}%` }}
+                            style={{ width: `${rightSidePanelWidth}%` }}
                         >
                             {sidePanel}
                         </div>
