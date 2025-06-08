@@ -1,4 +1,4 @@
-import { SchemaField, SOCKET_TASKS } from "./socket-schema";
+import { SchemaField, SOCKET_TASKS } from "../../../constants/socket-schema";
 import { flexibleJsonParse } from "@/utils/json-utils";
 
 /* Socket Task Preset Creation Guide
@@ -432,41 +432,6 @@ export const WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP: TaskPreset = {
     }
 };
 
-/**
- * Transform a workflow step into an EXECUTE_STEP_QUICK task
- */
-export const WORKFLOW_STEP_TO_EXECUTE_STEP_QUICK: TaskPreset = {
-    name: "workflow_step_to_execute_step_quick",
-    description: "Convert a workflow step object to an EXECUTE_STEP_QUICK socket task",
-    targetTask: "execute_step_quick",
-    service: "workflow_service",
-    fieldMappings: {
-        step_definition: {
-            sourceField: (step: any) => ({
-                function_type: step.function_type || "workflow_recipe_executor",
-                function_id: step.function_id || step.id || "",
-                step_name: step.step_name || step.name || "",
-                status: step.status || "pending",
-                override_data: step.override_data || {},
-                additional_dependencies: step.additional_dependencies || []
-            }),
-            required: true
-        },
-        user_inputs: {
-            sourceField: "user_inputs",
-            defaultValue: [],
-            transform: (inputs: any) => {
-                if (!Array.isArray(inputs)) return [];
-                return inputs.map(input => ({
-                    broker_id: input.broker_id || input.id || "",
-                    value: input.value || input.data || ""
-                }));
-            }
-        }
-    }
-};
-
-
 
 /**
  * Transform recipe data into a RUN_RECIPE task
@@ -564,7 +529,6 @@ export const FLOW_NODES_TO_START_WORKFLOW: TaskPreset = {
 
 export const TASK_PRESETS: Record<string, TaskPreset> = {
     [WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP.name]: WORKFLOW_STEP_TO_EXECUTE_SINGLE_STEP,
-    [WORKFLOW_STEP_TO_EXECUTE_STEP_QUICK.name]: WORKFLOW_STEP_TO_EXECUTE_STEP_QUICK,
     [RECIPE_DATA_TO_RUN_RECIPE.name]: RECIPE_DATA_TO_RUN_RECIPE,
     [FLOW_NODES_TO_START_WORKFLOW.name]: FLOW_NODES_TO_START_WORKFLOW,
 };

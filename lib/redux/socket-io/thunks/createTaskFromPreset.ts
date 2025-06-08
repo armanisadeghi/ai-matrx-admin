@@ -4,7 +4,7 @@ import {
     getPreset, 
     transformDataWithPreset,
     SocketTaskName 
-} from "@/constants/socket-task-presets";
+} from "@/components/socket-io/presets/socket-task-presets";
 import { createTask } from "./createTaskThunk";
 import { submitTask } from "./submitTaskThunk";
 import { nanoid } from "nanoid";

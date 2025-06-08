@@ -1,11 +1,17 @@
 "use client";
-
 import { createSelector } from "@reduxjs/toolkit";
 import { RootState } from "@/lib/redux";
 import { SocketTask } from "@/lib/redux/socket-io/socket.types";
 
 // ==================== Task Selectors ====================
 export const selectAllTasks = (state: RootState): Record<string, SocketTask> => state.socketTasks.tasks as Record<string, SocketTask>;
+
+// 1. Convert tasks object to array - memoized to prevent new references
+export const selectAllTasksArray = createSelector(
+    [selectAllTasks],
+    (tasks) => Object.values(tasks)
+);
+
 
 // ==================== Current Task Selectors ====================
 export const selectCurrentTaskId = (state: RootState): string | null => state.socketTasks.currentTaskId;
@@ -143,3 +149,38 @@ export const selectTaskStreamingByListenerId = createSelector(
 );
 
 export const selectTestMode = (state: RootState) => state.socketConnections.testMode;
+
+// ==================== New Extended Selectors ====================
+
+
+export const selectBuildingTasksCount = createSelector(
+    [selectAllTasksArray],
+    (tasksArray) => tasksArray.filter((task) => task.status === "building").length
+);
+
+// 3. Count ready tasks - reuses existing array selector
+export const selectReadyTasksCount = createSelector(
+    [selectAllTasksArray],
+    (tasksArray) => tasksArray.filter((task) => task.status === "ready").length
+);
+
+// 4. Count submitted tasks (running) - reuses existing array selector
+export const selectSubmittedTasksCount = createSelector(
+    [selectAllTasksArray],
+    (tasksArray) => tasksArray.filter((task) => task.status === "submitted").length
+);
+
+// 5. Count completed tasks - reuses existing array selector
+export const selectCompletedTasksCount = createSelector(
+    [selectAllTasksArray],
+    (tasksArray) => tasksArray.filter((task) => task.status === "completed").length
+);
+
+// 6. Count error tasks - reuses existing array selector
+export const selectErrorTasksCount = createSelector(
+    [selectAllTasksArray],
+    (tasksArray) => tasksArray.filter((task) => task.status === "error").length
+);
+
+// Alias for backwards compatibility / semantic clarity
+export const selectRunningTasksCount = selectSubmittedTasksCount;

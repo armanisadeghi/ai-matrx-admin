@@ -42,8 +42,8 @@ import CandidateProfileBlock from "@/components/mardown-display/blocks/candidate
 import ParseExtractorOptions from "@/components/official/processor-extractor/ParseExtractorOptions";
 import MarkdownRenderer from "@/components/mardown-display/MarkdownRenderer";
 import FullScreenMarkdownEditor from "@/components/mardown-display/chat-markdown/FullScreenMarkdownEditor";
-import SectionViewer from "@/components/mardown-display/chat-markdown/analyzer/SectionViewer";
-import SectionViewerWithSidebar from "@/components/mardown-display/chat-markdown/analyzer/SectionViewerWithSidebar";
+import SectionViewer from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/SectionViewer";
+import SectionViewerWithSidebar from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/SectionViewerWithSidebar";
 import SectionsViewer from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/sections-viewer";
 import LinesViewer from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/lines-viewer";
 import SectionViewerV2 from "@/components/mardown-display/chat-markdown/analyzer/analyzer-options/section-viewer-V2";

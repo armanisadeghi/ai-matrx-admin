@@ -79,9 +79,7 @@ export const SocketExecuteButton: React.FC<SocketExecuteButtonProps> = ({
 
         try {
             onExecuteStart?.(dataToExecute);
-            
-            console.log(`🚀 Executing preset "${presetName}" with data:`, dataToExecute);
-            
+                        
             const createdTaskId = await dispatch(createTaskFromPresetQuick({
                 presetName,
                 sourceData: dataToExecute
@@ -89,9 +87,7 @@ export const SocketExecuteButton: React.FC<SocketExecuteButtonProps> = ({
             
             setTaskId(createdTaskId);
             onExecuteComplete?.(createdTaskId);
-            
-            console.log(`✅ Task executed successfully: ${createdTaskId}`);
-            
+                        
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : String(err);
             setError(errorMessage);

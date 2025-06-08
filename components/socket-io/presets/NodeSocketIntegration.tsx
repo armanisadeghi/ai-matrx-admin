@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppDispatch } from "@/lib/redux";
 import { createTaskFromPresetQuick } from "@/lib/redux/socket-io/thunks/createTaskFromPreset";
-import { getPresetsForTask, getAvailablePresets } from "@/constants/socket-task-presets";
+import { getPresetsForTask, getAvailablePresets } from "@/components/socket-io/presets/socket-task-presets";
 import { Play, Zap, Settings } from "lucide-react";
 
 interface NodeSocketIntegrationProps {

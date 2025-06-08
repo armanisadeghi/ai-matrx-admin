@@ -12,6 +12,90 @@ export interface ContentSection {
   children: ContentItem[];
 }
 
+// Safety validation functions
+const isValidContentItem = (item: any): item is ContentItem => {
+  return (
+    item &&
+    typeof item === 'object' &&
+    typeof item.type === 'string' &&
+    typeof item.content === 'string' &&
+    (item.children === undefined || (Array.isArray(item.children) && item.children.every((child: any) => isValidContentItem(child))))
+  );
+};
+
+const isValidContentSection = (section: any): section is ContentSection => {
+  return (
+    section &&
+    typeof section === 'object' &&
+    typeof section.type === 'string' &&
+    Array.isArray(section.children) &&
+    section.children.every((item: any) => isValidContentItem(item))
+  );
+};
+
+const isValidContentData = (data: any): data is ContentSection[] => {
+  return (
+    Array.isArray(data) &&
+    data.every((section: any) => isValidContentSection(section))
+  );
+};
+
+// JSON Fallback Component
+const JsonFallback = ({ data, onCopy }: { data: any; onCopy: () => void }) => {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = async () => {
+    try {
+      const jsonString = JSON.stringify(data, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      onCopy();
+    } catch (err) {
+      console.error('Failed to copy JSON:', err);
+    }
+  };
+
+  return (
+    <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-900">
+      <div className="h-full max-w-7xl mx-auto">
+        <div className="h-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileText size={16} className="text-gray-500 dark:text-gray-400" />
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200">
+                  Raw Data (JSON)
+                </h3>
+                <span className="text-sm text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/20 px-2 py-1 rounded-md">
+                  Unexpected Format
+                </span>
+              </div>
+              <button
+                onClick={handleCopy}
+                className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors group"
+                title="Copy JSON data"
+              >
+                {copied ? (
+                  <Check size={16} className="text-green-500" />
+                ) : (
+                  <Copy size={16} className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" />
+                )}
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6 overflow-auto" style={{ height: 'calc(100% - 80px)' }}>
+            <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              {JSON.stringify(data, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const getSectionIcon = (sectionType: string) => {
   const iconProps = { size: 16, className: "text-gray-500 dark:text-gray-400" };
   
@@ -53,7 +137,27 @@ const getSectionLabel = (sectionType: string) => {
 };
 
 const renderContentItem = (item: ContentItem, index: number) => {
+  // Safety check: validate the item structure
+  if (!isValidContentItem(item)) {
+    return (
+      <div key={index} className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg p-3 mb-2">
+        <div className="flex items-center gap-2 mb-2">
+          <FileText size={14} className="text-orange-500 dark:text-orange-400" />
+          <span className="text-xs font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+            Invalid Content Item
+          </span>
+        </div>
+        <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700 overflow-auto">
+          {JSON.stringify(item, null, 2)}
+        </pre>
+      </div>
+    );
+  }
+
   const { type, content } = item;
+  
+  // Safety check: ensure content is a string
+  const safeContent = typeof content === 'string' ? content : String(content || '');
   
   if (type === "line_break") {
     return <div key={index} className="h-2" />;
@@ -66,7 +170,7 @@ const renderContentItem = (item: ContentItem, index: number) => {
   if (type === "header_h1") {
     return (
       <h1 key={index} className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-4">
-        {content}
+        {safeContent}
       </h1>
     );
   }
@@ -74,7 +178,7 @@ const renderContentItem = (item: ContentItem, index: number) => {
   if (type === "header_h2") {
     return (
       <h2 key={index} className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-3">
-        {content}
+        {safeContent}
       </h2>
     );
   }
@@ -82,7 +186,7 @@ const renderContentItem = (item: ContentItem, index: number) => {
   if (type === "header_h3") {
     return (
       <h3 key={index} className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-2">
-        {content}
+        {safeContent}
       </h3>
     );
   }
@@ -93,7 +197,7 @@ const renderContentItem = (item: ContentItem, index: number) => {
         <span className="text-gray-600 dark:text-gray-400 mt-1">•</span>
         <div 
           className="text-gray-700 dark:text-gray-300 leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: safeContent }}
         />
       </div>
     );
@@ -104,63 +208,102 @@ const renderContentItem = (item: ContentItem, index: number) => {
       <div 
         key={index} 
         className="text-gray-700 dark:text-gray-300 leading-relaxed mb-2"
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: safeContent }}
       />
     );
   }
   
   return (
     <div key={index} className="text-gray-700 dark:text-gray-300 leading-relaxed mb-2">
-      {content}
+      {safeContent}
     </div>
   );
 };
 
 const extractSummaryFromSection = (section: ContentSection): string => {
+  // Safety check: validate section structure
+  if (!isValidContentSection(section) || !section.children || !Array.isArray(section.children)) {
+    return 'Invalid Section';
+  }
+
+  // Filter valid children
+  const validChildren = section.children.filter(child => isValidContentItem(child));
+  
+  if (validChildren.length === 0) {
+    return 'No Valid Content';
+  }
+
   // Find the first header or meaningful content for summary
-  const header = section.children.find(child => 
-    child.type.startsWith('header_') && child.content.trim()
+  const header = validChildren.find(child => 
+    child.type && child.type.startsWith('header_') && 
+    child.content && typeof child.content === 'string' && child.content.trim()
   );
   
-  if (header) {
+  if (header && header.content) {
     return header.content.trim();
   }
   
   // Fallback to first paragraph with content
-  const paragraph = section.children.find(child => 
-    child.type === 'paragraph' && child.content.trim()
+  const paragraph = validChildren.find(child => 
+    child.type === 'paragraph' && 
+    child.content && typeof child.content === 'string' && child.content.trim()
   );
   
-  if (paragraph) {
+  if (paragraph && paragraph.content) {
     const text = paragraph.content.replace(/<[^>]*>/g, '').trim();
+    return text.length > 50 ? text.substring(0, 50) + '...' : text;
+  }
+  
+  // Fallback to any content with text
+  const anyContent = validChildren.find(child => 
+    child.content && typeof child.content === 'string' && child.content.trim()
+  );
+  
+  if (anyContent && anyContent.content) {
+    const text = anyContent.content.replace(/<[^>]*>/g, '').trim();
     return text.length > 50 ? text.substring(0, 50) + '...' : text;
   }
   
   return 'Content Section';
 };
 
-const SectionsViewer = ({ data }: { data: ContentSection[] }) => {
+const SectionsViewer = ({ data }: { data: any }) => {
   const [selectedSectionIndex, setSelectedSectionIndex] = useState<number>(0);
   const [copiedData, setCopiedData] = useState<boolean>(false);
   
-  const selectedSection = data[selectedSectionIndex];
+  // Safety check: if data is not in expected format, show JSON fallback
+  if (!isValidContentData(data)) {
+    return <JsonFallback data={data} onCopy={() => setCopiedData(true)} />;
+  }
+
+  const safeData = data as ContentSection[];
+  const selectedSection = safeData[selectedSectionIndex] || safeData[0];
   
   const copyToClipboard = async () => {
     try {
-      const textContent = selectedSection.children
-        .filter(item => item.content && item.content.trim())
+      if (!selectedSection || !isValidContentSection(selectedSection) || !selectedSection.children) {
+        return;
+      }
+
+      const validChildren = selectedSection.children.filter(item => 
+        isValidContentItem(item) && item.content && typeof item.content === 'string' && item.content.trim()
+      );
+      
+      const textContent = validChildren
         .map(item => item.content.replace(/<[^>]*>/g, ''))
         .join('\n');
       
-      await navigator.clipboard.writeText(textContent);
-      setCopiedData(true);
-      setTimeout(() => setCopiedData(false), 2000);
+      if (textContent.trim()) {
+        await navigator.clipboard.writeText(textContent);
+        setCopiedData(true);
+        setTimeout(() => setCopiedData(false), 2000);
+      }
     } catch (err) {
       console.error('Failed to copy:', err);
     }
   };
   
-  if (!data || data.length === 0) {
+  if (!safeData || safeData.length === 0) {
     return (
       <div className="w-full h-full p-4 bg-inherit flex items-center justify-center">
         <p className="text-gray-500 dark:text-gray-400">No content to display</p>
@@ -175,15 +318,40 @@ const SectionsViewer = ({ data }: { data: ContentSection[] }) => {
         <div className="w-80 flex-shrink-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-sm">
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <h2 className="font-semibold text-gray-800 dark:text-gray-200">Content Sections</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{data.length} section{data.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{safeData.length} section{safeData.length !== 1 ? 's' : ''}</p>
           </div>
           
           <div className="overflow-y-auto" style={{ height: 'calc(100% - 80px)' }}>
-            {data.map((section, index) => {
+            {safeData.map((section, index) => {
+              // Additional safety check for each section
+              if (!isValidContentSection(section)) {
+                return (
+                  <div
+                    key={index}
+                    className="w-full p-4 border-b border-orange-200 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20"
+                  >
+                    <div className="flex items-start gap-3">
+                      <FileText size={16} className="text-orange-500 dark:text-orange-400" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-1 break-words">
+                          Invalid Section Data
+                        </p>
+                        <p className="text-xs text-orange-500 dark:text-orange-400">
+                          Section {index + 1}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
               const summary = extractSummaryFromSection(section);
-              const contentCount = section.children.filter(child => 
-                child.content && child.content.trim() && child.type !== 'line_break'
-              ).length;
+              const validChildren = section.children ? section.children.filter(child => 
+                isValidContentItem(child) && child.content && 
+                typeof child.content === 'string' && child.content.trim() && 
+                child.type !== 'line_break'
+              ) : [];
+              const contentCount = validChildren.length;
               
               return (
                 <button
@@ -243,8 +411,26 @@ const SectionsViewer = ({ data }: { data: ContentSection[] }) => {
           {/* Content */}
           <div className="p-6 overflow-y-auto" style={{ height: 'calc(100% - 80px)' }}>
             <div className="max-w-4xl">
-              {selectedSection.children.map((item, index) => 
-                renderContentItem(item, index)
+              {selectedSection && isValidContentSection(selectedSection) ? (
+                selectedSection.children && Array.isArray(selectedSection.children) ? (
+                  selectedSection.children.map((item, index) => 
+                    renderContentItem(item, index)
+                  )
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400 italic">No content items available</p>
+                )
+              ) : (
+                <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText size={16} className="text-orange-500 dark:text-orange-400" />
+                    <span className="font-medium text-orange-600 dark:text-orange-400">
+                      Invalid Section Data
+                    </span>
+                  </div>
+                  <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-700 overflow-auto">
+                    {JSON.stringify(selectedSection, null, 2)}
+                  </pre>
+                </div>
               )}
             </div>
           </div>

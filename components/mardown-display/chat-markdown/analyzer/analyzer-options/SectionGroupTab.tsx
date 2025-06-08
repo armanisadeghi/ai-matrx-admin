@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { LineCategory, SegmentType, SectionGroup, LineData } from "./types";
+import { LineCategory, SegmentType, SectionGroup, LineData } from "../types";
 
 interface SectionGroupTabProps {
-    sectionGroup: SectionGroup;
+    data: SectionGroup;
 }
 
-const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ sectionGroup }) => {
+const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ data }) => {
     const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
     const getRowKey = (sectionPosition: number, linePosition: number) =>
@@ -82,7 +82,7 @@ const SectionGroupTab: React.FC<SectionGroupTabProps> = ({ sectionGroup }) => {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {sectionGroup.sections.flatMap((section) =>
+                    {data.sections.flatMap((section) =>
                         section.lines.map((item) => {
                             const rowKey = getRowKey(section.position, item.position);
                             return (

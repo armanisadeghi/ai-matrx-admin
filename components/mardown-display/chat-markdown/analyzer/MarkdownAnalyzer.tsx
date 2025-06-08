@@ -3,7 +3,7 @@ import { createChatSelectors } from "@/lib/redux/entity/custom-selectors/chatSel
 import { useAppSelector } from "@/lib/redux";
 import { MarkdownAnalysisData } from "./types";
 import AnalysisTab from "./AnalysisTab";
-import SectionGroupTab from "./SectionGroupTab";
+import SectionGroupTab from "./analyzer-options/SectionGroupTab";
 
 
 interface MarkdownAnalyzerProps {
@@ -62,7 +62,7 @@ const MarkdownAnalyzer: React.FC<MarkdownAnalyzerProps> = ({ messageId }) => {
             {/* Tab Content */}
             <div className="p-4">
                 {activeTab < markdownAnalysis.section_groups.length ? (
-                    <SectionGroupTab sectionGroup={markdownAnalysis.section_groups[activeTab]} />
+                    <SectionGroupTab data={markdownAnalysis.section_groups[activeTab]} />
                 ) : (
                     <AnalysisTab analysis={markdownAnalysis.analysis} />
                 )}
