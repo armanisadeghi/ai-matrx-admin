@@ -14,6 +14,7 @@ export type CommonSectionType =
   | "intro_text"
   | "outro_text"
   | "plain_text"
+  | "paragraph"
   | "paragraph_section"
   
   // Code and Technical
@@ -22,14 +23,26 @@ export type CommonSectionType =
   | "json_block"
   | "json_block_section"
   | "xml_block_section"
+  | "xml_block_thinking_section"
+  | "xml_block_function_calls_section"
   
   // Tables and Data
   | "table"
+  | "table_block"
   | "table_block_section"
   | "entries_and_values"
+  | "entry_and_value"
   | "entry_and_value_section"
   
-  // Headers
+  // Headers (Python docs enhanced)
+  | "header_h1"
+  | "header_h2"
+  | "header_h3"
+  | "header_h4"
+  | "header_h5"
+  | "header_h6"
+  | "header_h1_underlined"
+  | "header_h2_underlined"
   | "header_with_or_without_text"
   | "header_with_text"
   | "header_h1_section"
@@ -39,7 +52,12 @@ export type CommonSectionType =
   | "header_h5_section"
   | "header_h6_section"
   
-  // Lists
+  // Lists (Python docs enhanced)
+  | "bullet"
+  | "sub_bullet"
+  | "numbered_list_item"
+  | "check_item_checked"
+  | "check_item_unchecked"
   | "header_with_list"
   | "header_with_bullets"
   | "header_with_numbered_list"
@@ -48,8 +66,11 @@ export type CommonSectionType =
   | "bold_text_with_sub_bullets"
   | "checklist"
   
-  // Formatting
+  // Text Types (Python docs enhanced)
+  | "bold_text"
   | "bold_text_section"
+  
+  // Formatting
   | "line_break"
   | "thematic_break"
   
@@ -130,19 +151,39 @@ export const isValidBaseSectionArray = (data: any): data is BaseSection[] => {
 
 export const getSectionTypeLabel = (sectionType: string): string => {
   const labelMap: { [key: string]: string } = {
+    // Content Types
     "intro_text": "Introduction Text",
     "outro_text": "Outro Text",
-    "plain_text": "Plain Text",
+    "paragraph": "Paragraph",
     "paragraph_section": "Paragraph",
+    "plain_text": "Plain Text",
+    
+    // Code and Technical (Python enhanced)
     "code_block": "Code Block",
     "code_block_section": "Code Block",
     "json_block": "JSON Block",
     "json_block_section": "JSON Block",
     "xml_block_section": "XML Block",
+    "xml_block_thinking_section": "XML Thinking Block",
+    "xml_block_function_calls_section": "XML Function Calls",
+    
+    // Tables and Data (Python enhanced)
     "table": "Table",
-    "table_block_section": "Table Block",
+    "table_block": "Table Block",
+    "table_block_section": "Table",
     "entries_and_values": "Entries and Values",
+    "entry_and_value": "Entry and Value",
     "entry_and_value_section": "Entry and Value",
+    
+    // Headers (all Python variants)
+    "header_h1": "H1 Header",
+    "header_h2": "H2 Header", 
+    "header_h3": "H3 Header",
+    "header_h4": "H4 Header",
+    "header_h5": "H5 Header",
+    "header_h6": "H6 Header",
+    "header_h1_underlined": "H1 Header (Underlined)",
+    "header_h2_underlined": "H2 Header (Underlined)",
     "header_with_or_without_text": "Header with Optional Text",
     "header_with_text": "Header with Text",
     "header_with_list": "Header with List",
@@ -154,19 +195,37 @@ export const getSectionTypeLabel = (sectionType: string): string => {
     "header_h4_section": "Header H4",
     "header_h5_section": "Header H5",
     "header_h6_section": "Header H6",
+    
+    // Lists (all Python variants)
+    "bullet": "Bullet Point",
+    "sub_bullet": "Sub Bullet Point",
+    "numbered_list_item": "Numbered List Item",
+    "check_item_checked": "Checked Item",
+    "check_item_unchecked": "Unchecked Item",
     "numbered_list_without_header": "Numbered List",
     "numbered_list": "Numbered List",
     "bold_text_with_sub_bullets": "Bold Text with Sub-bullets",
     "checklist": "Checklist",
+    
+    // Text Types (Python enhanced)
+    "bold_text": "Bold Text",
     "bold_text_section": "Bold Text",
+    
+    // Formatting
     "line_break": "Line Break",
     "thematic_break": "Thematic Break",
+    
+    // References and Links
     "reference": "Reference",
     "link_section": "Link",
     "citation": "Citation",
+    
+    // Media
     "image_section": "Image",
     "video_section": "Video",
     "audio_section": "Audio",
+    
+    // Special
     "other_section_type": "Other Section",
     "unknown_section": "Unknown Section",
     "metadata_section": "Metadata",
@@ -174,73 +233,124 @@ export const getSectionTypeLabel = (sectionType: string): string => {
     "conclusion_section": "Conclusion"
   };
   
-  return labelMap[sectionType] || sectionType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  // Handle numbered duplicates (section_name_2, section_name_3, etc.)
+  const baseType = sectionType.replace(/_\d+$/, '');
+  const match = sectionType.match(/_(\d+)$/);
+  const number = match ? ` (${match[1]})` : '';
+  
+  // Handle dynamic XML patterns
+  if (sectionType.startsWith('xml_block_') && sectionType.endsWith('_section')) {
+    const xmlType = sectionType.replace('xml_block_', '').replace('_section', '');
+    return `XML ${xmlType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Block`;
+  }
+  
+  return (labelMap[baseType] || baseType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())) + number;
 };
 
 export const getSectionTypeIcon = (sectionType: string, size: number = 16) => {
   const iconProps = { size, className: "text-gray-500 dark:text-gray-400" };
   
-  switch (sectionType) {
-    case "intro_text":
-    case "outro_text":
-      return <BookOpen {...iconProps} />;
-    case "code_block":
-    case "code_block_section":
-    case "xml_block_section":
-      return <Code {...iconProps} />;
-    case "json_block":
-    case "json_block_section":
-      return <Braces {...iconProps} />;
-    case "table":
-    case "table_block_section":
-      return <Table {...iconProps} />;
-    case "entries_and_values":
-    case "entry_and_value_section":
-      return <List {...iconProps} />;
-    case "header_with_or_without_text":
-    case "header_with_text":
-    case "header_with_list":
-    case "header_with_bullets":
-    case "header_with_numbered_list":
-    case "header_h1_section":
-    case "header_h2_section":
-    case "header_h3_section":
-    case "header_h4_section":
-    case "header_h5_section":
-    case "header_h6_section":
-    case "numbered_list_without_header":
-    case "numbered_list":
-      return <Hash {...iconProps} />;
-    case "bold_text_with_sub_bullets":
-    case "bold_text_section":
-    case "plain_text":
-    case "paragraph_section":
-      return <Type {...iconProps} />;
-    case "checklist":
-      return <CheckSquare {...iconProps} />;
-    case "line_break":
-    case "thematic_break":
-      return <Minus {...iconProps} />;
-    case "reference":
-    case "link_section":
-      return <Link {...iconProps} />;
-    case "citation":
-      return <Quote {...iconProps} />;
-    case "image_section":
-      return <Image {...iconProps} />;
-    case "video_section":
-    case "audio_section":
-      return <Archive {...iconProps} />;
-    case "unknown_section":
-      return <HelpCircle {...iconProps} />;
-    case "metadata_section":
-      return <Info {...iconProps} />;
-    case "summary_section":
-    case "conclusion_section":
-      return <Star {...iconProps} />;
-    default:
-      return <FileText {...iconProps} />;
+  // Enhanced type map for easier extensibility and better Python system integration
+  const typeMap: Record<string, React.ReactNode> = {
+    // Content Types
+    "intro_text": <BookOpen {...iconProps} />,
+    "outro_text": <BookOpen {...iconProps} />,
+    "paragraph": <Type {...iconProps} />,
+    "paragraph_section": <Type {...iconProps} />,
+    "plain_text": <Type {...iconProps} />,
+    
+    // Code and Technical (Python enhanced)
+    "code_block": <Code {...iconProps} />,
+    "code_block_section": <Code {...iconProps} />,
+    "json_block": <Braces {...iconProps} />,
+    "json_block_section": <Braces {...iconProps} />,
+    "xml_block_section": <Code {...iconProps} />,
+    "xml_block_thinking_section": <Code {...iconProps} />,
+    "xml_block_function_calls_section": <Code {...iconProps} />,
+    
+    // Tables and Data (Python enhanced)
+    "table": <Table {...iconProps} />,
+    "table_block": <Table {...iconProps} />,
+    "table_block_section": <Table {...iconProps} />,
+    "entries_and_values": <List {...iconProps} />,
+    "entry_and_value": <List {...iconProps} />,
+    "entry_and_value_section": <List {...iconProps} />,
+    
+    // Headers (all Python variants)
+    "header_h1": <Hash {...iconProps} />,
+    "header_h2": <Hash {...iconProps} />,
+    "header_h3": <Hash {...iconProps} />,
+    "header_h4": <Hash {...iconProps} />,
+    "header_h5": <Hash {...iconProps} />,
+    "header_h6": <Hash {...iconProps} />,
+    "header_h1_underlined": <Hash {...iconProps} />,
+    "header_h2_underlined": <Hash {...iconProps} />,
+    "header_with_or_without_text": <Hash {...iconProps} />,
+    "header_with_text": <Hash {...iconProps} />,
+    "header_with_list": <Hash {...iconProps} />,
+    "header_with_bullets": <Hash {...iconProps} />,
+    "header_with_numbered_list": <Hash {...iconProps} />,
+    "header_h1_section": <Hash {...iconProps} />,
+    "header_h2_section": <Hash {...iconProps} />,
+    "header_h3_section": <Hash {...iconProps} />,
+    "header_h4_section": <Hash {...iconProps} />,
+    "header_h5_section": <Hash {...iconProps} />,
+    "header_h6_section": <Hash {...iconProps} />,
+    
+    // Lists (all Python variants)
+    "bullet": <List {...iconProps} />,
+    "sub_bullet": <List {...iconProps} />,
+    "numbered_list_item": <Hash {...iconProps} />,
+    "check_item_checked": <CheckSquare {...iconProps} />,
+    "check_item_unchecked": <CheckSquare {...iconProps} />,
+    "numbered_list_without_header": <Hash {...iconProps} />,
+    "numbered_list": <Hash {...iconProps} />,
+    "bold_text_with_sub_bullets": <Type {...iconProps} />,
+    "checklist": <CheckSquare {...iconProps} />,
+    
+    // Text Types (Python enhanced)
+    "bold_text": <Type {...iconProps} />,
+    "bold_text_section": <Type {...iconProps} />,
+    
+    // Formatting
+    "line_break": <Minus {...iconProps} />,
+    "thematic_break": <Minus {...iconProps} />,
+    
+    // References and Links
+    "reference": <Link {...iconProps} />,
+    "link_section": <Link {...iconProps} />,
+    "citation": <Quote {...iconProps} />,
+    
+    // Media
+    "image_section": <Image {...iconProps} />,
+    "video_section": <Archive {...iconProps} />,
+    "audio_section": <Archive {...iconProps} />,
+    
+    // Special
+    "unknown_section": <HelpCircle {...iconProps} />,
+    "metadata_section": <Info {...iconProps} />,
+    "summary_section": <Star {...iconProps} />,
+    "conclusion_section": <Star {...iconProps} />,
+  };
+
+  // Check for exact match first
+  if (typeMap[sectionType]) {
+    return typeMap[sectionType];
   }
+  
+  // Handle dynamic XML block patterns (xml_block_*)
+  if (sectionType.startsWith('xml_block_') && sectionType.endsWith('_section')) {
+    return <Code {...iconProps} />;
+  }
+  
+  // Handle numbered duplicates (section_name_2, section_name_3, etc.)
+  const baseType = sectionType.replace(/_\d+$/, '');
+  if (typeMap[baseType]) {
+    return typeMap[baseType];
+  }
+  
+  // Default fallback
+  return <FileText {...iconProps} />;
 };
 
 // ==========================================
@@ -452,4 +562,163 @@ export const useSelectedIndex = (maxIndex: number) => {
   };
   
   return { selectedIndex, selectIndex };
-}; 
+};
+
+// ==========================================
+// ENHANCED CONTENT PROCESSING UTILITIES
+// ==========================================
+
+/**
+ * Detects if content has enhanced parsed data (parsed_json, parsed_table)
+ */
+export const hasEnhancedContent = (data: any): boolean => {
+  if (!data || typeof data !== 'object') return false;
+  
+  // Check for parsed_json or parsed_table at root level
+  if (data.parsed_json || data.parsed_table) return true;
+  
+  // Check for parsed content in children
+  if (Array.isArray(data.children)) {
+    return data.children.some((child: any) => hasEnhancedContent(child));
+  }
+  
+  // Check for parsed content in nested objects
+  if (Array.isArray(data.content)) {
+    return data.content.some((item: any) => hasEnhancedContent(item));
+  }
+  
+  return false;
+};
+
+/**
+ * Extracts enhanced content when available, falls back to regular content
+ */
+export const getEnhancedContent = (data: any): string => {
+  if (!data) return '';
+  
+  // Priority: parsed_json > parsed_table > regular content
+  if (data.parsed_json) {
+    return typeof data.parsed_json === 'string' ? data.parsed_json : JSON.stringify(data.parsed_json, null, 2);
+  }
+  
+  if (data.parsed_table) {
+    return typeof data.parsed_table === 'string' ? data.parsed_table : JSON.stringify(data.parsed_table, null, 2);
+  }
+  
+  // Fallback to regular content
+  if (typeof data.content === 'string') return data.content;
+  if (Array.isArray(data.content)) return data.content.join('\n');
+  
+  return '';
+};
+
+/**
+ * Handles dynamic keys with suffixes (_2, _3, etc.)
+ */
+export const normalizeDynamicKey = (key: string): { baseKey: string; suffix: string; number: number } => {
+  const match = key.match(/^(.+?)(_\d+)$/);
+  if (match) {
+    const baseKey = match[1];
+    const suffix = match[2];
+    const number = parseInt(suffix.replace('_', ''));
+    return { baseKey, suffix, number };
+  }
+  return { baseKey: key, suffix: '', number: 0 };
+};
+
+/**
+ * Groups dynamic keys by their base names
+ */
+export const groupDynamicKeys = (keys: string[]): Record<string, string[]> => {
+  const groups: Record<string, string[]> = {};
+  
+  keys.forEach(key => {
+    const { baseKey } = normalizeDynamicKey(key);
+    if (!groups[baseKey]) {
+      groups[baseKey] = [];
+    }
+    groups[baseKey].push(key);
+  });
+  
+  return groups;
+};
+
+/**
+ * Enhanced type detection that handles extensions and registrations
+ */
+export const detectSectionType = (data: any): string => {
+  if (!data || typeof data !== 'object') return 'unknown_section';
+  
+  // Direct type field
+  if (typeof data.type === 'string') {
+    return data.type;
+  }
+  
+  // Key-based detection (for key-value objects)
+  const keys = Object.keys(data);
+  if (keys.length === 1) {
+    const key = keys[0];
+    const { baseKey } = normalizeDynamicKey(key);
+    
+    // Check if it's a known section type
+    if (baseKey.endsWith('_section')) {
+      return baseKey;
+    }
+  }
+  
+  // Enhanced content detection
+  if (hasEnhancedContent(data)) {
+    if (data.parsed_json) return 'json_block_section';
+    if (data.parsed_table) return 'table_block_section';
+  }
+  
+  // Fallback detection
+  if (data.section || data.content) {
+    return 'other_section_type';
+  }
+  
+  return 'unknown_section';
+};
+
+/**
+ * Advanced line break processing for Python explicit \n characters
+ */
+export const preprocessContentForLineBreaks = (content: string): string => {
+  if (!content || typeof content !== 'string') return content;
+  
+  // Convert single \n to double \n for proper markdown paragraph breaks
+  // But preserve existing double \n (don't make them quadruple)
+  return content.replace(/(?<!\n)\n(?!\n)/g, '\n\n');
+};
+
+/**
+ * Handler registry for extensible type management
+ */
+interface TypeHandler {
+  icon: React.ReactNode;
+  label: string;
+  renderer?: React.ComponentType<any>;
+}
+
+class TypeHandlerRegistry {
+  private handlers: Record<string, TypeHandler> = {};
+  
+  register(type: string, handler: TypeHandler) {
+    this.handlers[type] = handler;
+  }
+  
+  get(type: string): TypeHandler | null {
+    return this.handlers[type] || null;
+  }
+  
+  has(type: string): boolean {
+    return type in this.handlers;
+  }
+  
+  getAllTypes(): string[] {
+    return Object.keys(this.handlers);
+  }
+}
+
+// Global registry instance
+export const typeHandlerRegistry = new TypeHandlerRegistry(); 

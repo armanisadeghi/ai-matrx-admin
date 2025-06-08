@@ -147,7 +147,35 @@ const detectLineItemPattern = (data: any): ViewerRecommendation | null => {
   return null;
 };
 
-// 6. IntelligentViewer - Key-Value Object pattern
+// 6. FlatSectionViewer - Flat section pattern (specific key-value object)
+const detectFlatSectionPattern = (data: any): ViewerRecommendation | null => {
+  if (
+    data &&
+    typeof data === 'object' &&
+    !Array.isArray(data) &&
+    Object.keys(data).length > 0 &&
+    Object.values(data).every(value => typeof value === 'string') &&
+    // Check if keys follow section naming patterns
+    Object.keys(data).some(key => 
+      key.includes('_section') || 
+      key.includes('header_') || 
+      key.includes('paragraph') ||
+      key.includes('text') ||
+      /[a-zA-Z_]+_\d+$/.test(key) // Pattern with numbers like header_h2_section_2
+    )
+  ) {
+    return {
+      viewerName: 'FlatSectionViewer',
+      confidence: 'high',
+      reasoning: 'Data structure is a flat object with section-like keys and string content - perfect for FlatSectionViewer with consistent numbering and raw/rendered toggle',
+      matchedPattern: 'Flat Section Object',
+      sampleCount: Object.keys(data).length
+    };
+  }
+  return null;
+};
+
+// 7. IntelligentViewer - Key-Value Object pattern (generic fallback)
 const detectKeyValuePattern = (data: any): ViewerRecommendation | null => {
   if (
     data &&
@@ -167,7 +195,7 @@ const detectKeyValuePattern = (data: any): ViewerRecommendation | null => {
   return null;
 };
 
-// 7. IntelligentViewer - Section-with-Children pattern
+// 8. IntelligentViewer - Section-with-Children pattern
 const detectSectionWithChildrenPattern = (data: any): ViewerRecommendation | null => {
   if (
     Array.isArray(data) &&
@@ -212,6 +240,7 @@ export const getViewerRecommendation = (data: any): ViewerRecommendation => {
     detectSectionDataPattern,
     detectContentSectionPattern,
     detectLineItemPattern,
+    detectFlatSectionPattern, // Check for flat sections before generic key-value
     detectKeyValuePattern,
     detectSectionWithChildrenPattern
   ];
@@ -240,6 +269,7 @@ export const getAllViewerRecommendations = (data: any): ViewerRecommendation[] =
     { name: 'SectionData', fn: detectSectionDataPattern },
     { name: 'ContentSection', fn: detectContentSectionPattern },
     { name: 'LineItem', fn: detectLineItemPattern },
+    { name: 'FlatSection', fn: detectFlatSectionPattern },
     { name: 'Key-Value', fn: detectKeyValuePattern },
     { name: 'Section-with-Children', fn: detectSectionWithChildrenPattern }
   ];

@@ -40,6 +40,7 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
     const [isBrokerOverlayOpen, setIsBrokerOverlayOpen] = useState(false);
     const [isResultsOverlayOpen, setIsResultsOverlayOpen] = useState(false);
     const functionOptions = getRegisteredFunctionSelectOptions();
+    const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
 
     const hasWorkflowNodes = nodes.some(
         (node) =>
@@ -104,9 +105,12 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
                             buttonText="Execute Workflow"
                             variant="default"
                             size="sm"
-                            overlayTitle="Execute Entire Workflow"
-                            overlayDescription="Execute all workflow nodes in sequence with user inputs and relays"
                             className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            onExecuteComplete={(taskId) => {
+                              setCurrentTaskId(taskId);
+                              setIsResultsOverlayOpen(true);
+                          }}
+
                         />
                     )}
 
@@ -142,7 +146,7 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
 
             {/* Results Overlay */}
             <SocketResultsOverlay
-                taskId={null}
+                taskId={currentTaskId}
                 isOpen={isResultsOverlayOpen}
                 onClose={() => {
                     setIsResultsOverlayOpen(false);

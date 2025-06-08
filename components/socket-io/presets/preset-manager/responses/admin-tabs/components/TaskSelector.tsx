@@ -33,7 +33,7 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
             value={selectedTaskId || ""}
             onValueChange={(value) => onTaskChange(value || null)}
         >
-            <SelectTrigger className="w-64">
+            <SelectTrigger className="w-[600px]">
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent>
@@ -41,10 +41,7 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
                     <SelectItem key={task.taskId} value={task.taskId}>
                         <div className="flex flex-col text-left">
                             <span className="font-medium">
-                                {task.taskName || "Unnamed Task"}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                                {task.taskId}
+                                {task.taskName || "Unnamed Task"} Task ID: {task.taskId}
                             </span>
                         </div>
                     </SelectItem>
@@ -52,4 +49,4 @@ export const TaskSelector: React.FC<TaskSelectorProps> = ({
             </SelectContent>
         </Select>
     );
-}; 
+};

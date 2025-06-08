@@ -5,7 +5,7 @@ import { SocketPresetResponseProps } from "../SocketPresetManager";
 import { SocketTasksTab } from "./admin-tabs/SocketTasksTab";
 import { SocketTextResponseTab } from "./admin-tabs/SocketTextResponseTab";
 import { SocketDataResponseTab } from "./admin-tabs/SocketDataResponseTab";
-
+import { SocketDataProcessorExtractor } from "./admin-tabs/SocketDataProcessorExtractor";
 import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScreenOverlay";
 import SocketInfoResponseTab from "./admin-tabs/SocketInfoResponseTab";
 import SocketErrorResponseTab from "./admin-tabs/SocketErrorResponseTab";
@@ -86,17 +86,29 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
       ),
     },
     {
-      id: "data",
-      label: "Data",
-      content: (
-        <SocketDataResponseTab
-          taskId={selectedTaskId}
-          onTaskIdChange={setSelectedTaskId}
-          isExecuting={isExecuting}
-          error={error}
-        />
-      ),
-    },
+        id: "data",
+        label: "Data",
+        content: (
+          <SocketDataResponseTab
+            taskId={selectedTaskId}
+            onTaskIdChange={setSelectedTaskId}
+            isExecuting={isExecuting}
+            error={error}
+          />
+        ),
+      },    
+      {
+        id: "data-processor",
+        label: "Data 2",
+        content: (
+          <SocketDataProcessorExtractor
+            taskId={selectedTaskId}
+            onTaskIdChange={setSelectedTaskId}
+            isExecuting={isExecuting}
+            error={error}
+          />
+        ),
+      },
     {
       id: "info",
       label: "Info",
