@@ -14,9 +14,11 @@ interface UserInputNodeProps {
   selected: boolean;
   onDelete?: (nodeId: string) => void;
   onEdit?: (nodeData: any) => void;
+  onDuplicate?: (nodeId: string) => void;
+  onDuplicateRPC?: (nodeId: string) => void;
 }
 
-const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete, onEdit }) => {
+const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, onDuplicateRPC }) => {
   const { mode } = useTheme();
   const [mounted, setMounted] = useState(false);
   
@@ -104,8 +106,8 @@ const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete,
     </div>
   );
 
-  // Only wrap in ContextMenu if we have delete/edit handlers
-  if (onDelete || onEdit) {
+  // Only wrap in ContextMenu if we have delete/edit/duplicate handlers
+  if (onDelete || onEdit || onDuplicate || onDuplicateRPC) {
     return (
       <ContextMenu>
         <ContextMenuTrigger asChild>
@@ -116,6 +118,18 @@ const UserInputNode: React.FC<UserInputNodeProps> = ({ data, selected, onDelete,
             <ContextMenuItem onClick={() => onEdit(data)}>
               <Edit className="h-4 w-4 mr-2" />
               Edit Input
+            </ContextMenuItem>
+          )}
+          {onDuplicate && (
+            <ContextMenuItem onClick={() => onDuplicate(data.id)}>
+              <Copy className="h-4 w-4 mr-2" />
+              Duplicate Input (Custom)
+            </ContextMenuItem>
+          )}
+          {onDuplicateRPC && (
+            <ContextMenuItem onClick={() => onDuplicateRPC(data.id)}>
+              <Copy className="h-4 w-4 mr-2" />
+              Duplicate Input (RPC)
             </ContextMenuItem>
           )}
           <ContextMenuItem onClick={() => navigator.clipboard.writeText(data.broker_id)}>

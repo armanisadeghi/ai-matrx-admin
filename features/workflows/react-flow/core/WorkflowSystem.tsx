@@ -105,6 +105,8 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
     handleNodeSave,
     handleRemoveFromWorkflow,
     handlePermanentDelete,
+    handleDuplicateNode,
+    handleDuplicateNodeRPC,
     prepareWorkflowData,
     exposeWorkflowMethods,
   } = useWorkflowActions({

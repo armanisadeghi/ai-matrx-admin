@@ -1,6 +1,7 @@
 import { cloneDeep } from "lodash";
 import { ArgumentOverride } from "@/features/workflows/types";
 import { getRegisteredFunctions } from "@/features/workflows/constants";
+import { flexibleJsonParse } from "@/utils/json-utils";
 
 // Helper function to get the effective value for an argument
 export const getEffectiveArgValue = (arg: any, argOverrides?: ArgumentOverride[]): { value: any; ready: boolean } => {
@@ -144,6 +145,27 @@ export const handleArgValueChange = (
         value = inputValue.toLowerCase() === "true";
     } else if (arg.data_type === "float") {
         value = inputValue ? parseFloat(inputValue) || 0 : null;
+    } else if (arg.data_type === "dict" || arg.data_type === "list") {
+        // For dict and list types, parse JSON to store as actual data structure
+        if (inputValue && inputValue.trim() !== '') {
+            try {
+                // Use flexibleJsonParse to handle various JSON formats
+                const parseResult = flexibleJsonParse(inputValue);
+                if (parseResult.success) {
+                    value = parseResult.data;
+                } else {
+                    // If parsing fails, keep as string but log warning
+                    console.warn(`Failed to parse JSON for ${arg.name}:`, parseResult.error);
+                    value = inputValue;
+                }
+            } catch (error) {
+                console.warn(`Error parsing JSON for ${arg.name}:`, error);
+                value = inputValue;
+            }
+        } else {
+            // Empty value - set to appropriate empty structure
+            value = arg.data_type === "dict" ? {} : [];
+        }
     }
 
     updateArgOverride(node, onNodeUpdate, arg.name, "default_value", value);

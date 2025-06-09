@@ -13,6 +13,8 @@ declare global {
           deleteNode: (nodeId: string) => void;
           editNode: (nodeData: any) => void;
           getUserInputs: () => { broker_id: string; value: string }[];
+          duplicateNode: (nodeId: string) => void;
+          duplicateNodeRPC: (nodeId: string) => void;
       };
   }
 }
@@ -29,6 +31,14 @@ export const NodeWrapper: React.FC<NodeProps> = ({ data, selected, id }) => {
     window.workflowSystemRef?.editNode?.(nodeData);
   };
 
+  const handleDuplicate = (nodeId: string) => {
+    window.workflowSystemRef?.duplicateNode?.(nodeId);
+  };
+
+  const handleDuplicateRPC = (nodeId: string) => {
+    window.workflowSystemRef?.duplicateNodeRPC?.(nodeId);
+  };
+
   const userInputs = window.workflowSystemRef?.getUserInputs?.() || [];
 
   // Update node internals when component mounts or when handles change
@@ -40,7 +50,7 @@ export const NodeWrapper: React.FC<NodeProps> = ({ data, selected, id }) => {
   if (data.type === 'userInput') {
     return (
       <div className="relative">
-        <UserInputNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} />
+        <UserInputNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} onDuplicate={handleDuplicate} onDuplicateRPC={handleDuplicateRPC} />
         <NodeFloatingIcon nodeData={data} selected={selected} />
         {/* Output handle for user inputs */}
         <Handle
@@ -63,7 +73,7 @@ export const NodeWrapper: React.FC<NodeProps> = ({ data, selected, id }) => {
   if (data.type === 'brokerRelay') {
     return (
       <div className="relative">
-        <BrokerRelayNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} />
+        <BrokerRelayNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} onDuplicate={handleDuplicate} onDuplicateRPC={handleDuplicateRPC} />
         <NodeFloatingIcon nodeData={data} selected={selected} />
         {/* Input and output handles for relays */}
         <Handle
@@ -99,7 +109,7 @@ export const NodeWrapper: React.FC<NodeProps> = ({ data, selected, id }) => {
   // Default to workflow node for registered functions
   return (
     <div className="relative">
-      <WorkflowNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} userInputs={userInputs} />
+      <WorkflowNode data={data} selected={selected} onDelete={handleDelete} onEdit={handleEdit} onDuplicate={handleDuplicate} onDuplicateRPC={handleDuplicateRPC} userInputs={userInputs} />
       <NodeFloatingIcon nodeData={data} selected={selected} />
       {/* Input and output handles for workflow nodes */}
                <Handle

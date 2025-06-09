@@ -11,6 +11,8 @@ import ArgumentsTab from './tabs/ArgumentsTab';
 import MappingsTab from './tabs/MappingsTab';
 import DependenciesTab from './tabs/DependenciesTab';
 import BrokersTab from './tabs/BrokersTab';
+import DescriptionTab from './tabs/DescriptionTab';
+import ResultsTab from './tabs/ResultsTab';
 import AdminTab from './tabs/AdminTab';
 
 // Define the structure for tab configuration with proper typing
@@ -39,9 +41,11 @@ interface DefaultNodeEditorProps {
 const DEFAULT_TABS: TabConfig[] = [
   { id: 'basic', label: 'Overview', component: OverviewTab },
   { id: 'arguments', label: 'Arguments', component: ArgumentsTab },
-  { id: 'mappings', label: 'Mappings', component: MappingsTab },
   { id: 'dependencies', label: 'Dependencies', component: DependenciesTab },
   { id: 'brokers', label: 'Brokers', component: BrokersTab },
+  { id: 'mappings', label: 'Mappings', component: MappingsTab },
+  { id: 'description', label: 'Description', component: DescriptionTab },
+  { id: 'results', label: 'Results', component: ResultsTab },
   { id: 'object', label: 'Admin', component: AdminTab },
 ];
 
@@ -100,9 +104,11 @@ const DefaultNodeEditor: React.FC<DefaultNodeEditorProps> = ({
       const defaultOrders: { [key: string]: number } = {
         'basic': 10,
         'arguments': 20,
-        'mappings': 30,
-        'dependencies': 40,
-        'brokers': 50,
+        'dependencies': 30,
+        'brokers': 40,
+        'mappings': 50,
+        'description': 55,
+        'results': 57,
         'object': 60
       };
       

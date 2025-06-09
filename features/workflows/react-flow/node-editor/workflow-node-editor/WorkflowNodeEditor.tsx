@@ -14,6 +14,8 @@ import ArgumentsTab from './ArgumentsTab';
 import MappingsTab from './MappingsTab';
 import Dependencies from './Dependencies';
 import BrokersTab from './BrokersTab';
+import DescriptionTab from './DescriptionTab';
+import ResultsTab from './ResultsTab';
 import NodeObjectTab from './NodeObjectTab';
 
 // Define the structure for tab configuration
@@ -42,9 +44,11 @@ interface NodeEditorProps {
 const DEFAULT_TABS: TabConfig[] = [
   { id: 'basic', label: 'Overview', component: OverviewTab },
   { id: 'arguments', label: 'Arguments', component: ArgumentsTab },
-  { id: 'mappings', label: 'Mappings', component: MappingsTab },
   { id: 'dependencies', label: 'Dependencies', component: Dependencies },
   { id: 'brokers', label: 'Brokers', component: BrokersTab },
+  { id: 'mappings', label: 'Mappings', component: MappingsTab },
+  { id: 'description', label: 'Description', component: DescriptionTab },
+  { id: 'results', label: 'Results', component: ResultsTab },
   { id: 'object', label: 'Admin', component: NodeObjectTab },
 ];
 
@@ -141,7 +145,7 @@ const WorkflowNodeEditor: React.FC<NodeEditorProps> = ({
 
         <div className="flex-1 min-h-0 overflow-hidden">
           <Tabs defaultValue={finalTabs[0]?.id} className="w-full h-full flex flex-col">
-            <TabsList className={`grid w-full grid-cols-${finalTabs.length} flex-shrink-0`}>
+            <TabsList className="grid w-full flex-shrink-0" style={{ gridTemplateColumns: `repeat(${finalTabs.length}, minmax(0, 1fr))` }}>
               {finalTabs.map(tab => (
                 <TabsTrigger key={tab.id} value={tab.id}>
                   {tab.label}

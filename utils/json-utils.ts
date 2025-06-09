@@ -231,4 +231,42 @@ export function deepClone<T>(obj: T): T {
     // Fallback for objects that can't be JSON serialized
     return obj;
   }
+}
+
+/**
+ * Converts a value to a string representation suitable for text input
+ * Objects and arrays are converted to formatted JSON strings
+ */
+export function valueToString(value: any): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch (error) {
+      return String(value);
+    }
+  }
+  
+  return String(value);
+}
+
+/**
+ * Checks if a value has meaningful content
+ * For objects/arrays, checks if they have properties/elements
+ * For strings, checks if non-empty after trimming
+ */
+export function hasContent(value: any): boolean {
+  if (!value) return false;
+  
+  if (typeof value === 'object') {
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    return Object.keys(value).length > 0;
+  }
+  
+  return String(value).trim().length > 0;
 } 

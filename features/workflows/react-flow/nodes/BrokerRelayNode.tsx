@@ -13,9 +13,11 @@ interface BrokerRelayNodeProps {
   selected: boolean;
   onDelete?: (nodeId: string) => void;
   onEdit?: (nodeData: any) => void;
+  onDuplicate?: (nodeId: string) => void;
+  onDuplicateRPC?: (nodeId: string) => void;
 }
 
-const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDelete, onEdit }) => {
+const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, onDuplicateRPC }) => {
   const { mode } = useTheme();
   const [mounted, setMounted] = useState(false);
   
@@ -101,8 +103,8 @@ const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDel
     </Card>
   );
 
-  // Only wrap in ContextMenu if we have delete/edit handlers
-  if (onDelete || onEdit) {
+  // Only wrap in ContextMenu if we have delete/edit/duplicate handlers
+  if (onDelete || onEdit || onDuplicate || onDuplicateRPC) {
     return (
       <ContextMenu>
         <ContextMenuTrigger asChild>
@@ -113,6 +115,18 @@ const BrokerRelayNode: React.FC<BrokerRelayNodeProps> = ({ data, selected, onDel
             <ContextMenuItem onClick={() => onEdit(data)}>
               <Edit className="h-4 w-4 mr-2" />
               Edit Relay
+            </ContextMenuItem>
+          )}
+          {onDuplicate && (
+            <ContextMenuItem onClick={() => onDuplicate(data.id)}>
+              <Copy className="h-4 w-4 mr-2" />
+              Duplicate Relay (Custom)
+            </ContextMenuItem>
+          )}
+          {onDuplicateRPC && (
+            <ContextMenuItem onClick={() => onDuplicateRPC(data.id)}>
+              <Copy className="h-4 w-4 mr-2" />
+              Duplicate Relay (RPC)
             </ContextMenuItem>
           )}
           <ContextMenuItem onClick={() => navigator.clipboard.writeText(data.source)}>

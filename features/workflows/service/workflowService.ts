@@ -316,3 +316,164 @@ export async function saveCompleteWorkflow(
 
     await Promise.all(operations);
 }
+
+/**
+ * Duplicate a workflow node within the same workflow
+ */
+export async function duplicateWorkflowNode(nodeId: string, workflowId: string, userId: string): Promise<WorkflowNodeData> {
+    // First, fetch the existing node
+    const { data: existingNode, error: fetchError } = await supabase
+        .from("workflow_node")
+        .select("*")
+        .eq("id", nodeId)
+        .single();
+
+    if (fetchError) throw new Error(`Failed to fetch node for duplication: ${fetchError.message}`);
+    if (!existingNode) throw new Error("Node not found for duplication");
+
+    // Create a copy excluding id, created_at, updated_at
+    const { id, created_at, updated_at, ...nodeDataToCopy } = existingNode;
+    
+    // Modify the step_name to include "COPY"
+    const originalStepName = nodeDataToCopy.step_name || "Unnamed Step";
+    const duplicatedStepName = `${originalStepName} COPY`;
+
+    // Create the new node
+    const { data: duplicatedNode, error: createError } = await supabase
+        .from("workflow_node")
+        .insert({
+            ...nodeDataToCopy,
+            step_name: duplicatedStepName,
+            workflow_id: workflowId,
+            user_id: userId,
+        })
+        .select()
+        .single();
+
+    if (createError) throw new Error(`Failed to create duplicated node: ${createError.message}`);
+    return duplicatedNode;
+}
+
+/**
+ * Duplicate a workflow user input within the same workflow
+ */
+export async function duplicateWorkflowUserInput(inputId: string, workflowId: string, userId: string): Promise<WorkflowUserInputData> {
+    // First, fetch the existing user input
+    const { data: existingInput, error: fetchError } = await supabase
+        .from("workflow_user_input")
+        .select("*")
+        .eq("id", inputId)
+        .single();
+
+    if (fetchError) throw new Error(`Failed to fetch user input for duplication: ${fetchError.message}`);
+    if (!existingInput) throw new Error("User input not found for duplication");
+
+    // Create a copy excluding id, created_at, updated_at
+    const { id, created_at, updated_at, ...inputDataToCopy } = existingInput;
+    
+    // Modify the label to include "COPY"
+    const originalLabel = inputDataToCopy.label || "User Input";
+    const duplicatedLabel = `${originalLabel} COPY`;
+
+    // Create the new user input
+    const { data: duplicatedInput, error: createError } = await supabase
+        .from("workflow_user_input")
+        .insert({
+            ...inputDataToCopy,
+            label: duplicatedLabel,
+            workflow_id: workflowId,
+            user_id: userId,
+        })
+        .select()
+        .single();
+
+    if (createError) throw new Error(`Failed to create duplicated user input: ${createError.message}`);
+    return duplicatedInput;
+}
+
+/**
+ * Duplicate a workflow relay within the same workflow
+ */
+export async function duplicateWorkflowRelay(relayId: string, workflowId: string, userId: string): Promise<WorkflowRelayData> {
+    // First, fetch the existing relay
+    const { data: existingRelay, error: fetchError } = await supabase
+        .from("workflow_relay")
+        .select("*")
+        .eq("id", relayId)
+        .single();
+
+    if (fetchError) throw new Error(`Failed to fetch relay for duplication: ${fetchError.message}`);
+    if (!existingRelay) throw new Error("Relay not found for duplication");
+
+    // Create a copy excluding id, created_at, updated_at
+    const { id, created_at, updated_at, ...relayDataToCopy } = existingRelay;
+    
+    // Modify the label to include "COPY"
+    const originalLabel = relayDataToCopy.label || "Broker Relay";
+    const duplicatedLabel = `${originalLabel} COPY`;
+
+    // Create the new relay
+    const { data: duplicatedRelay, error: createError } = await supabase
+        .from("workflow_relay")
+        .insert({
+            ...relayDataToCopy,
+            label: duplicatedLabel,
+            workflow_id: workflowId,
+            user_id: userId,
+        })
+        .select()
+        .single();
+
+    if (createError) throw new Error(`Failed to create duplicated relay: ${createError.message}`);
+    return duplicatedRelay;
+}
+
+// ===== RPC-BASED DUPLICATION (TESTING) =====
+
+/**
+ * Duplicate a workflow node using RPC function (testing approach)
+ */
+export async function duplicateWorkflowNodeRPC(nodeId: string): Promise<WorkflowNodeData> {
+    const { data, error } = await supabase.rpc('duplicate_row', {
+        p_table_name: 'workflow_node',
+        p_source_id: nodeId,
+        p_excluded_columns: ['id', 'created_at', 'updated_at']
+    });
+
+    if (error) throw new Error(`Failed to duplicate node via RPC: ${error.message}`);
+    if (!data) throw new Error("No data returned from RPC duplication");
+
+    return data;
+}
+
+/**
+ * Duplicate a workflow user input using RPC function (testing approach)
+ */
+export async function duplicateWorkflowUserInputRPC(inputId: string): Promise<WorkflowUserInputData> {
+    const { data, error } = await supabase.rpc('duplicate_row', {
+        p_table_name: 'workflow_user_input',
+        p_source_id: inputId,
+        p_excluded_columns: ['id', 'created_at', 'updated_at']
+    });
+
+    if (error) throw new Error(`Failed to duplicate user input via RPC: ${error.message}`);
+    if (!data) throw new Error("No data returned from RPC duplication");
+
+    return data;
+}
+
+/**
+ * Duplicate a workflow relay using RPC function (testing approach)
+ */
+export async function duplicateWorkflowRelayRPC(relayId: string): Promise<WorkflowRelayData> {
+    const { data, error } = await supabase.rpc('duplicate_row', {
+        p_table_name: 'workflow_relay',
+        p_source_id: relayId,
+        p_excluded_columns: ['id', 'created_at', 'updated_at']
+    });
+
+    if (error) throw new Error(`Failed to duplicate relay via RPC: ${error.message}`);
+    if (!data) throw new Error("No data returned from RPC duplication");
+
+    return data;
+}

@@ -25,6 +25,7 @@ import {
     Edit,
     TestTube,
     MessageCircle,
+    Copy,
 } from "lucide-react";
 import { BaseNode, ArgumentOverride } from "@/features/workflows/types";
 import { isNodeConnected } from "@/features/workflows/utils/node-utils";
@@ -35,6 +36,8 @@ interface WorkflowNodeProps {
     selected: boolean;
     onDelete?: (nodeId: string) => void;
     onEdit?: (nodeData: BaseNode) => void;
+    onDuplicate?: (nodeId: string) => void;
+    onDuplicateRPC?: (nodeId: string) => void;
     userInputs?: Array<{ broker_id: string; value: any }>; // Optional user inputs from the workflow
 }
 
@@ -77,7 +80,7 @@ const getStatusBadgeVariant = (status: string) => {
     }
 };
 
-const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onEdit, userInputs }) => {
+const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, onEdit, onDuplicate, onDuplicateRPC, userInputs }) => {
     const functionData = getRegisteredFunctions().find((f) => f.id === data.function_id);
     const hasRequiredInputs = functionData?.args.some((arg) => {
         const override = data.arg_overrides?.find((o: ArgumentOverride) => o.name === arg.name);
@@ -246,8 +249,8 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
         </div>
     );
 
-    // Only wrap in ContextMenu if we have delete/edit handlers
-    if (onDelete || onEdit) {
+    // Only wrap in ContextMenu if we have delete/edit/duplicate handlers
+    if (onDelete || onEdit || onDuplicate || onDuplicateRPC) {
         return (
             <>
                 <ContextMenu>
@@ -257,6 +260,18 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ data, selected, onDelete, o
                             <ContextMenuItem onClick={() => onEdit(data)}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit Node
+                            </ContextMenuItem>
+                        )}
+                        {onDuplicate && (
+                            <ContextMenuItem onClick={() => onDuplicate(data.id)}>
+                                <Copy className="h-4 w-4 mr-2" />
+                                Duplicate Node (Custom)
+                            </ContextMenuItem>
+                        )}
+                        {onDuplicateRPC && (
+                            <ContextMenuItem onClick={() => onDuplicateRPC(data.id)}>
+                                <Copy className="h-4 w-4 mr-2" />
+                                Duplicate Node (RPC)
                             </ContextMenuItem>
                         )}
                         {onDelete && (
