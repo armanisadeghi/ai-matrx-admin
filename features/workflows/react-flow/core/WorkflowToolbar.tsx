@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Database, History } from "lucide-react";
 import { SocketExecuteButton } from "@/components/socket-io/presets/preset-manager/triggers/SocketExecuteButton";
 import DebugOverlay from "@/features/workflows/react-flow/core/DebugOverlay";
+import EdgeManagementOverlay from "@/features/workflows/react-flow/core/EdgeManagementOverlay";
 import { BrokerOverlay } from "@/features/workflows/react-flow/common/BrokerOverlay";
+import { CompleteWorkflowData } from "@/features/workflows/types";
 import { getRegisteredFunctionSelectOptions } from "@/features/workflows/utils/node-utils";
 import { workflowNodeCustomTabs } from "@/features/workflows/react-flow/common/workflow-results-tab-config";
 import { SocketResultsOverlay } from "@/components/socket-io/presets/preset-manager/responses/SocketResultsOverlay";
@@ -21,6 +23,8 @@ interface WorkflowToolbarProps {
     onSave?: () => void;
     onExecute: () => void;
     prepareWorkflowData: () => any;
+    onEdgesUpdated?: () => void;
+    workflowId?: string;
     mode: "edit" | "view" | "execute";
     workflowName?: string;
 }
@@ -34,6 +38,8 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
     onSave,
     onExecute,
     prepareWorkflowData,
+    onEdgesUpdated,
+    workflowId,
     mode,
     workflowName,
 }) => {
@@ -136,6 +142,12 @@ export const WorkflowToolbar: React.FC<WorkflowToolbarProps> = ({
                         Brokers
                     </Button>
 
+                    {mode === "edit" && workflowId && onEdgesUpdated && (
+                        <EdgeManagementOverlay
+                            workflowId={workflowId}
+                            onEdgesUpdated={onEdgesUpdated}
+                        />
+                    )}
                     <DebugOverlay nodes={nodes} edges={edges} />
 
                     <div className="text-sm text-muted-foreground">

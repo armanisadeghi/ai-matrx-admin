@@ -27,25 +27,46 @@ interface WorkflowDataForReactFlow {
   edges: Edge[];
   viewport: Viewport;
   coreWorkflowData: CoreWorkflowData;
+  completeWorkflowData: CompleteWorkflowData;
 }
 
 export const useWorkflowData = () => {
   const loadWorkflow = useCallback(async (workflowId: string): Promise<WorkflowDataForReactFlow | null> => {
     try {
       const completeData = await fetchWorkflowById(workflowId);
+
+      const {
+        workflow,
+        nodes: coreNodes,
+        userInputs: coreUserInputs,
+        relays: coreRelays,
+        edges: coreEdges,
+    } = completeData;
+
+      console.log("workflow", workflow);
+      console.log("coreNodes", coreNodes);
+      console.log("coreUserInputs", coreUserInputs);
+      console.log("coreRelays", coreRelays);
+      console.log("coreEdges", coreEdges);
       
       const virtualEdges = analyzeBrokerConnections(completeData);
       
       const { nodes, edges, coreWorkflowData } = transformDbToReactFlow(completeData);
       
       // Combine database edges with computed broker-based edges
-      const allEdges = [...edges, ...virtualEdges];
+      const combinedEdges = [...edges, ...virtualEdges];
+      
+      // Deduplicate edges by ID to prevent duplicates
+      const allEdges = combinedEdges.filter((edge, index, self) => 
+        self.findIndex(e => e.id === edge.id) === index
+      );
       
       return {
         nodes,
         edges: allEdges,
         viewport: coreWorkflowData.viewport,
-        coreWorkflowData: coreWorkflowData
+        coreWorkflowData: coreWorkflowData,
+        completeWorkflowData: completeData
       };
     } catch (error) {
       console.error('Error loading workflow:', error);
@@ -84,8 +105,9 @@ export const useWorkflowData = () => {
         }
       });
 
-      // Transform edges
+      // Transform edges - EXCLUDE virtual edges from being saved
       const edges = workflowData.edges
+        .filter(edge => !edge.id?.startsWith('virtual_')) // ✅ Never save virtual edges
         .map(edge => transformEdgeToDb(edge))
         .filter(edge => edge.id && edge.source_node_id && edge.target_node_id) as any[];
 

@@ -33,6 +33,7 @@ export interface BaseNode {
     workflow_id?: string; // UUID, nullable (Foreign Key to the Workflow.)
     status?: string; // The status of the node. Can be: pending, initialized, ready_to_execute, executing, execution_complete, execution_failed.
     ui_node_data?: Node;
+    metadata?: Record<string, any>;
 }
 
 // ===== TYPES =====
@@ -49,9 +50,9 @@ export interface CoreWorkflowData {
     category: string | null;
     metadata?: Record<string, any>;
     viewport: Viewport;
-  }
-  
-  export interface WorkflowNodeData {
+}
+
+export interface WorkflowNodeData {
     id: string;
     created_at?: string;
     updated_at?: string;
@@ -69,9 +70,9 @@ export interface CoreWorkflowData {
     status: string;
     metadata?: Record<string, any>;
     ui_node_data?: Node;
-  }
-  
-  export interface WorkflowUserInputData {
+}
+
+export interface WorkflowUserInputData {
     id: string;
     created_at?: string;
     updated_at?: string;
@@ -79,15 +80,15 @@ export interface CoreWorkflowData {
     user_id?: string;
     broker_id: string;
     label: string | null;
-    data_type: 'int' | 'float' | 'str' | 'bool' | 'list' | 'tuple' | 'dict' | 'set';
+    data_type: "int" | "float" | "str" | "bool" | "list" | "tuple" | "dict" | "set";
     default_value: string | null;
     is_required: boolean;
     field_component_id: string | null;
     metadata?: Record<string, any>;
     ui_node_data?: Node;
-  }
-  
-  export interface WorkflowRelayData {
+}
+
+export interface WorkflowRelayData {
     id: string;
     created_at?: string;
     updated_at?: string;
@@ -98,9 +99,9 @@ export interface CoreWorkflowData {
     label: string | null;
     metadata?: Record<string, any>;
     ui_node_data?: Node;
-  }
-  
-  export interface WorkflowEdgeData {
+}
+
+export interface WorkflowEdgeData {
     id: string;
     created_at?: string;
     updated_at?: string;
@@ -113,14 +114,75 @@ export interface CoreWorkflowData {
     animated: boolean;
     style: Record<string, any> | null;
     metadata?: Record<string, any>;
-  }
-  
-  export interface CompleteWorkflowData {
+}
+
+export interface CompleteWorkflowData {
     workflow: CoreWorkflowData;
     nodes: WorkflowNodeData[];
     userInputs: WorkflowUserInputData[];
     relays: WorkflowRelayData[];
     edges: WorkflowEdgeData[];
-  }
-  
-  
+}
+
+// ===== KNOWN BROKERS SYSTEM =====
+
+/**
+ * Represents a broker that will be available at runtime but isn't explicitly declared
+ */
+export interface KnownBroker {
+    /** The broker ID that will be generated */
+    id: string;
+    /** Human-readable label for this broker */
+    label: string;
+    /** Description of what this broker contains */
+    description?: string;
+    /** Data type of the broker content */
+    dataType?: string;
+    /** Whether this broker is always generated or conditional */
+    guaranteed: boolean;
+    /** Additional metadata about this broker */
+    metadata?: Record<string, any>;
+}
+
+/**
+ * Registry of known brokers for a node, stored in node metadata
+ * This allows the edge analyzer to understand additional runtime brokers
+ */
+export interface NodeKnownBrokers {
+    /** Version of the known brokers schema for future compatibility */
+    version: "1.0";
+    /** Timestamp when this was computed */
+    computedAt: string;
+    /** Additional brokers this node will generate at runtime */
+    runtimeBrokers: KnownBroker[];
+    /** Any global brokers this node depends on or makes available */
+    globalBrokers?: KnownBroker[];
+    /** Node-specific configuration used to compute these brokers */
+    computationContext?: Record<string, any>;
+}
+
+/**
+ * Interface for computing known brokers for different node types
+ */
+export interface KnownBrokerComputer {
+    /** The node type this computer handles */
+    nodeType: string;
+    /** Function type if specific to certain functions */
+    functionType?: string;
+    /** Compute known brokers based on node configuration */
+    computeKnownBrokers: (node: BaseNode) => NodeKnownBrokers | null;
+}
+
+// ===== EXTENDED METADATA TYPES =====
+
+/**
+ * Standard metadata structure for workflow nodes
+ */
+export interface WorkflowNodeMetadata {
+    /** Known brokers registry for this node */
+    knownBrokers?: NodeKnownBrokers;
+    /** UI-specific metadata */
+    ui?: Record<string, any>;
+    /** Custom node-specific metadata */
+    custom?: Record<string, any>;
+}

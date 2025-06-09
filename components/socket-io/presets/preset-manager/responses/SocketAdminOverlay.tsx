@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import { SocketPresetResponseProps } from "../SocketPresetManager";
 import { SocketTasksTab } from "./admin-tabs/SocketTasksTab";
@@ -10,7 +9,16 @@ import FullScreenOverlay, { TabDefinition } from "@/components/official/FullScre
 import SocketInfoResponseTab from "./admin-tabs/SocketInfoResponseTab";
 import SocketErrorResponseTab from "./admin-tabs/SocketErrorResponseTab";
 import { SocketBookmarkTab, BookmarkTabConfig } from "./admin-tabs/SocketBookmarkTab";
-import { DualSidebar } from "./admin-tabs/components/DualSidebar";
+import { DualSidebar, TaskSidebarComponent } from "./admin-tabs/components/DualSidebar";
+import { 
+    InfoResponseItemComponent,
+    ErrorResponseItemComponent,
+    TextResponseItemComponent,
+    DataResponseItemComponent,
+    WorkflowSummaryItemComponent,
+    StepCompletionItemComponent,
+    LoadingWorkItemComponent
+} from "./admin-tabs/components/ResultsSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppSelector } from "@/lib/redux/hooks";
@@ -22,27 +30,60 @@ import {
     selectPrimaryResponseEndedByTaskId,
 } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
 
+// Define available base tab names
+export type BaseTabName = "tasks" | "text" | "data" | "data-processor" | "info" | "errors";
+
+// Header component props interface
+export interface HeaderComponentProps {
+    selectedTaskId: string | null;
+    selectedDataType: "data" | "text" | "info" | "error";
+    responseIndex: number;
+    taskEnded: boolean;
+    hasValidText: boolean;
+    hasValidData: boolean;
+    hasValidInfo: boolean;
+    hasValidError: boolean;
+    currentResponseArray: any[];
+    onDataTypeChange: (type: "data" | "text" | "info" | "error") => void;
+    onResponseIndexChange: (index: number) => void;
+}
+
+export type HeaderComponent = React.FC<HeaderComponentProps>;
+
 export interface SocketAdminOverlayProps extends SocketPresetResponseProps {
     // Override props for admin overlay
     overlayTitle?: string;
     overlayDescription?: string;
     showOverlay?: boolean;
     onClose?: () => void;
-
-    // Custom bookmark tabs
     customTabs?: BookmarkTabConfig[];
+
+    // New prop to control which base tabs to include
+    includeTabs?: BaseTabName[];
+
+    // Pass-through props for FullScreenOverlay customization
+    width?: string;
+    height?: string;
+    initialTab?: string;
+    leftSidePanelRatio?: number;
+    showLeftSidePanel?: boolean;
+
+    // Custom component overrides
+    HeaderComponent?: HeaderComponent;
+    TaskSidebarComponent?: TaskSidebarComponent;
+    InfoResponseItemComponent?: InfoResponseItemComponent;
+    ErrorResponseItemComponent?: ErrorResponseItemComponent;
+    TextResponseItemComponent?: TextResponseItemComponent;
+    DataResponseItemComponent?: DataResponseItemComponent;
+    WorkflowSummaryItemComponent?: WorkflowSummaryItemComponent;
+    StepCompletionItemComponent?: StepCompletionItemComponent;
+    LoadingWorkItemComponent?: LoadingWorkItemComponent;
+    
+    // DualSidebar customization
+    dualSidebarClassName?: string;
+    dualSidebarSplitRatio?: [number, number];
 }
 
-/**
- * Admin overlay that provides full access to all socket task and response data
- *
- * This component:
- * - Shows all tasks, listeners, and responses in Redux
- * - Initializes with the current taskId but allows browsing all data
- * - Uses FullScreenOverlay with multiple tabs
- * - Persists across multiple executions (doesn't reset data)
- * - Provides JSON exploration and markdown viewing for responses
- */
 export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
     taskId,
     isExecuting = false,
@@ -52,9 +93,31 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
     showOverlay = false,
     onClose,
     customTabs = [],
+    includeTabs, // If undefined, all tabs will be shown
+
+    // FullScreenOverlay customization props
+    width = "95vw",
+    height = "95vh",
+    initialTab = "tasks",
+    leftSidePanelRatio = 0.2,
+    showLeftSidePanel = true,
+
+    // Custom component overrides
+    HeaderComponent,
+    TaskSidebarComponent,
+    InfoResponseItemComponent,
+    ErrorResponseItemComponent,
+    TextResponseItemComponent,
+    DataResponseItemComponent,
+    WorkflowSummaryItemComponent,
+    StepCompletionItemComponent,
+    LoadingWorkItemComponent,
+    
+    // DualSidebar customization
+    dualSidebarClassName,
+    dualSidebarSplitRatio,
 }) => {
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(taskId);
-
     // Header controls state
     const [selectedDataType, setSelectedDataType] = useState<"data" | "text" | "info" | "error">("text");
     const [responseIndex, setResponseIndex] = useState<number>(0);
@@ -81,9 +144,9 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
         onClose?.();
     };
 
-    // Define base tabs for the overlay
-    const baseTabs: TabDefinition[] = [
-        {
+    // Define all possible base tabs
+    const allBaseTabs: Record<BaseTabName, TabDefinition> = {
+        tasks: {
             id: "tasks",
             label: "Tasks",
             content: (
@@ -97,7 +160,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                 />
             ),
         },
-        {
+        text: {
             id: "text",
             label: "Text",
             content: (
@@ -111,7 +174,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                 />
             ),
         },
-        {
+        data: {
             id: "data",
             label: "Data",
             content: (
@@ -125,7 +188,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                 />
             ),
         },
-        {
+        "data-processor": {
             id: "data-processor",
             label: "Data 2",
             content: (
@@ -139,7 +202,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                 />
             ),
         },
-        {
+        info: {
             id: "info",
             label: "Info",
             content: (
@@ -152,7 +215,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                 />
             ),
         },
-        {
+        errors: {
             id: "errors",
             label: "Error",
             content: (
@@ -165,9 +228,12 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                 />
             ),
         },
-    ];
+    };
 
-    // Add custom bookmark tabs
+    const tabsToInclude: BaseTabName[] = includeTabs || ["tasks", "text", "data", "data-processor", "info", "errors"];
+
+    const baseTabs: TabDefinition[] = tabsToInclude.filter((tabName) => tabName in allBaseTabs).map((tabName) => allBaseTabs[tabName]);
+
     const customTabDefinitions: TabDefinition[] = customTabs.map((config, index) => ({
         id: `custom-${index}`,
         label: config.tabName,
@@ -184,15 +250,13 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
         ),
     }));
 
-    // Combine base and custom tabs
     const tabs: TabDefinition[] = [...baseTabs, ...customTabDefinitions];
 
-        // Determine which response types have valid data
     const hasValidText = textResponse && textResponse.length >= 2;
     const hasValidData = dataResponse && dataResponse.length > 0;
     const hasValidInfo = infoResponse && infoResponse.length > 0;
     const hasValidError = errorsResponse && errorsResponse.length > 0;
-    
+
     const validTypes: Array<"text" | "data" | "info" | "error"> = [];
     if (hasValidText) validTypes.push("text");
     if (hasValidData) validTypes.push("data");
@@ -224,31 +288,32 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
     const currentResponseArray = getCurrentResponseArray();
     const showIndexButtons = selectedDataType !== "text" && currentResponseArray.length > 0;
 
-        // Header component
-    const headerComponent = (
+    const defaultHeaderComponent = (
         <div className="flex items-center gap-4 flex-wrap">
             {/* Task Status Badge - Always show when we have a taskId */}
             {selectedTaskId && (
-                <div className={`px-2 py-1 text-xs font-medium rounded-md border ${
-                    taskEnded 
-                        ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700"
-                        : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-700"
-                }`}>
+                <div
+                    className={`px-2 py-1 text-xs font-medium rounded-md border ${
+                        taskEnded
+                            ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-200 dark:border-green-700"
+                            : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-700"
+                    }`}
+                >
                     {taskEnded ? "Task Ended" : "Task Started"}
                 </div>
             )}
-            
+
             {/* Response Type Toggle - Always show all buttons */}
             <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Type:</span>
                 <div className="flex gap-1">
                     {(["text", "data", "info", "error"] as const).map((type) => {
-                        const isValid = 
+                        const isValid =
                             (type === "text" && hasValidText) ||
                             (type === "data" && hasValidData) ||
                             (type === "info" && hasValidInfo) ||
                             (type === "error" && hasValidError);
-                        
+
                         return (
                             <Button
                                 key={type}
@@ -269,7 +334,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                     })}
                 </div>
             </div>
-            
+
             {/* Response Index Buttons */}
             {showIndexButtons && (
                 <div className="flex items-center gap-2">
@@ -292,7 +357,27 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
         </div>
     );
 
-    // If overlay is not open, render nothing
+    const headerComponent = HeaderComponent ? (
+        <HeaderComponent
+            selectedTaskId={selectedTaskId}
+            selectedDataType={selectedDataType}
+            responseIndex={responseIndex}
+            taskEnded={taskEnded}
+            hasValidText={hasValidText}
+            hasValidData={hasValidData}
+            hasValidInfo={hasValidInfo}
+            hasValidError={hasValidError}
+            currentResponseArray={currentResponseArray}
+            onDataTypeChange={(type) => {
+                setSelectedDataType(type);
+                setResponseIndex(0);
+            }}
+            onResponseIndexChange={setResponseIndex}
+        />
+    ) : defaultHeaderComponent;
+
+    const actualInitialTab = tabs.find((tab) => tab.id === initialTab)?.id || tabs[0]?.id || "tasks";
+
     if (!isOverlayOpen) {
         return null;
     }
@@ -304,22 +389,34 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
             title={overlayTitle}
             description={overlayDescription}
             tabs={tabs}
-            initialTab="tasks"
-            width="95vw"
-            height="95vh"
+            initialTab={actualInitialTab}
+            width={width}
+            height={height}
             sharedHeader={headerComponent}
-            leftSidePanelRatio={0.2}
+            leftSidePanelRatio={leftSidePanelRatio}
             leftSidePanel={
-                <DualSidebar 
-                    selectedTaskId={selectedTaskId} 
-                    onTaskSelect={setSelectedTaskId}
-                    selectedDataType={selectedDataType}
-                    selectedIndex={responseIndex}
-                    onDataTypeChange={(dataType, index) => {
-                        setSelectedDataType(dataType);
-                        setResponseIndex(index || 0);
-                    }}
-                />
+                showLeftSidePanel ? (
+                    <DualSidebar
+                        selectedTaskId={selectedTaskId}
+                        onTaskSelect={setSelectedTaskId}
+                        selectedDataType={selectedDataType}
+                        selectedIndex={responseIndex}
+                        onDataTypeChange={(dataType, index) => {
+                            setSelectedDataType(dataType);
+                            setResponseIndex(index || 0);
+                        }}
+                        className={dualSidebarClassName}
+                        splitRatio={dualSidebarSplitRatio}
+                        TaskSidebarComponent={TaskSidebarComponent}
+                        InfoResponseItemComponent={InfoResponseItemComponent}
+                        ErrorResponseItemComponent={ErrorResponseItemComponent}
+                        TextResponseItemComponent={TextResponseItemComponent}
+                        DataResponseItemComponent={DataResponseItemComponent}
+                        WorkflowSummaryItemComponent={WorkflowSummaryItemComponent}
+                        StepCompletionItemComponent={StepCompletionItemComponent}
+                        LoadingWorkItemComponent={LoadingWorkItemComponent}
+                    />
+                ) : undefined
             }
         />
     );

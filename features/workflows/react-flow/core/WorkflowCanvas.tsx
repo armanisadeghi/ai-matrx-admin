@@ -29,6 +29,7 @@ interface WorkflowCanvasProps {
   nodeTypes: NodeTypes;
   onAddNode: (id: string, type?: string) => void;
   mode?: 'edit' | 'view' | 'execute';
+  workflowId?: string;
 }
 
 export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
@@ -41,6 +42,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
   nodeTypes,
   onAddNode,
   mode = 'edit',
+  workflowId,
 }) => {
   const { mode: themeMode } = useTheme();
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
@@ -59,6 +61,13 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
   const handleCloseEdgeOverlay = useCallback(() => {
     setIsEdgeOverlayOpen(false);
     setSelectedEdge(null);
+  }, []);
+
+  const handleEdgeUpdated = useCallback(() => {
+    // Force re-render by updating the edges state
+    // This will ensure any edge label changes are reflected
+    setSelectedEdge(null);
+    setIsEdgeOverlayOpen(false);
   }, []);
 
   // Create custom edge component with click handler
@@ -176,6 +185,8 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
         edge={selectedEdge}
         isOpen={isEdgeOverlayOpen}
         onClose={handleCloseEdgeOverlay}
+        onEdgeUpdated={handleEdgeUpdated}
+        workflowId={workflowId}
       />
     </>
   );

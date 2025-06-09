@@ -1,11 +1,9 @@
 "use client";
 import React from "react";
 import { getBezierPath, type EdgeProps } from "reactflow";
-
 interface CustomEdgeProps extends EdgeProps {
     onEdgeClick?: (edge: EdgeProps) => void;
 }
-
 export default function CustomEdge({
     id,
     sourceX,
@@ -22,7 +20,6 @@ export default function CustomEdge({
 }: CustomEdgeProps) {
     const xEqual = sourceX === targetX;
     const yEqual = sourceY === targetY;
-
     const [edgePath, labelX, labelY] = getBezierPath({
         // we need this little hack in order to display the gradient for a straight line
         sourceX: xEqual ? sourceX + 0.0001 : sourceX,
@@ -32,18 +29,15 @@ export default function CustomEdge({
         targetY,
         targetPosition,
     });
-
     // Get label from data
     const label = data?.label;
     const connectionType = data?.connectionType;
-
     const handleEdgeClick = (event: React.MouseEvent) => {
         event.stopPropagation();
         if (onEdgeClick) {
             onEdgeClick({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, data, ...edgeProps });
         }
     };
-
     return (
         <>
             <defs>
@@ -69,9 +63,9 @@ export default function CustomEdge({
             {label && (
                 <foreignObject
                     width={200}
-                    height={28}
+                    height={24}
                     x={labelX - 100}
-                    y={labelY - 14}
+                    y={labelY - 12}
                     requiredExtensions="http://www.w3.org/1999/xhtml"
                     onClick={handleEdgeClick}
                     className="cursor-pointer"
@@ -79,9 +73,10 @@ export default function CustomEdge({
                     <div className="flex justify-center">
                         <span
                             className={`
-                inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium
+                inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-normal
                 bg-white dark:bg-gray-800 
                 border shadow-sm transition-colors hover:shadow-md
+                whitespace-nowrap overflow-hidden text-ellipsis max-w-[180px]
                 ${
                     connectionType === "to_argument"
                         ? "border-emerald-300 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50"

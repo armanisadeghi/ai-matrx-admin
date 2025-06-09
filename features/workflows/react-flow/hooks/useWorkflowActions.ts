@@ -15,9 +15,11 @@ import {
   removeUserInputFromWorkflow,
   removeRelayFromWorkflow
 } from "@/features/workflows/service/workflowService";
+import { removeEdgesForNode } from "@/features/workflows/utils/edgeCleanup";
 
 interface UseWorkflowActionsProps {
   nodes: Node[];
+  edges: Edge[];
   setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
   setEditingNode: React.Dispatch<React.SetStateAction<BaseNode | UserInputData | BrokerRelayData | null>>;
@@ -30,6 +32,7 @@ interface UseWorkflowActionsProps {
 
 export const useWorkflowActions = ({
   nodes,
+  edges,
   setNodes,
   setEdges,
   setEditingNode,
@@ -298,6 +301,9 @@ export const useWorkflowActions = ({
     if (!node) return;
 
     try {
+      // ✅ Clean up connected edges from database first
+      await removeEdgesForNode(nodeId, edges);
+
       // Remove from database workflow reference
       const data = node.data;
       if (data.type === 'userInput') {
@@ -311,16 +317,25 @@ export const useWorkflowActions = ({
       // Remove from UI
       setNodes((nds) => nds.filter((n) => n.id !== nodeId));
       setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+      
+      // ✅ Trigger workflow reload to regenerate virtual edges
+      if (onWorkflowReload) {
+        console.log('🔄 Reloading workflow after node removal...');
+        await onWorkflowReload();
+      }
     } catch (error) {
       console.error('❌ Failed to remove node from workflow:', error);
     }
-  }, [nodes, setNodes, setEdges]);
+  }, [nodes, edges, setNodes, setEdges, onWorkflowReload]);
 
   const handlePermanentDelete = useCallback(async (nodeId: string) => {
     const node = nodes.find(n => n.id === nodeId);
     if (!node) return;
 
     try {
+      // ✅ Clean up connected edges from database first
+      await removeEdgesForNode(nodeId, edges);
+
       // Delete permanently from database
       const data = node.data;
       if (data.type === 'userInput') {
@@ -334,10 +349,16 @@ export const useWorkflowActions = ({
       // Remove from UI
       setNodes((nds) => nds.filter((n) => n.id !== nodeId));
       setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+      
+      // ✅ Trigger workflow reload to regenerate virtual edges
+      if (onWorkflowReload) {
+        console.log('🔄 Reloading workflow after node deletion...');
+        await onWorkflowReload();
+      }
     } catch (error) {
       console.error('❌ Failed to delete node permanently:', error);
     }
-  }, [nodes, setNodes, setEdges]);
+  }, [nodes, edges, setNodes, setEdges, onWorkflowReload]);
 
   const exposeWorkflowMethods = useCallback(() => {
     window.workflowSystemRef = {

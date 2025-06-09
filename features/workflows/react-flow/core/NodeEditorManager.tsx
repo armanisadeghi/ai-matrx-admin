@@ -3,7 +3,7 @@ import React from "react";
 import WorkflowNodeEditor from "@/features/workflows/react-flow/node-editor/workflow-node-editor/WorkflowNodeEditor";
 import UserInputEditor from "@/features/workflows/react-flow/node-editor/user-input-node-editor/UserInputEditor";
 import BrokerRelayEditor from "@/features/workflows/react-flow/node-editor/broker-relay-node-editor/BrokerRelayEditor";
-import { BaseNode, UserInputData, BrokerRelayData } from "@/features/workflows/types";
+import { BaseNode, UserInputData, BrokerRelayData, CompleteWorkflowData } from "@/features/workflows/types";
 import { CustomNodeEditor, DefaultNodeEditor } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes";
 import RecipeNodeEditor from "@/features/workflows/react-flow/node-editor/workflow-node-editor/custom-workflow-nodes/custom-nodes/recipes/RecipeNodeEditor";
 
@@ -12,6 +12,7 @@ interface NodeEditorManagerProps {
   onSave: (node: BaseNode | UserInputData | BrokerRelayData) => void;
   onClose: () => void;
   mode?: 'edit' | 'view' | 'execute';
+  completeWorkflowData?: CompleteWorkflowData | null;
 }
 
 export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
@@ -19,6 +20,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
   onSave,
   onClose,
   mode = 'edit',
+  completeWorkflowData,
 }) => {
   if (!editingNode) return null;
 
@@ -44,6 +46,7 @@ export const NodeEditorManager: React.FC<NodeEditorManagerProps> = ({
         onClose={onClose} 
         open={!!editingNode}
         readOnly={isReadOnly}
+        completeWorkflowData={completeWorkflowData}
       />
     );
   }

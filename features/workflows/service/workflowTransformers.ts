@@ -15,6 +15,14 @@ import {
 
 /**
  * Transform database workflow data to React Flow format
+ * 
+ * {
+        workflow,
+        nodes,
+        userInputs,
+        relays,
+        edges,
+    }
  */
 export function transformDbToReactFlow(dbData: CompleteWorkflowData): {
   nodes: Node[];
@@ -157,7 +165,6 @@ export function transformNodeToDb(node: Node, workflowId: string):
   // Defensive check for node.data
   if (!node.data) {
     console.warn('Node missing data property:', node.id);
-    // ✅ Try to create a normalized node if we have a function_id, otherwise fallback
     const fallbackNode = {
       id: node.id,
       ui_node_data: node, // Store the complete React Flow node object
@@ -192,7 +199,7 @@ export function transformNodeToDb(node: Node, workflowId: string):
       data_type: node.data.data_type || 'string',
       default_value: node.data.value, // Save the current session value as the new default
       is_required: false,
-      field_component_id: null // ✅ UUID foreign key to field_components table
+      field_component_id: null
     };
     
     return {
@@ -216,7 +223,6 @@ export function transformNodeToDb(node: Node, workflowId: string):
   // Default to workflow node
   const baseNodeData = node.data as BaseNode;
   
-  // ✅ Use your node-utils validation
   if (baseNodeData.function_id) {
     try {
       validateNodeUpdate(baseNodeData);
@@ -229,7 +235,6 @@ export function transformNodeToDb(node: Node, workflowId: string):
     type: 'workflow',
     data: {
       ...baseTransform,
-      // ✅ EXACT BaseNode field mapping - no extra fields
       function_id: baseNodeData.function_id || null,
       function_type: baseNodeData.function_type || 'registered_function',
       step_name: baseNodeData.step_name || null,

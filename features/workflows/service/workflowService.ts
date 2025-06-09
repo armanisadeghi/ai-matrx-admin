@@ -43,12 +43,18 @@ export async function fetchWorkflowById(workflowId: string): Promise<CompleteWor
     if (relaysResult.error) throw new Error(`Failed to fetch relays: ${relaysResult.error.message}`);
     if (edgesResult.error) throw new Error(`Failed to fetch edges: ${edgesResult.error.message}`);
 
+    const workflow = workflowResult.data;
+    const nodes = nodesResult.data || [];
+    const userInputs = userInputsResult.data || [];
+    const relays = relaysResult.data || [];
+    const edges = edgesResult.data || [];
+
     return {
-        workflow: workflowResult.data,
-        nodes: nodesResult.data || [],
-        userInputs: userInputsResult.data || [],
-        relays: relaysResult.data || [],
-        edges: edgesResult.data || [],
+        workflow,
+        nodes,
+        userInputs,
+        relays,
+        edges,
     };
 }
 
@@ -310,4 +316,3 @@ export async function saveCompleteWorkflow(
 
     await Promise.all(operations);
 }
-

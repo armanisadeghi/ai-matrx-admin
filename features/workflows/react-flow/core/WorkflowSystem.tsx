@@ -54,6 +54,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
   const [editingNode, setEditingNode] = useState<BaseNode | UserInputData | BrokerRelayData | null>(null);
   const [selectedFunction, setSelectedFunction] = useState<string>("");
   const [coreWorkflowData, setCoreWorkflowData] = useState<CoreWorkflowData | null>(null);
+  const [completeWorkflowData, setCompleteWorkflowData] = useState<CompleteWorkflowData | null>(null);
   const [deleteDialogNode, setDeleteDialogNode] = useState<Node | null>(null);
   const [isDeletionProcessing, setIsDeletionProcessing] = useState(false);
   const user = useAppSelector(selectUser);
@@ -69,6 +70,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
           setNodes(workflowData.nodes || []);
           setEdges(workflowData.edges || []);
           setCoreWorkflowData(workflowData.coreWorkflowData);
+          setCompleteWorkflowData(workflowData.completeWorkflowData);
           
           // Restore viewport if available
           if (workflowData.viewport) {
@@ -87,6 +89,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
         setNodes(workflowData.nodes || []);
         setEdges(workflowData.edges || []);
         setCoreWorkflowData(workflowData.coreWorkflowData);
+        setCompleteWorkflowData(workflowData.completeWorkflowData);
         
         // Restore viewport if available
         if (workflowData.viewport) {
@@ -106,6 +109,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
     exposeWorkflowMethods,
   } = useWorkflowActions({
     nodes,
+    edges,
     setNodes,
     setEdges,
     setEditingNode,
@@ -205,6 +209,8 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
         onSave={mode === 'edit' ? handleSaveWorkflow : undefined}
         onExecute={handleExecuteWorkflow}
         prepareWorkflowData={prepareWorkflowData}
+        onEdgesUpdated={handleWorkflowReload}
+        workflowId={workflowId}
         mode={mode}
         workflowName={coreWorkflowData?.name}
       />
@@ -219,6 +225,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
         nodeTypes={nodeTypes}
         onAddNode={handleAddNode}
         mode={mode}
+        workflowId={workflowId}
       />
 
       <NodeEditorManager
@@ -226,6 +233,7 @@ export const WorkflowSystem: React.FC<WorkflowSystemProps> = ({
         onSave={handleNodeSave}
         onClose={() => setEditingNode(null)}
         mode={mode}
+        completeWorkflowData={completeWorkflowData}
       />
 
       <NodeDeleteDialog

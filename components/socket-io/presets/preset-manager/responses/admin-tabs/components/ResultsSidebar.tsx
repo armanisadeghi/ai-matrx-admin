@@ -14,21 +14,85 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle, Clock, MessageSquare, Database, AlertCircle, Info, Copy, Loader2, Cog, Zap } from "lucide-react";
 
+// Interfaces for response component types
+export interface InfoResponseItemProps {
+    info: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
+}
+
+export interface ErrorResponseItemProps {
+    error: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
+}
+
+export interface TextResponseItemProps {
+    text: string;
+    isSelected: boolean;
+    onClick: () => void;
+}
+
+export interface DataResponseItemProps {
+    data: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
+}
+
+export interface WorkflowSummaryItemProps {
+    data: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
+}
+
+export interface StepCompletionItemProps {
+    data: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
+}
+
+export interface LoadingWorkItemProps {
+    // No props currently, but interface allows for future extension
+}
+
+// Component type definitions
+export type InfoResponseItemComponent = React.FC<InfoResponseItemProps>;
+export type ErrorResponseItemComponent = React.FC<ErrorResponseItemProps>;
+export type TextResponseItemComponent = React.FC<TextResponseItemProps>;
+export type DataResponseItemComponent = React.FC<DataResponseItemProps>;
+export type WorkflowSummaryItemComponent = React.FC<WorkflowSummaryItemProps>;
+export type StepCompletionItemComponent = React.FC<StepCompletionItemProps>;
+export type LoadingWorkItemComponent = React.FC<LoadingWorkItemProps>;
+
 interface ResultsSidebarProps {
     selectedTaskId: string | null;
     selectedDataType?: "text" | "data" | "info" | "error";
     selectedIndex?: number;
     onDataTypeChange?: (dataType: "text" | "data" | "info" | "error", index?: number) => void;
+
+    // Override component props
+    InfoResponseItemComponent?: InfoResponseItemComponent;
+    ErrorResponseItemComponent?: ErrorResponseItemComponent;
+    TextResponseItemComponent?: TextResponseItemComponent;
+    DataResponseItemComponent?: DataResponseItemComponent;
+    WorkflowSummaryItemComponent?: WorkflowSummaryItemComponent;
+    StepCompletionItemComponent?: StepCompletionItemComponent;
+    LoadingWorkItemComponent?: LoadingWorkItemComponent;
 }
 
 // Component for Info responses
-const InfoResponseItem: React.FC<{ 
-    info: any; 
-    index: number; 
-    isSelected: boolean; 
-    onClick: () => void; 
+const InfoResponseItem: React.FC<{
+    info: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
 }> = ({ info, index, isSelected, onClick }) => (
-    <div 
+    <div
         className={`p-2 rounded-md border-l-2 cursor-pointer transition-all duration-200 mb-1 ${
             isSelected
                 ? "bg-primary text-primary-foreground border-l-primary-foreground ring-2 ring-primary/50 shadow-md"
@@ -56,13 +120,13 @@ const InfoResponseItem: React.FC<{
 );
 
 // Component for Error responses
-const ErrorResponseItem: React.FC<{ 
-    error: any; 
-    index: number; 
-    isSelected: boolean; 
-    onClick: () => void; 
+const ErrorResponseItem: React.FC<{
+    error: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
 }> = ({ error, index, isSelected, onClick }) => (
-    <div 
+    <div
         className={`p-2 rounded-md border-l-2 cursor-pointer transition-all duration-200 mb-1 ${
             isSelected
                 ? "bg-primary text-primary-foreground border-l-primary-foreground ring-2 ring-primary/50 shadow-md"
@@ -90,10 +154,10 @@ const ErrorResponseItem: React.FC<{
 );
 
 // Component for Text response (throttled character count)
-const TextResponseItem: React.FC<{ 
-    text: string; 
-    isSelected: boolean; 
-    onClick: () => void; 
+const TextResponseItem: React.FC<{
+    text: string;
+    isSelected: boolean;
+    onClick: () => void;
 }> = ({ text, isSelected, onClick }) => {
     const throttledCharCount = useMemo(() => {
         // Simple throttling - update every 500ms worth of renders
@@ -101,7 +165,7 @@ const TextResponseItem: React.FC<{
     }, [text]);
 
     return (
-        <div 
+        <div
             className={`p-2 rounded-md border-l-2 cursor-pointer transition-all duration-200 mb-1 ${
                 isSelected
                     ? "bg-primary text-primary-foreground border-l-primary-foreground ring-2 ring-primary/50 shadow-md"
@@ -125,16 +189,16 @@ const TextResponseItem: React.FC<{
 };
 
 // Component for Workflow Summary data
-const WorkflowSummaryItem: React.FC<{ 
-    data: any; 
-    index: number; 
-    isSelected: boolean; 
-    onClick: () => void; 
+const WorkflowSummaryItem: React.FC<{
+    data: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
 }> = ({ data, index, isSelected, onClick }) => {
     const summary = data.summary || {};
-    
+
     return (
-        <div 
+        <div
             className={`p-2 rounded-md border-l-2 cursor-pointer transition-all duration-200 mb-1 ${
                 isSelected
                     ? "bg-primary text-primary-foreground border-l-primary-foreground ring-2 ring-primary/50 shadow-md"
@@ -153,8 +217,12 @@ const WorkflowSummaryItem: React.FC<{
                     </span>
                 </div>
                 <div className={`text-[10px] ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                    <div>Total: {summary.total_functions || 0} | Done: {summary.completed || 0}</div>
-                    <div>Failed: {summary.failed || 0} | Time: {summary.total_execution_time_seconds?.toFixed(1) || 0}s</div>
+                    <div>
+                        Total: {summary.total_functions || 0} | Done: {summary.completed || 0}
+                    </div>
+                    <div>
+                        Failed: {summary.failed || 0} | Time: {summary.total_execution_time_seconds?.toFixed(1) || 0}s
+                    </div>
                 </div>
             </div>
         </div>
@@ -162,11 +230,11 @@ const WorkflowSummaryItem: React.FC<{
 };
 
 // Component for Step Completion data
-const StepCompletionItem: React.FC<{ 
-    data: any; 
-    index: number; 
-    isSelected: boolean; 
-    onClick: () => void; 
+const StepCompletionItem: React.FC<{
+    data: any;
+    index: number;
+    isSelected: boolean;
+    onClick: () => void;
 }> = ({ data, index, isSelected, onClick }) => {
     const getStatusIcon = (status: string) => {
         switch (status?.toLowerCase()) {
@@ -188,20 +256,20 @@ const StepCompletionItem: React.FC<{
                 return {
                     border: "border-l-green-500",
                     bg: "bg-green-50 dark:bg-green-950/20",
-                    text: "text-green-800 dark:text-green-200"
+                    text: "text-green-800 dark:text-green-200",
                 };
             case "failed":
             case "error":
                 return {
                     border: "border-l-red-500",
                     bg: "bg-red-50 dark:bg-red-950/20",
-                    text: "text-red-800 dark:text-red-200"
+                    text: "text-red-800 dark:text-red-200",
                 };
             default:
                 return {
                     border: "border-l-blue-500",
                     bg: "bg-blue-50 dark:bg-blue-950/20",
-                    text: "text-blue-800 dark:text-blue-200"
+                    text: "text-blue-800 dark:text-blue-200",
                 };
         }
     };
@@ -212,12 +280,12 @@ const StepCompletionItem: React.FC<{
         try {
             await navigator.clipboard.writeText(text);
         } catch (err) {
-            console.error('Failed to copy:', err);
+            console.error("Failed to copy:", err);
         }
     };
 
     return (
-        <div 
+        <div
             className={`p-2 rounded-md border-l-2 cursor-pointer transition-all duration-200 mb-1 ${
                 isSelected
                     ? "bg-primary text-primary-foreground border-l-primary-foreground ring-2 ring-primary/50 shadow-md"
@@ -227,7 +295,7 @@ const StepCompletionItem: React.FC<{
         >
             <div className="space-y-1">
                 <div className={`text-xs font-medium ${isSelected ? "text-primary-foreground" : colors.text}`}>
-                Step #{index + 1} Results
+                    Step #{index + 1} Results
                 </div>
                 <div className="flex items-center gap-1">
                     {getStatusIcon(data.status)}
@@ -243,8 +311,12 @@ const StepCompletionItem: React.FC<{
                         <span className={`text-[10px] font-mono ${isSelected ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
                             {data.return_broker_id}
                         </span>
-                        <Copy 
-                            className={`w-3 h-3 cursor-pointer ${isSelected ? "text-primary-foreground/80 hover:text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                        <Copy
+                            className={`w-3 h-3 cursor-pointer ${
+                                isSelected
+                                    ? "text-primary-foreground/80 hover:text-primary-foreground"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 copyToClipboard(data.return_broker_id);
@@ -258,24 +330,19 @@ const StepCompletionItem: React.FC<{
 };
 
 // Component for generic Data responses
-const DataResponseItem: React.FC<{ 
-    data: any; 
-    index: number; 
-    isSelected: boolean; 
-    onClick: () => void; 
-}> = ({ data, index, isSelected, onClick }) => {
+const DataResponseItem: React.FC<DataResponseItemProps> = ({ data, index, isSelected, onClick }) => {
     // Handle specific data types
     if (data.data_type === "workflow_summary") {
         return <WorkflowSummaryItem data={data} index={index} isSelected={isSelected} onClick={onClick} />;
     }
-    
+
     if (data.data_type === "step_completion") {
         return <StepCompletionItem data={data} index={index} isSelected={isSelected} onClick={onClick} />;
     }
 
     // Generic data display
     return (
-        <div 
+        <div
             className={`p-2 rounded-md border-l-2 cursor-pointer transition-all duration-200 mb-1 ${
                 isSelected
                     ? "bg-primary text-primary-foreground border-l-primary-foreground ring-2 ring-primary/50 shadow-md"
@@ -301,7 +368,7 @@ const DataResponseItem: React.FC<{
 // Component for active workflow indicator
 const LoadingWorkItem: React.FC = () => {
     const [animationPhase, setAnimationPhase] = useState(0);
-    
+
     // Rotate through different animation phases for visual interest
     useEffect(() => {
         const interval = setInterval(() => {
@@ -309,7 +376,7 @@ const LoadingWorkItem: React.FC = () => {
         }, 1500);
         return () => clearInterval(interval);
     }, []);
-    
+
     const getIcon = () => {
         switch (animationPhase) {
             case 0:
@@ -322,7 +389,7 @@ const LoadingWorkItem: React.FC = () => {
                 return <Loader2 className="w-4 h-4 text-cyan-400 animate-spin" />;
         }
     };
-    
+
     const getMessage = () => {
         switch (animationPhase) {
             case 0:
@@ -335,41 +402,44 @@ const LoadingWorkItem: React.FC = () => {
                 return "Working...";
         }
     };
-    
+
     return (
         <div className="p-4 rounded-lg border-l-4 border-l-cyan-400 bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 dark:from-cyan-950/30 dark:to-indigo-950/30 mb-2 animate-pulse shadow-lg">
             <div className="space-y-2">
                 <div className="text-sm font-bold text-cyan-700 dark:text-cyan-300 flex items-center gap-2">
                     {getIcon()}
-                    Workflow Active
+                    Process Active
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                        <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                     </div>
-                    <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
-                        {getMessage()}
-                    </span>
+                    <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">{getMessage()}</span>
                 </div>
-                <div className="text-sm text-blue-700 dark:text-blue-300 font-bold">
-                    Workflow processing...
-                </div>
+                <div className="text-sm text-blue-700 dark:text-blue-300 font-bold">Processing...</div>
             </div>
         </div>
     );
 };
 
-export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({ 
-    selectedTaskId, 
-    selectedDataType = "text", 
-    selectedIndex = 0, 
-    onDataTypeChange 
+export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
+    selectedTaskId,
+    selectedDataType = "text",
+    selectedIndex = 0,
+    onDataTypeChange,
+    InfoResponseItemComponent = InfoResponseItem,
+    ErrorResponseItemComponent = ErrorResponseItem,
+    TextResponseItemComponent = TextResponseItem,
+    DataResponseItemComponent = DataResponseItem,
+    WorkflowSummaryItemComponent = WorkflowSummaryItem,
+    StepCompletionItemComponent = StepCompletionItem,
+    LoadingWorkItemComponent = LoadingWorkItem,
 }) => {
     const [errorTimeout, setErrorTimeout] = useState<NodeJS.Timeout | null>(null);
     const [showLoadingOverride, setShowLoadingOverride] = useState(false);
-    
+
     const textResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseTextByTaskId(selectedTaskId)(state) : ""));
     const dataResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseDataByTaskId(selectedTaskId)(state) : []));
     const infoResponse = useAppSelector((state) => (selectedTaskId ? selectPrimaryResponseInfoByTaskId(selectedTaskId)(state) : []));
@@ -378,7 +448,7 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
 
     const hasAnyData = textResponse.length > 0 || dataResponse.length > 0 || infoResponse.length > 0 || errorsResponse.length > 0;
     const hasErrors = errorsResponse.length > 0;
-    
+
     // Determine if task is actively running
     const isTaskRunning = selectedTaskId && hasAnyData && !taskEnded && !showLoadingOverride;
 
@@ -389,12 +459,12 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
             if (errorTimeout) {
                 clearTimeout(errorTimeout);
             }
-            
+
             // Set a new 5-second timeout
             const timeout = setTimeout(() => {
                 setShowLoadingOverride(true);
             }, 5000);
-            
+
             setErrorTimeout(timeout);
         } else {
             // Clear timeout if conditions change
@@ -429,7 +499,10 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="font-medium text-sm">Results</h3>
                     {isTaskRunning && (
-                        <Badge variant="secondary" className="text-[10px] px-1 py-0 animate-pulse bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                        <Badge
+                            variant="secondary"
+                            className="text-[10px] px-1 py-0 animate-pulse bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                        >
                             <Loader2 className="w-2 h-2 mr-1 animate-spin" />
                             Active
                         </Badge>
@@ -470,16 +543,14 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                         <div className="text-center py-4 text-muted-foreground">
                             <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
                             <p className="text-sm">No results yet</p>
-                            {selectedTaskId && (
-                                <p className="text-xs mt-1">Task is running...</p>
-                            )}
+                            {selectedTaskId && <p className="text-xs mt-1">Task is running...</p>}
                         </div>
                     ) : (
                         <div className="space-y-1">
                             {/* Text Response */}
                             {textResponse.length > 0 && (
-                                <TextResponseItem 
-                                    text={textResponse} 
+                                <TextResponseItemComponent
+                                    text={textResponse}
                                     isSelected={selectedDataType === "text"}
                                     onClick={() => onDataTypeChange?.("text")}
                                 />
@@ -487,9 +558,9 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
 
                             {/* Info Responses */}
                             {infoResponse.map((info, index) => (
-                                <InfoResponseItem 
-                                    key={`info-${index}`} 
-                                    info={info} 
+                                <InfoResponseItemComponent
+                                    key={`info-${index}`}
+                                    info={info}
                                     index={index}
                                     isSelected={selectedDataType === "info" && selectedIndex === index}
                                     onClick={() => onDataTypeChange?.("info", index)}
@@ -498,9 +569,9 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
 
                             {/* Error Responses */}
                             {errorsResponse.map((error, index) => (
-                                <ErrorResponseItem 
-                                    key={`error-${index}`} 
-                                    error={error} 
+                                <ErrorResponseItemComponent
+                                    key={`error-${index}`}
+                                    error={error}
                                     index={index}
                                     isSelected={selectedDataType === "error" && selectedIndex === index}
                                     onClick={() => onDataTypeChange?.("error", index)}
@@ -509,9 +580,9 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
 
                             {/* Data Responses */}
                             {dataResponse.map((data, index) => (
-                                <DataResponseItem 
-                                    key={`data-${index}`} 
-                                    data={data} 
+                                <DataResponseItemComponent
+                                    key={`data-${index}`}
+                                    data={data}
                                     index={index}
                                     isSelected={selectedDataType === "data" && selectedIndex === index}
                                     onClick={() => onDataTypeChange?.("data", index)}
@@ -519,7 +590,7 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
                             ))}
 
                             {/* Loading Indicator (when task is running) */}
-                            {isTaskRunning && <LoadingWorkItem />}
+                            {isTaskRunning && <LoadingWorkItemComponent />}
                         </div>
                     )}
                 </div>
@@ -527,3 +598,5 @@ export const ResultsSidebar: React.FC<ResultsSidebarProps> = ({
         </div>
     );
 };
+
+export default ResultsSidebar;

@@ -1,0 +1,757 @@
+[
+    {
+        "data_type": "step_completion",
+        "instance_id": "87745f46",
+        "step_name": "App name, description and image ideas",
+        "function_name": "orchestrate_run_recipe",
+        "status": "completed",
+        "completion_time": 1749444004.333763,
+        "return_broker_id": "784f9b61-81cc-44af-8d24-a1cc3d9eac56",
+        "result": {
+            "success": true,
+            "results": null,
+            "content": "# App Suggestions\n\n---\n\n## 1. Suggestion\n\n- **App Name:**\n  CompGuard Pro\n\n- **App Description:**  \n  CompGuard Pro delivers efficient, AI-powered support for legal teams focused on defending employers in worker's compensation cases. Instantly analyze claim documents, flag risks, track deadlines, and organize evidence, making case management simpler and more precise for firms handling high-stakes litigation.\n\n- **Image Description:**  \n  Real lawyer in a navy suit at a desk, reviewing legal files, computer screen showing case documents, courtroom sketch in background, neutral office colors, focused serious expression.\n\n---\n\n## 2. Suggestion\n\n- **App Name:**\n  DefenseMate\n\n- **App Description:**  \n  DefenseMate provides a streamlined toolkit for worker’s compensation defense attorneys representing businesses. Leveraging AI, it summarizes case files, drafts key legal documents, and highlights inconsistencies in claims, enabling quick, informed case strategy development.\n\n- **Image Description:**  \n  Professional man in a suit, pointing at documents on a large table, legal folders around, city office window view, serious expression, subtle blue tones, modern legal workspace.\n\n---\n\n## 3. Suggestion\n\n- **App Name:**\n  ShieldCase AI\n\n- **App Description:**  \n  ShieldCase AI empowers corporate counsel with automated document review, instant claim analysis, and risk assessment tailored to worker’s compensation defense. Ensures solid case organization and proactive alerts for critical deadlines, simplifying complex litigation tasks for company lawyers.\n\n- **Image Description:**  \n  Woman attorney in a black blazer, standing with arms crossed by conference table, stacks of paperwork visible, glass office walls, digital tablet on table, strong confident posture.",
+            "lines": [
+                {
+                    "type": "header_h1",
+                    "content": "App Suggestions"
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "thematic_break",
+                    "content": ""
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "header_h2",
+                    "content": "1. Suggestion"
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**App Name:**"
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  CompGuard Pro"
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**App Description:**  "
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  CompGuard Pro delivers efficient, AI-powered support for legal teams focused on defending employers in worker's compensation cases. Instantly analyze claim documents, flag risks, track deadlines, and organize evidence, making case management simpler and more precise for firms handling high-stakes litigation."
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**Image Description:**  "
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  Real lawyer in a navy suit at a desk, reviewing legal files, computer screen showing case documents, courtroom sketch in background, neutral office colors, focused serious expression."
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "thematic_break",
+                    "content": ""
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "header_h2",
+                    "content": "2. Suggestion"
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**App Name:**"
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  DefenseMate"
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**App Description:**  "
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  DefenseMate provides a streamlined toolkit for worker’s compensation defense attorneys representing businesses. Leveraging AI, it summarizes case files, drafts key legal documents, and highlights inconsistencies in claims, enabling quick, informed case strategy development."
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**Image Description:**  "
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  Professional man in a suit, pointing at documents on a large table, legal folders around, city office window view, serious expression, subtle blue tones, modern legal workspace."
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "thematic_break",
+                    "content": ""
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "header_h2",
+                    "content": "3. Suggestion"
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**App Name:**"
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  ShieldCase AI"
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**App Description:**  "
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  ShieldCase AI empowers corporate counsel with automated document review, instant claim analysis, and risk assessment tailored to worker’s compensation defense. Ensures solid case organization and proactive alerts for critical deadlines, simplifying complex litigation tasks for company lawyers."
+                },
+                {
+                    "type": "line_break",
+                    "content": ""
+                },
+                {
+                    "type": "bullet",
+                    "content": "**Image Description:**  "
+                },
+                {
+                    "type": "paragraph",
+                    "content": "  Woman attorney in a black blazer, standing with arms crossed by conference table, stacks of paperwork visible, glass office walls, digital tablet on table, strong confident posture."
+                }
+            ],
+            "sections": [
+                {
+                    "type": "header_h1_section",
+                    "children": [
+                        {
+                            "type": "header_h1",
+                            "content": "App Suggestions"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        }
+                    ]
+                },
+                {
+                    "type": "header_h2_section",
+                    "children": [
+                        {
+                            "type": "header_h2",
+                            "content": "1. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  CompGuard Pro"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  CompGuard Pro delivers efficient, AI-powered support for legal teams focused on defending employers in worker's compensation cases. Instantly analyze claim documents, flag risks, track deadlines, and organize evidence, making case management simpler and more precise for firms handling high-stakes litigation."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Real lawyer in a navy suit at a desk, reviewing legal files, computer screen showing case documents, courtroom sketch in background, neutral office colors, focused serious expression."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        }
+                    ]
+                },
+                {
+                    "type": "header_h2_section",
+                    "children": [
+                        {
+                            "type": "header_h2",
+                            "content": "2. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  DefenseMate"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  DefenseMate provides a streamlined toolkit for worker’s compensation defense attorneys representing businesses. Leveraging AI, it summarizes case files, drafts key legal documents, and highlights inconsistencies in claims, enabling quick, informed case strategy development."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Professional man in a suit, pointing at documents on a large table, legal folders around, city office window view, serious expression, subtle blue tones, modern legal workspace."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        }
+                    ]
+                },
+                {
+                    "type": "header_h2_section",
+                    "children": [
+                        {
+                            "type": "header_h2",
+                            "content": "3. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  ShieldCase AI"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  ShieldCase AI empowers corporate counsel with automated document review, instant claim analysis, and risk assessment tailored to worker’s compensation defense. Ensures solid case organization and proactive alerts for critical deadlines, simplifying complex litigation tasks for company lawyers."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Woman attorney in a black blazer, standing with arms crossed by conference table, stacks of paperwork visible, glass office walls, digital tablet on table, strong confident posture."
+                        }
+                    ]
+                }
+            ],
+            "section_texts": {
+                "header_h1_section_1": "App Suggestions",
+                "header_h2_section_1": "1. Suggestion\n**App Name:**\n  CompGuard Pro\n**App Description:**  \n  CompGuard Pro delivers efficient, AI-powered support for legal teams focused on defending employers in worker's compensation cases. Instantly analyze claim documents, flag risks, track deadlines, and organize evidence, making case management simpler and more precise for firms handling high-stakes litigation.\n**Image Description:**  \n  Real lawyer in a navy suit at a desk, reviewing legal files, computer screen showing case documents, courtroom sketch in background, neutral office colors, focused serious expression.",
+                "header_h2_section_2": "2. Suggestion\n**App Name:**\n  DefenseMate\n**App Description:**  \n  DefenseMate provides a streamlined toolkit for worker’s compensation defense attorneys representing businesses. Leveraging AI, it summarizes case files, drafts key legal documents, and highlights inconsistencies in claims, enabling quick, informed case strategy development.\n**Image Description:**  \n  Professional man in a suit, pointing at documents on a large table, legal folders around, city office window view, serious expression, subtle blue tones, modern legal workspace.",
+                "header_h2_section_3": "3. Suggestion\n**App Name:**\n  ShieldCase AI\n**App Description:**  \n  ShieldCase AI empowers corporate counsel with automated document review, instant claim analysis, and risk assessment tailored to worker’s compensation defense. Ensures solid case organization and proactive alerts for critical deadlines, simplifying complex litigation tasks for company lawyers.\n**Image Description:**  \n  Woman attorney in a black blazer, standing with arms crossed by conference table, stacks of paperwork visible, glass office walls, digital tablet on table, strong confident posture."
+            },
+            "sections_by_header": [
+                {
+                    "type": "header_h1_section",
+                    "children": [
+                        {
+                            "type": "header_h1",
+                            "content": "App Suggestions"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        }
+                    ]
+                },
+                {
+                    "type": "header_h2_section",
+                    "children": [
+                        {
+                            "type": "header_h2",
+                            "content": "1. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  CompGuard Pro"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  CompGuard Pro delivers efficient, AI-powered support for legal teams focused on defending employers in worker's compensation cases. Instantly analyze claim documents, flag risks, track deadlines, and organize evidence, making case management simpler and more precise for firms handling high-stakes litigation."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Real lawyer in a navy suit at a desk, reviewing legal files, computer screen showing case documents, courtroom sketch in background, neutral office colors, focused serious expression."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        }
+                    ]
+                },
+                {
+                    "type": "header_h2_section",
+                    "children": [
+                        {
+                            "type": "header_h2",
+                            "content": "2. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  DefenseMate"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  DefenseMate provides a streamlined toolkit for worker’s compensation defense attorneys representing businesses. Leveraging AI, it summarizes case files, drafts key legal documents, and highlights inconsistencies in claims, enabling quick, informed case strategy development."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Professional man in a suit, pointing at documents on a large table, legal folders around, city office window view, serious expression, subtle blue tones, modern legal workspace."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        }
+                    ]
+                },
+                {
+                    "type": "header_h2_section",
+                    "children": [
+                        {
+                            "type": "header_h2",
+                            "content": "3. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  ShieldCase AI"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  ShieldCase AI empowers corporate counsel with automated document review, instant claim analysis, and risk assessment tailored to worker’s compensation defense. Ensures solid case organization and proactive alerts for critical deadlines, simplifying complex litigation tasks for company lawyers."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Woman attorney in a black blazer, standing with arms crossed by conference table, stacks of paperwork visible, glass office walls, digital tablet on table, strong confident posture."
+                        }
+                    ]
+                }
+            ],
+            "section_texts_by_header": {
+                "header_h1_section_1": "App Suggestions",
+                "header_h2_section_1": "1. Suggestion\n**App Name:**\n  CompGuard Pro\n**App Description:**  \n  CompGuard Pro delivers efficient, AI-powered support for legal teams focused on defending employers in worker's compensation cases. Instantly analyze claim documents, flag risks, track deadlines, and organize evidence, making case management simpler and more precise for firms handling high-stakes litigation.\n**Image Description:**  \n  Real lawyer in a navy suit at a desk, reviewing legal files, computer screen showing case documents, courtroom sketch in background, neutral office colors, focused serious expression.",
+                "header_h2_section_2": "2. Suggestion\n**App Name:**\n  DefenseMate\n**App Description:**  \n  DefenseMate provides a streamlined toolkit for worker’s compensation defense attorneys representing businesses. Leveraging AI, it summarizes case files, drafts key legal documents, and highlights inconsistencies in claims, enabling quick, informed case strategy development.\n**Image Description:**  \n  Professional man in a suit, pointing at documents on a large table, legal folders around, city office window view, serious expression, subtle blue tones, modern legal workspace.",
+                "header_h2_section_3": "3. Suggestion\n**App Name:**\n  ShieldCase AI\n**App Description:**  \n  ShieldCase AI empowers corporate counsel with automated document review, instant claim analysis, and risk assessment tailored to worker’s compensation defense. Ensures solid case organization and proactive alerts for critical deadlines, simplifying complex litigation tasks for company lawyers.\n**Image Description:**  \n  Woman attorney in a black blazer, standing with arms crossed by conference table, stacks of paperwork visible, glass office walls, digital tablet on table, strong confident posture."
+            },
+            "sections_by_big_headers": [
+                {
+                    "type": "header_h1_section",
+                    "children": [
+                        {
+                            "type": "header_h1",
+                            "content": "App Suggestions"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "header_h2",
+                            "content": "1. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  CompGuard Pro"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  CompGuard Pro delivers efficient, AI-powered support for legal teams focused on defending employers in worker's compensation cases. Instantly analyze claim documents, flag risks, track deadlines, and organize evidence, making case management simpler and more precise for firms handling high-stakes litigation."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Real lawyer in a navy suit at a desk, reviewing legal files, computer screen showing case documents, courtroom sketch in background, neutral office colors, focused serious expression."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "header_h2",
+                            "content": "2. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  DefenseMate"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  DefenseMate provides a streamlined toolkit for worker’s compensation defense attorneys representing businesses. Leveraging AI, it summarizes case files, drafts key legal documents, and highlights inconsistencies in claims, enabling quick, informed case strategy development."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Professional man in a suit, pointing at documents on a large table, legal folders around, city office window view, serious expression, subtle blue tones, modern legal workspace."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "thematic_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "header_h2",
+                            "content": "3. Suggestion"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Name:**"
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  ShieldCase AI"
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**App Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  ShieldCase AI empowers corporate counsel with automated document review, instant claim analysis, and risk assessment tailored to worker’s compensation defense. Ensures solid case organization and proactive alerts for critical deadlines, simplifying complex litigation tasks for company lawyers."
+                        },
+                        {
+                            "type": "line_break",
+                            "content": ""
+                        },
+                        {
+                            "type": "bullet",
+                            "content": "**Image Description:**  "
+                        },
+                        {
+                            "type": "paragraph",
+                            "content": "  Woman attorney in a black blazer, standing with arms crossed by conference table, stacks of paperwork visible, glass office walls, digital tablet on table, strong confident posture."
+                        }
+                    ]
+                }
+            ],
+            "section_texts_by_big_headers": {
+                "header_h1_section_1": "App Suggestions\n1. Suggestion\n**App Name:**\n  CompGuard Pro\n**App Description:**  \n  CompGuard Pro delivers efficient, AI-powered support for legal teams focused on defending employers in worker's compensation cases. Instantly analyze claim documents, flag risks, track deadlines, and organize evidence, making case management simpler and more precise for firms handling high-stakes litigation.\n**Image Description:**  \n  Real lawyer in a navy suit at a desk, reviewing legal files, computer screen showing case documents, courtroom sketch in background, neutral office colors, focused serious expression.\n2. Suggestion\n**App Name:**\n  DefenseMate\n**App Description:**  \n  DefenseMate provides a streamlined toolkit for worker’s compensation defense attorneys representing businesses. Leveraging AI, it summarizes case files, drafts key legal documents, and highlights inconsistencies in claims, enabling quick, informed case strategy development.\n**Image Description:**  \n  Professional man in a suit, pointing at documents on a large table, legal folders around, city office window view, serious expression, subtle blue tones, modern legal workspace.\n3. Suggestion\n**App Name:**\n  ShieldCase AI\n**App Description:**  \n  ShieldCase AI empowers corporate counsel with automated document review, instant claim analysis, and risk assessment tailored to worker’s compensation defense. Ensures solid case organization and proactive alerts for critical deadlines, simplifying complex litigation tasks for company lawyers.\n**Image Description:**  \n  Woman attorney in a black blazer, standing with arms crossed by conference table, stacks of paperwork visible, glass office walls, digital tablet on table, strong confident posture."
+            },
+            "errors": null,
+            "execution_time_ms": 7293.86
+        },
+        "error_details": null
+    },
+    {
+        "executed_functions": [
+            {
+                "instance_id": "87745f46",
+                "step_name": "App name, description and image ideas",
+                "func_name": "orchestrate_run_recipe",
+                "status": "execution_complete",
+                "execution_required": true,
+                "return_brokers": ["784f9b61-81cc-44af-8d24-a1cc3d9eac56"],
+                "completion_time": 1749444004.333763,
+                "is_successful": true,
+                "is_failed": false
+            }
+        ],
+        "other_functions": [],
+        "summary": {
+            "total_functions": 1,
+            "executed_count": 1,
+            "completed": 1,
+            "failed": 0,
+            "orchestrator_status": "completed",
+            "progress_percentage": 100,
+            "total_execution_time_seconds": 7.32
+        },
+        "data_type": "workflow_summary",
+        "execution_id": "93b6e4a8-ba57-42ba-a222-3371b200b349",
+        "instance_id": "93b6e4a8-ba57-42ba-a222-3371b200b349",
+        "workflow_id": "93b6e4a8-ba57-42ba-a222-3371b200b349",
+        "step_name": "App name, description and image ideas"
+    }
+]

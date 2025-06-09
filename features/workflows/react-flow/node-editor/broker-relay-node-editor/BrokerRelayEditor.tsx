@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { BrokerRelayData } from '@/features/workflows/types';
+import { BrokerRelayData, CompleteWorkflowData } from '@/features/workflows/types';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRightLeft, Plus, Trash2, Copy } from "lucide-react";
+import { BrokerSelect } from "@/components/ui/broker-select";
+import { useBrokerData } from "@/features/workflows/hooks/useBrokerData";
+import { CustomFieldLabelAndHelpText } from '@/constants/app-builder-help-text';
 
 interface BrokerRelayEditorProps {
   node: BrokerRelayData | null;
@@ -15,6 +18,7 @@ interface BrokerRelayEditorProps {
   onClose: () => void;
   open: boolean;
   readOnly?: boolean;
+  completeWorkflowData?: CompleteWorkflowData | null;
 }
 
 const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({ 
@@ -22,10 +26,14 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
   onSave, 
   onClose,
   open,
-  readOnly = false
+  readOnly = false,
+  completeWorkflowData
 }) => {
   const [editingNode, setEditingNode] = useState<BrokerRelayData | null>(node);
   const [cancelClicked, setCancelClicked] = useState(false);
+
+  // Get broker data for the workflow
+  const { producerBrokers, allBrokers } = useBrokerData(completeWorkflowData);
 
   useEffect(() => {
     setEditingNode(node);
@@ -96,47 +104,55 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto space-y-6">
+          {/* Relay Label */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Relay Configuration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="relay-label">Label</Label>
+                <CustomFieldLabelAndHelpText
+                  fieldId="relay-label"
+                  fieldLabel="Relay Label"
+                  helpText="A human-readable name to identify this relay in the workflow"
+                  required={true}
+                  className="pt-2"
+                />
                 <Input
                   id="relay-label"
                   value={editingNode.label || ''}
                   onChange={(e) => setEditingNode({ ...editingNode, label: e.target.value })}
-                  placeholder="Enter relay label"
+                  placeholder="Enter a descriptive name for this relay"
+                  disabled={readOnly}
                 />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="source-broker">Source Broker ID</Label>
-                <Input
-                  id="source-broker"
-                  value={editingNode.source}
-                  onChange={(e) => setEditingNode({ ...editingNode, source: e.target.value })}
-                  placeholder="Enter source broker ID"
-                  className="font-mono"
-                />
-                <p className="text-xs text-muted-foreground">
-                  The broker ID that provides data to this relay
-                </p>
               </div>
             </CardContent>
           </Card>
 
+          {/* Source Configuration */}
+          <Card>
+            <CardContent>
+              <BrokerSelect
+                label="Source Broker ID"
+                description="The broker ID that provides data to this relay"
+                value={editingNode.source}
+                onValueChange={(value) => setEditingNode({ ...editingNode, source: value })}
+                brokers={producerBrokers}
+                showProducersOnly={true}
+                placeholder="Select source broker..."
+                disabled={readOnly}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Target Configuration */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Target Brokers</CardTitle>
+                <CardTitle className="text-lg">Data Targets</CardTitle>
                 <div className="flex gap-2">
                   <Button onClick={copyAllTargets} variant="outline" size="sm">
                     <Copy className="h-4 w-4 mr-2" />
                     Copy All
                   </Button>
-                  <Button onClick={addTarget} size="sm">
+                  <Button onClick={addTarget} size="sm" disabled={readOnly}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Target
                   </Button>
@@ -149,21 +165,23 @@ const BrokerRelayEditor: React.FC<BrokerRelayEditorProps> = ({
                   {editingNode.targets.map((target, index) => (
                     <Card key={index} className="border-border">
                       <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
-                          <div className="flex-1 space-y-2">
-                            <Label>Target {index + 1}</Label>
-                            <Input
+                        <div className="flex items-start gap-4">
+                          <div className="flex-1">
+                            <BrokerSelect
+                              label={`Target ${index + 1}`}
                               value={target}
-                              onChange={(e) => updateTarget(index, e.target.value)}
-                              placeholder="Enter target broker ID"
-                              className="font-mono"
+                              onValueChange={(value) => updateTarget(index, value)}
+                              brokers={allBrokers}
+                              placeholder="Select or enter target broker ID..."
+                              disabled={readOnly}
                             />
                           </div>
                           <Button
                             variant="outline"
                             size="icon"
                             onClick={() => removeTarget(index)}
-                            className="mt-6"
+                            className="mt-8"
+                            disabled={readOnly}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
