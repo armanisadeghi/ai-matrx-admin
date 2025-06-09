@@ -23,7 +23,7 @@ const NavigationRows: React.FC<NavigationRowsProps> = ({
     const keysForThisRow = getKeysAtPath(originalData, pathToHere);
 
     rowsToRender.push(
-      <div key={`row-${rowIndex}`} className="flex flex-wrap gap-2 mb-2">
+      <div key={`row-${rowIndex}`} className="flex flex-wrap gap-1 mb-1">
         {keysForThisRow.map((key) => {
           // Create the path for this button
           const buttonPath = currentPath.slice(0, idx).concat([[rowIndex, key]]);
@@ -58,7 +58,7 @@ const NavigationRows: React.FC<NavigationRowsProps> = ({
   }
 
   return (
-    <div className="mb-4 border-b pb-4 border-gray-200 dark:border-gray-700">
+    <div className="mb-2 border-b pb-2 border-gray-200 dark:border-gray-700">
       {rowsToRender}
     </div>
   );

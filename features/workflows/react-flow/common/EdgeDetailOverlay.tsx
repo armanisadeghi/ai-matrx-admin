@@ -84,25 +84,25 @@ export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdge
     const [labelValue, setLabelValue] = useState("");
     const [isSavingLabel, setIsSavingLabel] = useState(false);
 
-    if (!isOpen || !edge) return null;
-
-    const connectionType = edge.data?.connectionType || "unknown";
-    const sourceBrokerId = edge.data?.sourceBrokerId;
-    const label = edge.data?.label || "Unlabeled Connection";
-    const metadata = edge.data?.metadata || {};
-
-    const typeInfo = getConnectionTypeInfo(connectionType);
-    const IconComponent = typeInfo.icon;
-
-    // Initialize label value when edge changes
     React.useEffect(() => {
         if (edge) {
             setLabelValue(edge.data?.label || "");
         }
     }, [edge]);
 
+    if (!isOpen || !edge) return null;
+
+    const connectionType = edge.data?.connectionType || "unknown";
+    const sourceBrokerId = edge.data?.sourceBrokerId;
+    const label = edge.data?.label || "Unlabeled Connection";
+    const metadata = edge.data?.metadata || {};
+    const isVirtualEdge = edge.id.startsWith("virtual_");
+
+    const typeInfo = getConnectionTypeInfo(connectionType);
+    const IconComponent = typeInfo.icon;
+
     const saveLabel = async () => {
-        if (!edge.id || !edge.data || !workflowId) return;
+        if (!edge.id || !edge.data || !workflowId || isVirtualEdge) return;
         
         setIsSavingLabel(true);
         try {
@@ -135,7 +135,7 @@ export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdge
     };
 
     const handleDeleteEdge = async () => {
-        if (!edge?.id) return;
+        if (!edge?.id || isVirtualEdge) return;
 
         setIsDeleting(true);
         try {
@@ -182,7 +182,18 @@ export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdge
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button onClick={handleDeleteEdge} disabled={isDeleting} variant="destructive" size="sm" className="gap-2">
+                        {isVirtualEdge && (
+                            <Badge variant="secondary" className="text-xs">
+                                Virtual Edge
+                            </Badge>
+                        )}
+                        <Button 
+                            onClick={handleDeleteEdge} 
+                            disabled={isDeleting || isVirtualEdge} 
+                            variant="destructive" 
+                            size="sm" 
+                            className="gap-2"
+                        >
                             <Trash2 className="w-4 h-4" />
                             {isDeleting ? "Deleting..." : "Delete Edge"}
                         </Button>
@@ -209,17 +220,29 @@ export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdge
                                     <h3 className="flex items-center gap-2 text-sm font-medium mb-3">
                                         <Edit2 className="w-4 h-4 text-blue-500" />
                                         Connection Label
+                                        {isVirtualEdge && (
+                                            <Badge variant="outline" className="text-xs ml-2">
+                                                Read-only
+                                            </Badge>
+                                        )}
                                     </h3>
+                                    {isVirtualEdge && (
+                                        <div className="mb-3 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700 rounded text-sm text-amber-700 dark:text-amber-300">
+                                            <Info className="w-4 h-4 inline mr-1" />
+                                            Virtual edges are auto-generated and cannot be modified.
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2">
                                         <Input
                                             value={labelValue}
                                             onChange={(e) => setLabelValue(e.target.value)}
+                                            disabled={isVirtualEdge}
                                             className="flex-1 bg-white dark:bg-gray-800"
                                             placeholder="Enter connection label..."
                                         />
                                         <Button
                                             onClick={saveLabel}
-                                            disabled={isSavingLabel || labelValue === label}
+                                            disabled={isSavingLabel || labelValue === label || isVirtualEdge}
                                             size="sm"
                                             className="gap-1"
                                         >
@@ -528,6 +551,30 @@ export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdge
 
                             {/* Admin Tab */}
                             <TabsContent value="admin" className="mt-0 space-y-6">
+                                {isVirtualEdge && (
+                                    <Card className="border-amber-200 dark:border-amber-800">
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                                                <Info className="w-5 h-5" />
+                                                Virtual Edge Information
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3">
+                                            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
+                                                <h4 className="font-medium text-sm text-amber-700 dark:text-amber-300 mb-2">
+                                                    Auto-Generated Edge
+                                                </h4>
+                                                <p className="text-sm text-amber-600 dark:text-amber-400">
+                                                    This edge was automatically generated by the workflow system to represent data flow relationships that exist at runtime. Virtual edges cannot be deleted or modified as they are dynamically created based on broker connections and workflow logic.
+                                                </p>
+                                            </div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-2">
+                                                💡 Virtual edges help visualize the complete data flow in your workflow, including connections that aren't explicitly stored in the database.
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
                                 <Card>
                                     <CardHeader>
                                         <div className="flex items-center justify-between">
@@ -569,13 +616,19 @@ export function EdgeDetailOverlay({ edge, isOpen, onClose, onEdgeDeleted, onEdge
                                     <CardContent className="space-y-4">
                                         <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-700 rounded-lg p-4">
                                             <h4 className="font-medium text-sm text-red-700 dark:text-red-300 mb-2">Delete Edge</h4>
-                                            <p className="text-sm text-red-600 dark:text-red-400 mb-3">
-                                                This will permanently remove the edge from the database. This action cannot be undone and
-                                                may affect workflow execution if the edge is critical.
-                                            </p>
+                                            {isVirtualEdge ? (
+                                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                    Virtual edges cannot be deleted as they are automatically generated by the system based on workflow logic.
+                                                </p>
+                                            ) : (
+                                                <p className="text-sm text-red-600 dark:text-red-400 mb-3">
+                                                    This will permanently remove the edge from the database. This action cannot be undone and
+                                                    may affect workflow execution if the edge is critical.
+                                                </p>
+                                            )}
                                             <Button
                                                 onClick={handleDeleteEdge}
-                                                disabled={isDeleting}
+                                                disabled={isDeleting || isVirtualEdge}
                                                 variant="destructive"
                                                 size="sm"
                                                 className="gap-2"

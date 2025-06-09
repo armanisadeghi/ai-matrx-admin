@@ -58,4 +58,7 @@ export interface ActionButtonsProps {
   onOpenBookmarkDialog: () => void;
   onCopyPath: () => void;
   onReset: () => void;
+  onOpenCopyPathObjectDialog?: () => void;
+  ignorePrefix?: string;
+  onIgnorePrefixChange?: (prefix: string) => void;
 } 

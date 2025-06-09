@@ -21,7 +21,7 @@ interface SocketTasksTabProps {
     selectedIndex?: number;
 }
 
-export const SocketTasksTab: React.FC<SocketTasksTabProps> = ({
+export const DynamicTab: React.FC<SocketTasksTabProps> = ({
     currentTaskId,
     onTaskIdChange,
     isExecuting = false,
@@ -75,46 +75,22 @@ export const SocketTasksTab: React.FC<SocketTasksTabProps> = ({
             {/* Main Content */}
             <div className="flex-1 flex flex-col p-6 min-w-0">
                 {/* Content area */}
+                {/* Filtered Response Data */}
                 <Card className="flex flex-col">
-                    <CardHeader>
-                        <CardTitle className="text-lg">
-                            {isWorkflowSummary
-                                ? "Workflow Summary"
-                                : isStepCompletion
-                                ? "Step Results"
-                                : isTextResponse
-                                ? "Text Response"
-                                : isInfoMessage
-                                ? "Status Update"
-                                : selectedTask
-                                ? "Submitted Data"
-                                : "No Task Selected"}
-                        </CardTitle>
-                    </CardHeader>
                     <CardContent className="flex-1 overflow-hidden">
-                        {isWorkflowSummary ? (
-                            <div className="h-full overflow-auto">
-                                <WorkflowSummaryDisplay data={filteredResponseData} />
-                            </div>
-                        ) : isStepCompletion ? (
-                            <div className="h-full overflow-auto">
-                                <StepCompletionDisplay data={filteredResponseData} />
-                            </div>
-                        ) : isTextResponse ? (
-                            <div className="h-full overflow-auto">
-                                <TextResponseDisplay textResponse={filteredResponseData} isExecuting={isExecuting} />
-                            </div>
-                        ) : isInfoMessage ? (
-                            <div className="h-full overflow-auto">
-                                <InfoMessageDisplay data={filteredResponseData} />
-                            </div>
-                        ) : selectedTask ? (
-                            <div className="h-full">
-                                <RawJsonExplorer pageData={selectedTask} ignorePrefix="data[0]" />
+                        {hasResponseData ? (
+                            <div className="h-full pt-2">
+                                <RawJsonExplorer pageData={filteredResponseData} ignorePrefix="data[*]" />
                             </div>
                         ) : (
                             <div className="flex items-center justify-center h-32 text-muted-foreground">
-                                <p>Select a task from the sidebar to view its details</p>
+                                <p>
+                                    {currentTaskId
+                                        ? `No ${selectedDataType} response data available${
+                                              selectedDataType !== "text" ? ` at index ${selectedIndex + 1}` : ""
+                                          }`
+                                        : "Select a task to view response data"}
+                                </p>
                             </div>
                         )}
                     </CardContent>

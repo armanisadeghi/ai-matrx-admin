@@ -75,5 +75,8 @@
         "Default",
         "Applets"
     ],
-    "favorites.currentGroup": "Default"
+    "favorites.currentGroup": "Default",
+    "powershell.buttons.showPanelMovementButtons": true,
+    "powershell.integratedConsole.forceClearScrollbackBuffer": true,
+    "powershell.integratedConsole.suppressStartupBanner": true
 }

@@ -83,7 +83,7 @@ export const SocketDataResponseTab: React.FC<SocketDataResponseTabProps> = ({
         <CardContent className="h-full p-0 overflow-hidden">
           {hasDataResponse ? (
             <div className="h-full">
-              <RawJsonExplorer pageData={dataResponse} />
+              <RawJsonExplorer pageData={dataResponse} ignorePrefix="data[*]" />
             </div>
           ) : (
             <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">

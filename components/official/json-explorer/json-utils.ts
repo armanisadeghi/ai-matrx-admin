@@ -151,3 +151,100 @@ export const generateAccessPath = (currentPath) => {
 
     return accessPath;
 };
+
+// Convert current path to enhanced bookmark format
+export const convertToEnhancedBookmark = (currentPath, ignorePrefix = undefined) => {
+    try {
+        // Build the full access path first
+        const fullAccessPath = generateAccessPath(currentPath);
+        
+        // Parse the full access path to get the array representation
+        const fullPathArray = parseAccessPathToArray(fullAccessPath);
+
+        // If ignorePrefix is provided, try to parse it and remove matching prefix
+        if (ignorePrefix && typeof ignorePrefix === 'string') {
+            try {
+                const prefixArray = parseAccessPathToArray(ignorePrefix);
+                
+                // Check if the beginning of fullPathArray matches prefixArray (with wildcard support)
+                if (Array.isArray(prefixArray) && prefixArray.length > 0 && prefixArray.length <= fullPathArray.length) {
+                    let matches = true;
+                    for (let i = 0; i < prefixArray.length; i++) {
+                        // "*" acts as a wildcard that matches any value
+                        if (prefixArray[i] !== "*" && fullPathArray[i] !== prefixArray[i]) {
+                            matches = false;
+                            break;
+                        }
+                    }
+                    
+                    // If it matches, remove the prefix
+                    if (matches) {
+                        return fullPathArray.slice(prefixArray.length);
+                    }
+                }
+            } catch (parseError) {
+                // If prefix parsing fails, just ignore it and return the full path
+                console.warn('Failed to parse ignorePrefix:', ignorePrefix, parseError);
+            }
+        }
+
+        return fullPathArray;
+    } catch (error) {
+        // If anything goes wrong, fall back to a safe default
+        console.error('Error in convertToEnhancedBookmark:', error);
+        return [];
+    }
+};
+
+// Helper function to parse access path string to array
+export const parseAccessPathToArray = (accessPath) => {
+    if (!accessPath) return [];
+    
+    // Handle paths like: data[0]["result"]["section_texts"] or data[*]["result"]
+    // Split by brackets and quotes, then clean up
+    const parts = [];
+    
+    // Remove 'data' prefix if it exists
+    let path = accessPath;
+    if (path.startsWith('data')) {
+        parts.push('data');
+        path = path.substring(4);
+    }
+    
+    // Parse the rest of the path
+    const regex = /\[([^\]]+)\]/g;
+    let match;
+    
+    while ((match = regex.exec(path)) !== null) {
+        let value = match[1];
+        
+        // Remove quotes if present
+        if ((value.startsWith('"') && value.endsWith('"')) || 
+            (value.startsWith("'") && value.endsWith("'"))) {
+            value = value.slice(1, -1);
+        }
+        
+        // Handle wildcards
+        if (value === "*") {
+            parts.push("*");
+        }
+        // Convert to number if it's a numeric string
+        else if (/^\d+$/.test(value)) {
+            parts.push(parseInt(value));
+        } else {
+            parts.push(value);
+        }
+    }
+    
+    return parts;
+};
+
+// Generate enhanced bookmark object
+export const generateEnhancedBookmarkObject = (currentPath, name, ignorePrefix = undefined) => {
+    const pathArray = convertToEnhancedBookmark(currentPath, ignorePrefix);
+    
+    return {
+        name: name,
+        path: pathArray
+    };
+};

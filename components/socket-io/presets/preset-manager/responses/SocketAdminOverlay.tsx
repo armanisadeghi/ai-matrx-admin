@@ -10,14 +10,14 @@ import SocketInfoResponseTab from "./admin-tabs/SocketInfoResponseTab";
 import SocketErrorResponseTab from "./admin-tabs/SocketErrorResponseTab";
 import { SocketBookmarkTab, BookmarkTabConfig } from "./admin-tabs/SocketBookmarkTab";
 import { DualSidebar, TaskSidebarComponent } from "./admin-tabs/components/DualSidebar";
-import { 
+import {
     InfoResponseItemComponent,
     ErrorResponseItemComponent,
     TextResponseItemComponent,
     DataResponseItemComponent,
     WorkflowSummaryItemComponent,
     StepCompletionItemComponent,
-    LoadingWorkItemComponent
+    LoadingWorkItemComponent,
 } from "./admin-tabs/components/ResultsSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,9 +29,10 @@ import {
     selectPrimaryResponseTextByTaskId,
     selectPrimaryResponseEndedByTaskId,
 } from "@/lib/redux/socket-io/selectors/socket-response-selectors";
+import { DynamicTab } from "./admin-tabs/DynamicTab";
 
 // Define available base tab names
-export type BaseTabName = "tasks" | "text" | "data" | "data-processor" | "info" | "errors";
+export type BaseTabName = "tasks" | "text" | "data" | "data-processor" | "info" | "errors" | "dynamic";
 
 // Header component props interface
 export interface HeaderComponentProps {
@@ -78,7 +79,7 @@ export interface SocketAdminOverlayProps extends SocketPresetResponseProps {
     WorkflowSummaryItemComponent?: WorkflowSummaryItemComponent;
     StepCompletionItemComponent?: StepCompletionItemComponent;
     LoadingWorkItemComponent?: LoadingWorkItemComponent;
-    
+
     // DualSidebar customization
     dualSidebarClassName?: string;
     dualSidebarSplitRatio?: [number, number];
@@ -112,7 +113,7 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
     WorkflowSummaryItemComponent,
     StepCompletionItemComponent,
     LoadingWorkItemComponent,
-    
+
     // DualSidebar customization
     dualSidebarClassName,
     dualSidebarSplitRatio,
@@ -160,6 +161,21 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
                 />
             ),
         },
+        dynamic: {
+            id: "dynamic",
+            label: "Dynamic",
+            content: (
+                <DynamicTab
+                    currentTaskId={selectedTaskId}
+                    onTaskIdChange={setSelectedTaskId}
+                    isExecuting={isExecuting}
+                    error={error}
+                    selectedDataType={selectedDataType}
+                    selectedIndex={responseIndex}
+                />
+            ),
+        },
+
         text: {
             id: "text",
             label: "Text",
@@ -374,7 +390,9 @@ export const SocketAdminOverlay: React.FC<SocketAdminOverlayProps> = ({
             }}
             onResponseIndexChange={setResponseIndex}
         />
-    ) : defaultHeaderComponent;
+    ) : (
+        defaultHeaderComponent
+    );
 
     const actualInitialTab = tabs.find((tab) => tab.id === initialTab)?.id || tabs[0]?.id || "tasks";
 

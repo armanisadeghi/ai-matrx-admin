@@ -15,11 +15,12 @@ export function getIntelligentNodePosition(
   existingNodes: Node[],
   viewport?: Viewport
 ): { x: number; y: number } {
-  // Get viewport center, fallback to origin if not provided
-  const viewportCenter = viewport 
+  // Get viewport center, fallback to (0, 0) which is center of screen
+  const viewportCenter = viewport && typeof window !== 'undefined'
     ? {
-        x: (-viewport.x + window.innerWidth / 2) / viewport.zoom,
-        y: (-viewport.y + window.innerHeight / 2) / viewport.zoom
+        // Convert screen center to flow coordinates
+        x: (window.innerWidth / 2 - viewport.x) / viewport.zoom,
+        y: (window.innerHeight / 2 - viewport.y) / viewport.zoom
       }
     : { x: 0, y: 0 };
 
@@ -115,10 +116,11 @@ function getSpiralPosition(
     }
   }
 
-  // Fallback: place far to the right if spiral fails
+  // Fallback: place relative to center, ensuring we don't go to bottom corner
+  const fallbackOffset = Math.max(200, existingNodes.length * 50);
   return {
-    x: center.x + 500,
-    y: center.y - NODE_HEIGHT / 2
+    x: center.x + fallbackOffset,
+    y: center.y
   };
 }
 

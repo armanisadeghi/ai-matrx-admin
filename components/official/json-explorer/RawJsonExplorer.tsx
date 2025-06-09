@@ -11,8 +11,9 @@ import BookmarkDialog from "./BookmarkDialog";
 import BookmarksDialog from "./BookmarksDialog";
 import NavigationRows from "./NavigationRows";
 import ActionButtons from "./ActionButtons";
+import CopyPathObjectDialog from "./CopyPathObjectDialog";
 
-const RawJsonExplorer = ({ pageData }) => {
+const RawJsonExplorer = ({ pageData, ignorePrefix = undefined }) => {
     // Initialize with cleaned data
     const [originalData, setOriginalData] = useState(null);
     const [currentPath, setCurrentPath] = useState<PathArray>([[0, "All"]]); // [[rowIndex, selectedKey], ...]
@@ -24,6 +25,12 @@ const RawJsonExplorer = ({ pageData }) => {
     const [bookmarkName, setBookmarkName] = useState("");
     const [bookmarkDescription, setBookmarkDescription] = useState("");
     const [bookmarksDialogOpen, setBookmarksDialogOpen] = useState(false);
+
+    // Copy Path Object dialog state
+    const [copyPathObjectDialogOpen, setCopyPathObjectDialogOpen] = useState(false);
+
+    // Ignore prefix state
+    const [currentIgnorePrefix, setCurrentIgnorePrefix] = useState(ignorePrefix || "");
 
     // Hidden paths feature
     const [hiddenPaths, setHiddenPaths] = useState<string[]>([]);
@@ -367,11 +374,14 @@ const RawJsonExplorer = ({ pageData }) => {
                         onOpenBookmarkDialog={() => setBookmarkDialogOpen(true)}
                         onCopyPath={copyAccessPath}
                         onReset={handleReset}
+                        onOpenCopyPathObjectDialog={() => setCopyPathObjectDialogOpen(true)}
+                        ignorePrefix={currentIgnorePrefix}
+                        onIgnorePrefixChange={setCurrentIgnorePrefix}
                     />
                 </div>
                 
                 {generateAccessPath(currentPath) !== "data" && (
-                    <div className="mb-4 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono overflow-x-auto">
+                    <div className="mb-2 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono overflow-x-auto">
                         {generateAccessPath(currentPath)}
                     </div>
                 )}
@@ -422,6 +432,13 @@ const RawJsonExplorer = ({ pageData }) => {
                 bookmarks={bookmarks}
                 onJumpToBookmark={jumpToBookmark}
                 onDeleteBookmark={deleteBookmark}
+            />
+
+            <CopyPathObjectDialog
+                open={copyPathObjectDialogOpen}
+                onOpenChange={setCopyPathObjectDialogOpen}
+                currentPath={currentPath}
+                ignorePrefix={currentIgnorePrefix}
             />
         </div>
     );

@@ -38,6 +38,7 @@ export const SocketResultsOverlay: React.FC<SocketResultsOverlayProps> = ({
             customTabs={customTabs}
             overlayTitle={overlayTitle}
             overlayDescription={overlayDescription}
+            includeTabs={["tasks", "text", "dynamic", "data", "info", "errors"]}
         />
     );
 }; 

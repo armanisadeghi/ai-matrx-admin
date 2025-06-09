@@ -104,7 +104,7 @@ export const SocketBookmarkTab: React.FC<SocketBookmarkTabProps> = ({
             case "RawJsonExplorer":
                 return (
                     <div className="h-full">
-                        <RawJsonExplorer pageData={traversalResult.data} />
+                        <RawJsonExplorer pageData={traversalResult.data} ignorePrefix="data[*]" />
                     </div>
                 );
 

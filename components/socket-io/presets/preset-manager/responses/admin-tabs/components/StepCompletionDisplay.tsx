@@ -117,7 +117,7 @@ const ResultRenderer: React.FC<{ result: any; functionName: string }> = ({ resul
 };
 
 export const StepCompletionDisplay: React.FC<StepCompletionDisplayProps> = ({ data }) => {
-    const [isResultsExpanded, setIsResultsExpanded] = useState(true);
+    const [isResultsExpanded, setIsResultsExpanded] = useState(false);
     
     const hasResult = data.result && (
         typeof data.result === 'object' ? Object.keys(data.result).length > 0 : data.result
@@ -224,7 +224,10 @@ export const StepCompletionDisplay: React.FC<StepCompletionDisplayProps> = ({ da
             {/* Results Section */}
             {hasResult && (
                 <Card className={isSuccessful ? "border-green-200 dark:border-green-800" : ""}>
-                    <CardHeader className="pb-2">
+                    <CardHeader 
+                        className="pb-2 cursor-pointer hover:bg-muted/30 transition-colors"
+                        onClick={() => setIsResultsExpanded(!isResultsExpanded)}
+                    >
                         <CardTitle className={`flex items-center justify-between ${isSuccessful ? "text-green-700 dark:text-green-300" : ""}`}>
                             <div className="flex items-center gap-2">
                                 <CheckCircle className={`w-5 h-5 ${isSuccessful ? "text-green-500" : "text-muted-foreground"}`} />
@@ -243,18 +246,13 @@ export const StepCompletionDisplay: React.FC<StepCompletionDisplayProps> = ({ da
                                     </Badge>
                                 )}
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setIsResultsExpanded(!isResultsExpanded)}
-                                className="h-8 w-8 p-0"
-                            >
+                            <div className="h-8 w-8 flex items-center justify-center">
                                 {isResultsExpanded ? (
                                     <ChevronDown className="w-4 h-4" />
                                 ) : (
                                     <ChevronRight className="w-4 h-4" />
                                 )}
-                            </Button>
+                            </div>
                         </CardTitle>
                     </CardHeader>
                     {isResultsExpanded && (
