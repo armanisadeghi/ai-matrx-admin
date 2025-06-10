@@ -69,9 +69,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["createdAt", "updatedAt", "appletId", "containerId", "order"]
 },
   arg: {
-  nativeFields: ["id", "name", "required", "defaultJunk", "dataType", "ready", "registeredFunction", "defaultValue"],
+  nativeFields: ["id", "name", "required", "defaultJunk", "dataType", "ready", "registeredFunction", "defaultValue", "description", "examples"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["name", "required", "defaultJunk", "dataType", "ready", "registeredFunction", "defaultValue"]
+  nativeFieldsNoPk: ["name", "required", "defaultJunk", "dataType", "ready", "registeredFunction", "defaultValue", "description", "examples"]
 },
   audioLabel: {
   nativeFields: ["id", "createdAt", "name", "description"],
@@ -324,9 +324,9 @@ export const entityFieldNameGroups: EntityFieldNameGroupsType =
   nativeFieldsNoPk: ["recipe", "tool", "params"]
 },
   registeredFunction: {
-  nativeFields: ["id", "funcName", "modulePath", "className", "description", "returnBroker", "name", "tags"],
+  nativeFields: ["id", "funcName", "modulePath", "className", "description", "returnBroker", "name", "tags", "category", "icon", "nodeDescription"],
   primaryKeyFields: ["id"],
-  nativeFieldsNoPk: ["funcName", "modulePath", "className", "description", "returnBroker", "name", "tags"]
+  nativeFieldsNoPk: ["funcName", "modulePath", "className", "description", "returnBroker", "name", "tags", "category", "icon", "nodeDescription"]
 },
   schemaTemplates: {
   nativeFields: ["id", "templateName", "description", "fields", "version", "createdAt"],

@@ -130,7 +130,8 @@ function updateStepWithFunctionData(existingStep: WorkflowStep, registeredFuncti
         ...existingStep,
         override_data: {
             ...existingStep.override_data,
-            return_broker_override: existingStep.override_data?.return_broker_override || registeredFunction.returnBroker,
+            // NEVER overwrite user's return_broker_override - preserve it exactly as is
+            return_broker_override: existingStep.override_data?.return_broker_override,
             arg_overrides: mergedOverrides
         }
     };
@@ -339,6 +340,7 @@ export const getWorkflowActionsWithThunks = () => {
         // Refresh a step with latest function metadata (preserves user overrides)
         refreshStepWithFunctionData: (params: { stepIndex: number }) => 
             (dispatch: AppDispatch, getState: () => RootState) => {
+                console.log("🔍 refreshStepWithFunctionData called - this might be corrupting data!", params);
                 const state = getState();
                 const keyOrId = state.entities["workflow"].selection.activeRecord;
                 if (!keyOrId) return;

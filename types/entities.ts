@@ -143,6 +143,8 @@ export type Arg = {
     ready: boolean;
     registeredFunction: string;
     defaultValue: Record<string, unknown>;
+    description?: string;
+    examples?: string;
 }
 
 export type AudioLabel = {
@@ -732,6 +734,9 @@ export type RegisteredFunction = {
     returnBroker: string;
     name: string;
     tags?: Record<string, unknown>;
+    category?: string;
+    icon?: string;
+    nodeDescription?: string;
 }
 
 export type SchemaTemplates = {

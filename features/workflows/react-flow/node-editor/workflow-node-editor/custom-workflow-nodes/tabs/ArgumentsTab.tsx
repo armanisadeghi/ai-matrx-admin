@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { getRegisteredFunctions } from "@/features/workflows/constants";
+import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 import { Button } from "@/components/ui/button";
 import { Input, DeleteInput } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +32,7 @@ interface ArgumentsTabProps {
 const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ node, onNodeUpdate, argsToHide = [] }) => {
     const functionData = getRegisteredFunctions().find((f) => f.id === node.function_id);
     const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({});
+    const [localValues, setLocalValues] = useState<Record<string, string>>({});
 
     if (!functionData || functionData.args.length === 0) {
         return <div className="p-4 text-center text-muted-foreground">No arguments defined for this function.</div>;
@@ -63,6 +64,8 @@ const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ node, onNodeUpdate, argsToH
                 const arg = [...requiredArgs, ...optionalArgs].find(a => a.name === argName);
                 if (arg) {
                     handleArgValueChange(node, onNodeUpdate, arg, formattedJson);
+                    // Also update local state so the textarea shows the cleaned value
+                    setLocalValues(prev => ({ ...prev, [argName]: formattedJson }));
                 }
                 
                 setJsonErrors(prev => ({ ...prev, [argName]: '' }));
@@ -80,7 +83,7 @@ const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ node, onNodeUpdate, argsToH
         }
     };
 
-    const validateJsonOnChange = (argName: string, value: string) => {
+    const validateJsonOnBlur = (argName: string, value: string) => {
         if (!value || value.trim() === '') {
             setJsonErrors(prev => ({ ...prev, [argName]: '' }));
             return;
@@ -153,6 +156,10 @@ const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ node, onNodeUpdate, argsToH
 
             case 'dict':
             case 'list':
+                const currentValue = localValues[arg.name] !== undefined 
+                    ? localValues[arg.name] 
+                    : valueToString(effective.value);
+                
                 return (
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -161,7 +168,12 @@ const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ node, onNodeUpdate, argsToH
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleJsonClean(arg.name, valueToString(effective.value))}
+                                onClick={() => {
+                                    const valueToClean = localValues[arg.name] !== undefined 
+                                        ? localValues[arg.name] 
+                                        : valueToString(effective.value);
+                                    handleJsonClean(arg.name, valueToClean);
+                                }}
                                 className="h-7 px-2 text-xs"
                             >
                                 <Wand2 className="h-3 w-3 mr-1" />
@@ -169,25 +181,28 @@ const ArgumentsTab: React.FC<ArgumentsTabProps> = ({ node, onNodeUpdate, argsToH
                             </Button>
                         </div>
                         <Textarea
-                            value={valueToString(effective.value)}
+                            value={currentValue}
                             onChange={(e) => {
+                                setLocalValues(prev => ({ ...prev, [arg.name]: e.target.value }));
+                            }}
+                            onBlur={(e) => {
                                 handleArgValueChange(node, onNodeUpdate, arg, e.target.value);
-                                validateJsonOnChange(arg.name, e.target.value);
+                                validateJsonOnBlur(arg.name, e.target.value);
+                                // Clear local state after committing to node
+                                setLocalValues(prev => {
+                                    const newState = { ...prev };
+                                    delete newState[arg.name];
+                                    return newState;
+                                });
                             }}
                             placeholder={dataType === 'dict' ? '{\n  "key": "value"\n}' : '[\n  "item1",\n  "item2"\n]'}
                             className="text-sm font-mono resize-y"
                             rows={8}
                         />
                         {currentError && (
-                            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                            <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
                                 <AlertTriangle className="h-3 w-3" />
                                 {currentError}
-                            </div>
-                        )}
-                        {!currentError && hasContent(effective.value) && (
-                            <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                                <CheckCircle2 className="h-3 w-3" />
-                                Valid JSON format
                             </div>
                         )}
                     </div>

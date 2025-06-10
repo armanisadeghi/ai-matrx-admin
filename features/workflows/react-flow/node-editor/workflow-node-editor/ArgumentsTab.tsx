@@ -28,6 +28,7 @@ import { cleanJson } from "@/utils/json-cleaner-utility";
 const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
     const functionData = getFunctionData(node.function_id);
     const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({});
+    const [localValues, setLocalValues] = useState<Record<string, string>>({});
 
     if (!hasFunctionArguments(functionData)) {
         return <div className="p-4 text-center text-muted-foreground">No arguments defined for this function.</div>;
@@ -36,61 +37,63 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
     const { requiredArgs, optionalArgs } = separateArguments(functionData);
 
     const handleJsonClean = (argName: string, currentValue: string) => {
-        if (!currentValue || currentValue.trim() === '') {
-            setJsonErrors(prev => ({ ...prev, [argName]: '' }));
+        if (!currentValue || currentValue.trim() === "") {
+            setJsonErrors((prev) => ({ ...prev, [argName]: "" }));
             return;
         }
 
         try {
             // First try our flexible JSON parser
             const parseResult = flexibleJsonParse(currentValue);
-            
+
             if (parseResult.success) {
                 // Clean and format the JSON
                 const cleanedData = cleanJson(parseResult.data);
                 const formattedJson = JSON.stringify(cleanedData, null, 2);
-                
+
                 // Find the argument and update its value
-                const arg = [...requiredArgs, ...optionalArgs].find(a => a.name === argName);
+                const arg = [...requiredArgs, ...optionalArgs].find((a) => a.name === argName);
                 if (arg) {
                     handleArgValueChange(node, onNodeUpdate, arg, formattedJson);
+                    // Also update local state so the textarea shows the cleaned value
+                    setLocalValues((prev) => ({ ...prev, [argName]: formattedJson }));
                 }
-                
-                setJsonErrors(prev => ({ ...prev, [argName]: '' }));
+
+                setJsonErrors((prev) => ({ ...prev, [argName]: "" }));
             } else {
-                setJsonErrors(prev => ({ 
-                    ...prev, 
-                    [argName]: parseResult.error || 'Invalid JSON format' 
+                setJsonErrors((prev) => ({
+                    ...prev,
+                    [argName]: parseResult.error || "Invalid JSON format",
                 }));
             }
         } catch (error) {
-            setJsonErrors(prev => ({ 
-                ...prev, 
-                [argName]: 'Failed to parse JSON: ' + (error as Error).message 
+            setJsonErrors((prev) => ({
+                ...prev,
+                [argName]: "Failed to parse JSON: " + (error as Error).message,
             }));
         }
     };
 
-    const validateJsonOnChange = (argName: string, value: string) => {
-        if (!value || value.trim() === '') {
-            setJsonErrors(prev => ({ ...prev, [argName]: '' }));
+    const validateJsonOnBlur = (argName: string, value: string) => {
+        if (!value || value.trim() === "") {
+            setJsonErrors((prev) => ({ ...prev, [argName]: "" }));
             return;
         }
 
         try {
             const parseResult = flexibleJsonParse(value);
             if (parseResult.success) {
-                setJsonErrors(prev => ({ ...prev, [argName]: '' }));
+                setJsonErrors((prev) => ({ ...prev, [argName]: "" }));
             } else {
-                setJsonErrors(prev => ({ 
-                    ...prev, 
-                    [argName]: 'Invalid JSON - use Clean JSON button to fix' 
+                setJsonErrors((prev) => ({
+                    ...prev,
+                    [argName]: "Invalid JSON - use Clean JSON button to fix",
                 }));
             }
         } catch (error) {
-            setJsonErrors(prev => ({ 
-                ...prev, 
-                [argName]: 'Invalid JSON format' 
+            setJsonErrors((prev) => ({
+                ...prev,
+                [argName]: "Invalid JSON format",
             }));
         }
     };
@@ -100,29 +103,25 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
         const currentError = jsonErrors[arg.name];
 
         switch (dataType) {
-            case 'bool':
+            case "bool":
                 return (
                     <div className="flex items-center space-x-2">
                         <Checkbox
-                            checked={effective.value === true || effective.value === 'true'}
-                            onCheckedChange={(checked) => 
-                                handleArgValueChange(node, onNodeUpdate, arg, String(checked))
-                            }
+                            checked={effective.value === true || effective.value === "true"}
+                            onCheckedChange={(checked) => handleArgValueChange(node, onNodeUpdate, arg, String(checked))}
                         />
-                        <span className="text-sm">
-                            {effective.value === true || effective.value === 'true' ? 'True' : 'False'}
-                        </span>
+                        <span className="text-sm">{effective.value === true || effective.value === "true" ? "True" : "False"}</span>
                     </div>
                 );
 
-            case 'int':
+            case "int":
                 return (
                     <Input
                         type="number"
                         step="1"
-                        value={String(effective.value || '')}
+                        value={String(effective.value || "")}
                         onChange={(e) => {
-                            const val = e.target.value === '' ? '' : parseInt(e.target.value) || 0;
+                            const val = e.target.value === "" ? "" : parseInt(e.target.value) || 0;
                             handleArgValueChange(node, onNodeUpdate, arg, String(val));
                         }}
                         placeholder="Enter integer value"
@@ -130,20 +129,22 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                     />
                 );
 
-            case 'float':
+            case "float":
                 return (
                     <Input
                         type="number"
                         step="any"
-                        value={String(effective.value || '')}
+                        value={String(effective.value || "")}
                         onChange={(e) => handleArgValueChange(node, onNodeUpdate, arg, e.target.value)}
                         placeholder="Enter decimal value"
                         className="text-sm h-10"
                     />
                 );
 
-            case 'dict':
-            case 'list':
+            case "dict":
+            case "list":
+                const currentValue = localValues[arg.name] !== undefined ? localValues[arg.name] : valueToString(effective.value);
+
                 return (
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -152,7 +153,11 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleJsonClean(arg.name, valueToString(effective.value))}
+                                onClick={() => {
+                                    const valueToClean =
+                                        localValues[arg.name] !== undefined ? localValues[arg.name] : valueToString(effective.value);
+                                    handleJsonClean(arg.name, valueToClean);
+                                }}
                                 className="h-7 px-2 text-xs"
                             >
                                 <Wand2 className="h-3 w-3 mr-1" />
@@ -160,40 +165,43 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                             </Button>
                         </div>
                         <Textarea
-                            value={valueToString(effective.value)}
+                            value={currentValue}
                             onChange={(e) => {
-                                handleArgValueChange(node, onNodeUpdate, arg, e.target.value);
-                                validateJsonOnChange(arg.name, e.target.value);
+                                setLocalValues((prev) => ({ ...prev, [arg.name]: e.target.value }));
                             }}
-                            placeholder={dataType === 'dict' ? '{\n  "key": "value"\n}' : '[\n  "item1",\n  "item2"\n]'}
+                            onBlur={(e) => {
+                                handleArgValueChange(node, onNodeUpdate, arg, e.target.value);
+                                validateJsonOnBlur(arg.name, e.target.value);
+                                // Clear local state after committing to node
+                                setLocalValues((prev) => {
+                                    const newState = { ...prev };
+                                    delete newState[arg.name];
+                                    return newState;
+                                });
+                            }}
+                            placeholder={dataType === "dict" ? '{\n  "key": "value"\n}' : '[\n  "item1",\n  "item2"\n]'}
                             className="text-sm font-mono resize-y"
                             rows={8}
                         />
                         {currentError && (
-                            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                            <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
                                 <AlertTriangle className="h-3 w-3" />
                                 {currentError}
-                            </div>
-                        )}
-                        {!currentError && hasContent(effective.value) && (
-                            <div className="flex items-center gap-2 text-xs text-green-600 dark:text-green-400">
-                                <CheckCircle2 className="h-3 w-3" />
-                                Valid JSON format
                             </div>
                         )}
                     </div>
                 );
 
-            case 'str':
-            case 'url':
+            case "str":
+            case "url":
             default:
                 return (
                     <div className="space-y-2">
                         <Label className="text-xs">Text value:</Label>
                         <Textarea
-                            value={String(effective.value || '')}
+                            value={String(effective.value || "")}
                             onChange={(e) => handleArgValueChange(node, onNodeUpdate, arg, e.target.value)}
-                            placeholder={dataType === 'url' ? 'https://example.com' : 'Enter text value'}
+                            placeholder={dataType === "url" ? "https://example.com" : "Enter text value"}
                             className="text-sm resize-y"
                             rows={3}
                         />
@@ -229,14 +237,10 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                             {/* Option 1: Direct Value */}
                             <div className="space-y-3 p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-green-700 dark:text-green-300">
-                                        Option 1: Direct Value
-                                    </span>
+                                    <span className="text-sm font-medium text-green-700 dark:text-green-300">Option 1: Direct Value</span>
                                     <Checkbox
                                         checked={effective.ready}
-                                        onCheckedChange={(checked) => 
-                                            updateArgOverride(node, onNodeUpdate, arg.name, "ready", !!checked)
-                                        }
+                                        onCheckedChange={(checked) => updateArgOverride(node, onNodeUpdate, arg.name, "ready", !!checked)}
                                     />
                                 </div>
 
@@ -252,9 +256,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                             {/* Option 2: Broker Mapping */}
                             <div className="space-y-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                                        Option 2: Broker Mapping
-                                    </span>
+                                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Option 2: Broker Mapping</span>
                                     <Button
                                         onClick={() => addBrokerMapping(node, onNodeUpdate, arg.name)}
                                         size="sm"
@@ -281,14 +283,10 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                                                 <DeleteInput
                                                     key={mappingIndex}
                                                     value={mapping.source_broker_id}
-                                                    onChange={(e) => 
-                                                        updateBrokerMapping(node, onNodeUpdate, globalIndex, e.target.value)
-                                                    }
+                                                    onChange={(e) => updateBrokerMapping(node, onNodeUpdate, globalIndex, e.target.value)}
                                                     placeholder="Enter broker ID"
                                                     className="font-mono text-sm h-10"
-                                                    onDelete={() => 
-                                                        removeBrokerMapping(node, onNodeUpdate, globalIndex)
-                                                    }
+                                                    onDelete={() => removeBrokerMapping(node, onNodeUpdate, globalIndex)}
                                                 />
                                             );
                                         })}
@@ -337,9 +335,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
             {requiredArgs.length > 0 && (
                 <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                            Required Arguments
-                        </h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Required Arguments</h3>
                         <Badge variant="destructive" className="text-xs">
                             Must be configured
                         </Badge>
@@ -352,9 +348,7 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
             {optionalArgs.length > 0 && (
                 <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                            Optional Arguments
-                        </h3>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Optional Arguments</h3>
                         <Badge variant="secondary" className="text-xs">
                             Can be left empty
                         </Badge>
@@ -369,12 +363,24 @@ const ArgumentsTab: React.FC<TabComponentProps> = ({ node, onNodeUpdate }) => {
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium text-muted-foreground">Data Type Guide:</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
-                            <div>• <strong>str/url:</strong> Text values</div>
-                            <div>• <strong>int:</strong> Whole numbers (1, 42, -10)</div>
-                            <div>• <strong>float:</strong> Decimal numbers (3.14, -0.5)</div>
-                            <div>• <strong>bool:</strong> True/False values</div>
-                            <div>• <strong>dict:</strong> JSON objects {"{"}"key": "value"{"}"}</div>
-                            <div>• <strong>list:</strong> JSON arrays ["item1", "item2"]</div>
+                            <div>
+                                • <strong>str/url:</strong> Text values
+                            </div>
+                            <div>
+                                • <strong>int:</strong> Whole numbers (1, 42, -10)
+                            </div>
+                            <div>
+                                • <strong>float:</strong> Decimal numbers (3.14, -0.5)
+                            </div>
+                            <div>
+                                • <strong>bool:</strong> True/False values
+                            </div>
+                            <div>
+                                • <strong>dict:</strong> JSON objects {"{"}"key": "value"{"}"}
+                            </div>
+                            <div>
+                                • <strong>list:</strong> JSON arrays ["item1", "item2"]
+                            </div>
                         </div>
                         <p className="text-xs text-muted-foreground pt-2">
                             Use the "Clean JSON" button to automatically format and validate dict/list values.

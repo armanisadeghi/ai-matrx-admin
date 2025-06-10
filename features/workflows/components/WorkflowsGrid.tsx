@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Workflow, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { fetchUserWorkflows, CoreWorkflowData } from '../service/workflowService';
+import { fetchUserWorkflows } from '../service/workflowService';
 import { WorkflowCard } from './WorkflowCard';
 import { selectUser, selectActiveUserName } from "@/lib/redux/selectors/userSelectors";
 import { useAppSelector } from '@/lib/redux';
+import { CoreWorkflowData } from '../types';
 
 export function WorkflowsGrid() {
   const [workflows, setWorkflows] = useState<CoreWorkflowData[]>([]);

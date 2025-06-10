@@ -14,6 +14,9 @@ import { socketMiddleware } from "./socket-io/connection/socketMiddleware";
 
 const sagaMiddleware = createSagaMiddleware();
 
+// Store reference for utility access
+let storeInstance: AppStore | null = null;
+
 export const makeStore = (initialState: any) => {
     if (!initialState?.globalCache?.schema) {
         throw new Error("Schema must be provided to create store");
@@ -36,6 +39,9 @@ export const makeStore = (initialState: any) => {
     const rootSagaInstance = createRootSaga(initialState.globalCache.entityNames);
     sagaMiddleware.run(rootSagaInstance);
 
+    // Keep reference for utility access
+    storeInstance = store;
+
     return store;
 };
 
@@ -43,5 +49,8 @@ export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore["getState"]>;
 export type AppDispatch = AppStore["dispatch"];
 export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action>;
+
+// Getter for utilities to access store
+export const getStore = (): AppStore | null => storeInstance;
 
 enableMapSet();

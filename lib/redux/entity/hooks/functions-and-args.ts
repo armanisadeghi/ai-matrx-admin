@@ -1,4 +1,3 @@
-
 import {
     ArgData,
     RegisteredFunctionData,
@@ -8,6 +7,20 @@ import { EntitySelectors } from "../selectors";
 import { EntityActions } from "../slice";
 import { FetchMode } from "../actions";
 import { useEntityWithFetch } from "./useAllData";
+
+type RegisteredFunctionDataExample = {
+    id: string;
+    name: string;
+    funcName: string;
+    modulePath: string;
+    returnBroker: string;
+    tags?: Record<string, unknown>;
+    description?: string;
+    category?: string;
+    icon?: string;
+    className?: string;
+    nodeDescription?: string;
+}
 
 
 type UseRegisteredFunctionWithFetchReturn = {
@@ -93,6 +106,18 @@ export const useRegisteredFunctionWithFetch = (): UseRegisteredFunctionWithFetch
     };
 };
 
+type ArgDataExample = {
+    id: string;
+    name: string;
+    registeredFunction: string;
+    required: boolean;
+    dataType: "str" | "bool" | "dict" | "float" | "int" | "list" | "url";
+    ready: boolean;
+    defaultValue: Record<string, unknown>;
+    description?: string;
+    defaultJunk?: string;
+    examples?: string;
+}
 
 type UseArgWithFetchReturn = {
     argSelectors: EntitySelectors<"arg">;
@@ -174,5 +199,90 @@ export const useArgWithFetch = (): UseArgWithFetchReturn => {
         fetchArgOneWithFkIfk,
         fetchArgAll,
         fetchArgPaginated,
+    };
+};
+
+// Combined function structure matching constants
+type CombinedFunctionArg = {
+    name: string;
+    required: boolean;
+    dataType: string;
+    ready: boolean;
+    defaultValue: any;
+    description?: string | null;
+    examples?: string | null;
+};
+
+type CombinedFunction = {
+    id: string;
+    name: string;
+    returnBroker: string;
+    args: CombinedFunctionArg[];
+    description?: string;
+    category?: string;
+    nodeDescription?: string;
+    tags?: string[] | null;
+    icon?: string | null;
+};
+
+type UseCombinedFunctionsWithArgsReturn = {
+    combinedFunctions: CombinedFunction[];
+    isLoading: boolean;
+    isError: boolean;
+    fetchAll: () => void;
+};
+
+export const useCombinedFunctionsWithArgs = (): UseCombinedFunctionsWithArgsReturn => {
+    const {
+        registeredFunctionRecords,
+        registeredFunctionIsLoading,
+        registeredFunctionIsError,
+        fetchRegisteredFunctionAll,
+    } = useRegisteredFunctionWithFetch();
+
+    const {
+        argRecords,
+        argIsLoading,
+        argIsError,
+        fetchArgAll,
+    } = useArgWithFetch();
+
+    const fetchAll = () => {
+        fetchRegisteredFunctionAll();
+        fetchArgAll();
+    };
+
+    const combinedFunctions: CombinedFunction[] = Object.values(registeredFunctionRecords).map((func) => {
+        // Get all args for this function
+        const functionArgs = Object.values(argRecords)
+            .filter(arg => arg.registeredFunction === func.id)
+            .map((arg): CombinedFunctionArg => ({
+                name: arg.name,
+                required: arg.required,
+                dataType: arg.dataType || 'str',
+                ready: arg.ready,
+                defaultValue: arg.defaultValue,
+                description: arg.description || null,
+                examples: arg.examples || null,
+            }));
+
+        return {
+            id: func.id,
+            name: func.name,
+            returnBroker: func.returnBroker,
+            args: functionArgs,
+            description: func.description,
+            category: func.category,
+            nodeDescription: func.nodeDescription,
+            tags: func.tags ? (Array.isArray(func.tags) ? func.tags : Object.keys(func.tags)) : null,
+            icon: func.icon || null,
+        };
+    });
+
+    return {
+        combinedFunctions,
+        isLoading: registeredFunctionIsLoading || argIsLoading,
+        isError: registeredFunctionIsError || argIsError,
+        fetchAll,
     };
 };

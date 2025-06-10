@@ -1,7 +1,59 @@
 import { cloneDeep } from "lodash";
 import { ArgumentOverride } from "@/features/workflows/types";
-import { getRegisteredFunctions } from "@/features/workflows/constants";
 import { flexibleJsonParse } from "@/utils/json-utils";
+import { registeredFunctions } from "@/features/workflows/constants";
+import { getStore } from "@/lib/redux/store";
+
+export const DEFAULT_EXCLUDE_ARG_NAMES = ["recipe_brokers", "session_manager"];
+
+// Get registered functions from Redux store (primary source)
+export function getRegisteredFunctionsFromStore() {
+    const store = getStore();
+    if (!store) {
+        return [];
+    }
+
+    const state = store.getState();
+    const functions = Object.values(state.entities?.registeredFunction?.records || {});
+    const args = Object.values(state.entities?.arg?.records || {});
+    
+    return functions.map((func: any) => ({
+        id: func.id,
+        name: func.name,
+        return_broker: func.returnBroker,
+        description: func.description,
+        category: func.category,
+        node_description: func.nodeDescription,
+        tags: func.tags,
+        icon: func.icon,
+        args: args
+            .filter((arg: any) => arg.registeredFunction === func.id)
+            .filter((arg: any) => !DEFAULT_EXCLUDE_ARG_NAMES.includes(arg.name))
+            .map((arg: any) => ({
+                name: arg.name,
+                required: arg.required,
+                data_type: arg.dataType,
+                ready: arg.ready,
+                default_value: arg.defaultValue?.value,
+                description: arg.description,
+                examples: arg.examples
+            }))
+    }));
+}
+
+export function getRegisteredFunctions() {
+    // Try to get from Redux store first
+    const storeData = getRegisteredFunctionsFromStore();
+    if (storeData.length > 0) {
+        return storeData;
+    }
+    
+    // Fallback to constants if store is empty or not available
+    return cloneDeep(registeredFunctions).map((func) => ({
+        ...func,
+        args: func.args.filter((arg) => !DEFAULT_EXCLUDE_ARG_NAMES.includes(arg.name)),
+    }));
+}
 
 // Helper function to get the effective value for an argument
 export const getEffectiveArgValue = (arg: any, argOverrides?: ArgumentOverride[]): { value: any; ready: boolean } => {

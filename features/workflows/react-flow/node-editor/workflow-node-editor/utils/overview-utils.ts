@@ -1,5 +1,5 @@
 import { BaseNode } from '@/features/workflows/types';
-import { getRegisteredFunctions } from '@/features/workflows/constants';
+import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 
 // Interface for argument with additional data
 export interface ArgumentWithData {

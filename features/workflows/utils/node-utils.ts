@@ -1,7 +1,7 @@
 import { BaseNode, ArgumentOverride, ArgumentMapping } from "@/features/workflows/types";
-import { DEFAULT_EXCLUDE_ARG_NAMES, getRegisteredFunctions } from "@/features/workflows/constants";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
+import { DEFAULT_EXCLUDE_ARG_NAMES, getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 
 
 export function getNormalizedRegisteredFunctionNode(function_id: string): BaseNode {

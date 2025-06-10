@@ -291,9 +291,29 @@ export const useWorkflowActions = ({
   }, [setNodes, workflowId, userId, nodes, onWorkflowReload]);
 
   const prepareWorkflowData = useCallback(() => {
+    console.log("🔍 prepareWorkflowData - INPUT nodes sample:", 
+      nodes.slice(0, 3).map(node => ({
+        id: node.id,
+        stepName: node.data?.step_name,
+        returnBrokerOverrides: node.data?.return_broker_overrides,
+        nodeType: node.type,
+        dataKeys: node.data ? Object.keys(node.data) : []
+      }))
+    );
+
     const workflowNodes = extractExecutionNodes(nodes);
     const userInputs = extractUserInputs(nodes);
     const relays = extractRelays(nodes);
+
+    console.log("🔍 prepareWorkflowData - final output before socket:", {
+      workflowNodesCount: workflowNodes.length,
+      sampleWorkflowNodes: workflowNodes.slice(0, 3).map(node => ({
+        id: node.id,
+        stepName: node.step_name,
+        returnBrokerOverrides: node.return_broker_overrides,
+        "node keys": Object.keys(node)
+      }))
+    });
 
     return {
       nodes: workflowNodes,

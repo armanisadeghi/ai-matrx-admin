@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getRegisteredFunctions } from '@/features/workflows/constants';
+import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 import { BaseNode } from '@/features/workflows/types';
 import { getAllReturnBrokers } from '@/features/workflows/react-flow/node-editor/workflow-node-editor/utils';
 

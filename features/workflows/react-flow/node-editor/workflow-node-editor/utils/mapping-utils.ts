@@ -1,6 +1,6 @@
 import { cloneDeep } from "lodash";
 import { ArgumentMapping } from "@/features/workflows/types";
-import { getRegisteredFunctions } from "@/features/workflows/constants";
+import { getRegisteredFunctions } from "@/features/workflows/react-flow/node-editor/workflow-node-editor/utils/arg-utils";
 
 // Function to get function data for mappings
 export const getFunctionDataForMappings = (functionId: string) => {
